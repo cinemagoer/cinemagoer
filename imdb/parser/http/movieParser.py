@@ -1593,7 +1593,7 @@ class HTMLDvdParser(ParserBase):
         dparser = HTMLDvdParser()
         result = dparser.parse(dvd_html_string)
     """
-
+    # TODO: it's not still ready to handle the "laserdisc" page.
     kind = 'dvd'
 
     def _init(self):

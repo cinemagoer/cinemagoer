@@ -34,7 +34,8 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         goofs_parser, trivia_parser, quotes_parser, \
                         releasedates_parser, ratings_parser, \
                         officialsites_parser, connections_parser, \
-                        tech_parser, locations_parser, soundtrack_parser
+                        tech_parser, locations_parser, soundtrack_parser, \
+                        dvd_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
@@ -215,6 +216,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_soundtrack(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'soundtrack')
         return soundtrack_parser.parse(cont)
+
+    def get_movie_dvd(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'dvd')
+        return dvd_parser.parse(cont)
     
     def _search_person(self, name, results):
         # The URL of the query.

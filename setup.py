@@ -26,7 +26,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '1.8-cvs050301'
+version = '1.8-cvs050317'
 
 home_page = 'http://imdbpy.sourceforge.net/'
 
@@ -87,9 +87,6 @@ if DO_SCRIPTS:
                         './bin/get_person', './bin/search_person']
 
 
-if not hasattr(sys, 'version_info'):
-    sys.version_info = (1, 5)
-
 if sys.version_info >= (2, 1):
     params['keywords'] = ['imdb', 'movie', 'people', 'database', 'cinema',
                             'film', 'person', 'cast', 'actor', 'actress',
@@ -101,9 +98,6 @@ if sys.version_info >= (2, 3):
     params['classifiers'] = filter(None, classifiers.split("\n"))
 
 
-if sys.version_info < (2, 0):
-    apply(setup, [], params)
-else:
-    setup(**params)
+setup(**params)
 
 

@@ -100,11 +100,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
-        return str(movieID).zfill(7)
+        return '%07d' % int(movieID)
 
     def _normalize_personID(self, personID):
         """Normalize the given personID."""
-        return str(personID).zfill(7)
+        return '%07d' % int(personID)
 
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID; in this implementation

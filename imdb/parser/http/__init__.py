@@ -33,7 +33,8 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         alternateversions_parser, crazycredits_parser, \
                         goofs_parser, trivia_parser, quotes_parser, \
                         releasedates_parser, ratings_parser, \
-                        officialsites_parser, connections_parser
+                        officialsites_parser, connections_parser, \
+                        tech_parser, locations_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
@@ -194,6 +195,22 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_connections(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'movieconnections')
         return connections_parser.parse(cont)
+
+    def get_movie_technical(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'technical')
+        return tech_parser.parse(cont)
+
+    def get_movie_business(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'business')
+        return tech_parser.parse(cont)
+
+    def get_movie_literature(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'literature')
+        return tech_parser.parse(cont)
+
+    def get_movie_locations(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'locations')
+        return locations_parser.parse(cont)
     
     def _search_person(self, name, results):
         # The URL of the query.

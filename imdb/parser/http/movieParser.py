@@ -1463,6 +1463,79 @@ class HTMLConnectionParser(ParserBase):
             self.__cnt += data.lower()
 
 
+class HTMLTechParser(ParserBase):
+    """Parser for the "technical", "business", "literature" and
+    "locations" of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        tparser = HTMLTechParser()
+        result = tparser.parse(technical_html_string)
+    """
+
+    # Do not gather names and titles references.
+    getRefs = 0
+
+    def _init(self):
+        self.kind = 'something else'
+    
+    def _reset(self):
+        """Reset the parser."""
+        self.__tc = {}
+        self.__dotc = 0
+        self.__indt = 0
+        self.__indd = 0
+        self.__cur_sect = ''
+        self.__curdata = ['']
+    
+    def get_data(self):
+        """Return the dictionary."""
+        if self.kind == 'locations':
+            rl = []
+            for item in self.__tc.items():
+                tmps = item[0].strip() + ' ' + \
+                        ' '.join([x.strip() for x in item[1]])
+                rl.append(tmps)
+            return {'locations': rl}
+        return self.__tc
+
+    def start_dl(self, attrs):
+        self.__dotc = 1
+
+    def end_dl(self):
+        self.__dotc = 0
+
+    def start_dt(self, attrs):
+        if self.__dotc: self.__indt = 1
+
+    def end_dt(self):
+        self.__indt = 0
+
+    def start_dd(self, attrs):
+        if self.__dotc: self.__indd = 1
+
+    def end_dd(self):
+        self.__indd = 0
+        self.__curdata[:] = [x for x in self.__curdata if x.strip()]
+        if self.__cur_sect and self.__curdata:
+            self.__tc[self.__cur_sect] = self.__curdata[:]
+        self.__curdata[:] = ['']
+        self.__cur_sect = ''
+
+    def do_br(self, attrs):
+        if self.__indd:
+            self.__curdata += ['']
+
+    def _handle_data(self, data):
+        if self.__indd:
+            self.__curdata[-1] += data
+        elif self.__indt:
+            if self.kind != 'locations': data = data.lower()
+            self.__cur_sect += data
+
+
 # The used instances.
 movie_parser = HTMLMovieParser()
 plot_parser = HTMLPlotParser()
@@ -1479,5 +1552,8 @@ releasedates_parser = HTMLReleaseinfoParser()
 ratings_parser = HTMLRatingsParser()
 officialsites_parser = HTMLOfficialsitesParser()
 connections_parser = HTMLConnectionParser()
+tech_parser = HTMLTechParser()
+locations_parser = HTMLTechParser()
+locations_parser.kind = 'locations'
 
 

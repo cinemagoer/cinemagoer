@@ -4,7 +4,7 @@
 As I've already said, IMDbPY by itself is not really useful if you're
 not a developer; anyway, some simple example scripts are included in
 the ./bin directory.
-You can find other IMDbPY-base programs here:
+You can find other IMDbPY-based programs here:
     http://imdbpy.sourceforge.net/?page=programs
 
 The 'search_movie' script takes a single argument, which must be

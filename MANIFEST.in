@@ -8,4 +8,5 @@
 # to install the documentation.
 recursive-include docs *
 global-exclude *~
+prune CVS
 

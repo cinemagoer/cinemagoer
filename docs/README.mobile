@@ -5,6 +5,9 @@ Since version 1.8, IMDbPY tries to be usable even on
 systems with very limited storage space, bandwidth and
 CPU power, like PDA, hand-held devices and mobile phones.
 
+The support is still in alpha, and I plan to extend it in
+the next releases (contact me for help or hints).
+
 Please read both the following section.
 
 

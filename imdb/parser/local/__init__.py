@@ -143,7 +143,7 @@ class IMDbLocalAccessSystem(IMDbBase):
         from imdb.parser.http.searchMovieParser import BasicMovieParser
         mparser = BasicMovieParser()
         result = mparser.parse(content)
-        if not (result and result.get('data')): return None
+        if not (result and result.has_key('data')): return None
         return result['data'][0][0]
 
     def get_imdbPersonID(self, personID):
@@ -160,7 +160,7 @@ class IMDbLocalAccessSystem(IMDbBase):
         from imdb.parser.http.searchPersonParser import BasicPersonParser
         pparser = BasicPersonParser()
         result = pparser.parse(content)
-        if not (result and result.get('data')): return None
+        if not (result and result.has_key('data')): return None
         return result['data'][0][0]
 
     def _findRefs(self, o, trefs, nrefs):
@@ -181,7 +181,6 @@ class IMDbLocalAccessSystem(IMDbBase):
                 rname = build_name(analyze_name(name, canonical=1),
                                     canonical=1)
                 if nrefs.has_key(rname): continue
-                nspl = name.split()
                 personID = self.__namesScan.getID(rname)
                 if personID is None:
                     personID = self.__namesScan.getID(name)
@@ -286,7 +285,6 @@ class IMDbLocalAccessSystem(IMDbBase):
             rt = res['runtimes'][0]
             episodes = re_episodes.findall(rt)
             if episodes:
-                bi = rt.rfind('(')
                 res['runtimes'][0] = re_episodes.sub('', rt)
                 res['episodes'] = episodes[0]
         # AKA titles.

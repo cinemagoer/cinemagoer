@@ -158,7 +158,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         #      params = urllib.urlencode({'more': 'tt', 'q': title})
         params = urllib.urlencode({'tt': 'on', 'mx': str(results), 'q': title})
         cont = self._retrieve(imdbURL_search % params)
-        return search_movie_parser.parse(cont)['data']
+        return search_movie_parser.parse(cont, results=results)['data']
 
     def get_movie_main(self, movieID):
         if not self.isThin:
@@ -249,7 +249,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         #      params = urllib.urlencode({'more': 'nm', 'q': name})
         params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
         cont = self._retrieve(imdbURL_search % params)
-        return search_person_parser.parse(cont)['data']
+        return search_person_parser.parse(cont, results=results)['data']
 
     def get_person_main(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'maindetails')

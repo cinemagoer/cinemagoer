@@ -25,7 +25,6 @@ import types
 from copy import deepcopy
 from utils import analyze_title, build_title, modifyStrings, modClearRefs, \
                     normalizeTitle
-from Person import Person
 
 
 class Movie:
@@ -314,6 +313,7 @@ class Movie:
 
     def __contains__(self, item):
         """Return true if the given Person object is listed in this Movie."""
+        from Person import Person
         if not isinstance(item, Person):
             return 0
         for i in self.__movie_data.values():

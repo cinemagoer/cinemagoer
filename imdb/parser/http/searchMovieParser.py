@@ -29,8 +29,6 @@ from imdb.utils import analyze_title
 from utils import ParserBase
 
 
-# XXX: not sure it's still useful, with the new search system.
-#      Anyway, it's used by the local access system, to get the imdbID.
 class BasicMovieParser(ParserBase):
     """Simply get the title of a movie and the imdbID.
     
@@ -100,6 +98,11 @@ class HTMLSearchMovieParser(ParserBase):
         self.__current_imdbID = ''
         self.__current_title = ''
         self.__no_more = 0
+        self.__stop = 0
+    
+    def parse(self, cont, results=None):
+        self.maxres = results
+        return ParserBase.parse(self, cont)
 
     def get_data(self):
         """Return a list of ('imdbID', {title_dict}) tuples."""
@@ -144,12 +147,19 @@ class HTMLSearchMovieParser(ParserBase):
             title = self.__current_title.strip()
             tup = (self.__current_imdbID, analyze_title(title, canonical=1))
             self.__results.append(tup)
+            if self.maxres is not None and self.maxres <= len(self.__results):
+                self.__stop = 1
         self.__current_title = ''
         self.__current_imdbID = ''
         self.__is_title = 0
         self.__no_more = 0
 
     def _handle_data(self, data):
+        if self.__stop:
+            res = self.__results
+            self.reset()
+            self.__results = res
+            return
         if self.__begin_list and self.__is_title and not self.__no_more:
             self.__current_title += data
         elif self.__reading_page_title:
@@ -164,7 +174,7 @@ class HTMLSearchMovieParser(ParserBase):
                 self.reset()
                 # Get imdbID and title directly from the "main details" page.
                 bmp = BasicMovieParser()
-                self.__results = bmp.parse(rawdata)
+                self.__results = bmp.parse(rawdata)['data']
         else:
             # XXX: we have to check the plain text part of the HTML
             #      to know when the list of title begins.

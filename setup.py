@@ -9,7 +9,7 @@ from distutils.core import setup, Extension
 # system", set DO_LOCAL to 0.
 # The local access system requires a C module and, to be used, the _whole_
 # IMDb's database installed in your computer; this not useful/possible
-# in small devices like handheld computers, where it makes sense to
+# in small devices like hand-held computers, where it makes sense to
 # also save the little space taken by the local interface package or
 # where you don't have the development environment needed to compile
 # the C module.
@@ -26,7 +26,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '1.8-cvs050323'
+version = '1.8'
 
 home_page = 'http://imdbpy.sourceforge.net/'
 
@@ -62,9 +62,6 @@ Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries
 Topic :: Software Development :: Libraries :: Python Modules
 """
 
-ratober = Extension('imdb.parser.local.ratober',
-                    ['imdb/parser/local/ratober.c'])
-
 params = {'name': 'IMDbPY',
       'version': version,
       'description': 'Python package to access the IMDb\'s database',
@@ -79,6 +76,8 @@ params = {'name': 'IMDbPY',
 
 if DO_LOCAL:
     params['packages'] = params['packages'] + ['imdb.parser.local']
+    ratober = Extension('imdb.parser.local.ratober',
+                        ['imdb/parser/local/ratober.c'])
     params['ext_modules'] = [ratober]
 
 if DO_SCRIPTS:

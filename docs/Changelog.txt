@@ -1,14 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 1.8 "Paths Of Glory" (cvs-050323)
+* What's the new in release 1.8 "Paths Of Glory" (24 Mar 2005)
   [general]
   - introduced a new data access system "httpThin", useful for
     systems with limited bandwidth and CPU power, like PDA,
     hand-held devices and mobile phones.
   - the setup.py script can be configured to not compile/install
     the local access system and the example scripts (useful for
-    handheld devices).
+    hand-held devices); introduced setup.cfg and MANIFEST.in files.
   - updated the list of articles used to manage movie titles.
   - removed the all_info tuples from Movie and Person classes,
     since the list of available info sets depends on the access
@@ -17,8 +17,6 @@
   - removed the IMDbNotAvailable exception.
   - unified some code in methods get_movie(), get_person() and
     update() in IMDbBase class.
-  - a lot of improvements for setup.py (added a setup.cfg and a
-    MANIFEST.in file).
   - minor updates to the documentation; added a 46x46 PNG icon.
   - documentation for small/mobile systems.
 
@@ -26,11 +24,11 @@
   - renamed the m['notes'] item of Movie objects to m['episodes'].
 
   [Person class]
-  - the p.__contains__(m) method could be used to check if the p
+  - the p.__contains__(m) method can be used to check if the p
     Person has worked in the m Movie.
 
   [local data access system]
-  - gather information about laserdisc, literature and business.
+  - gather information about "laserdisc", "literature" and "business".
   - fixed a bug in ratober.c; now the search_name() function
     handles search strings already in the "Surname, Name" format.
   - two new methods, get_lastMovieID() and get_lastPersonID().

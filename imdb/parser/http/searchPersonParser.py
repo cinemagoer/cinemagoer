@@ -97,6 +97,11 @@ class HTMLSearchPersonParser(ParserBase):
         self.__is_name = 0
         self.__name = ''
         self.__no_more = 0
+        self.__stop = 0
+
+    def parse(self, cont, results=None):
+        self.maxres = results
+        return ParserBase.parse(self, cont)
 
     def get_data(self):
         """Return a list of tuples (imdbID, {name_dict})."""
@@ -138,6 +143,8 @@ class HTMLSearchPersonParser(ParserBase):
             d = analyze_name(self.__name.strip(), canonical=1)
             res.update(d)
             self.__results.append((self.__current_imdbID.strip(), d))
+            if self.maxres is not None and self.maxres <= len(self.__results):
+                self.__stop = 1
             self.__name = ''
             self.__current_imdbID = ''
             self.__is_name = 0
@@ -145,6 +152,11 @@ class HTMLSearchPersonParser(ParserBase):
         self.__no_more = 0
 
     def _handle_data(self, data):
+        if self.__stop:
+            res = self.__results
+            self.reset()
+            self.__results = res
+            return
         sldata = data.strip().lower()
         if self.__in_title:
             if data.lower().find('imdb name search') == -1:
@@ -152,7 +164,7 @@ class HTMLSearchPersonParser(ParserBase):
                 rawdata = self.rawdata
                 self.reset()
                 bpp = BasicPersonParser()
-                self.__results = bpp.parse(rawdata)
+                self.__results = bpp.parse(rawdata)['data']
         elif self.__in_list and self.__is_name and not self.__no_more:
             self.__name += data
         elif sldata.find('exact match') != -1 or \

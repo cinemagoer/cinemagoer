@@ -986,7 +986,6 @@ class HTMLAlternateVersionsParser(ParserBase):
                 self.__cav = ''
             else:
                 lcw = self.__cav.lower()
-                lcws = lcw.strip()
                 for i in ('with', 'by', 'from', 'of'):
                     posi = lcw.find(i)
                     if posi != -1:
@@ -1606,7 +1605,7 @@ class HTMLTechParser(ParserBase):
     def start_dd(self, attrs):
         if self.__dotc: self.__indd = 1
 
-    def end_dd(self, fromp=0):
+    def end_dd(self):
         self.__indd = 0
         self.__curdata[:] = [x.strip() for x in self.__curdata]
         self.__curdata[:] = [x for x in self.__curdata if x]

@@ -1,0 +1,68 @@
+  TODO for IMDbPY
+  ===============
+
+See the code, and search for XXX, FIXME and TODO.
+
+NOTE: it's time to clean the code!
+
+
+[general]
+* Unify Movie and Person classes? (UserDict or dict subclasses?)
+* Unify portions of the code of the update(), get_movie() and
+  get_person() methods of the IMDbBase class.
+* The clear() method of Movie and Person classes should
+  reset also current_info, currentRole, notes and so on.
+* Write better summary() methods for Movie and Person classes.
+
+
+[searches]
+* Support advanced query for movie titles/person names.
+
+
+[Movie objects]
+* Define invariable names for the sections (the keys you use to access
+  info stored in a Movie object).
+* Gather more data; information left out: user comments, external/newsgroup
+  reviews, reccomendations, amazon.com summaries, soundtrack listing,
+  merchandising links, box office & business, technical specs (local only),
+  laserdisc details, DVD details, literature listings, news articles,
+  trailers, posters, photo gallery, on tv, schedule links, showtimes,
+  miscellaneous, photographs, sound clips, video clips, message boards.
+* Should the __contains__() methods descend lists and dictionaries?
+
+
+[Person objects]
+* Define invariable names for the sections (the keys you use to access
+  info stored in a Person object).
+* Should other persons referred in the data (e.g.: "spouse") be managed
+  as Person instances?
+* Gather more data; left out data: publicity, agent (local only),
+  photo gallery, news articles.
+
+
+[http data access system]
+* If the access through the proxy fails, try without proxy.
+* Access to the "my IMDb" functions for registered users would
+  be really cool.
+
+
+[local data access system]
+* Improve performances, especially for searching names/titles.
+* The convBin() and getFullIndex() functions in the utils
+  modules _must_ be rewritten (they're crap!).
+* Some files are not considered: mpaa-ratings-reasons.list,
+  business.list.gz, literature.list, miscellaneous-companies.list,
+  mpaa-ratings-reasons.list.
+* I'm not sure that the ratober.search_title() function works
+  correctly with movies with a '(' in the title.
+* You need the mkdb executable from the moviedb program to generate the
+  database/index files; moviedb is not open source software (although
+  it can be downloaded and used without paying money).
+  An open source (pure python?) script must be written.
+  NOTE: this MUST be done.
+  Files like biographies.data are plainly wrong: sometimes
+  a person is referred with 'Name Surname' (qv) and sometimes
+  with 'Surname, Name' (qv).
+  Names and titles with "'" are not handled properly and so on...
+
+

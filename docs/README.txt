@@ -1,0 +1,84 @@
+  What's IMDbPY?
+  ==============
+
+NOTE: see also the recommendations in the "DISCLAIMER.txt" file.
+
+
+IMDbPY is a Python package useful to retrieve and manage the data of
+the IMDb movie database.
+
+IMDbPY is mainly a tool intended for programmers and developers, but
+some example scripts are included.
+
+If you're a poor, simple, clueless user, read the "README.users" file. :-)
+Seriously: take a look at the provided example scripts even if you're
+a Really Mighty Programmer(tm), they should clearly show how to use IMDbPY.
+
+If you want to develop a program/script/package/framework using the
+IMDbPY package, see the "README.package" file, for instructions about
+how to use this package.
+
+If you're crazy enough and/or you've realized that your higher
+inspiration in life is to help the development of IMDbPY, begin reading
+the "README.devel" file. ;-)
+
+
+  INSTALLATION
+  ============
+
+Everything you need to do is to run, as the root user, the command:
+    # python setup.py install
+
+If, for some reason, it doesn't work, you can copy the "./imdb"
+directory in the local site-packages directory of the python
+major version you're using.
+To know what major version of python you've installed, run:
+    $ python -V
+
+It should return a string like "Python 2.2.1"; in this example
+the major version is "2.2".
+Now copy the "./imdb" directory:
+    # cp -r ./imdb /usr/local/lib/python{MAJORVERSION}/site-packages/
+
+
+  FEATURES
+  ========
+
+So far you can search for a movie with a given title or a person
+with a given name, and retrieve information for a given movie or person;
+the supported data access systems are 'http' (i.e.: the data are fetched
+through the IMDb's web server http://akas.imdb.com) and 'local',
+meaning that the data are taken from the plain text data files;
+see http://www.imdb.com/interfaces.html for more information.
+
+
+
+  FEATURE OF THE HTTP DATA ACCESS SYSTEM
+  ======================================
+
+* Returns almost every available information about a movie or person.
+* The use of the "akas" server will provide access to a lot of
+  AKA titles in many languages, so it's really useful if English is
+  not your native language.
+* You can set/use a proxy to access the web; if set, the HTTP_PROXY
+  environment variable will be automatically used, otherwise you can set a
+  proxy with the set_proxy() method of the class returned by the
+  imdb.IMDb function; obviously this method is available only for the http
+  data access system, since it's defined in the IMDbHTTPAccessSystem class
+  of the parser.http package.
+  Example:
+      from imdb import IMDb
+      i = IMDb(accessSystem='http') # the accessSystem argument is not really
+                            # needed, since "http" is the default.
+      i.set_proxy('http://localhost:8080/')
+
+  You can force a direct connection to the net setting the proxy
+  to a null value (i.e.: i.set_proxy('')).
+
+
+  FEATURE OF THE LOCAL DATA ACCESS SYSTEM
+  =======================================
+
+* Retrieve almost every information available, in a decently short time.
+
+

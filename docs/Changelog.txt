@@ -1,0 +1,220 @@
+  Changelog for IMDbPY
+  ====================
+
+* What's the new in release 1.8 "" (2005)
+  [general]
+  - updated the list of articles used to manage movie titles.
+  - renamed the m['notes'] item of Movie objects to m['episodes'].
+
+  [local data access system]
+  - fixed a bug in ratober.c; now the search_name() function
+    handles search strings already in the "Surname, Name" format.
+
+  [http data access system]
+  - fixed a bug retrieving the number of episodes of tv series.
+
+
+* What's the new in release 1.7 "Saw" (04 Feb 2005)
+  [general]
+  - Person class has two new keys; 'canonical name' and
+    'long imdb canonical name', like "Gibson, Mel" and
+    "Gibson, Mel (I)".
+  - now titles and names are always internally stored in the
+    canonical format.
+  - search_movie() and search_person() methods return the
+    "read" movieID or personID (handling aliases).
+  - Movie and Person objects have a 'notes' instance attribute,
+    used to specify comments about the role of a person in a movie.
+    The Movie class can also contain a ['notes'] item, used to
+    store information about the runtime; e.g. (26 episodes).
+  - fixed minor bugs in the IMDbBase, Person and Movie classes.
+  - some performance improvements.
+
+  [http data access system]
+  - fixed bugs retrieving the currentRole.
+  - try to handle unicode chars.
+  - now the searches return also "popular titles" and
+    "popular names" from the new IMDb's search system.
+
+  [local data access system]
+  - information about movie connections are retrieved.
+  - support for multiple biographies.
+  - now it works with Python 2.2 or previous versions.
+  - fixed a minor glitch in the initialization of the ratober C module.
+  - fixed a pair buffer overflows.
+  - fixed some (very rare) infinite loops bugs.
+  - it raises IMDbDataAccessError for (most of) I/O errors.
+
+  [Movie class]
+  - fixed a bug getting the "long imdb canonical title".
+
+
+* What's the new in release 1.6 "Ninja Commandments" (04 Jan 2005)
+  [general]
+  - now inside Movie and Person object, the text strings (biography,
+    movie plot, etc.) contain titles and names references, like
+    "_Movie, The (1999)_ (qv)" or "'A Person' (qv)"; these reference
+    are transformed at access time with a user defined function.
+  - introduced _get_real_movieID and _get_real_personID methods
+    in the IMDbBase class, to handle title/name aliases for the
+    local access system.
+  - split the _normalize_id method in _normalize_movieID
+    and _normalize_personID.
+  - fixed some bugs.
+
+  [Movie class]
+  - now you can access the 'canonical title' and
+    'long imdb canonical title' attributes, to get the movie title
+    in the format "Movie Title, The".
+
+  [local data access system]
+  - title and name aliases now work correctly.
+  - now get_imdbMovieID and get_imdbPersonID methods should
+    work in almost every case.
+  - people's akas are handled.
+
+  [http data access system]
+  - now the BasicMovieParser class can correctly gather the imdbID.
+
+
+* What's the new in release 1.5 "The Incredibles" (23 Dec 2004)
+  [local database]
+  - support a local installation of the IMDb database!
+    WOW!  Now you can download the plain text data files from
+    http://imdb.com/interfaces.html and access those
+    information through IMDbPY!
+
+  [general]
+  - movie titles and person names are "fully normalized";
+    Not "Matrix, The (1999)", but "The Matrix (1999)";
+    Not "Cruise, Tom" but "Tom Cruise".
+  - get_mop_infoSet() methods can now return a tuple with the
+    dictionary data and a list of information sets they provided.
+
+  [http data access system]
+  - support for the new search system (yes, another one...)
+  - a lot of small fixes to stay up-to-date with the html
+    of the IMDb web server.
+  - modified the personParser module so that it will no
+    more download both "filmoyear" and "maindetails" pages;
+    now only the latter is parsed.
+  - movie search now correctly reports the movie year and index.
+  - gather "locations" information about a movie.
+  - modified the HTMLAwardsParser class so that it doesn't list
+    empty entries.
+
+
+* What's the new in release 1.4 "The Village" (10 Nov 2004)
+  [http data access system]
+  - modified the personParser.HTMLMaindetailsParser class,
+    because IMDb has changed the img tag for the headshot.
+  - now 'archive footage' is handled correctly.
+
+  [IMDb class]
+  - fixed minor glitches (missing "self" parameter in a
+    couple of methods).
+
+  [misc]
+  - now distutils installs also the example scripts in ./bin/*
+
+
+* What's the new in release 1.3 "House of 1000 Corpses" (6 Jul 2004)
+  [http data access system]
+  - modified the BasicMovieParser and BasicPersonParser classes,
+    because IMDb has removed the "pageflicker" from the html pages.
+
+  [general]
+  - the test suite was moved outside the tgz package.
+
+
+* What's the new in release 1.2 "Kill Bill" (2 May 2004)
+  [general]
+  - now it retrieves almost every available information about movie
+    and people!
+  - introduced the concept of "data set", to retrieve different sets
+    of information about a movie/person (so that it's possibile to
+    fetch only the needed information).
+  - introduced a test suite, using the PyUnit (unittest) module.
+  - fixed a nasty typo; the analyze_title and build_title functions
+    now use the strings 'tv mini series' and 'tv series' for the 'kind'
+    key (previously the 'serie' word ws used).
+  - new design; removed the mix-in class and used a factory pattern;
+    imdb.IMDb is now a function, which returns an instance of a class,
+    subclass of imdb.IMDbBase.
+  - introduced the build_name(name_dict) function in the utils module,
+    which takes a dictionary and build a long imdb name.
+  - fixed bugs in the analyze_name function; now it correctly raise
+    an IMDbParserError exception for empty/all spaces strings.
+  - now the analyze_title function sets only the meaningful
+    information (i.e.: no 'kind' or 'year' key, if they're not set)
+
+  [http data access system]
+  - removed all non-greedy regular expressions.
+  - removed all regular expressions in the movieParser module; now
+    self.rawdata is no more used to search "strange" matches.
+  - introduced a ParserBase class, used as base class for the parsers.
+  - retrieve information about the production status (pre-production,
+    announced, in production, etc.)
+  - mpaa is now a string.
+  - now when an IMDbDataAccessError is raised it shows also the
+    used proxy.
+  - minor changes to improve performances in the handle_data method of
+    the HTMLMovieParser class.
+  - minor changes to achieve a major performances improvement in
+    the BasicPersonParser class in the searchPersonParse module.
+
+  [Movie class]
+  - fixed a bug in isSameTitle method, now the accessSystem is correctly
+    checked.
+  - fixed some typos.
+
+  [Person class]
+  - minor changes to the isSamePerson method (now it uses the build_name
+    function).
+
+
+* What's the new in release 1.1 "Gigli" (17 Apr 2004)
+  [general]
+  - added support for persons (search & retrieve information about people).
+  - removed the dataSets module.
+  - removed the MovieTitle and the SearchMovieResults classes; now information
+    about the title is stored directly in the Movie object and the search
+    methods return simple lists (of Movie or Person objects).
+  - removed the IMDbTitleError exception.
+  - added the analyze_name() function in the imdb.utils module, which
+    returns a dictionary with the 'name' and 'imdbIndex' keys from the
+    given long imdb name string.
+
+  [http data access system]
+  - http search uses the new search system.
+  - moved the plotParser module content inside the movieParser module.
+  - fixed a minor bug handling AKAs for movie titles.
+
+  [IMDb class]
+  - introduced the update(obj) method of the IMDb class, to update
+    the information of the given object (a Movie or Person instance).
+  - added the get_imdbURL(obj) method if the IMDb class, which returns
+    the URL of the main IMDb page for the given object (a Movie or Person).
+  - renamed the 'kind' parameter of the IMDb class to 'accessSystem'.
+
+  [Movie class]
+  - now __str__() returns only the short name; the summary() method
+    returns a pretty-printed string for the Movie object.
+  - persons are no more simple strings, but Person objects (the role/duty
+    is stored in the currentRole variable of the object).
+  - isSameTitle(obj) method to compare two Movie objects even when
+    not all information are gathered.
+  - new __contains__() method, to check is a given person was in a movie.
+
+  [misc]
+  - updated the documentation.
+  - corrected some syntax/grammar errors.
+
+
+* What's the new in release 1.0 "Equilibrium" (01 Apr 2004)
+  [general]
+  - first public release.
+  - retrieve data only from the web server.
+  - search only for movie titles.
+
+

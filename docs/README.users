@@ -1,0 +1,77 @@
+  IMDbPY FOR THE USERS
+  ====================
+
+As I've already said, IMDbPY by itself is not really useful if you're
+not a developer; anyway, some simple example scripts are included in
+the ./bin directory.
+You can find other IMDbPY-base programs here:
+    http://imdbpy.sf.net/#programs
+
+The 'search_movie' script takes a single argument, which must be
+a title of a movie to search; if the title contains spaces or
+other "strange" chars, enclose the title in single or double quotes.
+It will print a list of imdbID and long imdb titles.
+
+The 'get_movie' script takes a single argument: an imdbID - the
+7-ciphers number used by IMDb to uniquely identify a movie on the
+on-line database, like '0133093' for "The Matrix" - and it will
+print some information about the movie.
+
+The 'get_first_movie' works like 'search_movie', but it will only print
+information about the first matching title.
+
+Now guess what 'get_person', 'search_person' and 'get_first_person'
+scripts do... :-)
+
+Remember that you've to be connected to the net, if you want to
+use these scripts!
+If the HTTP_PROXY environment variable is set, the referred proxy
+is used.
+
+Take a look at the scripts; they're somewhat commented; maybe
+you can customize it...
+
+
+Examples:
+
+$ ./search_movie 'the passion'
+    20 results for "the passion":
+Passion of the Christ, The (2004)
+Passion, The (2003/I)
+Passion, The (1999) (TV)
+Patima (1975)
+Andrei Rublyov (1969)
+Passion de Jeanne d'Arc, La (1928)
+Passion of Darkly Noon, The (1996)
+Passion of Ayn Rand, The (1999)
+Passion Béatrice, La (1987)
+Passion, En (1969)
+Pride and the Passion, The (1957)
+"Charles II: The Power & the Passion" (2003) (mini)
+Pasión de María Elena, La (2003)
+Pasión según Berenice, La (1976)
+Passion of Rita Camilleri, The (1993)
+Culture, Water, Money: The Passion of the Frontier (1998)
+Sanguisuga conduce la danza, La (1975)
+Passion of John Ruskin, The (1994)
+Making of 'The Passion of the Christ', The (2004) (TV)
+Scream of the Butterfly (1965)
+
+
+$ ./get_movie 0133093
+Movie
+=====
+Title: Matrix, The
+Genres: Action, Thriller, Sci-Fi.
+Director: Andy Wachowski (as The Wachowski Brothers), Larry Wachowski (as The Wachowski Brothers).
+Writer: Andy Wachowski (written by) (as The Wachowski Brothers), Larry Wachowski (written by) (as The Wachowski Brothers).
+Cast: Keanu Reeves (Neo (Thomas A. Anderson)), Laurence Fishburne (Morpheus), Carrie-Anne Moss (Trinity), Hugo Weaving (Agent Smith), Joe Pantoliano (Cypher (Mr. Reagan)).
+Runtime: 136.
+Country: USA.
+Language: English.
+Rating: 8.5
+Votes: 114,264
+Plot: In the near future, a computer hacker named Neo (Keanu Reeves) discovers that all life on Earth may be nothing more than an elaborate facade created by a malevolent cyber-intelligence, for the purpose of placating us while our life essence is "farmed" to fuel the Matrix's campaign of domination in the "real" world. He joins like-minded Rebel warriors Morpheus (Laurence Fishburne) and Trinity (Carrie Ann Moss) in their struggle to overthrow the Matrix.
+
+
+

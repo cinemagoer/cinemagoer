@@ -1,0 +1,28 @@
+  LOCAL INSTALLATION
+  ==================
+
+Select a mirror of the "The Plain Text Data Files" from
+the http://www.imdb.com/interfaces.html page and download
+every file in the main directory (beware that the "diffs"
+subdirectory contains _a lot_ of files you _don't_ need,
+so don't start mirroring everything!).
+
+From the same page, download also the latest version (3.24, as
+I'm writing) of the Col Needham's command line programs (moviedb),
+under the tools directory.
+
+Install moviedb; in a stage of the installation, the mkdb program will
+generate a lot of data and index files in the directory specified by
+the DBDIR variable in the Makefile.
+
+Now you can use IMDbPY on these data:
+  from imdb import IMDb
+  i = IMDb('local', '/the/DBDIR/directory/')
+  resList = i.search_movie('the incredibles')
+  for x in resList: print x
+  ti = resList[1]
+  i.update(ti)
+  print ti['director'][0]
+
+and so on...
+

@@ -1,0 +1,413 @@
+  IMDbPY package
+  ==============
+
+Here you can find information useful to use IMDbPY to write your
+own scripts or programs.
+These information are far from complete: the code is the final
+documentation! ;-)
+
+Sections in this file:
+* GENERAL USAGE
+* THE Movie CLASS
+* THE Person CLASS
+* INFORMATION SETS
+* Person OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Person OBJECT
+* THE (NOT-SO-)"UNIVERSAL" '::' SEPARATOR
+* MOVIE TITLES AND PERSON NAMES REFERENCES
+* EXCEPTIONS
+* OTHER SOURCES OF INFO
+
+
+  GENERAL USAGE
+  =============
+
+To use the IMDbPY package, you've to import the imdb package and
+call the IMDb function.
+the basic invocation is:
+
+  import imdb
+  imdb_access = imdb.IMDb()
+
+If you're accessing a local installation of the IMDb's data,
+you must do:
+  imdb_access = imdb.IMDb('local', dbDirectory='/dir/with/files')
+where '/dir/with/files' is the directory which contains the *.data,
+*.key, *.titles, *.names and *.index files.
+
+Now you've the "imdb_access" object, instance of a subclass
+of the imdb.IMDbBase class, which can be used to search for a given
+title/name and to retrieve information about the referred movie/person.
+
+The IMDb function can be called with a 'accessSystem' keyword argument,
+that must be a string representing the type of data access you want
+to use.  That's because different systems to access the IMDb data are
+available: you can directly fetch data from the web server, you can
+have a local copy of the database (see http://www.imdb.com/interfaces.html),
+you can access movie data through the e-mail interface, etc. etc.
+
+
+  Supported access systems  |  Aliases  |  Description
+ ---------------------------+-----------+------------------------------------
+            'http'          |   'web',  | information are fetched through
+                            |   'html'  | the http://akas.imdb.com web server
+ ---------------------------|-----------|------------------------------------
+            'local'         |  'files'  | information are taken from the
+                            |           | plain text data files.
+ ---------------------------|-----------|------------------------------------
+
+The imdb_access object has five main methods: search_movie(title),
+get_movie(movieID), search_person(name), get_person(personID)
+and update(MovieOrPersonObject)
+
+  Methods description:
+
+search_movie(title) searches for the given title, and returns a
+list of Movie objects containing only basic information like the
+movie title and year, and with a "movieID" instance variable:
+   - movieID is an identifier of some kind; for the sake of simplicity
+     you can think of it as the ID used by the IMDb's web server used to
+     univocally identify a movie (e.g.: '0094226' for Brian De Palma's
+     "The Untouchables"), but keep in mind that it's not necessary the
+     same ID!!!
+     For some implementations of the "data access system" these two IDs can
+     be the same (and this is the case of the 'http' data access system), but
+     other "access systems" can use a totally different kind of movieID.
+     The easier (I hope!) way to understand this is to think at the
+     movieID of a Movie returned by the search_movie() method as the _thing_
+     you've  to pass to the get_movie() method, so that it can retrieve info
+     about the referred movie.
+     So, movieID _can_ be the imdbID ('0094226') if you're accessing
+     the web server, but with a local installation of the IMDb database,
+     movieID will be an integer, as read from the "titles.key" file;
+     if, for example, you've put IMDb's data into a local database, the
+     movieID can be an index in a given table of the database, and so on.
+
+get_movie(movieID) will fetch the needed data and return a Movie object
+for the movie referenced by the given movieID; the Movie class can be
+found in the Movie module; a Movie object presents basically the same
+interface of a Python's dictionary, so you can access, for example, the
+list of actors and actress using the syntax: movieObject['cast']
+
+The search_person(name) and get_person(personID) methods work the same
+way as search_movie(title) and get_movie(movieID).
+
+The get_imdbMovieID(movieID) and get_imdbPersonID(personID) take,
+respectively, a movieID and a personID and return the relative imdbID.
+
+The get_imdbURL(MovieOrPersonObject) method return a string with the main
+IMDb URL for the given Movie or Person object.
+
+The update(MovieOrPersonObject) method takes an instance of a Movie
+or Person class and retrieve every available information.
+Remember that the search_movie(title) and search_person(name) methods
+will return a list Movie or Person objects with only basic information,
+like the movie title or the person name, so update() can be used to
+retrieve every other information.
+
+Example:
+  i = IMDb()
+  # movie_list is a list of Movie objects, with only attributes like 'title'
+  # and 'year' defined.
+  movie_list = i.search_movie('the passion')
+  # the first movie in the list.
+  first_match = movie_list[0]
+  # only basic information like the title will be printed.
+  print first_match.summary()
+  # update the information for this movie.
+  i.update(first_match)
+  # a lot of information will be printed!
+  print first_match.summary()
+  # retrieve trivia information and print it.
+  i.update(first_match, 'trivia')
+  print m['trivia']
+  # retrieve both 'quotes' and 'goofs' information (with a list or tuple)
+  i.update(m, ['quotes', 'goofs'])
+  print m['quotes']
+  print m['goofs']
+  # retrieve every available information.
+  i.update(m, 'all')
+
+
+  THE Movie CLASS
+  ===============
+
+The main use of a Movie object is to access to the info it contains
+with a dictionary-like interface, like "movieObject[key]" where 'key'
+is a string that identifies the information you want to get.
+
+I've a really bad news for you: at this time, what 'key' is, is a
+little unclear! <g>
+
+In general, it's the name of the section as used by the IMDb web
+server to show the data.
+Where the information is a list of people with a role (an actor,
+a stunt, a writer, etc.) the relative section in the HTML page
+starts with a link to a "/Glossary/X#SectName" page; here "sectname"
+is used as 'key'.
+When the info regard companies (distributors, special effects, etc.)
+or the movie itself (sound mix, certifications, etc.) the section
+in the HTML page begins with a link to a "/List?SectName=" page, so
+we use "sectname" as a 'key'.
+The section name (the key) is always (with some minor exceptions)
+lowercase; underscores and minus signs are replaced with spaces.
+Some other keys aren't taken from the HTML page, but are defined
+within the Movie class.
+To get the complete list of keys available for a given Movie object,
+you can use the movieObject.keys() method (obviously only keys that
+refer to some existing information are defined, so a movie without an
+art director will raise a KeyError exception is you try
+movieObject['art director']); to avoid the exception, you can test
+if a Movie object has a given key with the has_key(key) method, or
+get the value with the get(key) method, which returns the value or
+None if the key is not found (an optional paramenter can modify the
+default value returned if the key isn't found).
+
+Below, a list of the main keys you can encounter, the type of the value
+returned by movieObject[key] and a short description/example:
+
+title; string; the "usual" title of the movie, like "The Untouchables".
+long imdb title; string; "Uncommon Valor (1983/II) (TV)"
+canonical title; string; the title in the canonical format,
+                         like "Untouchables, The".
+long imdb canonical title; string; "Patriot, The (2000)".
+year; string; the year of release or '????' if unknown.
+kind; string; one in ('movie', 'tv series', 'tv mini series', 'video game')
+imdbIndex; string; the roman number for movies with the same title/year.
+director; Person list; a list of director's name (e.g.: ['Brian De Palma'])
+cast; Person list; list of actor/actress, with the currentRole instance
+                   variable set to a string which describe his role/duty.
+cover url; string; the link to the image of the poster.
+writer; Person list; list of writers ['Oscar Fraley (novel)']
+plot; list; list of plots and authors of the plot.
+rating; string; user rating on IMDb from 1 to 10 (e.g. '7.8')
+votes; string; number of votes (e.g. '24,101')
+runtimes; string list; in minutes ['119'] or something like ['USA:118',
+          'UK:116']
+notes; string; number or episodes for a series, or other information.
+color info; string list; ["Color (Technicolor)"]
+countries; string list; production's country ['USA', 'Italy']
+genres; string list; one or more in (Action, Adventure, Adult, Animation,
+		Comedy,
+		Crime, Documentary, Drama, Family, Fantasy, Film-Noir,
+		Horror, Musical, Mystery, Romance, Sci-Fi, Short, Thriller,
+		War, Western)
+akas; string list; list of aka for this movie
+languages; string list; list of languages
+certificates; string list; ['UK:15', 'USA:R']
+mpaa; string; the mpaa rating
+
+Other keys that contain a list of Person objects are: costume designer,
+sound crew, crewmembers, editor, production manager, visual effects,
+assistant director, art department, composer, art director,
+cinematographer, make up, stunt performer, producer, set decorator,
+production designer.
+
+Other keys that contain list of companies are: production companies, special
+effects, sound mix, special effects companies, miscellaneous companies,
+distributors.
+
+
+  THE Person CLASS
+  ================
+
+It works mostly like the Movie class. :-)
+
+The Movie class defines a the __contains__() method, which is used to
+check if a given person has worked in a given movie with the syntax:
+  if personObject in movieObject:
+      print '%s worked in %s' % (personObject['name'], movieObject['title'])
+
+The Person class defines a isSamePerson(otherPersonObject) method, useful
+to compare two person if you're not sure that both objects have retrieved
+complete information (e.g.: a Person object returned by a query);
+th syntax is:
+   if personObject.isSamePerson(otherPersonObject):
+       print 'they are the same person!'
+
+An analogous method is defined for the Movie class, and it's
+called isSameTitle(otherMovieObject)
+
+
+  INFORMATION SETS
+  ================
+
+Since release 1.2, it's possibile to retrieve almost every piece of
+information about a given movie or person; this can be a problem, because
+(at least for the 'http' data access system) it means that a lot of
+web pages must be fetched and parsed, and this can be time consuming,
+especially if you're interested only in a small set of information.
+
+Now the get_person, get_movie and update methods have an optional 'info'
+argument, which can be set to a list of strings, each one representing
+an "information set".
+Movie and Person objects have, respectively, their own list of
+available "information sets".
+E.g.: the Movie class have a set called 'taglines' for the taglines
+of the movie, a set called 'vote details' for the number of votes for
+rating [1-10], demographic breakdowns and top 250 rank; the Person
+class have a set called 'other works' for miscellaneous works of
+this person an so on.
+
+By default only important information are retrieved/updated (i.e.:
+for a Movie object, only the 'main' and 'plot' information sets;
+for a Person object only 'main', 'filmography', 'biography'.
+
+Example:
+  i = imdb.IMDb(accessSystem='http')
+  m = i.get_movie('0133093') # only default info set are retrieved.
+  m.has_key('demographic') # returns false, since no demographic breakdowns
+                           # aren't available by default.
+  i.update(m, info=('vote details',)) # retrieve the vote details info set.
+  print m['demographic'] # print the demographic breakdowns.
+
+Another example:
+  i = imdb.IMDb(accessSystem='http')
+  # retrieve only the biography and the "other works" page:
+  p = i.get_person('0000154', info=['biography', 'other works'])
+  print p['salary']
+  print p['other works']
+
+To see which information sets are available and what are the defaults,
+see the all_info and default_info instance variable of Movie and Person
+classes.  Each object instance of Movie or Person, also have a
+current_info instance variable, to remember the information sets
+already retrieved.
+
+
+  Person OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Person OBJECT
+  ============================================================================
+
+Parsing the information about a movie, you'll encounter a lot of references
+to the people who worked on it, like the cast, the director, the stunts,
+and so on.  When such a reference is found, a Person object is instantiated,
+and the currentRole instance variable of the object is set to a string
+that describes the role or the duty of the person.
+E.g.:
+    # retrieve data for Mel Gibson's "The Passion of the Christ"
+    import imdb
+    i =  imdb.IMDb(accessSystem='http')
+    movie = i.get_movie('0335345')
+    # Get the second Person object in the list of writers
+    writer = movie['writer'][1]
+    # Will print "Mel Gibson"
+    print writer['name']
+    # Will print "screenplay", because that was duty of Mel Gibson,
+    # as a writer for the movie.
+    print writer.currentRole
+
+Obviously these Person objects contain only information directly
+available parsing the movie pages (e.g.: the name, an imdbID, the role/duty),
+so if now you:
+    print writer['actor']
+to get a list of movies acted by Mel Gibson, you'll get a KeyError
+exception, because the Person object doesn't contain this kind of
+information.
+
+To gather every available information, you've to use the update()
+method of the IMDb class:
+    i.update(writer)
+    # Now it will print a list of Movie objects.
+    print writer['actor']
+
+The same is true parsing a person data: you'll find a list of movie
+he/she worked on and, for every movie, the currentRole instance variable
+is set to a string describing the role/duty of the considered person.
+E.g.:
+    # Julia Roberts
+    julia = i.get_person('0000210')
+    # Print a list of movies she acted in and the played role, separated
+    # by '::'
+    print [movie['title'] + '::' + movie.currentRole
+           for movie in julia['actress']]
+
+Here the various Movie objects only contain minimal information, like
+the title and the year; the latest movie with Julia Roberts:
+    last = julia['actress'][0]
+    # Retrieve full information
+    i.update(last)
+    # Print the name of the first director
+    print last['director'][0]['name']
+
+
+  THE (NOT-SO-)"UNIVERSAL" '::' SEPARATOR
+  =======================================
+
+Sometimes I've used '::' to separate a set of different information
+inside a string, like the name of a company and what it has done for the
+movie, the information in the "Also Known As" section, and so on.
+It's easier to understand if you look at it; look at the output of:
+  import imdb
+  i = imdb.IMDb()
+  m = i.get_movie('0094226')
+  print m['akas']
+
+
+  MOVIE TITLES AND PERSON NAMES REFERENCES
+  ========================================
+
+Sometimes in Movie and Person attributes, there're strings with
+references to other movies or persons (e.g.: in the plot, in
+the biography, etc.).
+These references are stored in the Movie or Person instances;
+in the strings you'll find values like _A Movie (2003)_ (qv)
+or 'A Person' (qv); accessing these string (like movie['plot']
+or person['biography']), these strings are modified using
+a provided function, which must take, as arguments, the
+string and two dictionary with titles and names references;
+by default the (qv) strings are converted in the "normal"
+format ("A Movie (2003)" and "A Person").
+You can find some examples of these functions in the
+imdb.utils module.
+The function used to modify the strings can be set with
+the defaultModFunct parameter of the IMDb class or
+with the modFunct parameter of the get_movie and get_person
+methods.
+E.g.:
+  import imdb
+  i = imdb.IMDb(defaultModFunct=imdb.utils.modHtmlLinks)
+
+Or:
+  import imdb
+  i = imdb.IMDb()
+  i.get_person('0000154', modFunct=imdb.utils.modHtmlLinks)
+
+
+  EXCEPTIONS
+  ==========
+
+The imdb._exceptions module contains the exceptions raised by the
+imdb package.  Every exception is a subsclass of IMDbError, which is
+available from the imdb package.
+
+You can catch any type of errors raised by the IMDbPY package with
+something like:
+  from imdb impotr IMDb, IMDbError
+
+  try:
+      i = IMDb()
+  except IMDbError, err:
+      print err
+
+  try:
+      results = i.search_person('Mel Gibson')
+  except IMDbError, err:
+      print err
+
+  try:
+      movie = i.get_movie('0335345')
+  except IMDbError, err:
+      print err
+
+
+  OTHER SOURCES OF INFO
+  =====================
+
+Once the IMDbPY package is installed, you can read the docstring for
+packages, modules, functions, classes, objects, methods using the
+pydoc program; e.g.: "pydoc imdb.IMDb" will show the documentation
+about the imdb.IMDb class.
+
+The code contains a lot of comments, try reading it, if you can
+understand my English!
+
+

@@ -1,0 +1,10 @@
+
+I'd like to thank the following people for their help:
+
+* Nick S. Novikov, for the Windows installer.
+
+* Simone Bacciglieri, who downloaded the plain text data files for me.
+
+* Carmine Noviello, for some design hints.
+
+

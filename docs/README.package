@@ -183,7 +183,7 @@ rating; string; user rating on IMDb from 1 to 10 (e.g. '7.8')
 votes; string; number of votes (e.g. '24,101')
 runtimes; string list; in minutes ['119'] or something like ['USA:118',
           'UK:116']
-notes; string; number or episodes for a series, or other information.
+episodes; string; number or episodes for a series.
 color info; string list; ["Color (Technicolor)"]
 countries; string list; production's country ['USA', 'Italy']
 genres; string list; one or more in (Action, Adventure, Adult, Animation,

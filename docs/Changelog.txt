@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 1.8 "Infested" (cvs-050301)
+* What's the new in release 1.8 "Million Dollar Baby" (cvs-050305)
   [general]
   - updated the list of articles used to manage movie titles.
   - renamed the m['notes'] item of Movie objects to m['episodes'].
@@ -19,6 +19,8 @@
 
   [http data access system]
   - fixed a bug retrieving the number of episodes of tv series.
+  - now it retrieves information about "technical specifications",
+    "business data", "literature" and "locations".
 
 
 * What's the new in release 1.7 "Saw" (04 Feb 2005)

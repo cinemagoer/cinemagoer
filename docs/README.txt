@@ -48,6 +48,9 @@ be useful if you're installing IMDbPY in a system with very
 little hard disk space (like an handheld device) or where
 you've not a complete development environment available.
 
+If you want to use a local copy of the whole IMDb's database,
+read the README.local file.
+
 
   FEATURES
   ========

@@ -34,6 +34,7 @@ imdb (package)
             +-> movieParser
             +-> personParser
             +-> utils
+            +-> ratober
 
 Description:
 imdb (package): contains the IMDb function, the IMDbBase class and imports
@@ -62,7 +63,8 @@ http.utils: miscellaneous utilities used only by the http package.
 The modules under the parser.local package are the same of the
 parser.http package (the search functions are placed directly in the
 IMDbLocalAccessSystem class); obviously they manage a local installation
-of the database.
+of the database.  The ratober module is a C module, used to search
+names.keys and titles.key files.
 
 
   GENERIC DESCRIPTION
@@ -93,6 +95,12 @@ of the imdb.IMDb class which must define at least the following methods:
  get_movie_*(movieID)  - a set of methods, one for every set of information
                          defined for a Movie object; should return
                          a dictionary with the relative information.
+                         This dictionary can contains some optional keys:
+                         'data': must be a dictionary with the movie info.
+                         'titlesRefs': a dictionary of 'movie title': movieObj
+                                       pairs.
+                         'namesRefs': a dictionary of 'person name': personObj
+                                      pairs.
  get_person_*(personID) - a set of methods, one for every set of information
                           defined for a Person object; should return
                           a dictionary with the relative information.

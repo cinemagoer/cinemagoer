@@ -8,10 +8,6 @@ NOTE: it's time to clean the code!
 
 [general]
 * Unify Movie and Person classes? (UserDict or dict subclasses?)
-* Unify portions of the code of the update(), get_movie() and
-  get_person() methods of the IMDbBase class.
-* The clear() method of Movie and Person classes should
-  reset also current_info, currentRole, notes and so on.
 * Write better summary() methods for Movie and Person classes.
 
 
@@ -23,19 +19,16 @@ NOTE: it's time to clean the code!
 * Define invariable names for the sections (the keys you use to access
   info stored in a Movie object).
 * Gather more data; information left out: user comments, external/newsgroup
-  reviews, reccomendations, amazon.com summaries, soundtrack listing,
-  merchandising links, box office & business, technical specs (local only),
-  laserdisc details, DVD details, literature listings, news articles,
-  trailers, posters, photo gallery, on tv, schedule links, showtimes,
-  miscellaneous, photographs, sound clips, video clips, message boards.
+  reviews, reccomendations, amazon.com summaries, merchandising links,
+  laserdisc details, trailers, posters, photo gallery, on tv, schedule links,
+  showtimes, miscellaneous, photographs, sound clips, video clips,
+  message boards.
 * Should the __contains__() methods descend lists and dictionaries?
 
 
 [Person objects]
 * Define invariable names for the sections (the keys you use to access
   info stored in a Person object).
-* Should other persons referred in the data (e.g.: "spouse") be managed
-  as Person instances?
 * Gather more data; left out data: publicity, agent (local only),
   photo gallery, news articles.
 

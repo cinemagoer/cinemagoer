@@ -1,17 +1,30 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 1.8 "Dead End" (cvs-050306)
+* What's the new in release 1.8 "Shadow of the Vampire" (cvs-050317)
   [general]
   - updated the list of articles used to manage movie titles.
-  - renamed the m['notes'] item of Movie objects to m['episodes'].
   - the setup.py script works with older Python versions, and
     it can be configured to not compile/install the local
     access system and the example scripts (useful for handheld
     devices).
+  - removed the all_info tuples from Movie and Person classes;
+    since the list of available info set depend on the access
+    system, I've added two methods to the IMDbBase class;
+    get_movie_infoset() and get_person_infoset().
+  - removed the IMDbNotAvailable exception.
+  - unified some code in methods get_movie(), get_person() and
+    update() in IMDbBase class.
   - a lot of improvement for setup.py (added a setup.cfg and a
     MANIFEST.in file).
   - minor updates to the documentation; added a 46x46 PNG icon.
+
+  [Movie class]
+  - renamed the m['notes'] item of Movie objects to m['episodes'].
+
+  [Person class]
+  - the p.__contains__(m) method could be used to check if the p
+    Person has worked in the m Movie.
 
   [local data access system]
   - fixed a bug in ratober.c; now the search_name() function
@@ -19,8 +32,9 @@
 
   [http data access system]
   - fixed a bug retrieving the number of episodes of tv series.
-  - now it retrieves information about "technical specifications",
-    "business data", "literature", 'soundtrack' and "locations".
+  - now it retrieves movies information about "technical specifications",
+    "business data", "literature", "soundtrack", "dvd" and "locations".
+  - retrieves people information about "publicity" and "agent".
 
 
 * What's the new in release 1.7 "Saw" (04 Feb 2005)

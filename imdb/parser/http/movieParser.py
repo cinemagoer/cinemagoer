@@ -1594,6 +1594,8 @@ class HTMLDvdParser(ParserBase):
         result = dparser.parse(dvd_html_string)
     """
 
+    kind = 'dvd'
+
     def _init(self):
         self.__dvd = []
 
@@ -1603,92 +1605,141 @@ class HTMLDvdParser(ParserBase):
         self.__indvd = 0
         self.__intitle = 0
         self.__curtitle = ''
-        self.__inlabel = 0
-        self.__clabel = ''
-        self.__intable = 0
-        self.__cmdata = ['']
-        self.__curcols = []
-        self.__incolsh = 0
-        self.__sel_col = -1
-        self.__doneth = 0
-        self.__ci = {}
+        self.__binfo = 0
+        self.__binfo_txt = ''
+        self.__inth = 0
+        self.__noendb = 0
+        self.__finfo = 0
+        self.__finfo_txt = ''
+        self.__inar = 0
+        self.__thl = []
+        self.__thmult = 1
+        self.__colcount = -1
+        self.__coldata = ''
+        self.__insound = 0
 
     def get_data(self):
         """Return the dictionary."""
         if self.__dvd: return {'dvd': self.__dvd}
         return {}
 
-    def start_a(self, attrs):
-        name = self.get_attr_value(attrs, 'name')
-        if self.__indvd:
-            href = self.get_attr_value(attrs, 'href')
-            if href and href.lower().startswith('/sections/dvds/labels/'):
-                self.__inlabel = 1
-        if name and len(name) > 1 and name[0] == "X":
-            self.__indvd = 1
-        
-    def end_a(self): pass
-
-    def start_table(self, attrs):
-        if self.__indvd:
-            if not self.__intable:
-                border = self.get_attr_value(attrs, 'border')
-                if border == '1':
-                    self.__intable = 1
-            #else:
-            #    self.__intable = 0
-
-    def end_table(self):
-        if self.__intable:
-            if self.__cmdata:
-                cmdata = [x.replace('\n', ' ').replace('  ', ' ')
-                            for x in self.__cmdata if x]
-                if cmdata:
-                    self.__cdvd['misc'] = cmdata
-            #self.__intable = 0
-            self.__doneth = 0
-            self.__sel_col = -1
-            self.__incolsh = 0
-            self.__curcols[:] = []
-
-    def start_b(self, attrs):
-        if self.__intable:
-            cls = self.get_attr_value(attrs, 'class')
-            if cls and cls.lower() == 'catheader':
-                self.__incolsh = 1
-    
-    def end_b(self):
-        self.__incolsh = 0
-
-    def start_tr(self, attrs): pass
-
-    def end_tr(self):
-        if self.__doneth and self.__ci:
-            self.__cdvd.update(self.__ci)
-        if self.__curcols:
-            self.__doneth = 1
-
-    def start_td(self, attrsd):
-        if self.__intable and self.__doneth and self.__curcols:
-            self.__sel_col += 1
-            self.__sel_col %= len(self.__curcols)
-
-    def end_td(self): pass
+    def _put_data(self, s):
+        s = s.strip()
+        if not s: return
+        dcmi = s.find('::-')
+        mini = s.find('min')
+        if dcmi != -1 and mini != -1:
+            self._put_data('color::%s' % s[:dcmi])
+            self._put_data('runtime::%s' % s[dcmi+3:mini])
+            return
+        ss = [x.strip() for x in s.split('::') if x.strip()]
+        ssl = len(ss)
+        if ssl == 1:
+            if ss[0].lower().find('read about how we rate dvds') != -1: return
+            if not self.__cdvd.has_key('misc'):
+                self.__cdvd['misc'] = []
+            self.__cdvd['misc'].append(ss[0])
+        else:
+            k = ss[0].lower()
+            v = ' '.join(ss[1:]).replace('\n', '')
+            if self.__cdvd.has_key(k) and type(self.__cdvd[k]) is not type([]):
+                self.__cdvd[k] = [self.__cdvd[k]]
+            if self.__cdvd.has_key(k):
+                self.__cdvd[k] += v
+            else:
+                self.__cdvd[k] = v
 
     def do_hr(self, attrs):
-        if self.__cdvd:
+        if self.__indvd and self.__cdvd:
             self.__dvd.append(self.__cdvd.copy())
-        self._reset()
+            self._reset()
+
+    def start_a(self, attrs):
+        name = self.get_attr_value(attrs, 'name')
+        if name and len(name) > 1 and name[0] == "X":
+            self.__indvd = 1
+        if not self.__indvd: return
+        href = self.get_attr_value(attrs, 'href')
+        hrefl = href
+        if href: hrefl = href.lower()
+        if hrefl and hrefl.find('sections/dvds/labels') != -1:
+            self.__binfo_txt = 'label::'
+            self.__noendb = 1
+        elif hrefl and hrefl.find('sections/dvds/pictureformats') != -1:
+            self.__binfo_txt = 'picture format::'
+            self.__noendb = 1
+        elif hrefl and hrefl.find('sections/dvds/regions') != -1:
+            self.__finfo_txt = 'region::'
+        elif hrefl and hrefl.find('sections/dvds/video') != -1:
+            self.__finfo_txt = 'video standard::'
+        elif hrefl and hrefl.find('sections/dvds/packaging') != -1:
+            self.__finfo_txt = 'packaging::'
+
+    def end_a(self): pass
 
     def do_br(self, attrs):
         if self.__indvd:
             if self.__intitle: self.__curtitle += ' - '
-            if self.__inlabel:
-                self.__inlabel = 0
-                self.__cdvd['label'] = self.__clabel
-            elif not self.__intable:
-                self.__cmdata.append('')
+            if self.__binfo:
+                self.__binfo = 0
+                if self.__binfo_txt:
+                    self._put_data(self.__binfo_txt)
+                    self.__binfo_txt = ''
 
+    def start_table(self, attrs):
+        self.__thl = []
+
+    def end_table(self):
+        if self.__insound: self.__insound = 0
+
+    def start_th(self, attrs):
+        if self.__indvd:
+            self.__inth = 1
+            span = self.get_attr_value(attrs, 'colspan')
+            if span:
+                try:self.__thmult = int(span)
+                except (ValueError, OverflowError): pass
+
+    def end_th(self):
+        self.__inth = 0
+
+    def start_tr(self, attrs):
+        if not self.__indvd: return
+        if self.__thl:
+            self.__colcount = -1
+
+    def end_tr(self): pass
+
+    def start_td(self, attrs):
+        if not self.__indvd: return
+        if self.__thl:
+            self.__colcount += 1
+            self.__colcount %= len(self.__thl)
+
+    def end_td(self):
+        if not self.__indvd: return
+        if self.__thl:
+            self.__coldata = self.__coldata.strip()
+            if not self.__coldata: return
+            if not self.__insound:
+                k = self.__thl[self.__colcount]
+                v = self.__coldata.strip().replace('\n', ' ').replace('  ', ' ')
+                if v.find('::') != -1:
+                    v = [x.strip() for x in v.split('::') if x.strip()]
+                if not (k and v): return
+                self.__cdvd[k] = v
+            else:
+                if not self.__cdvd.has_key('sound'): self.__cdvd['sound'] = {}
+                lang = self.__thl[self.__colcount].lower()
+                self.__cdvd['sound'][lang] = self.__coldata
+            self.__coldata = ''
+
+    def start_li(self, attrs):
+        if self.__indvd and self.__thl and self.__coldata.strip():
+            self.__coldata += '::'
+
+    def end_li(self): pass
+            
     def start_h3(self, attrs):
         if self.__indvd:
             self.__intitle = 1
@@ -1698,29 +1749,76 @@ class HTMLDvdParser(ParserBase):
             self.__intitle = 0
             self.__cdvd['title'] = self.__curtitle
 
+    def start_font(self, attrs):
+        if not self.__indvd: return
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls.lower() in ('catheader', 'smalltxt') and \
+                not self.__inth and not self.__binfo:
+            self.__finfo = 1
+
+    def end_font(self):
+        if not self.__indvd: return
+        if self.__finfo:
+            self.__finfo = 0
+            self.__finfo_txt = self.__finfo_txt.strip()
+            if self.__finfo_txt:
+                self._put_data(self.__finfo_txt)
+                self.__finfo_txt = ''
+
+    def do_img(self, attrs):
+        src = self.get_attr_value(attrs, 'src')
+        if src and src.lower().find('images.amazon.com') != -1:
+            self.__cdvd['cover'] = src
+
+    def start_b(self, attrs):
+        if self.kind == 'laserdisc':
+            cls = self.get_attr_value(attrs, 'class')
+            if cls.lower() == 'ch':
+                if not self.__indvd:
+                    self.__indvd = 1
+        if not self.__indvd: return
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls.lower() in ('catheader', 'smalltxt', 'aspectratio') \
+                and not self.__inth:
+            self.__binfo = 1
+            self.__binfo_txt = ''
+            if cls.lower() == 'aspectratio': self.__inar = 1
+
+    def end_b(self):
+        if self.__binfo:
+            self.__binfo_txt = self.__binfo_txt.strip()
+            if self.__binfo_txt:
+                if self.__binfo_txt[-1] == ':':
+                    self.__binfo_txt = self.__binfo_txt[:-1]
+                sep = '::'
+                if self.__noendb:
+                    sep = ' '
+                    self.__noendb = 0
+                self.__binfo_txt += sep
+            if  self.__inar:
+                self.__inar = 0
+                self.__binfo_txt = self.__binfo_txt.replace(' : ', ':')
+                self._put_data('aspect ratio::%s' % self.__binfo_txt)
+
     def _handle_data(self, data):
         if self.__indvd:
+            if self.__inth:
+                dsl = data.replace(':', '').strip().lower()
+                self.__thl += [dsl]*self.__thmult
+                if dsl == 'sound':
+                    self.__insound = 1
             if self.__intitle:
                 self.__curtitle += data
-            elif self.__inlabel:
-                self.__clabel += data
-            elif self.__incolsh:
-                dsl = data.strip().lower()
-                self.__curcols.append(dsl)
-                self.__ci[dsl] = ''
-            elif not self.__intable:
-                ds = data.strip()
-                if ds:
-                    if self.__cmdata[-1]:
-                        if self.__cmdata[-1][-1] != '(' and ds[-1] != ')':
-                            self.__cmdata[-1] += ' '
-                    self.__cmdata[-1] += ds
-            elif self.__curcols:
-                ds = data.strip()
-                if ds:
-                    self.__ci[self.__curcols[self.__sel_col]] += data.strip()
-                    #print self.__curcols[self.__sel_col], data.strip()
-
+            elif self.__binfo:
+                sdata = data.lstrip()
+                if sdata:
+                    self.__binfo_txt += sdata
+            elif self.__finfo:
+                sdata = data.lstrip()
+                if sdata:
+                    self.__finfo_txt += sdata
+            elif self.__thl and not self.__inth:
+                self.__coldata += data
 
 
 # The used instances.

@@ -914,9 +914,18 @@ class HTMLAlternateVersionsParser(ParserBase):
         self.__in_avd = 0
         self.__av = []
         self.__cav = ''
+        self.__stlist = []
+        self.__curst = {}
+        self.__cur_title = ''
+        self.__curinfo = ''
 
     def get_data(self):
         """Return the dictionary."""
+        if self.kind == 'soundtrack':
+            if self.__stlist:
+                return {self.kind: self.__stlist}
+            else:
+                return {}
         if not self.__av: return {}
         return {self.kind: self.__av}
 
@@ -933,9 +942,47 @@ class HTMLAlternateVersionsParser(ParserBase):
 
     def end_li(self):
         if self.__in_av and self.__in_avd:
+            if self.kind == 'soundtrack':
+                self.__stlist.append(self.__curst.copy())
+                self.__curst.clear()
+                self.__cur_title = ''
+                self.__curinfo = ''
+            else:
+                self.__av.append(self.__cav.strip())
             self.__in_avd = 0
-            self.__av.append(self.__cav.strip())
             self.__cav = ''
+
+    def do_br(self, attrs):
+        if self.__in_avd and self.kind == 'soundtrack':
+            if not self.__cur_title:
+                self.__cav = self.__cav.strip()
+                if self.__cav and self.__cav[-1] == '"':
+                    self.__cav = self.__cav[:-1]
+                if self.__cav and self.__cav[0] == '"':
+                    self.__cav = self.__cav[1:]
+                self.__cur_title = self.__cav
+                self.__curst[self.__cur_title] = {}
+                self.__cav = ''
+            else:
+                lcw = self.__cav.lower()
+                lcws = lcw.strip()
+                for i in ('with', 'by', 'from', 'of'):
+                    posi = lcw.find(i)
+                    if posi != -1:
+                        self.__curinfo = self.__cav[:posi+len(i)]
+                        rest = self.__cav[posi+len(i)+1:]
+                        self.__curst[self.__cur_title][self.__curinfo] = \
+                                rest
+                        break
+                else:
+                    if not lcw.strip(): return
+                    if not self.__curst[self.__cur_title].has_key('misc'):
+                        self.__curst[self.__cur_title]['misc'] = ''
+                    if self.__curst[self.__cur_title]['misc'] and \
+                            self.__curst[self.__cur_title]['misc'][-1] != ' ':
+                        self.__curst[self.__cur_title]['misc'] += ' '
+                    self.__curst[self.__cur_title]['misc'] += self.__cav
+                self.__cav = ''
 
     def _handle_data(self, data):
         if self.__in_avd:
@@ -1542,11 +1589,13 @@ plot_parser = HTMLPlotParser()
 movie_awards_parser = HTMLAwardsParser()
 taglines_parser = HTMLTaglinesParser()
 keywords_parser = HTMLKeywordsParser()
-alternateversions_parser = HTMLAlternateVersionsParser()
 crazycredits_parser = HTMLCrazyCreditsParser()
 goofs_parser = HTMLGoofsParser()
+alternateversions_parser = HTMLAlternateVersionsParser()
 trivia_parser = HTMLAlternateVersionsParser()
+soundtrack_parser = HTMLAlternateVersionsParser()
 trivia_parser.kind = 'trivia'
+soundtrack_parser.kind = 'soundtrack'
 quotes_parser = HTMLQuotesParser()
 releasedates_parser = HTMLReleaseinfoParser()
 ratings_parser = HTMLRatingsParser()

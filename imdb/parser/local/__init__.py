@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import os
 
 from imdb import IMDbBase
-from imdb._exceptions import IMDbDataAccessError, IMDbNotAvailable, IMDbError
+from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb.utils import analyze_title, build_title, analyze_name, \
                         build_name, re_titleRef, re_nameRef, re_episodes
 from imdb.Person import Person
@@ -293,10 +293,6 @@ class IMDbLocalAccessSystem(IMDbBase):
                         'titlesRefs': trefs, 'namesRefs': nrefs}
         return {'data': {}}
 
-    def get_movie_awards(self, movieID):
-        raise IMDbNotAvailable, 'awards information not available ' + \
-                                'in the local database'
-
     def get_movie_taglines(self, movieID):
         tg = getTaglines(movieID, '%staglines.index' % self.__db,
                         '%staglines.data' % self.__db)
@@ -358,10 +354,6 @@ class IMDbLocalAccessSystem(IMDbBase):
     def get_movie_vote_details(self, movieID):
         data = getRatingData(movieID, '%sratings.data' % self.__db)
         return {'data': data}
-
-    def get_movie_official_sites(self, movieID):
-        raise IMDbNotAvailable, 'official sites information not available ' + \
-                                'in the local database'
 
     def get_movie_trivia(self, movieID):
         triv = parseMinusList(movieID, '%strivia.data' % self.__db,
@@ -450,15 +442,7 @@ class IMDbLocalAccessSystem(IMDbBase):
     def get_person_biography(self, personID):
         return self.get_person_main(personID)
 
-    def get_person_awards(self, personID):
-        raise IMDbNotAvailable, 'awards information not available ' + \
-                                'in the local database'
-
     def get_person_other_works(self, personID):
         return self.get_person_main(personID)
-
-    def get_person_official_sites(self, personID):
-        raise IMDbNotAvailable, 'official sites information not available ' + \
-                                'in the local database'
 
 

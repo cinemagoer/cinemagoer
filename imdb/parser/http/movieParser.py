@@ -1512,7 +1512,7 @@ class HTMLConnectionParser(ParserBase):
 
 class HTMLTechParser(ParserBase):
     """Parser for the "technical", "business", "literature" and
-    "locations" of a given movie.
+    "locations" pages of a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -1583,6 +1583,146 @@ class HTMLTechParser(ParserBase):
             self.__cur_sect += data
 
 
+class HTMLDvdParser(ParserBase):
+    """Parser for the "dvd" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        dparser = HTMLDvdParser()
+        result = dparser.parse(dvd_html_string)
+    """
+
+    def _init(self):
+        self.__dvd = []
+
+    def _reset(self):
+        """Reset the parser."""
+        self.__cdvd = {}
+        self.__indvd = 0
+        self.__intitle = 0
+        self.__curtitle = ''
+        self.__inlabel = 0
+        self.__clabel = ''
+        self.__intable = 0
+        self.__cmdata = ['']
+        self.__curcols = []
+        self.__incolsh = 0
+        self.__sel_col = -1
+        self.__doneth = 0
+        self.__ci = {}
+
+    def get_data(self):
+        """Return the dictionary."""
+        if self.__dvd: return {'dvd': self.__dvd}
+        return {}
+
+    def start_a(self, attrs):
+        name = self.get_attr_value(attrs, 'name')
+        if self.__indvd:
+            href = self.get_attr_value(attrs, 'href')
+            if href and href.lower().startswith('/sections/dvds/labels/'):
+                self.__inlabel = 1
+        if name and len(name) > 1 and name[0] == "X":
+            self.__indvd = 1
+        
+    def end_a(self): pass
+
+    def start_table(self, attrs):
+        if self.__indvd:
+            if not self.__intable:
+                border = self.get_attr_value(attrs, 'border')
+                if border == '1':
+                    self.__intable = 1
+            #else:
+            #    self.__intable = 0
+
+    def end_table(self):
+        if self.__intable:
+            if self.__cmdata:
+                cmdata = [x.replace('\n', ' ').replace('  ', ' ')
+                            for x in self.__cmdata if x]
+                if cmdata:
+                    self.__cdvd['misc'] = cmdata
+            #self.__intable = 0
+            self.__doneth = 0
+            self.__sel_col = -1
+            self.__incolsh = 0
+            self.__curcols[:] = []
+
+    def start_b(self, attrs):
+        if self.__intable:
+            cls = self.get_attr_value(attrs, 'class')
+            if cls and cls.lower() == 'catheader':
+                self.__incolsh = 1
+    
+    def end_b(self):
+        self.__incolsh = 0
+
+    def start_tr(self, attrs): pass
+
+    def end_tr(self):
+        if self.__doneth and self.__ci:
+            self.__cdvd.update(self.__ci)
+        if self.__curcols:
+            self.__doneth = 1
+
+    def start_td(self, attrsd):
+        if self.__intable and self.__doneth and self.__curcols:
+            self.__sel_col += 1
+            self.__sel_col %= len(self.__curcols)
+
+    def end_td(self): pass
+
+    def do_hr(self, attrs):
+        if self.__cdvd:
+            self.__dvd.append(self.__cdvd.copy())
+        self._reset()
+
+    def do_br(self, attrs):
+        if self.__indvd:
+            if self.__intitle: self.__curtitle += ' - '
+            if self.__inlabel:
+                self.__inlabel = 0
+                self.__cdvd['label'] = self.__clabel
+            elif not self.__intable:
+                self.__cmdata.append('')
+
+    def start_h3(self, attrs):
+        if self.__indvd:
+            self.__intitle = 1
+
+    def end_h3(self):
+        if self.__indvd:
+            self.__intitle = 0
+            self.__cdvd['title'] = self.__curtitle
+
+    def _handle_data(self, data):
+        if self.__indvd:
+            if self.__intitle:
+                self.__curtitle += data
+            elif self.__inlabel:
+                self.__clabel += data
+            elif self.__incolsh:
+                dsl = data.strip().lower()
+                self.__curcols.append(dsl)
+                self.__ci[dsl] = ''
+            elif not self.__intable:
+                ds = data.strip()
+                if ds:
+                    if self.__cmdata[-1]:
+                        if self.__cmdata[-1][-1] != '(' and ds[-1] != ')':
+                            self.__cmdata[-1] += ' '
+                    self.__cmdata[-1] += ds
+            elif self.__curcols:
+                ds = data.strip()
+                if ds:
+                    self.__ci[self.__curcols[self.__sel_col]] += data.strip()
+                    #print self.__curcols[self.__sel_col], data.strip()
+
+
+
 # The used instances.
 movie_parser = HTMLMovieParser()
 plot_parser = HTMLPlotParser()
@@ -1604,5 +1744,6 @@ connections_parser = HTMLConnectionParser()
 tech_parser = HTMLTechParser()
 locations_parser = HTMLTechParser()
 locations_parser.kind = 'locations'
+dvd_parser = HTMLDvdParser()
 
 

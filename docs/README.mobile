@@ -1,0 +1,70 @@
+  IMDbPY FOR SMALL SYSTEMS
+  ========================
+
+Since version 1.8, IMDbPY tries to be usable even on
+systems with very limited storage space, bandwidth and
+CPU power, like PDA, hand-held devices and mobile phones.
+
+Please read both the following section.
+
+
+  INSTALLATION OPTIONS
+  ====================
+
+You can modify a couple of variables in the setup.py script:
+setting DO_LOCAL to 0, the parser.local package is not installed (and
+the ratober C module is not compiled); this is useful if your system
+doesn't have the space (more than 600Mb) for a local installation
+of the IMDb's database.  Preventing the installation of the
+parser.local package will also save about 150Kb of disk space
+on your system.
+
+If the DO_SCRIPTS variable is set to 0, the example scripts in
+the ./bin/ directory are not installed, saving about 45Kb.
+
+
+Now, if you're installing IMDbPY (using ./setup.py install), you
+should take a look at some options, like "--no-compile" and "-O0"
+to exclude pyc and pyo file (saving at least 300Kb of disk space).
+
+Instead, if you're creating a package (rpm, deb or whatever),
+in the setup.cfg you can exclude from your package things
+like the documentation (more than 120Kb) and the icon (~4Kb).
+
+In both situation (installing and packaging), you may also need
+to modify the MANIFEST.in file.
+
+
+  USING
+  =====
+
+Instead of the default data access system ('http'), you can
+use 'httpThin' (or 'webThin' or 'htmlThin').
+
+I.e.:
+  from imdb import IMDb
+  i = IMDb('webThin')
+  sp = i.search_person('mel gibson', results=10)
+  sm = i.search_movie('mystic river', results=15)
+  ... and so on...
+
+
+So far the main difference is that, parsing movies' information,
+the "maindetails" page is parsed, in place of the "combined" page.
+This reduces the required bandwidth and the CPU power needed.
+Obviously a lot of information are lost (and only the first 15
+people if the cast are listed), but it still retrieves everything
+you normally need (director, writer, runtime, country, language, akas,
+etc.)
+
+Another difference is that, if the "defaultModFuct" parameter is not
+provided (as default) calling the IMDb() function, no references
+to people or movie are collected from textual information (like
+the plot of a movie).
+
+
+Remember that, calling the search_movie() and search_person()
+methods of the "IMDb" object, you can provide a "results"
+parameter, to download only a limited amount of results (20,
+by default).
+

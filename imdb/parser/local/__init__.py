@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import os
+from stat import ST_SIZE
 
 from imdb import IMDbBase
 from imdb._exceptions import IMDbDataAccessError, IMDbError
@@ -67,6 +68,16 @@ class IMDbLocalAccessSystem(IMDbBase):
             raise IMDbDataAccessError, '"%s" is not a directory' % self.__db
         self.__namesScan = KeyFScan('%snames.key' % self.__db)
         self.__titlesScan = KeyFScan('%stitles.key' % self.__db)
+
+    def _get_lastID(self, indexF):
+        fsize = os.stat(indexF)[ST_SIZE]
+        return (fsize / 4) - 1
+
+    def get_lastMovieID(self):
+        return self._get_lastID('%stitles.index' % self.__db)
+    
+    def get_lastPersonID(self):
+        return self._get_lastID('%snames.index' % self.__db)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""

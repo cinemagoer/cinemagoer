@@ -18,34 +18,32 @@ NOTE: it's time to clean the code!
 [Movie objects]
 * Define invariable names for the sections (the keys you use to access
   info stored in a Movie object).
-* Gather more data; information left out: user comments, external/newsgroup
-  reviews, reccomendations, amazon.com summaries, merchandising links,
-  laserdisc details, trailers, posters, photo gallery, on tv, schedule links,
-  showtimes, miscellaneous, photographs, sound clips, video clips,
-  message boards.
 * Should the __contains__() methods descend lists and dictionaries?
 
 
 [Person objects]
 * Define invariable names for the sections (the keys you use to access
   info stored in a Person object).
-* Gather more data; left out data: publicity, agent (local only),
-  photo gallery, news articles.
 
 
 [http data access system]
 * If the access through the proxy fails, try without proxy.
 * Access to the "my IMDb" functions for registered users would
   be really cool.
+* Gather more data; information left out: user comments, external reviews,
+  newsgroup reviews, reccomendations, amazon.com summaries, merchandising links,
+  laserdisc details, trailers, posters, photo gallery, on tv, schedule links,
+  showtimes, miscellaneous, photographs, sound clips, video clips,
+  message boards.
+* Gather more data; left out data: photo gallery, news articles.
+
 
 
 [local data access system]
 * Improve performances, especially for searching names/titles.
 * The convBin() and getFullIndex() functions in the utils
   modules _must_ be rewritten (they're crap!).
-* Some files are not considered: mpaa-ratings-reasons.list,
-  business.list.gz, literature.list, miscellaneous-companies.list,
-  mpaa-ratings-reasons.list.
+* Some files are not considered: mpaa-ratings-reasons.list.
 * I'm not sure that the ratober.search_title() function works
   correctly with movies with a '(' in the title.
 * You need the mkdb executable from the moviedb program to generate the

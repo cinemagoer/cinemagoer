@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-15 -*-
 """
 parser.local.movieParser module (imdb package).
 
@@ -148,6 +149,126 @@ def getTaglines(movieID, indexF, dataF):
             tgL.append(line)
         tgf.close()
     return tgL
+
+
+def _parseColonList(movieID, indexF, dataF, stopKey, replaceKeys):
+    """Parser for lists with "COMMA: value" strings."""
+    index = getFullIndex(indexF, movieID, kind='idx2idx')
+    out = {}
+    if index is None: return out
+    try:
+        fd = open(dataF, 'rt')
+    except IOError, e:
+        raise IMDbDataAccessError, str(e)
+    fd.seek(index)
+    fd.readline()
+    while 1:
+        line = fd.readline()
+        if not line or line.startswith(stopKey): break
+        line = line.strip()
+        if not line: continue
+        cols = line.split(':', 1)
+        if len(cols) < 2: continue
+        k = cols[0]
+        k = replaceKeys.get(k, k)
+        v = ' '.join(cols[1:]).strip()
+        if not out.has_key(k): out[k] = []
+        out[k].append(v)
+    fd.close()
+    return out
+
+
+_lit = {'SCRP': 'screenplay/teleplay',
+        'NOVL': 'novel',
+        'ADPT': 'adaption',
+        'BOOK': 'book',
+        'PROT': 'production process protocol',
+        'IVIW': 'interviews',
+        'CRIT': 'printed media reviews',
+        'ESSY': 'essays',
+        'OTHR': 'other literature'
+}
+
+def getLiterature(movieID, indexF, dataF):
+    """Return literature information for a movie."""
+    return _parseColonList(movieID, indexF, dataF, 'MOVI: ', _lit)
+
+
+_bus = {'BT': 'budget',
+        'WG': 'weekend gross',
+        'GR': 'gross',
+        'OW': 'opening weekend',
+        'RT': 'rentals',
+        'AD': 'admissions',
+        'SD': 'filming dates',
+        'PD': 'production dates',
+        'ST': 'studios',
+        'CP': 'copyright Holder'
+}
+
+def getBusiness(movieID, indexF, dataF):
+    """Return business information for a movie."""
+    bd = _parseColonList(movieID, indexF, dataF, 'MV: ', _bus)
+    for k in bd.keys():
+        nv = []
+        for v in bd[k]:
+            v = v.replace('USD ', '$').replace('GBP ', '£').replace('EUR', '¤')
+            nv.append(v)
+        bd[k] = nv
+    return bd
+
+
+_ldk = {'OT': 'original title',
+        'PC': 'production country',
+        'YR': 'year',
+        'CF': 'certification',
+        'CA': 'category',
+        'GR': 'group (genre)',
+        'LA': 'language',
+        'SU': 'subtitles',
+        'LE': 'length',
+        'RD': 'release date',
+        'ST': 'status of availablility',
+        'PR': 'official retail price',
+        'RC': 'release country',
+        'VS': 'video standard',
+        'CO': 'color information',
+        'SE': 'sound encoding',
+        'DS': 'digital sound',
+        'AL': 'analog left',
+        'AR': 'analog right',
+        'MF': 'master format',
+        'PP': 'pressing plant',
+        'SZ': 'disc size',
+        'SI': 'number of sides',
+        'DF': 'disc format',
+        'PF': 'picture format',
+        'AS': 'aspect ratio',
+        'CC': 'close captions/teletext/ld+g',
+        'CS': 'number of chapter stops',
+        'QP': 'quality program',
+        'IN': 'additional information',
+        'SL': 'supplement',
+        'RV': 'review',
+        'V1': 'quality of source',
+        'V2': 'contrast',
+        'V3': 'color rendition',
+        'V4': 'sharpness',
+        'V5': 'video noise',
+        'V6': 'video artifacts',
+        'VQ': 'video quality',
+        'A1': 'frequency response',
+        'A2': 'dynamic range',
+        'A3': 'spaciality',
+        'A4': 'audio noise',
+        'A5': 'dialogue intellegibility',
+        'AQ': 'audio quality'
+}
+
+def getLaserdisc(movieID, indexF, dataF):
+    """Return laserdisc information for a movie."""
+    ld = _parseColonList(movieID, indexF, dataF, '--', _ldk)
+    return ld
 
 
 def getQuotes(movieID, dataF, indexF):

@@ -1,7 +1,8 @@
 
 I'd like to thank the following people for their help:
 
-* Nick S. Novikov, for the Windows installer.
+* Nick S. Novikov, who provided the Windows installer until I've
+  managed to set up a Windows development environment.
 
 * Simone Bacciglieri, who downloaded the plain text data files for me.
 

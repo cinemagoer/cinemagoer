@@ -1,21 +1,20 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 1.8 "Shadow of the Vampire" (cvs-050319)
+* What's the new in release 1.8 "Terminal Invasion" (cvs-050320)
   [general]
+  - the setup.py script can be configured to not compile/install
+    the local access system and the example scripts (useful for
+    handheld devices).
   - updated the list of articles used to manage movie titles.
-  - the setup.py script works with older Python versions, and
-    it can be configured to not compile/install the local
-    access system and the example scripts (useful for handheld
-    devices).
-  - removed the all_info tuples from Movie and Person classes;
-    since the list of available info set depend on the access
-    system, I've added two methods to the IMDbBase class;
+  - removed the all_info tuples from Movie and Person classes,
+    since the list of available info sets depends on the access
+    system. I've added two methods to the IMDbBase class,
     get_movie_infoset() and get_person_infoset().
   - removed the IMDbNotAvailable exception.
   - unified some code in methods get_movie(), get_person() and
     update() in IMDbBase class.
-  - a lot of improvement for setup.py (added a setup.cfg and a
+  - a lot of improvements for setup.py (added a setup.cfg and a
     MANIFEST.in file).
   - minor updates to the documentation; added a 46x46 PNG icon.
 
@@ -27,8 +26,10 @@
     Person has worked in the m Movie.
 
   [local data access system]
+  - gather information about laserdisc, literature and business.
   - fixed a bug in ratober.c; now the search_name() function
     handles search strings already in the "Surname, Name" format.
+  - two new methods, get_lastMovieID() and get_lastPersonID().
 
   [http data access system]
   - fixed a bug retrieving the number of episodes of tv series.

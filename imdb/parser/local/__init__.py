@@ -36,7 +36,8 @@ from imdb.Movie import Movie
 from personParser import getFilmography, getBio, getAkaNames
 from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
                         getPlot, getRatingData, getMovieMisc, getTaglines, \
-                        getQuotes, getMovieLinks
+                        getQuotes, getMovieLinks, getBusiness, getLiterature, \
+                        getLaserdisc
 
 from ratober import search_name, search_title
 from utils import getFullIndex, sortBy, KeyFScan
@@ -74,9 +75,11 @@ class IMDbLocalAccessSystem(IMDbBase):
         return (fsize / 4) - 1
 
     def get_lastMovieID(self):
+        """Return the last movieID"""
         return self._get_lastID('%stitles.index' % self.__db)
     
     def get_lastPersonID(self):
+        """Return the last personID"""
         return self._get_lastID('%snames.index' % self.__db)
 
     def _normalize_movieID(self, movieID):
@@ -343,6 +346,14 @@ class IMDbLocalAccessSystem(IMDbBase):
         if goo: return {'data': {'goofs': goo},
                         'titlesRefs': trefs, 'namesRefs': nrefs}
         return {'data': {}}
+    
+    def get_movie_soundtrack(self, movieID):
+        goo = parseMinusList(movieID, '%ssoundtracks.data' % self.__db,
+                            '%ssoundtracks.index' % self.__db)
+        trefs, nrefs = self._extractRefs(goo)
+        if goo: return {'data': {'soundtrack': goo},
+                        'titlesRefs': trefs, 'namesRefs': nrefs}
+        return {'data': {}}
 
     def get_movie_quotes(self, movieID):
         mq = getQuotes(movieID, '%squotes.data' % self.__db,
@@ -390,7 +401,31 @@ class IMDbLocalAccessSystem(IMDbBase):
                             '%stitles.key' % self.__db)
         if mc: return {'data': {'connections': mc}}
         return {'data': {}}
+
+    def get_movie_business(self, movieID):
+        mb = getBusiness(movieID, '%sbusiness.index' % self.__db,
+                            '%sbusiness.data' % self.__db)
+        trefs, nrefs = self._extractRefs(mb)
+        if mb: return {'data': {'business': mb},
+                        'titlesRefs': trefs, 'namesRefs': nrefs}
+        return {'data': {}}
     
+    def get_movie_literature(self, movieID):
+        ml = getLiterature(movieID, '%sliterature.index' % self.__db,
+                            '%sliterature.data' % self.__db)
+        trefs, nrefs = self._extractRefs(ml)
+        if ml: return {'data': {'literature': ml},
+                        'titlesRefs': trefs, 'namesRefs': nrefs}
+        return {'data': {}}
+    
+    def get_movie_laserdisc(self, movieID):
+        ml = getLaserdisc(movieID, '%slaserdisc.index' % self.__db,
+                            '%slaserdisc.data' % self.__db)
+        trefs, nrefs = self._extractRefs(ml)
+        if ml: return {'data': {'laserdisc': ml},
+                        'titlesRefs': trefs, 'namesRefs': nrefs}
+        return {'data': {}}
+
     def _search_person(self, name, results):
         # ratober functions return a sorted
         # list of tuples (match_score, personID, personName)

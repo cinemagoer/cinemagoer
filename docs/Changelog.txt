@@ -1,10 +1,17 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 1.8 "" (2005)
+* What's the new in release 1.8 "Infested" (cvs-050301)
   [general]
   - updated the list of articles used to manage movie titles.
   - renamed the m['notes'] item of Movie objects to m['episodes'].
+  - the setup.py script works with older Python versions, and
+    it can be configured to not compile/install the local
+    access system and the example scripts (useful for handheld
+    devices).
+  - a lot of improvement for setup.py (added a setup.cfg and a
+    MANIFEST.in file).
+  - minor updates to the documentation; added a 46x46 PNG icon.
 
   [local data access system]
   - fixed a bug in ratober.c; now the search_name() function

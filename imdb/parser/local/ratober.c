@@ -54,22 +54,22 @@
 
 /* List of articles.
    XXX: are "agapi mou" and  "liebling" articles? */
-#define ART_COUNT    57
+#define ART_COUNT    45
 char *articles[ART_COUNT] = {"the ", "la ", "a ", "die ", "der ", "le ", "el ",
-            "l'", "il ", "das ", "les ", "i ", "o ", "ein ", "un ", "de ",
-            "los ", "an ", "una ", "eine ", "las ", "den ", "gli ", "het ",
-            "en ", "lo ", "to ", "os ", "as ", "az ", "ha-", "een ", "det ",
-            "oi ", "ang ", "ta ", "al-", "et ", "des ", "dem ", "al ",
-            "uno ", "un'", "ett ", "mga ", "egy ", "Ο ", "Η ", "ye ",
-            "eines ", "da ", "els ", "Το ", "Οι ", "el-", "-al ", "'n "};
+            "l'", "il ", "das ", "les ", "i ", "o ", "ein ", "un ", "los ",
+            "de ", "an ", "una ", "eine ", "las ", "den ", "gli ", "het ",
+            "lo ", "os ", "az ", "ha-", "een ", "det ",
+            "oi ", "ang ", "ta ", "al-", "dem ",
+            "uno ", "un'", "ett ", "mga ", "Ο ", "Η ",
+            "eines ", "els ", "Το ", "Οι "};
 
 char *articlesNoSP[ART_COUNT] = {"the", "la", "a", "die", "der", "le", "el",
-           "l'", "il", "das", "les", "i", "o", "ein", "un", "de",
-           "los", "an", "una", "eine", "las", "den", "gli", "het",
-           "en", "lo", "to", "os", "as", "az", "ha-", "een", "det",
-           "oi", "ang", "ta", "al-", "et", "des", "dem", "al",
-           "uno", "un'", "ett", "mga", "egy", "Ο", "Η", "ye",
-           "eines", "da", "els", "Το", "Οι", "el-", "-al", "'n"};
+           "l'", "il", "das", "les", "i", "o", "ein", "un", "los",
+           "de", "an", "una", "eine", "las", "den", "gli", "het",
+           "lo", "os", "az", "ha-", "een", "det",
+           "oi", "ang", "ta", "al-", "dem",
+           "uno", "un'", "ett", "mga", "Ο", "Η",
+           "eines", "els", "Το", "Οι"};
 
 
 //*****************************************
@@ -164,6 +164,8 @@ ratcliff(char *s1, char *s2)
 }
 
 
+/* Search for the searchText2 name in the key file keyFileName,
+ * returning at most nrResults results. */
 static PyObject*
 search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 {
@@ -194,8 +196,10 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         return NULL;
     }
 
-    if (strstr(searchText1, ", ") == NULL) {
+    if (strstr(searchText2, ", ") == NULL) {
         if ((cp = strrchr(searchText2, ' ')) != NULL) {
+            /* build a "Surname, Name" search pattern.
+             * XXX: what about search patterns with multiple spaces? */
             strncpy(searchText1, cp+1, strlen(cp));
             strncat(searchText1, ", ", 2);
             strncat(searchText1, searchText2, strlen(searchText2) - strlen(cp));
@@ -205,7 +209,8 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             doThirdTest = 1;
         }
     } else {
-        /* Contains a ", " */
+        /* Contains a ", ", so we can assume that the search pattern
+         * is already in the "Surname, Name" format. */
         strcpy(searchText1, searchText2);
         doSecTest = 0;
     }
@@ -232,16 +237,17 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
                 continue;
             }
         }
+
         if (doThirdTest) {
             if ((cp = strstr(line, ", ")) != NULL) {
                 *cp = '\0';
-                res = ratcliff(searchText2, line) - 0.1;
-                if (res >= RO_THRESHOLD) {
-                    PyList_Append(result, Py_BuildValue("(dis)",
-                                    res, strtol(key, NULL, 16), origLine));
-                    continue;
-                }
-           }
+            }
+            res = ratcliff(searchText2, line) - 0.1;
+            if (res >= RO_THRESHOLD) {
+                PyList_Append(result, Py_BuildValue("(dis)",
+                                res, strtol(key, NULL, 16), origLine));
+                continue;
+            }
         }
     }
 
@@ -256,6 +262,8 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 }
 
 
+/* Search for the searchText2 title in the key file keyFileName,
+ * returning at most nrResults results. */
 static PyObject*
 search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 {
@@ -334,10 +342,11 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
                                 res, strtol(key, NULL, 16), origLine));
                 continue;
             }
-        } else {
+        } else if (strstr(line, ", ") != NULL) {
+            /* Strip the article. */
+            linelen = strlen(line);
             for (count = 0; count < ART_COUNT; count++) {
                 artlen = strlen(articlesNoSP[count]);
-                linelen = strlen(line);
                 if (linelen >= artlen+2 &&
                         !strncasecmp(articlesNoSP[count],
                         &(line[linelen-artlen]), artlen) &&
@@ -347,8 +356,8 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
                     if (res >= RO_THRESHOLD) {
                         PyList_Append(result, Py_BuildValue("(dis)",
                                         res, strtol(key, NULL, 16), origLine));
-                        break;
                     }
+                    break;
                 }
             }
         }

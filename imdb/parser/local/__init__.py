@@ -28,7 +28,7 @@ import os
 from imdb import IMDbBase
 from imdb._exceptions import IMDbDataAccessError, IMDbNotAvailable, IMDbError
 from imdb.utils import analyze_title, build_title, analyze_name, \
-                        build_name, re_titleRef, re_nameRef
+                        build_name, re_titleRef, re_nameRef, re_episodes
 from imdb.Person import Person
 from imdb.Movie import Movie
 
@@ -270,11 +270,11 @@ class IMDbLocalAccessSystem(IMDbBase):
             if data: res[name] = data
         if res.has_key('runtimes') and len(res['runtimes']) > 0:
             rt = res['runtimes'][0]
-            bi = rt.rfind('(')
-            ei = rt.rfind(')')
-            if bi != -1 and ei > bi:
-                res['runtimes'][0] = rt[:bi].strip()
-                res['notes'] = rt[bi:ei+1]
+            episodes = re_episodes.findall(rt)
+            if episodes:
+                bi = rt.rfind('(')
+                res['runtimes'][0] = re_episodes.sub('', rt)
+                res['episodes'] = episodes[0]
         # AKA titles.
         akas = getAkaTitles(movieID,
                     '%saka-titles.data' % self.__db,

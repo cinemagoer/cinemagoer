@@ -30,7 +30,7 @@ from urllib import unquote
 
 from imdb.Person import Person
 from imdb.Movie import Movie
-from imdb.utils import analyze_title
+from imdb.utils import analyze_title, re_episodes
 from imdb._exceptions import IMDbParserError
 from utils import ParserBase
 
@@ -306,12 +306,10 @@ class HTMLMovieParser(ParserBase):
             self.__is_runtimes = 0
             rt = self.__runtimes.replace(' min', '')
             # The "(xy episodes)" note.
-            sep = rt.find(' (')
-            if sep != -1:
-                eep = rt.find(')')
-                if eep > sep:
-                    self.set_item('notes', rt[sep:eep+1])
-                    rt = '%s%s' % (rt[:sep], rt[eep+1:])
+            episodes = re_episodes.findall(rt)
+            if episodes:
+                rt = re_episodes.sub('', rt)
+                self.set_item('episodes', episodes[0])
             rl = [x.strip() for x in rt.split('/')]
             if rl: self.set_item('runtimes', rl)
 

@@ -37,6 +37,9 @@ re_year_index = re.compile(r'\(([0-9\?]{4}(/[IVXLCDM]+)?)\)')
 # Match only the imdbIndex (for name strings).
 re_index = re.compile(r'^\(([IVXLCDM]+)\)$')
 
+# Match the number of episodes.
+re_episodes = re.compile('\s?\((\d+) episodes\)', re.I)
+
 
 # Common suffixes in surnames.
 _sname_suffixes = ('de', 'la', 'der', 'den', 'del', 'y', 'da', 'van',
@@ -108,13 +111,15 @@ def build_name(name_dict, canonical=0):
 
 # List of articles.
 # XXX: are 'agapi mou' and  'liebling' articles?
+# XXX: removed 'en', 'to', 'as', 'et', 'des', 'al', 'egy', 'ye', 'da'
+#      and "'n" because they are more commonly used as non-articles
+#      at the begin of a title.
 _articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el', "l'", 'il',
-            'das', 'les', 'i', 'o', 'ein', 'un', 'de', 'los', 'an',
-            'una', 'eine', 'las', 'den', 'gli', 'het', 'en', 'lo', 'to',
-            'os', 'as', 'az', 'ha-', 'een', 'det', 'oi', 'ang', 'ta',
-            'al-', 'et', 'des', 'dem', 'al', 'uno', "un'", 'ett',
-            'mga', 'egy', 'Ο', 'Η', 'ye', 'eines', 'da', 'els',
-            'Το', 'Οι', 'el-', '-al', "'n")
+            'das', 'les', 'i', 'o', 'ein', 'un', 'los', 'de', 'an',
+            'una', 'eine', 'las', 'den', 'gli', 'het', 'lo',
+            'os', 'az', 'ha-', 'een', 'det', 'oi', 'ang', 'ta',
+            'al-', 'dem', 'uno', "un'", 'ett', 'mga', 'Ο', 'Η',
+            'eines', 'els', 'Το', 'Οι')
 
 # Articles with spaces.
 _spArticles = []

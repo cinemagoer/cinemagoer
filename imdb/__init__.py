@@ -44,7 +44,10 @@ def IMDb(accessSystem='http', *arguments, **keywords):
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
     elif accessSystem in ('local', 'files'):
-        from parser.local import IMDbLocalAccessSystem
+        try:
+            from parser.local import IMDbLocalAccessSystem
+        except ImportError:
+            raise IMDbError, 'the local access system is not installed'
         return IMDbLocalAccessSystem(*arguments, **keywords)
     else:
         raise IMDbError, 'unknown kind of data access system: "%s"' \

@@ -13,6 +13,8 @@ some example scripts are included.
 If you're a poor, simple, clueless user, read the "README.users" file. :-)
 Seriously: take a look at the provided example scripts even if you're
 a Really Mighty Programmer(tm), they should clearly show how to use IMDbPY.
+Other IMDbPY-based programs can be downloaded from:
+  http://imdbpy.sourceforge.net/?page=programs
 
 If you want to develop a program/script/package/framework using the
 IMDbPY package, see the "README.package" file, for instructions about
@@ -39,6 +41,12 @@ It should return a string like "Python 2.2.1"; in this example
 the major version is "2.2".
 Now copy the "./imdb" directory:
     # cp -r ./imdb /usr/local/lib/python{MAJORVERSION}/site-packages/
+
+
+The setup.py contains some configuration options that could
+be useful if you're installing IMDbPY in a system with very
+little hard disk space (like an handheld device) or where
+you've not a complete development environment available.
 
 
   FEATURES

@@ -54,6 +54,9 @@ you can access movie data through the e-mail interface, etc. etc.
             'local'         |  'files'  | information are taken from the
                             |           | plain text data files.
  ---------------------------|-----------|------------------------------------
+          'httpThin'        | 'webThin' | identical to 'http', but less
+                            | 'htmlThin'| information are gathered; useful
+                            |           | for small systems like PDA.
 
 The imdb_access object has five main methods: search_movie(title),
 get_movie(movieID), search_person(name), get_person(personID)

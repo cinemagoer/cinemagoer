@@ -65,7 +65,9 @@ the supported data access systems are 'http' (i.e.: the data are fetched
 through the IMDb's web server http://akas.imdb.com) and 'local',
 meaning that the data are taken from the plain text data files;
 see http://www.imdb.com/interfaces.html for more information.
-
+Another data access system is 'httpThin', which is equal to 'http'
+but fetch less data and so it is (or at least it tries to be)
+suitable for small system like PDA or smartphones.
 
 
   FEATURE OF THE HTTP DATA ACCESS SYSTEM

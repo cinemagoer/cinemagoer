@@ -38,6 +38,10 @@ NOTE: it's time to clean the code!
 * Gather more people's data: photo gallery, news articles.
 
 
+[httpThin data access system]
+* it should be made _really_ faster than 'http'.
+
+
 [local data access system]
 * Improve performances, especially for searching names/titles.
 * The convBin() and getFullIndex() functions in the utils

@@ -40,6 +40,10 @@ class HTMLMaindetailsParser(ParserBase):
         cparser = HTMLMaindetailsParser()
         result = cparser.parse(categorized_html_string)
     """
+
+    # Do not gather names and titles references.
+    getRefs = 0
+
     def _init(self):
         # This is the dictionary that will be returned by the parse() method.
         self.__person_data = {}
@@ -343,7 +347,7 @@ class HTMLBioParser(ParserBase):
 
 
 class HTMLOtherWorksParser(ParserBase):
-    """Parser for the "other works" page of a given person.
+    """Parser for the "other works" and "agent" pages of a given person.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -352,21 +356,33 @@ class HTMLOtherWorksParser(ParserBase):
         owparser = HTMLOtherWorksParser()
         result = owparser.parse(otherworks_html_string)
     """
+
+    def _init(self):
+        self.kind = 'other works'
+    
     def _reset(self):
         """Reset the parser."""
         self.__in_ow = 0
         self.__ow = []
         self.__cow = ''
+        self.__dostrip = 0
 
     def get_data(self):
         """Return the dictionary."""
         if not self.__ow: return {}
-        return {'other works': self.__ow}
+        return {self.kind: self.__ow}
 
     def start_dd(self, attrs):
         self.__in_ow = 1
 
     def end_dd(self): pass
+
+    def start_b(self, attrs): pass
+
+    def end_b(self):
+        if self.kind == 'agent' and self.__in_ow and self.__cow:
+            self.__cow += '::'
+            self.__dostrip = 1
 
     def do_br(self, attrs):
         if self.__in_ow and self.__cow:
@@ -381,6 +397,9 @@ class HTMLOtherWorksParser(ParserBase):
     
     def _handle_data(self, data):
         if self.__in_ow:
+            if self.__dostrip:
+                data = data.lstrip()
+                if data: self.__dostrip = 0
             self.__cow += data
 
 
@@ -388,9 +407,14 @@ class HTMLOtherWorksParser(ParserBase):
 maindetails_parser = HTMLMaindetailsParser()
 bio_parser = HTMLBioParser()
 otherworks_parser = HTMLOtherWorksParser()
+agent_parser = HTMLOtherWorksParser()
+agent_parser.kind = 'agent'
 from movieParser import HTMLOfficialsitesParser
 person_officialsites_parser = HTMLOfficialsitesParser()
 from movieParser import HTMLAwardsParser
 person_awards_parser = HTMLAwardsParser()
 person_awards_parser.subject = 'name'
+from movieParser import HTMLTechParser
+publicity_parser = HTMLTechParser()
+publicity_parser.kind = 'publicity'
 

@@ -1511,8 +1511,8 @@ class HTMLConnectionParser(ParserBase):
 
 
 class HTMLTechParser(ParserBase):
-    """Parser for the "technical", "business", "literature" and
-    "locations" pages of a given movie.
+    """Parser for the "technical", "business", "literature",
+    "publicity" (for people) and "locations" pages of a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -1560,12 +1560,38 @@ class HTMLTechParser(ParserBase):
     def end_dt(self):
         self.__indt = 0
 
+    def start_tr(self, attrs): pass
+
+    def end_tr(self):
+        if self.__indd and self.kind == 'publicity':
+            if self.__curdata:
+                self.do_br([])
+
+    def start_td(self, attrs): pass
+
+    def end_td(self):
+        if self.__indd and self.__curdata and self.kind == 'publicity':
+            if self.__curdata[-1].find('::') == -1:
+                self.__curdata[-1] += '::'
+
+    def start_p(self, attrs): pass
+
+    def end_p(self):
+        if self.__indd and self.kind == 'publicity':
+            if self.__curdata:
+                self.__curdata[-1] += '::'
+                self.do_br([])
+
     def start_dd(self, attrs):
         if self.__dotc: self.__indd = 1
 
-    def end_dd(self):
+    def end_dd(self, fromp=0):
         self.__indd = 0
-        self.__curdata[:] = [x for x in self.__curdata if x.strip()]
+        self.__curdata[:] = [x.strip() for x in self.__curdata]
+        self.__curdata[:] = [x for x in self.__curdata if x]
+        for i in xrange(len(self.__curdata)):
+            if self.__curdata[i][-2:] == '::':
+                self.__curdata[i] = self.__curdata[i][:-2]
         if self.__cur_sect and self.__curdata:
             self.__tc[self.__cur_sect] = self.__curdata[:]
         self.__curdata[:] = ['']
@@ -1773,7 +1799,7 @@ class HTMLDvdParser(ParserBase):
     def start_b(self, attrs):
         if self.kind == 'laserdisc':
             cls = self.get_attr_value(attrs, 'class')
-            if cls.lower() == 'ch':
+            if cls and cls.lower() == 'ch':
                 if not self.__indvd:
                     self.__indvd = 1
         if not self.__indvd: return

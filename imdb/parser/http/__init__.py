@@ -39,7 +39,8 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
-                        person_officialsites_parser
+                        person_officialsites_parser, publicity_parser, \
+                        agent_parser
 from searchPersonParser import search_person_parser
 
 
@@ -247,6 +248,14 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_person_other_works(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'otherworks')
         return otherworks_parser.parse(cont)
+
+    def get_person_agent(self, personID):
+        cont = self._retrieve(imdbURL_person % personID + 'agent')
+        return agent_parser.parse(cont)
+
+    def get_person_publicity(self, personID):
+        cont = self._retrieve(imdbURL_person % personID + 'publicity')
+        return publicity_parser.parse(cont)
 
     def get_person_official_sites(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'officialsites')

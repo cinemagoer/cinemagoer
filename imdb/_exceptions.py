@@ -32,7 +32,4 @@ class IMDbParserError(IMDbError):
     """Exception raised when an error occurred parsing the data."""
     pass
 
-class IMDbNotAvailable(IMDbError):
-    """Exception raised when a required information is not available."""
-    pass
 

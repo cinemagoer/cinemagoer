@@ -27,7 +27,7 @@ __all__ = ['IMDb', 'IMDbError']
 
 import types
 import Movie, Person
-from _exceptions import IMDbError, IMDbDataAccessError, IMDbNotAvailable
+from _exceptions import IMDbError, IMDbDataAccessError
 
 
 # URLs of the main pages for movies and persons.
@@ -94,7 +94,27 @@ class IMDbBase:
         """Handle name aliases."""
         # By default, do nothing.
         return personID
-    
+
+    def _get_infoset(self, prefname):
+        """Return methods with the name starting with prefname."""
+        infoset = []
+        excludes = ('%smain' % prefname, '%sinfoset' % prefname)
+        preflen = len(prefname)
+        for name in dir(self.__class__):
+            if name.startswith(prefname) and name not in excludes:
+                member = getattr(self.__class__, name)
+                if type(member) is types.MethodType:
+                    infoset.append(name[preflen:].replace('_', ' '))
+        return infoset
+
+    def get_movie_infoset(self):
+        """Return the list of info set available for movies."""
+        return self._get_infoset('get_movie_')
+
+    def get_person_infoset(self):
+        """Return the list of info set available for persons."""
+        return self._get_infoset('get_person_')
+        
     def get_movie(self, movieID, info=Movie.Movie.default_info, modFunct=None):
         """Return a Movie object for the given movieID.
         
@@ -109,38 +129,11 @@ class IMDbBase:
         """
         movieID = self._normalize_movieID(movieID)
         movieID = self._get_real_movieID(movieID)
-        if info == 'all':
-            info = Movie.Movie.all_info
-        if type(info) not in (types.ListType, types.TupleType):
-            info = (info,)
-        res = {}
         movie = Movie.Movie(movieID=movieID, accessSystem=self.accessSystem)
         modFunct = modFunct or self._defModFunct
         if modFunct is not None:
             movie.set_mod_funct(modFunct)
-        for i in info:
-            if i in movie.current_info: continue
-            try:
-                method = getattr(self, 'get_movie_%s' % i.replace(' ', '_'))
-            except AttributeError:
-                raise IMDbDataAccessError, 'unknown information set: "%s"' \
-                                            % str(i)
-            try: ret = method(movieID)
-            except IMDbNotAvailable: ret = {'data': {}, 'titlesRefs': {},
-                                            'namesRefs': {}}
-            if ret.has_key('info sets'):
-                for ri in ret['info sets']:
-                    movie.add_to_current_info(ri)
-            else:
-                movie.add_to_current_info(i)
-            if ret.has_key('data'):
-                res.update(ret['data'])
-            if ret.has_key('titlesRefs'):
-                movie.update_titlesRefs(ret['titlesRefs'])
-            if ret.has_key('namesRefs'):
-                movie.update_namesRefs(ret['namesRefs'])
-        movie.set_data(res, override=1)
-        # Return a Movie object.
+        self.update(movie, info, override=1)
         return movie
 
     def _search_movie(self, title, results):
@@ -177,39 +170,12 @@ class IMDbBase:
         """
         personID = self._normalize_personID(personID)
         personID = self._get_real_personID(personID)
-        if info == 'all':
-            info = Person.Person.all_info
-        if type(info) not in (types.ListType, types.TupleType):
-            info = (info,)
-        res = {}
         person = Person.Person(personID=personID,
                                 accessSystem=self.accessSystem)
         modFunct = modFunct or self._defModFunct
         if modFunct is not None:
             person.set_mod_funct(modFunct)
-        for i in info:
-            if i in person.current_info: continue
-            try:
-                method = getattr(self, 'get_person_%s' % i.replace(' ', '_'))
-            except AttributeError:
-                raise IMDbDataAccessError, 'unknown information set "%s"' \
-                                            % str(i)
-            try: ret = method(personID)
-            except IMDbNotAvailable: ret = {'data': {}, 'titlesRefs': {},
-                                            'namesRefs': {}}
-            if ret.has_key('info sets'):
-                for ri in ret['info sets']:
-                    person.add_to_current_info(ri)
-            else:
-                person.add_to_current_info(i)
-            if ret.has_key('data'):
-                res.update(ret['data'])
-            if ret.has_key('titlesRefs'):
-                person.update_titlesRefs(ret['titlesRefs'])
-            if ret.has_key('namesRefs'):
-                person.update_namesRefs(ret['namesRefs'])
-        person.set_data(res, override=1)
-        # Return a Person object.
+        self.update(person, info, override=1)
         return person
 
     def _search_person(self, name, results):
@@ -277,7 +243,10 @@ class IMDbBase:
         if info is None:
             info = mop.default_info
         elif info == 'all':
-            info = mop.all_info
+            if isinstance(mop, Movie.Movie):
+                info = self.get_movie_infoset()
+            else:
+                info = self.get_person_infoset()
         if type(info) not in (types.ListType, types.TupleType):
             info = (info,)
         res = {}
@@ -289,9 +258,7 @@ class IMDbBase:
             except AttributeError:
                 raise IMDbDataAccessError, 'unknown information set "%s"' \
                                             % str(i)
-            try: ret = method(mopID)
-            except IMDbNotAvailable: ret = {'data': {}, 'titlesRefs': {},
-                                            'namesRefs': {}}
+            ret = method(mopID)
             if ret.has_key('info sets'):
                 for ri in ret['info sets']:
                     mop.add_to_current_info(ri)

@@ -21,6 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import types
 from copy import deepcopy
 from utils import analyze_name, build_name, modifyStrings, modClearRefs, \
                     normalizeName
@@ -38,14 +39,6 @@ class Person:
     are defined (as "biography" for the "mini biography" key);
     see the keys_alias dictionary.
     """
-
-    # Every information set available for a Movie object.
-    all_info = ('main', # Name, birth/death day/notes.
-                'filmography',  # List of movie and role/duty.
-                'biography',    # Bio, spouse, salary, etc. etc.
-                'awards',       # Awards he won.
-                'other works',  # Other things he've done.
-                'official sites')
     # The default sets of information retrieved.
     default_info = ('main', 'filmography', 'biography')
 
@@ -137,6 +130,7 @@ class Person:
         self.myName = ''
         self.myID = None
         self.currentRole = ''
+        self.notes = ''
         self.__titlesRefs = {}
         self.__namesRefs = {}
 
@@ -164,6 +158,11 @@ class Person:
     def clear(self):
         """Reset the dictionary."""
         self.__person_data.clear()
+        self.currentRole = ''
+        self.notes = ''
+        self.__titlesRefs = {}
+        self.__namesRefs = {}
+        self.current_info = []
 
     def has_key(self, key):
         """Return true if a given section is defined."""
@@ -209,7 +208,17 @@ class Person:
         """Directly store the item with the given key."""
         self.__person_data[key] = item
     
-    # TODO: should a method like __contains__() be defined?
+    def __contains__(self, item):
+        """Return true if this Person has worked in the given Movie."""
+        from Movie import Movie
+        if not isinstance(item, Movie):
+            return 0
+        for i in self.__person_data.values():
+            if type(i) in (types.ListType, types.TupleType):
+                for j in i:
+                    if isinstance(j, Movie) and item.isSameTitle(j):
+                        return 1
+        return 0
 
     def __delitem__(self, key):
         """Remove the given section or key."""

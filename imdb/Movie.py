@@ -40,25 +40,6 @@ class Movie:
     are defined (as "plot summary" for the "plot" key); see the
     keys_alias dictionary.
     """
-
-    # Every information set available for a Movie object.
-    all_info = ('main', # Information from the "combined details" page
-                        # of a movie: title, director, cast, companies,
-                        # akas, genres, votes, rating, runtime, etc. etc.
-                'plot', # the plot.
-                'awards',   # awards won and nominations.
-                'taglines', # promotional taglines.
-                'keywords', # plot keywords.
-                'alternate versions',
-                'crazy credits',
-                'goofs',
-                'quotes',
-                'release dates',
-                'vote details', # number of votes for rating [1-10],
-                                # demographic breakdowns and top 250 rank.
-                'official sites',
-                'connections',
-                'trivia')
     # The default sets of information retrieved.
     default_info = ('main', 'plot')
 
@@ -194,6 +175,7 @@ class Movie:
         self.myTitle = ''
         self.myID = None
         self.currentRole = ''
+        self.notes = ''
         self.__titlesRefs = {}
         self.__namesRefs = {}
         self.__modFunct = modClearRefs
@@ -218,6 +200,11 @@ class Movie:
     def clear(self):
         """Reset the dictionary."""
         self.__movie_data.clear()
+        self.currentRole = ''
+        self.notes = ''
+        self.__titlesRefs = {}
+        self.__namesRefs = {}
+        self.current_info = []
 
     def has_key(self, key):
         """Return true if a given section is defined."""

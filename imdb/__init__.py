@@ -233,7 +233,7 @@ class IMDbBase:
         else:
             raise IMDbError, 'object ' + repr(mop) + \
                         ' is not a Movie or Person instance'
-        if not mopID:
+        if mopID is None:
             raise IMDbDataAccessError, \
                     'the supplied object has null movieID or personID'
         if mop.accessSystem == self.accessSystem:

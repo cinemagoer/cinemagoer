@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 1.8 "Shadow of the Vampire" (cvs-050317)
+* What's the new in release 1.8 "Shadow of the Vampire" (cvs-050319)
   [general]
   - updated the list of articles used to manage movie titles.
   - the setup.py script works with older Python versions, and

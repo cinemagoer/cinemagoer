@@ -20,6 +20,9 @@ If you want to develop a program/script/package/framework using the
 IMDbPY package, see the "README.package" file, for instructions about
 how to use this package.
 
+If you're installing IMDbPY in a smart phone, PDA or hand-held system,
+read the "README.mobile" file.
+
 If you're crazy enough and/or you've realized that your higher
 inspiration in life is to help the development of IMDbPY, begin reading
 the "README.devel" file. ;-)
@@ -46,10 +49,11 @@ Now copy the "./imdb" directory:
 The setup.py contains some configuration options that could
 be useful if you're installing IMDbPY in a system with very
 little hard disk space (like an handheld device) or where
-you've not a complete development environment available.
+you've not a complete development environment available;
+read the "README.mobile" file.
 
 If you want to use a local copy of the whole IMDb's database,
-read the README.local file.
+read the "README.local" file.
 
 
   FEATURES

@@ -77,6 +77,9 @@ class HTMLMovieParser(ParserBase):
 
     def _init(self):
         self.__movie_data = {}
+        # If true, we're parsing the "maindetails" page; if false,
+        # the "combined" page is expected.
+        self.mdparse = 0
 
     def _reset(self):
         self.__movie_data.clear()
@@ -312,6 +315,8 @@ class HTMLMovieParser(ParserBase):
                 self.set_item('episodes', episodes[0])
             rl = [x.strip() for x in rt.split('/')]
             if rl: self.set_item('runtimes', rl)
+        if self.mdparse:
+            self.end_tr()
 
     def start_li(self, attrs): pass
 
@@ -330,6 +335,10 @@ class HTMLMovieParser(ParserBase):
 
     def start_b(self, attrs):
         self.__is_akas = 0
+        if self.mdparse:
+            cls = self.get_attr_value(attrs, 'class')
+            if cls and cls.lower() == 'blackcatheader':
+                self.end_table()
 
     def end_b(self): pass
 
@@ -470,10 +479,22 @@ class HTMLMovieParser(ParserBase):
             self.__is_languages = 0
         elif sldata.startswith('also known as'):
             self.__is_akas = 1
-        elif sldata.startswith('production notes/status'):
-            self.__is_movie_status = 1
         elif sldata.startswith('runtime:'):
             self.__is_runtimes = 1
+        elif sldata.startswith('production notes/status'):
+            self.__is_movie_status = 1
+        # XXX: the following branches are here to manage the "maindetails"
+        #      page of a movie, instead of the "combined" page.
+        if self.mdparse:
+            if sldata.startswith('cast overview, first billed only'):
+                self.__is_cast_crew = 1
+                self.__current_section = 'cast'
+            elif sldata.startswith('directed by'):
+                self.__is_cast_crew = 1
+                self.__current_section = 'director'
+            elif sldata.startswith('writing credits'):
+                self.__is_cast_crew = 1
+                self.__current_section = 'writer'
 
 
 class HTMLPlotParser(ParserBase):

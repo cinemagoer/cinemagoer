@@ -43,6 +43,9 @@ def IMDb(accessSystem='http', *arguments, **keywords):
     if accessSystem in ('http', 'web', 'html'):
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
+    elif accessSystem in ('httpThin', 'webThin', 'htmlThin'):
+        from parser.http import IMDbHTTPAccessSystem
+        return IMDbHTTPAccessSystem(isThin=1, *arguments, **keywords)
     elif accessSystem in ('local', 'files'):
         try:
             from parser.local import IMDbLocalAccessSystem

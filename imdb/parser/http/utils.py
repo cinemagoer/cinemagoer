@@ -236,6 +236,7 @@ class ParserBase(HTMLParser):
         data = self.get_data()
         if self.getRefs:
             _putRefs(data, self._titlesRefs.keys(), self._namesRefs.keys())
+        # XXX: should I return a copy of data?
         return {'data': data, 'titlesRefs': self._titlesRefs,
                 'namesRefs': self._namesRefs}
 

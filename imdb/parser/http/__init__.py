@@ -82,6 +82,22 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     urlOpener = IMDbURLopener()
 
+    def __init__(self, isThin=0, *arguments, **keywords):
+        """Initialize the access system."""
+        IMDbBase.__init__(self, *arguments, **keywords)
+        # When isThin is set, we're parsing the "maindetails" page
+        # of a movie (instead of the "combined" page) and movie/person
+        # references are not collected if no defaultModFunct is provided.
+        self.isThin = isThin
+        if isThin:
+            self.accessSystem = 'httpThin'
+            movie_parser.mdparse = 1
+            from utils import ParserBase
+            if self._defModFunct is None:
+                ParserBase.getRefs = 0
+                from imdb.utils import modNull
+                self._defModFunct = modNull
+
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
         return str(movieID).zfill(7)
@@ -138,12 +154,17 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def _search_movie(self, title, results):
         # The URL of the query.
-        params = urllib.urlencode({'more': 'tt', 'q': title})
+        # XXX: To retrieve the complete results list:
+        #      params = urllib.urlencode({'more': 'tt', 'q': title})
+        params = urllib.urlencode({'tt': 'on', 'mx': str(results), 'q': title})
         cont = self._retrieve(imdbURL_search % params)
         return search_movie_parser.parse(cont)['data']
 
     def get_movie_main(self, movieID):
-        cont = self._retrieve(imdbURL_movie % movieID + 'combined')
+        if not self.isThin:
+            cont = self._retrieve(imdbURL_movie % movieID + 'combined')
+        else:
+            cont = self._retrieve(imdbURL_movie % movieID + 'maindetails')
         return movie_parser.parse(cont)
 
     def get_movie_plot(self, movieID):
@@ -224,7 +245,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
     
     def _search_person(self, name, results):
         # The URL of the query.
-        params = urllib.urlencode({'more': 'nm', 'q': name})
+        # XXX: To retrieve the complete results list:
+        #      params = urllib.urlencode({'more': 'nm', 'q': name})
+        params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
         cont = self._retrieve(imdbURL_search % params)
         return search_person_parser.parse(cont)['data']
 

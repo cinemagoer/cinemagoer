@@ -30,13 +30,12 @@ NOTE: it's time to clean the code!
 * If the access through the proxy fails, try without proxy.
 * Access to the "my IMDb" functions for registered users would
   be really cool.
-* Gather more data; information left out: user comments, external reviews,
-  newsgroup reviews, reccomendations, amazon.com summaries, merchandising links,
+* Gather more movies' data: user comments, external reviews, newsgroup reviews,
+  reccomendations, amazon.com summaries, merchandising links,
   laserdisc details, trailers, posters, photo gallery, on tv, schedule links,
   showtimes, miscellaneous, photographs, sound clips, video clips,
   message boards.
-* Gather more data; left out data: photo gallery, news articles.
-
+* Gather more people's data: photo gallery, news articles.
 
 
 [local data access system]

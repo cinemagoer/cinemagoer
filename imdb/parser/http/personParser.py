@@ -325,7 +325,7 @@ class HTMLBioParser(ParserBase):
             if sect == 'salary': sect = 'salary history'
             data = self.__sect_data.strip()
             d_split = data.split('::')
-            d_split[:] = filter(None, d_split)
+            d_split[:] = filter(None, [x.strip() for x in d_split])
             if sect == 'salary history':
                 newdata = []
                 for j in d_split:
@@ -333,7 +333,7 @@ class HTMLBioParser(ParserBase):
                     newdata.append('::'.join(j))
                 d_split[:] = newdata
             if len(d_split) == 1:
-                self.__bio_data[sect] = data
+                self.__bio_data[sect] = d_split[0]
             # Multiple items are added separately (e.g.: 'trivia' is
             # a list of strings).
             else:

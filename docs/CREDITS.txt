@@ -1,6 +1,8 @@
 
 I'd like to thank the following people for their help:
 
+* Tero Saarni, for the series 60 GUI and testing.
+
 * Nick S. Novikov, who provided the Windows installer until I've
   managed to set up a Windows development environment.
 
@@ -8,4 +10,5 @@ I'd like to thank the following people for their help:
 
 * Carmine Noviello, for some design hints.
 
+* "Basilius" for a bug report.
 

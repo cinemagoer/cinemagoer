@@ -5,8 +5,14 @@ Since version 1.8, IMDbPY tries to be usable even on
 systems with very limited storage space, bandwidth and
 CPU power, like PDA, hand-held devices and mobile phones.
 
-The support is still in alpha, and I plan to extend it in
-the next releases (contact me for help or hints).
+Sections in this file:
+* INSTALLATION OPTIONS
+  how to save a little space installing IMDbPY.
+* THE "MOBILE" DATA ACCESS SYSTEM
+  useful for systems with very little CPU power and bandwidth.
+* THE "HTTPTHIN" DATA ACCESS SYSTEM
+  for systems with normal CPU power, but insufficient bandwidth.
+* OTHER TIPS
 
 Please read both the following section.
 
@@ -38,21 +44,46 @@ In both situation (installing and packaging), you may also need
 to modify the MANIFEST.in file.
 
 
-  USING
-  =====
+  THE "MOBILE" DATA ACCESS SYSTEM
+  ===============================
+
+Intended to be used with PDA, smart phones and hand-held devices,
+the "mobile" data access system is a subclass of the default
+"httpThin" data access system, with some methods replaced with faster
+regular expressions, instead of the html parser.  Moreover, for
+the movies, only the main information are retrieved (see the 'httpThin'
+notes).  Due to its extensive use of regular expressions, it's somewhat
+slower at start up (about 2 or 3 times), but it's much faster at
+usage time (from 2 to 20 times faster).
+
+Usage:
+  from imdb import IMDb
+  i = IMDb('mobile')
+  sp = i.search_person('mel gibson', results=10)
+  p = sp[0]
+  i.update(p)
+  sm = i.search_movie('mystic river', results=15)
+  m = sm[0]
+  i.update(m)
+  ...and so on...
+
+
+
+  THE "HTTPTHIN" DATA ACCESS SYSTEM
+  =================================
 
 Instead of the default data access system ('http'), you can
-use 'httpThin' (or 'webThin' or 'htmlThin').
+also use 'httpThin' (or 'webThin' or 'htmlThin').
 
 I.e.:
   from imdb import IMDb
   i = IMDb('httpThin')
   sp = i.search_person('mel gibson', results=10)
   sm = i.search_movie('mystic river', results=15)
-  ... and so on...
+  ...and so on...
 
 
-So far the main difference is that, parsing movies' information,
+The main difference is that, parsing movies' information,
 the "maindetails" page is parsed, in place of the "combined" page.
 This reduces the required bandwidth and the CPU power needed.
 Obviously a lot of information are lost (and only the first 15
@@ -66,8 +97,20 @@ to people or movie are collected from textual information (like
 the plot of a movie).
 
 
+  OTHER TIPS
+  ==========
+
 Remember that, calling the search_movie() and search_person()
 methods of the "IMDb" object, you can provide a "results"
 parameter, to download only a limited amount of results (20,
 by default).
+
+With the http, httpThin and mobile data access systems you can
+set a proxy with the set_proxy() method; e.g.:
+  i = IMDb('http')
+  i.set_proxy('http://localhost:8080/')
+
+Remember that the proxy is automatically used if the $HTTP_PROXY
+environment variable is set.
+
 

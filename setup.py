@@ -26,7 +26,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '1.9-cvs20050418'
+version = '1.9-cvs20050418b'
 
 home_page = 'http://imdbpy.sourceforge.net/'
 
@@ -72,7 +72,8 @@ params = {'name': 'IMDbPY',
       'maintainer_email': 'da@erlug.linux.it',
       'url': home_page,
       'license': 'GPL',
-      'packages': ['imdb', 'imdb.parser', 'imdb.parser.http']}
+      'packages': ['imdb', 'imdb.parser', 'imdb.parser.http',
+                    'imdb.parser.mobile']}
 
 if DO_LOCAL:
     params['packages'] = params['packages'] + ['imdb.parser.local']

@@ -22,6 +22,5 @@ to the IMDb's data, you have to accept the specific policy and conditions.
 IMDbPY (and the author) is not affiliated with Internet Movie Database Inc.
 
 Please do not use IMDbPY as a base to develop robots or crawlers.
-Remember that you always have to accept the conditions above mentioned.
-
+Remember that you always have to accept the above mentioned conditions.
 

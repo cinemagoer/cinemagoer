@@ -53,10 +53,16 @@ you can access movie data through the e-mail interface, etc. etc.
  ---------------------------|-----------|------------------------------------
             'local'         |  'files'  | information are taken from the
                             |           | plain text data files.
+ ----------------------------------------------------------------------------
+           'mobile'         |           | same as 'httpThin', but regular
+                            |           | expressions are used for parsing.
+                            |           | Ideal for small systems like PDA,
+                            |           | smart phones, hand-held devices with
+                            |           | limited bandwidth and CPU power.
  ---------------------------|-----------|------------------------------------
           'httpThin'        | 'webThin' | identical to 'http', but less
                             | 'htmlThin'| information are gathered; useful
-                            |           | for small systems like PDA.
+                            |           | for systems with limited bandwidth.
 
 The imdb_access object has five main methods: search_movie(title),
 get_movie(movieID), search_person(name), get_person(personID)

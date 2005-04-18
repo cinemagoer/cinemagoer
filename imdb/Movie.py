@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import types
 from copy import deepcopy
 from utils import analyze_title, build_title, modifyStrings, modClearRefs, \
-                    normalizeTitle
+                    modNull, normalizeTitle
 
 
 class Movie:
@@ -276,8 +276,11 @@ class Movie:
                 return build_title(self.__movie_data, canonical=1)
         if key in self.keys_alias.keys():
             key = self.keys_alias[key]
-        return modifyStrings(self.__movie_data[key], self.__modFunct,
-                            self.__titlesRefs, self.__namesRefs)
+        if self.__modFunct is modNull:
+            return self.__movie_data[key]
+        else:
+            return modifyStrings(self.__movie_data[key], self.__modFunct,
+                                    self.__titlesRefs, self.__namesRefs)
 
     def __nonzero__(self):
         """The Movie is "false" if the self.__movie_data is empty."""

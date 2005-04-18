@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import types
 from copy import deepcopy
 from utils import analyze_name, build_name, modifyStrings, modClearRefs, \
-                    normalizeName
+                    modNull, normalizeName
 
 
 class Person:
@@ -44,11 +44,20 @@ class Person:
 
     # Aliases for some not-so-intuitive keys.
     keys_alias = {'biography': 'mini biography',
+                  'bio': 'mini biography',
                   'misc': 'miscellaneouscrew',
+                  'aka': 'akas',
+                  'also known as': 'akas',
+                  'nick name': 'nick names',
                   'miscellaneous crew': 'miscellaneouscrew',
                   'crewmembers': 'miscellaneouscrew',
                   'tv guest': 'notable tv guest appearances',
                   'guest appearances': 'notable tv guest appearances',
+                  'spouses': 'spouse',
+                  'salary': 'salary history',
+                  'otherworks': 'other works',
+                  "maltin's biography":
+                        "biography from leonard maltin's movie encyclopedia",
                   'real name': 'birth name'}
 
     def __init__(self, personID=None, name='', myName='', myID=None,
@@ -247,8 +256,11 @@ class Person:
                 return build_name(self.__person_data, canonical=1)
         if key in self.keys_alias.keys():
             key = self.keys_alias[key]
-        return modifyStrings(self.__person_data[key], self.__modFunct,
-                            self.__titlesRefs, self.__namesRefs)
+        if self.__modFunct is modNull:
+            return self.__person_data[key]
+        else:
+            return modifyStrings(self.__person_data[key], self.__modFunct,
+                                    self.__titlesRefs, self.__namesRefs)
 
     def __nonzero__(self):
         """The Person is "false" if the self.__person_data is empty."""

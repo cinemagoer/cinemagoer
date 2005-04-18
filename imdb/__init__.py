@@ -46,6 +46,9 @@ def IMDb(accessSystem='http', *arguments, **keywords):
     elif accessSystem in ('httpThin', 'webThin', 'htmlThin'):
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(isThin=1, *arguments, **keywords)
+    elif accessSystem in ('mobile',):
+        from parser.mobile import IMDbMobileAccessSystem
+        return IMDbMobileAccessSystem(*arguments, **keywords)
     elif accessSystem in ('local', 'files'):
         try:
             from parser.local import IMDbLocalAccessSystem
@@ -136,7 +139,7 @@ class IMDbBase:
         modFunct = modFunct or self._defModFunct
         if modFunct is not None:
             movie.set_mod_funct(modFunct)
-        self.update(movie, info, override=1)
+        self.update(movie, info)
         return movie
 
     def _search_movie(self, title, results):
@@ -178,7 +181,7 @@ class IMDbBase:
         modFunct = modFunct or self._defModFunct
         if modFunct is not None:
             person.set_mod_funct(modFunct)
-        self.update(person, info, override=1)
+        self.update(person, info)
         return person
 
     def _search_person(self, name, results):

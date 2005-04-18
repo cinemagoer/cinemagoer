@@ -108,7 +108,7 @@ def _parseBiography(biol):
     quotes = _parseList(biol, 'QU')
     if quotes: res['quotes'] = quotes
     otherworks = _parseList(biol, 'OW')
-    if otherworks: res['otherworks'] = otherworks
+    if otherworks: res['other works'] = otherworks
     realname = [x[4:].strip() for x in biol if x.startswith('RN: ')]
     if realname: res['birth name'] = realname[0]
     sal = [x[6:].strip().replace(' -> ', '::')

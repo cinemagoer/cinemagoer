@@ -66,6 +66,9 @@ class HTMLMaindetailsParser(ParserBase):
         self.__in_b = 0
         self.__sect_name = ''
         self.__in_emailfriend = 0
+        self.__in_akas = 0
+        self.__aka = ''
+        self.__akas = []
 
     def get_data(self):
         """Return the dictionary."""
@@ -88,6 +91,8 @@ class HTMLMaindetailsParser(ParserBase):
                 self.__person_data['death date'] = d_date.strip()
             if d_notes:
                 self.__person_data['death notes'] = d_notes.strip()
+        if self.__akas:
+            self.__person_data['akas'] = self.__akas
         return self.__person_data
     
     def start_title(self, attrs):
@@ -115,6 +120,11 @@ class HTMLMaindetailsParser(ParserBase):
             self.__death += '::'
         elif self.__in_list:
             self.__in_list = 0
+        elif self.__in_akas:
+            self.__aka = self.__aka.strip()
+            if self.__aka:
+                self.__akas.append(self.__aka)
+                self.__aka = ''
 
     def start_b(self, attrs):
         self.__in_b = 1
@@ -146,7 +156,6 @@ class HTMLMaindetailsParser(ParserBase):
                     d = analyze_name(value)
                     if d.has_key('name'):
                         self.__person_data['name'] = d['name']
-
 
     def start_ol(self, attrs): pass
 
@@ -208,6 +217,12 @@ class HTMLMaindetailsParser(ParserBase):
     def end_dd(self):
         self.__in_birth = 0
         self.__in_death = 0
+        if self.__in_akas:
+            self.__aka = self.__aka.strip()
+            if self.__aka:
+                self.__akas.append(self.__aka)
+                self.__aka = ''
+            self.__in_akas = 0
 
     def start_a(self, attrs):
         href = self.get_attr_value(attrs, 'href')
@@ -238,10 +253,14 @@ class HTMLMaindetailsParser(ParserBase):
             if self.__death and not self.__death[-1].isspace():
                 self.__death += ' '
             self.__death += sdata
+        elif self.__in_akas:
+            self.__aka += data
         elif sldata.startswith('date of death'):
             self.__in_death = 1
         elif sldata.startswith('date of birth'):
             self.__in_birth = 1
+        elif sldata.startswith('sometimes credited as'):
+            self.__in_akas = 1
         elif self.__in_sect:
             self.__sect_name += sldata
         elif self.__in_title:
@@ -303,8 +322,16 @@ class HTMLBioParser(ParserBase):
             # XXX: to get rid of the last colons.
             if sect[-1] == ':':
                 sect = sect[:-1]
+            if sect == 'salary': sect = 'salary history'
             data = self.__sect_data.strip()
             d_split = data.split('::')
+            d_split[:] = filter(None, d_split)
+            if sect == 'salary history':
+                newdata = []
+                for j in d_split:
+                    j = filter(None, [x.strip() for x in j.split('@@@@')])
+                    newdata.append('::'.join(j))
+                d_split[:] = newdata
             if len(d_split) == 1:
                 self.__bio_data[sect] = data
             # Multiple items are added separately (e.g.: 'trivia' is
@@ -335,6 +362,14 @@ class HTMLBioParser(ParserBase):
                 self.__sect_data += '::'
 
     def end_tr(self): pass
+
+    def start_td(self, attrs): pass
+
+    def end_td(self):
+        if self.__in_sect and \
+                self.__sect_name.strip().lower() in \
+                ('salary', 'salary history'):
+            if self.__sect_data: self.__sect_data += '@@@@'
     
     def _handle_data(self, data):
         if self.__in_sect_name:

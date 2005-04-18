@@ -1,6 +1,17 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 1.9 "Komodo" (cvs-20050418)
+  [general]
+  - introduced the new "mobile" data access system, useful for
+    small systems.  It should be from 2 to 5 times faster than "http"
+    or "httpThin".
+  - fixed some bugs, unified some keywords.
+
+  [http data access system]
+  - fixed some bugs; now it retrieves names akas.
+
+
 * What's the new in release 1.8 "Paths Of Glory" (24 Mar 2005)
   [general]
   - introduced a new data access system "httpThin", useful for

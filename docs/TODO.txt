@@ -8,9 +8,6 @@ NOTE: it's time to clean the code!
 
 [general]
 * Unify Movie and Person classes? (UserDict or dict subclasses?)
-* Support for thin systems (PDA, hand-held devices, ...); a new
-  data access system must be written, to retrieve only a small set
-  of information as fast as possibile (with very little parsing).
 * Write better summary() methods for Movie and Person classes.
 
 
@@ -45,6 +42,10 @@ NOTE: it's time to clean the code!
 
 [httpThin data access system]
 * it should be made _really_ faster than 'http'.
+
+
+[mobile]
+* general optimization.
 
 
 [local data access system]

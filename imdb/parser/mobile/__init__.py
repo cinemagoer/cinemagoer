@@ -37,84 +37,84 @@ from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
 
 
 # Common part for names search.
-regexp_gn = r'(<a href="/name/nm[0-9]{7}/">.+?</a>.*?<br>)'
+regexp_gn = r'(<a href="/name/nm[0-9]{7}/">.{1,50}?</a>.{1,80}?<br>)'
 # Find the director(s).
-re_dir = re.compile(r'directed by</b><br>\s*' + regexp_gn, re.I)
+re_dir = re.compile(r'directed by</b><br> ?' + regexp_gn, re.I)
 # Find the writer(s).
-re_wri = re.compile(r'writing credits</b>\s*(?:<small>.*?</small>)?\s*<br>\s*' + regexp_gn, re.I)
+re_wri = re.compile(r'writing credits</b> ?(?:<small>.{1,50}?</small>)? ?<br> ?' + regexp_gn, re.I)
 # Extract personIDs and names.
-re_names = re.compile(r'<a href="/name/nm([0-9]{7})/">(.+?)</a>\s*( .+?)?(?=<br>|</td>)', re.I)
+re_names = re.compile(r'<a href="/name/nm([0-9]{7})/">(.{1,50}?)</a> ?( .{1,10}?)?(?=<br>|</td>)', re.I)
 # Extract personIDs, names and optional roles.
-re_names_cast = re.compile(r'<a href="/name/nm([0-9]{7})/">(.+?)</a></td>(?:<td.*?>\s*\.\.\.\.\s*</td><td.*?>(.+?)</td></tr>)?', re.I)
+re_names_cast = re.compile(r'<a href="/name/nm([0-9]{7})/">(.{1,50}?)</a></td>(?:<td.{0,20}?> ?\.\.\.\. ?</td><td.{0,20}?>(.{0,50}?)</td></tr>)?', re.I)
 # The personID.
 re_personID = re.compile(r'<a href="/name/nm([0-9]{7})/board/threads/">', re.I)
 # People headshots.
-re_headshot = re.compile(r'<a.*?name="headshot".*?<img.+?src="(.+?)"')
+re_headshot = re.compile(r'<a .{0,50}?name="headshot".{0,50}?<img.{1,30}?src="(.{1,60}?)"')
 # Person filmography sections.
-re_whathedo = re.compile(r'<i>filmography as:</i>.+?</small>', re.I)
-re_filmoyer_sect = re.compile(r'<a href="#(.+?)">(.+?)</a>')
+re_whathedo = re.compile(r'<i>filmography as:</i>.{1,800}?</small>', re.I)
+re_filmoyer_sect = re.compile(r'<a href="#(.{1,40}?)">(.{1,40}?)</a>')
 # Person filmography.
-re_filmoyer = re.compile(r'<li>\s*<a.*?href="/title/tt([0-9]{7}/">.+?</a>(?:\s|.)*?)\s*(?=</li>|<br>)', re.I)
+re_filmoyer = re.compile(r'<li> ?<a .{0,30}?href="/title/tt([0-9]{7}/">.{1,80}?</a>(?:\s|.)*?) ?(?=</li>|<br>)', re.I)
 # Name akas.
-re_nmakas = re.compile(r'sometimes credited as:</div></dt>\s*<dd>(.+?)(?:<br>(.+?))*\s*</dd>', re.I)
+re_nmakas = re.compile(r'sometimes credited as:</div></dt> ?<dd>(.{1,80}?)(?:<br>(.{1,80}?))* ?</dd>', re.I)
 # Birth name.
-re_bname = re.compile(r'<dt class="ch">birth name</dt>\s*<dd>(.+?)\s*(?=<hr|</dd>)', re.I)
+re_bname = re.compile(r'<dt class="ch">birth name</dt> ?<dd>(.{1,80}?) ?(?=<hr|</dd>)', re.I)
 # Height.
-re_height = re.compile(r'<dt class="ch">height</dt>\s*<dd>(.+?)\s*(?=<hr|</dd>)', re.I)
+re_height = re.compile(r'<dt class="ch">height</dt> ?<dd>(.{1,20}?) ?(?=<hr|</dd>)', re.I)
 # Mini biography.
-re_bio = re.compile(r'<dt class="ch">mini biography</dt>\s*<dd><p class="biopar">\s*(.+?)\s*</p>', re.I)
+re_bio = re.compile(r'<dt class="ch">mini biography</dt> ?<dd><p class="biopar"> ?(.+?) ?</p>', re.I)
 # Birth and death.
-re_born = re.compile(r'<a href="/onthisday\?.+?">(.+?)</a>\s*<a href="/borninyear\?([0-9?]{4})">', re.I)
-re_bnotes = re.compile(r'<a href="/bornwhere\?.+?">(.+?)</a>', re.I)
-re_death = re.compile(r'<a href="/onthisday\?.+?">(.+?)</a>\s*?<a href="/diedinyear\?([0-9?]{4})">[0-9?]{4}</a><br>(?:\s*?(.+?)\s*)?\s*?</dd>', re.I)
+re_born = re.compile(r'<a href="/onthisday\?.{1,30}?">(.{1,15}?)</a> ?<a href="/borninyear\?([0-9?]{4})">', re.I)
+re_bnotes = re.compile(r'<a href="/bornwhere\?.{1,100}?">(.{1,100}?)</a>', re.I)
+re_death = re.compile(r'<a href="/onthisday\?.{1,30}?">(.{1,15}?)</a> ?<a href="/diedinyear\?([0-9?]{4})">[0-9?]{4}</a><br>(?: ?(.{1,100}?) ?)? ?</dd>', re.I)
 
 # The movieID.
-re_movieID = re.compile(r'<input.+?value="([0-9]{7})">', re.I)
+re_movieID = re.compile(r'<input.{1,30}?value="([0-9]{7})">', re.I)
 # Movie genres.
-re_genres = re.compile(r'href="/sections/genres/(.+?)/"', re.I)
+re_genres = re.compile(r'href="/sections/genres/(.{1,20}?)/"', re.I)
 # User rating.
-re_ur = re.compile(r'user rating:</b>.*?<b>([0-9\.]+?)/10</b> \(([0-9,\.]+) votes\)', re.I | re.S)
+re_ur = re.compile(r'user rating:</b>.{1,1500}?<b>([0-9\.]{1,4})/10</b> \(([0-9,\.]{1,11}) votes\)', re.I | re.S)
 re_top250 = re.compile(r'<a href="/top_250_films">top 250: #([0-9]{1,3})</a>', re.I)
 # The cast's table.
-re_cast = re.compile(r'cast overview.*?</table>', re.I)
+re_cast = re.compile(r'cast overview.{1,5000}?</table>', re.I)
 # Akas for movies.
-re_akas = re.compile(r'<i class="transl">(.+?)</i>', re.I)
+re_akas = re.compile(r'<i class="transl">(.{1,100}?)</i>', re.I)
 # MPAA rating.
-re_mpaa = re.compile(r'<a href="/mpaa">mpaa</a>:</b>\s*(.+?)\s*<br>', re.I)
+re_mpaa = re.compile(r'<a href="/mpaa">mpaa</a>:</b> ?(.{1,200}?) ?<br>', re.I)
 # Runtimes.
-re_runtimes = re.compile(r'<b class="ch">runtime:</b>\s*(.+?)\s*<br>', re.I)
+re_runtimes = re.compile(r'<b class="ch">runtime:</b> ?(.{1,400}?) ?<br>', re.I)
 # Countries.
-re_countr = re.compile(r'<a href="/sections/countries/.+?/">(.+?)</a>', re.I)
+re_countr = re.compile(r'<a href="/sections/countries/.{1,50}?/">(.{1,50}?)</a>', re.I)
 # Languages.
-re_lang = re.compile(r'<a href="/sections/languages/.+?/">(.+?)</a>', re.I)
+re_lang = re.compile(r'<a href="/sections/languages/.{1,50}?/">(.{1,50}?)</a>', re.I)
 # Color info.
-re_color = re.compile(r'<a href="/list\?color-info=.+?">(.+?)</a>(?: <i>(.+?)</i>)?', re.I)
+re_color = re.compile(r'<a href="/list\?color-info=.{1,60}?">(.{1,60}?)</a>(?: <i>(.{0,60}?)</i>)?', re.I)
 # Soundmix.
-re_soundmix = re.compile(r'<a href="/list\?sound-mix=.+?">(.+?)</a>', re.I)
+re_soundmix = re.compile(r'<a href="/list\?sound-mix=.{1,120}?">(.{1,120}?)</a>', re.I)
 # Certificates.
-re_certificates = re.compile(r'<a href="/list\?certificates=.+?">(.+?)</a>(?: <i>(.+?)</i>)?', re.I)
+re_certificates = re.compile(r'<a href="/list\?certificates=.{1,100}?">(.{1,100}?)</a>(?: <i>(.{0,100}?)</i>)?', re.I)
 # To find the cover.
-re_cover1 = re.compile(r'<img .*?alt="cover".*?>', re.I)
-re_cover2 = re.compile(r'src="(.+?)"', re.I)
+re_cover1 = re.compile(r'<img .{0,100}?alt="cover".{0,50}?>', re.I)
+re_cover2 = re.compile(r'src="(.{,60}?)"', re.I)
 # Spouse.
-re_spouse1 = re.compile(r'<dt class="ch">spouse</dt>\s*<dd><table border="0">(.+?)</table>', re.I | re.S)
-re_spouse2 = re.compile(r'<tr>(.+?)</tr>', re.I | re.S)
-re_misc_sect = re.compile(r'<dt class="ch">(.+?)</dt>\s*<dd>(.+?)\s*(?:</hr>|</dd>)', re.I|re.S)
+re_spouse1 = re.compile(r'<dt class="ch">spouse</dt> ?<dd><table border="0">(.{1,1000}?)</table>', re.I | re.S)
+re_spouse2 = re.compile(r'<tr>(.{1,400}?)</tr>', re.I | re.S)
+re_misc_sect = re.compile(r'<dt class="ch">(.{1,1000}?)</dt> ?<dd>(.+?) ?(?:</hr>|</dd>)', re.I|re.S)
 
 # Movie plot.
-re_plot = re.compile(r'<p class="plotpar">\s*(.+?)\s*</p>', re.I)
+#re_plot = re.compile(r'<p class="plotpar"> ?(.+?) ?</p>', re.I)
 
 # Movie title or person name.
-re_title = re.compile(r'<title>(.+?)</title>', re.I)
+re_title = re.compile(r'<title>(.{1,100}?)</title>', re.I)
 # To strip spaces.
 re_spaces = re.compile(r'\s+')
 # Strip html.
 re_unhtml = re.compile(r'<.+?>')
 
 # Movie search.
-re_msearch = re.compile(r'<li>\s*<a.+?href="/title/tt([0-9]{7})/".*?>(.+?)</a>\s*(?: (.+?))?\s*(?=</li>|<br>)', re.I)
+re_msearch = re.compile(r'<li> ?<a .{0,100}?href="/title/tt([0-9]{7})/".{0,100}?>(.{1,100}?)</a> ?(?: (.{0,1000}?))? ?(?=</li>|<br>)', re.I)
 # Person search.
-re_psearch = re.compile(r'<li>\s*<a.+?href="/name/nm([0-9]{7})/".*?>(.+?)</a>\s*(?: (.+?))?\s*(?=<small>|<br>|</li>)', re.I)
+re_psearch = re.compile(r'<li> ?<a .{0,100}?href="/name/nm([0-9]{7})/".{0,100}?>(.{1,50}?)</a> ?(?: (.{0,1000}?))? ?(?=<small>|<br>|</li>)', re.I)
 
 
 # Here to handle non-breaking spaces.
@@ -171,9 +171,12 @@ def _getFilmography(s):
     if not sects: return r
     for sect, sectName in sects:
         sectName = sectName.lower()
-        rawm = re.search('<a name="%s">.+?<ol>(.+?)</ol>' % sect, s, re.I|re.S)
-        if not rawm: continue
-        raws = s[rawm.start():rawm.end()]
+        raws = ''
+        inisect = s.find('<a name="%s">' % sect)
+        if inisect != -1:
+            endsect = s[inisect:].find('</ol>')
+            if endsect != -1: raws = s[inisect:inisect+endsect]
+        if not raws: continue
         mlist = re_filmoyer.findall(raws)
         for m in mlist:
             d = {}
@@ -247,7 +250,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         self.accessSystem = 'mobile'
 
     def _mretrieve(self, url):
-        return _subRefs(IMDbHTTPAccessSystem._retrieve(self, url))
+        cont = IMDbHTTPAccessSystem._retrieve(self, url)
+        cont = re_spaces.sub(' ', cont)
+        return _subRefs(cont)
 
     def _buildPerson(self, match, regexp=re_names):
         r = []
@@ -343,7 +348,15 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
 
     def get_movie_plot(self, movieID):
         cont = self._mretrieve(imdbURL_movie % movieID + 'plotsummary')
-        plot = re_plot.findall(cont)
+        plot = []
+        pi = cont.find('<p class="plotpar">')
+        while pi != -1:
+            pe = cont[pi:].find('</p>')
+            if pe == -1: break
+            thisplot = cont[pi+19:pi+pe].strip()
+            plot.append(thisplot)
+            cont = cont[pi+19:]
+            pi = cont.find('<p class="plotpar">')
         if plot: return {'data': {'plot': plot}}
         return {'data': {}}
 

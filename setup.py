@@ -26,7 +26,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '1.9-cvs20050418c'
+version = '1.9-cvs20050419'
 
 home_page = 'http://imdbpy.sourceforge.net/'
 
@@ -51,11 +51,13 @@ classifiers = """\
 Development Status :: 5 - Production/Stable
 Environment :: Console
 Environment :: Web Environment
+Environment :: Handhelds/PDA's
 Intended Audience :: Developers
 Intended Audience :: End Users/Desktop
 License :: OSI Approved :: GNU General Public License (GPL)
 Natural Language :: English
 Programming Language :: Python
+Programming Language :: C
 Operating System :: OS Independent
 Topic :: Database :: Front-Ends
 Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries

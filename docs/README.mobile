@@ -50,11 +50,10 @@ to modify the MANIFEST.in file.
 Intended to be used with PDA, smart phones and hand-held devices,
 the "mobile" data access system is a subclass of the default
 "httpThin" data access system, with some methods replaced with faster
-regular expressions, instead of the html parser.  Moreover, for
+string methods, instead of the html parser.  Moreover, for
 the movies, only the main information are retrieved (see the 'httpThin'
-notes).  Due to its extensive use of regular expressions, it's somewhat
-slower at start up (about 2 or 3 times), but it's much faster at
-usage time (from 2 to 20 times faster).
+notes).  It should be, at usage time, from 2 to 20 times faster than
+the "http"/"httpThin" data access system.
 
 Usage:
   from imdb import IMDb

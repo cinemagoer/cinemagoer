@@ -29,99 +29,31 @@ from sgmllib import entityref, charref
 
 from imdb.Movie import Movie
 from imdb.Person import Person
-from imdb.utils import analyze_title, analyze_name, modNull, \
+from imdb.utils import analyze_title, analyze_name, \
                         canonicalTitle, canonicalName
 from imdb._exceptions import IMDbDataAccessError
 from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
                                 imdbURL_movie, imdbURL_person
 
+# XXX NOTE: the first version of this module was heavily based on
+#           regular expressions.  This new version replace regexps with
+#           find() strings methods; despite being less flexible, it
+#           seems to be at least as fast and, hopefully, much more
+#           lightweight.
 
-# Common part for names search.
-regexp_gn = r'(<a href="/name/nm[0-9]{7}/">.{1,50}?</a>.{1,80}?<br>)'
-# Find the director(s).
-re_dir = re.compile(r'directed by</b><br> ?' + regexp_gn, re.I)
-# Find the writer(s).
-re_wri = re.compile(r'writing credits</b> ?(?:<small>.{1,50}?</small>)? ?<br> ?' + regexp_gn, re.I)
-# Extract personIDs and names.
-re_names = re.compile(r'<a href="/name/nm([0-9]{7})/">(.{1,50}?)</a> ?( .{1,10}?)?(?=<br>|</td>)', re.I)
-# Extract personIDs, names and optional roles.
-re_names_cast = re.compile(r'<a href="/name/nm([0-9]{7})/">(.{1,50}?)</a></td>(?:<td.{0,20}?> ?\.\.\.\. ?</td><td.{0,20}?>(.{0,50}?)</td></tr>)?', re.I)
-# The personID.
-re_personID = re.compile(r'<a href="/name/nm([0-9]{7})/board/threads/">', re.I)
-# People headshots.
-re_headshot = re.compile(r'<a .{0,50}?name="headshot".{0,50}?<img.{1,30}?src="(.{1,60}?)"')
-# Person filmography sections.
-re_whathedo = re.compile(r'<i>filmography as:</i>.{1,800}?</small>', re.I)
-re_filmoyer_sect = re.compile(r'<a href="#(.{1,40}?)">(.{1,40}?)</a>')
-# Person filmography.
-re_filmoyer = re.compile(r'<li> ?<a .{0,30}?href="/title/tt([0-9]{7}/">.{1,80}?</a>(?:\s|.)*?) ?(?=</li>|<br>)', re.I)
-# Name akas.
-re_nmakas = re.compile(r'sometimes credited as:</div></dt> ?<dd>(.{1,80}?)(?:<br>(.{1,80}?))* ?</dd>', re.I)
-# Birth name.
-re_bname = re.compile(r'<dt class="ch">birth name</dt> ?<dd>(.{1,80}?) ?(?=<hr|</dd>)', re.I)
-# Height.
-re_height = re.compile(r'<dt class="ch">height</dt> ?<dd>(.{1,20}?) ?(?=<hr|</dd>)', re.I)
-# Mini biography.
-re_bio = re.compile(r'<dt class="ch">mini biography</dt> ?<dd><p class="biopar"> ?(.+?) ?</p>', re.I)
-# Birth and death.
-re_born = re.compile(r'<a href="/onthisday\?.{1,30}?">(.{1,15}?)</a> ?<a href="/borninyear\?([0-9?]{4})">', re.I)
-re_bnotes = re.compile(r'<a href="/bornwhere\?.{1,100}?">(.{1,100}?)</a>', re.I)
-re_death = re.compile(r'<a href="/onthisday\?.{1,30}?">(.{1,15}?)</a> ?<a href="/diedinyear\?([0-9?]{4})">[0-9?]{4}</a><br>(?: ?(.{1,100}?) ?)? ?</dd>', re.I)
-
-# The movieID.
-re_movieID = re.compile(r'<input.{1,30}?value="([0-9]{7})">', re.I)
-# Movie genres.
-re_genres = re.compile(r'href="/sections/genres/(.{1,20}?)/"', re.I)
-# User rating.
-re_ur = re.compile(r'user rating:</b>.{1,1500}?<b>([0-9\.]{1,4})/10</b> \(([0-9,\.]{1,11}) votes\)', re.I | re.S)
-re_top250 = re.compile(r'<a href="/top_250_films">top 250: #([0-9]{1,3})</a>', re.I)
-# The cast's table.
-re_cast = re.compile(r'cast overview.{1,5000}?</table>', re.I)
-# Akas for movies.
-re_akas = re.compile(r'<i class="transl">(.{1,100}?)</i>', re.I)
-# MPAA rating.
-re_mpaa = re.compile(r'<a href="/mpaa">mpaa</a>:</b> ?(.{1,200}?) ?<br>', re.I)
-# Runtimes.
-re_runtimes = re.compile(r'<b class="ch">runtime:</b> ?(.{1,400}?) ?<br>', re.I)
-# Countries.
-re_countr = re.compile(r'<a href="/sections/countries/.{1,50}?/">(.{1,50}?)</a>', re.I)
-# Languages.
-re_lang = re.compile(r'<a href="/sections/languages/.{1,50}?/">(.{1,50}?)</a>', re.I)
-# Color info.
-re_color = re.compile(r'<a href="/list\?color-info=.{1,60}?">(.{1,60}?)</a>(?: <i>(.{0,60}?)</i>)?', re.I)
-# Soundmix.
-re_soundmix = re.compile(r'<a href="/list\?sound-mix=.{1,120}?">(.{1,120}?)</a>', re.I)
-# Certificates.
-re_certificates = re.compile(r'<a href="/list\?certificates=.{1,100}?">(.{1,100}?)</a>(?: <i>(.{0,100}?)</i>)?', re.I)
-# To find the cover.
-re_cover1 = re.compile(r'<img .{0,100}?alt="cover".{0,50}?>', re.I)
-re_cover2 = re.compile(r'src="(.{,60}?)"', re.I)
-# Spouse.
-re_spouse1 = re.compile(r'<dt class="ch">spouse</dt> ?<dd><table border="0">(.{1,1000}?)</table>', re.I | re.S)
-re_spouse2 = re.compile(r'<tr>(.{1,400}?)</tr>', re.I | re.S)
-re_misc_sect = re.compile(r'<dt class="ch">(.{1,1000}?)</dt> ?<dd>(.+?) ?(?:</hr>|</dd>)', re.I|re.S)
-
-# Movie plot.
-#re_plot = re.compile(r'<p class="plotpar"> ?(.+?) ?</p>', re.I)
-
-# Movie title or person name.
-re_title = re.compile(r'<title>(.{1,100}?)</title>', re.I)
 # To strip spaces.
 re_spaces = re.compile(r'\s+')
 # Strip html.
 re_unhtml = re.compile(r'<.+?>')
-
-# Movie search.
-re_msearch = re.compile(r'<li> ?<a .{0,100}?href="/title/tt([0-9]{7})/".{0,100}?>(.{1,100}?)</a> ?(?: (.{0,1000}?))? ?(?=</li>|<br>)', re.I)
-# Person search.
-re_psearch = re.compile(r'<li> ?<a .{0,100}?href="/name/nm([0-9]{7})/".{0,100}?>(.{1,50}?)</a> ?(?: (.{0,1000}?))? ?(?=<small>|<br>|</li>)', re.I)
-
+# imdb person or movie ids.
+re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
 
 # Here to handle non-breaking spaces.
 entitydefs['nbsp'] = ' '
 
+
 def _replRef(match):
-    """Replace the matched entity or reference."""
+    """Replace the matched html/sgml entity and reference."""
     ret = match.group()[1:-1]
     ret = entitydefs.get(ret, ret)
     if ret[0] == '#':
@@ -136,6 +68,7 @@ def _replRef(match):
             pass
     return ret
 
+
 def _subRefs(s):
     """Return the given html string with entity and char references
     replaced."""
@@ -144,99 +77,49 @@ def _subRefs(s):
     return s
 
 
-def _getFilmography(s):
-    """Return a dictionary with the filmography of a person."""
-    r = {}
-    bdate = re_born.search(s)
-    if bdate:
-        r['birth date'] = ' '.join(bdate.groups())
-    bnotes = re_bnotes.search(s)
-    if bnotes:
-        r['birth notes'] = ' '.join(bnotes.groups())
-    ddate = re_death.search(s)
-    if ddate:
-        gr = ddate.groups()
-        r['death date'] = ' '.join(gr[0:2])
-        dn = gr[2]
-        if dn: r['death notes'] = dn
-    akas = re_nmakas.search(s)
-    if akas:
-        r['akas'] = [x for x in akas.groups() if x]
-    hs = re_headshot.search(s)
-    if hs:
-        r['headshot'] = hs.groups()[0]
-    do_what = re_whathedo.search(s)
-    if not do_what: return r
-    sects = re_filmoyer_sect.findall(s[do_what.start():do_what.end()])
-    if not sects: return r
-    for sect, sectName in sects:
-        sectName = sectName.lower()
-        raws = ''
-        inisect = s.find('<a name="%s">' % sect)
-        if inisect != -1:
-            endsect = s[inisect:].find('</ol>')
-            if endsect != -1: raws = s[inisect:inisect+endsect]
-        if not raws: continue
-        mlist = re_filmoyer.findall(raws)
-        for m in mlist:
-            d = {}
-            d['movieID'] = m[:7]
-            ti = m.find('/">')
-            te = m.find('</a>')
-            if ti != -1 and te > ti:
-                d['title'] = m[ti+3:te]
-                m = m[te+4:]
-            else:
-                continue
-            fi = m.find('<font ')
-            if fi != -1:
-                fe = m.find('</font>')
-                if fe > fi:
-                    fif = m[fi+6:].find('>')
-                    if fif != -1:
-                        d['status'] = m[fi+7+fif:fe]
-                        m = m[:fi] + m[fe+7:]
-            fai = m.find('<i>')
-            if fai != -1:
-                fae = m[fai:].find('</i>')
-                if fae != -1:
-                    m = m[:fai] + m[fai+fae+4:]
-            tvi = m.find('<small>TV Series</small>')
-            if tvi != -1:
-                d['title'] = '"%s"' % d['title']
-                m = m[:tvi] + m[tvi+24:]
-            m = m.strip()
-            for x in xrange(2):
-                if len(m) > 1 and m[0] == '(':
-                    ey = m.find(')')
-                    if ey != -1:
-                        if m[1].isdigit() or \
-                                m[1:ey] in ('TV', 'V', 'mini', 'VG'):
-                            d['title'] += ' %s' % m[:ey+1]
-                            m = m[ey+1:].lstrip()
-            #istvguest = 0
-            #if m.find('<small>playing</small>') != -1:
-            #    istvguest = 1
-            m = m.replace('<small>', ' ').replace('</small>', ' ')
-            m = re_spaces.sub(' ', m).strip()
-            notes = ''
-            role = ''
-            ms = m.split('....')
-            if len(ms) >= 1:
-                first = ms[0]
-                if first and first[0] == '(':
-                    notes = first.strip()
-                ms = ms[1:]
-            if ms: role = ' '.join(ms).strip()
-            movie = Movie(title=d['title'],
-                            accessSystem='mobile', movieID=d['movieID'],
-                            modFunct=modNull)
-            if d.has_key('status'): movie['status'] = d['status']
-            movie.currentRole = role
-            movie.notes = notes
-            if not r.has_key(sectName): r[sectName] = []
-            r[sectName].append(movie)
-    return r
+def _unHtml(s):
+    """Return a string without tags."""
+    return re_spaces.sub(' ', re_unhtml.sub('', s)).strip()
+
+
+_ltypes = (type([]), type(()))
+
+def _getTagWith(s, cont):
+    """Return the html tags in the 's' string containing the 'cont'
+    string."""
+    lres = []
+    bi = s.find(cont)
+    if bi != -1:
+        btag = s[:bi].rfind('<')
+        if btag != -1:
+            etag = s[bi+1:].find('>')
+            if etag != -1:
+                lres.append(s[btag:bi+2+etag])
+                lres += _getTagWith(s[btag+1+etag:], cont)
+    return lres
+
+
+def _findBetween(s, begins, ends, beginindx=0):
+    """Return the list of string from the s string which included
+    between the begins and ends strings."""
+    lres = []
+    #if endindx is None: endindx = len(s)
+    bi = s.find(begins, beginindx)
+    if bi != -1:
+        lbegins = len(begins)
+        if type(ends) in _ltypes:
+            eset = [s.find(end, bi+lbegins) for end in ends]
+            eset[:] = [x for x in eset if x != -1]
+            if not eset: ei = -1
+            else: ei = min(eset)
+        else:
+            ei = s.find(ends, bi+lbegins)
+        if ei != -1:
+            match = s[bi+lbegins:ei]
+            lres.append(match)
+            lres += _findBetween(s, begins, ends, ei)
+            #if maxRes > 0 and len(lres) >= maxRes: return lres
+    return lres
 
 
 class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
@@ -250,177 +133,315 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         self.accessSystem = 'mobile'
 
     def _mretrieve(self, url):
+        """Retrieve an html page and normalize it."""
         cont = IMDbHTTPAccessSystem._retrieve(self, url)
         cont = re_spaces.sub(' ', cont)
         return _subRefs(cont)
 
-    def _buildPerson(self, match, regexp=re_names):
-        r = []
-        if not match: return r
-        names = regexp.findall(match.group())
+    def _getPersons(self, s, sep='<br>', hasCr=0):
+        """Return a list of Person objects, from the string s; items
+        are separated by the sep string; if hasCr is set, the
+        currentRole of a person is searched."""
+        names = s.split(sep)
+        pl = []
         for name in names:
             notes = ''
-            currentRole = name[2]
-            fpi = currentRole.find('(')
+            currentRole = ''
+            fpi = name.find(' (')
             if fpi != -1:
-                fpe = currentRole.rfind(')')
-                notes = currentRole[fpi:fpe+1]
-                currentRole = currentRole[:fpi].strip()
-            r.append(Person(personID=name[0], name=canonicalName(name[1]),
-                        currentRole=currentRole, notes=notes,
-                        modFunct=modNull))
-        return r
+                fpe = name.rfind(')')
+                if fpe > fpi:
+                    notes = _unHtml(name[fpi:fpe+1])
+                    name = name[:fpi] + name[fpe+1:]
+                    name = name.replace('&', '')
+            if hasCr:
+                name = name.split(' .... ')
+                if len(name) > 1:
+                    currentRole = _unHtml(name[1])
+                name = name[0]
+            pid = re_imdbID.findall(name)
+            name = _unHtml(name)
+            if not (pid and name): continue
+            pl.append(Person(personID=pid, name=canonicalName(name),
+                            currentRole=currentRole, notes=notes,
+                            accessSystem=self.accessSystem,
+                            modFunct=self._defModFunct))
+        return pl
 
     def _search_movie(self, title, results):
         params = urllib.urlencode({'tt': 'on', 'mx': str(results), 'q': title})
         cont = self._mretrieve(imdbURL_search % params)
-        title = re_title.findall(cont)
+        title = _findBetween(cont, '<title>', '</title>')
         res = []
         if not title: return res
         if title[0].lower().find('imdb title search') == -1:
             # XXX: a direct hit!
-            title = analyze_title(title[0], canonical=1)
-            mid = re_movieID.findall(cont)
-            if mid: res = [(mid[0], title)]
+            title = _unHtml(title[0])
+            midtag = _findTagWith(cont, 'name="arg"')
+            mid = None
+            if midtag: mid = _findBetween(midtag[0], 'value="', '"')
+            if not (mid and title): return res
+            res[:] = [(mid[0], analyze_title(title, canonical=1))]
         else:
-            res = re_msearch.findall(cont)
-            res = [(x[0], analyze_title(' '.join(x[1:]), canonical=1))
-                    for x in res]
+            lis = _findBetween(cont, '<li>', ['</li>', '<br>'])
+            for li in lis:
+                imdbid = re_imdbID.findall(li)
+                mtitle = _unHtml(li)
+                if not (imdbid and mtitle): continue
+                res.append((imdbid[0], analyze_title(mtitle, canonical=1)))
         return res
 
     def get_movie_main(self, movieID):
         cont = self._mretrieve(imdbURL_movie % movieID + 'maindetails')
         d = {}
-        title = re_title.findall(cont)
+        title = _findBetween(cont, '<title>', '</title>')
         if not title:
             raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
-        d = analyze_title(title[0], canonical=1)
-        directh = re_dir.search(cont)
-        dnames = self._buildPerson(directh)
-        if dnames: d['director'] = dnames
-        wrih = re_wri.search(cont)
-        wnames = self._buildPerson(wrih)
-        if wnames: d['writer'] = wnames
-        c1 = re_cover1.findall(cont)
-        if c1:
-            c2 = re_cover2.findall(c1[0])
-            if c2: d['cover url'] = c2[0]
-        genres = re_genres.findall(cont)
-        if genres:
-            d['genres'] = genres
-        ur = re_ur.search(cont)
+        title = _unHtml(title[0])
+        d = analyze_title(title, canonical=1)
+        direct = _findBetween(cont, 'Directed by</b><br>', '<br> <br>')
+        if direct:
+            dirs = self._getPersons(direct[0])
+            if dirs: d['director'] = dirs
+        writers = _findBetween(cont, 'Writing credits</b>', '<br> <br>')
+        if writers:
+            ws = self._getPersons(writers[0])
+            if ws: d['writer'] = ws
+        cvurl = _getTagWith(cont, 'alt="cover"')
+        if cvurl:
+            cvurl = _findBetween(cvurl[0], 'src="', '"')
+            if cvurl: d['cover url'] = cvurl[0]
+        genres = _findBetween(cont, 'href="/Sections/Genres/', '/')
+        if genres: d['genres'] = genres
+        ur = _findBetween(cont, 'User Rating:</b>', ' votes)')
         if ur:
-            rating, votes = ur.groups()
-            if rating: d['rating'] = rating
-            if votes: d['votes'] = votes.replace(',', '')
-        top250 = re_top250.search(cont)
-        if top250: d['top 250 rank'] = top250.group(1)
-        castdata = re_cast.search(cont)
-        cast = self._buildPerson(castdata, regexp=re_names_cast)
-        if cast: d['cast'] = cast
-        akas = [x.replace(' (','::(',1).replace('   [','::[').replace('  ',' ')
-                for x in re_akas.findall(cont)]
-        if akas: d['akas'] = akas
-        mpaa = re_mpaa.findall(cont)
-        if mpaa: d['mpaa'] = mpaa[0]
-        runtimes = re_runtimes.search(cont)
+            rat = _findBetween(ur[0], '<b>', '</b>')
+            if rat:
+                teni = rat[0].find('/10')
+                if teni != -1:
+                    rat = rat[0][:teni]
+                    d['rating'] = rat.strip()
+            vi = ur[0].rfind('(')
+            if vi != -1 and ur[0][vi:].find('await') == -1:
+                d['votes'] = ur[0][vi+1:].replace(',', '').strip()
+        top250 = _findBetween(cont, 'href="/top_250_films"', '</a>')
+        if top250:
+            fn = top250[0].rfind('#')
+            if fn != -1:
+                d['top 250 rank'] = top250[0][fn+1:]
+        castdata = _findBetween(cont, 'Cast overview', '</table>')
+        if castdata:
+            fl = castdata[0].find('href=')
+            if fl != -1: castdata[0] = '< a' + castdata[0][fl:]
+            cast = self._getPersons(castdata[0], sep='</tr><tr>', hasCr=1)
+            if cast: d['cast'] = cast
+        akas = _findBetween(cont, '<i class="transl">', '<br>')
+        if akas:
+            akas = [_unHtml(x).replace(' (','::(', 1).replace(' [','::[')
+                    for x in akas]
+            d['akas'] = akas
+        mpaa = _findBetween(cont, 'MPAA</a>:', '<br>')
+        if mpaa: d['mpaa'] = _unHtml(mpaa[0])
+        runtimes = _findBetween(cont, 'Runtime:</b>', '<br>')
         if runtimes:
             rt = [x.strip().replace(' min', '')
-                    for x in runtimes.group(1).split('/')]
+                    for x in runtimes[0].split('/')]
             d['runtimes'] = rt
-        country = re_countr.findall(cont)
+        country = _findBetween(cont, 'href="/Sections/Countries/', '"')
         if country: d['countries'] = country
-        lang = re_lang.findall(cont)
-        if re_lang: d['languages'] = lang
-        col = re_color.findall(cont)
-        for i in xrange(len(col)):
-            if col[i][1]: col[i] = col[i][0] + '::' + col[i][1]
-            else: col[i] = col[i][0]
-        if col: d['color'] = col
-        sm = re_soundmix.findall(cont)
-        if sm: d['sound mix'] = sm
-        cert = re_certificates.findall(cont)
-        for i in xrange(len(cert)):
-            if cert[i][1]: cert[i] = cert[i][0] + '::' + cert[i][1]
-            else: cert[i] = cert[i][0]
-        if cert: d['certificates'] = cert
+        lang = _findBetween(cont, 'href="/Sections/Languages/', '"')
+        if lang: d['languages'] = lang
+        col = _findBetween(cont, '"/List?color-info=', '<br>')
+        if col:
+            col[:] = col[0].split(' / ')
+            col[:] = ['<a %s' % x for x in col if x]
+            col[:] = [_unHtml(x.replace(' <i>', '::')) for x in col]
+            if col: d['color'] = col
+        sm = _findBetween(cont, '/List?sound-mix=', '<br>')
+        if sm:
+            sm[:] = sm[0].split(' / ')
+            sm[:] = ['<a %s' % x for x in sm if x]
+            sm[:] = [_unHtml(x.replace(' <i>', '::')) for x in sm]
+            if sm: d['sound mix'] = sm
+        cert = _findBetween(cont, 'Certification:</b>', '<br>')
+        if cert:
+            cert[:] = cert[0].split(' / ')
+            cert[:] = [_unHtml(x.replace(' <i>', '::')) for x in cert]
+            if cert: d['certificates'] = cert
         return {'data': d}
 
     def get_movie_plot(self, movieID):
         cont = self._mretrieve(imdbURL_movie % movieID + 'plotsummary')
-        plot = []
-        pi = cont.find('<p class="plotpar">')
-        while pi != -1:
-            pe = cont[pi:].find('</p>')
-            if pe == -1: break
-            thisplot = cont[pi+19:pi+pe].strip()
-            plot.append(thisplot)
-            cont = cont[pi+19:]
-            pi = cont.find('<p class="plotpar">')
+        plot = _findBetween(cont, '<p class="plotpar">', '</p>')
+        plot[:] = [_unHtml(x) for x in plot]
         if plot: return {'data': {'plot': plot}}
         return {'data': {}}
 
     def _search_person(self, name, results):
         params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
         cont = self._mretrieve(imdbURL_search % params)
-        name = re_title.findall(cont)
+        name = _findBetween(cont, '<title>', '</title>')
         res = []
         if not name: return res
         if name[0].lower().find('imdb name search') == -1:
             # XXX: a direct hit!
-            name = analyze_name(name[0], canonical=1)
-            pid = re_personID.findall(cont)
-            if pid: res = [(pid[0], name)]
+            name = _unHtml(name[0])
+            pidtag = _findTagWith(cont, '/board/threads/')
+            pid = None
+            if pidtag: pid = _findBetween(pidtag[0], '/name/nm', '/')
+            if not (pid and name): return res
+            res[:] = [(pid[0], analyze_name(name, canonical=1))]
         else:
-            res = re_psearch.findall(cont)
-            res = [(x[0], analyze_name(' '.join(x[1:]), canonical=1))
-                    for x in res]
+            lis = _findBetween(cont, '<li>', ['<small>', '</li>', '<br>'])
+            for li in lis:
+                pid = re_imdbID.findall(li)
+                pname = _unHtml(li)
+                if not (pid and pname): continue
+                res.append((pid[0], analyze_name(pname, canonical=1)))
         return res
 
     def get_person_main(self, personID):
-        cont = self._mretrieve(imdbURL_person % personID + 'maindetails')
-        d = {}
-        name = re_title.findall(cont)
+        s = self._mretrieve(imdbURL_person % personID + 'maindetails')
+        r = {}
+        name = _findBetween(s, '<title>', '</title>')
         if not name:
             raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
-        d = analyze_name(name[0], canonical=1)
-        d.update(_getFilmography(cont))
-        return {'data': d, 'info sets': ('main', 'filmography')}
+        r = analyze_name(name[0], canonical=1)
+        bdate = _findBetween(s, '<div class="ch">Date of birth',
+                            ('<br>', '<dt>'))
+        if bdate:
+            bdate = _unHtml('<a %s' % bdate[0])
+            if bdate: r['birth date'] = bdate
+        bnotes = _findBetween(s, 'href="/BornWhere?', '</dd>')
+        if bnotes:
+            bnotes = _unHtml('<a %s' % bnotes[0])
+            if bnotes: r['birth notes'] = bnotes
+        ddate = _findBetween(s, '<div class="ch">Date of death', '</dd>')
+        if ddate:
+            ddates = ddate[0].split('<br>')
+            ddate = ddates[0]
+            ddate = _unHtml('<a %s' % ddate)
+            if ddate: r['death date'] = ddate
+            dnotes = None
+            if len(ddates) > 1:
+                dnotes = _unHtml(ddates[1])
+            if dnotes: r['death notes'] = dnotes
+        akas = _findBetween(s, 'Sometimes Credited As:', '</dl>')
+        if akas:
+            akas[:] = [_unHtml(x) for x in akas[0].split('<br>')]
+            if akas: r['akas'] = akas
+        hs = _findBetween(s, 'name="headshot"', '</a>')
+        if hs:
+            hs[:] = _findBetween(hs[0], 'src="', '"')
+            if hs: r['headshot'] = hs[0]
+        workkind = _findBetween(s, 'Filmography as:</i>', '</p>')
+        if not workkind: return r
+        wsects = workkind[0].split(', ')
+        ws = []
+        for w in wsects:
+            sl = _findBetween(w, 'href="#', '"')
+            if not sl: continue
+            sn = _findBetween(w, '">', '</a')
+            if sn: sn = _unHtml(sn[0])
+            if not sn: continue
+            ws.append((sl[0], sn.lower()))
+        for sect, sectName in ws:
+            sectName = sectName.lower()
+            raws = ''
+            inisect = s.find('<a name="%s">' % sect)
+            if inisect != -1:
+                endsect = s[inisect:].find('</ol>')
+                if endsect != -1: raws = s[inisect:inisect+endsect]
+            if not raws: continue
+            mlist = _findBetween(raws, '<li>', ('</li>', '<br>'))
+            for m in mlist:
+                d = {}
+                d['movieID'] = m[:7]
+                ti = m.find('/">')
+                te = m.find('</a>')
+                if ti != -1 and te > ti:
+                    d['title'] = m[ti+3:te]
+                    m = m[te+4:]
+                else:
+                    continue
+                fi = m.find('<font ')
+                if fi != -1:
+                    fe = m.find('</font>')
+                    if fe > fi:
+                        fif = m[fi+6:].find('>')
+                        if fif != -1:
+                            d['status'] = m[fi+7+fif:fe]
+                            m = m[:fi] + m[fe+7:]
+                fai = m.find('<i>')
+                if fai != -1:
+                    fae = m[fai:].find('</i>')
+                    if fae != -1:
+                        m = m[:fai] + m[fai+fae+4:]
+                tvi = m.find('<small>TV Series</small>')
+                if tvi != -1:
+                    d['title'] = '"%s"' % d['title']
+                    m = m[:tvi] + m[tvi+24:]
+                m = m.strip()
+                for x in xrange(2):
+                    if len(m) > 1 and m[0] == '(':
+                        ey = m.find(')')
+                        if ey != -1:
+                            if m[1].isdigit() or \
+                                    m[1:ey] in ('TV', 'V', 'mini', 'VG'):
+                                d['title'] += ' %s' % m[:ey+1]
+                                m = m[ey+1:].lstrip()
+                #istvguest = 0
+                #if m.find('<small>playing</small>') != -1:
+                #    istvguest = 1
+                m = m.replace('<small>', ' ').replace('</small>', ' ').strip()
+                notes = ''
+                role = ''
+                ms = m.split('....')
+                if len(ms) >= 1:
+                    first = ms[0]
+                    if first and first[0] == '(':
+                        notes = first.strip()
+                    ms = ms[1:]
+                if ms: role = ' '.join(ms).strip()
+                movie = Movie(title=d['title'], accessSystem=self.accessSystem,
+                                movieID=d['movieID'],
+                                modFunct=self._defModFunct)
+                if d.has_key('status'): movie['status'] = d['status']
+                movie.currentRole = role
+                movie.notes = notes
+                if not r.has_key(sectName): r[sectName] = []
+                r[sectName].append(movie)
+        return {'data': r, 'info sets': ('main', 'filmography')}
 
     def get_person_biography(self, personID):
         cont = self._mretrieve(imdbURL_person % personID + 'bio')
         d = {}
-        bname = re_bname.findall(cont)
-        if bname: d['birth name'] = bname[0]
-        height = re_height.findall(cont)
-        if height: d['height'] = height[0]
-        bio = re_bio.findall(cont)
-        if bio: d['mini biography'] = bio
-        spouses = re_spouse1.search(cont)
+        spouses = _findBetween(cont, 'Spouse</dt>', ('</table>', '</dd>'))
         if spouses:
             sl = []
-            for spouse in re_spouse2.findall(spouses.groups()[0]):
+            for spouse in spouses[0].split('</tr>'):
                 if spouse.count('</td>') > 1:
                     spouse = spouse.replace('</td>', '::</td>', 1)
-                spouse = re_spaces.sub(' ', re_unhtml.sub('', spouse))
+                spouse = _unHtml(spouse)
                 spouse = spouse.replace(':: ', '::').strip()
-                sl.append(spouse)
+                if spouse: sl.append(spouse)
             if sl: d['spouse'] = sl
-        misc_sects = re_misc_sect.findall(cont)
-        if misc_sects:
-            for sect, data in misc_sects:
-                sect = sect.lower().replace(':', '').strip()
-                if sect == 'salary': sect = 'salary history'
-                if sect in ('birth name', 'height', 'mini biography',
-                            'imdb mini-biography by', 'spouse'):
-                    continue
-                data = data.replace('</p><p class="biopar">', '::')
-                data = data.replace('</td>\n<td valign="top">', '@@@@')
-                data = data.replace('</td>\n</tr>', '::')
-                data = re_spaces.sub(' ', re_unhtml.sub('', data))
-                data = [x.strip() for x in data.split('::')]
-                data[:] = [x.replace('@@@@', '::') for x in data if x]
-                d[sect] = data
+        misc_sects = _findBetween(cont, '<dt class="ch">', ('<hr', '</dd>'))
+        misc_sects[:] = [x.split('</dt>') for x in misc_sects]
+        misc_sects[:] = [x for x in misc_sects if len(x) == 2]
+        for sect, data in misc_sects:
+            sect = sect.lower().replace(':', '').strip()
+            if sect == 'salary': sect = 'salary history'
+            if sect in ('imdb mini-biography by', 'spouse'):
+                continue
+            data = data.replace('</p><p class="biopar">', '::')
+            data = data.replace('</td>\n<td valign="top">', '@@@@')
+            data = data.replace('</td>\n</tr>', '::')
+            data = _unHtml(data)
+            data = [x.strip() for x in data.split('::')]
+            data[:] = [x.replace('@@@@', '::') for x in data if x]
+            if sect in ('birth name', 'height') and data: data = data[0]
+            d[sect] = data
         return {'data': d}
 
 

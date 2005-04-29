@@ -162,7 +162,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             pid = re_imdbID.findall(name)
             name = _unHtml(name)
             if not (pid and name): continue
-            pl.append(Person(personID=pid, name=canonicalName(name),
+            pl.append(Person(personID=pid[0], name=canonicalName(name),
                             currentRole=currentRole, notes=notes,
                             accessSystem=self.accessSystem,
                             modFunct=self._defModFunct))
@@ -235,6 +235,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if fl != -1: castdata[0] = '< a' + castdata[0][fl:]
             cast = self._getPersons(castdata[0], sep='</tr><tr>', hasCr=1)
             if cast: d['cast'] = cast
+        # FIXME: doesn't catch "complete title", which is not
+        #        included in <i> tags.
+        #        See "Gehr Nany Fgbevrf 11", movieID: 0282910
         akas = _findBetween(cont, '<i class="transl">', '<br>')
         if akas:
             akas = [_unHtml(x).replace(' (','::(', 1).replace(' [','::[')

@@ -1,13 +1,15 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 1.9 "Ed Wood" (cvs-20050426)
+* What's the new in release 1.9 "Ed Wood" (cvs-20050429)
   [general]
   - introduced the new "mobile" data access system, useful for
     small systems.  It should be from 2 to 20 times faster than "http"
     or "httpThin".
+  - the "http", "httpThin" and "mobile" data access system can now
+    search for adult movies.  See the README.adult file.
   - now it should works again with python 2.0 and 2.1.
-  - fixed a bug affecting performances.
+  - fixed a bug affecting performances/download time.
   - unified some keywords amongst differents data access systems.
 
   [http data access system]

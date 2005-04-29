@@ -1,0 +1,56 @@
+  IMDbPY for porn addicted
+  ========================
+  (No, it will not download Selen directly into your bed...)
+
+Calling the search_movie() and search_person() methods when using
+the "http", "httpThin" and "mobile" data access system, adult
+titles (and person who have only worked in hard movies) are not shown.
+That's because IMDb requires you to be a registered user to see
+the everyone-is-hugging kind of movie.
+
+I've setup an account for IMDbPY, and now you can include adult
+results in your search by calling the do_adult_search() method.
+
+By default IMDbPY still _excludes_ these results, because I need
+more time to test the code.
+The 'local' data access system always shows _every_ kind of movie.
+
+
+E.g.:
+    from imdb import IMDb
+    ia = IMDb(accessSystem='http') # or 'httpThin' or 'mobile'.
+
+    # Just for this example, exclude the proxy.
+    ia.set_proxy(None)
+
+    # Today we're horny.
+    ia.do_adult_search(1)
+
+    results = ia.search_movie('debby does dallas', results=5)
+    for movie in results:
+        print movie['long imdb title'], movie.movieID
+    # It will print:
+    # Debbie Does Dallas (1978) 0077415
+    # Debbie Does Dallas Part II (1981) 0083807
+    # Debbie Does Dallas: The Next Generation (1997) (V) 0160174
+    # Debbie Does Dallas '99 (1999) (V) 0233539
+    # Debbie Does Dallas 3 (1985) 0124352
+
+    # You can also revert to the default puritan behavior.
+    ia.do_adult_search(0)
+
+    results = ia.search_movie('debby does dallas', results=5)
+    for movie in results:
+       print movie['long imdb title'], movie.movieID
+    # It will print only:
+    # Pauly Does Dallas (1993) (TV) 0208347
+
+
+The do_adult_search() method also takes a couple of arguments,
+"cookie_id" and "cookie_uu", so that you can select _your own_
+IMDb's account.
+For the strings to use, see your "cookie" or "cookie.txt" file.
+Obviously you need to activate the "adult movies" option for
+your account; see http://imdb.com/find/preferences?_adult=1
+
+

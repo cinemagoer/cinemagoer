@@ -79,6 +79,10 @@ suitable for systems with limited bandwidth but normal CPU power.
 * The use of the "akas" server will provide access to a lot of
   AKA titles in many languages, so it's really useful if English is
   not your native language.
+* By default does not includes adult titles (and people who have worked
+  only in adult movies) in the results of a title/name search; this
+  behavior can be changed with the do_adult_search() method; please
+  read the "README.adult" file.
 * You can set/use a proxy to access the web; if set, the HTTP_PROXY
   environment variable will be automatically used, otherwise you can set a
   proxy with the set_proxy() method of the class returned by the

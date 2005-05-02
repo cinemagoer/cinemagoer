@@ -27,8 +27,10 @@ NOTE: it's time to clean the code!
 
 
 [http data access system]
-* doing a movie_search(), the "adult" titles are not displayed!
-  It's seems to be a feature reserved to registered users.
+* There's a known bug using IMDbPY with Python 2.0 and 2.1: 
+  it fails to retrieveweb pages, raising the httplib.UnknownTransferEncoding
+  exception, if a proxy is used; unset the HTTP_PROXY environment variable
+  or call the imdbObject.set_proxy(None) method.
 * If the access through the proxy fails, try without proxy.
 * Some (many?) HTML parser can be interrupted as long as they've
   parse every needed information, as HTMLSearchMovieParser does.

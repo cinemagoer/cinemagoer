@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release cvs-050531 "Star Wars: Episode III" (31 May 2005)
+  [http data access system]
+  - added the "recommendations" page.
+
+
 * What's the new in release 1.9 "Ed Wood" (02 May 2005)
   [general]
   - introduced the new "mobile" data access system, useful for

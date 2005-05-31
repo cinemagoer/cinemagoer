@@ -1867,6 +1867,99 @@ class HTMLDvdParser(ParserBase):
                 self.__coldata += data
 
 
+
+class HTMLRecParser(ParserBase):
+    """Parser for the "recommendations" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        rparser = HTMLRecParser()
+        result = rparser.parse(recommendations_html_string)
+    """
+
+    # Do not gather names and titles references.
+    getRefs = 0
+
+    def _reset(self):
+        """Reset the parser."""
+        self.__rec = {}
+        self.__firsttd = 0
+        self.__curlist = ''
+        self.__curtitle = ''
+        self.__startgath = 0
+        self.__intable = 0
+        self.__inb = 0
+        self.__cur_id = ''
+    
+    def get_data(self):
+        if not self.__rec: return {}
+        return {'recommendations': self.__rec}
+
+    def start_a(self, attrs):
+        if self.__firsttd:
+            href = self.get_attr_value(attrs, 'href')
+            if href:
+                tn = self.re_imdbID.findall(href)
+                if tn:
+                    self.__cur_id = tn[-1]
+
+    def end_a(self): pass
+
+    def start_table(self, attrs):
+        self.__intable = 1
+
+    def end_table(self):
+        self.__intable = 0
+        self.__startgath = 0
+
+    def start_tr(self, attrs):
+        self.__firsttd = 1
+
+    def end_tr(self): pass
+
+    def start_td(self, attrs):
+        if self.__firsttd:
+            span = self.get_attr_value(attrs, 'colspan')
+            if span: self.__firsttd = 0
+
+    def end_td(self):
+        if self.__firsttd:
+            self.__curtitle = clear_text(self.__curtitle)
+            if self.__curtitle:
+                if self.__curlist:
+                    if not self.__rec.has_key(self.__curlist):
+                        self.__rec[self.__curlist] = []
+                    if self.__cur_id:
+                        m = Movie(movieID=self.__cur_id,
+                                    movieData=analyze_title(self.__curtitle,
+                                                            canonical=1),
+                                    accessSystem='http')
+                        self.__rec[self.__curlist].append(m)
+                        self.__cur_id = ''
+                self.__curtitle = ''
+            self.__firsttd = 0
+
+    def start_b(self, attrs):
+        self.__inb = 1
+
+    def end_b(self):
+        self.__inb = 0
+
+    def _handle_data(self, data):
+        ldata = data.lower()
+        if self.__intable and self.__inb:
+            if ldata.find('suggested by the database') != -1:
+                self.__startgath = 1
+                self.__curlist = 'database'
+            elif ldata.find('imdb users recommend') != -1:
+                self.__startgath = 1
+                self.__curlist = 'users'
+        elif self.__firsttd and self.__curlist:
+            self.__curtitle += data
+
+
 # The used instances.
 movie_parser = HTMLMovieParser()
 plot_parser = HTMLPlotParser()
@@ -1889,5 +1982,6 @@ tech_parser = HTMLTechParser()
 locations_parser = HTMLTechParser()
 locations_parser.kind = 'locations'
 dvd_parser = HTMLDvdParser()
+rec_parser = HTMLRecParser()
 
 

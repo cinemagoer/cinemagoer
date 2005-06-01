@@ -1,9 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release cvs-050531 "Star Wars: Episode III" (31 May 2005)
+* What's the new in release cvs-050601 "Per Un Pugno Di Dollari" (01 Jun 2005)
   [http data access system]
   - added the "recommendations" page.
+  - fixed a bug in the BasicMovieParser class, due to changes in the
+    IMDb's html.
 
 
 * What's the new in release 1.9 "Ed Wood" (02 May 2005)

@@ -350,7 +350,7 @@ class Movie:
         if not self:
             return ''
         s = 'Movie\n=====\n'
-        title = self.get('title')
+        title = self.get('long imdb canonical title')
         if title:
             s += 'Title: %s\n' % title
         genres = self.get('genres')

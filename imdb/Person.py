@@ -315,7 +315,7 @@ class Person:
         if not self:
             return ''
         s = 'Person\n=====\n'
-        name = self.get('name')
+        name = self.get('long imdb canonical name')
         if name:
             s += 'Name: %s\n' % name
         bdate = self.get('birth date')

@@ -13,3 +13,5 @@ I'd like to thank the following people for their help:
 
 * "Basilius" for a bug report.
 
+* Davide for a bug report.
+

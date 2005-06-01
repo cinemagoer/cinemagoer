@@ -62,11 +62,13 @@ class BasicMovieParser(ParserBase):
         t = self.get_attr_value(attrs, 'type')
         if t and t.strip().lower() == 'hidden':
             n = self.get_attr_value(attrs, 'name')
-            if n and n.strip().lower() == 'arg':
+            if n: n = n.strip().lower()
+            if n in ('arg', 'auto'):
                 val = self.get_attr_value(attrs, 'value') or ''
                 # XXX: use re_imdbIDonly because in the input field
                 #      the movieID is not preceded by 'tt'.
-                nr = self.re_imdbIDonly.findall(val)
+                if n == 'arg': nr = self.re_imdbIDonly.findall(val)
+                else: nr = self.re_imdbID.findall(val)
                 if not nr: return
                 imdbID = nr[0]
                 title = self.__page_title.strip()

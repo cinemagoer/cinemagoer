@@ -1,11 +1,15 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release cvs-050601 "Per Un Pugno Di Dollari" (01 Jun 2005)
+* What's the new in release cvs-050608 "Monster Dog" (08 Jun 2005)
   [http data access system]
   - added the "recommendations" page.
   - fixed a bug in the BasicMovieParser class, due to changes in the
     IMDb's html.
+  - the "rating details" parse information about the total number
+    of voters, arithmetic mean, median and so on.  The values are
+    stored as integers and floats, and no more as strings.
+  - dictionary keys in soundtrack are lowercase.
 
 
 * What's the new in release 1.9 "Ed Wood" (02 May 2005)

@@ -363,7 +363,7 @@ class HTMLMovieParser(ParserBase):
                 if i != -1:
                     rating = rav[:i]
                     try:
-                        float(rating)
+                        rating = float(rating)
                         self.set_item('rating', rating)
                     except ValueError:
                         pass
@@ -373,7 +373,7 @@ class HTMLMovieParser(ParserBase):
                     j = votes.find(' ')
                     votes = votes[:j].replace(',', '')
                     try:
-                        int(votes)
+                        votes = int(votes)
                         self.set_item('votes', votes)
                     except ValueError:
                         pass
@@ -990,6 +990,8 @@ class HTMLAlternateVersionsParser(ParserBase):
                     posi = lcw.find(i)
                     if posi != -1:
                         self.__curinfo = self.__cav[:posi+len(i)]
+                        if self.kind == 'soundtrack':
+                            self.__curinfo = self.__curinfo.lower().strip()
                         rest = self.__cav[posi+len(i)+1:]
                         self.__curst[self.__cur_title][self.__curinfo] = \
                                 rest
@@ -1288,6 +1290,7 @@ class HTMLRatingsParser(ParserBase):
         self.__cur_demo_av = ''
         self.__next_is_demo_vote = 0
         self.__next_demo_vote = ''
+        self.__in_td = 0
 
     def get_data(self):
         """Return the dictionary."""
@@ -1312,9 +1315,11 @@ class HTMLRatingsParser(ParserBase):
     def end_b(self):
         self.__in_b = 0
 
-    def start_td(self, attrs): pass
+    def start_td(self, attrs):
+        self.__in_td = 1
 
     def end_td(self):
+        self.__in_td = 0
         if self.__in_total:
             if self.__first:
                 self.__first = 0
@@ -1327,10 +1332,8 @@ class HTMLRatingsParser(ParserBase):
         if self.__in_total:
             if self.__cur_nr:
                 try:
-                    c = self.__cur_vote
-                    n = self.__cur_nr
-                    int(c)
-                    int(n)
+                    c = int(self.__cur_vote)
+                    n = int(self.__cur_nr)
                     self.__votes[c] = n
                 except (ValueError, OverflowError): pass
                 self.__cur_nr = ''
@@ -1338,10 +1341,8 @@ class HTMLRatingsParser(ParserBase):
         if self.__in_demo:
             self.__in_demo = 0
             try:
-                av = self.__cur_demo_av
-                dv = self.__next_demo_vote
-                float(av)
-                int(dv)
+                av = float(self.__cur_demo_av)
+                dv = int(self.__next_demo_vote)
                 self.__demo[self.__cur_demo_t] = (dv, av)
             except (ValueError, OverflowError): pass
             self.__cur_demo_av = ''
@@ -1379,8 +1380,22 @@ class HTMLRatingsParser(ParserBase):
                 if i != -1:
                     sd = sd[:i]
                     try: sd = int(sd)
-                    except (ValueError, OverflowError): return
-                    self.__rank = {'top 250 rank': sd}
+                    except (ValueError, OverflowError): pass
+                    if type(sd) is type(1):
+                        self.__rank['top 250 rank'] = sd
+            elif sdata.startswith('Arithmetic mean = '):
+                if sdata[-1] == '.': sdata = sdata[:-1]
+                am = sdata[18:]
+                try: am = float(am)
+                except (ValueError, OverflowError): pass
+                if type(am) is type(1.0):
+                    self.__rank['arithmetic mean'] = am
+            elif sdata.startswith('Median = '):
+                med = sdata[9:]
+                try: med = int(med)
+                except (ValueError, OverflowError): pass
+                if type(med) is type(1):
+                    self.__rank['median'] = med
         if self.__in_demo:
             if self.__next_is_demo_vote:
                 self.__next_demo_vote = sdata
@@ -1390,6 +1405,10 @@ class HTMLRatingsParser(ParserBase):
                 self.__next_is_demo_vote = 1
             else:
                 self.__cur_demo_av = sdata
+        elif self.__in_td and sdata.startswith('All votes'):
+            self.__in_demo = 1
+            self.__next_is_demo_vote = 1
+            self.__cur_demo_t = 'all votes'
 
 
 class HTMLOfficialsitesParser(ParserBase):

@@ -49,6 +49,11 @@ imdbURL_movie = 'http://akas.imdb.com/title/tt%s/'
 imdbURL_person = 'http://akas.imdb.com/name/nm%s/'
 imdbURL_search = 'http://akas.imdb.com/find?%s'
 
+# The cookies for the "adult" search.
+# Please don't mess with this account.
+_cookie_id = 'boM2bYxz9MCsOnH9gZ0S9QHs12NWrNdApxsls1Vb5/NGrNdjcHx3dUas10UASoAjVEvhAbGagERgOpNkAPvxdbfKwaV2ikEj9SzXY1WPxABmDKQwdqzwRbM+12NSeJFGUEx3F8as10WwidLzVshDtxaPIbP13NdjVS9UZTYqgTVGrNcT9vyXU1'
+_cookie_uu = '3M3AXsquTU5Gur/Svik+ewflPm5Rk2ieY3BIPlLjyK3C0Dp9F8UoPgbTyKiGtZp4x1X+uAUGKD7BM2g+dVd8eqEzDErCoYvdcvGLvVLAen1y08hNQtALjVKAe+1hM8g9QbNonlG1/t4S82ieUsBbrSIQbq1yhV6tZ6ArvSbA7rgHc8n5AdReyAmDaJ5Wm/ee3VDoCnGj/LlBs2ieUZNorhHDKK5Q=='
+
 
 class IMDbURLopener(urllib.FancyURLopener):
     """Fetch web pages and handle errors."""
@@ -137,6 +142,20 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_proxy(self):
         """Return the used proxy or an empty string."""
         return self.urlOpener.proxies.get('http', '')
+
+    def do_adult_search(self, doAdult,
+                        cookie_id=_cookie_id, cookie_uu=_cookie_uu):
+        """If doAdult is true, 'adult' movies are included in the
+        search results; cookie_id and cookie_uu are optional
+        parameters to select a specific account (see your cookie
+        or cookies.txt file."""
+        for index in xrange(len(self.urlOpener.addheaders)):
+            if self.urlOpener.addheaders[index][0] == 'Cookie':
+                del self.urlOpener.addheaders[index]
+                break
+        if doAdult:
+            c_header = 'id=%s; uu=%s' % (cookie_id, cookie_uu)
+            self.urlOpener.addheaders += [('Cookie', c_header)]
 
     def _retrieve(self, url):
         """Retrieve the given URL."""

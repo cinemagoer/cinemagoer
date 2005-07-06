@@ -104,7 +104,7 @@ class IMDbBase:
     def _get_infoset(self, prefname):
         """Return methods with the name starting with prefname."""
         infoset = []
-        excludes = ('%smain' % prefname, '%sinfoset' % prefname)
+        excludes = ('%sinfoset' % prefname,)
         preflen = len(prefname)
         for name in dir(self.__class__):
             if name.startswith(prefname) and name not in excludes:

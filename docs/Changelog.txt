@@ -1,7 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release cvs-050608 "Monster Dog" (08 Jun 2005)
+* What's the new in release cvs-050706 "War Of The Worlds" (06 Jul 2005)
+
+  [general]
+  - fixed a bug using the 'all' keyword of the update method.
+
+
   [http data access system]
   - added the "recommendations" page.
   - fixed a bug in the BasicMovieParser class, due to changes in the

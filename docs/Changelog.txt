@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release cvs-050706 "War Of The Worlds" (06 Jul 2005)
+* What's the new in release cvs-050707 "War Of The Worlds" (07 Jul 2005)
 
   [general]
   - fixed a bug using the 'all' keyword of the update method.
@@ -9,6 +9,9 @@
 
   [http data access system]
   - added the "recommendations" page.
+  - the 'notes' instance variable is now correctly used to store
+    miscellaneous information about people in non-cast roles, replacing
+    the 'currentRole' variable.
   - fixed a bug in the BasicMovieParser class, due to changes in the
     IMDb's html.
   - the "rating details" parse information about the total number

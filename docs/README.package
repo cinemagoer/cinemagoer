@@ -288,21 +288,40 @@ already retrieved.
 
 Parsing the information about a movie, you'll encounter a lot of references
 to the people who worked on it, like the cast, the director, the stunts,
-and so on.  When such a reference is found, a Person object is instantiated,
-and the currentRole instance variable of the object is set to a string
-that describes the role or the duty of the person.
+and so on.
+For people in the cast (actors/actresses), the "currentRole" instance
+variable is set to the name of the character they played (e.g.: "Roy Neary"
+for the role played by Richard Dreyfuss in Close Encounters of the Third Kind).
+
+Another instance variable of a Person object is "notes", used to store
+miscellaneous information (like an aka name for the actor, an "uncredited"
+notice and so on).
+It's also used, for non-cast people, to describe the specific task of
+the person (e.g.: "assistant dialogue staff" for a person of the sound
+departement).
+
 E.g.:
-    # retrieve data for Mel Gibson's "The Passion of the Christ"
+    # retrieve data for Steven Spielberg's "Close Encounters of the Third Kind"
     import imdb
     i =  imdb.IMDb(accessSystem='http')
-    movie = i.get_movie('0335345')
-    # Get the second Person object in the list of writers
-    writer = movie['writer'][1]
-    # Will print "Mel Gibson"
+    movie = i.get_movie('0075860')
+
+    # Get the 7th Person object in the cast list
+    cast = movie['cast'][6]
+    # Will print "Warren J. Kemmerling"
+    print cast['name']
+    # Will print "Wild Bill"
+    print cast.currentRole
+    # Will print "(as Warren Kemmerling)"
+    print cast.notes
+
+    # Get the 5th Person object in the list of writers
+    writer = movie['writer'][4]
+    # Will print "Steven Spielberg"
     print writer['name']
-    # Will print "screenplay", because that was duty of Mel Gibson,
+    # Will print "written by", because that was duty of Steven Spielberg,
     # as a writer for the movie.
-    print writer.currentRole
+    print writer.notes
 
 Obviously these Person objects contain only information directly
 available parsing the movie pages (e.g.: the name, an imdbID, the role/duty),

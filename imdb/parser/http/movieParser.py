@@ -229,15 +229,20 @@ class HTMLMovieParser(ParserBase):
                 n_split = self.__name.split('::')
                 n = n_split[0].strip()
                 del n_split[0]
-                role = ' '.join(n_split)
+                role = ' '.join(n_split).strip()
                 notes = ''
                 ii = role.find('(')
                 if ii != -1:
                     ei = role.rfind(')')
                     if ei != -1:
-                        notes = role[ii:ei+1]
+                        notes = role[ii:ei+1].strip()
                         role = '%s%s' % (role[:ii], role[ei+1:])
-                        role = role.replace('  ', ' ')
+                        role = role.replace('  ', ' ').strip()
+                sect = clear_text(self.__current_section)
+                if sect != 'cast':
+                    if notes: notes = ' %s' % notes
+                    notes = role + notes
+                    role = ''
                 # Create a Person object.
                 # XXX: check for self.__cur_nameID?
                 #      maybe it's not a good idea; it's possible for
@@ -245,7 +250,6 @@ class HTMLMovieParser(ParserBase):
                 p = Person(name=n, currentRole=role,
                             personID=self.__cur_nameID, accessSystem='http')
                 if notes: p.notes = notes
-                sect = clear_text(self.__current_section)
                 if not self.__movie_data.has_key(sect):
                     self.__movie_data[sect] = []
                 self.__movie_data[sect].append(p)
@@ -264,6 +268,9 @@ class HTMLMovieParser(ParserBase):
                 if not sect_name.startswith('status'):
                     sect_name = 'status %s' % sect_name
                 self.set_item(sect_name, self.__movie_status_data)
+        elif self.__is_cast_crew and self.__current_section:
+            if self.__is_name:
+                self.__name += '::'
     
     def do_br(self, attrs):
         if self.__is_company_cred:

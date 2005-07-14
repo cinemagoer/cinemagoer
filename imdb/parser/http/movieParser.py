@@ -115,6 +115,9 @@ class HTMLMovieParser(ParserBase):
         self.__runtimes = ''
         self.__is_mpaa = 0
         self.__mpaa = ''
+        self.__inbch = 0
+        self.__isplotoutline = 0
+        self.__plotoutline = ''
         # If true, the next data should be merged with the previous one,
         # without the '::' separator.
         self.__merge_next = 0
@@ -205,6 +208,10 @@ class HTMLMovieParser(ParserBase):
             self.__is_languages = 1
         elif link.startswith('/mpaa'):
             self.__is_mpaa = 1
+        elif self.__isplotoutline:
+            self.__isplotoutline = 0
+            if self.__plotoutline:
+                self.set_item('plot outline', self.__plotoutline)
         elif link.startswith('http://pro.imdb.com'):
             self.__is_movie_status = 0
         elif link.startswith('/titlebrowse?'):
@@ -312,6 +319,10 @@ class HTMLMovieParser(ParserBase):
             self.__is_mpaa = 0
             mpaa = self.__mpaa.replace('MPAA:', '')
             self.set_item('mpaa', mpaa)
+        elif self.__isplotoutline:
+            self.__isplotoutline = 0
+            if self.__plotoutline:
+                self.set_item('plot outline', self.__plotoutline)
         elif self.__is_runtimes and self.__runtimes:
             self.__is_runtimes = 0
             rt = self.__runtimes.replace(' min', '')
@@ -342,12 +353,16 @@ class HTMLMovieParser(ParserBase):
 
     def start_b(self, attrs):
         self.__is_akas = 0
-        if self.mdparse:
-            cls = self.get_attr_value(attrs, 'class')
-            if cls and cls.lower() == 'blackcatheader':
+        cls = self.get_attr_value(attrs, 'class')
+        if cls:
+            cls = cls.lower()
+            if cls == 'ch':
+                self.__inbch = 1
+            elif self.mdparse and cls == 'blackcatheader':
                 self.end_table()
 
-    def end_b(self): pass
+    def end_b(self):
+        if self.__inbch: self.__inbch = 0
 
     def do_img(self, attrs):
         alttex = self.get_attr_value(attrs, 'alt')
@@ -484,6 +499,10 @@ class HTMLMovieParser(ParserBase):
         elif self.__is_languages:
             self.append_item('languages', data)
             self.__is_languages = 0
+        elif self.__isplotoutline:
+            self.__plotoutline += data
+        elif self.__inbch and sldata.startswith('plot outline:'):
+            self.__isplotoutline = 1
         elif sldata.startswith('also known as'):
             self.__is_akas = 1
         elif sldata.startswith('runtime:'):
@@ -1591,7 +1610,7 @@ class HTMLTechParser(ParserBase):
                 tmps = item[0].strip() + ' ' + \
                         ' '.join([x.strip() for x in item[1]])
                 rl.append(tmps)
-            return {'locations': rl}
+            if rl: return {'locations': rl}
         return self.__tc
 
     def start_dl(self, attrs):

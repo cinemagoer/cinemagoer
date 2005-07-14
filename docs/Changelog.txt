@@ -1,23 +1,39 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release cvs-050707 "War Of The Worlds" (07 Jul 2005)
+* What's the new in release cvs-050714 "Ninja Scroll" (14 Jul 2005)
 
   [general]
-  - fixed a bug using the 'all' keyword of the update method.
-
+  - WARNING! by now, using http and mobile access methods, movie/person
+    searches will include by default adult movie titles/pornstar names.
+    You can still deactivate this feature setting the adultSearch
+    argument to false, or calling the do_adult_search() method with
+    a false value.
+  - fixed a bug using the 'all' keyword of the 'update' method.
 
   [http data access system]
   - added the "recommendations" page.
   - the 'notes' instance variable is now correctly used to store
     miscellaneous information about people in non-cast roles, replacing
     the 'currentRole' variable.
+  - the adultSearch initialization argument is by default true.
+  - you can supply the proxy to use with the 'proxy' initialization
+    argument.
+  - retrieve the "plot outline" information.
   - fixed a bug in the BasicMovieParser class, due to changes in the
     IMDb's html.
   - the "rating details" parse information about the total number
     of voters, arithmetic mean, median and so on.  The values are
     stored as integers and floats, and no more as strings.
   - dictionary keys in soundtrack are lowercase.
+  - fixed a bug with empty 'location' information.
+
+  [mobile data access system]
+  - number of votes, rating and top 250 rank are now integers/floats.
+  - retrieve the "plot outline" information.
+
+  [local data access system]
+  - number of votes, rating and top 250 rank are now integers/floats.
 
 
 * What's the new in release 1.9 "Ed Wood" (02 May 2005)

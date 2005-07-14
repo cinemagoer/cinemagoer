@@ -102,8 +102,8 @@ def getRatingData(movieID, ratingDF):
     rd[:] = rd[1:]
     rd[2] = rd[2] / 10.0
     rating = {'votes distribution': rd[0],
-                'votes': str(rd[1]),
-                'rating': str(rd[2])}
+                'votes': rd[1],
+                'rating': rd[2]}
     return rating
 
 

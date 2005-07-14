@@ -220,15 +220,27 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 teni = rat[0].find('/10')
                 if teni != -1:
                     rat = rat[0][:teni]
-                    d['rating'] = rat.strip()
+                    try:
+                        rat = float(rat.strip())
+                        d['rating'] = rat
+                    except ValueError:
+                        pass
             vi = ur[0].rfind('(')
             if vi != -1 and ur[0][vi:].find('await') == -1:
-                d['votes'] = ur[0][vi+1:].replace(',', '').strip()
+                try:
+                    votes = int(ur[0][vi+1:].replace(',', '').strip())
+                    d['votes'] = votes
+                except ValueError:
+                    pass
         top250 = _findBetween(cont, 'href="/top_250_films"', '</a>')
         if top250:
             fn = top250[0].rfind('#')
             if fn != -1:
-                d['top 250 rank'] = top250[0][fn+1:]
+                try:
+                    td = int(top250[0][fn+1:])
+                    d['top 250 rank'] = td
+                except ValueError:
+                    pass
         castdata = _findBetween(cont, 'Cast overview', '</table>')
         if castdata:
             fl = castdata[0].find('href=')
@@ -238,7 +250,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         # FIXME: doesn't catch "complete title", which is not
         #        included in <i> tags.
         #        See "Gehr Nany Fgbevrf 11", movieID: 0282910
-        akas = _findBetween(cont, '<i class="transl">', '<br>')
+        akas = _findBetween(cont, '<i class="transl">', '<br')
         if akas:
             akas = [_unHtml(x).replace(' (','::(', 1).replace(' [','::[')
                     for x in akas]
@@ -254,7 +266,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if country: d['countries'] = country
         lang = _findBetween(cont, 'href="/Sections/Languages/', '"')
         if lang: d['languages'] = lang
-        col = _findBetween(cont, '"/List?color-info=', '<br>')
+        col = _findBetween(cont, '"/List?color-info=', '<br')
         if col:
             col[:] = col[0].split(' / ')
             col[:] = ['<a %s' % x for x in col if x]
@@ -266,11 +278,15 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             sm[:] = ['<a %s' % x for x in sm if x]
             sm[:] = [_unHtml(x.replace(' <i>', '::')) for x in sm]
             if sm: d['sound mix'] = sm
-        cert = _findBetween(cont, 'Certification:</b>', '<br>')
+        cert = _findBetween(cont, 'Certification:</b>', '<br')
         if cert:
             cert[:] = cert[0].split(' / ')
             cert[:] = [_unHtml(x.replace(' <i>', '::')) for x in cert]
             if cert: d['certificates'] = cert
+        plotoutline = _findBetween(cont, 'Plot Outline:</b>', ['<a ', '<br'])
+        if plotoutline:
+            plotoutline = plotoutline[0].strip()
+            if plotoutline: d['plot outline'] = plotoutline
         return {'data': d}
 
     def get_movie_plot(self, movieID):
@@ -295,7 +311,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if not (pid and name): return res
             res[:] = [(pid[0], analyze_name(name, canonical=1))]
         else:
-            lis = _findBetween(cont, '<li>', ['<small>', '</li>', '<br>'])
+            lis = _findBetween(cont, '<li>', ['<small', '</li>', '<br'])
             for li in lis:
                 pid = re_imdbID.findall(li)
                 pname = _unHtml(li)

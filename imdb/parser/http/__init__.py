@@ -87,7 +87,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     urlOpener = IMDbURLopener()
 
-    def __init__(self, isThin=0, *arguments, **keywords):
+    def __init__(self, isThin=0, adultSearch=1, proxy=-1,
+                *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         # When isThin is set, we're parsing the "maindetails" page
@@ -102,6 +103,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 ParserBase.getRefs = 0
                 from imdb.utils import modNull
                 self._defModFunct = modNull
+        self.do_adult_search(adultSearch)
+        if proxy != -1: self.set_proxy(proxy)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""

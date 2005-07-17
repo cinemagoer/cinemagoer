@@ -1,12 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release cvs-050714 "Ninja Scroll" (14 Jul 2005)
+* What's the new in release 2.0 "Land Of The Dead" (16 Jul 2005)
 
   [general]
-  - WARNING! by now, using http and mobile access methods, movie/person
+  - WARNING! Now, using http and mobile access methods, movie/person
     searches will include by default adult movie titles/pornstar names.
-    You can still deactivate this feature setting the adultSearch
+    You can still deactivate this feature by setting the adultSearch
     argument to false, or calling the do_adult_search() method with
     a false value.
   - fixed a bug using the 'all' keyword of the 'update' method.

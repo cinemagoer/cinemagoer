@@ -1,30 +1,30 @@
-  IMDbPY for porn addicted
-  ========================
-  (No, it will not download Selen directly into your bed...)
+  IMDbPY for sensitive people
+  ===========================
 
-Calling the search_movie() and search_person() methods when using
-the "http", "httpThin" and "mobile" data access system, adult
-titles (and person who have only worked in hard movies) are not shown.
-That's because IMDb requires you to be a registered user to see
-the everyone-is-hugging kind of movie.
+Since version 2.0, by default adult movies are included in
+the result of the search_movie() and search_person() methods.
 
-I've setup an account for IMDbPY, and now you can include adult
-results in your search by calling the do_adult_search() method.
-
-By default IMDbPY still _excludes_ these results, because I need
-more time to test the code.
-The 'local' data access system always shows _every_ kind of movie.
-
+If for some unintelligible reason you don't want classics
+like "Debbie Does Dallas" to show up in your list of results,
+you can disable this feature initializing the IMDb class with
+the 'adultSearch' argument.
 
 E.g.:
     from imdb import IMDb
+    ia = IMDb(accessSystem='http', adultSearch=0) # or 'httpThin' or 'mobile'.
+
+
+The behavior of a IMDb class's instance can be modified at
+runtime, calling the do_adult_search() method.
+
+E.g.:
+    from imdb import IMDb
+
+    # By default in the horny-mode.
     ia = IMDb(accessSystem='http') # or 'httpThin' or 'mobile'.
 
     # Just for this example, exclude the proxy.
     ia.set_proxy(None)
-
-    # Today we're horny.
-    ia.do_adult_search(1)
 
     results = ia.search_movie('debby does dallas', results=5)
     for movie in results:
@@ -36,7 +36,7 @@ E.g.:
     # Debbie Does Dallas '99 (1999) (V) 0233539
     # Debbie Does Dallas 3 (1985) 0124352
 
-    # You can also revert to the default puritan behavior.
+    # You can now revert to the default puritan behavior.
     ia.do_adult_search(0)
 
     results = ia.search_movie('debby does dallas', results=5)
@@ -44,6 +44,11 @@ E.g.:
        print movie['long imdb title'], movie.movieID
     # It will print only:
     # Pauly Does Dallas (1993) (TV) 0208347
+
+
+Everything above applies to the 'http' and 'mobile' data access
+systems; the 'local' data access system _always_ search for adult
+movies, and there's no way to filter this kind of movies.
 
 
 The do_adult_search() method also takes a couple of arguments,

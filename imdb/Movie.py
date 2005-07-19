@@ -223,11 +223,11 @@ class Movie:
 
     def items(self):
         """Return the items in the dictionary."""
-        return [(k, self.__movie_data[k]) for k in self.keys()]
+        return [(k, self.__movie_data.get(k)) for k in self.keys()]
 
     def values(self):
         """Return the values in the dictionary."""
-        return [self.__movie_data[k] for k in self.keys()]
+        return [self.__movie_data.get(k) for k in self.keys()]
 
     def append_item(self, key, item):
         """The item is appended to the list identified by

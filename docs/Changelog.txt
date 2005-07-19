@@ -1,6 +1,12 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 2.1-cvs050719 "Ginger Snaps" (19 Jul 2005)
+  [general]
+  - fixed a bug in items() and values() methods of Movie and Person
+    classes.
+
+
 * What's the new in release 2.0 "Land Of The Dead" (16 Jul 2005)
 
   [general]

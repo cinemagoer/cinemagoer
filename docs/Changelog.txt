@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.1-cvs050719 "Ginger Snaps" (19 Jul 2005)
+* What's the new in release 2.1-cvs050721 "Ginger Snaps" (21 Jul 2005)
   [general]
   - fixed a bug in items() and values() methods of Movie and Person
     classes.

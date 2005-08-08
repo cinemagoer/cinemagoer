@@ -35,12 +35,14 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         releasedates_parser, ratings_parser, \
                         officialsites_parser, connections_parser, \
                         tech_parser, locations_parser, soundtrack_parser, \
-                        dvd_parser, rec_parser
+                        dvd_parser, rec_parser, externalrev_parser, \
+                        newsgrouprev_parser, misclinks_parser, \
+                        soundclips_parser, videoclips_parser, photosites_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
                         person_officialsites_parser, publicity_parser, \
-                        agent_parser
+                        agent_parser, news_parser
 from searchPersonParser import search_person_parser
 
 
@@ -269,6 +271,30 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(imdbURL_movie % movieID + 'recommendations')
         return rec_parser.parse(cont)
 
+    def get_movie_external_reviews(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'externalreviews')
+        return externalrev_parser.parse(cont)
+
+    def get_movie_newgroup_reviews(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'newsgroupreviews')
+        return newsgrouprev_parser.parse(cont)
+    
+    def get_movie_misc_sites(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'miscsites')
+        return misclinks_parser.parse(cont)
+    
+    def get_movie_sound_clips(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'soundsites')
+        return soundclips_parser.parse(cont)
+    
+    def get_movie_video_clips(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'videosites')
+        return videoclips_parser.parse(cont)
+    
+    def get_movie_photo_sites(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'photosites')
+        return photosites_parser.parse(cont)
+    
     def _search_person(self, name, results):
         # The URL of the query.
         # XXX: To retrieve the complete results list:
@@ -309,5 +335,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_person_official_sites(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'officialsites')
         return person_officialsites_parser.parse(cont)
+
+    def get_person_news(self, personID):
+        cont = self._retrieve(imdbURL_person % personID + 'news')
+        return news_parser.parse(cont)
 
 

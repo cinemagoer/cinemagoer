@@ -83,7 +83,9 @@ class Movie:
                 'stunts':   'stunt performer',
                 'other crew':   'crewmembers',
                 'misc crew':   'crewmembers',
+                'miscellaneous crew':   'crewmembers',
                 'other companies':  'miscellaneous companies',
+                'misc companies': 'miscellaneous companies',
                 'aka':  'akas',
                 'also known as':    'akas',
                 'country':  'countries',
@@ -92,7 +94,12 @@ class Movie:
                 'language': 'languages',
                 'certificate':  'certificates',
                 'certifications':   'certificates',
-                'certification':    'certificates'}
+                'certification':    'certificates',
+                'miscellaneous links':  'misc links',
+                'miscellaneous':    'misc links',
+                'soundclips':   'sound clips',
+                'videoclips':   'video clips',
+                'photographs':  'photo sites'}
 
     def __init__(self, movieID=None, title='', myTitle='',
                     myID=None, movieData={}, currentRole='', notes='',

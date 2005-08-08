@@ -1,10 +1,16 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.1-cvs050721 "Ginger Snaps" (21 Jul 2005)
+* What's the new in release 2.1-cvs050808 "Bribe Of Chucky" (08 Aug 2005)
   [general]
   - fixed a bug in items() and values() methods of Movie and Person
     classes.
+
+  [http data access system]
+  - parse the "external reviews", "newsgroup reviews", "newsgroup reviews",
+    "misc links", "sound clips", "video clips" and "photo sites"
+    pages for movies.
+  - parse the "news" page for persons.
 
 
 * What's the new in release 2.0 "Land Of The Dead" (16 Jul 2005)

@@ -1438,7 +1438,9 @@ class HTMLRatingsParser(ParserBase):
 
 
 class HTMLOfficialsitesParser(ParserBase):
-    """Parser for the "official sites" page of a given movie.
+    """Parser for the "official sites", "external reviews", "newsgroup
+    reviews", "miscellaneous links", "sound clips", "video clips" and
+    "photographs" pages of a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -1451,6 +1453,9 @@ class HTMLOfficialsitesParser(ParserBase):
     # Do not gather names and titles references.
     getRefs = 0
 
+    def _init(self):
+        self.kind = 'official sites'
+    
     def _reset(self):
         """Reset the parser."""
         self.__in_os = 0
@@ -1463,7 +1468,7 @@ class HTMLOfficialsitesParser(ParserBase):
     def get_data(self):
         """Return the dictionary."""
         if not self.__os: return {}
-        return {'official sites': self.__os}
+        return {self.kind: self.__os}
 
     def start_td(self, attrs):
         # XXX: not good at all!
@@ -1488,7 +1493,7 @@ class HTMLOfficialsitesParser(ParserBase):
         if self.__in_os3:
             self.__in_os3 = 0
             if self.__cosl and self.__cos:
-                self.__os.append((self.__cos, self.__cosl))
+                self.__os.append((self.__cos.strip(), self.__cosl.strip()))
             self.__cosl = ''
             self.__cos = ''
 
@@ -1912,7 +1917,6 @@ class HTMLDvdParser(ParserBase):
                 self.__coldata += data
 
 
-
 class HTMLRecParser(ParserBase):
     """Parser for the "recommendations" page of a given movie.
     The page should be provided as a string, as taken from
@@ -2022,6 +2026,18 @@ quotes_parser = HTMLQuotesParser()
 releasedates_parser = HTMLReleaseinfoParser()
 ratings_parser = HTMLRatingsParser()
 officialsites_parser = HTMLOfficialsitesParser()
+externalrev_parser = HTMLOfficialsitesParser()
+externalrev_parser.kind = 'external reviews'
+newsgrouprev_parser = HTMLOfficialsitesParser()
+newsgrouprev_parser.kind = 'newsgroup reviews'
+misclinks_parser = HTMLOfficialsitesParser()
+misclinks_parser.kind = 'misc links'
+soundclips_parser = HTMLOfficialsitesParser()
+soundclips_parser.kind = 'sound clips'
+videoclips_parser = HTMLOfficialsitesParser()
+videoclips_parser.kind = 'video clips'
+photosites_parser = HTMLOfficialsitesParser()
+photosites_parser.kind = 'photo sites'
 connections_parser = HTMLConnectionParser()
 tech_parser = HTMLTechParser()
 locations_parser = HTMLTechParser()

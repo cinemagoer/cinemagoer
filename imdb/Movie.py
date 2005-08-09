@@ -99,7 +99,8 @@ class Movie:
                 'miscellaneous':    'misc links',
                 'soundclips':   'sound clips',
                 'videoclips':   'video clips',
-                'photographs':  'photo sites'}
+                'photographs':  'photo sites',
+                'amazon review': 'amazon reviews'}
 
     def __init__(self, movieID=None, title='', myTitle='',
                     myID=None, movieData={}, currentRole='', notes='',

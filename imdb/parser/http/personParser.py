@@ -438,85 +438,6 @@ class HTMLOtherWorksParser(ParserBase):
             self.__cow += data
 
 
-class HTMLNewsParser(ParserBase):
-    """Parser for the "news" page of a given person.
-    The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        nwparser = HTMLNewsParser()
-        result = nwparser.parse(news_html_string)
-    """
-
-    def _reset(self):
-        """Reset the parser."""
-        self.__intable = 0
-        self.__inh1 = 0
-        self.__innews = 0
-        self.__cur_news = {}
-        self.__news = []
-        self.__cur_stage = 'title'
-        self.__cur_text = ''
-        self.__cur_link = ''
-
-    def start_table(self, attrs):
-        self.__intable = 1
-
-    def end_table(self):
-        self.__intable = 0
-        self.__innews = 0
-
-    def start_h1(self, attrs):
-        self.__inh1 = 1
-
-    def end_h1(self):
-        self.__inh1 = 0
-
-    def get_data(self):
-        """Return the dictionary."""
-        if not self.__news: return {}
-        return {'news': self.__news}
-
-    def start_p(self, attrs): pass
-
-    def end_p(self):
-        if self.__innews:
-            if self.__cur_news:
-                self.__news.append(self.__cur_news)
-                self.__cur_news = {}
-            self.__cur_stage = 'title'
-            self.__cur_text = ''
-
-    def do_br(self, attrs):
-        if self.__innews:
-            if self.__cur_text:
-                self.__cur_news[self.__cur_stage] = self.__cur_text.strip()
-                self.__cur_text = ''
-            if self.__cur_stage == 'title':
-                self.__cur_stage = 'date'
-            elif self.__cur_stage == 'date':
-                self.__cur_stage = 'body'
-            elif self.__cur_stage == 'body':
-                self.__cur_stage = 'title'
-
-    def start_a(self, attrs):
-        if self.__innews and self.__cur_stage == 'date':
-            href = self.get_attr_value(attrs, 'href')
-            if href:
-                if not href.startswith('http://'):
-                    if href[0] == '/': href = href[1:]
-                    href = 'http://akas.imdb.com/%s' % href
-                self.__cur_news['link'] = href
-
-    def _handle_data(self, data):
-        if self.__innews:
-            self.__cur_text += data
-        elif self.__inh1 and self.__intable:
-            if data.strip().lower().startswith('news for'):
-                self.__innews = 1
-
-
 # The used instances.
 maindetails_parser = HTMLMaindetailsParser()
 bio_parser = HTMLBioParser()
@@ -531,5 +452,5 @@ person_awards_parser.subject = 'name'
 from movieParser import HTMLTechParser
 publicity_parser = HTMLTechParser()
 publicity_parser.kind = 'publicity'
-news_parser = HTMLNewsParser()
+from movieParser import news_parser
 

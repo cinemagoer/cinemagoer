@@ -2009,6 +2009,194 @@ class HTMLRecParser(ParserBase):
             self.__curtitle += data
 
 
+class HTMLNewsParser(ParserBase):
+    """Parser for the "news" page of a given movie or person.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        nwparser = HTMLNewsParser()
+        result = nwparser.parse(news_html_string)
+    """
+
+    def _reset(self):
+        """Reset the parser."""
+        self.__intable = 0
+        self.__inh1 = 0
+        self.__innews = 0
+        self.__cur_news = {}
+        self.__news = []
+        self.__cur_stage = 'title'
+        self.__cur_text = ''
+        self.__cur_link = ''
+
+    def get_data(self):
+        """Return the dictionary."""
+        if not self.__news: return {}
+        return {'news': self.__news}
+
+    def start_table(self, attrs):
+        self.__intable = 1
+
+    def end_table(self):
+        self.__intable = 0
+        self.__innews = 0
+
+    def start_h1(self, attrs):
+        self.__inh1 = 1
+
+    def end_h1(self):
+        self.__inh1 = 0
+
+    def start_p(self, attrs): pass
+
+    def end_p(self):
+        if self.__innews:
+            if self.__cur_news:
+                self.__news.append(self.__cur_news)
+                self.__cur_news = {}
+            self.__cur_stage = 'title'
+            self.__cur_text = ''
+
+    def do_br(self, attrs):
+        if self.__innews:
+            if self.__cur_text:
+                self.__cur_news[self.__cur_stage] = self.__cur_text.strip()
+                self.__cur_text = ''
+            if self.__cur_stage == 'title':
+                self.__cur_stage = 'date'
+            elif self.__cur_stage == 'date':
+                self.__cur_stage = 'body'
+            elif self.__cur_stage == 'body':
+                self.__cur_stage = 'title'
+
+    def start_a(self, attrs):
+        if self.__innews and self.__cur_stage == 'date':
+            href = self.get_attr_value(attrs, 'href')
+            if href:
+                if not href.startswith('http://'):
+                    if href[0] == '/': href = href[1:]
+                    href = 'http://akas.imdb.com/%s' % href
+                self.__cur_news['link'] = href
+
+    def _handle_data(self, data):
+        if self.__innews:
+            self.__cur_text += data
+        elif self.__inh1 and self.__intable:
+            if data.strip().lower().startswith('news for'):
+                self.__innews = 1
+
+
+class HTMLAmazonReviewsParser(ParserBase):
+    """Parser for the "amazon reviews" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        arparser = HTMLAmazonReviewsParser()
+        result = arparser.parse(amazonreviews_html_string)
+    """
+
+    # Do not gather names and titles references.
+    getRefs = 0
+
+    def _reset(self):
+        """Reset the parser."""
+        self.__intable = 0
+        self.__inh3 = 0
+        self.__inreview = 0
+        self.__in_kind = 0
+        self.__reviews = []
+        self.__cur_title = ''
+        self.__cur_text = ''
+        self.__cur_link = ''
+        self.__cur_revkind = ''
+    
+    def get_data(self):
+        """Return the dictionary."""
+        if not self.__reviews: return {}
+        return {'amazon reviews': self.__reviews}
+
+    def start_table(self, attrs):
+        self.__intable = 1
+
+    def end_table(self):
+        if self.__inreview:
+            self._add_info()
+            self.__cur_title = ''
+            self.__cur_link = ''
+        self.__intable = 0
+        self.__inreview = 0
+
+    def start_h3(self, attrs):
+        self.__inh3 = 1
+        self.__cur_link = ''
+        self.__cur_title = ''
+
+    def end_h3(self):
+        self.__inh3 = 0
+
+    def start_a(self, attrs):
+        if self.__inh3:
+            href = self.get_attr_value(attrs, 'href')
+            if href:
+                if not href.startswith('http://'):
+                    if href[0] == '/': href = href[1:]
+                    href = 'http://akas.imdb.com/%s' % href
+                self.__cur_link = href.strip()
+
+    def end_a(self): pass
+
+    def start_b(self, attrs):
+        if self.__inreview:
+            self.__in_kind = 1
+
+    def end_b(self):
+        self.__in_kind = 0
+
+    def start_p(self, attrs):
+        if self.__inreview:
+            self._add_info()
+
+    def end_p(self):
+        self.__inreview = 0
+        self.__cur_title = ''
+        self.__cur_link = ''
+
+    def _add_info(self):
+        self.__cur_title = self.__cur_title.replace('\n', ' ').strip()
+        self.__cur_text = self.__cur_text.replace('\n', ' ').strip()
+        self.__cur_link = self.__cur_link.strip()
+        self.__cur_revkind = self.__cur_revkind.replace('\n', ' ').strip()
+        entry = {}
+        if not self.__cur_text: return
+        ai = self.__cur_text.rfind(' --', -30)
+        author = ''
+        if ai != -1:
+            author = self.__cur_text[ai+3:]
+            self.__cur_text = self.__cur_text[:ai-1]
+        if self.__cur_title: entry['title'] = self.__cur_title
+        if self.__cur_text: entry['review'] = self.__cur_text
+        if self.__cur_link: entry['link'] = self.__cur_link
+        if self.__cur_revkind: entry['review kind'] = self.__cur_revkind
+        if author: entry['review author'] = author
+        if entry: self.__reviews.append(entry)
+        self.__cur_text = ''
+        self.__cur_revkind = ''
+
+    def _handle_data(self, data):
+        if self.__inreview:
+            if self.__in_kind:
+                self.__cur_revkind += data
+            else:
+                self.__cur_text += data
+        elif self.__intable and self.__inh3:
+            self.__inreview = 1
+            self.__cur_title += data
+
+
 # The used instances.
 movie_parser = HTMLMovieParser()
 plot_parser = HTMLPlotParser()
@@ -2044,5 +2232,6 @@ locations_parser = HTMLTechParser()
 locations_parser.kind = 'locations'
 dvd_parser = HTMLDvdParser()
 rec_parser = HTMLRecParser()
-
+news_parser = HTMLNewsParser()
+amazonrev_parser = HTMLAmazonReviewsParser()
 

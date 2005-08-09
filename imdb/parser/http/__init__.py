@@ -37,12 +37,13 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         tech_parser, locations_parser, soundtrack_parser, \
                         dvd_parser, rec_parser, externalrev_parser, \
                         newsgrouprev_parser, misclinks_parser, \
-                        soundclips_parser, videoclips_parser, photosites_parser
+                        soundclips_parser, videoclips_parser, news_parser, \
+                        photosites_parser, amazonrev_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
                         person_officialsites_parser, publicity_parser, \
-                        agent_parser, news_parser
+                        agent_parser
 from searchPersonParser import search_person_parser
 
 
@@ -275,7 +276,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(imdbURL_movie % movieID + 'externalreviews')
         return externalrev_parser.parse(cont)
 
-    def get_movie_newgroup_reviews(self, movieID):
+    def get_movie_newsgroup_reviews(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'newsgroupreviews')
         return newsgrouprev_parser.parse(cont)
     
@@ -295,6 +296,14 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(imdbURL_movie % movieID + 'photosites')
         return photosites_parser.parse(cont)
     
+    def get_movie_news(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'news')
+        return news_parser.parse(cont)
+    
+    def get_movie_amazon_reviews(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'amazon')
+        return amazonrev_parser.parse(cont)
+  
     def _search_person(self, name, results):
         # The URL of the query.
         # XXX: To retrieve the complete results list:

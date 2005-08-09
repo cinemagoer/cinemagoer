@@ -6,6 +6,8 @@ I'd like to thank the following people for their help:
 
 * Guillaume Wisniewski, for a bug report.
 
+* Kent Johnson, for a bug report.
+
 * Andras Bali, for the hint about the "plot outline" information.
 
 * Nick S. Novikov, who provided the Windows installer until I've

@@ -165,7 +165,9 @@ class HTMLSearchMovieParser(ParserBase):
         if self.__begin_list and self.__is_title and not self.__no_more:
             self.__current_title += data
         elif self.__reading_page_title:
-            if data.lower().find('imdb title search') == -1:
+            dl = data.lower()
+            if (dl.find('imdb title search') == -1 and
+                    dl.find('imdb title  search') == -1):
                 # XXX: a direct result!
                 #      Interrupt parsing, and retrieve data using a
                 #      BasicMovieParser object.

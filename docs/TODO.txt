@@ -34,7 +34,7 @@ NOTE: it's time to clean the code!
 * If the access through the proxy fails, is it possible to
   automatically try without?
 * Some (many?) HTML parser can be interrupted as long as they've
-  parse every needed information, as HTMLSearchMovieParser does.
+  parsed every needed information, as HTMLSearchMovieParser does.
 * Access to the "my IMDb" functions for registered users would
   be really cool.
 * Gather more movies' data: user comments, merchandising links,
@@ -59,6 +59,7 @@ NOTE: it's time to clean the code!
 * Some files are not considered: mpaa-ratings-reasons.list.
 * I'm not sure that the ratober.search_title() function works
   correctly with movies with a '(' in the title.
+* methods like get_imdbMovieID() should use the mobile access system?
 * You need the mkdb executable from the moviedb program to generate the
   database/index files; moviedb is not open source software (although
   it can be downloaded and used without paying money).

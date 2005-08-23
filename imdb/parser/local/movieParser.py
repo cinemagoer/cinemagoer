@@ -203,7 +203,7 @@ _bus = {'BT': 'budget',
         'SD': 'filming dates',
         'PD': 'production dates',
         'ST': 'studios',
-        'CP': 'copyright Holder'
+        'CP': 'copyright holder'
 }
 
 def getBusiness(movieID, indexF, dataF):
@@ -262,7 +262,11 @@ _ldk = {'OT': 'original title',
         'A3': 'spaciality',
         'A4': 'audio noise',
         'A5': 'dialogue intellegibility',
-        'AQ': 'audio quality'
+        'AQ': 'audio quality',
+        'LN': 'number',
+        'LB': 'label',
+        'CN': 'catalog number',
+        'LT': 'laserdisc title'
 }
 
 def getLaserdisc(movieID, indexF, dataF):

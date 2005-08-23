@@ -174,7 +174,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         title = _findBetween(cont, '<title>', '</title>')
         res = []
         if not title: return res
-        if title[0].lower().find('imdb title search') == -1:
+        tl = title[0].lower()
+        if (tl.find('imdb title search') == -1 and
+                tl.find('imdb title  search') == -1):
             # XXX: a direct hit!
             title = _unHtml(title[0])
             midtag = _getTagWith(cont, 'name="arg"')
@@ -302,7 +304,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         name = _findBetween(cont, '<title>', '</title>')
         res = []
         if not name: return res
-        if name[0].lower().find('imdb name search') == -1:
+        nl = name[0].lower()
+        if (nl.find('imdb name search') == -1 and
+                nl.find('imdb name  search' == -1):
             # XXX: a direct hit!
             name = _unHtml(name[0])
             pidtag = _getTagWith(cont, '/board/threads/')

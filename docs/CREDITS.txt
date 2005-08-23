@@ -4,6 +4,11 @@ I'd like to thank the following people for their help:
 * Tero Saarni, for the series 60 GUI and a lot of testing and
   debugging.
 
+* Trevor MacPhail, for a bug report about search_* methods and
+  the ParserBase.parse method.
+
+* Sebastian Pölsterl, for a bug report about search_* methods.
+
 * Guillaume Wisniewski, for a bug report.
 
 * Kent Johnson, for a bug report.

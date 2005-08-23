@@ -1,16 +1,24 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.1-cvs050809 "Bribe Of Chucky" (09 Aug 2005)
+* What's the new in release 2.1-cvs050823 "Blue Submarine No. 6" (23 Aug 2005)
   [general]
   - fixed a bug in items() and values() methods of Movie and Person
     classes.
 
   [http data access system]
+  - fixed a bug in the search_movie() and search_person() methods.
   - parse the "external reviews", "newsgroup reviews", "newsgroup reviews",
     "misc links", "sound clips", "video clips", "amazon reviews", "news" and
     "photo sites" pages for movies.
   - parse the "news" page for persons.
+
+  [local data access system]
+  - fixed a bug; 'producer' data where scanned two times.
+  - some tags were missing for the laserdisc entries.
+
+  [mobile data access system]
+  - fixed a bug in the search_movie() and search_person() methods.
 
 
 * What's the new in release 2.0 "Land Of The Dead" (16 Jul 2005)

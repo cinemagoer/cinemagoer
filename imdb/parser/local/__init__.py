@@ -236,7 +236,7 @@ class IMDbLocalAccessSystem(IMDbBase):
             actl[:] = sortBy(actl, 'position')
             res['cast'] = actl
         # List of other workers.
-        works = ('producer', 'writer', 'cinematographer', 'composer',
+        works = ('writer', 'cinematographer', 'composer',
                 'costume-designer', 'director', 'editor', 'miscellaneou',
                 'producer', 'production-designer', 'cinematographer')
         for i in works:
@@ -454,8 +454,7 @@ class IMDbLocalAccessSystem(IMDbBase):
         res = {}
         works = ('actor', 'actresse', 'producer', 'writer',
                 'cinematographer', 'composer', 'costume-designer',
-                'director', 'editor', 'miscellaneou', 'producer',
-                'production-designer')
+                'director', 'editor', 'miscellaneou', 'production-designer')
         for i in works:
             index = getFullIndex('%s%ss.names' % (self.__db, i), personID)
             if index is not None:

@@ -159,7 +159,9 @@ class HTMLSearchPersonParser(ParserBase):
             return
         sldata = data.strip().lower()
         if self.__in_title:
-            if data.lower().find('imdb name search') == -1:
+            dl = data.lower()
+            if (dl.find('imdb name search') == -1 and
+                    dl.find('imdb name  search') == 1):
                 # A direct hit!
                 rawdata = self.rawdata
                 self.reset()

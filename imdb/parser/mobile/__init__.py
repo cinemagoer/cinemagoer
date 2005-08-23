@@ -306,7 +306,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not name: return res
         nl = name[0].lower()
         if (nl.find('imdb name search') == -1 and
-                nl.find('imdb name  search' == -1):
+                nl.find('imdb name  search' == -1)):
             # XXX: a direct hit!
             name = _unHtml(name[0])
             pidtag = _getTagWith(cont, '/board/threads/')

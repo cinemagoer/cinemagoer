@@ -192,6 +192,8 @@ class ParserBase(HTMLParser):
             if not self.__re_imdbIDmatch.match(href) or \
                     (len(href) > 10 and href[10:11] != '?'):
                 return
+            href = href[2:]
+            if href[-1] == '/': href = href[:-1]
             self._titleRefCID = href
             self._inTTRef = 1
             self._inLinkTTRef = 1
@@ -200,6 +202,8 @@ class ParserBase(HTMLParser):
             if not self.__re_imdbIDmatch.match(href) or \
                     (len(href) > 10 and href[10:11] != '?'):
                 return
+            href = href[2:]
+            if href[-1] == '/': href = href[:-1]
             self._nameRefCID = href
             self._inNMRef = 1
 

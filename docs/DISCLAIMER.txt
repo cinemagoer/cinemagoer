@@ -15,12 +15,19 @@ listed here: http://www.imdb.com/conditions
 If you use alternate interfaces (see http://www.imdb.com/interfaces.html)
 to the IMDb's data, you have to accept the specific policy and conditions.
 
+Read also the http://www.imdb.com/Copyright document.
+
 
   IMDbPY
   ======
 
 IMDbPY (and the author) is not affiliated with Internet Movie Database Inc.
 
-Please do not use IMDbPY as a base to develop robots or crawlers.
+You're NOT allowed to use IMDbPY as a base to develop robots or crawlers.
+Also, you CAN'T grant public access to the IMDb's data, processed/managed
+by IMDbPY, if not otherwise stated by the IMDb's policy; you MUST use
+IMDbPY for your own personal use.
+
 Remember that you always have to accept the above mentioned conditions.
+
 

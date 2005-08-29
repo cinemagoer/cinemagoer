@@ -26,10 +26,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import os
 from stat import ST_SIZE
 
-from imdb import IMDbBase
 from imdb._exceptions import IMDbDataAccessError, IMDbError
-from imdb.utils import analyze_title, build_title, analyze_name, \
-                        build_name, re_titleRef, re_nameRef, re_episodes
+from imdb.utils import analyze_title, analyze_name, re_episodes
 from imdb.Person import Person
 from imdb.Movie import Movie
 
@@ -47,8 +45,9 @@ _ltype = type([])
 _dtype = type({})
 _stypes = (type(''), type(u''))
 
+from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem
 
-class IMDbLocalAccessSystem(IMDbBase):
+class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
     """The class used to access IMDb's data through a local installation."""
 
     accessSystem = 'local'
@@ -57,7 +56,7 @@ class IMDbLocalAccessSystem(IMDbBase):
         """Initialize the access system.
         The directory with the files must be supplied.
         """
-        IMDbBase.__init__(self, *arguments, **keywords)
+        IMDbLocalAndSqlAccessSystem.__init__(self, *arguments, **keywords)
         self.__db = os.path.expandvars(dbDirectory)
         self.__db = os.path.expanduser(self.__db)
         if hasattr(os.path, 'realpath'):
@@ -69,6 +68,12 @@ class IMDbLocalAccessSystem(IMDbBase):
             raise IMDbDataAccessError, '"%s" is not a directory' % self.__db
         self.__namesScan = KeyFScan('%snames.key' % self.__db)
         self.__titlesScan = KeyFScan('%stitles.key' % self.__db)
+
+    def _getTitleID(self, title):
+        return self.__titlesScan.getID(title)
+
+    def _getNameID(self, name):
+        return self.__namesScan.getID(name)
 
     def _get_lastID(self, indexF):
         fsize = os.stat(indexF)[ST_SIZE]
@@ -112,23 +117,6 @@ class IMDbLocalAccessSystem(IMDbBase):
         if rid is not None: return rid
         return personID
 
-    def _searchIMDbMoP(self, params):
-        """Fetch the given web page from the IMDb akas server."""
-        import urllib
-        from imdb.parser.http import IMDbURLopener
-        params = urllib.urlencode(params)
-        url = 'http://akas.imdb.com/find?%s' % params
-        content = ''
-        try:
-            urlOpener = IMDbURLopener()
-            uopener = urlOpener.open(url)
-            content = uopener.read()
-            uopener.close()
-            urlOpener.close()
-        except (IOError, IMDbDataAccessError):
-            pass
-        return content
-
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID.
         Try an Exact Primary Title search on IMDb;
@@ -136,15 +124,7 @@ class IMDbLocalAccessSystem(IMDbBase):
         """
         titline = getLabel(movieID, '%stitles.index' % self.__db,
                             '%stitles.key' % self.__db)
-        if not titline: return None
-        params = {'q': titline, 's': 'pt'}
-        content = self._searchIMDbMoP(params)
-        if not content: return None
-        from imdb.parser.http.searchMovieParser import BasicMovieParser
-        mparser = BasicMovieParser()
-        result = mparser.parse(content)
-        if not (result and result.has_key('data')): return None
-        return result['data'][0][0]
+        return self._httpMovieID(titline)
 
     def get_imdbPersonID(self, personID):
         """Translate a personID in an imdbID.
@@ -153,53 +133,7 @@ class IMDbLocalAccessSystem(IMDbBase):
         """
         name = getLabel(personID, '%snames.index' % self.__db,
                         '%snames.key' % self.__db)
-        if not name: return None
-        params = {'q': name, 's': 'pn'}
-        content = self._searchIMDbMoP(params)
-        if not content: return None
-        from imdb.parser.http.searchPersonParser import BasicPersonParser
-        pparser = BasicPersonParser()
-        result = pparser.parse(content)
-        if not (result and result.has_key('data')): return None
-        return result['data'][0][0]
-
-    def _findRefs(self, o, trefs, nrefs):
-        """Find titles or names references in strings."""
-        to = type(o)
-        if to in _stypes:
-            for title in re_titleRef.findall(o):
-                rtitle = build_title(analyze_title(title, canonical=1),
-                                    canonical=1)
-                if trefs.has_key(rtitle): continue
-                movieID = self.__titlesScan.getID(rtitle)
-                if movieID is None:
-                    movieID = self.__titlesScan.getID(title)
-                if movieID is None: continue
-                m = Movie(movieID=movieID, title=rtitle, accessSystem='local')
-                trefs[rtitle] = m
-            for name in re_nameRef.findall(o):
-                rname = build_name(analyze_name(name, canonical=1),
-                                    canonical=1)
-                if nrefs.has_key(rname): continue
-                personID = self.__namesScan.getID(rname)
-                if personID is None:
-                    personID = self.__namesScan.getID(name)
-                if personID is None: continue
-                p = Person(personID=personID, name=rname, accessSystem='local')
-                nrefs[rname] = p
-        elif to is _ltype:
-            for item in o:
-                self._findRefs(item, trefs, nrefs)
-        elif to is _dtype:
-            for value in o.values():
-                self._findRefs(value, trefs, nrefs)
-        return (trefs, nrefs)
-
-    def _extractRefs(self, o):
-        """Scan for titles or names references in strings."""
-        trefs = {}
-        nrefs = {}
-        return self._findRefs(o, trefs, nrefs)
+        return self._httpPersonID(name)
 
     def _search_movie(self, title, results):
         # ratober functions return a sorted
@@ -207,7 +141,6 @@ class IMDbLocalAccessSystem(IMDbBase):
         return [(x[1], analyze_title(x[2]))
                 for x in search_title(title.strip(),
                 '%stitles.key' % self.__db, results)]
-
 
     def get_movie_main(self, movieID):
         # Information sets provided by this method.

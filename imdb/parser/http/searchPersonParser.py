@@ -159,9 +159,8 @@ class HTMLSearchPersonParser(ParserBase):
             return
         sldata = data.strip().lower()
         if self.__in_title:
-            dl = data.lower()
-            if (dl.find('imdb name search') == -1 and
-                    dl.find('imdb name  search') == 1):
+            dls = data.strip().lower()
+            if not dls.startswith('imdb name'):
                 # A direct hit!
                 rawdata = self.rawdata
                 self.reset()

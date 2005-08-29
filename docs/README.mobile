@@ -28,6 +28,10 @@ of the IMDb's database.  Preventing the installation of the
 parser.local package will also save at least 150Kb of disk space
 on your system.
 
+The DO_SQL variable, if set to 0, will excludes the parser.sql
+package (and the parser.common package, if DO_LOCAL is also 0);
+you don't need it if your system does not have the MySQLdb module.
+
 If the DO_SCRIPTS variable is set to 0, the example scripts in
 the ./bin/ directory are not installed, saving about 45Kb.
 

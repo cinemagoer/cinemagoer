@@ -175,8 +175,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         res = []
         if not title: return res
         tl = title[0].lower()
-        if (tl.find('imdb title search') == -1 and
-                tl.find('imdb title  search') == -1):
+        if not tl.startswith('imdb title'):
             # XXX: a direct hit!
             title = _unHtml(title[0])
             midtag = _getTagWith(cont, 'name="arg"')
@@ -244,6 +243,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 except ValueError:
                     pass
         castdata = _findBetween(cont, 'Cast overview', '</table>')
+        if not castdata:
+            castdata = _findBetween(cont, 'Credited cast', '</table>')
         if castdata:
             fl = castdata[0].find('href=')
             if fl != -1: castdata[0] = '< a' + castdata[0][fl:]
@@ -305,8 +306,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         res = []
         if not name: return res
         nl = name[0].lower()
-        if (nl.find('imdb name search') == -1 and
-                nl.find('imdb name  search' == -1)):
+        if not nl.startswith('imdb name search'):
             # XXX: a direct hit!
             name = _unHtml(name[0])
             pidtag = _getTagWith(cont, '/board/threads/')

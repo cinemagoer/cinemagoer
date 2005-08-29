@@ -37,6 +37,10 @@ imdb (package)
        |    +-> ratober
        |
        +-> mobile (package)
+       |
+       +-> sql (package)
+       |
+       +-> common (package)
 
 Description:
 imdb (package): contains the IMDb function, the IMDbBase class and imports
@@ -68,10 +72,16 @@ IMDbLocalAccessSystem class); obviously they manage a local installation
 of the database.  The ratober module is a C module, used to search
 names.keys and titles.key files.
 
+The parser.sql package manages the access to the data in the SQL
+database, created with the imdbpy2sql script; see the README.sqldb file.
+
 The class in the parser.mobile package is a subclass of the one found
 in parser.http, with some method overridden to be many times faster (from
 2 to 20 times); it's useful for systems with slow bandwidth and not
 much CPU power.
+
+The parser.common package contains code common to different packages;
+so far there's only the locsql module.
 
 
   GENERIC DESCRIPTION
@@ -80,7 +90,7 @@ much CPU power.
 I wanted to stay independent from the source of the data for a given
 movie/person, and so the imdb.IMDb function returns an instance of a class
 that provides specific methods to access a given data source (web server,
-local installation, etc.)
+local installation, SQL database, etc.)
 
 Unfortunately this means that the movieID in the Movie class and the
 personID in the Person class are dependent by the data access system
@@ -139,6 +149,9 @@ Now you've to modify the imdb.IMDb function so that, when the right
 data access system is selected with the "accessSystem" parameter, an
 instance of your newly created class is returned.
 
+NOTE: this is a somewhat misleading example: I've already written a
+data access system for mysql (it's called 'sql').  Maybe I'll find
+a better example...
 E.g.: if you want to call your new data access system "mysql" (meaning
 that the data are stored in a mysql database), you've to add to the imdb.IMDb
 function something like:

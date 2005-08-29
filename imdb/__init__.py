@@ -55,6 +55,9 @@ def IMDb(accessSystem='http', *arguments, **keywords):
         except ImportError:
             raise IMDbError, 'the local access system is not installed'
         return IMDbLocalAccessSystem(*arguments, **keywords)
+    elif accessSystem in ('sql', 'db', 'database'):
+        from parser.sql import IMDbSqlAccessSystem
+        return IMDbSqlAccessSystem(*arguments, **keywords)
     else:
         raise IMDbError, 'unknown kind of data access system: "%s"' \
                             % str(accessSystem)

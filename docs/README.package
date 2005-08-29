@@ -51,15 +51,19 @@ you can access movie data through the e-mail interface, etc. etc.
             'http'          |   'web',  | information are fetched through
                             |   'html'  | the http://akas.imdb.com web server
  ---------------------------|-----------|------------------------------------
-            'local'         |  'files'  | information are taken from the
-                            |           | plain text data files.
- ----------------------------------------------------------------------------
+             'sql'          |   'db',   | information are fetched through
+                            | 'database'| a SQL database (so far only MySQL
+                            |           | is supported).
+ ---------------------------|-----------|------------------------------------
            'mobile'         |           | same as 'httpThin', but string
                             |           | methods are used for parsing.
                             |           | Ideal for small systems like PDA,
                             |           | smart phones, hand-held devices with
                             |           | limited bandwidth and CPU power.
  ---------------------------|-----------|------------------------------------
+            'local'         |  'files'  | information are taken from the
+                            |           | plain text data files.
+ ----------------------------------------------------------------------------
           'httpThin'        | 'webThin' | identical to 'http', but less
                             | 'htmlThin'| information are gathered; useful
                             |           | for systems with limited bandwidth.
@@ -101,9 +105,12 @@ The search_person(name) and get_person(personID) methods work the same
 way as search_movie(title) and get_movie(movieID).
 
 The get_imdbMovieID(movieID) and get_imdbPersonID(personID) take,
-respectively, a movieID and a personID and return the relative imdbID.
+respectively, a movieID and a personID and returns the relative imdbID.
 
-The get_imdbURL(MovieOrPersonObject) method return a string with the main
+The get_imdbID(MovieOrPersonObject) method returns the imdbID for
+the given Movie or Person object.
+
+The get_imdbURL(MovieOrPersonObject) method returns a string with the main
 IMDb URL for the given Movie or Person object.
 
 The update(MovieOrPersonObject) method takes an instance of a Movie
@@ -112,6 +119,9 @@ Remember that the search_movie(title) and search_person(name) methods
 will return a list Movie or Person objects with only basic information,
 like the movie title or the person name, so update() can be used to
 retrieve every other information.
+By default a "reasonable" set of information are retrieved ('main',
+'filmography' and 'biography' for a Person object, and 'main' and 'plot'
+for a Movie object).
 
 Example:
   i = IMDb()

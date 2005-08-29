@@ -55,6 +55,9 @@ read the "README.mobile" file.
 If you want to use a local copy of the whole IMDb's database,
 read the "README.local" file.
 
+If you want to insert the content of the plain text data files
+into a SQL database, read the "README.sqldb" file.
+
 
   FEATURES
   ========
@@ -65,6 +68,9 @@ the supported data access systems are 'http' (i.e.: the data are fetched
 through the IMDb's web server http://akas.imdb.com) and 'local',
 meaning that the data are taken from the plain text data files;
 see http://www.imdb.com/interfaces.html for more information.
+The same plain text data files used with the 'local' data access
+system can be converted to a SQL database, using the "imdbpy2sql"
+script, and then accessed using the 'sql' data access system.
 For mobile systems there's the 'mobile' data access system, useful
 for PDA, hand-held devices and smart phones.
 Another data access system is 'httpThin', which is equal to 'http'
@@ -72,8 +78,8 @@ but fetch less data and so it is (or at least it tries to be)
 suitable for systems with limited bandwidth but normal CPU power.
 
 
-  FEATURE OF THE HTTP DATA ACCESS SYSTEM
-  ======================================
+  FEATURES OF THE HTTP DATA ACCESS SYSTEM
+  =======================================
 
 * Returns almost every available information about a movie or person.
 * The use of the "akas" server will provide access to a lot of
@@ -99,9 +105,22 @@ suitable for systems with limited bandwidth but normal CPU power.
   to a null value (i.e.: i.set_proxy('')).
 
 
-  FEATURE OF THE LOCAL DATA ACCESS SYSTEM
-  =======================================
+  FEATURES OF THE LOCAL DATA ACCESS SYSTEM
+  ========================================
 
 * Retrieve almost every information available, in a decently short time.
 
+
+  FEATURES OF THE MOBILE DATA ACCESS SYSTEM
+  =========================================
+
+* Returns every information available in the plain text data files.
+
+
+  FEATURES OF THE MOBILE DATA ACCESS SYSTEM
+  =========================================
+
+* Very lightweight, returns almost every needed information.
+* Accessories data sets (like 'goofs', 'trivia' and so on) are always
+  available (being a subclass of the 'http' data access system).
 

@@ -1,12 +1,10 @@
 """
-parser package (imdb package).
+parser.common package (imdb package).
 
-This package provides various parser to access IMDb data (e.g.: a
-parser for the web/http interface, a parser for the local files,
-a parser for the e-mail interface, etc.).
-So far, the http and local parsers are implemented.
+This package provides some modules containing code shared amongst
+different parsers.
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2005 Davide Alberani <da@erlug.linux.it> 
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,7 +20,5 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
-
-__all__ = ['http', 'local', 'mobile', 'sql']
 
 

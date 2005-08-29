@@ -1,0 +1,52 @@
+  SQL
+  ===
+
+Since version 2.1 it's possible to transfer the whole IMDb's
+database from the plain text data files into an SQL database.
+
+So far the MySQL database is supported; see the TODO.txt
+file for more details.
+
+
+  SQL DATABASE INSTALLATION
+  =========================
+
+Select a mirror of the "The Plain Text Data Files" from
+the http://www.imdb.com/interfaces.html page and download
+every file in the main directory (beware that the "diffs"
+subdirectory contains _a lot_ of files you _don't_ need,
+so don't start mirroring everything!).
+
+Create a database named imdb (or whatever you like),
+using the mysqladmin tool:
+  # mysqladmin -p create imdb
+
+Now create the tables in this database, using the "imdb.sql"
+file included in this directory:
+  # mysql -p imdb < imdb.sql
+
+To populate the database, you must run the imdbpy2sql script:
+  # imdbpy2sql -d /dir/with/plainTextDataFiles/ db=imdb user=da passwd=pwd
+
+Notice that the command will take a long time to complete (I estimate
+between 20 minutes and 2 or 3 hours, depending on your hardware).
+It will also requires a lot of memory (RAM or swap space), in the
+range of 150 or 200 megabytes.
+In the end, the database will require between 900MB and 1GB of disc space.
+
+
+  SQL USE
+  =======
+
+Now you can use IMDbPY with the database:
+  from imdb import IMDb
+  i = IMDb('sql', db='imdb', user='myuser', passwd='mypwd')
+  resList = i.search_movie('the incredibles')
+  for x in resList: print x
+  ti = resList[0]
+  i.update(ti)
+  print ti['director'][0]
+
+and so on...
+
+

@@ -230,7 +230,7 @@ def build_title(title_dict, canonical=0):
     year = title_dict.get('year', '????')
     if kind in ('tv series', 'tv mini series'):
         title = '"%s"' % title
-    title += ' (%s' % year
+    title += ' (%s' % (year or '????')
     if imdbIndex:
         title += '/%s' % imdbIndex
     title += ')'

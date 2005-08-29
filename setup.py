@@ -5,7 +5,7 @@ from distutils.core import setup, Extension
 
 # --- CONFIGURE
 
-# XXX NOTE: if you _really_ don't want to install the "local access
+# XXX NOTE: if you _really_ don't want to install the "local data access
 # system", set DO_LOCAL to 0.
 # The local access system requires a C module and, to be used, the _whole_
 # IMDb's database installed in your computer; this not useful/possible
@@ -18,6 +18,11 @@ from distutils.core import setup, Extension
 # IMDb's database installed; obviously it can't be used, but the
 # interface to the web database is always available.
 DO_LOCAL = 1
+# XXX NOTE: the "sql data access system" requires the MySQLdb python
+# module and a connection to a database with the whole IMDb data,
+# that must be create using the imdbpy2sql script.
+# Setting this to 1 will always install at least the imdbpy2sql script.
+DO_SQL = 1
 # Install some very simple example scripts.
 DO_SCRIPTS = 1
 
@@ -26,7 +31,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '2.1-cvs050823'
+version = '2.1'
 
 home_page = 'http://imdbpy.sourceforge.net/'
 
@@ -77,16 +82,26 @@ params = {'name': 'IMDbPY',
       'packages': ['imdb', 'imdb.parser', 'imdb.parser.http',
                     'imdb.parser.mobile']}
 
+
+if DO_LOCAL or DO_SQL:
+    params['packages'] = params['packages'] + ['imdb.parser.common']
+
 if DO_LOCAL:
     params['packages'] = params['packages'] + ['imdb.parser.local']
     ratober = Extension('imdb.parser.local.ratober',
                         ['imdb/parser/local/ratober.c'])
     params['ext_modules'] = [ratober]
 
+if DO_SQL:
+    params['packages'] = params['packages'] + ['imdb.parser.sql']
+    params['scripts'] = ['./bin/imdbpy2sql']
+
 if DO_SCRIPTS:
-    params['scripts'] = ['./bin/get_first_movie', './bin/get_movie',
-                        './bin/search_movie', './bin/get_first_person',
-                        './bin/get_person', './bin/search_person']
+    if not params.has_key('scripts'): params['scripts'] = []
+    params['scripts'] = params['scripts'] + ['./bin/get_first_movie',
+                        './bin/get_movie', './bin/search_movie',
+                        './bin/get_first_person', './bin/get_person',
+                        './bin/search_person']
 
 
 if sys.version_info >= (2, 1):

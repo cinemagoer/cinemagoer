@@ -49,6 +49,8 @@ E.g.:
 Everything above applies to the 'http' and 'mobile' data access
 systems; the 'local' data access system _always_ search for adult
 movies, and there's no way to filter this kind of movies.
+So far the 'sql' data access system does not filter for adult
+movies, but maybe I'll add this feature a future release.
 
 
 The do_adult_search() method also takes a couple of arguments,

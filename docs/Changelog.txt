@@ -1,10 +1,15 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.1-cvs050823 "Blue Submarine No. 6" (23 Aug 2005)
+* What's the new in release 2.1 "Madagascar" (30 Aug 2005)
   [general]
+  - introduced the "sql data access system"; now you can transfer the
+    whole content of the plain text data files (distributed by IMDb)
+    into a SQL database (MySQL, so far).
+  - written a tool to insert the plain text data files in a SQL database.
   - fixed a bug in items() and values() methods of Movie and Person
     classes.
+  - unified portions of code shared between "local" and "sql".
 
   [http data access system]
   - fixed a bug in the search_movie() and search_person() methods.
@@ -12,12 +17,16 @@
     "misc links", "sound clips", "video clips", "amazon reviews", "news" and
     "photo sites" pages for movies.
   - parse the "news" page for persons.
+  - fixed a bug retrieving personID and movieID within namesRefs
+    and titlesRefs.
 
   [local data access system]
   - fixed a bug; 'producer' data where scanned two times.
   - some tags were missing for the laserdisc entries.
 
   [mobile data access system]
+  - fixed a bug retrieving cast information (sometimes introduced
+    with "Cast overview" and sometimes with "Credited cast").
   - fixed a bug in the search_movie() and search_person() methods.
 
 

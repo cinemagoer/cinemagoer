@@ -88,7 +88,12 @@ def _groupListBy(l, index, sortByI=None, reverseSort=0):
 
 
 def distance(a,b):
-    "Calculates the Levenshtein distance between a and b."
+    """Calculates the Levenshtein distance between a and b.
+    This function is a (very slightly modified) copy of the
+    python implementation of the Levenshtein Distance algorithm
+    by Magnus Lie Hetland; the original can be found at
+    http://www.hetland.org/python/distance.py
+    """
     a = a.lower()
     b = b.lower()
     n, m = len(a), len(b)

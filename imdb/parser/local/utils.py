@@ -27,6 +27,8 @@ from sys import maxint
 from struct import unpack, calcsize
 
 from imdb._exceptions import IMDbDataAccessError
+from imdb.parser.common.locsql import _last
+
 
 _int_type = type(0)
 
@@ -266,19 +268,13 @@ def getRawData(dataF, offset, doCast=0, doWriters=0):
     return personID, resList
 
 
-class _LastC:
-    """Size matters."""
-    def __cmp__(self, other): return 1
-
-_last = _LastC()
-
 def sortBy(l, key, remove=1, reverse=0):
     """Sort the list l with the order specified by the key attributes
     of it's items.  If remove is set, the key is then removed, if
     present."""
     # XXX: beware that, even if the list is not modified in place,
     #      its elements are modified (if remove is set)!
-    tmpl = [(x.get(key, _last), x) for x in l]
+    tmpl = [(x.get(key) or _last, x) for x in l]
     tmpl.sort()
     l = [x[1] for x in tmpl]
     if remove:

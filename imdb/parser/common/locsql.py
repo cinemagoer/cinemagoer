@@ -125,3 +125,10 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         return self._findRefs(o, trefs, nrefs)
 
 
+class _LastC:
+    """Size matters."""
+    def __cmp__(self, other): return 1
+
+_last = _LastC()
+
+

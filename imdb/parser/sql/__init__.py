@@ -23,7 +23,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem
+from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, _last
 from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
                         normalizeName, build_title, build_name, \
                         analyze_name, analyze_title, re_episodes
@@ -80,7 +80,7 @@ def _groupListBy(l, index, sortByI=None, reverseSort=0):
     res = tmpd.values()
     if sortByI is not None:
         for i in xrange(len(res)):
-            tmpl = [(x[sortByI], x) for x in res[i]]
+            tmpl = [(x[sortByI] or _last, x) for x in res[i]]
             tmpl.sort()
             if reverseSort: tmpl.reverse()
             res[i][:] = [x[1] for x in tmpl]
@@ -88,12 +88,7 @@ def _groupListBy(l, index, sortByI=None, reverseSort=0):
 
 
 def distance(a,b):
-    """Calculates the Levenshtein distance between a and b.
-    This function is a (very slightly modified) copy of the
-    python implementation of the Levenshtein Distance algorithm
-    by Magnus Lie Hetland; the original can be found at
-    http://www.hetland.org/python/distance.py
-    """
+    "Calculates the Levenshtein distance between a and b."
     a = a.lower()
     b = b.lower()
     n, m = len(a), len(b)

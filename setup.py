@@ -31,7 +31,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '2.2-cvs050911'
+version = '2.2-cvs050917'
 
 home_page = 'http://imdbpy.sourceforge.net/'
 
@@ -94,14 +94,14 @@ if DO_LOCAL:
 
 if DO_SQL:
     params['packages'] = params['packages'] + ['imdb.parser.sql']
-    params['scripts'] = ['./bin/imdbpy2sql']
+    params['scripts'] = ['./bin/imdbpy2sql.py']
 
 if DO_SCRIPTS:
     if not params.has_key('scripts'): params['scripts'] = []
-    params['scripts'] = params['scripts'] + ['./bin/get_first_movie',
-                        './bin/get_movie', './bin/search_movie',
-                        './bin/get_first_person', './bin/get_person',
-                        './bin/search_person']
+    params['scripts'] = params['scripts'] + ['./bin/get_first_movie.py',
+                        './bin/get_movie.py', './bin/search_movie.py',
+                        './bin/get_first_person.py', './bin/get_person.py',
+                        './bin/search_person.py']
 
 
 if sys.version_info >= (2, 1):

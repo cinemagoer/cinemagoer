@@ -7,20 +7,20 @@ the ./bin directory.
 You can find other IMDbPY-based programs here:
     http://imdbpy.sourceforge.net/?page=programs
 
-The 'search_movie' script takes a single argument, which must be
+The 'search_movie.py' script takes a single argument, which must be
 a title of a movie to search; if the title contains spaces or
 other "strange" chars, enclose the title in single or double quotes.
 It will print a list of imdbID and long imdb titles.
 
-The 'get_movie' script takes a single argument: an imdbID - the
+The 'get_movie.py' script takes a single argument: an imdbID - the
 7-ciphers number used by IMDb to uniquely identify a movie on the
 on-line database, like '0133093' for "The Matrix" - and it will
 print some information about the movie.
 
-The 'get_first_movie' works like 'search_movie', but it will only print
+The 'get_first_movie.py' works like 'search_movie.py', but it will only print
 information about the first matching title.
 
-Now guess what 'get_person', 'search_person' and 'get_first_person'
+Now guess what 'get_person.py', 'search_person.py' and 'get_first_person.py'
 scripts do... :-)
 
 Remember that you've to be connected to the net, if you want to
@@ -34,7 +34,7 @@ you can customize it...
 
 Examples:
 
-$ ./search_movie 'the passion'
+$ ./search_movie.py 'the passion'
     20 results for "the passion":
 Passion of the Christ, The (2004)
 Passion, The (2003/I)
@@ -58,7 +58,7 @@ Making of 'The Passion of the Christ', The (2004) (TV)
 Scream of the Butterfly (1965)
 
 
-$ ./get_movie 0133093
+$ ./get_movie.py 0133093
 Movie
 =====
 Title: Matrix, The

@@ -69,7 +69,7 @@ through the IMDb's web server http://akas.imdb.com) and 'local',
 meaning that the data are taken from the plain text data files;
 see http://www.imdb.com/interfaces.html for more information.
 The same plain text data files used with the 'local' data access
-system can be converted to a SQL database, using the "imdbpy2sql"
+system can be converted to a SQL database, using the "imdbpy2sql.py"
 script, and then accessed using the 'sql' data access system.
 For mobile systems there's the 'mobile' data access system, useful
 for PDA, hand-held devices and smart phones.

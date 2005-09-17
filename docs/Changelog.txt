@@ -1,7 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs050911 "Howl's Moving Castle" (11 Sep 2005)
+* What's the new in release 2.2-cvs050917 "Rosencrantz & Guildenstern Are Dead" (15 Sep 2005)
+  [general]
+  - renamed the script, appending the ".py" extension.
+  - added an "IMDb Powered" logo and a bitmap used for the Windows installer.
+
   [local and sql data access system]
   - now cast entries are correctly sorted.
 

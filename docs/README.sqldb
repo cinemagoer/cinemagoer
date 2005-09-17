@@ -25,8 +25,8 @@ Now create the tables in this database, using the "imdb.sql"
 file included in this directory:
   # mysql -p imdb < imdb.sql
 
-To populate the database, you must run the imdbpy2sql script:
-  # imdbpy2sql -d /dir/with/plainTextDataFiles/ db=imdb user=da passwd=pwd
+To populate the database, you must run the imdbpy2sql.py script:
+  # imdbpy2sql.py -d /dir/with/plainTextDataFiles/ db=imdb user=da passwd=pwd
 
 Notice that the command will take a long time to complete (I estimate
 between 20 minutes and 2 or 3 hours, depending on your hardware).

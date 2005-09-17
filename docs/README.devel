@@ -73,7 +73,7 @@ of the database.  The ratober module is a C module, used to search
 names.keys and titles.key files.
 
 The parser.sql package manages the access to the data in the SQL
-database, created with the imdbpy2sql script; see the README.sqldb file.
+database, created with the imdbpy2sql.py script; see the README.sqldb file.
 
 The class in the parser.mobile package is a subclass of the one found
 in parser.http, with some method overridden to be many times faster (from

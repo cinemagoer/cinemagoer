@@ -37,9 +37,10 @@ from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
 
 # XXX NOTE: the first version of this module was heavily based on
 #           regular expressions.  This new version replace regexps with
-#           find() strings methods; despite being less flexible, it
+#           find() strings' method calls; despite being less flexible, it
 #           seems to be at least as fast and, hopefully, much more
-#           lightweight.
+#           lightweight.  Yes: the regexp-based version was too heavyweight
+#           for systems with very limited CPU power and memory footprint.
 
 # To strip spaces.
 re_spaces = re.compile(r'\s+')
@@ -78,7 +79,7 @@ def _subRefs(s):
 
 
 def _unHtml(s):
-    """Return a string without tags."""
+    """Return a string without tags and no multiple spaces."""
     return re_spaces.sub(' ', re_unhtml.sub('', s)).strip()
 
 
@@ -100,8 +101,8 @@ def _getTagWith(s, cont):
 
 
 def _findBetween(s, begins, ends, beginindx=0):
-    """Return the list of string from the s string which included
-    between the begins and ends strings."""
+    """Return the list of strings from the 's' string which are included
+    between the 'begins' and 'ends' strings."""
     lres = []
     #if endindx is None: endindx = len(s)
     bi = s.find(begins, beginindx)
@@ -140,8 +141,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
 
     def _getPersons(self, s, sep='<br>', hasCr=0):
         """Return a list of Person objects, from the string s; items
-        are separated by the sep string; if hasCr is set, the
-        currentRole of a person is searched."""
+        are assumed to be separated by the sep string; if hasCr is set,
+        the currentRole of a person is searched."""
         names = s.split(sep)
         pl = []
         for name in names:
@@ -306,7 +307,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         res = []
         if not name: return res
         nl = name[0].lower()
-        if not nl.startswith('imdb name search'):
+        if not nl.startswith('imdb name'):
             # XXX: a direct hit!
             name = _unHtml(name[0])
             pidtag = _getTagWith(cont, '/board/threads/')

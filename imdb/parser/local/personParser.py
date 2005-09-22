@@ -1,7 +1,7 @@
 """
 parser.local.personParser module (imdb package).
 
-This module provides the functions, used to parse the
+This module provides the functions used to parse the
 information about people in a local installation of the
 IMDb database.
 

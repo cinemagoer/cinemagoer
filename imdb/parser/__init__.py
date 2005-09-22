@@ -1,10 +1,10 @@
 """
 parser package (imdb package).
 
-This package provides various parser to access IMDb data (e.g.: a
+This package provides various parsers to access IMDb data (e.g.: a
 parser for the web/http interface, a parser for the local files,
-a parser for the e-mail interface, etc.).
-So far, the http and local parsers are implemented.
+a parser for the SQL database interface, etc.).
+So far, the http/httpThin, local, mobile and sql parsers are implemented.
 
 Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
 

@@ -1,10 +1,10 @@
 """
 imdb package.
 
-This package can be used to retrieve information about a movie
-from the IMDb database.
+This package can be used to retrieve information about a movie or
+a person from the IMDb database.
 It can fetch data through different media (e.g.: the IMDb web pages,
-the e-mail interface, a local installation, etc.)
+a local installation, a SQL database, etc.)
 
 Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
 
@@ -37,7 +37,7 @@ imdbURL_person_main = 'http://akas.imdb.com/name/nm%s/'
 
 def IMDb(accessSystem='http', *arguments, **keywords):
     """Return an instance of the appropriate class.
-    The accessSystem parameter is used to specify the type of
+    The accessSystem parameter is used to specify the kind of
     the preferred access system.
     """
     if accessSystem in ('http', 'web', 'html'):
@@ -56,7 +56,10 @@ def IMDb(accessSystem='http', *arguments, **keywords):
             raise IMDbError, 'the local access system is not installed'
         return IMDbLocalAccessSystem(*arguments, **keywords)
     elif accessSystem in ('sql', 'db', 'database'):
-        from parser.sql import IMDbSqlAccessSystem
+        try:
+            from parser.sql import IMDbSqlAccessSystem
+        except ImportError:
+            raise IMDbError, 'the sql access system is not installed'
         return IMDbSqlAccessSystem(*arguments, **keywords)
     else:
         raise IMDbError, 'unknown kind of data access system: "%s"' \
@@ -71,7 +74,7 @@ class IMDbBase:
     have to search the "real" code into a subclass.
     """
 
-    # The name of the preferred access system (must be overridden
+    # The name of the preferred access system (MUST be overridden
     # in the subclasses).
     accessSystem = 'UNKNOWN'
 
@@ -79,7 +82,7 @@ class IMDbBase:
         """Initialize the access system.
         If specified, defaultModFunct is the function used by
         default by the Person and Movie objects, when accessing
-        to their text fields.
+        their text fields.
         """
         # The function used to print the strings.
         self._defModFunct = defaultModFunct
@@ -146,7 +149,7 @@ class IMDbBase:
         return movie
 
     def _search_movie(self, title, results):
-        """Return a list of tuple (movieID, {movieData})"""
+        """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
@@ -188,7 +191,7 @@ class IMDbBase:
         return person
 
     def _search_person(self, name, results):
-        """Return a list of tuple (personID, {personData})"""
+        """Return a list of tuples (personID, {personData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'

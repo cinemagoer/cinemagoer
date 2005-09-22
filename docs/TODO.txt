@@ -11,9 +11,7 @@ NOTE: it's always time to clean the code! <g>
 * Write better summary() methods for Movie and Person classes.
 * Some portions of code are poorly commented.
 * The documentation is written in my funny English.
-* Rename the scripts in the 'bin' directory to "script.py" or
-  otherwise the microsoft windows installation won't recognize
-  these scripts as executables.
+* in the utils module, add a sortMovies() and a sortPersons() functions.
 
 
 [searches]
@@ -23,7 +21,8 @@ NOTE: it's always time to clean the code! <g>
 [Movie objects]
 * Define invariable names for the sections (the keys you use to access
   info stored in a Movie object).
-* Should the __contains__() methods descend lists and dictionaries?
+* Should the __contains__() methods descend into nested lists
+  and dictionaries?
 
 
 [Person objects]

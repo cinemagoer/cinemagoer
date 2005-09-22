@@ -66,6 +66,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         self.__db = os.path.normcase(self.__db)
         if not os.path.isdir(self.__db):
             raise IMDbDataAccessError, '"%s" is not a directory' % self.__db
+        # Used to quickly get the mopID for a given title/name.
         self.__namesScan = KeyFScan('%snames.key' % self.__db)
         self.__titlesScan = KeyFScan('%stitles.key' % self.__db)
 

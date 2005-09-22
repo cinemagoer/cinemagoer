@@ -49,12 +49,14 @@ class Person:
                   'aka': 'akas',
                   'also known as': 'akas',
                   'nick name': 'nick names',
+                  'nicks': 'nick names',
                   'miscellaneous crew': 'miscellaneouscrew',
                   'crewmembers': 'miscellaneouscrew',
                   'tv guest': 'notable tv guest appearances',
                   'guest appearances': 'notable tv guest appearances',
                   'spouses': 'spouse',
                   'salary': 'salary history',
+                  'salaries': 'salary history',
                   'otherworks': 'other works',
                   "maltin's biography":
                         "biography from leonard maltin's movie encyclopedia",
@@ -272,6 +274,8 @@ class Person:
     def __cmp__(self, other):
         """Compare two Person objects."""
         # XXX: check the name and the personID?
+        # XXX: use comparison to sort people based on the 
+        #      billing position in credits?
         if not isinstance(other, self.__class__):
             return -1
         if self.__person_data == other.__person_data:

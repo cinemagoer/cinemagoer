@@ -23,6 +23,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+# FIXME: this whole module was written in a veeery short amount of time.
+#        The code should be commented, rewritten and cleaned. :-)
+
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, _last
 from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
                         normalizeName, build_title, build_name, \
@@ -72,7 +75,7 @@ def _reGroupDict(d, newgr):
 
 def _groupListBy(l, index, sortByI=None, reverseSort=0):
     """Regroup items in a list in a list of lists, grouped by
-    the value found in the given index."""
+    the value at the given index."""
     tmpd = {}
     for item in l:
         if tmpd.has_key(item[index]): tmpd[item[index]].append(item)
@@ -87,19 +90,24 @@ def _groupListBy(l, index, sortByI=None, reverseSort=0):
     return res
 
 
-def distance(a,b):
-    "Calculates the Levenshtein distance between a and b."
+def distance(a, b):
+    """Calculates the Levenshtein distance between a and b.
+
+    This function is copied from an implementation by Magnus Lie Hetland;
+    his original version can be found at:
+        http://www.hetland.org/python/distance.py
+    """
     a = a.lower()
     b = b.lower()
     n, m = len(a), len(b)
     if n > m:
         # Make sure n <= m, to use O(min(n,m)) space
-        a,b = b,a
-        n,m = m,n
+        a, b = b, a
+        n, m = m, n
     current = range(n+1)
-    for i in xrange(1,m+1):
-        previous, current = current, [i]+[0]*m
-        for j in xrange(1,n+1):
+    for i in xrange(1, m+1):
+        previous, current = current, [i] + [0]*m
+        for j in xrange(1, n+1):
             add, delete = previous[j]+1, current[j-1]+1
             change = previous[j-1]
             if a[j-1] != b[i-1]:

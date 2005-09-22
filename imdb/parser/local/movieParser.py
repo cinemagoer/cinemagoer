@@ -2,7 +2,7 @@
 """
 parser.local.movieParser module (imdb package).
 
-This module provides the functions, used to parse the
+This module provides the functions used to parse the
 information about movies in a local installation of the
 IMDb database.
 

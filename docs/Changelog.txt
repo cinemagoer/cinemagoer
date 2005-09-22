@@ -1,10 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs050917 "Rosencrantz & Guildenstern Are Dead" (15 Sep 2005)
+* What's the new in release 2.2-cvs050922 "eXistenZ" (22 Sep 2005)
   [general]
-  - renamed the script, appending the ".py" extension.
-  - added an "IMDb Powered" logo and a bitmap used for the Windows installer.
+  - renamed the scripts, appending the ".py" extension.
+  - added an "IMDbPY Powered" logo and a bitmap used for the Windows installer.
+
+  [mobile data access system]
+  - fixed a bug with direct hits, searching for a person's name.
 
   [local and sql data access system]
   - now cast entries are correctly sorted.

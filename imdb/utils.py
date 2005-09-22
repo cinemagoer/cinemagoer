@@ -28,7 +28,7 @@ from _exceptions import IMDbParserError
 
 
 # The regular expression for the "long" year format of IMDb, like
-# "(1998)" and "1986/II", where the optional roman number (that I call
+# "(1998)" and "(1986/II)", where the optional roman number (that I call
 # "imdbIndex" after the slash is used for movies with the same title
 # and year of release.
 # XXX: probably L, C, D and M are far too much! ;-)
@@ -284,7 +284,7 @@ def modHtmlLinks(s, titlesRefs, namesRefs):
         s = s.replace("'%s' (qv)" % name,
                         '<a href="http://akas.imdb.com/name/nm%s">%s</a>' %
                         (personID, name))
-    # Remove also non referenced entries.
+    # Remove also not referenced entries.
     s = modClearRefs(s, {}, {})
     return s
 
@@ -294,7 +294,7 @@ _ltype = type([])
 _dtype = type({})
 
 def modifyStrings(o, modFunct, titlesRefs, namesRefs):
-    """Modify a string (or strings values in a dictionary or strings
+    """Modify a string (or string values in a dictionary or strings
     in a list), using the provided modFunct function and titlesRefs
     and namesRefs references dictionaries."""
     to = type(o)

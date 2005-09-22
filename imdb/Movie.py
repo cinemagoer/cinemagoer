@@ -291,7 +291,8 @@ class Movie:
                                     self.__titlesRefs, self.__namesRefs)
 
     def __nonzero__(self):
-        """The Movie is "false" if the self.__movie_data is empty."""
+        """The Movie is "false" if the self.__movie_data does not contains
+        a title."""
         # XXX: check the title and the movieID?
         if self.__movie_data and self.__movie_data.has_key('title'):
             return 1
@@ -299,7 +300,8 @@ class Movie:
 
     def __cmp__(self, other):
         """Compare two Movie objects."""
-        # XXX: check the title and the movieID?
+        # XXX: only check the title and the movieID?
+        # XXX: comparison should be used to sort movies by year?
         if not isinstance(other, self.__class__):
             return -1
         if self.__movie_data == other.__movie_data:

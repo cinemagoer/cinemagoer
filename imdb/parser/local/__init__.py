@@ -53,7 +53,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
 
     accessSystem = 'local'
 
-    def __init__(self, dbDirectory, *arguments, **keywords):
+    def __init__(self, dbDirectory, adultSearch=1, *arguments, **keywords):
         """Initialize the access system.
         The directory with the files must be supplied.
         """
@@ -70,6 +70,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         # Used to quickly get the mopID for a given title/name.
         self.__namesScan = KeyFScan('%snames.key' % self.__db)
         self.__titlesScan = KeyFScan('%stitles.key' % self.__db)
+        self.do_adult_search(adultSearch)
 
     def _getTitleID(self, title):
         return self.__titlesScan.getID(title)
@@ -137,12 +138,29 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                         '%snames.key' % self.__db)
         return self._httpPersonID(name)
 
+    def do_adult_search(self, doAdult):
+        """If set to 0 or False, movies in the Adult category are not
+        shown in the results of a search."""
+        self.doAdult = doAdult
+
     def _search_movie(self, title, results):
         # ratober functions return a sorted
         # list of tuples (match_score, movieID, movieTitle)
-        return [(x[1], analyze_title(x[2]))
+        rl = [(x[1], analyze_title(x[2]))
                 for x in search_title(title.strip(),
                 '%stitles.key' % self.__db, results)]
+        # Check for adult movies.
+        if not self.doAdult:
+            newlist = []
+            for entry in rl:
+                genres = getMovieMisc(movieID=entry[0],
+                                dataF='%s%s.data' % (self.__db, 'genres'),
+                                indexF='%s%s.index' % (self.__db, 'genres'),
+                                attrIF='%sattributes.index' % self.__db,
+                                attrKF='%sattributes.key' % self.__db)
+                if 'Adult' not in genres: newlist.append(entry)
+            rl[:] = newlist
+        return rl
 
     def get_movie_main(self, movieID):
         # Information sets provided by this method.

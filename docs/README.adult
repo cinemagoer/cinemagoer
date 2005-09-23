@@ -46,18 +46,23 @@ E.g.:
     # Pauly Does Dallas (1993) (TV) 0208347
 
 
-Everything above applies to the 'http' and 'mobile' data access
-systems; the 'local' data access system _always_ search for adult
-movies, and there's no (easy and fast) way to filter this kind of movies.
-So far the 'sql' data access system does not filter for adult
-movies, but maybe I'll add this feature in a future release.
-
-
-The do_adult_search() method also takes a couple of arguments,
-"cookie_id" and "cookie_uu", so that you can select _your own_
-IMDb's account.
+The do_adult_search() method of the http and mobile data access system
+also takes another couple of arguments: "cookie_id" and "cookie_uu", so
+that you can select _your own_ IMDb's account.
 For the strings to use, see your "cookie" or "cookie.txt" file.
 Obviously you need to activate the "adult movies" option for
 your account; see http://imdb.com/find/preferences?_adult=1
+
+
+  OTHER DATA ACCESS SYSTEMS
+  =========================
+
+Since version 2.2 every other data access system (local and sql)
+support the same behavior of the http and mobile data access
+systems (i.e.: you can set the 'adultSearch' argument and use
+the 'do_adult_search' method).
+
+Notice that for the local and the sql data access systems only
+results from the search_movie() method are filtered.
 
 

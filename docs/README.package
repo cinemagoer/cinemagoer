@@ -206,8 +206,7 @@ episodes; string; number or episodes for a series.
 color info; string list; ["Color (Technicolor)"]
 countries; string list; production's country ['USA', 'Italy']
 genres; string list; one or more in (Action, Adventure, Adult, Animation,
-		Comedy,
-		Crime, Documentary, Drama, Family, Fantasy, Film-Noir,
+		Comedy, Crime, Documentary, Drama, Family, Fantasy, Film-Noir,
 		Horror, Musical, Mystery, Romance, Sci-Fi, Short, Thriller,
 		War, Western)
 akas; string list; list of aka for this movie

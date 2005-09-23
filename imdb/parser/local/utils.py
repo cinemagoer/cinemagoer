@@ -27,7 +27,6 @@ from sys import maxint
 from struct import unpack, calcsize
 
 from imdb._exceptions import IMDbDataAccessError
-from imdb.parser.common.locsql import _last
 
 
 _int_type = type(0)

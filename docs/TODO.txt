@@ -11,7 +11,6 @@ NOTE: it's always time to clean the code! <g>
 * Write better summary() methods for Movie and Person classes.
 * Some portions of code are poorly commented.
 * The documentation is written in my funny English.
-* in the utils module, add a sortMovies() and a sortPersons() functions.
 
 
 [searches]

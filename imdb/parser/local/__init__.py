@@ -27,7 +27,8 @@ import os
 from stat import ST_SIZE
 
 from imdb._exceptions import IMDbDataAccessError, IMDbError
-from imdb.utils import analyze_title, analyze_name, re_episodes
+from imdb.utils import analyze_title, analyze_name, re_episodes, \
+                        sortMovies, sortPeople
 from imdb.Person import Person
 from imdb.Movie import Movie
 
@@ -38,7 +39,7 @@ from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
                         getLaserdisc
 
 from ratober import search_name, search_title
-from utils import getFullIndex, sortBy, KeyFScan
+from utils import getFullIndex, KeyFScan
 
 
 _ltype = type([])
@@ -167,7 +168,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                             'offsList': midx, 'doCast': 1}
                 actl += getMovieCast(**params)
         if actl:
-            actl[:] = sortBy(actl, 'position')
+            actl.sort(sortPeople)
             res['cast'] = actl
         # List of other workers.
         works = ('writer', 'cinematographer', 'composer',
@@ -194,7 +195,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     params['doWriters'] = 1
                 params['dataF'] = '%s%ss.data' % (self.__db, key)
                 data = getMovieCast(**params)
-                if name == 'writer': data[:] = sortBy(data, 'order')
+                if name == 'writer': data.sort(sortPeople)
                 res[name] = data
         # Rating.
         rt = self.get_movie_vote_details(movieID)['data']
@@ -412,7 +413,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     params['doWriters'] = 1
                 params['dataF'] = '%s%ss.data' % (self.__db, key)
                 data = getFilmography(**params)
-                data[:] = sortBy(data, 'year', remove=0, reverse=1)
+                data.sort(sortMovies)
                 res[name] = data
         return {'data': res}
 

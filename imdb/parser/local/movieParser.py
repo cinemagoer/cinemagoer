@@ -89,7 +89,7 @@ def getMovieCast(dataF, movieID, indexF, keyF, attrIF, attrKF, offsList=[],
             if attr: p.notes = attr
         # Used to sort cast (it will be stripped out).
         if movie.has_key('position'):
-            p['position'] = movie['position']
+            p.billingPos = movie['position'] or None
         resList.append(p)
     return resList
 

@@ -268,22 +268,6 @@ def getRawData(dataF, offset, doCast=0, doWriters=0):
     return personID, resList
 
 
-def sortBy(l, key, remove=1, reverse=0):
-    """Sort the list l with the order specified by the key attributes
-    of it's items.  If remove is set, the key is then removed, if
-    present."""
-    # XXX: beware that, even if the list is not modified in place,
-    #      its elements are modified (if remove is set)!
-    tmpl = [(x.get(key) or _last, x) for x in l]
-    tmpl.sort()
-    l = [x[1] for x in tmpl]
-    if remove:
-        for item in l:
-            if item.has_key(key): del item[key]
-    if reverse: l.reverse()
-    return l
-
-
 def getLabel(ind, indexF, keyF):
     """Return the person name or movie title for the personID or
     movieID ind, searching the indexF and keyF files."""

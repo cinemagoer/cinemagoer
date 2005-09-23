@@ -93,7 +93,7 @@ that provides specific methods to access a given data source (web server,
 local installation, SQL database, etc.)
 
 Unfortunately this means that the movieID in the Movie class and the
-personID in the Person class are dependent by the data access system
+personID in the Person class are dependent on the data access system
 used.  So, when a Movie or Person object is instantiated, the accessSystem
 instance variable is set to a string used to identify the used data access
 system.
@@ -141,9 +141,7 @@ IMDbDataAccessError must be raised when you cannot access the resource
 you need to retrieve movie info or you're unable to do a query (this is
 _not_ the case when a query returns zero matches: in this situation an
 empty list must be returned); IMDbParserError should be raised when an
-error occurred parsing some data.  IMDbNotAvailable is raised when
-the requested information is not available in the running data
-access system.
+error occurred parsing some data.
 
 Now you've to modify the imdb.IMDb function so that, when the right
 data access system is selected with the "accessSystem" parameter, an

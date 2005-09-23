@@ -26,10 +26,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # FIXME: this whole module was written in a veeery short amount of time.
 #        The code should be commented, rewritten and cleaned. :-)
 
-from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, _last
+from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem
 from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
                         normalizeName, build_title, build_name, \
-                        analyze_name, analyze_title, re_episodes
+                        analyze_name, analyze_title, re_episodes, \
+                        sortMovies, sortPeople
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError, IMDbError
@@ -73,7 +74,7 @@ def _reGroupDict(d, newgr):
     return r
 
 
-def _groupListBy(l, index, sortByI=None, reverseSort=0):
+def _groupListBy(l, index):
     """Regroup items in a list in a list of lists, grouped by
     the value at the given index."""
     tmpd = {}
@@ -81,12 +82,6 @@ def _groupListBy(l, index, sortByI=None, reverseSort=0):
         if tmpd.has_key(item[index]): tmpd[item[index]].append(item)
         else: tmpd[item[index]] = [item]
     res = tmpd.values()
-    if sortByI is not None:
-        for i in xrange(len(res)):
-            tmpl = [(x[sortByI] or _last, x) for x in res[i]]
-            tmpl.sort()
-            if reverseSort: tmpl.reverse()
-            res[i][:] = [x[1] for x in tmpl]
     return res
 
 
@@ -122,7 +117,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     accessSystem = 'sql'
 
     def __init__(self, db, user, passwd, host='localhost', miscDBargs={},
-                *arguments, **keywords):
+                adultSearch=1, *arguments, **keywords):
         """Initialize the access system."""
         IMDbLocalAndSqlAccessSystem.__init__(self, *arguments, **keywords)
         initdict = miscDBargs
@@ -155,6 +150,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                         if x[1] in ('actor', 'actress')]
         lt = self.query('SELECT id, type FROM linktypes;')
         self._linktypes = dict(lt)
+        self.do_adult_search(adultSearch)
 
     def _getNameID(self, name):
         """Given a long imdb canonical name, returns a personID or
@@ -254,6 +250,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                         (imdbID, personID))
         return imdbID
 
+    def do_adult_search(self, doAdult):
+        """If set to 0 or False, movies in the Adult category are not
+        shown in the results of a search."""
+        self.doAdult = doAdult
+
     def query(self, sql, escape=1):
         """Execute a SQL query and returns the results."""
         try:
@@ -304,6 +305,13 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             if x[2]: tmpd['imdbIndex'] = x[2]
             if x[4]: tmpd['year'] = x[4]
             purged.append((x[0], tmpd))
+        if not self.doAdult:
+            mids = '(%s)' % ', '.join([str(x[0]) for x in purged])
+            adultlist = self.query('SELECT movieid FROM moviesinfo WHERE ' +
+                                'movieid IN ' + mids + ' AND infoid = 3 AND ' +
+                                'info = "Adult"', escape=0)
+            adultlist = [x[0] for x in list(adultlist)]
+            purged[:] = [x for x in purged if x[0] not in adultlist]
         return purged
         
     def _getDict(self, table, cols, clause='', unique=0):
@@ -343,7 +351,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             else:
                 tmpcast.append(i)
         # Regroup by role/duty (cast, writer, director, ...)
-        castdata[:] =  _groupListBy(tmpcast, 4, 3)
+        #castdata[:] =  _groupListBy(tmpcast, 4, 3)
+        castdata[:] =  _groupListBy(tmpcast, 4)
         for group in castdata:
             duty = self._roles[group[0][4]]
             if not res.has_key(duty): res[duty] = []
@@ -352,7 +361,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                             currentRole=pdata[1], notes=pdata[2],
                             accessSystem='sql')
                 if pdata[6]: p['imdbIndex'] = pdata[6]
+                p.billingPos = pdata[3]
                 res[duty].append(p)
+            res[duty].sort(sortPeople)
         # Info about the movie.
         minfo = self.query('SELECT infoid, info, note from moviesinfo ' +
                             'WHERE movieid = %s' % movieID)
@@ -515,7 +526,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                         'INNER JOIN titles USING (movieid) WHERE ' +
                         'cast.personid = %s' % personID))
         # Regroup by role/duty (cast, writer, director, ...)
-        castdata[:] =  _groupListBy(castdata, 3, 7, reverseSort=1)
+        castdata[:] =  _groupListBy(castdata, 3)
         for group in castdata:
             duty = self._roles[group[0][3]]
             if not res.has_key(duty): res[duty] = []
@@ -527,6 +538,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if mdata[5]: m['imdbIndex'] = mdata[5]
                 if mdata[7]: m['year'] = mdata[7]
                 res[duty].append(m)
+            res[duty].sort(sortMovies)
         # Info about the person.
         pinfo = self.query('SELECT infoid, info, note from personsinfo ' +
                             'WHERE personid = %s' % personID)

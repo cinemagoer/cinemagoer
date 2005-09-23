@@ -64,7 +64,8 @@ class Person:
 
     def __init__(self, personID=None, name='', myName='', myID=None,
                 personData={}, currentRole='', notes='', accessSystem=None,
-                titlesRefs={}, namesRefs={}, modFunct=modClearRefs):
+                titlesRefs={}, namesRefs={}, modFunct=modClearRefs,
+                billingPos=None):
         """Initialize a Person object.
 
         *personID* -- the unique identifier for the person.
@@ -80,6 +81,7 @@ class Person:
         *titlesRefs* -- a dictionary with references to movies.
         *namesRefs* -- a dictionary with references to persons.
         *modFunct* -- function called returning text fields.
+        *billingPos* -- position of this person in the credits list.
         """
         self.reset()
         self.accessSystem = accessSystem
@@ -94,6 +96,7 @@ class Person:
         self.currentRole = currentRole
         self.notes = notes
         self.set_mod_funct(modFunct)
+        self.billingPos = billingPos
 
     def get_current_info(self):
         """Return the current set of information retrieved."""

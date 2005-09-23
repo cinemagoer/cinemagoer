@@ -26,17 +26,17 @@ file included in this directory:
   # mysql -p imdb < imdb.sql
 
 To populate the database, you must run the imdbpy2sql.py script:
-  # imdbpy2sql.py -d /dir/with/plainTextDataFiles/ db=imdb user=da passwd=pwd
+  # imdbpy2sql.py -d /dir/with/plainTextDataFiles/ db=imdb user=name passwd=pwd
 
 Notice that the command will take a long time to complete (I estimate
 between 20 minutes and 2 or 3 hours, depending on your hardware).
 It will also requires a lot of memory (RAM or swap space), in the
-range of 150 or 200 megabytes.
+range of 150/200 megabytes.
 In the end, the database will require between 900MB and 1GB of disc space.
 
 
-  SQL USE
-  =======
+  SQL USAGE
+  =========
 
 Now you can use IMDbPY with the database:
   from imdb import IMDb

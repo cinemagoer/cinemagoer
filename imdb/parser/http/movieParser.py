@@ -121,6 +121,8 @@ class HTMLMovieParser(ParserBase):
         # If true, the next data should be merged with the previous one,
         # without the '::' separator.
         self.__merge_next = 0
+        # Counter for the billing position in credits.
+        self._counter = 1
 
     def append_item(self, sect, data):
         """Append a new value in the given section of the dictionary."""
@@ -252,14 +254,17 @@ class HTMLMovieParser(ParserBase):
                     role = ''
                 # Create a Person object.
                 # XXX: check for self.__cur_nameID?
-                #      maybe it's not a good idea; it's possible for
+                #      maybe it's not a good idea; is it possible for
                 #      a person to be listed without a link?
                 p = Person(name=n, currentRole=role,
                             personID=self.__cur_nameID, accessSystem='http')
                 if notes: p.notes = notes
                 if not self.__movie_data.has_key(sect):
                     self.__movie_data[sect] = []
+                    self._counter = 1
+                p.billingPos = self._counter
                 self.__movie_data[sect].append(p)
+                self._counter += 1
             self.__name = ''
             self.__cur_nameID = ''
         self.__movie_status_data = ''

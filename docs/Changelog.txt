@@ -1,10 +1,20 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs050922 "eXistenZ" (22 Sep 2005)
+* What's the new in release 2.2-cvs050923 "eXistenZ" (23 Sep 2005)
   [general]
+  - now the Person class has a 'billingPos' instance variable used to
+    keep record of the position of the person in a list of credits (as
+    an example, "Laurence Fishburne" is billed in 2nd position in the
+    cast list for the "Matrix, The (1999)" movie.
+  - added two functions to the utils module, to sort respectively
+    movies (by year/title/imdbIndex) and persons (by billingPos/name/imdbIndex).
   - renamed the scripts, appending the ".py" extension.
-  - added an "IMDbPY Powered" logo and a bitmap used for the Windows installer.
+  - added an "IMDbPY Powered" logo and a bitmap used by the Windows installer.
+
+  [sql data access system]
+  - you can now exclude movies of the "Adult" genre from the results
+    of a query.
 
   [mobile data access system]
   - fixed a bug with direct hits, searching for a person's name.

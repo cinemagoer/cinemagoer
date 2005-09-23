@@ -42,9 +42,9 @@ to exclude pyc and pyo file (saving at least 300Kb of disk space).
 
 Moreover, if you're creating a package (rpm, deb or whatever),
 in the setup.cfg you can exclude from your package things
-like the documentation (more than 120Kb) and the icon (~4Kb).
+like the documentation (more than 180Kb) and the icon (~4Kb).
 
-In both situation (installing and packaging), you may also need
+In both situations (installing and packaging), you may also need
 to modify the MANIFEST.in file.
 
 
@@ -96,7 +96,7 @@ The main difference is that, parsing movies' information,
 the "maindetails" page is parsed, in place of the "combined" page.
 This reduces the required bandwidth and the CPU power needed.
 Obviously a lot of information are lost (and only the first 15
-people if the cast are listed), but it still retrieves everything
+people of the cast are listed), but it still retrieves everything
 you usually need (director, writer, runtime, country, language, akas,
 etc.)
 

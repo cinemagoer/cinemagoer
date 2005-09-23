@@ -1,5 +1,5 @@
-  IMDbPY for sensitive people
-  ===========================
+  IMDbPY for (too) sensitive people
+  =================================
 
 Since version 2.0, by default adult movies are included in
 the result of the search_movie() and search_person() methods.
@@ -23,7 +23,7 @@ E.g.:
     # By default in the horny-mode.
     ia = IMDb(accessSystem='http') # or 'httpThin' or 'mobile'.
 
-    # Just for this example, exclude the proxy.
+    # Just for this example, be sure to exclude the proxy.
     ia.set_proxy(None)
 
     results = ia.search_movie('debby does dallas', results=5)
@@ -36,7 +36,7 @@ E.g.:
     # Debbie Does Dallas '99 (1999) (V) 0233539
     # Debbie Does Dallas 3 (1985) 0124352
 
-    # You can now revert to the default puritan behavior.
+    # You can now revert to the old puritan behavior.
     ia.do_adult_search(0)
 
     results = ia.search_movie('debby does dallas', results=5)
@@ -48,9 +48,9 @@ E.g.:
 
 Everything above applies to the 'http' and 'mobile' data access
 systems; the 'local' data access system _always_ search for adult
-movies, and there's no way to filter this kind of movies.
+movies, and there's no (easy and fast) way to filter this kind of movies.
 So far the 'sql' data access system does not filter for adult
-movies, but maybe I'll add this feature a future release.
+movies, but maybe I'll add this feature in a future release.
 
 
 The do_adult_search() method also takes a couple of arguments,

@@ -145,6 +145,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         the currentRole of a person is searched."""
         names = s.split(sep)
         pl = []
+        counter = 1
         for name in names:
             notes = ''
             currentRole = ''
@@ -166,7 +167,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             pl.append(Person(personID=pid[0], name=canonicalName(name),
                             currentRole=currentRole, notes=notes,
                             accessSystem=self.accessSystem,
-                            modFunct=self._defModFunct))
+                            modFunct=self._defModFunct, billingPos=counter))
+            counter += 1
         return pl
 
     def _search_movie(self, title, results):

@@ -10,12 +10,10 @@ content suppliers and protected by United States and international
 copyright laws.
 
 If you use the IMDb web site, you have to accept the conditions
-listed here: http://www.imdb.com/conditions
+listed here: http://www.imdb.com/help/show_article?conditions
 
 If you use alternate interfaces (see http://www.imdb.com/interfaces.html)
 to the IMDb's data, you have to accept the specific policy and conditions.
-
-Read also the http://www.imdb.com/Copyright document.
 
 
   IMDbPY

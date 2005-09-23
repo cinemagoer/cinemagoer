@@ -105,6 +105,12 @@ suitable for systems with limited bandwidth but normal CPU power.
   to a null value (i.e.: i.set_proxy('')).
 
 
+  FEATURES OF THE SQL DATA ACCESS SYSTEM
+  ======================================
+
+* Returns every information available in the plain text data files.
+  
+
   FEATURES OF THE LOCAL DATA ACCESS SYSTEM
   ========================================
 

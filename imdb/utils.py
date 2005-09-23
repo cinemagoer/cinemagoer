@@ -245,6 +245,54 @@ def build_title(title_dict, canonical=0):
             title += ' (VG)'
     return title.strip()
 
+class _LastC:
+    """Size matters."""
+    def __cmp__(self, other):
+        if isinstance(other, self.__class__): return 0
+        return 1
+
+_last = _LastC()
+
+
+def sortMovies(m1, m2):
+    """Sort movies by year, in reverse order; the imdbIdex is checked
+    for movies with the same year of production and title."""
+    try: m1y = int(m1.get('year', _last))
+    except (ValueError, OverflowError): m1y = _last
+    try: m2y = m2.get('year', _last)
+    except (ValueError, OverflowError): m2y = _last
+    if m1y > m2y: return -1
+    if m1y < m2y: return 1
+    # Ok, these movies have the same production year...
+    m1t = m1.get('canonical title', _last)
+    m2t = m2.get('canonical title', _last)
+    if m1t < m2t: return -1
+    if m1t > m2t: return 1
+    # Ok, these movies have the same title...
+    m1i = m1.get('imdbIndex', _last)
+    m2i = m2.get('imdbIndex', _last)
+    if m1i > m2i: return -1
+    if m1i < m2i: return 1
+    return 0
+
+
+def sortPeople(p1, p2):
+    p1b = p1.billingPos
+    if p1b is None: p1b = _last
+    p2b = p2.billingPos
+    if p2b is None: p2b = _last
+    if p1b > p2b: return 1
+    if p1b < p2b: return -1
+    p1n = p1.get('canonical name', _last)
+    p2n = p2.get('canonical name', _last)
+    if p1n > p2n: return 1
+    if p1n < p2n: return -1
+    p1i = p1.get('imdbIndex', _last)
+    p2i = p2.get('imdbIndex', _last)
+    if p1i > p2i: return 1
+    if p1i < p2i: return -1
+    return 0
+
 
 # References to titles and names.
 # XXX: find better regexp!

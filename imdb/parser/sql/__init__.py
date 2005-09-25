@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # FIXME: this whole module was written in a veeery short amount of time.
 #        The code should be commented, rewritten and cleaned. :-)
 
+from difflib import SequenceMatcher
+
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem
 from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
                         normalizeName, build_title, build_name, \
@@ -38,6 +40,8 @@ from imdb._exceptions import IMDbDataAccessError, IMDbError
 import MySQLdb
 import _mysql_exceptions
 
+
+sm = SequenceMatcher()
 
 _litlist = ['screenplay/teleplay', 'novel', 'adaption', 'book',
             'production process protocol', 'interviews',
@@ -83,32 +87,6 @@ def _groupListBy(l, index):
         else: tmpd[item[index]] = [item]
     res = tmpd.values()
     return res
-
-
-def distance(a, b):
-    """Calculates the Levenshtein distance between a and b.
-
-    This function is copied from an implementation by Magnus Lie Hetland;
-    his original version can be found at:
-        http://www.hetland.org/python/distance.py
-    """
-    a = a.lower()
-    b = b.lower()
-    n, m = len(a), len(b)
-    if n > m:
-        # Make sure n <= m, to use O(min(n,m)) space
-        a, b = b, a
-        n, m = m, n
-    current = range(n+1)
-    for i in xrange(1, m+1):
-        previous, current = current, [i] + [0]*m
-        for j in xrange(1, n+1):
-            add, delete = previous[j]+1, current[j-1]+1
-            change = previous[j-1]
-            if a[j-1] != b[i-1]:
-                change = change + 1
-            current[j] = min(add, delete, change)
-    return current[n]
 
 
 class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
@@ -225,7 +203,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         imdbID = self._httpMovieID(titline)
         # If the imdbID was retrieved from the web and was not in the
         # database, update the database (ignoring errors, because it's
-        # possibile that the current use has not update privileges).
+        # possibile that the current user has not update privileges).
         # There're times when I think I'm a genius; this one of
         # those times... <g>
         if imdbID is not None:
@@ -280,6 +258,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             if rfc != -1: title3 = title2[:rfc]
         for stitle in (title, title2, title3):
             if not stitle: continue
+            sm.set_seq1(stitle.lower())
             qr = list(self.query("SELECT movieid, title, imdbindex, kind, " +
                                     "year FROM titles WHERE " +
                                     "SOUNDEX(title) = SOUNDEX('%s');" %
@@ -293,9 +272,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if i not in _curres:
                     _curres.append(i)
                     # Calculate the distance with the searched title.
-                    res.append((distance(stitle, i[1]), i))
+                    sm.set_seq2(i[1].lower())
+                    res.append((sm.ratio(), i))
         del _curres
         res.sort()
+        res.reverse()
         res[:] = res[:results]
         res[:] = [x[1] for x in res]
         # Purge empty imdbIndex and year.
@@ -484,6 +465,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             name2 = canonicalName(name)
         for sname in (name, name2):
             if not sname: continue
+            sm.set_seq1(sname.lower())
             qr = list(self.query("SELECT personid, name, imdbindex " +
                                     "FROM names WHERE " +
                                     "SOUNDEX(name) = SOUNDEX('%s');" %
@@ -497,9 +479,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if i not in _curres:
                     _curres.append(i)
                     # Calculate the distance with the searched name.
-                    res.append((distance(sname, i[1]), i))
+                    sm.set_seq2(i[1].lower())
+                    res.append((sm.ratio(), i))
         del _curres
         res.sort()
+        res.reverse()
         res[:] = res[:results]
         res[:] = [x[1] for x in res]
         # Purge empty imdbIndex and year.

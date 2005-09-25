@@ -115,5 +115,6 @@ Things to do for SQL:
   is a minor issue, and I fear there're few chances to see substantial
   improvements.
 * Comment the imdbpy2sql.py script.
+* improve searching surnames only.
 
 

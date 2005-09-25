@@ -245,6 +245,7 @@ def build_title(title_dict, canonical=0):
             title += ' (VG)'
     return title.strip()
 
+
 class _LastC:
     """Size matters."""
     def __cmp__(self, other):
@@ -253,14 +254,16 @@ class _LastC:
 
 _last = _LastC()
 
-
 def sortMovies(m1, m2):
     """Sort movies by year, in reverse order; the imdbIdex is checked
     for movies with the same year of production and title."""
+    # AttributeError exception is caught to handle the 'int(_last)' case.
     try: m1y = int(m1.get('year', _last))
-    except (ValueError, OverflowError): m1y = _last
+    # except AttributeError: m1y = -1 # to put this movie at the end.
+    except (AttributeError, ValueError, OverflowError): m1y = _last
     try: m2y = m2.get('year', _last)
-    except (ValueError, OverflowError): m2y = _last
+    # except AttributeError: m2y = -1 # to put this movie at the end.
+    except (AttributeError, ValueError, OverflowError): m2y = _last
     if m1y > m2y: return -1
     if m1y < m2y: return 1
     # Ok, these movies have the same production year...

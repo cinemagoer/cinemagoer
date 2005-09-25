@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs050923a "eXistenZ" (23 Sep 2005)
+* What's the new in release 2.2-cvs050925 "eXistenZ" (25 Sep 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in a list of credits (as
@@ -20,6 +20,10 @@
 
   [local and sql data access system]
   - now cast entries are correctly sorted.
+
+  [sql data access system]
+  - search results are now sorted in correct order; difflib is used to
+    calculate strings similarity.
 
 
 * What's the new in release 2.1 "Madagascar" (30 Aug 2005)

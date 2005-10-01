@@ -481,6 +481,23 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     # Calculate the distance with the searched name.
                     sm.set_seq2(i[1].lower())
                     res.append((sm.ratio(), i))
+        if name.find(' ') == -1 and name.find(', ') == -1:
+            # Assume we're searching only a surname.
+            sm.set_seq1(name.lower())
+            qr = list(self.query("SELECT personid, name, imdbindex " +
+                            "FROM names WHERE " +
+                            "SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)) = " +
+                            "SOUNDEX('%s');" % _(name.lower()), escape=0))
+            qr += list(self.query("SELECT personid, name, imdbindex " +
+                            "FROM akanames WHERE " +
+                            "SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)) = " +
+                            "SOUNDEX('%s');" % _(name.lower()), escape=0))
+            # Uhh!  Duplicated code... :-)
+            for i in qr:
+                if i not in _curres:
+                    _curres.append(i)
+                    sm.set_seq2(i[1].split(', ')[0].lower())
+                    res.append((sm.ratio(), i))
         del _curres
         res.sort()
         res.reverse()

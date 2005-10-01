@@ -115,6 +115,8 @@ Things to do for SQL:
   is a minor issue, and I fear there're few chances to see substantial
   improvements.
 * Comment the imdbpy2sql.py script.
-* improve searching surnames only.
+* What about titles searched with(out) articles?
+* Check if excluding duplicates is a good thing or excludes results
+  with better match scores.
 
 

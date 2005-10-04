@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs051001 "Oldboy" (01 Oct 2005)
+* What's the new in release 2.2-cvs051004 "The Void" (04 Oct 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in a list of credits (as
@@ -20,11 +20,17 @@
 
   [local and sql data access system]
   - now cast entries are correctly sorted.
+  - fixed a bug retrieving information about a movie with the same
+    person listed more than one time in a given role/duty (e.g., the
+    same director for different episodes of a TV series).  Now it
+    works fine and it should also be a bit faster.
 
   [sql data access system]
   - search results are now sorted in correct order; difflib is used to
     calculate strings similarity.
   - searches for only a surname now returns much better results.
+  - fixed a bug in the imdbpy2sql.py script; now movie quotes are correctly
+    managed.
 
 
 * What's the new in release 2.1 "Madagascar" (30 Aug 2005)

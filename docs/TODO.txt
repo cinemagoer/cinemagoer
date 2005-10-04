@@ -62,9 +62,13 @@ NOTE: it's always time to clean the code! <g>
 
 [local data access system]
 * Improve performances, especially for searching names/titles.
+* Search for exact matches (title + year + imdbIndex)
+* There's probably a bug converting the rating to a float;
+  see: ER (1994) (TV), but I suspect this is a mkdb bug.
 * The convBin() and getFullIndex() functions in the utils
   modules _must_ be rewritten (they're crap!).
-* Some files are not considered: mpaa-ratings-reasons.list.
+* Some files are not considered: mpaa-ratings-reasons.list,
+  miscellaneous-companies.list.
 * I'm not sure that the ratober.search_title() function works
   correctly with movies with a '(' in the title.
 * methods like get_imdbMovieID() should use the mobile access system?
@@ -102,6 +106,7 @@ It's free software, after all.
 Things to do for SQL:
 * Support for other SQL database (like PostgresSQL), and try to be
   database-independent.
+* Search for exact matches (title + year + imdbIndex)
 * The imdbpy2sql.py script MUST be run on a database with empty tables;
   unfortunately so far a SQL installation can't be "updated" without
   recreating the database from scratch.

@@ -483,7 +483,7 @@ def doCast(fp, roleid, rolename):
     name = ''
     sqlstr = 'INSERT INTO cast (personid, movieid, currentrole, note, nrorder, roleid) VALUES (%s, %s, %s, %s, %s, ' + str(roleid) + ')'
     sqldata = SQLData(sqlString=sqlstr)
-    if rolename == 'miscellaneous': sqldata.flushEvery = 10000
+    if rolename == 'crewmembers': sqldata.flushEvery = 10000
     for line in fp:
         if line and line[0] != '\t':
             if line[0] == '\n': continue
@@ -639,7 +639,7 @@ def minusHashFiles(fp, funct, defaultid, descr):
     sqls = 'INSERT INTO moviesinfo (movieid, infoid, info, note) VALUES (%s, %s, %s, %s)'
     sqldata = SQLData(sqlString=sqls)
     sqldata.flushEvery = 2500
-    if descr == 'quotes': sqldata.flushEvery = 300
+    if descr == 'quotes': sqldata.flushEvery = 4000
     elif descr == 'soundtracks': sqldata.flushEvery = 3000
     elif descr == 'trivia': sqldata.flushEvery = 3000
     count = 0
@@ -696,16 +696,21 @@ def getTaglines():
 
 def getQuotes(lines):
     """Movie's quotes."""
+    quotes = []
     qttl = []
     for line in lines:
         if line.startswith('  ') and qttl and qttl[-1] and \
                 not qttl[-1].endswith('::'):
             line = line.lstrip()
             if line: qttl[-1] += ' %s' % line
+        elif not line.strip():
+            if qttl: quotes.append('::'.join(qttl))
+            qttl[:] = []
         else:
             line = line.lstrip()
             if line: qttl.append(line)
-    return ['::'.join(qttl)]
+    if qttl: quotes.append('::'.join(qttl))
+    return quotes
 
 
 def getBusiness(lines):
@@ -980,6 +985,7 @@ getTopBottomRating()
 completeCast()
 
 
+# Flush caches.
 CACHE_MID.flush()
 CACHE_PID.flush()
 

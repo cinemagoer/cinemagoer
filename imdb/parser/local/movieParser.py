@@ -70,27 +70,31 @@ def getMovieCast(dataF, movieID, indexF, keyF, attrIF, attrKF, offsList=[],
     """Read the specified files and return a list of Person objects,
     one for every people in offsList."""
     resList = []
+    _globoff = []
     for offset in offsList:
+        # One round for person is enough.
+        if offset not in _globoff: _globoff.append(offset)
+        else: continue
         personID, movies = getRawData(dataF, offset, doCast, doWriters)
         # Consider only the current movie.
-        movie = [x for x in movies if x.get('movieID') == movieID]
-        # XXX: can a person be listed more than one time for a single movie?
-        if len(movie) != 1: continue
-        # Here, movie is a dictionary as returned by the getRawData
-        # function, not a Movie class instance.
-        movie = movie[0]
-        name = getLabel(personID, indexF, keyF)
-        if not name: continue
-        p = Person(name=name, personID=personID,
-                    currentRole=movie.get('currentRole', ''),
-                    accessSystem='local')
-        if movie.has_key('attributeID'):
-            attr = getLabel(movie['attributeID'], attrIF, attrKF)
-            if attr: p.notes = attr
-        # Used to sort cast (it will be stripped out).
-        if movie.has_key('position'):
-            p.billingPos = movie['position'] or None
-        resList.append(p)
+        movielist = [x for x in movies if x.get('movieID') == movieID]
+        # XXX: a person can be listed more than one time for a single movie:
+        #      think about directors of TV series.
+        # XXX: here, 'movie' is a dictionary as returned by the getRawData
+        #      function, not a Movie class instance.
+        for movie in movielist:
+            name = getLabel(personID, indexF, keyF)
+            if not name: continue
+            p = Person(name=name, personID=personID,
+                        currentRole=movie.get('currentRole', ''),
+                        accessSystem='local')
+            if movie.has_key('attributeID'):
+                attr = getLabel(movie['attributeID'], attrIF, attrKF)
+                if attr: p.notes = attr
+            # Used to sort cast.
+            if movie.has_key('position'):
+                p.billingPos = movie['position'] or None
+            resList.append(p)
     return resList
 
 

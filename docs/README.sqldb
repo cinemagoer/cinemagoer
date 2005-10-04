@@ -7,6 +7,9 @@ database from the plain text data files into an SQL database.
 So far the MySQL database is supported; see the TODO.txt
 file for more details.
 
+You need the MySQLdb package.
+It can be downloaded from http://sourceforge.net/projects/mysql-python/
+
 
   SQL DATABASE INSTALLATION
   =========================

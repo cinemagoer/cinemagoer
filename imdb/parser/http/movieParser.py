@@ -2202,6 +2202,106 @@ class HTMLAmazonReviewsParser(ParserBase):
             self.__cur_title += data
 
 
+class HTMLGuestsParser(ParserBase):
+    """Parser for the "guest appearances" page of a given tv series.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        gparser = HTMLGuestsParser()
+        result = gparser.parse(guests_html_string)
+    """
+
+    # Do not gather names and titles references.
+    getRefs = 0
+
+    def _reset(self):
+        self._guests = {}
+        self._in_guests = 0
+        self._inh1 = 0
+        self._goth1 = 0
+        self._ingtable = 0
+        self._inname = 0
+        self._curname = ''
+        self._curid = ''
+        self._inepisode = 0
+        self._curepisode = ''
+
+    def get_data(self):
+        return self._guests
+
+    def start_h1(self, attrs):
+        self._inh1 = 1
+
+    def end_h1(self):
+        self._inh1 = 0
+
+    def start_a(self, attrs):
+        if self._inname:
+            href = self.get_attr_value(attrs, 'href')
+            cid = self.re_imdbID.findall(href or '')
+            if cid: self._curid = [-1]
+
+    def end_a(self): pass
+
+    def start_table(self, attrs):
+        if self._goth1: self._in_guests = 1
+
+    def end_table(self):
+        self._goth1 = 0
+        self._in_guests = 0
+
+    def start_tr(self, attrs): pass
+
+    def end_tr(self):
+        if self._inname:
+            self._curepisode = self._curepisode.replace('\n', ' ').replace('  ', ' ').strip()
+            if not self._curepisode: self._curepisode = 'UNKNOWN EPISODE'
+            self._curname = self._curname.replace('\n', '').strip()
+            if self._curname and self._curid:
+                if self._curepisode not in self._guests.keys():
+                    self._guests[self._curepisode] = []
+                name = self._curname.strip()
+                note = ''
+                bni = name.find('(')
+                if bni != -1:
+                    eni = name.rfind(')')
+                    if eni != -1:
+                        note = name[bni:]
+                        name = name[:bni].strip()
+                sn = name.split(' .... ')
+                name = sn[0]
+                role = ' '.join(sn[1:]).strip()
+                p = Person(name=name, personID=self._curid,
+                            currentRole=role, accessSystem='http',
+                            notes=note)
+                self._guests[self._curepisode].append(p)
+        if self._in_guests:
+            self._inname = 0
+            self._curname = ''
+            self._curid = ''
+            self._inepisode = 0
+
+    def start_td(self, attrs):
+        if self._in_guests:
+            colspan = self.get_attr_value(attrs, 'colspan')
+            if colspan == '3':
+                self._inepisode = 1
+                self._curepisode = ''
+            else:
+                self._inname = 1
+
+    def end_td(self): pass
+
+    def _handle_data(self, data):
+        if self._inh1 and data.lower().find('guest appearances') != -1:
+            self._goth1 = 1
+        elif self._in_guests:
+            if self._inname: self._curname += data
+            elif self._inepisode: self._curepisode += data
+
+
 # The used instances.
 movie_parser = HTMLMovieParser()
 plot_parser = HTMLPlotParser()
@@ -2239,4 +2339,5 @@ dvd_parser = HTMLDvdParser()
 rec_parser = HTMLRecParser()
 news_parser = HTMLNewsParser()
 amazonrev_parser = HTMLAmazonReviewsParser()
+guests_parser = HTMLGuestsParser()
 

@@ -189,7 +189,7 @@ class Movie:
 
     def set_title(self, title):
         """Set the title of the movie."""
-        d_title = analyze_title(title)
+        d_title = analyze_title(title, canonical=1)
         self.__movie_data.update(d_title)
 
     def set_data(self, md, override=0):

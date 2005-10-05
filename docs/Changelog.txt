@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs051004 "The Void" (04 Oct 2005)
+* What's the new in release 2.2-cvs0510045 "The Void" (05 Oct 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in a list of credits (as
@@ -14,6 +14,11 @@
     By default, adult movies are listed.
   - renamed the scripts, appending the ".py" extension.
   - added an "IMDbPY Powered" logo and a bitmap used by the Windows installer.
+  - now Person and Movie objects always convert name/title to the canonical
+    format (Title, The).
+
+  [http data access system]
+  - retrieves the 'guest appearances' page for TV series.
 
   [mobile data access system]
   - fixed a bug with direct hits, searching for a person's name.

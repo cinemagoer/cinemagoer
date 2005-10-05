@@ -22,6 +22,12 @@ NOTE: it's always time to clean the code! <g>
   info stored in a Movie object).
 * Should the __contains__() methods descend into nested lists
   and dictionaries?
+* For TV series the list of directors/writers returned by 'local'
+  and 'sql' is a long list with every single episodes listed in the
+  'notes' attribute (i.e.: the same person is listed more than one time,
+  just with a different note).
+  For 'http' and 'mobile' there's a list with one item for every
+  person, with a long 'notes' listing every episode.
 
 
 [Person objects]

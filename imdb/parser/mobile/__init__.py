@@ -29,8 +29,7 @@ from sgmllib import entityref, charref
 
 from imdb.Movie import Movie
 from imdb.Person import Person
-from imdb.utils import analyze_title, analyze_name, \
-                        canonicalTitle, canonicalName
+from imdb.utils import analyze_title, analyze_name
 from imdb._exceptions import IMDbDataAccessError
 from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
                                 imdbURL_movie, imdbURL_person
@@ -164,7 +163,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             pid = re_imdbID.findall(name)
             name = _unHtml(name)
             if not (pid and name): continue
-            pl.append(Person(personID=pid[0], name=canonicalName(name),
+            pl.append(Person(personID=pid[0], name=name,
                             currentRole=currentRole, notes=notes,
                             accessSystem=self.accessSystem,
                             modFunct=self._defModFunct, billingPos=counter))

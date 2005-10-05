@@ -150,7 +150,7 @@ class Person:
 
     def set_name(self, name):
         """Set the name of the person."""
-        d = analyze_name(name)
+        d = analyze_name(name, canonical=1)
         self.__person_data.update(d)
 
     def set_data(self, pd, override=0):

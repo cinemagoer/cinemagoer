@@ -32,16 +32,17 @@ from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem
 from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
                         normalizeName, build_title, build_name, \
                         analyze_name, analyze_title, re_episodes, \
-                        sortMovies, sortPeople
+                        sortMovies, sortPeople, re_year_index
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 
+import re
 import MySQLdb
 import _mysql_exceptions
 
 
-sm = SequenceMatcher()
+re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 _litlist = ['screenplay/teleplay', 'novel', 'adaption', 'book',
             'production process protocol', 'interviews',
@@ -244,56 +245,77 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                                     (sql, str(e))
 
     def _search_movie(self, title, results):
-        res = []
-        title3 = ''
-        rfc = title.rfind(', ')
         # Up to 3 variations of the title are searched.
-        _curres = []
-        if rfc != -1:
-            title2 = normalizeTitle(title)
-            title3 = title[:rfc]
+        sm1 = SequenceMatcher()
+        sm2 = SequenceMatcher()
+        sm3 = SequenceMatcher()
+        if re_year_index.search(title):
+            titldict = analyze_title(title, canonical=1)
+            title1 = titldict['title'].lower()
+            sm1.set_seq1(title1)
+            title3 = build_title(titldict, canonical=1).lower()
+            sm3.set_seq1(title3)
         else:
-            title2 = canonicalTitle(title)
-            rfc = title2.rfind(', ')
-            if rfc != -1: title3 = title2[:rfc]
-        for stitle in (title, title2, title3):
-            if not stitle: continue
-            sm.set_seq1(stitle.lower())
-            qr = list(self.query("SELECT movieid, title, imdbindex, kind, " +
-                                    "year FROM titles WHERE " +
-                                    "SOUNDEX(title) = SOUNDEX('%s');" %
-                                    _(stitle), escape=0))
-            qr += list(self.query("SELECT movieid, title, imdbindex, kind, " +
-                                    "year FROM akatitles WHERE " +
-                                    "SOUNDEX(title) = SOUNDEX('%s');" %
-                                    _(stitle), escape=0))
-            # Remove duplicated entries.
-            for i in qr:
-                if i not in _curres:
-                    _curres.append(i)
-                    # Calculate the distance with the searched title.
-                    sm.set_seq2(i[1].lower())
-                    res.append((sm.ratio(), i))
-        del _curres
+            title1 = canonicalTitle(title.lower())
+            sm1.set_seq1(title1)
+            title3 = ''
+        title2 = normalizeTitle(title1)
+        if title1 == title2: title2 = ''
+        else: sm2.set_seq1(title2)
+        resd = {}
+        sndex = "(SOUNDEX('%s')" % _(title1)
+        if title2: sndex += ", SOUNDEX('%s')" % _(title2)
+        sndex += ')'
+        sqlq = "SELECT movieid, title, imdbindex, kind, year " + \
+                "FROM titles WHERE SOUNDEX(title) IN %s" % sndex
+        if not title2:
+            sqlq += " OR SOUNDEX(LEFT(title, LENGTH(title)-" + \
+                    "LOCATE(' ,', REVERSE(title))+1)) = SOUNDEX('%s')" % title1
+        qr = list(self.query(sqlq, escape=0))
+        qr += list(self.query(sqlq.replace('titles', 'akatitles', 1), escape=0))
+        for i in qr:
+            # Calculate the distance with the searched title.
+            til = i[1].lower()
+            sm1.set_seq2(til)
+            ratios = [sm1.ratio()]
+            if title2:
+                sm2.set_seq2(normalizeName(til))
+                ratios.append(sm2.ratio())
+            else:
+                artindx = til.rfind(', ')
+                if artindx != -1:
+                    til = til[:artindx]
+                    sm1.set_seq2(til)
+                    ratios.append(sm1.ratio())
+            if title3:
+                tmpm = {'title': i[1], 'imdbIndex': i[2],
+                        'kind': i[3], 'year': i[4]}
+                sm3.set_seq2(build_title(tmpm, canonical=1).lower())
+                ratios.append(sm3.ratio() + 0.1)
+            ratio = max(ratios)
+            if i in resd.keys():
+                if ratio > resd[i]: resd[i] = ratio
+            else: resd[i] = ratio
+        res = [(x[1], x[0]) for x in resd.items()]
         res.sort()
         res.reverse()
         res[:] = res[:results]
         res[:] = [x[1] for x in res]
         # Purge empty imdbIndex and year.
-        purged = []
+        returnd = []
         for x in res:
             tmpd = {'title': x[1], 'kind': x[3]}
             if x[2]: tmpd['imdbIndex'] = x[2]
             if x[4]: tmpd['year'] = x[4]
-            purged.append((x[0], tmpd))
+            returnd.append((x[0], tmpd))
         if not self.doAdult:
-            mids = '(%s)' % ', '.join([str(x[0]) for x in purged])
+            mids = '(%s)' % ', '.join([str(x[0]) for x in returnd])
             adultlist = self.query('SELECT movieid FROM moviesinfo WHERE ' +
                                 'movieid IN ' + mids + ' AND infoid = 3 AND ' +
                                 'info = "Adult"', escape=0)
             adultlist = [x[0] for x in list(adultlist)]
-            purged[:] = [x for x in purged if x[0] not in adultlist]
-        return purged
+            returnd[:] = [x for x in returnd if x[0] not in adultlist]
+        return returnd
         
     def _getDict(self, table, cols, clause='', unique=0):
         """Return a list of dictionaries with data from the given
@@ -455,61 +477,106 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
 
     def _search_person(self, name, results):
         res = []
-        rfc = name.rfind(', ')
-        name2 = ''
-        _curres = []
-        # Up to 2 variations of the name are searched.
-        if rfc != -1:
-            name2 = normalizeName(name)
+        sm1 = SequenceMatcher()
+        sm2 = SequenceMatcher()
+        sm3 = SequenceMatcher()
+        if re_nameIndex.search(name):
+            namedict = analyze_name(name, canonical=1)
+            name1 = namedict['name'].lower()
+            sm1.set_seq1(name1)
+            name3 = build_name(namedict, canonical=1).lower()
+            sm3.set_seq1(name3)
         else:
-            name2 = canonicalName(name)
-        for sname in (name, name2):
-            if not sname: continue
-            sm.set_seq1(sname.lower())
-            qr = list(self.query("SELECT personid, name, imdbindex " +
-                                    "FROM names WHERE " +
-                                    "SOUNDEX(name) = SOUNDEX('%s');" %
-                                    _(sname), escape=0))
-            qr += list(self.query("SELECT personid, name, imdbindex " +
-                                    "FROM akanames WHERE " +
-                                    "SOUNDEX(name) = SOUNDEX('%s');" %
-                                    _(sname), escape=0))
-            # Remove duplicated entries.
-            for i in qr:
-                if i not in _curres:
-                    _curres.append(i)
-                    # Calculate the distance with the searched name.
-                    sm.set_seq2(i[1].lower())
-                    res.append((sm.ratio(), i))
-        if name.find(' ') == -1 and name.find(', ') == -1:
-            # Assume we're searching only a surname.
-            sm.set_seq1(name.lower())
-            qr = list(self.query("SELECT personid, name, imdbindex " +
-                            "FROM names WHERE " +
-                            "SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)) = " +
-                            "SOUNDEX('%s');" % _(name.lower()), escape=0))
-            qr += list(self.query("SELECT personid, name, imdbindex " +
-                            "FROM akanames WHERE " +
-                            "SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)) = " +
-                            "SOUNDEX('%s');" % _(name.lower()), escape=0))
-            # Uhh!  Duplicated code... :-)
-            for i in qr:
-                if i not in _curres:
-                    _curres.append(i)
-                    sm.set_seq2(i[1].split(', ')[0].lower())
-                    res.append((sm.ratio(), i))
-        del _curres
+            name1 = canonicalName(name.lower())
+            sm1.set_seq1(name1)
+            name3 = ''
+        name2 = normalizeName(name1)
+        if name1 == name2: name2 = ''
+        else: sm2.set_seq1(name2)
+        resd = {}
+
+        sndex = "(SOUNDEX('%s')" % _(name1)
+        if name2: sndex += ", SOUNDEX('%s')" % _(name2)
+        sndex += ')'
+        sqlq = "SELECT personid, name, imdbindex FROM names WHERE " + \
+                "SOUNDEX(name) IN %s OR " % sndex + \
+                "SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)) = " + \
+                "SOUNDEX('%s')" % _(name2 or name1)
+        sqlq += ';'
+
+        qr = list(self.query(sqlq, escape=0))
+        qr += list(self.query(sqlq.replace('names', 'akanames', 1), escape=0))
+
+        for i in qr:
+            nil = i[1].lower()
+            sm1.set_seq2(nil)
+            ratios = [sm1.ratio()]
+            if name2:
+                sm2.set_seq2(normalizeName(nil))
+                ratios.append(sm2.ratio())
+            nil = nil.split(', ')[0]
+            sm = sm1
+            if name2: sm = sm2
+            sm.set_seq2(nil)
+            ratios.append(sm.ratio())
+            if name3:
+                tmpp = {'name': i[1], 'imdbIndex': i[2]}
+                sm3.set_seq2(build_name(tmpp, canonical=1).lower())
+                ratios.append(sm3.ratio() + 0.1)
+            ratio = max(ratios)
+            if i in resd.keys():
+                if ratio > resd[i]: resd[i] = ratio
+            else: resd[i] = ratio
+        
+        # Up to 2 variations of the name are searched.
+        #for sname in (name, name2):
+        #    if not sname: continue
+        #    sm.set_seq1(sname.lower())
+        #    qr = list(self.query("SELECT personid, name, imdbindex " +
+        #                            "FROM names WHERE " +
+        #                            "SOUNDEX(name) = SOUNDEX('%s');" %
+        #                            _(sname), escape=0))
+        #    qr += list(self.query("SELECT personid, name, imdbindex " +
+        #                            "FROM akanames WHERE " +
+        #                            "SOUNDEX(name) = SOUNDEX('%s');" %
+        #                            _(sname), escape=0))
+        #    # Remove duplicated entries.
+        #    for i in qr:
+        #        if i not in _curres:
+        #            _curres.append(i)
+        #            # Calculate the distance with the searched name.
+        #            sm.set_seq2(i[1].lower())
+        #            res.append((sm.ratio(), i))
+        #if name.find(' ') == -1 and name.find(', ') == -1:
+        #    # Assume we're searching only a surname.
+        #    sm.set_seq1(name.lower())
+        #    qr = list(self.query("SELECT personid, name, imdbindex " +
+        #                    "FROM names WHERE " +
+        #                    "SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)) = " +
+        #                    "SOUNDEX('%s');" % _(name.lower()), escape=0))
+        #    qr += list(self.query("SELECT personid, name, imdbindex " +
+        #                    "FROM akanames WHERE " +
+        #                    "SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)) = " +
+        #                    "SOUNDEX('%s');" % _(name.lower()), escape=0))
+        #    # Uhh!  Duplicated code... :-)
+        #    for i in qr:
+        #        if i not in _curres:
+        #            _curres.append(i)
+        #            sm.set_seq2(i[1].split(', ')[0].lower())
+        #            res.append((sm.ratio(), i))
+        #del _curres
+        res = [(x[1], x[0]) for x in resd.items()]
         res.sort()
         res.reverse()
         res[:] = res[:results]
         res[:] = [x[1] for x in res]
         # Purge empty imdbIndex and year.
-        purged = []
+        returnd = []
         for x in res:
             tmpd = {'name': x[1]}
             if x[2]: tmpd['imdbIndex'] = x[2]
-            purged.append((x[0], tmpd))
-        return purged
+            returnd.append((x[0], tmpd))
+        return returnd
 
     def get_person_main(self, personID):
         # Every person information is retrieved from here.

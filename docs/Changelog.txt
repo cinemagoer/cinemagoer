@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs0510045 "The Void" (05 Oct 2005)
+* What's the new in release 2.2-cvs0510045b "The Void" (05 Oct 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in a list of credits (as
@@ -31,6 +31,7 @@
     works fine and it should also be a bit faster.
 
   [sql data access system]
+  - big improvements in the search system.
   - search results are now sorted in correct order; difflib is used to
     calculate strings similarity.
   - searches for only a surname now returns much better results.

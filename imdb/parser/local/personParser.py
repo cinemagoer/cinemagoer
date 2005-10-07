@@ -26,6 +26,8 @@ from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
 from utils import getRawData, getLabel, getFullIndex
 
+from imdb.utils import re_titleRef
+
 
 def _parseList(l, prefix, mline=1):
     """Given a list of lines l, strips prefix and join consecutive lines
@@ -62,6 +64,34 @@ def _parseList(l, prefix, mline=1):
     return resl
 
 
+def _buildGuests(gl):
+    """Return a list of Movie objects from a list of GA lines."""
+    rl = []
+    for g in gl:
+        titl = re_titleRef.findall(g)
+        if len(titl) != 1: continue
+        note = ''
+        if g[-1] == ')':
+            opi = g.rfind('(episode')
+            if opi == -1: opi = g.rfind('(')
+            if opi != -1:
+                note = g[opi:].replace('_', '"').strip()
+                g = g[:opi].strip()
+        cr = ''
+        cri = g.find('_ (qv), as ')
+        if cri != -1:
+            cr = g[cri+11:].replace('[unknown]', '').strip()
+            if cr and cr[-1] == ')':
+                opi = cr.rfind('(')
+                if opi != -1:
+                    if note: note += ' '
+                    note += cr[opi:]
+                    cr = cr[:opi].strip()
+        m = Movie(title=titl[0], currentRole=cr, notes=note,
+                    accessSystem='local')
+        rl.append(m)
+    return rl
+
 def _parseBioBy(l):
     """Return a list of biographies."""
     bios = []
@@ -74,7 +104,6 @@ def _parseBioBy(l):
                 bios.append(line[4:].strip() + '::' + ' '.join(tmpbio))
                 tmpbio[:] = []
     return bios
-
 
 def _parseBiography(biol):
     """Parse the biographies.data file."""
@@ -124,8 +153,10 @@ def _parseBiography(biol):
     if biomovies: res['biographical movies'] = biomovies
     portr = [x[6:].strip() for x in biol if x.startswith('PI: * ')]
     if portr: res['portrayed'] = portr
-    guestapp = [x[6:].strip() for x in biol if x.startswith('GA: * ')]
-    if guestapp: res['notable tv guest appearances'] = guestapp
+    guestapp = _buildGuests([x[6:].strip() for x in biol
+                            if x.startswith('GA: * ')])
+    if guestapp:
+        res['notable tv guest appearances'] = guestapp
     wheren = [x[6:].strip() for x in biol if x.startswith('WN: * ')]
     if wheren: res['where now'] = wheren
     tm = _parseList(biol, 'TM')

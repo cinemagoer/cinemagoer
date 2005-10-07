@@ -527,6 +527,7 @@ def castLists():
     while i:
         roleid = i[0][0]
         rolename = fname = i[0][1]
+        if rolename == 'guests': continue
         fname = fname.replace(' ', '-')
         if fname == 'actress': fname = 'actresses.list.gz'
         elif fname == 'crewmembers': fname = 'miscellaneous.list.gz'
@@ -750,12 +751,19 @@ def getMPAA(lines):
 def nmmvFiles(fp, funct, fname):
     """Files with sections separated by 'MV: ' or 'NM: '."""
     count = 0
+    sqlsP = 'INSERT INTO personsinfo (personid, infoid, info, note) VALUES (%s, %s, %s, %s)'
+    sqlsM = 'INSERT INTO moviesinfo (movieid, infoid, info, note) VALUES (%s, %s, %s, %s)'
     if fname == 'biographies.list.gz':
         datakind = 'person'
-        sqls = 'INSERT INTO personsinfo (personid, infoid, info, note) VALUES (%s, %s, %s, %s)'
+        sqls = sqlsP
+        curs.execute('SELECT id FROM roletypes WHERE role = "guests";')
+        guestid = curs.fetchone()[0]
+        guestdata = SQLData(sqlString='INSERT INTO cast (personid, movieid, currentrole, note, roleid) VALUES (%s, %s, %s, %s, ' + str(guestid) + ')')
+        guestdata.flushEvery = 10000
     else:
         datakind = 'movie'
-        sqls = 'INSERT INTO moviesinfo (movieid, infoid, info, note) VALUES (%s, %s, %s, %s)'
+        sqls = sqlsM
+        guestdata = None
     sqldata = SQLData(sqlString=sqls)
     if fname == 'plot.list.gz': sqldata.flushEvery = 1000
     elif fname == 'literature.list.gz': sqldata.flushEvery = 5000
@@ -774,9 +782,17 @@ def nmmvFiles(fp, funct, fname):
             print 'SCANNING %s: %s' % (fname[:-8].replace('-', ' '), ton)
         d = funct(text.split('\n'))
         for k, v in d.iteritems():
-            theid = INFO_TYPES[k]
+            if k != 'notable tv guest appearances':
+                theid = INFO_TYPES[k]
             if type(v) is _ltype:
                 for i in v:
+                    if k == 'notable tv guest appearances':
+                        title = i.get('long imdb canonical title')
+                        if not title: continue
+                        movieid = CACHE_MID.addUnique(title)
+                        guestdata.add((mopid, movieid, i.currentRole or None,
+                                        i.notes or None))
+                        continue
                     if k in ('plot', 'mini biography'):
                         s = i.split('::')
                         if len(s) == 2:
@@ -788,6 +804,8 @@ def nmmvFiles(fp, funct, fname):
             else:
                 if v: sqldata.add((mopid, theid, v, note))
         count += 1
+    if guestdata is not None:
+        guestdata.flush()
     sqldata.flush()
 
 

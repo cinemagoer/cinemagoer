@@ -52,6 +52,8 @@ class Person:
                   'miscellaneous crew': 'miscellaneouscrew',
                   'crewmembers': 'miscellaneouscrew',
                   'misc': 'miscellaneouscrew',
+                  'guest': 'notable tv guest appearances',
+                  'guests': 'notable tv guest appearances',
                   'tv guest': 'notable tv guest appearances',
                   'guest appearances': 'notable tv guest appearances',
                   'spouses': 'spouse',

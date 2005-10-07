@@ -410,6 +410,17 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     '%snames.index' % self.__db,
                     '%snames.key' % self.__db)
         if akas: res['akas'] = akas
+        # XXX: horrible hack!  The getBio() function is not able to
+        #      retrieve the movieID!
+        if res.has_key('notable tv guest appearances'):
+            nl = []
+            for m in res['notable tv guest appearances']:
+                movieID = self._getTitleID(m.get('long imdb canonical title'))
+                if movieID is None: continue
+                m.movieID = movieID
+                nl.append(m)
+            if nl: res['notable tv guest appearances'][:] = nl
+            else: del res['notable tv guest appearances']
         trefs, nrefs = self._extractRefs(res)
         return {'data': res, 'info sets': infosets,
                 'titlesRefs': trefs, 'namesRefs': nrefs}

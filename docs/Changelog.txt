@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs051007 "The Void" (07 Oct 2005)
+* What's the new in release 2.2-cvs051007b "The Void" (07 Oct 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in a list of credits (as
@@ -34,6 +34,8 @@
     person listed more than one time in a given role/duty (e.g., the
     same director for different episodes of a TV series).  Now it
     works fine and it should also be a bit faster.
+  - 'notable tv guest appearences' in biography is now a list of Movie
+    objects.
 
   [sql data access system]
   - new search system; it should return better matches in less
@@ -44,6 +46,7 @@
   - searches for only a surname now returns much better results.
   - fixed a bug in the imdbpy2sql.py script; now movie quotes are correctly
     managed.
+  - added another role, 'guests', for notable tv guest appearences.
 
 
 * What's the new in release 2.1 "Madagascar" (30 Aug 2005)

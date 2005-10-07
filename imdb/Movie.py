@@ -100,6 +100,10 @@ class Movie:
                 'soundclips':   'sound clips',
                 'videoclips':   'video clips',
                 'photographs':  'photo sites',
+                'guest': 'guests',
+                'guest appearances': 'guests',
+                'tv guests': 'guests',
+                'notable tv guest appearances': 'guests',
                 'amazon review': 'amazon reviews'}
 
     def __init__(self, movieID=None, title='', myTitle='',

@@ -2229,7 +2229,8 @@ class HTMLGuestsParser(ParserBase):
         self._curepisode = ''
 
     def get_data(self):
-        return self._guests
+        if not self._guests: return {}
+        return {'guests': self._guests}
 
     def start_h1(self, attrs):
         self._inh1 = 1

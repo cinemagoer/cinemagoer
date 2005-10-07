@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs0510045b "The Void" (05 Oct 2005)
+* What's the new in release 2.2-cvs051007 "The Void" (07 Oct 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in a list of credits (as
@@ -16,6 +16,8 @@
   - added an "IMDbPY Powered" logo and a bitmap used by the Windows installer.
   - now Person and Movie objects always convert name/title to the canonical
     format (Title, The).
+  - minor changes to the functions used to convert to "canonical format"
+    names and titles; they should be faster and with better matches.
 
   [http data access system]
   - retrieves the 'guest appearances' page for TV series.
@@ -25,13 +27,18 @@
 
   [local and sql data access system]
   - now cast entries are correctly sorted.
+  - new search system; it should return better matches in less
+    time (searching people's name is still somewhat slow); it's
+    also possibile to search for "long imdb canonical title/name".
   - fixed a bug retrieving information about a movie with the same
     person listed more than one time in a given role/duty (e.g., the
     same director for different episodes of a TV series).  Now it
     works fine and it should also be a bit faster.
 
   [sql data access system]
-  - big improvements in the search system.
+  - new search system; it should return better matches in less
+    time (searching people's name is still somewhat slow); it's
+    also possibile to search for "long imdb canonical title/name".
   - search results are now sorted in correct order; difflib is used to
     calculate strings similarity.
   - searches for only a surname now returns much better results.

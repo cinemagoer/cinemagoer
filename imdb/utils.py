@@ -47,6 +47,14 @@ _sname_suffixes = ('de', 'la', 'der', 'den', 'del', 'y', 'da', 'van',
 
 def canonicalName(name):
     """Return the given name in canonical "Surname, Name" format."""
+    # XXX: some statistics (over 1698193 names):
+    #      - just a surname:                 36614
+    #      - single surname, single name:  1461621
+    #      - composed surname, composed name: 6126
+    #      - composed surname, single name:  44597
+    #        (2: 39998, 3: 4175, 4: 356)
+    #      - single surname, composed name: 149235
+    #        (2: 143522, 3: 4787, 4: 681, 5: 165)
     if name.find(', ') != -1: return name
     sname = name.split(' ')
     snl = len(sname)
@@ -54,10 +62,23 @@ def canonicalName(name):
         name = '%s, %s' % (sname[1], sname[0])
     elif snl > 2:
         lsname = [x.lower() for x in sname]
-        for suffix in _sname_suffixes:
-            if suffix in lsname:
-                name = '%s, %s' % (' '.join(sname[1:]), sname[0])
+        for index in (0, snl-2, snl-3):
+            if lsname[index] not in _sname_suffixes: continue
+            try:
+                surn = '%s %s' % (sname[index], sname[index+1])
+                del sname[index]
+                del sname[index]
+                try:
+                    if lsname[index+2].startswith('jr'):
+                        surn += ' %s' % sname[index]
+                        del sname[index]
+                except (IndexError, ValueError): pass
+                name = '%s, %s' % (surn, ' '.join(sname))
                 break
+            except ValueError:
+                continue
+        else:
+            name = '%s, %s' % (sname[-1], ' '.join(sname[:-1]))
     return name
 
 def normalizeName(name):
@@ -138,6 +159,7 @@ def canonicalTitle(title):
             lart = len(article)
             title = '%s, %s' % (title[lart:], title[:lart])
             if article[-1] == ' ': title = title[:-1]
+            break
     return title
 
 def normalizeTitle(title):

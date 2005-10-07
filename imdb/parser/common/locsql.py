@@ -20,17 +20,22 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
+import re
 
 from imdb import IMDbBase
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
+from imdb.utils import analyze_title, build_title, analyze_name, \
+                        build_name, canonicalTitle, canonicalName, \
+                        normalizeName, re_titleRef, re_nameRef, \
+                        re_year_index, _articles
+
 _ltype = type([])
 _dtype = type({})
 _stypes = (type(''), type(u''))
 
-from imdb.utils import analyze_title, build_title, analyze_name, \
-                        build_name, re_titleRef, re_nameRef
+re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 
 class IMDbLocalAndSqlAccessSystem(IMDbBase):
@@ -124,4 +129,48 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         nrefs = {}
         return self._findRefs(o, trefs, nrefs)
 
+    def _titleVariations(self, title):
+        """Build title variations useful for searches."""
+        title1 = title
+        title2 = title3 = ''
+        if re_year_index.search(title):
+            # If it appears to have a (year[/imdbIndex]) indication,
+            # assume that a long imdb canonical name was provided.
+            titldict = analyze_title(title, canonical=1)
+            # title1: the canonical name.
+            title1 = titldict['title']
+            # title3: the long imdb canonical name.
+            title3 = build_title(titldict, canonical=1)
+        else:
+            # Just a title.
+            # title1: the canonical title.
+            title1 = canonicalTitle(title)
+            title3 = ''
+        # title2 is title1 without the article, or title1 unchanged.
+        if title2 != title1: hasArt = 1
+        title2 = title1
+        t2s = title2.split(', ')
+        if t2s[-1] in _articles:
+            title2 = ', '.join(t2s[:-1])
+        return title1, title2, title3
+
+    def _nameVariations(self, name):
+        """Build name variations useful for searches."""
+        name1 = name
+        name2 = name3 = ''
+        if re_nameIndex.search(name):
+            # We've a name with an (imdbIndex)
+            namedict = analyze_name(name, canonical=1)
+            # name1 is the name in the canonical format.
+            name1 = namedict['name']
+            # name3 is the canonical name with the imdbIndex.
+            name3 = build_name(namedict, canonical=1)
+        else:
+            # name1 is the name in the canonical format.
+            name1 = canonicalName(name)
+            name3 = ''
+        # name2 is the name in the normal format, if it differs from name1.
+        name2 = normalizeName(name1)
+        if name1 == name2: name2 = ''
+        return name1, name2, name3
 

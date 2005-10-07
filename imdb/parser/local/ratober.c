@@ -51,6 +51,8 @@
 
 #define RO_THRESHOLD 0.6
 
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+
 
 /* List of articles.
    XXX: are "agapi mou" and  "liebling" articles? */
@@ -164,97 +166,95 @@ ratcliff(char *s1, char *s2)
 }
 
 
-/* Search for the searchText2 name in the key file keyFileName,
- * returning at most nrResults results. */
+/* Search for the 'name1', 'name2' and 'name3' name variations
+ * in the key file keyFileName, returning at most nrResults results. */
 static PyObject*
 search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 {
-    char *searchText2, *keyFileName;
-    char searchText1[MXLINELEN] = "";
+    char *keyFileName = NULL;
+    char *name1 = NULL;
+    char *name2 = NULL;
+    char *name3 = NULL;
+    float ratio;
     FILE *keyFile;
-    float res;
     char line[MXLINELEN];
     char origLine[MXLINELEN];
+    char surname[MXLINELEN] = "";
+    char namesurname[MXLINELEN] = "";
     char *cp;
     char *key;
-    short doSecTest = 1;
-    short doThirdTest = 0;
+    short hasNS = 0;
     unsigned int nrResults = 0;
-    static char *argnames[] = {"name", "keyFile", "results", NULL};
+    static char *argnames[] = {"keyFile", "name1", "name2", "name3",
+                                "results", NULL};
     PyObject *result = PyList_New(0);
 
-    if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|i",
-                argnames, &searchText2, &keyFileName, &nrResults))
+    if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|ssi",
+                argnames, &keyFileName, &name1, &name2, &name3, &nrResults))
         return NULL;
 
-    if (strlen(searchText2) > MXLINELEN - 1) {
+    if (strlen(name1) > MXLINELEN - 1)
         return Py_BuildValue("O", result);
-    }
+
+    if (name2 != NULL && strlen(name2) == 0)
+        name2 = NULL;
+
+    if (name3 != NULL && strlen(name3) == 0)
+        name3 = NULL;
 
     if ((keyFile = fopen(keyFileName, "r")) == NULL) {
         PyErr_SetFromErrno(PyExc_IOError);
         return NULL;
     }
 
-    if (strstr(searchText2, ", ") == NULL) {
-        if ((cp = strrchr(searchText2, ' ')) != NULL) {
-            /* build a "Surname, Name" search pattern.
-             * XXX: what about search patterns with multiple spaces? */
-            strncpy(searchText1, cp+1, strlen(cp));
-            strncat(searchText1, ", ", 2);
-            strncat(searchText1, searchText2, strlen(searchText2) - strlen(cp));
-        } else {
-            /* Only a surname? */
-            doSecTest = 0;
-            doThirdTest = 1;
-        }
-    } else {
-        /* Contains a ", ", so we can assume that the search pattern
-         * is already in the "Surname, Name" format. */
-        strcpy(searchText1, searchText2);
-        doSecTest = 0;
-    }
-
     while (fgets(line, MXLINELEN, keyFile) != NULL) {
+        /* Split a "origLine|key" line. */
         if ((cp = strrchr(line, FSEP)) != NULL) {
             *cp = '\0';
             key = cp+1;
             strcpy(origLine, line);
         } else { continue; }
-        if ((cp = strstr(line, " (")) != NULL)
+        /* Strip the optional imdbIndex.
+         * XXX: check for [IVXLC]? */
+        if ((cp = strrchr(line, '(')) != NULL)
+            *(cp-1) = '\0';
+
+        /* Build versions of this line with just the "surname" and in the
+         * "name surname" format. */
+        strcpy(surname, line);
+        hasNS = 0;
+        if ((cp = strrchr(surname, ',')) != NULL && (cp+1)[0] == ' ') {
             *cp = '\0';
-        res = ratcliff(searchText1, line);
-        if (res >= RO_THRESHOLD) {
-            PyList_Append(result, Py_BuildValue("(dis)",
-                            res, strtol(key, NULL, 16), origLine));
-            continue;
+            hasNS = 1;
+            strcpy(namesurname, cp+2);
+            strcat(namesurname, " ");
+            strcat(namesurname, surname);
         }
-        if (doSecTest) {
-            res = ratcliff(searchText2, line);
-            if (res >= RO_THRESHOLD) {
-                PyList_Append(result, Py_BuildValue("(dis)",
-                            res, strtol(key, NULL, 16), origLine));
-                continue;
+    
+        ratio = ratcliff(name1, line) + 0.05;
+
+        if (hasNS) {
+            ratio = MAX(ratio, ratcliff(name1, surname));
+            ratio = MAX(ratio, ratcliff(name1, namesurname));
+            if (name2 != NULL) {
+                ratio = MAX(ratio, ratcliff(name2, surname));
+                ratio = MAX(ratio, ratcliff(name2, namesurname));
             }
         }
 
-        if (doThirdTest) {
-            if ((cp = strstr(line, ", ")) != NULL) {
-                *cp = '\0';
-            }
-            res = ratcliff(searchText2, line) - 0.1;
-            if (res >= RO_THRESHOLD) {
-                PyList_Append(result, Py_BuildValue("(dis)",
-                                res, strtol(key, NULL, 16), origLine));
-                continue;
-            }
-        }
+        if (name3 != NULL)
+            ratio = MAX(ratio, ratcliff(name3, origLine) + 0.1);
+    
+        if (ratio >= RO_THRESHOLD)
+            PyList_Append(result, Py_BuildValue("(dis)",
+                            ratio, strtol(key, NULL, 16), origLine));
     }
 
     fclose(keyFile);
 
     PyObject_CallMethod(result, "sort", NULL);
     PyObject_CallMethod(result, "reverse", NULL);
+
     if (nrResults > 0)
         PySequence_DelSlice(result, nrResults, PySequence_Size(result));
 
@@ -262,87 +262,88 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 }
 
 
-/* Search for the searchText2 title in the key file keyFileName,
- * returning at most nrResults results. */
+/* Search for the 'title1', title2' and 'title3' title variations
+ * in the key file keyFileName, returning at most nrResults results. */
 static PyObject*
 search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 {
-    char *searchText2, *keyFileName;
-    char searchText1[MXLINELEN] = "";
+    char *keyFileName = NULL;
+    char *title1 = NULL;
+    char *title2 = NULL;
+    char *title3 = NULL;
+    float ratio;
     FILE *keyFile;
-    float res;
     char line[MXLINELEN];
     char origLine[MXLINELEN];
     char *cp;
     char *key;
-    short doSecTest = 0;
+    unsigned short hasArt = 0;
+    unsigned short matchHasArt = 0;
     unsigned int nrResults = 0;
     unsigned short artlen = 0;
     unsigned short linelen = 0;
     unsigned int count = 0;
-    static char *argnames[] = {"title", "keyFile", "results", NULL};
+    char noArt[MXLINELEN] = "";
+    static char *argnames[] = {"keyFile", "title1", "title2", "title3",
+                                "results", NULL};
     PyObject *result = PyList_New(0);
 
-    if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|i",
-                argnames, &searchText2, &keyFileName, &nrResults))
+    if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|ssi",
+            argnames, &keyFileName, &title1, &title2, &title3, &nrResults))
         return NULL;
 
-    if (strlen(searchText2) > MXLINELEN - 1) {
+    if (strlen(title1) > MXLINELEN - 1)
         return Py_BuildValue("O", result);
-    }
+
+    if (title2 != NULL && strlen(title2) == 0)
+        title2 = NULL;
+
+    if (title3 != NULL && strlen(title3) == 0)
+              title3 = NULL;
 
     if ((keyFile = fopen(keyFileName, "r")) == NULL) {
         PyErr_SetFromErrno(PyExc_IOError);
         return NULL;
     }
 
+    linelen = strlen(title1);
     for (count = 0; count < ART_COUNT; count++) {
-        artlen = strlen(articles[count]);
-        if (!strncasecmp(searchText2, articles[count], artlen)) {
-            strcpy(searchText1, &searchText2[artlen]);
-            strcat(searchText1, ", ");
-            strcat(searchText1, articles[count]);
-            if (searchText1[strlen(searchText1)-1] == ' ')
-                searchText1[strlen(searchText1)-1] = '\0';
-            doSecTest = 1;
+        artlen = strlen(articlesNoSP[count]);
+        if (linelen >= artlen+2 &&
+                !strncasecmp(articlesNoSP[count],
+                &(title1[linelen-artlen]), artlen) &&
+                !strncmp(&(title1[linelen-artlen-2]), ", ", 2)) {
+            /* name1 contains an article. */
+            hasArt = 1;
             break;
         }
     }
-    if (!doSecTest)
-        strcpy(searchText1, searchText2);
-
-    /* for (count = 0; count < ART_COUNT; count++) {
-        artlen = strlen(articles[count]);
-        if (articles[count][artlen-1] == ' ')
-            articles[count][artlen-1] = '\0';
-    } */
 
     while (fgets(line, MXLINELEN, keyFile) != NULL) {
+        /* Split a "origLine|key" line */
         if ((cp = strrchr(line, FSEP)) != NULL) {
             *cp = '\0';
             key = cp+1;
             strcpy(origLine, line);
         } else { continue; }
-        if ((cp = strstr(line, " (")) != NULL)
-            *cp = '\0';
-        if (line[0] == '"')
-            *line = line[1];
-        if (line[(linelen = strlen(line))-1] == '"')
-            line[linelen] = '\0';
-        res = ratcliff(searchText1, line);
-        if (res >= RO_THRESHOLD) {
-            PyList_Append(result, Py_BuildValue("(dis)",
-                            res, strtol(key, NULL, 16), origLine));
-            continue;
+        /* Strip the (year[/imdbIndex]) */
+        while ((cp = strrchr(line, '(')) != NULL) {
+            *(cp-1) = '\0';
+            if ((cp+1)[0] == '1' || (cp+1)[0] == '2' || (cp+1)[0] == '?')
+                break;
         }
-        if (doSecTest) {
-            res = ratcliff(searchText2, line);
-            if (res >= RO_THRESHOLD) {
-                PyList_Append(result, Py_BuildValue("(dis)",
-                                res, strtol(key, NULL, 16), origLine));
-                continue;
-            }
-        } else if (strstr(line, ", ") != NULL) {
+        /* Strip the quotes around the TV series titles. */
+        if (line[0] == '"') {
+            strcpy(line, &(line[1]));
+            linelen = strlen(line);
+            if (linelen > 2 && line[linelen-1] == '"')
+                line[linelen-1] = '\0';
+        }
+
+        /* If the current line has an article, strip it and put the new
+         * line in noArt. */
+        matchHasArt = 0;
+        if (strrchr(line, ',') != NULL) {
             /* Strip the article. */
             linelen = strlen(line);
             for (count = 0; count < ART_COUNT; count++) {
@@ -351,16 +352,27 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
                         !strncasecmp(articlesNoSP[count],
                         &(line[linelen-artlen]), artlen) &&
                         !strncmp(&(line[linelen-artlen-2]), ", ", 2)) {
-                    line[linelen-artlen-2] = '\0';
-                    res = ratcliff(searchText2, line) - 0.1;
-                    if (res >= RO_THRESHOLD) {
-                        PyList_Append(result, Py_BuildValue("(dis)",
-                                        res, strtol(key, NULL, 16), origLine));
-                    }
+                    strcpy(noArt, line);
+                    noArt[linelen-artlen-2] = '\0';
+                    matchHasArt = 1;
                     break;
                 }
             }
         }
+
+        ratio = ratcliff(title1, line) + 0.05;
+
+        if (matchHasArt && !hasArt)
+            ratio = MAX(ratio, ratcliff(title1, noArt));
+        else if (hasArt && !matchHasArt && title2 != NULL)
+            ratio = MAX(ratio, ratcliff(title2, line));
+
+        if (title3 != NULL)
+            ratio = MAX(ratio, ratcliff(title3, origLine) + 0.1);
+
+        if (ratio >= RO_THRESHOLD)
+            PyList_Append(result, Py_BuildValue("(dis)",
+                            ratio, strtol(key, NULL, 16), origLine));
     }
 
     fclose(keyFile);

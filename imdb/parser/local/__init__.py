@@ -41,12 +41,12 @@ from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
 from ratober import search_name, search_title
 from utils import getFullIndex, KeyFScan
 
+from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem
 
 _ltype = type([])
 _dtype = type({})
 _stypes = (type(''), type(u''))
 
-from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem
 
 class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
     """The class used to access IMDb's data through a local installation."""
@@ -144,11 +144,17 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         self.doAdult = doAdult
 
     def _search_movie(self, title, results):
+        title = title.strip()
+        if not title: return []
+        # Search for these title variations.
+        title1, title2, title3 = self._titleVariations(title)
+        params = {'keyFile': '%stitles.key' % self.__db,
+                    'title1': title1.lower(), 'title2': title2.lower(),
+                    'results': results}
+        if title3: params['title3'] = title3.lower()
         # ratober functions return a sorted
         # list of tuples (match_score, movieID, movieTitle)
-        rl = [(x[1], analyze_title(x[2]))
-                for x in search_title(title.strip(),
-                '%stitles.key' % self.__db, results)]
+        rl = [(x[1], analyze_title(x[2])) for x in search_title(**params)]
         # Check for adult movies.
         if not self.doAdult:
             newlist = []
@@ -378,11 +384,16 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         return {'data': {}}
 
     def _search_person(self, name, results):
+        name = name.strip()
+        if not name: return []
+        name1, name2, name3 = self._nameVariations(name)
+        params = {'keyFile': '%snames.key' % self.__db,
+                    'name1': name1.lower(), 'results': results}
+        if name2: params['name2'] = name2.lower()
+        if name3: params['name3'] = name3.lower()
         # ratober functions return a sorted
         # list of tuples (match_score, personID, personName)
-        return [(x[1], analyze_name(x[2]))
-                for x in search_name(name.strip(),
-                '%snames.key' % self.__db, results)]
+        return [(x[1], analyze_name(x[2])) for x in search_name(**params)]
 
     def get_person_main(self, personID):
         infosets = ('main', 'biography', 'other works')

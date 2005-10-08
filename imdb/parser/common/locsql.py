@@ -59,6 +59,12 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
             pass
         return content
 
+    def _getTitleID(self, title):
+        raise NotImplementedError, 'override this method'
+
+    def _getNameID(self, name):
+        raise NotImplementedError, 'override this method'
+
     def _httpMovieID(self, titline):
         """Translate a movieID in an imdbID.
         Try an Exact Primary Title search on IMDb;
@@ -147,7 +153,6 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
             title1 = canonicalTitle(title)
             title3 = ''
         # title2 is title1 without the article, or title1 unchanged.
-        if title2 != title1: hasArt = 1
         title2 = title1
         t2s = title2.split(', ')
         if t2s[-1] in _articles:

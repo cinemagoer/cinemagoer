@@ -419,7 +419,9 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if movieID is None: continue
                 m.movieID = movieID
                 nl.append(m)
-            if nl: res['notable tv guest appearances'][:] = nl
+            if nl:
+                nl.sort(sortMovies)
+                res['notable tv guest appearances'][:] = nl
             else: del res['notable tv guest appearances']
         trefs, nrefs = self._extractRefs(res)
         return {'data': res, 'info sets': infosets,

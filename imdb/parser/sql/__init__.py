@@ -205,9 +205,12 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # possibile that the current user has not update privileges).
         # There're times when I think I'm a genius; this one of
         # those times... <g>
-        if imdbID is not None:
-            self.query('UPDATE titles SET imdbid = %s WHERE movieid = %s;' %
-                        (imdbID, movieID))
+        try:
+            if imdbID is not None:
+                self.query('UPDATE titles SET imdbid = %s WHERE movieid = %s;' %
+                            (imdbID, movieID))
+        except IMDbDataAccessError:
+            pass
         return imdbID
 
     def get_imdbPersonID(self, personID):
@@ -245,7 +248,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     def _search_movie(self, title, results):
         title = title.strip()
         if not title: return []
-        # Up to 3 variations of the title are searched.
+        # Up to 3 variations of the title are searched, plus the
+        # long imdb canonical title, if provided.
         sm1 = SequenceMatcher()
         sm2 = SequenceMatcher()
         sm3 = SequenceMatcher()
@@ -269,7 +273,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         qr = list(self.query(sqlq, escape=0))
         qr += list(self.query(sqlq.replace('titles', 'akatitles', 1), escape=0))
         for i in qr:
-            # Calculate the distance with the searched title.
             til = i[1].lower()
             # Distance with the canonical title (with or without article).
             #   titleS      -> titleR
@@ -478,6 +481,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     def get_movie_technical(self, movieID): return self.get_movie_main(movieID)
     def get_movie_trivia(self, movieID): return self.get_movie_main(movieID)
     def get_movie_vote_details(self, movieID): return self.get_movie_main(movieID)
+    def get_movie_guests(self, movieID): return self.get_movie_main(movieID)
 
     def _search_person(self, name, results):
         name = name.strip()
@@ -622,6 +626,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     else: nl.append(i)
                 else: nl.append(i)
             res['mini biography'][:] = nl
+        if res.has_key('guests'):
+            res['notable tv guest appearances'] = res['guests']
+            del res['guests']
         trefs, nrefs = self._extractRefs(res)
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
                 'info sets': infosets}

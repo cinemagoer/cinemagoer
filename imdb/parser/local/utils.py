@@ -249,7 +249,11 @@ def getRawData(dataF, offset, doCast=0, doWriters=0):
             tmpd['position'] = convBin(fread(1), 'position')
         if doWriters:
             orderset = convBin(fread(3), 'orderset')
-            tmpd['order'] = '%s:%s:%s' % tuple(orderset)
+            try:
+                tmpd['position'] = orderset[2]*1000 + orderset[1]*100 + \
+                                    orderset[0]
+            except TypeError:
+                pass
         resapp(tmpd)
     for i in xrange(noWithout):
         movieID = convBin(fread(3), 'movieID')
@@ -261,7 +265,11 @@ def getRawData(dataF, offset, doCast=0, doWriters=0):
             tmpd['position'] = convBin(fread(1), 'position')
         if doWriters:
             orderset = convBin(fread(3), 'orderset')
-            tmpd['order'] = '%s:%s:%s' % tuple(orderset)
+            try:
+                tmpd['position'] = orderset[2]*1000 + orderset[1]*100 + \
+                                    orderset[0]
+            except TypeError:
+                pass
         resapp(tmpd)
     fptr.close()
     return personID, resList

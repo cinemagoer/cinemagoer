@@ -283,7 +283,7 @@ def sortMovies(m1, m2):
     try: m1y = int(m1.get('year', _last))
     # except AttributeError: m1y = -1 # to put this movie at the end.
     except (AttributeError, ValueError, OverflowError): m1y = _last
-    try: m2y = m2.get('year', _last)
+    try: m2y = int(m2.get('year', _last))
     # except AttributeError: m2y = -1 # to put this movie at the end.
     except (AttributeError, ValueError, OverflowError): m2y = _last
     if m1y > m2y: return -1

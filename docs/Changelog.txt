@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs051007b "The Void" (07 Oct 2005)
+* What's the new in release 2.2-cvs051008 "The Exorcism of Emily Rose" (08 Oct 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in a list of credits (as
@@ -18,6 +18,7 @@
     format (Title, The).
   - minor changes to the functions used to convert to "canonical format"
     names and titles; they should be faster and with better matches.
+  - fixed a bug in the sortMovies() function.
 
   [http data access system]
   - retrieves the 'guest appearances' page for TV series.
@@ -36,6 +37,7 @@
     works fine and it should also be a bit faster.
   - 'notable tv guest appearences' in biography is now a list of Movie
     objects.
+  - writers are sorted in the right order.
 
   [sql data access system]
   - new search system; it should return better matches in less
@@ -47,6 +49,7 @@
   - fixed a bug in the imdbpy2sql.py script; now movie quotes are correctly
     managed.
   - added another role, 'guests', for notable tv guest appearences.
+  - writers are sorted in the right order.
 
 
 * What's the new in release 2.1 "Madagascar" (30 Aug 2005)

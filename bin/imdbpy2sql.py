@@ -506,8 +506,17 @@ def doCast(fp, roleid, rolename):
                 if note: note += ' '
                 note += item
             elif item[0] == '<':
-                try: order = long(item[1:-1])
-                except ValueError: pass
+                textor = item[1:-1]
+                try:
+                    order = long(textor)
+                except ValueError:
+                    os = textor.split(',')
+                    if len(os) == 3:
+                        try:
+                            order = (long(os[2]) * 1000) + \
+                                    (long(os[1]) * 100) + long(os[0])
+                        except ValueError:
+                            pass
         movieid = CACHE_MID.addUnique(title)
         currset = (pid, movieid, role or None,
                     note or None, order or None)
@@ -527,7 +536,9 @@ def castLists():
     while i:
         roleid = i[0][0]
         rolename = fname = i[0][1]
-        if rolename == 'guests': continue
+        if rolename == 'guests':
+            i = res.fetch_row()
+            continue
         fname = fname.replace(' ', '-')
         if fname == 'actress': fname = 'actresses.list.gz'
         elif fname == 'crewmembers': fname = 'miscellaneous.list.gz'
@@ -1006,4 +1017,6 @@ completeCast()
 # Flush caches.
 CACHE_MID.flush()
 CACHE_PID.flush()
+
+print 'DONE!'
 

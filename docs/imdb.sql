@@ -3,7 +3,7 @@
 # http://www.phpmyadmin.net
 #
 # Host: localhost
-# Generation Time: Aug 28, 2005 at 10:43 AM
+# Generation Time: Oct 08, 2005 at 06:36 PM
 # Server version: 4.0.16
 # PHP Version: 4.1.2
 # 
@@ -15,10 +15,11 @@
 #
 # Table structure for table `akanames`
 #
-# Creation: Aug 28, 2005 at 10:40 AM
-# Last update: Aug 28, 2005 at 10:40 AM
+# Creation: Oct 08, 2005 at 06:35 PM
+# Last update: Oct 08, 2005 at 06:35 PM
 #
 
+DROP TABLE IF EXISTS `akanames`;
 CREATE TABLE `akanames` (
   `personid` mediumint(8) unsigned NOT NULL default '0',
   `name` varchar(255) NOT NULL default '',
@@ -37,10 +38,11 @@ CREATE TABLE `akanames` (
 #
 # Table structure for table `akatitles`
 #
-# Creation: Aug 28, 2005 at 10:40 AM
-# Last update: Aug 28, 2005 at 10:40 AM
+# Creation: Oct 08, 2005 at 06:35 PM
+# Last update: Oct 08, 2005 at 06:35 PM
 #
 
+DROP TABLE IF EXISTS `akatitles`;
 CREATE TABLE `akatitles` (
   `movieid` mediumint(8) unsigned NOT NULL default '0',
   `title` varchar(255) NOT NULL default '',
@@ -62,16 +64,17 @@ CREATE TABLE `akatitles` (
 #
 # Table structure for table `cast`
 #
-# Creation: Aug 28, 2005 at 10:40 AM
-# Last update: Aug 28, 2005 at 10:40 AM
+# Creation: Oct 08, 2005 at 06:35 PM
+# Last update: Oct 08, 2005 at 06:35 PM
 #
 
+DROP TABLE IF EXISTS `cast`;
 CREATE TABLE `cast` (
   `personid` mediumint(8) unsigned NOT NULL default '0',
   `movieid` mediumint(8) unsigned NOT NULL default '0',
   `currentrole` varchar(255) default NULL,
   `note` varchar(255) default NULL,
-  `nrorder` tinyint(3) unsigned default NULL,
+  `nrorder` smallint(5) unsigned default NULL,
   `roleid` tinyint(3) unsigned NOT NULL default '0',
   KEY `personid` (`personid`),
   KEY `movieid` (`movieid`),
@@ -88,10 +91,11 @@ CREATE TABLE `cast` (
 #
 # Table structure for table `completecast`
 #
-# Creation: Aug 28, 2005 at 10:40 AM
-# Last update: Aug 28, 2005 at 10:40 AM
+# Creation: Oct 08, 2005 at 06:35 PM
+# Last update: Oct 08, 2005 at 06:35 PM
 #
 
+DROP TABLE IF EXISTS `completecast`;
 CREATE TABLE `completecast` (
   `movieid` mediumint(8) unsigned NOT NULL default '0',
   `object` enum('cast','crew') NOT NULL default 'cast',
@@ -110,11 +114,11 @@ CREATE TABLE `completecast` (
 #
 # Table structure for table `infotypes`
 #
-# Creation: Aug 25, 2005 at 10:38 AM
-# Last update: Aug 26, 2005 at 04:32 PM
-# Last check: Aug 26, 2005 at 03:52 PM
+# Creation: Oct 08, 2005 at 01:17 PM
+# Last update: Oct 08, 2005 at 01:17 PM
 #
 
+DROP TABLE IF EXISTS `infotypes`;
 CREATE TABLE `infotypes` (
   `id` tinyint(3) unsigned NOT NULL auto_increment,
   `info` varchar(32) NOT NULL default '',
@@ -137,128 +141,123 @@ INSERT INTO `infotypes` (`id`, `info`) VALUES (1, 'runtimes'),
 (9, 'tech info'),
 (10, 'production companies'),
 (11, 'countries'),
-(12, 'episodes'),
-(13, 'taglines'),
-(14, 'keywords'),
-(15, 'alternate versions'),
-(16, 'crazy credits'),
-(17, 'goofs'),
-(18, 'soundtrack'),
-(19, 'quotes'),
-(20, 'release dates'),
-(21, 'trivia'),
-(22, 'locations'),
-(23, 'connections'),
-(24, 'business'),
-(25, 'literature'),
-(26, 'laserdisc'),
-(27, 'miscellaneous companies'),
-(28, 'mini biography'),
-(29, 'birth notes'),
-(30, 'birth date'),
-(31, 'height'),
-(32, 'death date'),
-(34, 'spouse'),
-(36, 'other works'),
-(37, 'birth name'),
-(38, 'salary history'),
-(39, 'nick names'),
-(40, 'books'),
-(41, 'agent address'),
-(42, 'biographical movies'),
-(43, 'portrayed'),
-(44, 'notable tv guest appearances'),
-(45, 'where now'),
-(46, 'trademarks'),
-(47, 'interviews'),
-(48, 'articles'),
-(49, 'magazine covers'),
-(50, 'pictorials'),
-(51, 'death notes'),
-(52, 'LD disc format'),
-(53, 'LD year'),
-(54, 'LD digital sound'),
-(55, 'LD official retail price'),
-(56, 'LD frequency response'),
-(57, 'LD pressing plant'),
-(58, 'LD length'),
-(59, 'LD language'),
-(60, 'LD review'),
-(61, 'LD spaciality'),
-(62, 'LD release date'),
-(63, 'LD production country'),
-(64, 'LD contrast'),
-(65, 'LD color rendition'),
-(66, 'LD picture format'),
-(67, 'LD video noise'),
-(68, 'LD video artifacts'),
-(69, 'LD release country'),
-(70, 'LD sharpness'),
-(71, 'LD dynamic range'),
-(72, 'LD audio noise'),
-(73, 'LD color information'),
-(74, 'LD group (genre)'),
-(75, 'LD quality program'),
-(76, 'LD close captions/teletext/ld+g'),
-(77, 'LD category'),
-(78, 'LD analog left'),
-(79, 'LD certification'),
-(80, 'LD audio quality'),
-(81, 'LD video quality'),
-(82, 'LD aspect ratio'),
-(83, 'LD analog right'),
-(84, 'LD additional information'),
-(85, 'LD number of chapter stops'),
-(86, 'LD dialogue intellegibility'),
-(87, 'LD disc size'),
-(88, 'LD master format'),
-(89, 'LD subtitles'),
-(90, 'LD status of availablility'),
-(91, 'LD quality of source'),
-(92, 'LD number of sides'),
-(93, 'LD video standard'),
-(94, 'LD supplement'),
-(95, 'LD original title'),
-(96, 'LD sound encoding'),
-(97, 'LD number'),
-(98, 'LD label'),
-(99, 'LD catalog number'),
-(100, 'LD laserdisc title'),
-(101, 'screenplay/teleplay'),
-(102, 'novel'),
-(103, 'adaption'),
-(104, 'book'),
-(105, 'production process protocol'),
-(107, 'printed media reviews'),
-(108, 'essays'),
-(109, 'other literature'),
-(110, 'mpaa'),
-(111, 'plot'),
-(112, 'votes distribution'),
-(113, 'votes'),
-(114, 'rating'),
-(116, 'production dates'),
-(117, 'copyright holder'),
-(118, 'filming dates'),
-(119, 'budget'),
-(120, 'weekend gross'),
-(121, 'gross'),
-(122, 'opening weekend'),
-(123, 'rentals'),
-(124, 'admissions'),
-(126, 'studios'),
-(128, 'top 250 rank'),
-(129, 'bottom 10 rank');
+(12, 'taglines'),
+(13, 'keywords'),
+(14, 'alternate versions'),
+(15, 'crazy credits'),
+(16, 'goofs'),
+(17, 'soundtrack'),
+(18, 'quotes'),
+(19, 'release dates'),
+(20, 'trivia'),
+(21, 'locations'),
+(22, 'miscellaneous companies'),
+(23, 'mini biography'),
+(24, 'birth notes'),
+(25, 'birth date'),
+(26, 'height'),
+(27, 'death date'),
+(28, 'spouse'),
+(29, 'other works'),
+(30, 'birth name'),
+(31, 'salary history'),
+(32, 'nick names'),
+(33, 'books'),
+(34, 'agent address'),
+(35, 'biographical movies'),
+(36, 'portrayed'),
+(37, 'where now'),
+(38, 'trademarks'),
+(39, 'interviews'),
+(40, 'articles'),
+(41, 'magazine covers'),
+(42, 'pictorials'),
+(43, 'death notes'),
+(44, 'LD disc format'),
+(45, 'LD year'),
+(46, 'LD digital sound'),
+(47, 'LD official retail price'),
+(48, 'LD frequency response'),
+(49, 'LD pressing plant'),
+(50, 'LD length'),
+(51, 'LD language'),
+(52, 'LD review'),
+(53, 'LD spaciality'),
+(54, 'LD release date'),
+(55, 'LD production country'),
+(56, 'LD contrast'),
+(57, 'LD color rendition'),
+(58, 'LD picture format'),
+(59, 'LD video noise'),
+(60, 'LD video artifacts'),
+(61, 'LD release country'),
+(62, 'LD sharpness'),
+(63, 'LD dynamic range'),
+(64, 'LD audio noise'),
+(65, 'LD color information'),
+(66, 'LD group (genre)'),
+(67, 'LD quality program'),
+(68, 'LD close captions/teletext/ld+g'),
+(69, 'LD category'),
+(70, 'LD analog left'),
+(71, 'LD certification'),
+(72, 'LD audio quality'),
+(73, 'LD video quality'),
+(74, 'LD aspect ratio'),
+(75, 'LD analog right'),
+(76, 'LD additional information'),
+(77, 'LD number of chapter stops'),
+(78, 'LD dialogue intellegibility'),
+(79, 'LD disc size'),
+(80, 'LD master format'),
+(81, 'LD subtitles'),
+(82, 'LD status of availablility'),
+(83, 'LD quality of source'),
+(84, 'LD number of sides'),
+(85, 'LD video standard'),
+(86, 'LD supplement'),
+(87, 'LD original title'),
+(88, 'LD sound encoding'),
+(89, 'LD number'),
+(90, 'LD label'),
+(91, 'LD catalog number'),
+(92, 'LD laserdisc title'),
+(93, 'screenplay/teleplay'),
+(94, 'novel'),
+(95, 'adaption'),
+(96, 'book'),
+(97, 'production process protocol'),
+(98, 'printed media reviews'),
+(99, 'essays'),
+(100, 'other literature'),
+(101, 'mpaa'),
+(102, 'plot'),
+(103, 'votes distribution'),
+(104, 'votes'),
+(105, 'rating'),
+(106, 'production dates'),
+(107, 'copyright holder'),
+(108, 'filming dates'),
+(109, 'budget'),
+(110, 'weekend gross'),
+(111, 'gross'),
+(112, 'opening weekend'),
+(113, 'rentals'),
+(114, 'admissions'),
+(115, 'studios'),
+(116, 'top 250 rank'),
+(117, 'bottom 10 rank');
 
 # --------------------------------------------------------
 
 #
 # Table structure for table `linktypes`
 #
-# Creation: Aug 25, 2005 at 10:49 AM
-# Last update: Aug 25, 2005 at 10:49 AM
+# Creation: Oct 08, 2005 at 01:17 PM
+# Last update: Oct 08, 2005 at 01:17 PM
 #
 
+DROP TABLE IF EXISTS `linktypes`;
 CREATE TABLE `linktypes` (
   `id` tinyint(3) unsigned NOT NULL auto_increment,
   `type` varchar(32) NOT NULL default '',
@@ -294,10 +293,11 @@ INSERT INTO `linktypes` (`id`, `type`) VALUES (1, 'follows'),
 #
 # Table structure for table `movielinks`
 #
-# Creation: Aug 28, 2005 at 10:41 AM
-# Last update: Aug 28, 2005 at 10:41 AM
+# Creation: Oct 08, 2005 at 06:35 PM
+# Last update: Oct 08, 2005 at 06:35 PM
 #
 
+DROP TABLE IF EXISTS `movielinks`;
 CREATE TABLE `movielinks` (
   `movieid` mediumint(8) unsigned NOT NULL default '0',
   `movietoid` mediumint(8) unsigned NOT NULL default '0',
@@ -316,10 +316,11 @@ CREATE TABLE `movielinks` (
 #
 # Table structure for table `moviesinfo`
 #
-# Creation: Aug 28, 2005 at 10:41 AM
-# Last update: Aug 28, 2005 at 10:41 AM
+# Creation: Oct 08, 2005 at 06:35 PM
+# Last update: Oct 08, 2005 at 06:35 PM
 #
 
+DROP TABLE IF EXISTS `moviesinfo`;
 CREATE TABLE `moviesinfo` (
   `movieid` mediumint(8) unsigned NOT NULL default '0',
   `infoid` tinyint(3) unsigned NOT NULL default '0',
@@ -339,10 +340,11 @@ CREATE TABLE `moviesinfo` (
 #
 # Table structure for table `names`
 #
-# Creation: Aug 28, 2005 at 10:41 AM
-# Last update: Aug 28, 2005 at 10:41 AM
+# Creation: Oct 08, 2005 at 06:35 PM
+# Last update: Oct 08, 2005 at 06:35 PM
 #
 
+DROP TABLE IF EXISTS `names`;
 CREATE TABLE `names` (
   `personid` mediumint(8) unsigned NOT NULL auto_increment,
   `name` varchar(255) NOT NULL default '',
@@ -362,10 +364,11 @@ CREATE TABLE `names` (
 #
 # Table structure for table `personsinfo`
 #
-# Creation: Aug 28, 2005 at 10:41 AM
-# Last update: Aug 28, 2005 at 10:41 AM
+# Creation: Oct 08, 2005 at 06:35 PM
+# Last update: Oct 08, 2005 at 06:35 PM
 #
 
+DROP TABLE IF EXISTS `personsinfo`;
 CREATE TABLE `personsinfo` (
   `personid` mediumint(9) NOT NULL default '0',
   `infoid` tinyint(3) unsigned NOT NULL default '0',
@@ -385,10 +388,11 @@ CREATE TABLE `personsinfo` (
 #
 # Table structure for table `roletypes`
 #
-# Creation: Aug 25, 2005 at 10:54 AM
-# Last update: Aug 26, 2005 at 03:20 PM
+# Creation: Oct 08, 2005 at 01:17 PM
+# Last update: Oct 08, 2005 at 01:17 PM
 #
 
+DROP TABLE IF EXISTS `roletypes`;
 CREATE TABLE `roletypes` (
   `id` tinyint(3) unsigned NOT NULL auto_increment,
   `role` varchar(32) NOT NULL default '',
@@ -410,17 +414,19 @@ INSERT INTO `roletypes` (`id`, `role`) VALUES (1, 'actor'),
 (8, 'director'),
 (9, 'editor'),
 (10, 'crewmembers'),
-(11, 'production designer');
+(11, 'production designer'),
+(12, 'guests');
 
 # --------------------------------------------------------
 
 #
 # Table structure for table `titles`
 #
-# Creation: Aug 28, 2005 at 10:41 AM
-# Last update: Aug 28, 2005 at 10:41 AM
+# Creation: Oct 08, 2005 at 06:35 PM
+# Last update: Oct 08, 2005 at 06:35 PM
 #
 
+DROP TABLE IF EXISTS `titles`;
 CREATE TABLE `titles` (
   `movieid` mediumint(9) NOT NULL auto_increment,
   `title` varchar(255) NOT NULL default '',

@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 
-import os, sys, getopt
+import os, sys, getopt, time
 from gzip import GzipFile
 
 import MySQLdb
@@ -76,6 +76,16 @@ for arg in args:
 # Connect to the database.
 db = MySQLdb.connect(**CONN_PARAMS)
 curs = db.cursor()
+
+
+# Show time consumed by the single function call.
+CTIME = int(time.time())
+BEGIN_TIME = CTIME
+def t(s):
+    global CTIME
+    nt = int(time.time())
+    print '# TIME', s, ': %d min, %s sec.' % divmod(nt-CTIME, 60)
+    CTIME = nt
 
 
 # Handle laserdisc keys.
@@ -513,8 +523,8 @@ def doCast(fp, roleid, rolename):
                     os = textor.split(',')
                     if len(os) == 3:
                         try:
-                            order = (long(os[2]) * 1000) + \
-                                    (long(os[1]) * 100) + long(os[0])
+                            order = ((long(os[2])-1) * 1000) + \
+                                    ((long(os[1])-1) * 100) + (long(os[0])-1)
                         except ValueError:
                             pass
         movieid = CACHE_MID.addUnique(title)
@@ -548,6 +558,7 @@ def castLists():
         doCast(f, roleid, rolename)
         f.close()
         i = res.fetch_row()
+        t('castLists(%s)' % rolename)
 
 
 def doAkaNames():
@@ -834,6 +845,7 @@ def doNMMVFiles():
         elif fname == 'business.list.gz': fp.stop = BUS_STOP
         nmmvFiles(fp, funct, fname)
         fp.close()
+        t('doNMMVFiles(%s)' % fname[:-8].replace('-', ' '))
 
 
 def doMiscMovieInfo():
@@ -885,6 +897,7 @@ def doMiscMovieInfo():
             count += 1
         sqldata.flush()
         fp.close()
+        t('doMiscMovieInfo(%s)' % dataf[0][:-8].replace('-', ' '))
         
 
 def getRating():
@@ -992,31 +1005,42 @@ for item in results:
     MOVIELINK_IDS.append((item[1], item[0]))
 MOVIELINK_IDS.sort(_cmpfunc)
 
+
 # begin the iterations...
 
 # Populate the CACHE_MID instance.
 readMovieList()
 #CACHE_MID.populate()
 #CACHE_PID.populate()
+t('readMovieList()')
 
 # actors, actresses, directors, ....
 castLists()
 
 doAkaNames()
+t('doAkaNames()')
 doAkaTitles()
+t('doAkaTitles()')
 doMinusHashFiles()
+t('doMinusHashFiles()')
 doNMMVFiles()
 doMiscMovieInfo()
 doMovieLinks()
+t('doMovieLinks()')
 getRating()
+t('getRating()')
 getTaglines()
+t('getTaglines()')
 getTopBottomRating()
+t('getTopBottomRating()')
 completeCast()
+t('completeCast()')
 
 
 # Flush caches.
 CACHE_MID.flush()
 CACHE_PID.flush()
 
-print 'DONE!'
+print 'DONE! (in %d minutes, %d seconds)' % \
+        divmod(int(time.time())-BEGIN_TIME, 60)
 

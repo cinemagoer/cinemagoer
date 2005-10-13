@@ -106,7 +106,7 @@ class Movie:
                 'notable tv guest appearances': 'guests',
                 'amazon review': 'amazon reviews'}
 
-    def __init__(self, movieID=None, title='', myTitle='',
+    def __init__(self, title='', movieID=None, myTitle='',
                     myID=None, movieData={}, currentRole='', notes='',
                     accessSystem=None, titlesRefs={}, namesRefs={},
                     modFunct=modClearRefs):
@@ -342,7 +342,7 @@ class Movie:
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Movie instance."""
-        m = Movie(self.movieID, '', self.myTitle, self.myID,
+        m = Movie('', self.movieID, self.myTitle, self.myID,
                     deepcopy(self.__movie_data, memo), self.currentRole,
                     self.notes, self.accessSystem,
                     deepcopy(self.__titlesRefs, memo),

@@ -107,7 +107,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
                 if movieID is None:
                     movieID = self._getTitleID(title)
                 if movieID is None: continue
-                m = Movie(movieID=movieID, title=rtitle,
+                m = Movie(title=rtitle, movieID=movieID,
                             accessSystem=self.accessSystem)
                 trefs[rtitle] = m
             for name in re_nameRef.findall(o):
@@ -118,7 +118,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
                 if personID is None:
                     personID = self._getNameID(name)
                 if personID is None: continue
-                p = Person(personID=personID, name=rname,
+                p = Person(name=rname, personID=personID,
                             accessSystem=self.accessSystem)
                 nrefs[rname] = p
         elif to is _ltype:

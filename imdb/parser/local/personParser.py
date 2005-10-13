@@ -87,6 +87,7 @@ def _buildGuests(gl):
                     if note: note += ' '
                     note += cr[opi:]
                     cr = cr[:opi].strip()
+        # As you can see, we've no notion of the movieID, here.
         m = Movie(title=titl[0], currentRole=cr, notes=note,
                     accessSystem='local')
         rl.append(m)

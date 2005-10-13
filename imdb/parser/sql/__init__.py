@@ -343,6 +343,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         res = self._getDict('titles',
                             ('title', 'imdbIndex', 'kind', 'year'),
                             'movieid = %s' % movieID, unique=1)
+        if not res:
+            raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
         if res['imdbIndex'] is None: del res['imdbIndex']
         if res['year'] is None: del res['year']
         if not res:
@@ -562,6 +564,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         infosets = self.get_person_infoset()
         res = self._getDict('names', ('name', 'imdbIndex'),
                             'personid = %s' % personID, unique=1)
+        if not res:
+            raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
         if res['imdbIndex'] is None: del res['imdbIndex']
         if not res:
             raise IMDbDataAccessError, 'unable to get personID "%s"' % personID

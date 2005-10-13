@@ -64,7 +64,7 @@ class Person:
                         "biography from leonard maltin's movie encyclopedia",
                   'real name': 'birth name'}
 
-    def __init__(self, personID=None, name='', myName='', myID=None,
+    def __init__(self, name='', personID=None, myName='', myID=None,
                 personData={}, currentRole='', notes='', accessSystem=None,
                 titlesRefs={}, namesRefs={}, modFunct=modClearRefs,
                 billingPos=None):
@@ -305,7 +305,7 @@ class Person:
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Person instance."""
-        p = Person(self.personID, '', self.myName, self.myID,
+        p = Person('', self.personID, self.myName, self.myID,
                     deepcopy(self.__person_data, memo), self.currentRole,
                     self.notes, self.accessSystem,
                     deepcopy(self.__titlesRefs, memo),

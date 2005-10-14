@@ -138,7 +138,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         cont = re_spaces.sub(' ', cont)
         return _subRefs(cont)
 
-    def _getPersons(self, s, sep='<br>', hasCr=0):
+    def _getPersons(self, s, sep='<br>', hasCr=0, aonly=0):
         """Return a list of Person objects, from the string s; items
         are assumed to be separated by the sep string; if hasCr is set,
         the currentRole of a person is searched."""
@@ -161,6 +161,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     currentRole = _unHtml(name[1])
                 name = name[0]
             pid = re_imdbID.findall(name)
+            if aonly:
+                stripped = _findBetween(name, '>', '</a>')
+                if len(stripped) == 1: name = stripped[0]
             name = _unHtml(name)
             if not (pid and name): continue
             pl.append(Person(personID=pid[0], name=name,
@@ -204,11 +207,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         d = analyze_title(title, canonical=1)
         direct = _findBetween(cont, 'Directed by</b><br>', '<br> <br>')
         if direct:
-            dirs = self._getPersons(direct[0])
+            dirs = self._getPersons(direct[0], aonly=1)
             if dirs: d['director'] = dirs
         writers = _findBetween(cont, 'Writing credits</b>', '<br> <br>')
         if writers:
-            ws = self._getPersons(writers[0])
+            ws = self._getPersons(writers[0], aonly=1)
             if ws: d['writer'] = ws
         cvurl = _getTagWith(cont, 'alt="cover"')
         if cvurl:
@@ -267,9 +270,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             rt = [x.strip().replace(' min', '')
                     for x in runtimes[0].split('/')]
             d['runtimes'] = rt
-        country = _findBetween(cont, 'href="/Sections/Countries/', '"')
+        country = _findBetween(cont, 'href="/Sections/Countries/', ['"', '/'])
         if country: d['countries'] = country
-        lang = _findBetween(cont, 'href="/Sections/Languages/', '"')
+        lang = _findBetween(cont, 'href="/Sections/Languages/', ['"', '/'])
         if lang: d['languages'] = lang
         col = _findBetween(cont, '"/List?color-info=', '<br')
         if col:

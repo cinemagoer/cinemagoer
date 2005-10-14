@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs051013 "The Exorcism of Emily Rose" (13 Oct 2005)
+* What's the new in release 2.2-cvs051013b "The Exorcism of Emily Rose" (13 Oct 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in a list of credits (as
@@ -29,6 +29,7 @@
 
   [mobile data access system]
   - fixed a bug with direct hits, searching for a person's name.
+  - fixed a bug with languages and countries.
 
   [local and sql data access system]
   - now cast entries are correctly sorted.

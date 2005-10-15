@@ -1,27 +1,26 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs051013b "The Exorcism of Emily Rose" (13 Oct 2005)
+* What's the new in release 2.2-cvs051015 "The Exorcism of Emily Rose" (15 Oct 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
-    keep record of the position of the person in a list of credits (as
+    keep record of the position of the person in the list of credits (as
     an example, "Laurence Fishburne" is billed in 2nd position in the
     cast list for the "Matrix, The (1999)" movie.
   - added two functions to the utils module, to sort respectively
     movies (by year/title/imdbIndex) and persons (by billingPos/name/imdbIndex).
   - every data access system support the 'adultSearch' argument and the
     do_adult_search() method to exclude the adult movies from your searches.
-    By default, adult movies are listed.
+    By default, adult movies are always isted.
   - renamed the scripts, appending the ".py" extension.
   - added an "IMDbPY Powered" logo and a bitmap used by the Windows installer.
   - now Person and Movie objects always convert name/title to the canonical
     format (Title, The).
   - minor changes to the functions used to convert to "canonical format"
     names and titles; they should be faster and with better matches.
-  - fixed a bug in the sortMovies() function.
-  - 'title' is the first argument, initializing a Movie object (instead
+  - 'title' is the first argument, instancing a Movie object (instead
     of 'movieID').
-  - 'name' is the first argument, initializing a Movie object (instead
+  - 'name' is the first argument, instancing a Movie object (instead
     of 'personID').
 
   [http data access system]
@@ -45,9 +44,6 @@
   - writers are sorted in the right order.
 
   [sql data access system]
-  - new search system; it should return better matches in less
-    time (searching people's name is still somewhat slow); it's
-    also possibile to search for "long imdb canonical title/name".
   - search results are now sorted in correct order; difflib is used to
     calculate strings similarity.
   - searches for only a surname now returns much better results.
@@ -55,6 +51,7 @@
     managed.
   - added another role, 'guests', for notable tv guest appearences.
   - writers are sorted in the right order.
+  - put also the 'birth name' in the akanames table.
 
 
 * What's the new in release 2.1 "Madagascar" (30 Aug 2005)

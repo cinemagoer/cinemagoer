@@ -46,7 +46,7 @@ print '    Best match for "%s"' % name
 person = results[0]
 
 # So far the Person object only contains basic information like the
-# name; retrieve every avaliable information:
+# name; retrieve main information:
 i.update(person)
 
 print person.summary()

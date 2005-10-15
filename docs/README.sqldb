@@ -43,7 +43,7 @@ In the end, the database will require between 900MB and 1GB of disc space.
 
 Now you can use IMDbPY with the database:
   from imdb import IMDb
-  i = IMDb('sql', db='imdb', user='myuser', passwd='mypwd')
+  i = IMDb('sql', db='imdb', user='user', passwd='pwd')
   resList = i.search_movie('the incredibles')
   for x in resList: print x
   ti = resList[0]

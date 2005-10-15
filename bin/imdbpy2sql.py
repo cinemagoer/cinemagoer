@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 
-import os, sys, getopt, time
+import os, sys, getopt, time, re
 from gzip import GzipFile
 
 import MySQLdb
@@ -35,6 +35,7 @@ from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError
 
+re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 HELP = """imdbpy2sql usage:
     %s -d /directory/with/PlainTextDataFiles/ db=imdb user=admin passwd=pwd
@@ -782,10 +783,12 @@ def nmmvFiles(fp, funct, fname):
         guestid = curs.fetchone()[0]
         guestdata = SQLData(sqlString='INSERT INTO cast (personid, movieid, currentrole, note, roleid) VALUES (%s, %s, %s, %s, ' + str(guestid) + ')')
         guestdata.flushEvery = 10000
+        akanamesdata = SQLData(sqlString='INSERT INTO akanames (personid, name, imdbindex) VALUES (%s, %s, %s)')
     else:
         datakind = 'movie'
         sqls = sqlsM
         guestdata = None
+        akanamesdata = None
     sqldata = SQLData(sqlString=sqls)
     if fname == 'plot.list.gz': sqldata.flushEvery = 1000
     elif fname == 'literature.list.gz': sqldata.flushEvery = 5000
@@ -809,6 +812,7 @@ def nmmvFiles(fp, funct, fname):
             if type(v) is _ltype:
                 for i in v:
                     if k == 'notable tv guest appearances':
+                        # Put "guest" information in the cast table.
                         title = i.get('long imdb canonical title')
                         if not title: continue
                         movieid = CACHE_MID.addUnique(title)
@@ -825,9 +829,27 @@ def nmmvFiles(fp, funct, fname):
                     note = None
             else:
                 if v: sqldata.add((mopid, theid, v, note))
+                if k == 'birth name' and v:
+                    # Put also the birth name in the list of aliases.
+                    realname = v
+                    imdbIndex = re_nameImdbIndex.findall(realname)
+                    if imdbIndex:
+                        imdbIndex = imdbIndex[0]
+                        realname = re_nameImdbIndex.sub('', realname)
+                    # Strip misc notes.
+                    fpi = realname.find('(')
+                    if fpi != -1:
+                        lpi = realname.rfind(')')
+                        if lpi != -1:
+                            realname = '%s %s' % (realname[:fpi].strip(),
+                                                    realname[lpi:].strip())
+                            realname = realname.strip()
+                    if realname:
+                        # XXX: check for duplicates?
+                        akanamesdata.add((mopid, realname, imdbIndex))
         count += 1
-    if guestdata is not None:
-        guestdata.flush()
+    if guestdata is not None: guestdata.flush()
+    if akanamesdata is not None: akanamesdata.flush()
     sqldata.flush()
 
 

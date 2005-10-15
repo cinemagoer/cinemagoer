@@ -5,7 +5,7 @@ As I've already said, IMDbPY by itself is not really useful if you're
 not a developer; anyway, some simple example scripts are included in
 the ./bin directory.
 You can find other IMDbPY-based programs here:
-    http://imdbpy.sourceforge.net/?page=programs
+    http://imdbpy.sf.net/?page=programs
 
 The 'search_movie.py' script takes a single argument, which must be
 a title of a movie to search; if the title contains spaces or

@@ -18,11 +18,13 @@ from distutils.core import setup, Extension
 # IMDb's database installed; obviously it can't be used, but the
 # interface to the web database is always available.
 DO_LOCAL = 1
+
 # XXX NOTE: the "sql data access system" requires the MySQLdb python
 # module and a connection to a database with the whole IMDb data,
-# that must be create using the imdbpy2sql script.
-# Setting this to 1 will always install at least the imdbpy2sql script.
+# that must be create using the imdbpy2sql.py script.
+# Setting this to 1 will always install at least the imdbpy2sql.py script.
 DO_SQL = 1
+
 # Install some very simple example scripts.
 DO_SCRIPTS = 1
 
@@ -31,9 +33,9 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '2.2-cvs051013b'
+version = '2.2-cvs051015'
 
-home_page = 'http://imdbpy.sourceforge.net/'
+home_page = 'http://imdbpy.sf.net/'
 
 long_desc = """IMDbPY is a Python package useful to retrieve and
 manage the data of the IMDb movie database about both movies and people.
@@ -50,7 +52,7 @@ in this package; other IMDbPY-based programs are available at the
 home page: %s
 """ % home_page
 
-dwnl_url = 'http://imdbpy.sourceforge.net/?page=download'
+dwnl_url = 'http://imdbpy.sf.net/?page=download'
 
 classifiers = """\
 Development Status :: 5 - Production/Stable
@@ -107,7 +109,7 @@ if DO_SCRIPTS:
 if sys.version_info >= (2, 1):
     params['keywords'] = ['imdb', 'movie', 'people', 'database', 'cinema',
                             'film', 'person', 'cast', 'actor', 'actress',
-                            'director']
+                            'director', 'sql']
     params['platforms'] = 'any'
 
 if sys.version_info >= (2, 3):

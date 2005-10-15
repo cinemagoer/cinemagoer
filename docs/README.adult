@@ -7,11 +7,11 @@ the result of the search_movie() and search_person() methods.
 If for some unintelligible reason you don't want classics
 like "Debbie Does Dallas" to show up in your list of results,
 you can disable this feature initializing the IMDb class with
-the 'adultSearch' argument.
+the 'adultSearch' argument set to 0 (or other "False" value).
 
 E.g.:
     from imdb import IMDb
-    ia = IMDb(accessSystem='http', adultSearch=0) # or 'httpThin' or 'mobile'.
+    ia = IMDb(accessSystem='http', adultSearch=0)
 
 
 The behavior of a IMDb class's instance can be modified at
@@ -21,7 +21,7 @@ E.g.:
     from imdb import IMDb
 
     # By default in the horny-mode.
-    ia = IMDb(accessSystem='http') # or 'httpThin' or 'mobile'.
+    ia = IMDb(accessSystem='http')
 
     # Just for this example, be sure to exclude the proxy.
     ia.set_proxy(None)

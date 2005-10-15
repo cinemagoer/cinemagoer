@@ -46,7 +46,7 @@ print '    Best match for "%s"' % title
 movie = results[0]
 
 # So far the Movie object only contains basic information like the
-# title and the year; retrieve every avaliable information:
+# title and the year; retrieve main information:
 i.update(movie)
 
 print movie.summary()

@@ -167,7 +167,12 @@ ratcliff(char *s1, char *s2)
 
 
 /* Search for the 'name1', 'name2' and 'name3' name variations
- * in the key file keyFileName, returning at most nrResults results. */
+ * in the key file keyFileName, returning at most nrResults results.
+ *
+ * See also the documentation of the _search_person() method of the
+ * parser.sql python module, and the _nameVariations() method of the
+ * common.locsql module.
+ */
 static PyObject*
 search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 {
@@ -263,7 +268,12 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 
 
 /* Search for the 'title1', title2' and 'title3' title variations
- * in the key file keyFileName, returning at most nrResults results. */
+ * in the key file keyFileName, returning at most nrResults results.
+ *
+ * See also the documentation of the _search_movie() method of the
+ * parser.sql python module, and the _titleVariations() method of the
+ * common.locsql module.
+ */
 static PyObject*
 search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 {

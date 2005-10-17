@@ -30,7 +30,8 @@ from gzip import GzipFile
 import MySQLdb
 from _mysql_exceptions import OperationalError
 
-from imdb.utils import analyze_title, analyze_name, build_name, build_title
+from imdb.utils import analyze_title, analyze_name, build_name, build_title, \
+                        normalizeName, canonicalName
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError
@@ -829,10 +830,12 @@ def nmmvFiles(fp, funct, fname):
                     note = None
             else:
                 if v: sqldata.add((mopid, theid, v, note))
-                if k == 'birth name' and v:
-                    # Put also the birth name in the list of aliases.
-                    realname = v
-                    imdbIndex = re_nameImdbIndex.findall(realname)
+            if k in ('nick names', 'birth name') and v:
+                # Put also the birth name/nick names in the list of aliases.
+                if k == 'birth name': realnames = [v]
+                else: realnames = v
+                for realname in realnames:
+                    imdbIndex = re_nameImdbIndex.findall(realname) or None
                     if imdbIndex:
                         imdbIndex = imdbIndex[0]
                         realname = re_nameImdbIndex.sub('', realname)
@@ -846,6 +849,10 @@ def nmmvFiles(fp, funct, fname):
                             realname = realname.strip()
                     if realname:
                         # XXX: check for duplicates?
+                        if k == 'birth name':
+                            realname = canonicalName(realname)
+                        else:
+                            realname = normalizeName(realname)
                         akanamesdata.add((mopid, realname, imdbIndex))
         count += 1
     if guestdata is not None: guestdata.flush()

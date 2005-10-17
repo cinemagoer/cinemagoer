@@ -25,7 +25,7 @@ setting DO_LOCAL to 0, the parser.local package is not installed (and
 the "ratober" C module is not compiled); this is useful if your system
 doesn't have the space (more than 600Mb) for a local installation
 of the IMDb's database.  Preventing the installation of the
-parser.local package will also save at least 150Kb of disk space
+parser.local package will also save at least 120Kb of disk space
 on your system.
 
 The DO_SQL variable, if set to 0, will excludes the parser.sql
@@ -33,16 +33,17 @@ package (and the parser.common package, if DO_LOCAL is also 0);
 you don't need it if your system does not have the MySQLdb module.
 
 If the DO_SCRIPTS variable is set to 0, the example scripts in
-the ./bin/ directory are not installed, saving about 45Kb.
+the ./bin/ directory are not installed, saving about 65Kb.
 
 
 Now, if you're installing IMDbPY (using ./setup.py install), you
 should take a look at some options, like "--no-compile" and "-O0"
-to exclude pyc and pyo file (saving at least 300Kb of disk space).
+to exclude pyc (saving at least 450Kb of disk space) and pyo
+(other 400Kb) files.
 
 Moreover, if you're creating a package (rpm, deb or whatever),
 in the setup.cfg you can exclude from your package things
-like the documentation (more than 180Kb) and the icon (~4Kb).
+like the documentation (more than 200Kb) and the icon (~4Kb).
 
 In both situations (installing and packaging), you may also need
 to modify the MANIFEST.in file.

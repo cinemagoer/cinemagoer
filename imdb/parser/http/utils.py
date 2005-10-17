@@ -90,7 +90,10 @@ class ParserBase(HTMLParser):
 
     def handle_charref(self, name):
         # Stupids, stupids non-breaking spaces...
-        if name == '160': self.handle_data(' ')
+        if name == '160':
+            name = ' '
+            self.handle_data(name)
+            return
         return HTMLParser.handle_charref(self, name)
 
     def unknown_charref(self, ref):

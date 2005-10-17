@@ -104,7 +104,7 @@ be grateful for your work.
 Again: if there's something that bother you, write some code.
 It's free software, after all.
 
-Things to do for SQL:
+Things to do:
 * Support for other SQL database (like PostgresSQL), and try to be
   database-independent.
 * The imdbpy2sql.py script MUST be run on a database with empty tables;
@@ -116,6 +116,9 @@ Things to do for SQL:
 * Running the imdbpy2sql.py script will still issues some Warnings, from
   the MySQLdb module.  This is especially true for the readMovieList()
   function.  This needs investigation: maybe some movies are lost.
+  NOTE: this is due to data truncation in 'note' field, where information
+  are longer than 255 chars; see mysql-python bug #1295308:
+  http://sf.net/tracker/index.php?func=detail&aid=1295308&group_id=22307&atid=374932
 * The imdbpy2sql.py is slow and takes a lot of time, but honestly this
   is a minor issue, and I fear there're few chances to see substantial
   improvements.

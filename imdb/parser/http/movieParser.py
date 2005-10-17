@@ -941,9 +941,18 @@ class HTMLKeywordsParser(ParserBase):
             self.__ckw = ''
             self.__in_kw = 0
 
-    def _handle_data(self, data):
-        if self.__in_kw:
-            self.__ckw += data
+    def start_a(self, attrs):
+        if not self.__in_kw: return
+        href = self.get_attr_value(attrs, 'href')
+        if not href: return
+        kwi = href.find('keyword/')
+        if kwi == -1: return
+        kw = href[kwi+8:].strip()
+        if not kw: return
+        if kw[-1] == '/': kw = kw[:-1].strip()
+        if kw: self.__ckw = kw
+
+    def end_a(self): pass
 
 
 class HTMLAlternateVersionsParser(ParserBase):
@@ -1506,6 +1515,9 @@ class HTMLOfficialsitesParser(ParserBase):
         if self.__in_os3:
             href = self.get_attr_value(attrs, 'href')
             if href:
+                if not href.lower().startswith('http://'):
+                    if href.startswith('/'): href = href[1:]
+                    href = 'http://akas.imdb.com/%s' % href
                 self.__cosl = href
         
     def end_a(self): pass

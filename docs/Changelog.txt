@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.2-cvs051015 "The Exorcism of Emily Rose" (15 Oct 2005)
+* What's the new in release 2.2 "The Thing" (17 Oct 2005)
   [general]
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in the list of credits (as
@@ -11,7 +11,7 @@
     movies (by year/title/imdbIndex) and persons (by billingPos/name/imdbIndex).
   - every data access system support the 'adultSearch' argument and the
     do_adult_search() method to exclude the adult movies from your searches.
-    By default, adult movies are always isted.
+    By default, adult movies are always listed.
   - renamed the scripts, appending the ".py" extension.
   - added an "IMDbPY Powered" logo and a bitmap used by the Windows installer.
   - now Person and Movie objects always convert name/title to the canonical
@@ -25,12 +25,16 @@
 
   [http data access system]
   - retrieves the 'guest appearances' page for TV series.
+  - fixed a bug retrieving newsgroup reviews urls.
+  - fixed a bug managing non-breaking spaces (they're truly a damnation!)
+  - fixed a bug with mini TV Series in people's biographies.
+  - now keywords are in format 'bullet-time' and no more 'Bullet Time'.
 
   [mobile data access system]
   - fixed a bug with direct hits, searching for a person's name.
   - fixed a bug with languages and countries.
 
-  [local and sql data access system]
+  [local data access system]
   - now cast entries are correctly sorted.
   - new search system; it should return better matches in less
     time (searching people's name is still somewhat slow); it's
@@ -46,12 +50,14 @@
   [sql data access system]
   - search results are now sorted in correct order; difflib is used to
     calculate strings similarity.
+  - new search SQL query and comparison algorithm; it should return
+    much better matches.
   - searches for only a surname now returns much better results.
   - fixed a bug in the imdbpy2sql.py script; now movie quotes are correctly
     managed.
   - added another role, 'guests', for notable tv guest appearences.
   - writers are sorted in the right order.
-  - put also the 'birth name' in the akanames table.
+  - put also the 'birth name' and the 'nick names' in the akanames table.
 
 
 * What's the new in release 2.1 "Madagascar" (30 Aug 2005)

@@ -189,6 +189,8 @@ class HTMLMaindetailsParser(ParserBase):
             elif self.__roles.startswith('(mini)'):
                 tit += ' (mini)'
                 self.__roles = self.__roles[6:].strip()
+                if self.__roles.startswith('TV Series'):
+                    self.__roles = self.__roles[10:].strip()
             elif self.__roles.startswith('(VG)'):
                 tit += ' (VG)'
                 self.__roles = self.__roles[4:].strip()

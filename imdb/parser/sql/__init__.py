@@ -635,6 +635,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if res.has_key('guests'):
             res['notable tv guest appearances'] = res['guests']
             del res['guests']
+        miscnames = res.get('nick names', [])
+        if res.has_key('birth name'): miscnames.append(res['birth name'])
+        if res.has_key('akas'):
+            for mname in miscnames:
+                if mname in res['akas']: res['akas'].remove(mname)
         trefs, nrefs = self._extractRefs(res)
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
                 'info sets': infosets}

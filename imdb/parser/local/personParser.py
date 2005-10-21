@@ -26,7 +26,7 @@ from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
 from utils import getRawData, getLabel, getFullIndex
 
-from imdb.utils import re_titleRef
+from imdb.utils import re_titleRef, analyze_name, build_name, normalizeName
 
 
 def _parseList(l, prefix, mline=1):
@@ -140,12 +140,16 @@ def _parseBiography(biol):
     otherworks = _parseList(biol, 'OW')
     if otherworks: res['other works'] = otherworks
     realname = [x[4:].strip() for x in biol if x.startswith('RN: ')]
-    if realname: res['birth name'] = realname[0]
+    if realname:
+        rn = realname[0].strip()
+        if rn:
+            rn = build_name(analyze_name(rn, canonical=1), canonical=1)
+            res['birth name'] = rn
     sal = [x[6:].strip().replace(' -> ', '::')
             for x in biol if x.startswith('SA: * ')]
     if sal: res['salary history'] = sal
     nicks = [x[4:].strip() for x in biol if x.startswith('NK: ')]
-    if nicks: res['nick names'] = nicks
+    if nicks: res['nick names'] = [normalizeName(x) for x in nicks]
     books = _parseList(biol, 'BO')
     if books: res['books'] = books
     agent = _parseList(biol, 'AG')

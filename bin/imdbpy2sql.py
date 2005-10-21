@@ -30,8 +30,7 @@ from gzip import GzipFile
 import MySQLdb
 from _mysql_exceptions import OperationalError
 
-from imdb.utils import analyze_title, analyze_name, build_name, build_title, \
-                        normalizeName, canonicalName
+from imdb.utils import analyze_title, analyze_name, build_name, build_title
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError
@@ -849,10 +848,10 @@ def nmmvFiles(fp, funct, fname):
                             realname = realname.strip()
                     if realname:
                         # XXX: check for duplicates?
-                        if k == 'birth name':
-                            realname = canonicalName(realname)
-                        else:
-                            realname = normalizeName(realname)
+                        #if k == 'birth name':
+                        #    realname = canonicalName(realname)
+                        #else:
+                        #    realname = normalizeName(realname)
                         akanamesdata.add((mopid, realname, imdbIndex))
         count += 1
     if guestdata is not None: guestdata.flush()

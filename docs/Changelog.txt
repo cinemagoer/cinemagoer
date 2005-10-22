@@ -1,11 +1,18 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.3-cvs20051022 "Red Eye" (22 Oct 2005)
-  [local data access system]
+* What's the new in release 2.3-cvs20051022b "Red Eye" (22 Oct 2005)
+  [general]
+  - uniformed numerous keys for Movie and Person objects.
   - 'birth name' is now always in canonical form, and 'nick names'
     are always normalized; these changes also affect the sql data
     access system.
+
+  [http data access system]
+  - removed the 'imdb mini-biography by' key.
+
+  [mobile data access system]
+  - corrected bugs retrieving filmography.
 
   [sql data access system]
   - remove 'birth name' and 'nick names' from the list of 'akas'.

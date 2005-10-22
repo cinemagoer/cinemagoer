@@ -49,9 +49,10 @@ class Person:
                   'also known as': 'akas',
                   'nick name': 'nick names',
                   'nicks': 'nick names',
-                  'miscellaneous crew': 'miscellaneouscrew',
-                  'crewmembers': 'miscellaneouscrew',
-                  'misc': 'miscellaneouscrew',
+                  'nickname': 'nick names',
+                  'miscellaneouscrew': 'miscellaneous crew',
+                  'crewmembers': 'miscellaneous crew',
+                  'misc': 'miscellaneous crew',
                   'guest': 'notable tv guest appearances',
                   'guests': 'notable tv guest appearances',
                   'tv guest': 'notable tv guest appearances',
@@ -62,7 +63,11 @@ class Person:
                   'otherworks': 'other works',
                   "maltin's biography":
                         "biography from leonard maltin's movie encyclopedia",
-                  'real name': 'birth name'}
+                  'real name': 'birth name',
+                  'where are they now': 'where now',
+                  'personal quotes': 'quotes',
+                  'mini-biography author': 'imdb mini-biography by',
+                  'biography author': 'imdb mini-biography by'}
 
     def __init__(self, name='', personID=None, myName='', myID=None,
                 personData={}, currentRole='', notes='', accessSystem=None,

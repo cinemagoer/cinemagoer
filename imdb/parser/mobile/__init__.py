@@ -29,7 +29,7 @@ from sgmllib import entityref, charref
 
 from imdb.Movie import Movie
 from imdb.Person import Person
-from imdb.utils import analyze_title, analyze_name
+from imdb.utils import analyze_title, analyze_name, canonicalName
 from imdb._exceptions import IMDbDataAccessError
 from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
                                 imdbURL_movie, imdbURL_person
@@ -362,21 +362,38 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if hs:
             hs[:] = _findBetween(hs[0], 'src="', '"')
             if hs: r['headshot'] = hs[0]
-        workkind = _findBetween(s, 'Filmography as:</i>', '</p>')
-        if not workkind: return r
-        wsects = workkind[0].split(', ')
+        #workkind = _findBetween(s, 'Filmography as:</i>', '</p>')
+        #if not workkind: return r
+        #wsects = workkind[0].split(', ')
+        workkind = _findBetween(s, '<b><a name=', '</a> - filmography')
+        
         ws = []
-        for w in wsects:
-            sl = _findBetween(w, 'href="#', '"')
-            if not sl: continue
-            sn = _findBetween(w, '">', '</a')
-            if sn: sn = _unHtml(sn[0])
-            if not sn: continue
-            ws.append((sl[0], sn.lower()))
+        wsects = []
+        for w in workkind:
+            if w and w[0] == '"': w = w[1:]
+            se = ''
+            sn = ''
+            eti = w.rfind('>')
+            if eti == -1: continue
+            se = w[:eti]
+            if se and se[-1] == '"': se = se[:-1]
+            se = se.strip()
+            sn = w[eti+1:].strip().lower()
+            if se and sn: ws.append((se, sn))
+        #for w in wsects:
+        #    sl = _findBetween(w, 'href="#', '"')
+        #    if not sl: continue
+        #    sn = _findBetween(w, '">', '</a')
+        #    if sn: sn = _unHtml(sn[0])
+        #    if not sn: continue
+        #    ws.append((sl[0], sn.lower()))
+        if s.find('<a href="#guest-appearances"') != -1:
+            ws.append(('guest-appearances', 'notable tv guest appearances'))
+        if s.find('<a href="#archive">') != -1:
+            ws.append(('archive', 'archive footage'))
         for sect, sectName in ws:
-            sectName = sectName.lower()
             raws = ''
-            inisect = s.find('<a name="%s">' % sect)
+            inisect = s.find('<a name="%s' % sect)
             if inisect != -1:
                 endsect = s[inisect:].find('</ol>')
                 if endsect != -1: raws = s[inisect:inisect+endsect]
@@ -384,7 +401,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             mlist = _findBetween(raws, '<li>', ('</li>', '<br>'))
             for m in mlist:
                 d = {}
-                d['movieID'] = m[:7]
+                mid = re_imdbID.findall(m)
+                if not mid: continue
+                d['movieID'] = mid[0]
                 ti = m.find('/">')
                 te = m.find('</a>')
                 if ti != -1 and te > ti:
@@ -406,7 +425,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     if fae != -1:
                         m = m[:fai] + m[fai+fae+4:]
                 tvi = m.find('<small>TV Series</small>')
-                if tvi != -1:
+                if tvi != -1 and d['title'][0] != '"':
                     d['title'] = '"%s"' % d['title']
                     m = m[:tvi] + m[tvi+24:]
                 m = m.strip()
@@ -460,8 +479,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         for sect, data in misc_sects:
             sect = sect.lower().replace(':', '').strip()
             if sect == 'salary': sect = 'salary history'
-            if sect in ('imdb mini-biography by', 'spouse'):
-                continue
+            elif sect in ('imdb mini-biography by', 'spouse'): continue
+            elif sect == 'nickname': sect = 'nick names'
+            elif sect == 'where are they now': sect = 'where now'
+            elif sect == 'personal quotes': sect = 'quotes'
             data = data.replace('</p><p class="biopar">', '::')
             data = data.replace('</td>\n<td valign="top">', '@@@@')
             data = data.replace('</td>\n</tr>', '::')
@@ -469,6 +490,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             data = [x.strip() for x in data.split('::')]
             data[:] = [x.replace('@@@@', '::') for x in data if x]
             if sect in ('birth name', 'height') and data: data = data[0]
+            if sect == 'birth name': data = canonicalName(data)
             d[sect] = data
         return {'data': d}
 

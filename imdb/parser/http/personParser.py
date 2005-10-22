@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.Movie import Movie
-from imdb.utils import analyze_name, build_name
+from imdb.utils import analyze_name, build_name, canonicalName
 from utils import ParserBase
 
 
@@ -93,6 +93,10 @@ class HTMLMaindetailsParser(ParserBase):
                 self.__person_data['death notes'] = d_notes.strip()
         if self.__akas:
             self.__person_data['akas'] = self.__akas
+        if self.__person_data.has_key('miscellaneouscrew'):
+            self.__person_data['miscellaneous crew'] = \
+                    self.__person_data['miscellaneouscrew']
+            del self.__person_data['miscellaneouscrew']
         return self.__person_data
     
     def start_title(self, attrs):
@@ -325,6 +329,9 @@ class HTMLBioParser(ParserBase):
             if sect[-1] == ':':
                 sect = sect[:-1]
             if sect == 'salary': sect = 'salary history'
+            elif sect == 'nickname': sect = 'nick names'
+            elif sect == 'where are they now': sect = 'where now'
+            elif sect == 'personal quotes': sect = 'quotes'
             data = self.__sect_data.strip()
             d_split = data.split('::')
             d_split[:] = filter(None, [x.strip() for x in d_split])
@@ -334,17 +341,22 @@ class HTMLBioParser(ParserBase):
                     j = filter(None, [x.strip() for x in j.split('@@@@')])
                     newdata.append('::'.join(j))
                 d_split[:] = newdata
-            if len(d_split) == 1:
-                self.__bio_data[sect] = d_split[0]
-            # Multiple items are added separately (e.g.: 'trivia' is
-            # a list of strings).
+            if sect in ('height', 'birth name'):
+                self.__bio_data[sect] = canonicalName(d_split[0])
+            elif sect == 'imdb mini-biography by' and \
+                    self.__bio_data.has_key('mini biography'):
+                self.__bio_data['mini biography'][-1] = '%s::%s' % (d_split[0],
+                                    self.__bio_data['mini biography'][-1])
+                    
             else:
+                # Multiple items are added separately (e.g.: 'trivia' is
+                # a list of strings).
                 if not self.__bio_data.has_key(sect):
                     self.__bio_data[sect] = []
                 for d in [x.strip() for x in d_split]:
-                    if not d:
-                        continue
+                    if not d: continue
                     self.__bio_data[sect].append(d)
+                if not self.__bio_data[sect]: del self.__bio_data[sect]
         self.__sect_name = ''
         self.__sect_data = ''
         self.__in_sect = 0

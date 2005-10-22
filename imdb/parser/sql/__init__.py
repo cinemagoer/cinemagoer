@@ -620,7 +620,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             if res.has_key(key):
                 res[key] = res[key][0]
         if res.has_key('crewmembers'):
-            res['miscellaneouscrew'] = res['crewmembers']
+            res['miscellaneous crew'] = res['crewmembers']
             del res['crewmembers']
         if res.has_key('mini biography'):
             nl = []

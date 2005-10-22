@@ -213,7 +213,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if '-' in name:
                     name = name.replace('-', ' ')
                 elif name == 'miscellaneou':
-                    name = 'crewmembers'
+                    name = 'miscellaneous crew'
                     key = 'miscellaneou'
                 elif name == 'writer':
                     params['doWriters'] = 1
@@ -447,7 +447,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     name = 'actress'
                     params['doCast'] = 1
                 elif name == 'miscellaneou':
-                    name = 'miscellaneouscrew'
+                    name = 'miscellaneous crew'
                     key = 'miscellaneou'
                 elif name == 'actor':
                     params['doCast'] = 1

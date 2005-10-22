@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.3-cvs20051020 "The Thing" (20 Oct 2005)
+* What's the new in release 2.3-cvs20051022 "Red Eye" (22 Oct 2005)
   [local data access system]
   - 'birth name' is now always in canonical form, and 'nick names'
     are always normalized; these changes also affect the sql data

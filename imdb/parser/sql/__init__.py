@@ -640,6 +640,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if res.has_key('akas'):
             for mname in miscnames:
                 if mname in res['akas']: res['akas'].remove(mname)
+            if not res['akas']: del res['akas']
         trefs, nrefs = self._extractRefs(res)
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
                 'info sets': infosets}

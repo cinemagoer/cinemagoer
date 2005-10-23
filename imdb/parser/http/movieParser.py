@@ -252,6 +252,7 @@ class HTMLMovieParser(ParserBase):
                     if notes: notes = ' %s' % notes
                     notes = role + notes
                     role = ''
+                if sect == 'crewmembers': sect = 'miscellaneous crew'
                 # Create a Person object.
                 # XXX: check for self.__cur_nameID?
                 #      maybe it's not a good idea; is it possible for
@@ -650,6 +651,11 @@ class HTMLAwardsParser(ParserBase):
         self.__person_obj_list = []
         self.__movie_obj_list = []
 
+    def get_data(self):
+        """Return the dictionary."""
+        if not self.__aw_data: return {}
+        return {'awards': self.__aw_data}
+
     def start_big(self, attrs):
         self.__is_big = 1
 
@@ -843,11 +849,6 @@ class HTMLAwardsParser(ParserBase):
                     self.__cur_role += data
                 else:
                     self.__cur_category += data
-
-    def get_data(self):
-        """Return the dictionary."""
-        if not self.__aw_data: return {}
-        return {'awards': self.__aw_data}
 
 
 class HTMLTaglinesParser(ParserBase):
@@ -1633,6 +1634,8 @@ class HTMLTechParser(ParserBase):
                         ' '.join([x.strip() for x in item[1]])
                 rl.append(tmps)
             if rl: return {'locations': rl}
+        if self.kind in ('literature', 'business') and self.__tc:
+            return {self.kind: self.__tc}
         return self.__tc
 
     def start_dl(self, attrs):

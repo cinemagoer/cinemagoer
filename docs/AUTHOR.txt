@@ -4,6 +4,7 @@ Davide Alberani
 e-mail:		da@erlug.linux.it or alberanid@libero.it
 IMDbPY page:	http://imdbpy.sf.net/
 my homepage:	http://erlug.linux.it/~da/
+my cine-blog:	http://cinemelma.blogspot.com/ (Italian)
 Jabber ID:	alberanid@jabber.linux.it
 ICQ UIN:	83641305 (nick 'Mad77')
 PGP KeyID:	0x465BFD47 (the key is available in my homepage and

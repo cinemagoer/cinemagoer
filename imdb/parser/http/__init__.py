@@ -45,6 +45,7 @@ from personParser import maindetails_parser, bio_parser, \
                         person_officialsites_parser, publicity_parser, \
                         agent_parser
 from searchPersonParser import search_person_parser
+from utils import ParserBase
 
 
 # Misc URLs
@@ -101,11 +102,13 @@ class IMDbHTTPAccessSystem(IMDbBase):
         if isThin:
             self.accessSystem = 'httpThin'
             movie_parser.mdparse = 1
-            from utils import ParserBase
             if self._defModFunct is None:
                 ParserBase.getRefs = 0
                 from imdb.utils import modNull
                 self._defModFunct = modNull
+        else:
+            movie_parser.mdparse = 0
+            ParserBase.getRefs = 1
         self.do_adult_search(adultSearch)
         if proxy != -1: self.set_proxy(proxy)
 

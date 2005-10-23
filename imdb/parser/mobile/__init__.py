@@ -279,7 +279,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             col[:] = col[0].split(' / ')
             col[:] = ['<a %s' % x for x in col if x]
             col[:] = [_unHtml(x.replace(' <i>', '::')) for x in col]
-            if col: d['color'] = col
+            if col: d['color info'] = col
         sm = _findBetween(cont, '/List?sound-mix=', '<br>')
         if sm:
             sm[:] = sm[0].split(' / ')

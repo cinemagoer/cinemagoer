@@ -3,7 +3,7 @@
 # http://www.phpmyadmin.net
 #
 # Host: localhost
-# Generation Time: Oct 08, 2005 at 06:36 PM
+# Generation Time: Oct 23, 2005 at 12:37 PM
 # Server version: 4.0.16
 # PHP Version: 4.1.2
 # 
@@ -15,8 +15,8 @@
 #
 # Table structure for table `akanames`
 #
-# Creation: Oct 08, 2005 at 06:35 PM
-# Last update: Oct 08, 2005 at 06:35 PM
+# Creation: Oct 23, 2005 at 12:35 PM
+# Last update: Oct 23, 2005 at 12:35 PM
 #
 
 DROP TABLE IF EXISTS `akanames`;
@@ -38,8 +38,8 @@ CREATE TABLE `akanames` (
 #
 # Table structure for table `akatitles`
 #
-# Creation: Oct 08, 2005 at 06:35 PM
-# Last update: Oct 08, 2005 at 06:35 PM
+# Creation: Oct 23, 2005 at 12:35 PM
+# Last update: Oct 23, 2005 at 12:35 PM
 #
 
 DROP TABLE IF EXISTS `akatitles`;
@@ -64,8 +64,8 @@ CREATE TABLE `akatitles` (
 #
 # Table structure for table `cast`
 #
-# Creation: Oct 08, 2005 at 06:35 PM
-# Last update: Oct 08, 2005 at 06:35 PM
+# Creation: Oct 23, 2005 at 12:35 PM
+# Last update: Oct 23, 2005 at 12:35 PM
 #
 
 DROP TABLE IF EXISTS `cast`;
@@ -91,8 +91,8 @@ CREATE TABLE `cast` (
 #
 # Table structure for table `completecast`
 #
-# Creation: Oct 08, 2005 at 06:35 PM
-# Last update: Oct 08, 2005 at 06:35 PM
+# Creation: Oct 23, 2005 at 12:35 PM
+# Last update: Oct 23, 2005 at 12:35 PM
 #
 
 DROP TABLE IF EXISTS `completecast`;
@@ -293,8 +293,8 @@ INSERT INTO `linktypes` (`id`, `type`) VALUES (1, 'follows'),
 #
 # Table structure for table `movielinks`
 #
-# Creation: Oct 08, 2005 at 06:35 PM
-# Last update: Oct 08, 2005 at 06:35 PM
+# Creation: Oct 23, 2005 at 12:35 PM
+# Last update: Oct 23, 2005 at 12:35 PM
 #
 
 DROP TABLE IF EXISTS `movielinks`;
@@ -316,8 +316,8 @@ CREATE TABLE `movielinks` (
 #
 # Table structure for table `moviesinfo`
 #
-# Creation: Oct 08, 2005 at 06:35 PM
-# Last update: Oct 08, 2005 at 06:35 PM
+# Creation: Oct 23, 2005 at 12:35 PM
+# Last update: Oct 23, 2005 at 12:35 PM
 #
 
 DROP TABLE IF EXISTS `moviesinfo`;
@@ -340,8 +340,8 @@ CREATE TABLE `moviesinfo` (
 #
 # Table structure for table `names`
 #
-# Creation: Oct 08, 2005 at 06:35 PM
-# Last update: Oct 08, 2005 at 06:35 PM
+# Creation: Oct 23, 2005 at 12:35 PM
+# Last update: Oct 23, 2005 at 12:35 PM
 #
 
 DROP TABLE IF EXISTS `names`;
@@ -364,8 +364,8 @@ CREATE TABLE `names` (
 #
 # Table structure for table `personsinfo`
 #
-# Creation: Oct 08, 2005 at 06:35 PM
-# Last update: Oct 08, 2005 at 06:35 PM
+# Creation: Oct 23, 2005 at 12:35 PM
+# Last update: Oct 23, 2005 at 12:35 PM
 #
 
 DROP TABLE IF EXISTS `personsinfo`;
@@ -389,7 +389,7 @@ CREATE TABLE `personsinfo` (
 # Table structure for table `roletypes`
 #
 # Creation: Oct 08, 2005 at 01:17 PM
-# Last update: Oct 08, 2005 at 01:17 PM
+# Last update: Oct 23, 2005 at 12:30 PM
 #
 
 DROP TABLE IF EXISTS `roletypes`;
@@ -413,17 +413,17 @@ INSERT INTO `roletypes` (`id`, `role`) VALUES (1, 'actor'),
 (7, 'costume designer'),
 (8, 'director'),
 (9, 'editor'),
-(10, 'crewmembers'),
+(10, 'miscellaneous crew'),
 (11, 'production designer'),
-(12, 'guests');
+(12, 'guest');
 
 # --------------------------------------------------------
 
 #
 # Table structure for table `titles`
 #
-# Creation: Oct 08, 2005 at 06:35 PM
-# Last update: Oct 08, 2005 at 06:35 PM
+# Creation: Oct 23, 2005 at 12:35 PM
+# Last update: Oct 23, 2005 at 12:35 PM
 #
 
 DROP TABLE IF EXISTS `titles`;

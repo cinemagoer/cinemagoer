@@ -494,7 +494,7 @@ def doCast(fp, roleid, rolename):
     name = ''
     sqlstr = 'INSERT INTO cast (personid, movieid, currentrole, note, nrorder, roleid) VALUES (%s, %s, %s, %s, %s, ' + str(roleid) + ')'
     sqldata = SQLData(sqlString=sqlstr)
-    if rolename == 'crewmembers': sqldata.flushEvery = 10000
+    if rolename == 'miscellaneous crew': sqldata.flushEvery = 10000
     for line in fp:
         if line and line[0] != '\t':
             if line[0] == '\n': continue
@@ -547,12 +547,12 @@ def castLists():
     while i:
         roleid = i[0][0]
         rolename = fname = i[0][1]
-        if rolename == 'guests':
+        if rolename == 'guest':
             i = res.fetch_row()
             continue
         fname = fname.replace(' ', '-')
         if fname == 'actress': fname = 'actresses.list.gz'
-        elif fname == 'crewmembers': fname = 'miscellaneous.list.gz'
+        elif fname == 'miscellaneous-crew': fname = 'miscellaneous.list.gz'
         else: fname = fname + 's.list.gz'
         print 'DOING', fname
         f = SourceFile(fname, start=CAST_START, stop=CAST_STOP)
@@ -779,7 +779,7 @@ def nmmvFiles(fp, funct, fname):
     if fname == 'biographies.list.gz':
         datakind = 'person'
         sqls = sqlsP
-        curs.execute('SELECT id FROM roletypes WHERE role = "guests";')
+        curs.execute('SELECT id FROM roletypes WHERE role = "guest";')
         guestid = curs.fetchone()[0]
         guestdata = SQLData(sqlString='INSERT INTO cast (personid, movieid, currentrole, note, roleid) VALUES (%s, %s, %s, %s, ' + str(guestid) + ')')
         guestdata.flushEvery = 10000

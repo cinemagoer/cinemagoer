@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.3-cvs20051022b "Red Eye" (22 Oct 2005)
+* What's the new in release 2.3-cvs20051023b "Red Eye" (23 Oct 2005)
   [general]
   - uniformed numerous keys for Movie and Person objects.
   - 'birth name' is now always in canonical form, and 'nick names'
@@ -9,13 +9,17 @@
     access system.
 
   [http data access system]
-  - removed the 'imdb mini-biography by' key.
+  - removed the 'imdb mini-biography by' key; the name of the author
+    is now prepended to the 'mini biography' key.
+  - fixed an obscure bug using more than one access system (http with
+    mobile or httpThin).
 
   [mobile data access system]
   - corrected bugs retrieving filmography.
 
   [sql data access system]
   - remove 'birth name' and 'nick names' from the list of 'akas'.
+  - in the SQL database, 'crewmembers' is now 'miscellaneous crew'.
 
 
 * What's the new in release 2.2 "The Thing" (17 Oct 2005)

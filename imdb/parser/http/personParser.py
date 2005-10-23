@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.Movie import Movie
-from imdb.utils import analyze_name, build_name, canonicalName
+from imdb.utils import analyze_name, build_name, canonicalName, normalizeName
 from utils import ParserBase
 
 
@@ -341,6 +341,8 @@ class HTMLBioParser(ParserBase):
                     j = filter(None, [x.strip() for x in j.split('@@@@')])
                     newdata.append('::'.join(j))
                 d_split[:] = newdata
+            elif sect == 'nick names':
+                d_split[:] = [normalizeName(x) for x in d_split]
             if sect in ('height', 'birth name'):
                 self.__bio_data[sect] = canonicalName(d_split[0])
             elif sect == 'imdb mini-biography by' and \
@@ -353,8 +355,7 @@ class HTMLBioParser(ParserBase):
                 # a list of strings).
                 if not self.__bio_data.has_key(sect):
                     self.__bio_data[sect] = []
-                for d in [x.strip() for x in d_split]:
-                    if not d: continue
+                for d in d_split:
                     self.__bio_data[sect].append(d)
                 if not self.__bio_data[sect]: del self.__bio_data[sect]
         self.__sect_name = ''

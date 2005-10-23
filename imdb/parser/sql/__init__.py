@@ -592,6 +592,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if mdata[7]: m['year'] = mdata[7]
                 res[duty].append(m)
             res[duty].sort(sortMovies)
+        if res.has_key('guest'):
+            res['guests'] = res['guest']
+            del res['guest']
         # Info about the person.
         pinfo = self.query('SELECT infoid, info, note from personsinfo ' +
                             'WHERE personid = %s' % personID)
@@ -619,9 +622,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                         'birth name', 'height'):
             if res.has_key(key):
                 res[key] = res[key][0]
-        if res.has_key('crewmembers'):
-            res['miscellaneous crew'] = res['crewmembers']
-            del res['crewmembers']
         if res.has_key('mini biography'):
             nl = []
             for i in res['mini biography']:
@@ -632,9 +632,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     else: nl.append(i)
                 else: nl.append(i)
             res['mini biography'][:] = nl
-        if res.has_key('guests'):
-            res['notable tv guest appearances'] = res['guests']
-            del res['guests']
+        if res.has_key('guest'):
+            res['notable tv guest appearances'] = res['guest']
+            del res['guest']
         miscnames = res.get('nick names', [])
         if res.has_key('birth name'): miscnames.append(res['birth name'])
         if res.has_key('akas'):

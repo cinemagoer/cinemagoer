@@ -398,7 +398,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if t[3]: td['year'] = t[3]
                 nt = build_title(td, canonical=1)
                 if t[4]: nt += '::%s' % t[4]
-                res['akas'].append(nt)
+                if nt not in res['akas']: res['akas'].append(nt)
         # Do some transformation to preserve consistency with other
         # data access systems.
         if res.has_key('plot'):
@@ -593,7 +593,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 res[duty].append(m)
             res[duty].sort(sortMovies)
         if res.has_key('guest'):
-            res['guests'] = res['guest']
+            res['notable tv guest appearances'] = res['guest']
             del res['guest']
         # Info about the person.
         pinfo = self.query('SELECT infoid, info, note from personsinfo ' +

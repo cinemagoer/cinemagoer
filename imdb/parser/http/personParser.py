@@ -343,8 +343,10 @@ class HTMLBioParser(ParserBase):
                 d_split[:] = newdata
             elif sect == 'nick names':
                 d_split[:] = [normalizeName(x) for x in d_split]
-            if sect in ('height', 'birth name'):
+            if sect == 'birth name':
                 self.__bio_data[sect] = canonicalName(d_split[0])
+            elif sect == 'height':
+                self.__bio_data[sect] = d_split[0]
             elif sect == 'imdb mini-biography by' and \
                     self.__bio_data.has_key('mini biography'):
                 self.__bio_data['mini biography'][-1] = '%s::%s' % (d_split[0],

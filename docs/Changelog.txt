@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.3-cvs20051023b "Red Eye" (23 Oct 2005)
+* What's the new in release 2.3-cvs20051024 "Red Eye" (24 Oct 2005)
   [general]
   - uniformed numerous keys for Movie and Person objects.
   - 'birth name' is now always in canonical form, and 'nick names'

@@ -276,6 +276,7 @@ _ldk = {'OT': 'original title',
 def getLaserdisc(movieID, indexF, dataF):
     """Return laserdisc information for a movie."""
     ld = _parseColonList(movieID, indexF, dataF, '--', _ldk)
+    if ld and ld.has_key('original title'): del ld['original title']
     return ld
 
 

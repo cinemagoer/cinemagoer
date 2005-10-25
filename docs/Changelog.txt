@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.3-cvs20051024 "Red Eye" (24 Oct 2005)
+* What's the new in release 2.3-cvs20051025 "Excalibur" (25 Oct 2005)
   [general]
   - uniformed numerous keys for Movie and Person objects.
   - 'birth name' is now always in canonical form, and 'nick names'
@@ -15,7 +15,7 @@
     mobile or httpThin).
 
   [mobile data access system]
-  - corrected bugs retrieving filmography.
+  - corrected some bugs retrieving filmography.
 
   [sql data access system]
   - remove 'birth name' and 'nick names' from the list of 'akas'.

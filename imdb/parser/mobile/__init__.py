@@ -251,9 +251,16 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not castdata:
             castdata = _findBetween(cont, 'Credited cast', '</table>')
         if castdata:
-            fl = castdata[0].find('href=')
-            if fl != -1: castdata[0] = '< a' + castdata[0][fl:]
-            cast = self._getPersons(castdata[0], sep='</tr><tr>', hasCr=1)
+            castdata = castdata[0]
+            fl = castdata.find('href=')
+            if fl != -1: castdata = '< a' + castdata[fl:]
+            smib = castdata.find('<tr><td align="center" colspan="3"><small>')
+            if smib != -1:
+                smie = castdata.rfind('</small></td></tr>')
+                if smie != -1:
+                    castdata = castdata[:smib].strip() + \
+                                castdata[smie+18:].strip()
+            cast = self._getPersons(castdata, sep='</tr><tr>', hasCr=1)
             if cast: d['cast'] = cast
         # FIXME: doesn't catch "complete title", which is not
         #        included in <i> tags.

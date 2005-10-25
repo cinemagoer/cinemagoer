@@ -11,6 +11,9 @@ NOTE: it's always time to clean the code! <g>
 * Write better summary() methods for Movie and Person classes.
 * Some portions of code are poorly commented.
 * The documentation is written in my funny English.
+* Compatibility with Python 2.2 and previous versions is not assured
+  for every data access system (the imdbpysql.py script for sure
+  requires at least Python 2.2).
 
 
 [searches]
@@ -28,14 +31,20 @@ NOTE: it's always time to clean the code! <g>
   just with a different note).
   For 'http' and 'mobile' there's a list with one item for every
   person, with a long 'notes' listing every episode.
+  It's not easy to split these information since they can contain
+  notes ("written by", "as Aka Name", ...)
+* The 'laserdisc' information for 'local' and 'sql' is probabily
+  wrong: I think they merge data from different laserdisc titles.
 
 
 [Person objects]
 * Define invariable names for the sections (the keys you use to access
   info stored in a Person object).
-* the "crewmembers" key (the name used for Movie objects), is
-  "miscellaneouscrew" for Person objects.  Compatibility is ensured
-  using key aliases, but these keys should be unified.
+* Fetching data from the web ('http' and 'mobile'), the filmography
+  for a given person contains a list named "himself" or "herself" for
+  movies/shows where they were not acting.
+  In 'local' and 'sql', these movies/shows are listed in the
+  "actor" or "actress" list.
 
 
 [http data access system]
@@ -44,7 +53,7 @@ NOTE: it's always time to clean the code! <g>
   exception, if a proxy is used; unset the HTTP_PROXY environment variable
   or call the imdbObject.set_proxy(None) method.
 * If the access through the proxy fails, is it possible to
-  automatically try without?
+  automatically try without?  It doesn't seem easy...
 * Some (many?) HTML parser can be interrupted as long as they've
   parsed every needed information, as HTMLSearchMovieParser does.
 * Inherit from sgmllib.SGMLParser, instead that from htmllib.HTMLParser,
@@ -68,11 +77,19 @@ NOTE: it's always time to clean the code! <g>
 
 [local data access system]
 * There's probably a bug converting the rating to a float;
-  see: ER (1994) (TV), but I suspect this is a mkdb bug.
+  see: ER (1994) (TV), but I suspect this to be a mkdb bug.
+* The 'votes' key is not correctly stored for very high values;
+  this is for sure a mkdb bug.
+* Files like biographies.data are plainly wrong: sometimes
+  a person is referred with 'Name Surname' (qv) and sometimes
+  with 'Surname, Name' (qv).
+  Names and titles with "'" are not handled properly and so on...
+  This is a problem of the Plain Text Data Files, and can't be fixed.
 * The convBin() and getFullIndex() functions in the utils
   modules _must_ be rewritten (they're crap!).
 * Some files are not considered: mpaa-ratings-reasons.list,
-  miscellaneous-companies.list.
+  miscellaneous-companies.list (but they're used by the 'sql' data
+  access system).
 * methods like get_imdbMovieID() should use the mobile access system?
 * You need the mkdb executable from the moviedb program to generate the
   database/index files; moviedb is not open source software (although
@@ -80,10 +97,6 @@ NOTE: it's always time to clean the code! <g>
   An open source (pure python?) script must be written.
   NOTE: since release 2.1 I've introduced the imdbpy2sql.py script,
   so a replacement for mkdb is no more an urgent issue.
-* Files like biographies.data are plainly wrong: sometimes
-  a person is referred with 'Name Surname' (qv) and sometimes
-  with 'Surname, Name' (qv).
-  Names and titles with "'" are not handled properly and so on...
 
 
 [sql data access system]
@@ -111,11 +124,11 @@ Things to do:
   unfortunately so far a SQL installation can't be "updated" without
   recreating the database from scratch.
 * The database layout sucks (what about indexes?  I'm not sure they are
-  ok in this way).
-* The SQL query I've written are probably crap.
-* Running the imdbpy2sql.py script will still issues some Warnings, from
+  ok this way).
+* The SQL queries I've written are probably crap.
+* Running the imdbpy2sql.py script will still issue some Warnings, from
   the MySQLdb module.  This is especially true for the readMovieList()
-  function.  This needs investigation: maybe some movies are lost.
+  function.
   NOTE: this is due to data truncation in 'note' field, where information
   are longer than 255 chars; see mysql-python bug #1295308:
   http://sf.net/tracker/index.php?func=detail&aid=1295308&group_id=22307&atid=374932

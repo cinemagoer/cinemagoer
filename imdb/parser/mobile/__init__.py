@@ -250,6 +250,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         castdata = _findBetween(cont, 'Cast overview', '</table>')
         if not castdata:
             castdata = _findBetween(cont, 'Credited cast', '</table>')
+        if not castdata:
+            castdata = _findBetween(cont, 'Complete credited cast', '</table>')
         if castdata:
             castdata = castdata[0]
             fl = castdata.find('href=')

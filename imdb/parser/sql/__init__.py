@@ -464,6 +464,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             res['votes distribution'] = res['votes distribution'][0]
         if res.has_key('mpaa'):
             res['mpaa'] = res['mpaa'][0]
+        if res.has_key('guest'):
+            res['guests'] = res['guest']
+            del res['guest']
         trefs, nrefs = self._extractRefs(res)
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
                 'info sets': infosets}

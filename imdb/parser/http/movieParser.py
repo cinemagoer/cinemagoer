@@ -2197,6 +2197,10 @@ class HTMLAmazonReviewsParser(ParserBase):
         if ai != -1:
             author = self.__cur_text[ai+3:]
             self.__cur_text = self.__cur_text[:ai-1]
+        if self.__cur_title and self.__cur_title[-1] == ':':
+            self.__cur_title = self.__cur_title[:-1]
+        if self.__cur_revkind and self.__cur_revkind[-1] == ':':
+            self.__cur_revkind = self.__cur_revkind[:-1]
         if self.__cur_title: entry['title'] = self.__cur_title
         if self.__cur_text: entry['review'] = self.__cur_text
         if self.__cur_link: entry['link'] = self.__cur_link

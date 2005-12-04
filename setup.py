@@ -33,7 +33,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '2.3-cvs20051110'
+version = '2.3'
 
 home_page = 'http://imdbpy.sf.net/'
 

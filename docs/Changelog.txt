@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.3-cvs20051110 "Flesh & Blood" (10 Nov 2005)
+* What's the new in release 2.3 "Big Fish" (03 Dec 2005)
   [general]
   - uniformed numerous keys for Movie and Person objects.
   - 'birth name' is now always in canonical form, and 'nick names'
@@ -11,12 +11,12 @@
   [http data access system]
   - removed the 'imdb mini-biography by' key; the name of the author
     is now prepended to the 'mini biography' key.
-  - fixed an obscure bug using more than one access system (http with
-    mobile or httpThin).
+  - fixed an obscure bug using more than one access system (http in
+    conjunction with mobile or httpThin).
+  - fixed a bug in amazon reviews.
 
   [mobile data access system]
-  - corrected some bugs retrieving filmography.
-  - corrected some bugs retrieving cast list.
+  - corrected some bugs retrieving filmography and cast list.
 
   [sql data access system]
   - remove 'birth name' and 'nick names' from the list of 'akas'.

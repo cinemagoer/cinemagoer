@@ -63,7 +63,7 @@ def IMDb(accessSystem='http', *arguments, **keywords):
         return IMDbSqlAccessSystem(*arguments, **keywords)
     else:
         raise IMDbError, 'unknown kind of data access system: "%s"' \
-                            % str(accessSystem)
+                            % accessSystem
 
 
 class IMDbBase:
@@ -126,7 +126,7 @@ class IMDbBase:
     def get_person_infoset(self):
         """Return the list of info set available for persons."""
         return self._get_infoset('get_person_')
-        
+
     def get_movie(self, movieID, info=Movie.Movie.default_info, modFunct=None):
         """Return a Movie object for the given movieID.
         
@@ -224,7 +224,7 @@ class IMDbBase:
 
     def update(self, mop, info=None, override=0):
         """Given a Movie or Person object with only partial information,
-        retrieve every accessible information.
+        retrieve the required set of information.
 
         info is the list of sets of information to retrieve.
 
@@ -268,8 +268,7 @@ class IMDbBase:
                 method = getattr(as, 'get_%s_%s' %
                                     (prefix, i.replace(' ', '_')))
             except AttributeError:
-                raise IMDbDataAccessError, 'unknown information set "%s"' \
-                                            % str(i)
+                raise IMDbDataAccessError, 'unknown information set "%s"' % i
             ret = method(mopID)
             if ret.has_key('info sets'):
                 for ri in ret['info sets']:

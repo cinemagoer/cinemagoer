@@ -70,8 +70,8 @@ class Person:
                   'biography author': 'imdb mini-biography by'}
 
     def __init__(self, name='', personID=None, myName='', myID=None,
-                personData={}, currentRole='', notes='', accessSystem=None,
-                titlesRefs={}, namesRefs={}, modFunct=modClearRefs,
+                personData=None, currentRole='', notes='', accessSystem=None,
+                titlesRefs=None, namesRefs=None, modFunct=None,
                 billingPos=None):
         """Initialize a Person object.
 
@@ -92,8 +92,11 @@ class Person:
         """
         self.reset()
         self.accessSystem = accessSystem
+        if personData is None: personData = {}
         self.set_data(personData, override=1)
+        if titlesRefs is None: titlesRefs = {}
         self.update_titlesRefs(titlesRefs)
+        if namesRefs is None: namesRefs = {}
         self.update_namesRefs(namesRefs)
         if name and not personData.get('name'):
             self.set_name(name)
@@ -102,6 +105,7 @@ class Person:
         self.myID = myID
         self.currentRole = currentRole
         self.notes = notes
+        if modFunct is None: modFunct = modClearRefs
         self.set_mod_funct(modFunct)
         self.billingPos = billingPos
 
@@ -166,7 +170,7 @@ class Person:
         are merged.
         """
         # XXX: uh.  Not sure this the best place/way to do it.
-        pd = deepcopy(pd)
+        #pd = deepcopy(pd)
         if not override:
             self.__person_data.update(pd)
         else:

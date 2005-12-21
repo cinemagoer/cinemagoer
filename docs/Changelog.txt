@@ -1,6 +1,14 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 2.4-cvs20051221 "Cowboy Bebop" (21 Dec 2005)
+  [general]
+  - speed improvements in functions modifyStrings, sortMovies,
+    canonicalName, analyze_name, analyze_title.
+  - removed the deepcopy of the data, updating Movie and Person
+    objects.
+
+
 * What's the new in release 2.3 "Big Fish" (03 Dec 2005)
   [general]
   - uniformed numerous keys for Movie and Person objects.

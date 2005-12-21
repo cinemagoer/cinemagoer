@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from types import InstanceType
 
 from _exceptions import IMDbParserError
 
@@ -46,7 +45,8 @@ _sname_suffixes = ('de', 'la', 'der', 'den', 'del', 'y', 'da', 'van',
                     'e', 'von', 'the', 'di', 'du', 'el', 'al')
 
 def canonicalName(name):
-    """Return the given name in canonical "Surname, Name" format."""
+    """Return the given name in canonical "Surname, Name" format.
+    It assumes that name is in the 'Name Surname' format."""
     # XXX: some statistics (over 1698193 names):
     #      - just a surname:                 36614
     #      - single surname, single name:  1461621
@@ -55,24 +55,32 @@ def canonicalName(name):
     #        (2: 39998, 3: 4175, 4: 356)
     #      - single surname, composed name: 149235
     #        (2: 143522, 3: 4787, 4: 681, 5: 165)
+    # Don't convert names already in the canonical format.
     if name.find(', ') != -1: return name
     sname = name.split(' ')
     snl = len(sname)
     if snl == 2:
+        # Just a name and a surname: how boring...
         name = '%s, %s' % (sname[1], sname[0])
     elif snl > 2:
         lsname = [x.lower() for x in sname]
-        for index in (0, snl-2, snl-3):
+        if snl == 2: _indexes = (0, snl-2)
+        else: _indexes = (0, snl-2, snl-3)
+        # Check for common surname prefixes at the beginning and near the end.
+        for index in _indexes:
             if lsname[index] not in _sname_suffixes: continue
             try:
+                # Build the surname.
                 surn = '%s %s' % (sname[index], sname[index+1])
                 del sname[index]
                 del sname[index]
                 try:
+                    # Handle the "Jr." after the name.
                     if lsname[index+2].startswith('jr'):
                         surn += ' %s' % sname[index]
                         del sname[index]
-                except (IndexError, ValueError): pass
+                except (IndexError, ValueError):
+                    pass
                 name = '%s, %s' % (surn, ' '.join(sname))
                 break
             except ValueError:
@@ -104,9 +112,9 @@ def analyze_name(name, canonical=0):
     cpi = name.rfind(')')
     if opi != -1 and cpi != -1 and re_index.match(name[opi:cpi+1]):
         imdbIndex = name[opi+1:cpi]
-        name = name[:opi].strip()
+        name = name[:opi].rstrip()
     if not name:
-        raise IMDbParserError, 'invalid name: "%s"' % str(original_n)
+        raise IMDbParserError, 'invalid name: "%s"' % original_n
     if canonical:
         name = canonicalName(name)
     res['name'] = name
@@ -144,16 +152,25 @@ _articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el', "l'", 'il',
 
 # Articles with spaces.
 _spArticles = []
+#_spArticlesDict = {}
 for article in _articles:
+    #_spArticlesDict[article] = article
     if article[-1] not in ("'", '-'): article += ' '
     _spArticles.append(article)
 
 def canonicalTitle(title):
-    """Return the title in the canonic format 'Movie, The'."""
+    """Return the title in the canonic format 'Movie Title, The'."""
     try:
         if title.split(', ')[-1].lower() in _articles: return title
     except IndexError: pass
     ltitle = title.lower()
+    #for artSeparator in (' ', "'", '-'):
+    #    article = _spArticlesDict.get(ltitle.split(artSeparator)[0])
+    #    if article is not None:
+    #        lart = len(article)
+    #        title = '%s, %s' % (title[lart:], title[:lart])
+    #        if artSeparator == ' ': title = title[1:]
+    #        break
     for article in _spArticles:
         if ltitle.startswith(article):
             lart = len(article)
@@ -193,17 +210,16 @@ def analyze_title(title, canonical=0):
     #      tv series: 42454
     if title.endswith('(TV)'):
         kind = 'tv movie'
-        title = title[:-4]
+        title = title[:-4].rstrip()
     elif title.endswith('(V)'):
         kind = 'video movie'
-        title = title[:-3]
+        title = title[:-3].rstrip()
     elif title.endswith('(mini)'):
         kind = 'tv mini series'
-        title = title[:-6]
+        title = title[:-6].rstrip()
     elif title.endswith('(VG)'):
         kind = 'video game'
-        title = title[:-4]
-    title = title.strip()
+        title = title[:-4].rstrip()
     # Search for the year and the optional imdbIndex (a roman number).
     yi = re_year_index.findall(title)
     if yi:
@@ -214,17 +230,15 @@ def analyze_title(title, canonical=0):
             year = year[:-len(imdbIndex)-1]
         i = title.rfind('(%s)' % last_yi[0])
         if i != -1:
-            title = title[:i-1]
-    title = title.strip()
+            title = title[:i-1].rstrip()
     # This is a tv (mini) series: strip the '"' at the begin and at the end.
     # XXX: strip('"') is not used for compatibility with Python 2.0.
     if title and title[0] == title[-1] == '"':
         if not kind:
             kind = 'tv series'
-        title = title[1:-1]
-    title = title.strip()
+        title = title[1:-1].strip()
     if not title:
-        raise IMDbParserError, 'invalid title: "%s"' % str(original_t)
+        raise IMDbParserError, 'invalid title: "%s"' % original_t
     if canonical:
         title = canonicalTitle(title)
     # 'kind' is one in ('movie', 'tv series', 'tv mini series', 'tv movie'
@@ -252,7 +266,7 @@ def build_title(title_dict, canonical=0):
     year = title_dict.get('year', '????')
     if kind in ('tv series', 'tv mini series'):
         title = '"%s"' % title
-    title += ' (%s' % (year or '????')
+    title += ' (%s' % year
     if imdbIndex:
         title += '/%s' % imdbIndex
     title += ')'
@@ -265,7 +279,7 @@ def build_title(title_dict, canonical=0):
             title += ' (mini)'
         elif kind == 'video game':
             title += ' (VG)'
-    return title.strip()
+    return title
 
 
 class _LastC:
@@ -277,15 +291,10 @@ class _LastC:
 _last = _LastC()
 
 def sortMovies(m1, m2):
-    """Sort movies by year, in reverse order; the imdbIdex is checked
+    """Sort movies by year, in reverse order; the imdbIndex is checked
     for movies with the same year of production and title."""
-    # AttributeError exception is caught to handle the 'int(_last)' case.
-    try: m1y = int(m1.get('year', _last))
-    # except AttributeError: m1y = -1 # to put this movie at the end.
-    except (AttributeError, ValueError, OverflowError): m1y = _last
-    try: m2y = int(m2.get('year', _last))
-    # except AttributeError: m2y = -1 # to put this movie at the end.
-    except (AttributeError, ValueError, OverflowError): m2y = _last
+    m1y = int(m1.get('year', 0))
+    m2y = int(m2.get('year', 0))
     if m1y > m2y: return -1
     if m1y < m2y: return 1
     # Ok, these movies have the same production year...
@@ -302,6 +311,7 @@ def sortMovies(m1, m2):
 
 
 def sortPeople(p1, p2):
+    """Sort people by billingPos, name and imdbIndex."""
     p1b = p1.billingPos
     if p1b is None: p1b = _last
     p2b = p2.billingPos
@@ -365,6 +375,7 @@ def modHtmlLinks(s, titlesRefs, namesRefs):
 _stypes = (type(''), type(u''))
 _ltype = type([])
 _dtype = type({})
+_todescend = (_ltype, _dtype)
 
 def modifyStrings(o, modFunct, titlesRefs, namesRefs):
     """Modify a string (or string values in a dictionary or strings
@@ -373,25 +384,16 @@ def modifyStrings(o, modFunct, titlesRefs, namesRefs):
     to = type(o)
     if to in _stypes:
         return modFunct(o, titlesRefs, namesRefs)
-    elif to is _ltype:
-        no = []
-        noapp = no.append
-        for i in xrange(len(o)):
-            ti = type(o[i])
-            if ti is InstanceType:
-                noapp(o[i])
-            else:
-                noapp(modifyStrings(o[i], modFunct, titlesRefs, namesRefs))
-    elif to is _dtype:
-        no = {}
-        for k, v in o.items():
+    elif to in _todescend:
+        if to is _ltype: keys = xrange(len(o))
+        else: keys = o.keys()
+        for i in keys:
+            v = o[i]
             tv = type(v)
-            if tv is InstanceType:
-                no[k] = v
-            else:
-                no[k] = modifyStrings(v, modFunct, titlesRefs, namesRefs)
-    else:
-        return o
-    return no
+            if tv in _stypes:
+                o[i] = modFunct(v, titlesRefs, namesRefs)
+            elif tv in _todescend:
+                modifyStrings(o[i], modFunct, titlesRefs, namesRefs)
+    return o
 
 

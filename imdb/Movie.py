@@ -109,9 +109,9 @@ class Movie:
                 'amazon review': 'amazon reviews'}
 
     def __init__(self, title='', movieID=None, myTitle='',
-                    myID=None, movieData={}, currentRole='', notes='',
-                    accessSystem=None, titlesRefs={}, namesRefs={},
-                    modFunct=modClearRefs):
+                    myID=None, movieData=None, currentRole='', notes='',
+                    accessSystem=None, titlesRefs=None, namesRefs=None,
+                    modFunct=None):
         """Initialize a Movie object.
         
         *movieID* -- the unique identifier for the movie.
@@ -130,8 +130,11 @@ class Movie:
         """
         self.reset()
         self.accessSystem = accessSystem
+        if movieData is None: movieData = {}
         self.set_data(movieData, override=1)
+        if titlesRefs is None: titlesRefs = {}
         self.update_titlesRefs(titlesRefs)
+        if namesRefs is None: namesRefs = {}
         self.update_namesRefs(namesRefs)
         if title and not movieData.has_key('title'):
             self.set_title(title)
@@ -140,6 +143,7 @@ class Movie:
         self.myID = myID
         self.currentRole = currentRole
         self.notes = notes
+        if modFunct is None: modFunct = modClearRefs
         self.set_mod_funct(modFunct)
 
     def get_current_info(self):
@@ -204,7 +208,7 @@ class Movie:
         are merged.
         """
         # XXX: uh.  Not sure this the best place/way to do it.
-        md = deepcopy(md)
+        #md = deepcopy(md)
         if not override:
             self.__movie_data.update(md)
         else:

@@ -2002,8 +2002,7 @@ class HTMLRecParser(ParserBase):
                         self.__rec[self.__curlist] = []
                     if self.__cur_id:
                         m = Movie(movieID=self.__cur_id,
-                                    movieData=analyze_title(self.__curtitle,
-                                                            canonical=1),
+                                    title=self.__curtitle,
                                     accessSystem='http')
                         self.__rec[self.__curlist].append(m)
                         self.__cur_id = ''

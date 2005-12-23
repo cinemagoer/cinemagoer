@@ -23,14 +23,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import types
 from copy import deepcopy
-from utils import analyze_title, build_title, modifyStrings, modClearRefs, \
-                    modNull, normalizeTitle
+from utils import analyze_title, build_title, normalizeTitle, _Container
 
 
-class Movie:
+class Movie(_Container):
     """A Movie.
-    
-    A Movie object emulates (most of) the dictionary interface.
 
     Every information about a movie can be accessed as:
         movieObject['information']
@@ -108,17 +105,17 @@ class Movie:
                 'notable tv guest appearances': 'guests',
                 'amazon review': 'amazon reviews'}
 
-    def __init__(self, title='', movieID=None, myTitle='',
-                    myID=None, movieData=None, currentRole='', notes='',
-                    accessSystem=None, titlesRefs=None, namesRefs=None,
-                    modFunct=None):
+    keys_tomodify_list = ('plot', 'trivia', 'alternate versions', 'goofs',
+                        'quotes', 'dvd', 'laserdisc', 'news', 'soundtrack')
+
+    def _init(self, **kwds):
         """Initialize a Movie object.
         
         *movieID* -- the unique identifier for the movie.
-        *title* -- the title of the Movie, if not in the movieData dictionary.
+        *title* -- the title of the Movie, if not in the data dictionary.
         *myTitle* -- your personal title for the movie.
         *myID* -- your personal identifier for the movie.
-        *movieData* -- a dictionary used to initialize the object.
+        *data* -- a dictionary used to initialize the object.
         *currentRole* -- a string representing the current role or duty
                         of a person in this movie.
         *notes* -- notes for the person referred in the currentRole
@@ -128,206 +125,60 @@ class Movie:
         *namesRefs* -- a dictionary with references to persons.
         *modFunct* -- function called returning text fields.
         """
-        self.reset()
-        self.accessSystem = accessSystem
-        if movieData is None: movieData = {}
-        self.set_data(movieData, override=1)
-        if titlesRefs is None: titlesRefs = {}
-        self.update_titlesRefs(titlesRefs)
-        if namesRefs is None: namesRefs = {}
-        self.update_namesRefs(namesRefs)
-        if title and not movieData.has_key('title'):
+        title = kwds.get('title')
+        if title and not self.data.has_key('title'):
             self.set_title(title)
-        self.movieID = movieID
-        self.myTitle = myTitle
-        self.myID = myID
-        self.currentRole = currentRole
-        self.notes = notes
-        if modFunct is None: modFunct = modClearRefs
-        self.set_mod_funct(modFunct)
+        self.movieID = kwds.get('movieID', None)
+        self.myTitle = kwds.get('myTitle', '')
 
-    def get_current_info(self):
-        """Return the current set of information retrieved."""
-        return self.current_info
-
-    def set_current_info(self, ci):
-        """Set the current set of information retrieved."""
-        self.current_info = ci
-
-    def add_to_current_info(self, val):
-        """Add a set of information to the current list."""
-        if val not in self.current_info:
-            self.current_info.append(val)
-
-    def has_current_info(self, val):
-        """Return true if the given set of information is in the list."""
-        return val in self.current_info
-    
-    def set_mod_funct(self, modFunct):
-        """Set the fuction used to modify the strings."""
-        if modFunct is None: modFunct = modClearRefs
-        self.__modFunct = modFunct
-
-    def update_titlesRefs(self, titlesRefs):
-        """Update the dictionary with the references to movies."""
-        self.__titlesRefs.update(titlesRefs)
-    
-    def get_titlesRefs(self):
-        """Return the dictionary with the references to movies."""
-        return self.__titlesRefs
-
-    def update_namesRefs(self, namesRefs):
-        """Update the dictionary with the references to names."""
-        self.__namesRefs.update(namesRefs)
-
-    def get_namesRefs(self):
-        """Return the dictionary with the references to names."""
-        return self.__namesRefs
-
-    def reset(self):
+    def _reset(self):
         """Reset the Movie object."""
-        self.__movie_data = {}
-        self.current_info = []
         self.movieID = None
         self.myTitle = ''
-        self.myID = None
-        self.currentRole = ''
-        self.notes = ''
-        self.__titlesRefs = {}
-        self.__namesRefs = {}
-        self.__modFunct = modClearRefs
 
     def set_title(self, title):
         """Set the title of the movie."""
         d_title = analyze_title(title, canonical=1)
-        self.__movie_data.update(d_title)
+        self.data.update(d_title)
 
-    def set_data(self, md, override=0):
-        """Set the movie data to the given dictionary; if 'override' is
-        set, the previous data is removed, otherwise the two dictionary
-        are merged.
-        """
-        # XXX: uh.  Not sure this the best place/way to do it.
-        #md = deepcopy(md)
-        if not override:
-            self.__movie_data.update(md)
-        else:
-            self.__movie_data = md
-    
-    def clear(self):
-        """Reset the dictionary."""
-        self.__movie_data.clear()
-        self.currentRole = ''
-        self.notes = ''
-        self.__titlesRefs = {}
-        self.__namesRefs = {}
-        self.current_info = []
-
-    def has_key(self, key):
-        """Return true if a given section is defined."""
-        try:
-            self.__getitem__(key)
-        except KeyError:
-            return 0
-        return 1
-
-    def keys(self):
+    def _additional_keys(self):
         """Return a list of valid keys."""
-        l = self.__movie_data.keys()
-        if 'title' in l:
-            l += ['canonical title', 'long imdb title',
+        if self.data.has_key('title'):
+            return ['canonical title', 'long imdb title',
                     'long imdb canonical title']
-        return l
-
-    def items(self):
-        """Return the items in the dictionary."""
-        return [(k, self.get(k)) for k in self.keys()]
-
-    def values(self):
-        """Return the values in the dictionary."""
-        return [self.get(k) for k in self.keys()]
-
-    def append_item(self, key, item):
-        """The item is appended to the list identified by
-        the given key.
-        """
-        # TODO: this and the two other methods below are here only
-        #       for _future_ usage, when it will make sense to modify
-        #       a Movie object; right now they're incomplete and should
-        #       not be used.
-        if not self.__movie_data.has_key(key):
-            self.__movie_data[key] = []
-        self.__movie_data[key].append(item)
-
-    def set_item(self, key, item):
-        """Directly store the item with the given key."""
-        self.__movie_data[key] = item
-
-    def __setitem__(self, key, item):
-        """Directly store the item with the given key."""
-        self.__movie_data[key] = item
-    
-    def __delitem__(self, key):
-        """Remove the given section or key."""
-        # XXX: how to remove an item of a section?
-        del self.__movie_data[key]
-
-    def get(self, key, default=None):
-        """Return the given section, or default if it's not found."""
-        try:
-            return self.__getitem__(key)
-        except KeyError:
-            return default
+        return []
 
     def __getitem__(self, key):
         """Return the value for a given key, checking key aliases;
         a KeyError exception is raised if the key is not found.
         """
-        if self.__movie_data.has_key('title'):
+        if self.data.has_key('title'):
             if key == 'title':
-                return normalizeTitle(self.__movie_data['title'])
+                return normalizeTitle(self.data['title'])
             elif key == 'long imdb title':
-                return build_title(self.__movie_data, canonical=0)
+                return build_title(self.data, canonical=0)
             elif key == 'canonical title':
-                return self.__movie_data['title']
+                return self.data['title']
             elif key == 'long imdb canonical title':
-                return build_title(self.__movie_data, canonical=1)
-        if key in self.keys_alias.keys():
-            key = self.keys_alias[key]
-        if self.__modFunct is modNull:
-            return self.__movie_data[key]
-        else:
-            return modifyStrings(self.__movie_data[key], self.__modFunct,
-                                    self.__titlesRefs, self.__namesRefs)
+                return build_title(self.data, canonical=1)
+        return _Container.__getitem__(self, key)
 
     def __nonzero__(self):
-        """The Movie is "false" if the self.__movie_data does not contains
+        """The Movie is "false" if the self.data does not contains
         a title."""
         # XXX: check the title and the movieID?
-        if self.__movie_data and self.__movie_data.has_key('title'):
-            return 1
+        if self.data.has_key('title'): return 1
         return 0
-
-    def __cmp__(self, other):
-        """Compare two Movie objects."""
-        # XXX: only check the title and the movieID?
-        # XXX: comparison should be used to sort movies by year?
-        if not isinstance(other, self.__class__):
-            return -1
-        if self.__movie_data == other.__movie_data:
-            return 0
-        return 1
 
     def isSameTitle(self, other):
         """Return true if this and the compared object have the same
         long imdb title and/or movieID.
         """
-        if not isinstance(other, self.__class__):
-            return 0
-        if self.__movie_data.has_key('title') and \
-                other.__movie_data.has_key('title') and \
-                build_title(self.__movie_data, canonical=1) == \
-                build_title(other.__movie_data, canonical=1):
+        if not isinstance(other, self.__class__): return 0
+        if self.data.has_key('title') and \
+                other.data.has_key('title') and \
+                build_title(self.data, canonical=1) == \
+                build_title(other.data, canonical=1):
             return 1
         if self.accessSystem == other.accessSystem and \
                 self.movieID is not None and self.movieID == other.movieID:
@@ -339,7 +190,7 @@ class Movie:
         from Person import Person
         if not isinstance(item, Person):
             return 0
-        for i in self.__movie_data.values():
+        for i in self.data.values():
             if type(i) in (types.ListType, types.TupleType):
                 for j in i:
                     if isinstance(j, Person) and item.isSamePerson(j):
@@ -348,18 +199,15 @@ class Movie:
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Movie instance."""
-        m = Movie('', self.movieID, self.myTitle, self.myID,
-                    deepcopy(self.__movie_data, memo), self.currentRole,
-                    self.notes, self.accessSystem,
-                    deepcopy(self.__titlesRefs, memo),
-                    deepcopy(self.__namesRefs, memo))
-        m.current_info = self.current_info
-        m.set_mod_funct(self.__modFunct)
+        m = Movie(title='', movieID=self.movieID, myTitle=self.myTitle,
+                    myID=self.myID, data=deepcopy(self.data, memo),
+                    currentRole=self.currentRole, notes=self.notes,
+                    accessSystem=self.accessSystem,
+                    titlesRefs=deepcopy(self.titlesRefs, memo),
+                    namesRefs=deepcopy(self.namesRefs, memo))
+        m.current_info = list(self.current_info)
+        m.set_mod_funct(self.modFunct)
         return m
-
-    def copy(self):
-        """Return a deep copy of the object itself."""
-        return deepcopy(self)
 
     def __str__(self):
         """Simply print the short title."""
@@ -369,16 +217,10 @@ class Movie:
         """Return a string with a pretty-printed summary for the movie."""
         if not self:
             return ''
-        s = 'Movie\n=====\n'
-        title = self.get('long imdb canonical title')
-        if title:
-            s += 'Title: %s\n' % title
+        s = 'Movie\n=====\nTitle: %s\n' % \
+                    self.get('long imdb canonical title', '')
         genres = self.get('genres')
-        if genres:
-            s += 'Genres: '
-            for gen in genres:
-                s += gen + ', '
-            s = s[:-2] + '.\n'
+        if genres: s += 'Genres: %s.' % ', '.join(genres)
         director = self.get('director')
         if director:
             s += 'Director: '

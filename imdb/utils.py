@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
+from copy import copy, deepcopy
 
 from _exceptions import IMDbParserError
 
@@ -385,15 +386,245 @@ def modifyStrings(o, modFunct, titlesRefs, namesRefs):
     if to in _stypes:
         return modFunct(o, titlesRefs, namesRefs)
     elif to in _todescend:
+        _stillorig = 1
         if to is _ltype: keys = xrange(len(o))
         else: keys = o.keys()
         for i in keys:
             v = o[i]
             tv = type(v)
             if tv in _stypes:
+                if _stillorig:
+                    o = copy(o)
+                    _stillorig = 0
                 o[i] = modFunct(v, titlesRefs, namesRefs)
             elif tv in _todescend:
                 modifyStrings(o[i], modFunct, titlesRefs, namesRefs)
     return o
+
+
+class _Container:
+    """Base class for Movie and Person classes."""
+     # The default sets of information retrieved.
+    default_info = ()
+
+    # Aliases for some not-so-intuitive keys.
+    keys_alias = {}
+
+    # List of keys to modify.
+    keys_tomodify_list = ()
+
+    def __init__(self, myID=None, data=None, currentRole='', notes='',
+                accessSystem=None, titlesRefs=None, namesRefs=None,
+                modFunct=None, *args, **kwds):
+        """Initialize a Movie or a Person object.
+        *myID* -- your personal identifier for this object.
+        *data* -- a dictionary used to initialize the object.
+        *currentRole* -- a string representing the current role or duty
+                        of a person in this/a movie.
+        *notes* -- notes for the person referred in the currentRole
+                    attribute; e.g.: '(voice)' or the alias used in the
+                    movie credits.
+        *accessSystem* -- a string representing the data access system used.
+        *titlesRefs* -- a dictionary with references to movies.
+        *namesRefs* -- a dictionary with references to persons.
+        *modFunct* -- function called returning text fields.
+        """
+        self.reset()
+        self.myID = myID
+        if data is None: data = {}
+        self.set_data(data, override=1)
+        self.currentRole = currentRole
+        self.notes = notes
+        self.accessSystem = accessSystem
+        if titlesRefs is None: titlesRefs = {}
+        self.update_titlesRefs(titlesRefs)
+        if namesRefs is None: namesRefs = {}
+        self.update_namesRefs(namesRefs)
+        self.set_mod_funct(modFunct)
+        self.keys_tomodify = {}
+        for item in self.keys_tomodify_list:
+            self.keys_tomodify[item] = None
+        self._init(**kwds)
+
+    def _init(self, **kwds): pass
+
+    def reset(self):
+        """Reset the object."""
+        self.data = {}
+        self.myID = None
+        self.currentRole = ''
+        self.notes = ''
+        self.titlesRefs = {}
+        self.namesRefs = {}
+        self.modFunct = modClearRefs
+        self.current_info = []
+        self._reset()
+
+    def _reset(self): pass
+
+    def clear(self):
+        """Reset the dictionary."""
+        self.data.clear()
+        self.currentRole = ''
+        self.notes = ''
+        self.titlesRefs = {}
+        self.namesRefs = {}
+        self.current_info = []
+        self._clear()
+
+    def _clear(self): pass
+
+    def get_current_info(self):
+        """Return the current set of information retrieved."""
+        return self.current_info
+
+    def set_current_info(self, ci):
+        """Set the current set of information retrieved."""
+        self.current_info = ci
+
+    def add_to_current_info(self, val):
+        """Add a set of information to the current list."""
+        if val not in self.current_info:
+            self.current_info.append(val)
+
+    def has_current_info(self, val):
+        """Return true if the given set of information is in the list."""
+        return val in self.current_info
+    
+    def set_mod_funct(self, modFunct):
+        """Set the fuction used to modify the strings."""
+        if modFunct is None: modFunct = modClearRefs
+        self.modFunct = modFunct
+
+    def update_titlesRefs(self, titlesRefs):
+        """Update the dictionary with the references to movies."""
+        self.titlesRefs.update(titlesRefs)
+    
+    def get_titlesRefs(self):
+        """Return the dictionary with the references to movies."""
+        return self.titlesRefs
+
+    def update_namesRefs(self, namesRefs):
+        """Update the dictionary with the references to names."""
+        self.namesRefs.update(namesRefs)
+
+    def get_namesRefs(self):
+        """Return the dictionary with the references to names."""
+        return self.namesRefs
+
+    def set_data(self, data, override=0):
+        """Set the movie data to the given dictionary; if 'override' is
+        set, the previous data is removed, otherwise the two dictionary
+        are merged.
+        """
+        if not override:
+            self.data.update(data)
+        else:
+            self.data = data
+
+    def __cmp__(self, other):
+        """Compare two Movie or Person objects."""
+        # XXX: only check the title/name and the movieID/personID?
+        # XXX: comparison should be used to sort movies/person?
+        if not isinstance(other, self.__class__):
+            return -1
+        if self.data == other.data:
+            return 0
+        return 1
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, key):
+        """Return the value for a given key, checking key aliases;
+        a KeyError exception is raised if the key is not found.
+        """
+        if self.keys_alias.has_key(key):
+            key = self.keys_alias[key]
+        rawData = self.data[key]
+        if self.keys_tomodify.has_key(key) and \
+                self.modFunct not in (None, modNull):
+            return modifyStrings(rawData, self.modFunct, self.titlesRefs,
+                                self.namesRefs)
+        return rawData
+
+    def __setitem__(self, key, item):
+        """Directly store the item with the given key."""
+        self.data[key] = item
+
+    def __delitem__(self, key):
+        """Remove the given section or key."""
+        # XXX: how to remove an item of a section?
+        del self.data[key]
+
+    def keys(self):
+        """Return a list of valid keys."""
+        return self.data.keys() + self._additional_keys()
+
+    def items(self):
+        """Return the items in the dictionary."""
+        return [(k, self.get(k)) for k in self.keys()]
+
+    #def iteritems(self): return self.data.iteritems()
+    #def iterkeys(self): return self.data.iterkeys()
+    #def itervalues(self): return self.data.itervalues()
+
+    def values(self):
+        """Return the values in the dictionary."""
+        return [self.get(k) for k in self.keys()]
+
+    def has_key(self, key):
+        """Return true if a given section is defined."""
+        try:
+            self.__getitem__(key)
+        except KeyError:
+            return 0
+        return 1
+
+    def update(self, dict):
+        self.data.update(dict)
+
+    def get(self, key, failobj=None):
+        """Return the given section, or default if it's not found."""
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return failobj
+
+    def setdefault(self, key, failobj=None):
+        if not self.has_key(key):
+            self[key] = failobj
+        return self[key]
+
+    def pop(self, key, *args):
+        return self.data.pop(key, *args)
+
+    def popitem(self):
+        return self.data.popitem()
+    
+    def __contains__(self, key):
+        raise NotImplementedError, 'override this method'
+
+    def append_item(self, key, item):
+        """The item is appended to the list identified by the given key."""
+        if not self.data.has_key(key):
+            self.data[key] = []
+        self.data[key].append(item)
+
+    def set_item(self, key, item):
+        """Directly store the item with the given key."""
+        self.data[key] = item
+
+    def __nonzero__(self):
+        """The Movie is "false" if the self.data does not contains a title."""
+        if self.data: return 1
+        return 0
+
+    def __deepcopy__(self, memo):
+        raise NotImplementedError, 'override this method'
+
+    def copy(self):
+        """Return a deep copy of the object itself."""
+        return deepcopy(self)
 
 

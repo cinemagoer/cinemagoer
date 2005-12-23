@@ -84,7 +84,7 @@ class IMDbBase:
         default by the Person and Movie objects, when accessing
         their text fields.
         """
-        # The function used to print the strings.
+        # The function used to output the strings.
         self._defModFunct = defaultModFunct
         
     def _normalize_movieID(self, movieID):
@@ -164,7 +164,7 @@ class IMDbBase:
             results = 20
         res = self._search_movie(title, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                movieData=md, modFunct=self._defModFunct,
+                data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]
 
     def get_person(self, personID, info=Person.Person.default_info,
@@ -207,7 +207,7 @@ class IMDbBase:
             results = 20
         res = self._search_person(name, results)
         return [Person.Person(personID=self._get_real_personID(pi),
-                personData=pd, modFunct=self._defModFunct,
+                data=pd, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for pi, pd in res][:results]
 
     def new_movie(self, *arguments, **keywords):

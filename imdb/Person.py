@@ -23,14 +23,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import types
 from copy import deepcopy
-from utils import analyze_name, build_name, modifyStrings, modClearRefs, \
-                    modNull, normalizeName
+from utils import analyze_name, build_name, normalizeName, _Container
 
 
-class Person:
+class Person(_Container):
     """A Person.
-
-    A Person object emulates (most of) the dictionary interface.
 
     Every information about a person can be accessed as:
         personObject['information']
@@ -69,17 +66,21 @@ class Person:
                   'mini-biography author': 'imdb mini-biography by',
                   'biography author': 'imdb mini-biography by'}
 
-    def __init__(self, name='', personID=None, myName='', myID=None,
-                personData=None, currentRole='', notes='', accessSystem=None,
-                titlesRefs=None, namesRefs=None, modFunct=None,
-                billingPos=None):
+    # 'nick names'???
+    keys_tomodify_list = ('mini biography', 'spouse', 'quotes', 'other works',
+                        'salary history', 'trivia', 'trademarks', 'news',
+                        'books', 'biographical movies', 'portrayed',
+                        'where now', 'interviews', 'articles',
+                        "biography from leonard maltin's movie encyclopedia")
+
+    def _init(self, **kwds):
         """Initialize a Person object.
 
         *personID* -- the unique identifier for the person.
-        *name* -- the name of the Person, if not in the personData dictionary.
+        *name* -- the name of the Person, if not in the data dictionary.
         *myName* -- the nickname you use for this person.
         *myID* -- your personal id for this person.
-        *personData* -- a dictionary used to initialize the object.
+        *data* -- a dictionary used to initialize the object.
         *currentRole* -- a string representing the current role or duty
                         of the person in a movie.
         *notes* -- notes about the given person for a specific movie
@@ -90,211 +91,68 @@ class Person:
         *modFunct* -- function called returning text fields.
         *billingPos* -- position of this person in the credits list.
         """
-        self.reset()
-        self.accessSystem = accessSystem
-        if personData is None: personData = {}
-        self.set_data(personData, override=1)
-        if titlesRefs is None: titlesRefs = {}
-        self.update_titlesRefs(titlesRefs)
-        if namesRefs is None: namesRefs = {}
-        self.update_namesRefs(namesRefs)
-        if name and not personData.get('name'):
+        name = kwds.get('name')
+        if name and not self.data.has_key('name'):
             self.set_name(name)
-        self.personID = personID
-        self.myName = myName
-        self.myID = myID
-        self.currentRole = currentRole
-        self.notes = notes
-        if modFunct is None: modFunct = modClearRefs
-        self.set_mod_funct(modFunct)
-        self.billingPos = billingPos
+        self.personID = kwds.get('personID', None)
+        self.myName = kwds.get('myName', '')
+        self.billingPos = kwds.get('billingPos', None)
 
-    def get_current_info(self):
-        """Return the current set of information retrieved."""
-        return self.current_info
-
-    def set_current_info(self, ci):
-        """Set the current set of information retrieved."""
-        self.current_info = ci
-
-    def add_to_current_info(self, val):
-        """Add a set of information to the current list."""
-        if val not in self.current_info:
-            self.current_info.append(val)
-
-    def set_mod_funct(self, modFunct):
-        """Set the fuction used to modify the strings."""
-        if modFunct is None: modFunct = modClearRefs
-        self.__modFunct = modFunct
-
-    def update_titlesRefs(self, titlesRefs):
-        """Update the dictionary with the references to movies."""
-        self.__titlesRefs.update(titlesRefs)
-
-    def get_titlesRefs(self):
-        """Return the dictionary with the references to movies."""
-        return self.__titlesRefs
-
-    def update_namesRefs(self, namesRefs):
-        """Update the dictionary with the references to names."""
-        self.__namesRefs.update(namesRefs)
-
-    def get_namesRefs(self):
-        """Return the dictionary with the references to names."""
-        return self.__namesRefs
-    
-    def has_current_info(self, val):
-        """Return true if the given set of information is in the list."""
-        return val in self.current_info
-
-    def reset(self):
+    def _reset(self):
         """Reset the Person object."""
         self.personID = None
-        self.__person_data = {}
-        self.current_info = []
         self.myName = ''
-        self.myID = None
-        self.currentRole = ''
-        self.notes = ''
-        self.__titlesRefs = {}
-        self.__namesRefs = {}
+        self.billingPos = None
+
+    def _clear(self):
+        """Reset the dictionary."""
+        self.billingPos = None
 
     def set_name(self, name):
         """Set the name of the person."""
         d = analyze_name(name, canonical=1)
-        self.__person_data.update(d)
+        self.data.update(d)
 
-    def set_data(self, pd, override=0):
-        """Set the person data to the given dictionary; if 'override' is
-        set, the previous data is removed, otherwise the two dictionary
-        are merged.
-        """
-        # XXX: uh.  Not sure this the best place/way to do it.
-        #pd = deepcopy(pd)
-        if not override:
-            self.__person_data.update(pd)
-        else:
-            self.__person_data = pd
-
-    def __str__(self):
-        """Simply print the short name."""
-        return self.get('name', '')
-
-    def clear(self):
-        """Reset the dictionary."""
-        self.__person_data.clear()
-        self.currentRole = ''
-        self.notes = ''
-        self.__titlesRefs = {}
-        self.__namesRefs = {}
-        self.current_info = []
-
-    def has_key(self, key):
-        """Return true if a given section is defined."""
-        try:
-            self.__getitem__(key)
-        except KeyError:
-            return 0
-        return 1
-
-    def keys(self):
+    def _additional_keys(self):
         """Return a list of valid keys."""
-        l = self.__person_data.keys()
-        if 'name' in l:
-            l += ['canonical name', 'long imdb name',
+        if self.data.has_key('name'):
+            return ['canonical name', 'long imdb name',
                     'long imdb canonical name']
-        return l
-
-    def items(self):
-        """Return the items in the dictionary."""
-        return [(k, self.get(k)) for k in self.keys()]
-
-    def values(self):
-        """Return the values in the dictionary."""
-        return [self.get(k) for k in self.keys()]
-
-    def append_item(self, key, item):
-        """The item is appended to the list identified by
-        the given key.
-        """
-        # TODO: this and the two other methods below are here only
-        #       for _future_ usage, when it will make sense to modify
-        #       a Person object; right now they're incomplete and should
-        #       not be used.
-        if not self.__person_data.has_key(key):
-            self.__person_data[key] = []
-        self.__person_data[key].append(item)
-
-    def set_item(self, key, item):
-        """Directly store the item with the given key."""
-        self.__person_data[key] = item
-
-    def __setitem__(self, key, item):
-        """Directly store the item with the given key."""
-        self.__person_data[key] = item
-    
-    def __contains__(self, item):
-        """Return true if this Person has worked in the given Movie."""
-        from Movie import Movie
-        if not isinstance(item, Movie):
-            return 0
-        for i in self.__person_data.values():
-            if type(i) in (types.ListType, types.TupleType):
-                for j in i:
-                    if isinstance(j, Movie) and item.isSameTitle(j):
-                        return 1
-        return 0
-
-    def __delitem__(self, key):
-        """Remove the given section or key."""
-        # XXX: how to remove an item of a section?
-        del self.__person_data[key]
-
-    def get(self, key, default=None):
-        """Return the given section, or default if it's not found."""
-        try:
-            return self.__getitem__(key)
-        except KeyError:
-            return default
+        return []
 
     def __getitem__(self, key):
         """Return the value for a given key, checking key aliases;
         a KeyError exception is raised if the key is not found.
         """
-        if self.__person_data.has_key('name'):
+        if self.data.has_key('name'):
             if key == 'name':
-                return normalizeName(self.__person_data['name'])
+                return normalizeName(self.data['name'])
             elif key == 'canonical name':
-                return self.__person_data['name']
+                return self.data['name']
             elif key == 'long imdb name':
-                return build_name(self.__person_data)
+                return build_name(self.data)
             elif key == 'long imdb canonical name':
-                return build_name(self.__person_data, canonical=1)
-        if key in self.keys_alias.keys():
-            key = self.keys_alias[key]
-        if self.__modFunct is modNull:
-            return self.__person_data[key]
-        else:
-            return modifyStrings(self.__person_data[key], self.__modFunct,
-                                    self.__titlesRefs, self.__namesRefs)
+                return build_name(self.data, canonical=1)
+        return _Container.__getitem__(self, key)
 
     def __nonzero__(self):
-        """The Person is "false" if the self.__person_data is empty."""
+        """The Person is "false" if the self.data is empty."""
         # XXX: check the name and the personID?
-        if self.__person_data:
+        if self.data:
             return 1
         return 0
 
-    def __cmp__(self, other):
-        """Compare two Person objects."""
-        # XXX: check the name and the personID?
-        # XXX: use comparison to sort people based on the 
-        #      billing position in credits?
-        if not isinstance(other, self.__class__):
-            return -1
-        if self.__person_data == other.__person_data:
+    def __contains__(self, item):
+        """Return true if this Person has worked in the given Movie."""
+        from Movie import Movie
+        if not isinstance(item, Movie):
             return 0
-        return 1
+        for i in self.data.values():
+            if type(i) in (types.ListType, types.TupleType):
+                for j in i:
+                    if isinstance(j, Movie) and item.isSameTitle(j):
+                        return 1
+        return 0
 
     def isSamePerson(self, other):
         """Return true if two persons have the same name and imdbIndex
@@ -302,10 +160,10 @@ class Person:
         """
         if not isinstance(other, self.__class__):
             return 0
-        if self.__person_data.has_key('name') and \
-                other.__person_data.has_key('name') and \
-                build_name(self.__person_data, canonical=1) == \
-                build_name(other.__person_data, canonical=1):
+        if self.data.has_key('name') and \
+                other.data.has_key('name') and \
+                build_name(self.data, canonical=1) == \
+                build_name(other.data, canonical=1):
             return 1
         if self.accessSystem == other.accessSystem and \
                 self.personID and self.personID == other.personID:
@@ -314,18 +172,20 @@ class Person:
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Person instance."""
-        p = Person('', self.personID, self.myName, self.myID,
-                    deepcopy(self.__person_data, memo), self.currentRole,
-                    self.notes, self.accessSystem,
-                    deepcopy(self.__titlesRefs, memo),
-                    deepcopy(self.__namesRefs, memo))
-        p.current_info = self.current_info
-        p.set_mod_funct(self.__modFunct)
+        p = Person(name='', personID=self.personID, myName=self.myName,
+                    myID=self.myID, data=deepcopy(self.data, memo),
+                    currentRole=self.currentRole, notes=self.notes,
+                    accessSystem=self.accessSystem,
+                    titlesRefs=deepcopy(self.titlesRefs, memo),
+                    namesRefs=deepcopy(self.namesRefs, memo))
+        p.current_info = list(self.current_info)
+        p.set_mod_funct(self.modFunct)
+        p.billingPos = self.billingPos
         return p
 
-    def copy(self):
-        """Return a deep copy of the object itself."""
-        return deepcopy(self)
+    def __str__(self):
+        """Simply print the short name."""
+        return self.get('name', '')
 
     def summary(self):
         """Return a string with a pretty-printed summary for the person."""

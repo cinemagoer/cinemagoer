@@ -808,7 +808,11 @@ def nmmvFiles(fp, funct, fname):
         d = funct(text.split('\n'))
         for k, v in d.iteritems():
             if k != 'notable tv guest appearances':
-                theid = INFO_TYPES[k]
+                theid = INFO_TYPES.get(k)
+                if theid is None:
+                    print 'WARNING key "%s" of ton "%s" not in INFO_TYPES' % \
+                                (k, ton)
+                    continue
             if type(v) is _ltype:
                 for i in v:
                     if k == 'notable tv guest appearances':
@@ -867,7 +871,7 @@ def doNMMVFiles():
             ('literature.list.gz',LIT_START,getLiterature),
             ('mpaa-ratings-reasons.list.gz',MPAA_START,getMPAA),
             ('plot.list.gz',PLOT_START,getPlot)]:
-    #for fname, start, funct in [('biographies.list.gz',BIO_START,_parseBiography)]:
+    #for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
         fp = SourceFile(fname, start=start)
         if fname == 'literature.list.gz': fp.stop = LIT_STOP
         elif fname == 'business.list.gz': fp.stop = BUS_STOP

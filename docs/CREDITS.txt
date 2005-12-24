@@ -6,6 +6,8 @@ I'd like to thank the following people for their help:
 
 * Magnus Lie Hetland for an hint about the searches in sql package.
 
+* Thomas Jadjewski for a bug report about the imdbpy2sql.py script.
+
 * Trevor MacPhail, for a bug report about search_* methods and
   the ParserBase.parse method.
 

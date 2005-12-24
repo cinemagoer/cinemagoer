@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20051223 "Cowboy Bebop" (23 Dec 2005)
+* What's the new in release 2.4-cvs20051224 "Undead" (24 Dec 2005)
   [general]
   - unified Movie and Person classes.
   - the strings are modified only if it's really needed.
@@ -9,6 +9,9 @@
     canonicalName, analyze_name, analyze_title.
   - removed the deepcopy of the data, updating Movie and Person
     objects.
+
+  [sql data access system]
+  - fixed the imdbpy2sql.py script, to handle file with spurious lines.
 
 
 * What's the new in release 2.3 "Big Fish" (03 Dec 2005)

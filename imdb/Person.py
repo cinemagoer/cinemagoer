@@ -114,16 +114,14 @@ class Person(_Container):
         self.data.update(d)
 
     def _additional_keys(self):
-        """Return a list of valid keys."""
+        """Valid keys to append to the data.keys() list."""
         if self.data.has_key('name'):
             return ['canonical name', 'long imdb name',
                     'long imdb canonical name']
         return []
 
-    def __getitem__(self, key):
-        """Return the value for a given key, checking key aliases;
-        a KeyError exception is raised if the key is not found.
-        """
+    def _getitem(self, key):
+        """Handle special keys."""
         if self.data.has_key('name'):
             if key == 'name':
                 return normalizeName(self.data['name'])
@@ -133,13 +131,12 @@ class Person(_Container):
                 return build_name(self.data)
             elif key == 'long imdb canonical name':
                 return build_name(self.data, canonical=1)
-        return _Container.__getitem__(self, key)
+        return None
 
     def __nonzero__(self):
-        """The Person is "false" if the self.data is empty."""
+        """The Person is "false" if the self.data does not contain a name."""
         # XXX: check the name and the personID?
-        if self.data:
-            return 1
+        if self.data.has_key('name'): return 1
         return 0
 
     def __contains__(self, item):
@@ -189,13 +186,9 @@ class Person(_Container):
 
     def summary(self):
         """Return a string with a pretty-printed summary for the person."""
-        s = ''
-        if not self:
-            return ''
-        s = 'Person\n=====\n'
-        name = self.get('long imdb canonical name')
-        if name:
-            s += 'Name: %s\n' % name
+        if not self: return ''
+        s = 'Person\n=====\nName: %s\n' % \
+                                self.get('long imdb canonical name', '')
         bdate = self.get('birth date')
         if bdate:
             s += 'Birth date: %s' % bdate
@@ -215,16 +208,10 @@ class Person(_Container):
             s += 'Biography: %s\n' % bio[0]
         director = self.get('director')
         if director:
-            s += 'Last movies directed: '
-            for m in director[:3]:
-                s += str(m) + '; '
-            s = s[:-2] + '.\n'
+            s += 'Last movies directed: %s.\n' % '; '.join(director[:3])
         act = self.get('actor') or self.get('actress')
         if act:
-            s += 'Last movies acted: '
-            for m in act[:5]:
-                s += str(m) + '; '
-            s = s[:-2] + '.\n'
+            s += 'Last movies acted: %s.\n' % '; '.join(act[:5])
         return s
 
 

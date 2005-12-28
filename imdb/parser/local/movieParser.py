@@ -176,8 +176,9 @@ def _parseColonList(movieID, indexF, dataF, stopKey, replaceKeys):
         k = cols[0]
         k = replaceKeys.get(k, k)
         v = ' '.join(cols[1:]).strip()
-        if not out.has_key(k): out[k] = []
-        out[k].append(v)
+        out.setdefault(k, []).append(v)
+        #if not out.has_key(k): out[k] = []
+        #out[k].append(v)
     fd.close()
     return out
 
@@ -362,8 +363,9 @@ def getMovieLinks(movieID, dataF, movieTitlIF, movieTitlKF):
         m = Movie(title=title, movieID=entry[2], accessSystem='local')
         sect = _links_sect.get(entry[1])
         if not sect: continue
-        if not res.has_key(sect): res[sect] = []
-        res[sect].append(m)
+        res.setdefault(sect, []).append(m)
+        #if not res.has_key(sect): res[sect] = []
+        #res[sect].append(m)
     return res
 
 

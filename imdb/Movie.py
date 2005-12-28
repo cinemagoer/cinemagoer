@@ -106,7 +106,8 @@ class Movie(_Container):
                 'amazon review': 'amazon reviews'}
 
     keys_tomodify_list = ('plot', 'trivia', 'alternate versions', 'goofs',
-                        'quotes', 'dvd', 'laserdisc', 'news', 'soundtrack')
+                        'quotes', 'dvd', 'laserdisc', 'news', 'soundtrack',
+                        'crazy credits', 'business')
 
     def _init(self, **kwds):
         """Initialize a Movie object.
@@ -142,16 +143,14 @@ class Movie(_Container):
         self.data.update(d_title)
 
     def _additional_keys(self):
-        """Return a list of valid keys."""
+        """Valid keys to append to the data.keys() list."""
         if self.data.has_key('title'):
             return ['canonical title', 'long imdb title',
                     'long imdb canonical title']
         return []
 
-    def __getitem__(self, key):
-        """Return the value for a given key, checking key aliases;
-        a KeyError exception is raised if the key is not found.
-        """
+    def _getitem(self, key):
+        """Handle special keys."""
         if self.data.has_key('title'):
             if key == 'title':
                 return normalizeTitle(self.data['title'])
@@ -161,11 +160,10 @@ class Movie(_Container):
                 return self.data['title']
             elif key == 'long imdb canonical title':
                 return build_title(self.data, canonical=1)
-        return _Container.__getitem__(self, key)
+        return None
 
     def __nonzero__(self):
-        """The Movie is "false" if the self.data does not contains
-        a title."""
+        """The Movie is "false" if the self.data does not contain a title."""
         # XXX: check the title and the movieID?
         if self.data.has_key('title'): return 1
         return 0
@@ -213,6 +211,14 @@ class Movie(_Container):
         """Simply print the short title."""
         return self.get('title', '')
 
+    def _nameAndRole(self, personList, joiner=', '):
+        nl = []
+        for person in personList:
+            n = person.get('name', '')
+            if person.currentRole: n += ' (%s)' % person.currentRole
+            nl.append(n)
+        return joiner.join(nl)
+        
     def summary(self):
         """Return a string with a pretty-printed summary for the movie."""
         if not self:
@@ -223,56 +229,30 @@ class Movie(_Container):
         if genres: s += 'Genres: %s.' % ', '.join(genres)
         director = self.get('director')
         if director:
-            s += 'Director: '
-            for name in director:
-                s += str(name)
-                if name.currentRole:
-                    s += ' (%s)' % name.currentRole
-                s += ', '
-            s = s[:-2] + '.\n'
+            s += 'Director: %s.\n' % self._nameAndRole(director)
         writer = self.get('writer')
         if writer:
-            s += 'Writer: '
-            for name in writer:
-                s += str(name)
-                if name.currentRole:
-                    s += ' (%s)' % name.currentRole
-                s += ', '
-            s = s[:-2] + '.\n'
+            s += 'Writer: %s.\n' % self._nameAndRole(writer)
         cast = self.get('cast')
         if cast:
             cast = cast[:5]
-            s += 'Cast: '
-            for name in cast:
-                s += str(name)
-                if name.currentRole:
-                    s += ' (%s)' % name.currentRole
-                s += ', '
-            s = s[:-2] + '.\n'
+            s += 'Cast: %s.\n' % self._nameAndRole(cast)
         runtime = self.get('runtimes')
         if runtime:
-            s += 'Runtime: '
-            for r in runtime:
-                s += r + ', '
-            s = s[:-2] + '.\n'
+            s += 'Runtime: %s.\n' % ', '.join(runtime)
         countries = self.get('countries')
         if countries:
-            s += 'Country: '
-            for c in countries:
-                s += c + ', '
-            s = s[:-2] + '.\n'
+            s += 'Country: %s.\n' % ', '.join(countries)
         lang = self.get('languages')
         if lang:
-            s += 'Language: '
-            for l in lang:
-                s += l + ', '
-            s = s[:-2] + '.\n'
+            s += 'Language: %s.\n' % ', '.join(lang)
         rating = self.get('rating')
         if rating:
-            s += 'Rating: %s\n' % rating
-        nr_votes = self.get('votes')
-        if nr_votes:
-            s += 'Votes: %s\n' % nr_votes
+            s += 'Rating: %s' % rating
+            nr_votes = self.get('votes')
+            if nr_votes:
+                s += '(%s votes)' % nr_votes
+            s += '.\n'
         plot = self.get('plot')
         if plot:
             plot = plot[0]

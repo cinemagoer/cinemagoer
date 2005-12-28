@@ -370,9 +370,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
     def get_movie_literature(self, movieID):
         ml = getLiterature(movieID, '%sliterature.index' % self.__db,
                             '%sliterature.data' % self.__db)
-        trefs, nrefs = self._extractRefs(ml)
-        if ml: return {'data': {'literature': ml},
-                        'titlesRefs': trefs, 'namesRefs': nrefs}
+        if ml: return {'data': {'literature': ml}}
         return {'data': {}}
     
     def get_movie_laserdisc(self, movieID):

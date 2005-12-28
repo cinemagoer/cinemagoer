@@ -45,17 +45,19 @@ from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
 re_spaces = re.compile(r'\s+')
 # Strip html.
 re_unhtml = re.compile(r'<.+?>')
+re_unhtmlsub = re_unhtml.sub
 # imdb person or movie ids.
 re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
 
 # Here to handle non-breaking spaces.
 entitydefs['nbsp'] = ' '
+entitydefsget = entitydefs.get
 
 
 def _replRef(match):
     """Replace the matched html/sgml entity and reference."""
     ret = match.group()[1:-1]
-    ret = entitydefs.get(ret, ret)
+    ret = entitydefsget(ret, ret)
     if ret[0] == '#':
         try:
             ret = chr(int(ret[1:]))
@@ -79,7 +81,7 @@ def _subRefs(s):
 
 def _unHtml(s):
     """Return a string without tags and no multiple spaces."""
-    return re_spaces.sub(' ', re_unhtml.sub('', s)).strip()
+    return re_spaces.sub(' ', re_unhtmlsub('', s)).strip()
 
 
 _ltypes = (type([]), type(()))
@@ -144,6 +146,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         the currentRole of a person is searched."""
         names = s.split(sep)
         pl = []
+        plappend = pl.append
         counter = 1
         for name in names:
             notes = ''
@@ -166,7 +169,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 if len(stripped) == 1: name = stripped[0]
             name = _unHtml(name)
             if not (pid and name): continue
-            pl.append(Person(personID=pid[0], name=name,
+            plappend(Person(personID=pid[0], name=name,
                             currentRole=currentRole, notes=notes,
                             accessSystem=self.accessSystem,
                             modFunct=self._defModFunct, billingPos=counter))
@@ -465,8 +468,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 if d.has_key('status'): movie['status'] = d['status']
                 movie.currentRole = role
                 movie.notes = notes
-                if not r.has_key(sectName): r[sectName] = []
-                r[sectName].append(movie)
+                r.setdefault(sectName, []).append(movie)
+                #if not r.has_key(sectName): r[sectName] = []
+                #r[sectName].append(movie)
         return {'data': r, 'info sets': ('main', 'filmography')}
 
     def get_person_biography(self, personID):

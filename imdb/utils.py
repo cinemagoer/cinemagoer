@@ -65,7 +65,7 @@ def canonicalName(name):
         name = '%s, %s' % (sname[1], sname[0])
     elif snl > 2:
         lsname = [x.lower() for x in sname]
-        if snl == 2: _indexes = (0, snl-2)
+        if snl == 3: _indexes = (0, snl-2)
         else: _indexes = (0, snl-2, snl-3)
         # Check for common surname prefixes at the beginning and near the end.
         for index in _indexes:
@@ -110,10 +110,11 @@ def analyze_name(name, canonical=0):
     res = {}
     imdbIndex = ''
     opi = name.rfind('(')
-    cpi = name.rfind(')')
-    if opi != -1 and cpi != -1 and re_index.match(name[opi:cpi+1]):
-        imdbIndex = name[opi+1:cpi]
-        name = name[:opi].rstrip()
+    if opi != -1:
+        cpi = name.rfind(')')
+        if cpi > opi and re_index.match(name[opi:cpi+1]):
+            imdbIndex = name[opi+1:cpi]
+            name = name[:opi].rstrip()
     if not name:
         raise IMDbParserError, 'invalid name: "%s"' % original_n
     if canonical:
@@ -535,12 +536,20 @@ class _Container:
     def __len__(self):
         return len(self.data)
 
+    def _getitem(self, key):
+        """Handle special keys."""
+        return None
+
     def __getitem__(self, key):
         """Return the value for a given key, checking key aliases;
         a KeyError exception is raised if the key is not found.
         """
-        if self.keys_alias.has_key(key):
-            key = self.keys_alias[key]
+        value = self._getitem(key)
+        if value is not None: return value
+        # Handle key aliases.
+        key = self.keys_alias.get(key, key)
+        #if self.keys_alias.has_key(key):
+        #    key = self.keys_alias[key]
         rawData = self.data[key]
         if self.keys_tomodify.has_key(key) and \
                 self.modFunct not in (None, modNull):
@@ -607,9 +616,10 @@ class _Container:
 
     def append_item(self, key, item):
         """The item is appended to the list identified by the given key."""
-        if not self.data.has_key(key):
-            self.data[key] = []
-        self.data[key].append(item)
+        self.data.setdefault(key, []).append(item)
+        #if not self.data.has_key(key):
+        #    self.data[key] = []
+        #self.data[key].append(item)
 
     def set_item(self, key, item):
         """Directly store the item with the given key."""

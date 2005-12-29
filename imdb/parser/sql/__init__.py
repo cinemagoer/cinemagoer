@@ -37,7 +37,6 @@ from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 
-import re
 import MySQLdb
 import _mysql_exceptions
 

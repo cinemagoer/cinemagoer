@@ -377,10 +377,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         #workkind = _findBetween(s, 'Filmography as:</i>', '</p>')
         #if not workkind: return r
         #wsects = workkind[0].split(', ')
+        #wsects = []
         workkind = _findBetween(s, '<b><a name=', '</a> - filmography')
         
         ws = []
-        wsects = []
         for w in workkind:
             if w and w[0] == '"': w = w[1:]
             se = ''

@@ -445,7 +445,7 @@ class _Container:
         self.keys_tomodify = {}
         for item in self.keys_tomodify_list:
             self.keys_tomodify[item] = None
-        self._init(**kwds)
+        self._init(*args, **kwds)
 
     def _init(self, **kwds): pass
 
@@ -565,6 +565,10 @@ class _Container:
         """Remove the given section or key."""
         # XXX: how to remove an item of a section?
         del self.data[key]
+
+    def _additional_keys(self):
+        """Valid keys to append to the data.keys() list."""
+        return []
 
     def keys(self):
         """Return a list of valid keys."""

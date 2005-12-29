@@ -90,6 +90,11 @@ def _groupListBy(l, index):
     return res
 
 
+def sub_dict(d, keys):
+    """Return the subdictionary of 'd', with just the keys listed in 'keys'."""
+    return dict([(k, d[k]) for k in keys if k in d])
+
+
 class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     """The class used to access IMDb's data through a SQL database."""
 
@@ -471,7 +476,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if res.has_key('guest'):
             res['guests'] = res['guest']
             del res['guest']
-        trefs, nrefs = self._extractRefs(res)
+        trefs,nrefs = self._extractRefs(sub_dict(res,Movie.keys_tomodify_list))
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
                 'info sets': infosets}
 
@@ -650,7 +655,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             for mname in miscnames:
                 if mname in res['akas']: res['akas'].remove(mname)
             if not res['akas']: del res['akas']
-        trefs, nrefs = self._extractRefs(res)
+        trefs,nrefs = self._extractRefs(sub_dict(res,Person.keys_tomodify_list))
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
                 'info sets': infosets}
 

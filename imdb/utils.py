@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import re
 from copy import copy, deepcopy
 
-from _exceptions import IMDbParserError
+from imdb._exceptions import IMDbParserError
 
 
 # The regular expression for the "long" year format of IMDb, like
@@ -152,39 +152,41 @@ _articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el', "l'", 'il',
             'al-', 'dem', 'uno', "un'", 'ett', 'mga', 'Ο', 'Η',
             'eines', 'els', 'Το', 'Οι')
 
-# Articles with spaces.
+# Articles in a dictionary.
+_articlesDict = dict([(x, x) for x in _articles])
 _spArticles = []
-#_spArticlesDict = {}
 for article in _articles:
-    #_spArticlesDict[article] = article
     if article[-1] not in ("'", '-'): article += ' '
     _spArticles.append(article)
 
 def canonicalTitle(title):
     """Return the title in the canonic format 'Movie Title, The'."""
     try:
-        if title.split(', ')[-1].lower() in _articles: return title
+        if _articlesDict.has_key(title.split(', ')[-1].lower()): return title
     except IndexError: pass
     ltitle = title.lower()
-    #for artSeparator in (' ', "'", '-'):
-    #    article = _spArticlesDict.get(ltitle.split(artSeparator)[0])
-    #    if article is not None:
-    #        lart = len(article)
-    #        title = '%s, %s' % (title[lart:], title[:lart])
-    #        if artSeparator == ' ': title = title[1:]
-    #        break
     for article in _spArticles:
         if ltitle.startswith(article):
             lart = len(article)
             title = '%s, %s' % (title[lart:], title[:lart])
             if article[-1] == ' ': title = title[:-1]
             break
+    #for artSeparator in (' ', "'", '-'):
+    #    article = _articlesDict.get(ltitle.split(artSeparator)[0])
+    #    if article is not None:
+    #        lart = len(article)
+    #        # check titles like "una", "I'm Mad" and "L'abbacchio".
+    #        if title[lart:] == '' or (artSeparator != ' ' and
+    #                                title[lart:][1] != artSeparator): continue
+    #        title = '%s, %s' % (title[lart:], title[:lart])
+    #        if artSeparator == ' ': title = title[1:]
+    #        break
     return title
 
 def normalizeTitle(title):
     """Return the title in the normal "The Title" format."""
     stitle = title.split(', ')
-    if len(stitle) > 1 and stitle[-1].lower() in _articles:
+    if len(stitle) > 1 and _articlesDict.has_key(stitle[-1].lower()):
         sep = ' '
         if stitle[-1][-1] in ("'", '-'): sep = ''
         title = '%s%s%s' % (stitle[-1], sep, ', '.join(stitle[:-1]))
@@ -548,8 +550,6 @@ class _Container:
         if value is not None: return value
         # Handle key aliases.
         key = self.keys_alias.get(key, key)
-        #if self.keys_alias.has_key(key):
-        #    key = self.keys_alias[key]
         rawData = self.data[key]
         if self.keys_tomodify.has_key(key) and \
                 self.modFunct not in (None, modNull):
@@ -578,6 +578,7 @@ class _Container:
         """Return the items in the dictionary."""
         return [(k, self.get(k)) for k in self.keys()]
 
+    # XXX: implement!
     #def iteritems(self): return self.data.iteritems()
     #def iterkeys(self): return self.data.iterkeys()
     #def itervalues(self): return self.data.itervalues()
@@ -621,9 +622,6 @@ class _Container:
     def append_item(self, key, item):
         """The item is appended to the list identified by the given key."""
         self.data.setdefault(key, []).append(item)
-        #if not self.data.has_key(key):
-        #    self.data[key] = []
-        #self.data[key].append(item)
 
     def set_item(self, key, item):
         """Directly store the item with the given key."""

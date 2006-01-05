@@ -23,7 +23,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import types
 from copy import deepcopy
-from utils import analyze_title, build_title, normalizeTitle, _Container
+
+from imdb.utils import analyze_title, build_title, normalizeTitle, _Container
 
 
 class Movie(_Container):

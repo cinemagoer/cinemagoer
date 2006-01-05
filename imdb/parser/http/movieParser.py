@@ -260,9 +260,6 @@ class HTMLMovieParser(ParserBase):
                 if notes: p.notes = notes
                 if self.__movie_data.setdefault(sect, []) == []:
                     self._counter = 1
-                #if not self.__movie_data.has_key(sect):
-                #    self.__movie_data[sect] = []
-                #    self._counter = 1
                 p.billingPos = self._counter
                 self.__movie_data[sect].append(p)
                 self._counter += 1
@@ -585,9 +582,6 @@ class HTMLPlotParser(ParserBase):
             plot = self.__last_plot.strip()
             self.__plot_data.setdefault('plot', []).append('%s::%s' %
                                                             (writer, plot))
-            #if not self.__plot_data.has_key('plot'):
-            #    self.__plot_data['plot'] = []
-            #self.__plot_data['plot'].append(writer + '::' + plot)
             self.__is_plot_writer = 0
             self.__plot_writer = ''
             self.__last_plot = ''
@@ -1584,9 +1578,6 @@ class HTMLConnectionParser(ParserBase):
             m = Movie(title=self.__mtitle,
                         movieID=self.__cur_id,
                         accessSystem='http')
-            #if not self.__cn.has_key(sectit):
-            #    self.__cn[sectit] = []
-            #self.__cn[sectit].append(m)
             self.__cn.setdefault(sectit, []).append(m)
             self.__mtitle = ''
             self.__cur_id = ''
@@ -1752,9 +1743,6 @@ class HTMLDvdParser(ParserBase):
         ssl = len(ss)
         if ssl == 1:
             if ss[0].lower().find('read about how we rate dvds') != -1: return
-            #if not self.__cdvd.has_key('misc'):
-            #    self.__cdvd['misc'] = []
-            #self.__cdvd['misc'].append(ss[0])
             self.__cdvd.setdefault('misc', []).append(ss[0])
         else:
             k = ss[0].lower()
@@ -2004,9 +1992,6 @@ class HTMLRecParser(ParserBase):
                                     title=self.__curtitle,
                                     accessSystem='http')
                         self.__rec.setdefault(self.__curlist, []).append(m)
-                        #if not self.__rec.has_key(self.__curlist):
-                        #    self.__rec[self.__curlist] = []
-                        #self.__rec[self.__curlist].append(m)
                         self.__cur_id = ''
                 self.__curtitle = ''
             self.__firsttd = 0
@@ -2296,9 +2281,6 @@ class HTMLGuestsParser(ParserBase):
                             currentRole=role, accessSystem='http',
                             notes=note)
                 self._guests.setdefault(self._curepisode, []).append(p)
-                #if self._curepisode not in self._guests.keys():
-                #    self._guests[self._curepisode] = []
-                #self._guests[self._curepisode].append(p)
         if self._in_guests:
             self._inname = 0
             self._curname = ''

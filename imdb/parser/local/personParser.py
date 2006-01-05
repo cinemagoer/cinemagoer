@@ -24,9 +24,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
-from utils import getRawData, getLabel, getFullIndex
-
 from imdb.utils import re_titleRef, analyze_name, build_name, normalizeName
+from utils import getRawData, getLabel, getFullIndex
 
 
 def _parseList(l, prefix, mline=1):

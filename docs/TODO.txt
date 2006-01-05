@@ -7,7 +7,6 @@ NOTE: it's always time to clean the code! <g>
 
 
 [general]
-* Unify Movie and Person classes? (UserDict or dict subclasses?)
 * Write better summary() methods for Movie and Person classes.
 * Some portions of code are poorly commented.
 * The documentation is written in my funny English.

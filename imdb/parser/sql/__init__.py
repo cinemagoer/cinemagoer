@@ -69,10 +69,10 @@ def _reGroupDict(d, newgr):
     newgrks = newgr.keys()
     for k, v in d.items():
         if k in newgrks:
-            r.setdefault(newgr[k][0], {})
-            #if not r.has_key(newgr[k][0]):
-            #    r[newgr[k][0]] = {}
-            r[newgr[k][0]][newgr[k][1]] = v
+            r.setdefault(newgr[k][0], {})[newgr[k][1]] = v
+            # A not-so-clearer version:
+            #r.setdefault(newgr[k][0], {})
+            #r[newgr[k][0]][newgr[k][1]] = v
         else: r[k] = v
     return r
 
@@ -83,8 +83,6 @@ def _groupListBy(l, index):
     tmpd = {}
     for item in l:
         tmpd.setdefault(item[index], []).append(item)
-        #if tmpd.has_key(item[index]): tmpd[item[index]].append(item)
-        #else: tmpd[item[index]] = [item]
     res = tmpd.values()
     return res
 
@@ -99,10 +97,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
 
     accessSystem = 'sql'
 
-    def __init__(self, db, user, passwd, host='localhost', miscDBargs={},
+    def __init__(self, db, user, passwd, host='localhost', miscDBargs=None,
                 adultSearch=1, *arguments, **keywords):
         """Initialize the access system."""
         IMDbLocalAndSqlAccessSystem.__init__(self, *arguments, **keywords)
+        if miscDBargs is None: miscDBargs = {}
         initdict = miscDBargs
         initdict.update({'db': db, 'user': user, 'host': host,
                         'passwd': passwd})
@@ -373,7 +372,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         castdata[:] =  _groupListBy(tmpcast, 4)
         for group in castdata:
             duty = self._roles[group[0][4]]
-            #if not res.has_key(duty): res[duty] = []
             for pdata in group:
                 p = Person(personID=pdata[0], name=pdata[5],
                             currentRole=pdata[1], notes=pdata[2],
@@ -381,7 +379,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if pdata[6]: p['imdbIndex'] = pdata[6]
                 p.billingPos = pdata[3]
                 res.setdefault(duty, []).append(p)
-                #res[duty].append(p)
             res[duty].sort(sortPeople)
         # Info about the movie.
         minfo = self.query('SELECT infoid, info, note from moviesinfo ' +
@@ -389,12 +386,10 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         minfo = _groupListBy(minfo, 0)
         for group in minfo:
             sect = self._info[group[0][0]]
-            #if not res.has_key(sect): res[sect] = []
             for mdata in group:
                 data = mdata[1]
                 if mdata[2]: data += '::%s' % mdata[2]
                 res.setdefault(sect, []).append(data)
-                #res[sect].append(data)
         # AKA titles.
         akat = self.query('SELECT title, imdbindex, kind, year, note ' +
                             'FROM akatitles WHERE movieid = %s;' % movieID)
@@ -593,7 +588,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         castdata[:] =  _groupListBy(castdata, 3)
         for group in castdata:
             duty = self._roles[group[0][3]]
-            #if not res.has_key(duty): res[duty] = []
             for mdata in group:
                 m = Movie(movieID=mdata[0], title=mdata[4],
                             currentRole=mdata[1], notes=mdata[2],
@@ -602,7 +596,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if mdata[5]: m['imdbIndex'] = mdata[5]
                 if mdata[7]: m['year'] = mdata[7]
                 res.setdefault(duty, []).append(m)
-                #res[duty].append(m)
             res[duty].sort(sortMovies)
         if res.has_key('guest'):
             res['notable tv guest appearances'] = res['guest']
@@ -613,12 +606,10 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         pinfo = _groupListBy(pinfo, 0)
         for group in pinfo:
             sect = self._info[group[0][0]]
-            #if not res.has_key(sect): res[sect] = []
             for pdata in group:
                 data = pdata[1]
                 if pdata[2]: data += '::%s' % pdata[2]
                 res.setdefault(sect, []).append(data)
-                #res[sect].append(data)
         # AKA names.
         akan = self.query('SELECT name, imdbindex ' +
                             'FROM akanames WHERE personid = %s;' % personID)

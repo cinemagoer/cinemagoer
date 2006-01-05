@@ -23,11 +23,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-__all__ = ['IMDb', 'IMDbError']
+__all__ = ['IMDb', 'IMDbError', 'Movie', 'Person']
 
 import types
-import Movie, Person
-from _exceptions import IMDbError, IMDbDataAccessError
+
+from imdb import Movie, Person
+from imdb._exceptions import IMDbError, IMDbDataAccessError
 
 
 # URLs of the main pages for movies and persons.
@@ -211,13 +212,13 @@ class IMDbBase:
                 accessSystem=self.accessSystem) for pi, pd in res][:results]
 
     def new_movie(self, *arguments, **keywords):
-        """Return a Movie.Movie object."""
+        """Return a Movie object."""
         # XXX: not really useful...
         return Movie.Movie(accessSystem=self.accessSystem,
                             *arguments, **keywords)
 
     def new_person(self, *arguments, **keywords):
-        """Return a Person.Person object."""
+        """Return a Person object."""
         # XXX: not really useful...
         return Person.Person(accessSystem=self.accessSystem,
                                 *arguments, **keywords)
@@ -259,7 +260,7 @@ class IMDbBase:
                 info = self.get_movie_infoset()
             else:
                 info = self.get_person_infoset()
-        if type(info) not in (types.ListType, types.TupleType):
+        if type(info) not in (types.TupleType, types.ListType):
             info = (info,)
         res = {}
         for i in info:
@@ -355,4 +356,7 @@ class IMDbBase:
                 sm_dict.update({name: member.__doc__})
         return sm_dict
 
+
+_Container = object
+#from imdb.utils import _Container
 

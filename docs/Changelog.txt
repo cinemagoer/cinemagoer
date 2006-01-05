@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20051229b "Undead" (29 Dec 2005)
+* What's the new in release 2.4-cvs20060104 "Creep" (04 Jan 2006)
   [general]
   - unified Movie and Person classes.
   - the strings are modified only if it's really needed.

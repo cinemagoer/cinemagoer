@@ -374,10 +374,6 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if hs:
             hs[:] = _findBetween(hs[0], 'src="', '"')
             if hs: r['headshot'] = hs[0]
-        #workkind = _findBetween(s, 'Filmography as:</i>', '</p>')
-        #if not workkind: return r
-        #wsects = workkind[0].split(', ')
-        #wsects = []
         workkind = _findBetween(s, '<b><a name=', '</a> - filmography')
         
         ws = []
@@ -392,13 +388,6 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             se = se.strip()
             sn = w[eti+1:].strip().lower()
             if se and sn: ws.append((se, sn))
-        #for w in wsects:
-        #    sl = _findBetween(w, 'href="#', '"')
-        #    if not sl: continue
-        #    sn = _findBetween(w, '">', '</a')
-        #    if sn: sn = _unHtml(sn[0])
-        #    if not sn: continue
-        #    ws.append((sl[0], sn.lower()))
         if s.find('<a href="#guest-appearances"') != -1:
             ws.append(('guest-appearances', 'notable tv guest appearances'))
         if s.find('<a href="#archive">') != -1:
@@ -469,8 +458,6 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 movie.currentRole = role
                 movie.notes = notes
                 r.setdefault(sectName, []).append(movie)
-                #if not r.has_key(sectName): r[sectName] = []
-                #r[sectName].append(movie)
         return {'data': r, 'info sets': ('main', 'filmography')}
 
     def get_person_biography(self, personID):

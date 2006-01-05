@@ -211,9 +211,6 @@ class HTMLMaindetailsParser(ParserBase):
             if notes: movie.notes = notes
             movie.currentRole = self.__roles
             sect = self.__sect_name.strip().lower()
-            #if not self.__person_data.has_key(sect):
-            #    self.__person_data[sect] = []
-            #self.__person_data[sect].append(movie)
             self.__person_data.setdefault(sect, []).append(movie)
         self.__title = ''
         self.__roles = ''
@@ -357,12 +354,6 @@ class HTMLBioParser(ParserBase):
                 # Multiple items are added separately (e.g.: 'trivia' is
                 # a list of strings).
                 self.__bio_data[sect] = d_split
-                #self.__bio_data.setdefault(sect, d_split)
-                #if not self.__bio_data.has_key(sect):
-                #    self.__bio_data[sect] = []
-                #for d in d_split:
-                #    self.__bio_data[sect].append(d)
-                #if not self.__bio_data[sect]: del self.__bio_data[sect]
         self.__sect_name = ''
         self.__sect_data = ''
         self.__in_sect = 0

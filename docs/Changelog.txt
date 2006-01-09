@@ -1,15 +1,22 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060104 "Creep" (04 Jan 2006)
+* What's the new in release 2.4-cvs20060109 "The Lab" (09 Jan 2006)
   [general]
   - unified Movie and Person classes.
-  - the strings are modified only if it's really needed.
+  - the strings now are modified only if it's really needed.
   - speed improvements in functions modifyStrings, sortMovies,
     canonicalName, analyze_name, analyze_title.
   - (little) performance improvements in every data access system.
   - removed the deepcopy of the data, updating Movie and Person
     information.
+
+  [http data access system]
+  - the ParserBase class now inherits from sgmllib.SGMLParser,
+    instead of htmllib.HTMLParser, resulting in a little improvement
+    in parsing speed.
+  - fixed a bug in the parser for the "news" page for movies and
+    persons.
 
   [sql data access system]
   - fixed the imdbpy2sql.py script, to handle files with spurious lines.

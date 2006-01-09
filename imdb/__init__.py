@@ -6,7 +6,7 @@ a person from the IMDb database.
 It can fetch data through different media (e.g.: the IMDb web pages,
 a local installation, a SQL database, etc.)
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

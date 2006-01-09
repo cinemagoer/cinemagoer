@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -2067,15 +2067,23 @@ class HTMLNewsParser(ParserBase):
 
     def do_br(self, attrs):
         if self.__innews:
+            self.__cur_text = self.__cur_text.strip()
             if self.__cur_text:
-                self.__cur_news[self.__cur_stage] = self.__cur_text.strip()
+                if self.__cur_stage == 'body':
+                    if self.__cur_news.has_key('body'):
+                        bodykey = self.__cur_news['body']
+                        if bodykey and not bodykey[0].isspace():
+                            self.__cur_news['body'] += ' '
+                        self.__cur_news['body'] += self.__cur_text
+                    else:
+                        self.__cur_news['body'] = self.__cur_text
+                else:
+                    self.__cur_news[self.__cur_stage] = self.__cur_text
                 self.__cur_text = ''
             if self.__cur_stage == 'title':
                 self.__cur_stage = 'date'
             elif self.__cur_stage == 'date':
                 self.__cur_stage = 'body'
-            elif self.__cur_stage == 'body':
-                self.__cur_stage = 'title'
 
     def start_a(self, attrs):
         if self.__innews and self.__cur_stage == 'date':

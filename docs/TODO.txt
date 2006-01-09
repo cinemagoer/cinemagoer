@@ -55,8 +55,6 @@ NOTE: it's always time to clean the code! <g>
   automatically try without?  It doesn't seem easy...
 * Some (many?) HTML parser can be interrupted as long as they've
   parsed every needed information, as HTMLSearchMovieParser does.
-* Inherit from sgmllib.SGMLParser, instead that from htmllib.HTMLParser,
-  should slightly improve performances.
 * Access to the "my IMDb" functions for registered users would
   be really cool.
 * Gather more movies' data: user comments, merchandising links,

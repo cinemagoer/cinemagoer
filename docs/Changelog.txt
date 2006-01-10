@@ -1,13 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060109 "The Lab" (09 Jan 2006)
+* What's the new in release 2.4-cvs20060110 "The Lab" (10 Jan 2006)
   [general]
   - unified Movie and Person classes.
   - the strings now are modified only if it's really needed.
   - speed improvements in functions modifyStrings, sortMovies,
     canonicalName, analyze_name, analyze_title.
-  - (little) performance improvements in every data access system.
+  - performance improvements in every data access system.
   - removed the deepcopy of the data, updating Movie and Person
     information.
 
@@ -20,6 +20,8 @@
 
   [sql data access system]
   - fixed the imdbpy2sql.py script, to handle files with spurious lines.
+  - searches for names and titles are now much faster, if the
+    imdb.parser.local.ratober C module is compiled and installed.
 
 
 * What's the new in release 2.3 "Big Fish" (03 Dec 2005)

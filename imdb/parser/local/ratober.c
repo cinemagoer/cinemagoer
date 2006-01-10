@@ -2,7 +2,7 @@
  * Scan IMDb titles or names ".key" files, searching for a movie title
  * or a person name.
  *
- * Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+ * Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
  * Released under the GPL license.
  * 
  * Heavily based on code from the "simil" Python module.
@@ -163,6 +163,21 @@ ratcliff(char *s1, char *s2)
     l2 = strlen(s2);
 
     return 2.0 * RatcliffObershelp(s1, s1 + l1, s2, s2 + l2) / (l1 + l2);
+}
+
+
+/* Ratcliff-Obershelp for two python strings; returns a python float. */
+static PyObject*
+pyratcliff(PyObject *self, PyObject *pArgs)
+{
+    char *s1 = NULL;
+    char *s2 = NULL;
+    PyObject *discard = NULL;
+
+    if (!PyArg_ParseTuple(pArgs, "ss|O", &s1, &s2, &discard))
+        return NULL;
+
+    return Py_BuildValue("f", ratcliff(s1, s2));
 }
 
 
@@ -397,6 +412,8 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 
 
 static PyMethodDef ratober_methods[] = {
+    {"ratcliff", pyratcliff,
+        METH_VARARGS, "Ratcliff-Obershelp similarity"},
     {"search_name", (PyCFunction) search_name,
         METH_KEYWORDS, "search for a person name"},
     {"search_title", (PyCFunction) search_title,

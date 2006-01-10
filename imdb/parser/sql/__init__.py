@@ -40,6 +40,14 @@ from imdb._exceptions import IMDbDataAccessError, IMDbError
 import MySQLdb
 import _mysql_exceptions
 
+try:
+    from imdb.parser.local.ratober import ratcliff
+except ImportError:
+    def ratcliff(s1, s2, sm):
+        """Ratcliff-Obershelp similarity."""
+        sm.set_seq2(s2)
+        return sm.ratio()
+
 
 _litlist = ['screenplay/teleplay', 'novel', 'adaption', 'book',
             'production process protocol', 'interviews',
@@ -282,8 +290,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             # Distance with the canonical title (with or without article).
             #   titleS      -> titleR
             #   titleS, the -> titleR, the
-            sm1.set_seq2(til)
-            ratios = [sm1.ratio() + 0.05]
+            #sm1.set_seq2(til)
+            ratios = [ratcliff(title1, til, sm1) + 0.05]
             # til2 is til without the article, if present.
             til2 = til
             tils = til2.split(', ')
@@ -293,20 +301,21 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 matchHasArt = 1
             if hasArt and not matchHasArt:
                 #   titleS[, the]  -> titleR
-                sm2.set_seq2(til)
-                ratios.append(sm2.ratio())
+                #sm2.set_seq2(til)
+                ratios.append(ratcliff(title2, til, sm2))
             elif matchHasArt and not hasArt:
                 #   titleS  -> titleR[, the]
-                sm1.set_seq2(til2)
-                ratios.append(sm1.ratio())
+                #sm1.set_seq2(til2)
+                ratios.append(ratcliff(title1, til2, sm1))
             if title3:
                 # Distance with the long imdb canonical title.
                 tmpm = {'title': i[1], 'imdbIndex': i[2],
                         'kind': i[3], 'year': i[4]}
-                sm3.set_seq2(build_title(tmpm, canonical=1).lower())
-                ratios.append(sm3.ratio() + 0.1)
+                #sm3.set_seq2(build_title(tmpm, canonical=1).lower())
+                ratios.append(ratcliff(title3,
+                            build_title(tmpm, canonical=1).lower(), sm3) + 0.1)
             ratio = max(ratios)
-            if i in resd.keys():
+            if resd.has_key(i):
                 if ratio > resd[i]: resd[i] = ratio
             else: resd[i] = ratio
         res = [(x[1], x[0]) for x in resd.items()]
@@ -526,31 +535,32 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         for i in qr:
             nil = i[1].lower()
             # Distance with the canonical name.
-            sm1.set_seq2(nil)
-            ratios = [sm1.ratio() + 0.05]
+            #sm1.set_seq2(nil)
+            ratios = [ratcliff(name1, nil, sm1) + 0.05]
             nils = nil.split(', ', 1)
             surname = nils[0]
             namesurname = ''
             if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
             if surname != nil:
                 # Distance with the "Surname" in the database.
-                sm1.set_seq2(surname)
-                ratios.append(sm1.ratio())
-                sm1.set_seq2(namesurname)
-                ratios.append(sm1.ratio())
+                #sm1.set_seq2(surname)
+                ratios.append(ratcliff(name1, surname, sm1))
+                #sm1.set_seq2(namesurname)
+                ratios.append(ratcliff(name1, namesurname, sm1))
                 if name2:
-                    sm2.set_seq2(surname)
-                    ratios.append(sm2.ratio())
+                    #sm2.set_seq2(surname)
+                    ratios.append(ratcliff(name2, surname, sm2))
                     # Distance with the "Name Surname" in the database.
-                    sm2.set_seq2(namesurname)
-                    ratios.append(sm2.ratio())
+                    #sm2.set_seq2(namesurname)
+                    ratios.append(ratcliff(name2, namesurname, sm2))
             if name3:
                 # Distance with the long imdb canonical name.
                 tmpp = {'name': i[1], 'imdbIndex': i[2]}
-                sm3.set_seq2(build_name(tmpp, canonical=1).lower())
-                ratios.append(sm3.ratio() + 0.1)
+                #sm3.set_seq2(build_name(tmpp, canonical=1).lower())
+                ratios.append(ratcliff(name3,
+                            build_name(tmpp, canonical=1).lower(), sm3) + 0.1)
             ratio = max(ratios)
-            if i in resd.keys():
+            if resd.has_key(i):
                 if ratio > resd[i]: resd[i] = ratio
             else: resd[i] = ratio
         

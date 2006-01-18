@@ -44,21 +44,22 @@ def _parseList(l, prefix, mline=1):
     firstlen = len(fistl)
     otherlen = len(otherl)
     parsing = 0
+    joiner = ' '.join
     for line in l:
-        if line.startswith(fistl):
+        if line[:firstlen] == fistl:
             parsing = 1
             if ltmp:
-                reslapp(' '.join(ltmp))
+                reslapp(joiner(ltmp))
                 ltmp[:] = []
             ltmpapp(line[firstlen:].strip())
-        elif mline and line.startswith(otherl):
+        elif mline and line[:otherlen] == otherl:
                 ltmpapp(line[otherlen:].strip())
         else:
             if ltmp:
-                reslapp(' '.join(ltmp))
+                reslapp(joiner(ltmp))
                 ltmp[:] = []
             if parsing:
-                if ltmp: reslapp(' '.join(ltmp))
+                if ltmp: reslapp(joiner(ltmp))
                 break
     return resl
 
@@ -66,6 +67,7 @@ def _parseList(l, prefix, mline=1):
 def _buildGuests(gl):
     """Return a list of Movie objects from a list of GA lines."""
     rl = []
+    rlapp = rl.append
     for g in gl:
         titl = re_titleRef.findall(g)
         if len(titl) != 1: continue
@@ -89,19 +91,22 @@ def _buildGuests(gl):
         # As you can see, we've no notion of the movieID, here.
         m = Movie(title=titl[0], currentRole=cr, notes=note,
                     accessSystem='local')
-        rl.append(m)
+        rlapp(m)
     return rl
 
 def _parseBioBy(l):
     """Return a list of biographies."""
     bios = []
+    biosappend = bios.append
     tmpbio = []
+    tmpbioappend = tmpbio.append
+    joiner = ' '.join
     for line in l:
-        if line.startswith('BG: '):
-            tmpbio.append(line[4:].strip())
-        elif line.startswith('BY: '):
+        if line[:4] == 'BG: ':
+            tmpbioappend(line[4:].strip())
+        elif line[:4] == 'BY: ':
             if tmpbio:
-                bios.append(line[4:].strip() + '::' + ' '.join(tmpbio))
+                biosappend(line[4:].strip() + '::' + joiner(tmpbio))
                 tmpbio[:] = []
     return bios
 
@@ -110,69 +115,68 @@ def _parseBiography(biol):
     res = {}
     bio = ' '.join(_parseList(biol, 'BG', mline=0))
     bio = _parseBioBy(biol)
-    if bio:
-        res['mini biography'] = bio
-    height = [x for x in biol if x[:4] == 'HT: ']
-    if height: res['height'] = height[0][4:].strip()
-    bdate = [x for x in biol if x[:4] == 'DB: ']
-    if bdate:
-        bdate = bdate[0].strip()
-        i = bdate.find(',')
-        if i != -1:
-            res['birth notes'] = bdate[i+1:].strip()
-            bdate = bdate[:i]
-        res['birth date'] = bdate[4:]
-    ddate = [x for x in biol if x[:4] == 'DD: ']
-    if ddate:
-        ddate = ddate[0].strip()
-        i = ddate.find(',')
-        if i != -1:
-            res['death notes'] = ddate[i+1:].strip()
-            ddate = ddate[:i]
-        res['death date'] = ddate[4:]
+    if bio: res['mini biography'] = bio
+
+    for x in biol:
+        x4 = x[:4]
+        x6 = x[:6]
+        if x4 == 'DB: ':
+            bdate = x.strip()
+            i = bdate.find(',')
+            if i != -1:
+                res['birth notes'] = bdate[i+1:].strip()
+                bdate = bdate[:i]
+            res['birth date'] = bdate[4:]
+        elif x4 == 'DD: ':
+            ddate = x.strip()
+            i = ddate.find(',')
+            if i != -1:
+                res['death notes'] = ddate[i+1:].strip()
+                ddate = ddate[:i]
+            res['death date'] = ddate[4:]
+        elif x6 == 'SP: * ':
+            res.setdefault('spouse', []).append(x[6:].strip())
+        elif x4 == 'RN: ':
+            n = x[4:].strip()
+            if not n: continue
+            rn = build_name(analyze_name(n, canonical=1), canonical=1)
+            res['birth name'] = rn
+        elif x6 == 'AT: * ':
+            res.setdefault('articles', []).append(x[6:].strip())
+        elif x4 == 'HT: ':
+            res['height'] = x[4:].strip()
+        elif x6 == 'PT: * ':
+            res.setdefault('pictorials', []).append(x[6:].strip())
+        elif x6 == 'CV: * ':
+            res.setdefault('magazine covers', []).append(x[6:].strip())
+        elif x6 == 'WN: * ':
+            res.setdefault('where now', []).append(x[6:].strip())
+        elif x4 == 'NK: ':
+            res.setdefault('nick names', []).append(normalizeName(x[4:]))
+        elif x6 == 'PI: * ':
+            res.setdefault('portrayed', []).append(x[6:].strip())
+        elif x6 == 'SA: * ':
+            sal = x[6:].strip().replace(' -> ', '::')
+            res.setdefault('salary history', []).append(sal)
+
     trl = _parseList(biol, 'TR')
     if trl: res['trivia'] = trl
-    spouses = [x[6:].strip() for x in biol if x.startswith('SP: * ')]
-    if spouses: res['spouse'] = spouses
     quotes = _parseList(biol, 'QU')
     if quotes: res['quotes'] = quotes
     otherworks = _parseList(biol, 'OW')
     if otherworks: res['other works'] = otherworks
-    realname = [x[4:].strip() for x in biol if x.startswith('RN: ')]
-    if realname:
-        rn = realname[0].strip()
-        if rn:
-            rn = build_name(analyze_name(rn, canonical=1), canonical=1)
-            res['birth name'] = rn
-    sal = [x[6:].strip().replace(' -> ', '::')
-            for x in biol if x.startswith('SA: * ')]
-    if sal: res['salary history'] = sal
-    nicks = [x[4:].strip() for x in biol if x.startswith('NK: ')]
-    if nicks: res['nick names'] = [normalizeName(x) for x in nicks]
     books = _parseList(biol, 'BO')
     if books: res['books'] = books
     agent = _parseList(biol, 'AG')
     if agent: res['agent address'] = agent
     biomovies = _parseList(biol, 'BT')
     if biomovies: res['biographical movies'] = biomovies
-    portr = [x[6:].strip() for x in biol if x.startswith('PI: * ')]
-    if portr: res['portrayed'] = portr
-    guestapp = _buildGuests([x[6:].strip() for x in biol
-                            if x.startswith('GA: * ')])
-    if guestapp:
-        res['notable tv guest appearances'] = guestapp
-    wheren = [x[6:].strip() for x in biol if x.startswith('WN: * ')]
-    if wheren: res['where now'] = wheren
+    guestapp = _buildGuests([x[6:].strip() for x in biol if x[:6] == 'GA: * '])
+    if guestapp: res['notable tv guest appearances'] = guestapp
     tm = _parseList(biol, 'TM')
     if tm: res['trademarks'] = tm
     interv = _parseList(biol, 'IT')
     if interv: res['interviews'] = interv
-    articl = [x[6:].strip() for x in biol if x.startswith('AT: * ')]
-    if articl: res['articles'] = articl
-    cv = [x[6:].strip() for x in biol if x.startswith('CV: * ')]
-    if cv: res['magazine covers'] = cv
-    pict = [x[6:].strip() for x in biol if x.startswith('PT: * ')]
-    if pict: res['pictorials'] = pict
     return res
 
 
@@ -189,7 +193,7 @@ def getBio(personID, indexF, dataF):
     rlines = []
     while 1:
         line = fbio.readline()
-        if not line or line.startswith('NM: '): break
+        if not line or line[:4] == 'NM: ': break
         rlines.append(line)
     fbio.close()
     return _parseBiography(rlines)

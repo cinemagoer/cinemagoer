@@ -148,7 +148,7 @@ COMPCAST_START = ('CAST COVERAGE TRACKING LIST', '===========================')
 COMPCREW_START = ('CREW COVERAGE TRACKING LIST', '===========================')
 COMP_STOP = '---------------'
 
-
+GzipFileRL = GzipFile.readline
 class SourceFile(GzipFile):
     """Instances of this class are used to read gzipped files,
     starting from a defined line to a (optionally) given end."""
@@ -157,15 +157,23 @@ class SourceFile(GzipFile):
         filename = os.path.join(IMDB_PTDF_DIR, filename)
         GzipFile.__init__(self, filename, mode, *args, **kwds)
         self.start = start
-        self.stop = None # Don't check for a STOP line, now.
+        #self.stop = None # Don't check for a STOP line, now.
+        #self.stoplen = 0
         for item in start:
+            itemlen = len(item)
             for line in self:
-                if line.startswith(item): break
-        self.stop = stop
+                if line[:itemlen] == item: break
+        self.set_stop(stop)
 
-    def readline(self, size=-1):
-        line = GzipFile.readline(self, size)
-        if self.stop is not None and line.startswith(self.stop): return ''
+    def set_stop(self, stop):
+        if stop is not None:
+            self.stop = stop
+            self.stoplen = len(self.stop)
+            self.readline = self.readline_checkEnd
+
+    def readline_checkEnd(self, size=-1):
+        line = GzipFileRL(self, size)
+        if line[:self.stoplen] == self.stop: return ''
         return line
 
     def getByHashSections(self):
@@ -174,61 +182,70 @@ class SourceFile(GzipFile):
     def getByNMMVSections(self):
         return getSectionNMMV(self)
 
+
 def getSectionHash(fp):
     """Return sections separated by lines starting with #"""
     curSectList = []
+    curSectListApp = curSectList.append
     curTitle = ''
+    joiner = ''.join
     for line in fp:
-        if line.startswith('#'):
+        if line and line[0] == '#':
             if curSectList and curTitle:
-                yield curTitle, ''.join(curSectList)
+                yield curTitle, joiner(curSectList)
                 curSectList[:] = []
                 curTitle = ''
             curTitle = line[2:]
-        else: curSectList.append(line)
+        else: curSectListApp(line)
     if curSectList and curTitle:
-        yield curTitle, ''.join(curSectList)
+        yield curTitle, joiner(curSectList)
         curSectList[:] = []
         curTitle = ''
 
+NMMVSections = dict([(x, None) for x in ('MV: ', 'NM: ', 'OT: ', 'MOVI')])
+NMMVSectionsHASK = NMMVSections.has_key
 def getSectionNMMV(fp):
     """Return sections separated by lines starting with 'NM: ', 'MV: ',
     'OT: ' or 'MOVI'."""
     curSectList = []
+    curSectListApp = curSectList.append
     curNMMV = ''
+    joiner = ''.join
     for line in fp:
-        if line[:4] in ('MV: ', 'NM: ', 'OT: ', 'MOVI'):
+        if NMMVSectionsHASK(line[:4]):
             if curSectList and curNMMV:
-                yield curNMMV, ''.join(curSectList)
+                yield curNMMV, joiner(curSectList)
                 curSectList[:] = []
                 curNMMV = ''
             if line[:4] == 'MOVI': curNMMV = line[6:]
             else: curNMMV = line[4:]
-        elif not line.startswith('-'): curSectList.append(line)
+        elif not (line and line[0] == '-'): curSectListApp(line)
     if curSectList and curNMMV:
-        yield curNMMV, ''.join(curSectList)
+        yield curNMMV, joiner(curSectList)
         curSectList[:] = []
         curNMMV = ''
 
 
 class _BaseCache(dict):
     """Base class for Movie and Person basic information."""
-    def __init__(self, d={}, flushEvery=18000, counterInit=1):
+    def __init__(self, d=None, flushEvery=18000, counterInit=1):
         dict.__init__(self)
         self.counter = counterInit
         # Flush data into the SQL database every flushEvery entries.
         self.flushEvery = flushEvery
         self._tmpDict = {}
-        for k, v in d.items(): self[k] = v
+        if d is not None:
+            for k, v in d.iteritems(): self[k] = v
 
     def __setitem__(self, key, value):
         """Every time a key is set, its value is discarded and substituted
         with counter; every flushEvery, the temporary dictionary is
         flushed to the database, and then zeroed."""
-        if self.counter % self.flushEvery == 0:
+        counter = self.counter
+        if counter % self.flushEvery == 0:
             self.flush()
-        dict.__setitem__(self, key, self.counter)
-        self._tmpDict[key] = self.counter
+        dict.__setitem__(self, key, counter)
+        self._tmpDict[key] = counter
         self.counter += 1
 
     def flush(self):
@@ -247,9 +264,11 @@ class _BaseCache(dict):
                 newflushEvery = self.flushEvery / 2
                 c1.flushEvery = newflushEvery
                 c2.flushEvery = newflushEvery
-                for n, (key, value) in enumerate(self._tmpDict.iteritems()):
-                    if n < newflushEvery: c1._tmpDict[key] = value
-                    else: c2._tmpDict[key] = value
+                poptmpd = self._tmpDict.popitem
+                for x in xrange(len(self._tmpDict)/2):
+                    k, v = poptmpd()
+                    c1._tmpDict[k] = v
+                c2._tmpDict = self._tmpDict
                 c1.flush()
                 c2.flush()
                 self._tmpDict.clear()
@@ -264,9 +283,8 @@ class _BaseCache(dict):
 
     def add(self, key):
         """Insert a new key and return its value."""
-        c = self.counter
         self[key] = None
-        return c
+        return self.counter
     
     def addUnique(self, key):
         """Insert a new key and return its value; if the key is already
@@ -275,21 +293,29 @@ class _BaseCache(dict):
         else: return self.add(key)
 
 
+def fetchsome(curs, size=18000):
+    """Yes, I've read the Python Cookbook! :-)"""
+    while 1:
+        res = curs.fetchmany(size)
+        if not res: break
+        for r in res: yield r
+
 class MoviesCache(_BaseCache):
     """Manage the movies list."""
     def populate(self):
         print ' * POPULATING MoviesCache...'
-        db.query('SELECT movieid, title, kind, year, imdbindex FROM titles;')
-        res = db.use_result()
-        x = res.fetch_row()
-        while x:
-            x = x[0]
+        curs.execute('SELECT movieid,title,kind,year,imdbindex FROM titles;')
+        #res = db.use_result()
+        #x = res.fetch_row()
+        #while x:
+        #    x = x[0]
+        for x in fetchsome(curs, self.flushEvery):
             td = {'title': x[1], 'kind': x[2]}
             if x[3]: td['year'] = x[3]
             if x[4]: td['imdbIndex'] = x[4]
             title = build_title(td, canonical=1)
             dict.__setitem__(self, title, x[0])
-            x = res.fetch_row()
+            #x = res.fetch_row()
         curs.execute('SELECT MAX(movieid) FROM titles;')
         maxid = curs.fetchall()[0][0]
         if maxid is not None: self.counter = maxid + 1
@@ -299,13 +325,18 @@ class MoviesCache(_BaseCache):
         print ' * FLUSHING MoviesCache...'
         l = []
         lapp = l.append
-        for k, v in self._tmpDict.iteritems():
-            tmp = [v]
-            try: t = analyze_title(k)
-            except IMDbParserError: continue
-            for j in ('title', 'kind', 'year', 'imdbIndex'):
-                tmp.append(t.get(j))
-            lapp(tmp)
+        tmpDictiter = self._tmpDict.iteritems
+        for k, v in tmpDictiter():
+            #tmp = [v]
+            try:
+                t = analyze_title(k)
+            except IMDbParserError:
+                if k and k.strip():
+                    print 'WARNING MoviesCache._toDB() invalid title "%s"' % k
+                continue
+            tget = t.get
+            lapp([v, tget('title'), tget('kind'),
+                    tget('year'), tget('imdbIndex')])
         curs.executemany('INSERT INTO titles (movieid, title, kind, year, imdbindex) VALUES (%s, %s, %s, %s, %s)', l)
 
 
@@ -313,16 +344,15 @@ class PersonsCache(_BaseCache):
     """Manage the persons list."""
     def populate(self):
         print ' * POPULATING PersonsCache...'
-        db.query('SELECT personid, name, imdbindex FROM names;')
-        res = db.use_result()
-        x = res.fetch_row()
-        while x:
-            x = x[0]
+        curs.execute('SELECT personid, name, imdbindex FROM names;')
+        #res = db.use_result()
+        #x = res.fetch_row()
+        for x in fetchsome(curs, self.flushEvery):
             nd = {'name': x[1]}
             if x[2]: nd['imdbIndex'] = x[2]
             name = build_name(nd, canonical=1)
             dict.__setitem__(self, name, x[0])
-            x = res.fetch_row()
+            #x = res.fetch_row()
         curs.execute('SELECT MAX(personid) FROM names;')
         maxid = curs.fetchall()[0][0]
         if maxid is not None: self.counter = maxid + 1
@@ -332,13 +362,19 @@ class PersonsCache(_BaseCache):
         print ' * FLUSHING PersonsCache...'
         l = []
         lapp = l.append
-        for k, v in self._tmpDict.iteritems():
-            tmp = [v]
-            try: t = analyze_name(k)
-            except IMDbParserError: continue
-            for j in ('name', 'imdbIndex'):
-                tmp.append(t.get(j))
-            lapp(tmp)
+        tmpDictiter = self._tmpDict.iteritems
+        for k, v in tmpDictiter():
+            #tmp = [v]
+            try:
+                t = analyze_name(k)
+            except IMDbParserError:
+                if k and k.strip():
+                    print 'WARNING PersonsCache._toDB() invalid name "%s"' % k
+                continue
+            #for j in ('name', 'imdbIndex'):
+            #    tmp.append(t.get(j))
+            tget = t.get
+            lapp([v, tget('name'), tget('imdbIndex')])
         curs.executemany('INSERT INTO names (personid, name, imdbindex) VALUES (%s, %s, %s)', l)
 
 
@@ -356,37 +392,38 @@ class SQLData(dict):
     def __setitem__(self, key, value):
         """The value is discarded, the counter is used as the 'real' key
         and the user's 'key' is used as its values."""
-        if self.counter % self.flushEvery == 0:
+        counter = self.counter
+        if counter % self.flushEvery == 0:
             self.flush()
-        dict.__setitem__(self, self.counter, key)
+        dict.__setitem__(self, counter, key)
         self.counter += 1
 
     def add(self, key):
         self[key] = None
 
     def flush(self):
-        if self:
-            try:
-                self._toDB()
-                self.clear()
-                self.counter = self.counterInit
-            except OperationalError, e:
-                if not (e and e[0] == 1153): raise OperationalError, e
-                print ' * TOO MANY DATA (%s items), SPLITTING...' % len(self)
-                c1 = self.__class__()
-                c2 = self.__class__()
-                newflushEvery = self.flushEvery / 2
-                c1.flushEvery = newflushEvery
-                c2.flushEvery = newflushEvery
-                c1.sqlString = self.sqlString
-                c2.sqlString = self.sqlString
-                for n, (key, value) in enumerate(self.iteritems()):
-                    if n < newflushEvery: dict.__setitem__(c1, key, value)
-                    else: dict.__setitem__(c2, key, value)
-                c1.flush()
-                c2.flush()
-                self.clear()
-                self.counter = self.counterInit
+        if not self: return
+        try:
+            self._toDB()
+            self.clear()
+            self.counter = self.counterInit
+        except OperationalError, e:
+            if not (e and e[0] == 1153): raise OperationalError, e
+            print ' * TOO MANY DATA (%s items), SPLITTING...' % len(self)
+            newdata = self.__class__()
+            newflushEvery = self.flushEvery / 2
+            self.flushEvery = newflushEvery
+            newdata.flushEvery = newflushEvery
+            newdata.sqlString = self.sqlString
+            popitem = self.popitem
+            dsi = dict.__setitem__
+            for x in xrange(len(self)/2):
+                k, v = popitem()
+                dsi(newdata, k, v)
+            newdata.flush()
+            self.flush()
+            self.clear()
+            self.counter = self.counterInit
 
     def _toDB(self):
         print ' * FLUSHING SQLData...'
@@ -395,7 +432,8 @@ class SQLData(dict):
 
 # Miscellaneous functions.
 
-def unpack(line, headers, seps=('\t',)):
+##def unpack(line, headers, seps=('\t',)):
+def unpack(line, headers, sep='\t'):
     """Given a line, split at seps and return a dictionary with key
     from the header list.
     E.g.:
@@ -407,17 +445,18 @@ def unpack(line, headers, seps=('\t',)):
                     'rating': '8.4', 'title': 'Incredibles, The (2004)'}
     """
     r = {}
-    ls1 = None
-    ls2 = []
-    for sep in seps:
-        if ls1 is None:
-            ls1 = line.split(sep)
-        else:
-            for item in ls1:
-                ls2 += item.split(sep)
-            ls1[:] = ls2
-            ls2 = []
-    ls1 = [x for x in ls1 if x]
+    #ls1 = None
+    #ls2 = []
+    #for sep in seps:
+    #    if ls1 is None:
+    #        ls1 = line.split(sep)
+    #    else:
+    #        for item in ls1:
+    #            ls2 += item.split(sep)
+    #        ls1[:] = ls2
+    #        ls2 = []
+    #ls1 = filter(None, ls1)
+    ls1 = filter(None, line.split(sep))
     for index, item in enumerate(ls1):
         try: name = headers[index]
         except IndexError: name = 'item%s' % index
@@ -434,7 +473,7 @@ def _titleNote(title):
         eb = title.rfind('}')
         if eb > sb:
             rn = '(episode %s)' % title[sb+1:eb]
-            rt = title[:sb]+title[eb+1:].strip()
+            rt = title[:sb] + title[eb+1:].strip()
     return rt, rn
 
 
@@ -443,7 +482,7 @@ def _parseMinusList(fdata):
     rlist = []
     tmplist = []
     for line in fdata:
-        if line.startswith('- '):
+        if line and line[:2] == '- ':
             if tmplist: rlist.append(' '.join(tmplist))
             l = line[2:].strip()
             if l: tmplist[:] = [l]
@@ -498,13 +537,14 @@ def doCast(fp, roleid, rolename):
     for line in fp:
         if line and line[0] != '\t':
             if line[0] == '\n': continue
-            sl = [x for x in line.split('\t') if x]
+            #sl = [x for x in line.split('\t') if x]
+            sl = filter(None, line.split('\t'))
             if len(sl) != 2: continue
             name, line = sl
             pid = CACHE_PID.addUnique(name.strip())
         line = line.strip()
         ll = line.split('  ')
-        r = _titleNote(ll[0])
+        #r = _titleNote(ll[0])
         title, note = _titleNote(ll[0])
         note = note or ''
         role = ''
@@ -576,8 +616,11 @@ def doAkaNames():
             line = line.strip()
             if line[:5] == '(aka ': line = line[5:]
             if line[-1:] == ')': line = line[:-1]
-            try: name = analyze_name(line)
-            except IMDbParserError: continue
+            try:
+                name = analyze_name(line)
+            except IMDbParserError:
+                if line: print 'WARNING: wrong name "%s"' % line
+                continue
             sqldata.add((pid, name.get('name'), name.get('imdbIndex')))
             if count % 10000 == 0:
                 print 'SCANNING akanames:', line
@@ -609,8 +652,12 @@ def doAkaTitles():
                 if count % 10000 == 0:
                     print 'SCANNING %s: %s' % \
                             (fname[:-8].replace('-', ' '), akat)
-                try: akat = analyze_title(akat)
-                except IMDbParserError, e: continue
+                try:
+                    akat = analyze_title(akat)
+                except IMDbParserError, e:
+                    if akat.strip():
+                        print 'WARNING doAkaTitles() invalid title "%s"' % akat
+                    continue
                 ce = (mid, akat.get('title'), akat.get('imdbIndex'),
                         akat.get('kind'), akat.get('year'), res.get('note'))
                 sqldata.add(ce)
@@ -723,7 +770,7 @@ def getQuotes(lines):
     quotes = []
     qttl = []
     for line in lines:
-        if line.startswith('  ') and qttl and qttl[-1] and \
+        if line and line[:2] == '  ' and qttl and qttl[-1] and \
                 not qttl[-1].endswith('::'):
             line = line.lstrip()
             if line: qttl[-1] += ' %s' % line
@@ -873,8 +920,8 @@ def doNMMVFiles():
             ('plot.list.gz',PLOT_START,getPlot)]:
     #for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
         fp = SourceFile(fname, start=start)
-        if fname == 'literature.list.gz': fp.stop = LIT_STOP
-        elif fname == 'business.list.gz': fp.stop = BUS_STOP
+        if fname == 'literature.list.gz': fp.set_stop(LIT_STOP)
+        elif fname == 'business.list.gz': fp.set_stop(BUS_STOP)
         nmmvFiles(fp, funct, fname)
         fp.close()
         t('doNMMVFiles(%s)' % fname[:-8].replace('-', ' '))
@@ -939,7 +986,7 @@ def getRating():
     count = 0
     for line in fp:
         data = unpack(line, ('votes distribution', 'votes', 'rating', 'title'),
-                        seps=('  ',))
+                        sep='  ')
         if not data.has_key('title'): continue
         title = data['title'].strip()
         mid = CACHE_MID.addUnique(title)
@@ -965,7 +1012,7 @@ def getTopBottomRating():
         print 'SCANNING %s...' % what
         for line in fp:
             data = unpack(line, ('votes distribution', 'votes', 'rank',
-                            'title'), seps=('  ',))
+                            'title'), sep='  ')
             if not data.has_key('title'): continue
             title = data['title'].strip()
             mid = CACHE_MID.addUnique(title)
@@ -980,12 +1027,15 @@ def getTopBottomRating():
 def getPlot(lines):
     """Movie's plot."""
     plotl = []
+    plotlappend = plotl.append
     plotltmp = []
+    plotltmpappend = plotltmp.append
     for line in lines:
-        if line.startswith('PL: '):
-            plotltmp.append(line[4:])
-        elif line.startswith('BY: '):
-            plotl.append('%s::%s' % (line[4:].strip(), ' '.join(plotltmp)))
+        linestart = line[:4]
+        if linestart == 'PL: ':
+            plotltmpappend(line[4:])
+        elif linestart == 'BY: ':
+            plotlappend('%s::%s' % (line[4:].strip(), ' '.join(plotltmp)))
             plotltmp[:] = []
     return {'plot': plotl}
 
@@ -1053,9 +1103,12 @@ doAkaNames()
 t('doAkaNames()')
 doAkaTitles()
 t('doAkaTitles()')
+
 doMinusHashFiles()
 t('doMinusHashFiles()')
+
 doNMMVFiles()
+
 doMiscMovieInfo()
 doMovieLinks()
 t('doMovieLinks()')

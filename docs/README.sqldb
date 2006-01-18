@@ -2,7 +2,7 @@
   ===
 
 Since version 2.1 it's possible to transfer the whole IMDb's
-database from the plain text data files into an SQL database.
+database from the plain text data files into a SQL database.
 
 So far the MySQL database is supported; see the TODO.txt
 file for more details.

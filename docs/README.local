@@ -3,7 +3,10 @@
 
 NOTE: since you've to download the whole IMDb database,
 consider using the 'sql' data access system (it's faster
-than the 'local' one).  See the README.sqldb file.
+and generally better than the 'local' one).  See the README.sqldb
+file.
+Obviously you can still prefer to use the 'local' data access
+system if you're already using the moviedb program.
 
 
 Select a mirror of the "The Plain Text Data Files" from

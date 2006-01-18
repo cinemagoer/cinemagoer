@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060110 "The Lab" (10 Jan 2006)
+* What's the new in release 2.4-cvs20060118 "The Empire Strikes Back" (18 Jan 2006)
   [general]
   - unified Movie and Person classes.
   - the strings now are modified only if it's really needed.
@@ -22,6 +22,7 @@
   - fixed the imdbpy2sql.py script, to handle files with spurious lines.
   - searches for names and titles are now much faster, if the
     imdb.parser.local.ratober C module is compiled and installed.
+  - imdbpy2sql.py should be somewhat faster.
 
 
 * What's the new in release 2.3 "Big Fish" (03 Dec 2005)

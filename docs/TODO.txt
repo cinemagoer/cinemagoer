@@ -11,8 +11,8 @@ NOTE: it's always time to clean the code! <g>
 * Some portions of code are poorly commented.
 * The documentation is written in my funny English.
 * Compatibility with Python 2.2 and previous versions is not assured
-  for every data access system (the imdbpysql.py script for sure
-  requires at least Python 2.2).
+  for every data access system (the imdbpy2sql.py script for sure
+  requires at least Python 2.3).
 
 
 [searches]
@@ -106,10 +106,10 @@ layout sucks: I've an idea for a better structure...", well, consider
 that _these_ kinds of email will be probably immediately discarded.
 
 I _know_ these are important issues, but I've neither the time nor
-the ability to fix these problems, sorry.
+the ability to fix these problems by myself, sorry.
 Obviously if you want to contribute with patches, new code, new
 SQL queries and new database structures you're welcome and I will
-be grateful for your work.
+be very grateful for your work.
 
 Again: if there's something that bother you, write some code.
 It's free software, after all.
@@ -120,6 +120,9 @@ Things to do:
 * The imdbpy2sql.py script MUST be run on a database with empty tables;
   unfortunately so far a SQL installation can't be "updated" without
   recreating the database from scratch.
+  IMDb releases also "diff" files to keep the plain text files updated;
+  it would be wonderful to directly use these diff files to upgrade the
+  SQL database, but I think this is a nearly impossible task.
 * The database layout sucks (what about indexes?  I'm not sure they are
   ok this way).
 * The SQL queries I've written are probably crap.

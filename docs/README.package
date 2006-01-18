@@ -50,20 +50,20 @@ you can access movie data through the e-mail interface, etc. etc.
  ---------------------------+-----------+------------------------------------
             'http'          |   'web',  | information are fetched through
                             |   'html'  | the http://akas.imdb.com web server
- ---------------------------|-----------|------------------------------------
+ ---------------------------+-----------+------------------------------------
              'sql'          |   'db',   | information are fetched through
                             | 'database'| a SQL database (so far only MySQL
                             |           | is supported).
- ---------------------------|-----------|------------------------------------
+ ---------------------------+-----------+------------------------------------
            'mobile'         |           | same as 'httpThin', but string
                             |           | methods are used for parsing.
                             |           | Ideal for small systems like PDA,
                             |           | smart phones, hand-held devices with
                             |           | limited bandwidth and CPU power.
- ---------------------------|-----------|------------------------------------
+ ---------------------------+-----------+------------------------------------
             'local'         |  'files'  | information are taken from the
                             |           | plain text data files.
- ----------------------------------------------------------------------------
+ ---------------------------+-----------+------------------------------------
           'httpThin'        | 'webThin' | identical to 'http', but less
                             | 'htmlThin'| information are gathered; useful
                             |           | for systems with limited bandwidth.
@@ -230,7 +230,7 @@ distributors.
 
 It works mostly like the Movie class. :-)
 
-The Movie class defines a the __contains__() method, which is used to
+The Movie class defines a __contains__() method, which is used to
 check if a given person has worked in a given movie with the syntax:
   if personObject in movieObject:
       print '%s worked in %s' % (personObject['name'], movieObject['title'])

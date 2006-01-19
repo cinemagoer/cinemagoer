@@ -20,6 +20,11 @@ every file in the main directory (beware that the "diffs"
 subdirectory contains _a lot_ of files you _don't_ need,
 so don't start mirroring everything!).
 
+Starting from release 2.4, you can just download the files you need,
+instead of every single file; the files not downloaded, will be skipped.
+This feature is still quite untested, so please report any bug.
+
+
 Create a database named imdb (or whatever you like),
 using the mysqladmin tool:
   # mysqladmin -p create imdb
@@ -36,6 +41,9 @@ between 20 minutes and 2 or 3 hours, depending on your hardware).
 It will also requires a lot of memory (RAM or swap space), in the
 range of 150/200 megabytes.
 In the end, the database will require between 900MB and 1GB of disc space.
+
+The imdbpy2sql.py will print a lot of debug information on standard output;
+you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
 
 
   SQL USAGE

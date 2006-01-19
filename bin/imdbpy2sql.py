@@ -42,6 +42,8 @@ HELP = """imdbpy2sql usage:
         # NOTE: every "key=value" is passed to the MySQLdb connect function.
 """ % sys.argv[0]
 
+IMDB_PTDF_DIR = None
+
 # Manage arguments list.
 try:
     optlist, args = getopt.getopt(sys.argv[1:], 'd:h', ['help'])
@@ -49,8 +51,6 @@ except getopt.error, e:
     print 'Troubles with arguments.'
     print HELP
     sys.exit(2)
-
-IMDB_PTDF_DIR = None
 
 for opt in optlist:
     if opt[0] == '-d':
@@ -110,6 +110,8 @@ AKAT_START = ('AKA TITLES LIST', '=============', '', '', '')
 AKAT_IT_START = ('AKA TITLES LIST ITALIAN', '=======================', '', '')
 AKAT_DE_START = ('AKA TITLES LIST GERMAN', '======================', '')
 AKAT_ISO_START = ('AKA TITLES LIST ISO', '===================', '')
+AKAT_HU_START = ('AKA TITLES LIST HUNGARIAN', '=========================', '')
+AKAT_NO_START = ('AKA TITLES LIST NORWEGIAN', '=========================', '')
 AKAN_START = ('AKA NAMES LIST', '=============', '')
 AV_START = ('ALTERNATE VERSIONS LIST', '=======================', '', '')
 MINHASH_STOP = '-------------------------'
@@ -153,9 +155,19 @@ class SourceFile(GzipFile):
     """Instances of this class are used to read gzipped files,
     starting from a defined line to a (optionally) given end."""
     def __init__(self, filename=None, mode=None, start=(), stop=None,
-                    *args, **kwds):
+                    pwarning=1, *args, **kwds):
         filename = os.path.join(IMDB_PTDF_DIR, filename)
-        GzipFile.__init__(self, filename, mode, *args, **kwds)
+        try:
+            GzipFile.__init__(self, filename, mode, *args, **kwds)
+        except IOError, e:
+            if not pwarning: raise
+            print 'WARNING WARNING WARNING'
+            print 'WARNING unable to read the "%s" file.' % filename
+            print 'WARNING The file will be skipped, and the contained'
+            print 'WARNING information will NOT be stored in the database.'
+            print 'WARNING Complete error: %s' % str(e)
+            # re-raise the exception.
+            raise
         self.start = start
         #self.stop = None # Don't check for a STOP line, now.
         #self.stoplen = 0
@@ -514,7 +526,8 @@ def _parseColonList(lines, replaceKeys):
 
 def readMovieList():
     """Read the movies.list.gz file."""
-    mdbf = SourceFile(MOVIES, start=MOVIES_START, stop=MOVIES_STOP)
+    try: mdbf = SourceFile(MOVIES, start=MOVIES_START, stop=MOVIES_STOP)
+    except IOError: return
     count = 0
     for line in mdbf:
         title = line.split('\t')[0]
@@ -595,7 +608,11 @@ def castLists():
         elif fname == 'miscellaneous-crew': fname = 'miscellaneous.list.gz'
         else: fname = fname + 's.list.gz'
         print 'DOING', fname
-        f = SourceFile(fname, start=CAST_START, stop=CAST_STOP)
+        try:
+            f = SourceFile(fname, start=CAST_START, stop=CAST_STOP)
+        except IOError:
+            i = res.fetch_row()
+            continue
         doCast(f, roleid, rolename)
         f.close()
         i = res.fetch_row()
@@ -606,7 +623,8 @@ def doAkaNames():
     """People's akas."""
     pid = None
     count = 0
-    fp = SourceFile('aka-names.list.gz', start=AKAN_START)
+    try: fp = SourceFile('aka-names.list.gz', start=AKAN_START)
+    except IOError: return
     sqldata = SQLData(sqlString='INSERT INTO akanames (personid, name, imdbindex) VALUES (%s, %s, %s)')
     for line in fp:
         if line and line[0] != ' ':
@@ -624,7 +642,7 @@ def doAkaNames():
             sqldata.add((pid, name.get('name'), name.get('imdbIndex')))
             if count % 10000 == 0:
                 print 'SCANNING akanames:', line
-        count += 1
+            count += 1
     sqldata.flush()
     fp.close()
 
@@ -633,19 +651,37 @@ def doAkaTitles():
     """Movies' akas."""
     mid = None
     count = 0
-    fp = SourceFile('aka-titles.list.gz', start=AKAT_START)
     sqldata = SQLData(sqlString='INSERT INTO akatitles (movieid, title, imdbindex, kind, year, note) VALUES (%s, %s, %s, %s, %s, %s)', flushEvery=10000)
     for fname, start in (('aka-titles.list.gz',AKAT_START),
-                         ('italian-aka-titles.list.gz',AKAT_IT_START),
-                         ('german-aka-titles.list.gz',AKAT_DE_START),
-                         ('iso-aka-titles.list.gz',AKAT_ISO_START)):
-        fp = SourceFile(fname, start=start, stop='---------------------------')
+                    ('italian-aka-titles.list.gz',AKAT_IT_START),
+                    ('german-aka-titles.list.gz',AKAT_DE_START),
+                    ('iso-aka-titles.list.gz',AKAT_ISO_START),
+                    (os.path.join('contrib','hungarian-aka-titles.list.gz'),
+                        AKAT_HU_START),
+                    (os.path.join('contrib','norwegian-aka-titles.list.gz'),
+                        AKAT_NO_START)):
+        incontrib = 0
+        pwarning = 1
+        if start in (AKAT_HU_START, AKAT_NO_START):
+            pwarning = 0
+            incontrib = 1
+        try:
+            fp = SourceFile(fname, start=start,
+                            stop='---------------------------',
+                            pwarning=pwarning)
+        except IOError:
+            continue
         for line in fp:
             if line and line[0] != ' ':
                 if line[0] == '\n': continue
                 mid = CACHE_MID.addUnique(line.strip())
             else:
                 res = unpack(line.strip(), ('title', 'note'))
+                if incontrib:
+                    if res.get('note'): res['note'] += ' '
+                    else: res['note'] = ''
+                    if start == AKAT_HU_START: res['note'] += '(Hungary)'
+                    elif start == AKAT_NO_START: res['note'] += '(Norway)'
                 akat = res.get('title', '')
                 if akat[:5] == '(aka ': akat = akat[5:]
                 if akat[-2:] == '))': akat = akat[:-1]
@@ -661,7 +697,7 @@ def doAkaTitles():
                 ce = (mid, akat.get('title'), akat.get('imdbIndex'),
                         akat.get('kind'), akat.get('year'), res.get('note'))
                 sqldata.add(ce)
-            count += 1
+                count += 1
         sqldata.flush()
         fp.close()
 
@@ -671,7 +707,8 @@ def doMovieLinks():
     mid = None
     count = 0
     sqldata = SQLData(sqlString='INSERT INTO movielinks (movieid, movietoid, linktypeid, note) VALUES (%s, %s, %s, %s)', flushEvery=10000)
-    fp = SourceFile('movie-links.list.gz', start=LINK_START)
+    try: fp = SourceFile('movie-links.list.gz', start=LINK_START)
+    except IOError: return
     onote = ''
     tonote = ''
     for line in fp:
@@ -734,8 +771,11 @@ def doMinusHashFiles():
                          ('quotes',QUOTES_START),
                          ('soundtracks',SNDT_START),
                          ('trivia',TRIV_START)]:
-        fp = SourceFile(fname.replace(' ', '-')+'.list.gz', start=start,
+        try:
+            fp = SourceFile(fname.replace(' ', '-')+'.list.gz', start=start,
                         stop=MINHASH_STOP)
+        except IOError:
+            continue
         funct = _parseMinusList
         if fname == 'quotes': funct = getQuotes
         index = fname
@@ -746,7 +786,8 @@ def doMinusHashFiles():
 
 def getTaglines():
     """Movie's taglines."""
-    fp = SourceFile('taglines.list.gz', start=TAGL_START, stop=TAGL_STOP)
+    try: fp = SourceFile('taglines.list.gz', start=TAGL_START, stop=TAGL_STOP)
+    except IOError: return
     sqls = 'INSERT INTO moviesinfo (movieid, infoid, info, note) VALUES (%s, %s, %s, %s)'
     sqldata = SQLData(sqlString=sqls, flushEvery=10000)
     count = 0
@@ -760,7 +801,7 @@ def getTaglines():
             if count % 10000 == 0:
                 print 'SCANNING taglines:', title
             sqldata.add((mid, INFO_TYPES['taglines'], tag, note))
-            count += 1
+        count += 1
     sqldata.flush()
     fp.close()
         
@@ -919,7 +960,10 @@ def doNMMVFiles():
             ('mpaa-ratings-reasons.list.gz',MPAA_START,getMPAA),
             ('plot.list.gz',PLOT_START,getPlot)]:
     #for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
-        fp = SourceFile(fname, start=start)
+        try:
+            fp = SourceFile(fname, start=start)
+        except IOError:
+            continue
         if fname == 'literature.list.gz': fp.set_stop(LIT_STOP)
         elif fname == 'business.list.gz': fp.set_stop(BUS_STOP)
         nmmvFiles(fp, funct, fname)
@@ -945,7 +989,10 @@ def doMiscMovieInfo():
                     ('special-effects-companies.list.gz',SFX_START),
                     ('technical.list.gz',TCN_START),
                     ('release-dates.list.gz',RELDATE_START)):
-        fp = SourceFile(dataf[0], start=dataf[1])
+        try:
+            fp = SourceFile(dataf[0], start=dataf[1])
+        except IOError:
+            continue
         typeindex = dataf[0][:-8].replace('-', ' ')
         if typeindex == 'running times': typeindex = 'runtimes'
         elif typeindex == 'technical': typeindex = 'tech info'
@@ -981,7 +1028,8 @@ def doMiscMovieInfo():
 
 def getRating():
     """Movie's rating."""
-    fp = SourceFile('ratings.list.gz', start=RAT_START, stop=RAT_STOP)
+    try: fp = SourceFile('ratings.list.gz', start=RAT_START, stop=RAT_STOP)
+    except IOError: return
     sqldata = SQLData(sqlString='INSERT INTO moviesinfo (movieid, infoid, info) VALUES (%s, %s, %s)')
     count = 0
     for line in fp:
@@ -1006,7 +1054,8 @@ def getTopBottomRating():
     for what in ('top 250 rank', 'bottom 10 rank'):
         if what == 'top 250 rank': st = RAT_TOP250_START
         else: st = RAT_BOT10_START
-        fp = SourceFile('ratings.list.gz', start=st, stop=TOPBOT_STOP)
+        try: fp = SourceFile('ratings.list.gz', start=st, stop=TOPBOT_STOP)
+        except IOError: break
         sqldata = SQLData(sqlString='INSERT INTO moviesinfo (movieid, infoid, info) VALUES (%s, ' + str(INFO_TYPES[what]) + ', %s)')
         count = 1
         print 'SCANNING %s...' % what
@@ -1045,7 +1094,10 @@ def completeCast():
     sqldata = SQLData(sqlString='INSERT INTO completecast (movieid, object, status, note) VALUES (%s, %s, %s, %s)')
     for fname, start in [('complete-cast.list.gz',COMPCAST_START),
                         ('complete-crew.list.gz',COMPCREW_START)]:
-        fp = SourceFile(fname, start=start, stop=COMP_STOP)
+        try:
+            fp = SourceFile(fname, start=start, stop=COMP_STOP)
+        except IOError:
+            continue
         if fname == 'complete-cast.list.gz': obj = 'cast'
         else: obj = 'crew'
         count = 0
@@ -1089,43 +1141,59 @@ MOVIELINK_IDS.sort(_cmpfunc)
 
 
 # begin the iterations...
+def run():
+    print 'RUNNING imdbpy2sql.py'
+    # Populate the CACHE_MID instance.
+    readMovieList()
+    #CACHE_MID.populate()
+    #CACHE_PID.populate()
+    t('readMovieList()')
 
-# Populate the CACHE_MID instance.
-readMovieList()
-#CACHE_MID.populate()
-#CACHE_PID.populate()
-t('readMovieList()')
+    # actors, actresses, directors, ....
+    castLists()
 
-# actors, actresses, directors, ....
-castLists()
+    doAkaNames()
+    t('doAkaNames()')
+    doAkaTitles()
+    t('doAkaTitles()')
 
-doAkaNames()
-t('doAkaNames()')
-doAkaTitles()
-t('doAkaTitles()')
+    doMinusHashFiles()
+    t('doMinusHashFiles()')
 
-doMinusHashFiles()
-t('doMinusHashFiles()')
+    doNMMVFiles()
 
-doNMMVFiles()
+    doMiscMovieInfo()
+    doMovieLinks()
+    t('doMovieLinks()')
+    getRating()
+    t('getRating()')
+    getTaglines()
+    t('getTaglines()')
+    getTopBottomRating()
+    t('getTopBottomRating()')
+    completeCast()
+    t('completeCast()')
 
-doMiscMovieInfo()
-doMovieLinks()
-t('doMovieLinks()')
-getRating()
-t('getRating()')
-getTaglines()
-t('getTaglines()')
-getTopBottomRating()
-t('getTopBottomRating()')
-completeCast()
-t('completeCast()')
+    # Flush caches.
+    CACHE_MID.flush()
+    CACHE_PID.flush()
+
+    print 'DONE! (in %d minutes, %d seconds)' % \
+            divmod(int(time.time())-BEGIN_TIME, 60)
 
 
-# Flush caches.
-CACHE_MID.flush()
-CACHE_PID.flush()
+def _kdb_handler(signum, frame):
+    """Die gracefully."""
+    print 'INTERRUPT REQUEST RECEIVED FROM USER.  FLUSHING CACHES...'
+    CACHE_MID.flush()
+    CACHE_PID.flush()
+    print 'DONE! (in %d minutes, %d seconds)' % \
+            divmod(int(time.time())-BEGIN_TIME, 60)
+    sys.exit()
+    
 
-print 'DONE! (in %d minutes, %d seconds)' % \
-        divmod(int(time.time())-BEGIN_TIME, 60)
+if __name__ == '__main__':
+    import signal
+    signal.signal(signal.SIGINT, _kdb_handler)
+    run()
 

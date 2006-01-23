@@ -89,7 +89,7 @@ strings_check(char const *s, char const *t)
         return (DONTCOMPARE_NULL);
 
     // the same ?
-    if (strcasecmp(s, t) == 0)
+    if (strcmp(s, t) == 0)
         return (DONTCOMPARE_SAME);
 
     // string lenght difference threshold
@@ -166,6 +166,15 @@ ratcliff(char *s1, char *s2)
 }
 
 
+/* Change a string to lowercase. */
+static void
+strtolower(char *s1)
+{
+    int i;
+    for (i=0; i < strlen(s1); i++) s1[i] = tolower(s1[i]);
+}
+
+
 /* Ratcliff-Obershelp for two python strings; returns a python float. */
 static PyObject*
 pyratcliff(PyObject *self, PyObject *pArgs)
@@ -176,6 +185,9 @@ pyratcliff(PyObject *self, PyObject *pArgs)
 
     if (!PyArg_ParseTuple(pArgs, "ss|O", &s1, &s2, &discard))
         return NULL;
+
+    strtolower(s1);
+    strtolower(s2);
 
     return Py_BuildValue("f", ratcliff(s1, s2));
 }
@@ -215,12 +227,17 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 
     if (strlen(name1) > MXLINELEN - 1)
         return Py_BuildValue("O", result);
+    strtolower(name1);
 
     if (name2 != NULL && strlen(name2) == 0)
         name2 = NULL;
+    else
+        strtolower(name2);
 
     if (name3 != NULL && strlen(name3) == 0)
         name3 = NULL;
+    else
+        strtolower(name3);
 
     if ((keyFile = fopen(keyFileName, "r")) == NULL) {
         PyErr_SetFromErrno(PyExc_IOError);
@@ -241,6 +258,7 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 
         /* Build versions of this line with just the "surname" and in the
          * "name surname" format. */
+        strtolower(line);
         strcpy(surname, line);
         hasNS = 0;
         if ((cp = strrchr(surname, ',')) != NULL && (cp+1)[0] == ' ') {
@@ -262,8 +280,12 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             }
         }
 
-        if (name3 != NULL)
-            ratio = MAX(ratio, ratcliff(name3, origLine) + 0.1);
+        if (name3 != NULL) {
+            char origLineLower[MXLINELEN];
+	    strcpy(origLineLower, origLine);
+            strtolower(origLineLower);
+            ratio = MAX(ratio, ratcliff(name3, origLineLower) + 0.1);
+	}
     
         if (ratio >= RO_THRESHOLD)
             PyList_Append(result, Py_BuildValue("(dis)",
@@ -320,11 +342,16 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     if (strlen(title1) > MXLINELEN - 1)
         return Py_BuildValue("O", result);
 
+    strtolower(title1);
     if (title2 != NULL && strlen(title2) == 0)
         title2 = NULL;
+    else
+        strtolower(title2);
 
     if (title3 != NULL && strlen(title3) == 0)
-              title3 = NULL;
+        title3 = NULL;
+    else
+        strtolower(title3);
 
     if ((keyFile = fopen(keyFileName, "r")) == NULL) {
         PyErr_SetFromErrno(PyExc_IOError);
@@ -335,7 +362,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     for (count = 0; count < ART_COUNT; count++) {
         artlen = strlen(articlesNoSP[count]);
         if (linelen >= artlen+2 &&
-                !strncasecmp(articlesNoSP[count],
+                !strncmp(articlesNoSP[count],
                 &(title1[linelen-artlen]), artlen) &&
                 !strncmp(&(title1[linelen-artlen-2]), ", ", 2)) {
             /* name1 contains an article. */
@@ -364,6 +391,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             if (linelen > 2 && line[linelen-1] == '"')
                 line[linelen-1] = '\0';
         }
+	strtolower(line);
 
         /* If the current line has an article, strip it and put the new
          * line in noArt. */
@@ -374,7 +402,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             for (count = 0; count < ART_COUNT; count++) {
                 artlen = strlen(articlesNoSP[count]);
                 if (linelen >= artlen+2 &&
-                        !strncasecmp(articlesNoSP[count],
+                        !strncmp(articlesNoSP[count],
                         &(line[linelen-artlen]), artlen) &&
                         !strncmp(&(line[linelen-artlen-2]), ", ", 2)) {
                     strcpy(noArt, line);
@@ -392,8 +420,12 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         else if (hasArt && !matchHasArt && title2 != NULL)
             ratio = MAX(ratio, ratcliff(title2, line));
 
-        if (title3 != NULL)
-            ratio = MAX(ratio, ratcliff(title3, origLine) + 0.1);
+        if (title3 != NULL) {
+            char origLineLower[MXLINELEN];
+	    strcpy(origLineLower, origLine);
+	    strtolower(origLineLower);
+            ratio = MAX(ratio, ratcliff(title3, origLineLower) + 0.1);
+	}
 
         if (ratio >= RO_THRESHOLD)
             PyList_Append(result, Py_BuildValue("(dis)",

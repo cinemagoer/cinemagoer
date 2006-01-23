@@ -59,15 +59,17 @@ def _replRef(match):
     ret = match.group()[1:-1]
     ret = entitydefsget(ret, ret)
     if ret[0] == '#':
-        try:
-            ret = chr(int(ret[1:]))
-            if ret == '\xa0': ret = ' '
-        except (ValueError, TypeError, OverflowError):
+        # Always handle character references using unichr.
+        #try:
+        #    ret = chr(int(ret[1:]))
+        #    if ret == '\xa0': ret = ' '
+        #except (ValueError, TypeError, OverflowError):
             try:
                 ret = unichr(int(ret[1:])).encode('utf-8')
+                if ret == '\xa0': ret = ' '
             except (ValueError, TypeError, OverflowError):
                 pass
-            pass
+        #    pass
     return ret
 
 

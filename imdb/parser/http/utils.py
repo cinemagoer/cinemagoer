@@ -97,6 +97,13 @@ class ParserBase(SGMLParser):
             name = ' '
             self.handle_data(name)
             return
+        try:
+            ret = unichr(int(name)).encode('utf-8')
+            if ret in ('\xa0', '\xc2\xa0'): ret = ' '
+            self.handle_data(ret)
+            return
+        except (ValueError, TypeError, OverflowError):
+            pass
         return SGMLParser.handle_charref(self, name)
 
     def unknown_charref(self, ref):

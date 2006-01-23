@@ -217,7 +217,7 @@ class HTMLMovieParser(ParserBase):
         elif link.startswith('/titlebrowse?'):
             try:
                 d = analyze_title(unquote(olink[13:]))
-                if d.has_key('title'):
+                if not d.has_key('title'):
                     self.__movie_data['title'] = d['title']
             except IMDbParserError:
                 pass
@@ -402,46 +402,6 @@ class HTMLMovieParser(ParserBase):
                         self.set_item('votes', votes)
                     except ValueError:
                         pass
-
-    def handle_charref(self, name):
-        # This methods is the same found in sgmllib.py, except
-        # that it doesn't call _handle_data(), but manage the
-        # entity internally.
-        name = ParserBase.handle_charref(self, name)
-        try: n = int(name)
-        except (ValueError, TypeError):
-            self.unknown_charref(name)
-            return
-        if not 0 <= n <= 255:
-            self.unknown_charref(name)
-            return
-        c = chr(n)
-        self.simplyAdd(c)
-
-    def handle_entityref(self, name):
-        # See comments for the handle_charref() methods.
-        table = self.entitydefs
-        if table.has_key(name):
-            self.simplyAdd(table[name])
-        else:
-            self.unknown_entityref(name)
-            return
-    
-    def simplyAdd(self, c):
-        # Append an entity to the string we're building.
-        # It's used by handle_charref() and handle_entityref() methods.
-        if self.__is_company_cred and self.__current_section:
-            self.__company_data += c
-            if c != ' ':
-                # XXX: sigh!  This is here to catch &nbsp; (replaced with
-                #      a space); sometimes it's used to begin the description
-                #      of the role of a given company.
-                #      I'm not sure this will work correctly everywhere...
-                self.__merge_next = 1
-        elif self.__is_cast_crew and self.__current_section and self.__is_name:
-            self.__name += c
-        elif self.__is_title:
-            self.__title += c
 
     def _handle_data(self, data):
         # Manage the plain text part of an HTML document.

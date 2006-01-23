@@ -267,7 +267,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         sm2 = SequenceMatcher()
         sm3 = SequenceMatcher()
         title1, title2, title3 = self._titleVariations(title)
-        title1, title2, title3 = [x.lower() for x in (title1, title2, title3)]
+        #title1, title2, title3 = [x.lower() for x in (title1, title2, title3)]
         sm1.set_seq1(title1)
         sm2.set_seq2(title2)
         if title3: sm3.set_seq1(title3)
@@ -286,7 +286,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         qr = list(self.query(sqlq, escape=0))
         qr += list(self.query(sqlq.replace('titles', 'akatitles', 1), escape=0))
         for i in qr:
-            til = i[1].lower()
+            til = i[1]
             # Distance with the canonical title (with or without article).
             #   titleS      -> titleR
             #   titleS, the -> titleR, the
@@ -309,7 +309,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 tmpm = {'title': i[1], 'imdbIndex': i[2],
                         'kind': i[3], 'year': i[4]}
                 ratios.append(ratcliff(title3,
-                            build_title(tmpm, canonical=1).lower(), sm3) + 0.1)
+                            build_title(tmpm, canonical=1), sm3) + 0.1)
             ratio = max(ratios)
             if resd.has_key(i):
                 if ratio > resd[i]: resd[i] = ratio
@@ -505,7 +505,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         sm2 = SequenceMatcher()
         sm3 = SequenceMatcher()
         name1, name2, name3 = self._nameVariations(name)
-        name1, name2, name3 = [x.lower() for x in (name1, name2, name3)]
+        #name1, name2, name3 = [x.lower() for x in (name1, name2, name3)]
         sm1.set_seq1(name1)
         if name2: sm2.set_seq1(name2)
         if name3: sm3.set_seq1(name3)
@@ -529,7 +529,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         qr += list(self.query(sqlq.replace('names', 'akanames', 1), escape=0))
 
         for i in qr:
-            nil = i[1].lower()
+            print i
+            nil = i[1]
             # Distance with the canonical name.
             ratios = [ratcliff(name1, nil, sm1) + 0.05]
             nils = nil.split(', ', 1)
@@ -548,7 +549,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 # Distance with the long imdb canonical name.
                 tmpp = {'name': i[1], 'imdbIndex': i[2]}
                 ratios.append(ratcliff(name3,
-                            build_name(tmpp, canonical=1).lower(), sm3) + 0.1)
+                            build_name(tmpp, canonical=1), sm3) + 0.1)
             ratio = max(ratios)
             if resd.has_key(i):
                 if ratio > resd[i]: resd[i] = ratio

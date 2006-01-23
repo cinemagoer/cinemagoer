@@ -212,6 +212,7 @@ def analyze_title(title, canonical=0):
     # XXX: Number of entries at 27 jan 2005:
     #      {'(mini)': 4858, '(V)': 35501, '(VG)': 4301, '(TV)': 58443}
     #      tv series: 42454
+    # XXX: more up-to-date statistics: http://us.imdb.com/database_statistics
     if title.endswith('(TV)'):
         kind = 'tv movie'
         title = title[:-4].rstrip()

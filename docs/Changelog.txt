@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060119 "The Return Of The Jedi" (19 Jan 2006)
+* What's the new in release 2.4-cvs20060123 "Stealth" (23 Jan 2006)
   [general]
   - unified Movie and Person classes.
   - the strings now are modified only if it's really needed.
@@ -10,6 +10,9 @@
   - performance improvements in every data access system.
   - removed the deepcopy of the data, updating Movie and Person
     information.
+  - now the functions in the ratober C module always confront
+    lowercased strings.
+  - ratober C functions are always case insensitive.
 
   [http data access system]
   - the ParserBase class now inherits from sgmllib.SGMLParser,
@@ -17,6 +20,10 @@
     in parsing speed.
   - fixed a bug in the parser for the "news" page for movies and
     persons.
+  - removed special handlers for entity and chardefs in the HTMLMovieParser
+    class.
+  - fixed bugs related to non-ascii chars.
+  - fixed a nasty bug retrieving the title field.
 
   [sql data access system]
   - fixed the imdbpy2sql.py script, to handle files with spurious lines.
@@ -26,6 +33,9 @@
   - imdbpy2sql.py now works also on partial data (i.e. if you've not
     downloaded every single plain text file).
   - imdbpy2sql.py considers also a couple of files in the contrib directory.
+
+  [mobile data access system]
+  - fixed bugs related to non-ascii chars.
 
 
 * What's the new in release 2.3 "Big Fish" (03 Dec 2005)

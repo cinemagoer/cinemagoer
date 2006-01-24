@@ -229,12 +229,12 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         return Py_BuildValue("O", result);
     strtolower(name1);
 
-    if (name2 != NULL && strlen(name2) == 0)
+    if (name2 == NULL || strlen(name2) == 0)
         name2 = NULL;
     else
         strtolower(name2);
 
-    if (name3 != NULL && strlen(name3) == 0)
+    if (name3 == NULL || strlen(name3) == 0)
         name3 = NULL;
     else
         strtolower(name3);
@@ -280,7 +280,7 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             }
         }
 
-        if (name3 != NULL) {
+        if (name3 != NULL && strrchr(origLine, ')') != NULL) {
             char origLineLower[MXLINELEN];
 	    strcpy(origLineLower, origLine);
             strtolower(origLineLower);
@@ -343,12 +343,12 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         return Py_BuildValue("O", result);
 
     strtolower(title1);
-    if (title2 != NULL && strlen(title2) == 0)
+    if (title2 == NULL || strlen(title2) == 0)
         title2 = NULL;
     else
         strtolower(title2);
 
-    if (title3 != NULL && strlen(title3) == 0)
+    if (title3 == NULL || strlen(title3) == 0)
         title3 = NULL;
     else
         strtolower(title3);

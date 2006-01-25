@@ -529,7 +529,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         qr += list(self.query(sqlq.replace('names', 'akanames', 1), escape=0))
 
         for i in qr:
-            print i
             nil = i[1]
             # Distance with the canonical name.
             ratios = [ratcliff(name1, nil, sm1) + 0.05]

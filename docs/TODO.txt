@@ -7,6 +7,11 @@ NOTE: it's always time to clean the code! <g>
 
 
 [general]
+* Check for correctness of strings with chars outside the ascii/latin1
+  sets, especially with "local" and "sql" data access systems.
+* Searching names and titles with "local" and "sql" data access systems
+  is somewhat a mess: the various functions should return/manage
+  information in a more coherent way.
 * Write better summary() methods for Movie and Person classes.
 * Some portions of code are poorly commented.
 * The documentation is written in my funny English.

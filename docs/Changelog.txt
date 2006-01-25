@@ -1,10 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060124 "Stealth" (24 Jan 2006)
+* What's the new in release 2.4-cvs20060125b "Stealth" (25 Jan 2006)
   [general]
   - unified Movie and Person classes.
-  - the strings now are modified only if it's really needed.
+  - the strings used to store every kind of information about movies and
+    person now are modified (substituting titles and names references)
+    only when it's really needed.
   - speed improvements in functions modifyStrings, sortMovies,
     canonicalName, analyze_name, analyze_title.
   - performance improvements in every data access system.
@@ -12,7 +14,9 @@
     information.
   - now the functions in the ratober C module always confront
     lowercased strings.
-  - ratober C functions are always case insensitive.
+  - moved the "ratober" C module in the imdb.parser.common package,
+    being used by both ""http" and "sql" data access systems.
+  - C functions in the "ratober" module are always case insensitive.
 
   [http data access system]
   - the ParserBase class now inherits from sgmllib.SGMLParser,
@@ -33,9 +37,16 @@
   - imdbpy2sql.py now works also on partial data (i.e. if you've not
     downloaded every single plain text file).
   - imdbpy2sql.py considers also a couple of files in the contrib directory.
+  - searching names and titles, only the first 5 chars returned from
+    the SOUNDEX() SQL function are compared.
 
   [mobile data access system]
   - fixed bugs related to non-ascii chars.
+
+  [local data access system]
+  - it can work even if the "ratober" C module is not compiled;
+    obviously the pure python substitute is painfully slow (a
+    warning is issued).
 
 
 * What's the new in release 2.3 "Big Fish" (03 Dec 2005)

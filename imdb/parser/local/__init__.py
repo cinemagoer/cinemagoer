@@ -6,7 +6,7 @@ IMDb's data through a local installation.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "local" or "files".
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it> 
+Copyright 2004-2006 Davide Alberani <da@erlug.linux.it> 
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+from __future__ import generators
+
 import os
 from stat import ST_SIZE
 
@@ -38,14 +40,81 @@ from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
                         getQuotes, getMovieLinks, getBusiness, getLiterature, \
                         getLaserdisc
 
-from ratober import search_name, search_title
 from utils import getFullIndex, KeyFScan
 
-from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem
+from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
+                                        titleVariations, nameVariations
 
 _ltype = type([])
 _dtype = type({})
 _stypes = (type(''), type(u''))
+
+
+try:
+    from imdb.parser.common.ratober import search_name
+
+    def _scan_names(keyFile, name1, name2, name3, results=0):
+        sn = search_name(keyFile, name1, name2, name3, results)
+        res = []
+        for x in sn:
+            tmpd = analyze_name(x[2])
+            res.append((x[0], (x[1], tmpd['name'], tmpd.get('imdbIndex'))))
+        return res
+except ImportError:
+    import warnings
+    warnings.warn('Unable to import the ratober.search_name function.'
+                    '  Searching names using the "local" data access system'
+                    ' will be REALLY slow.')
+
+    from imdb.parser.common.locsql import scan_names
+
+    def _readNamesKeyFile(keyFile):
+        try: kf = open(keyFile, 'r')
+        except IOError, e: raise IMDbDataAccessError, str(e)
+        for line in kf:
+            ls = line.split('|')
+            if not ls[0]: continue
+            named = analyze_name(ls[0])
+            yield (long(ls[1], 16), named['name'], named.get('imdbIndex'))
+        kf.close()
+
+    def _scan_names(keyFile, name1, name2, name3, results=0):
+        return scan_names(_readNamesKeyFile(keyFile),
+                            name1, name2, name3, results)
+
+try:
+    from imdb.parser.common.ratober import search_title
+
+    def _scan_titles(keyFile, title1, title2, title3, results=0):
+        st = search_title(keyFile, title1, title2, title3, results)
+        res = []
+        for x in st:
+            tmpd = analyze_title(x[2])
+            res.append((x[0], (x[1], tmpd['title'], tmpd.get('imdbIndex'),
+                                tmpd['kind'], tmpd.get('year'))))
+        return res
+except ImportError:
+    import warnings
+    warnings.warn('Unable to import the ratober.search_title function.'
+                    '  Searching titles using the "local" data access system'
+                    ' will be REALLY slow.')
+
+    from imdb.parser.common.locsql import scan_titles
+
+    def _readTitlesKeyFile(keyFile):
+        try: kf = open(keyFile, 'r')
+        except IOError, e: raise IMDbDataAccessError, str(e)
+        for line in kf:
+            ls = line.split('|')
+            if not ls[0]: continue
+            titled = analyze_title(ls[0])
+            yield (long(ls[1], 16), titled['title'], titled.get('imdbIndex'),
+                    titled['kind'], titled.get('year'))
+        kf.close()
+
+    def _scan_titles(keyFile, title1, title2, title3, results=0):
+        return scan_titles(_readTitlesKeyFile(keyFile),
+                            title1, title2, title3, results)
 
 
 class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
@@ -147,26 +216,33 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         title = title.strip()
         if not title: return []
         # Search for these title variations.
-        title1, title2, title3 = self._titleVariations(title)
-        params = {'keyFile': '%stitles.key' % self.__db,
-                    'title1': title1.lower(), 'title2': title2.lower(),
-                    'results': results}
-        if title3: params['title3'] = title3.lower()
-        # ratober functions return a sorted
-        # list of tuples (match_score, movieID, movieTitle)
-        rl = [(x[1], analyze_title(x[2])) for x in search_title(**params)]
+        title1, title2, title3 = titleVariations(title)
+        resultsST = results
+        if not self.doAdult: resultsST = 0
+        res = _scan_titles('%stitles.key' % self.__db,
+                            title1, title2, title3, resultsST)
+        if self.doAdult and results > 0: res[:] = res[:results]
+        res[:] = [x[1] for x in res]
         # Check for adult movies.
         if not self.doAdult:
             newlist = []
-            for entry in rl:
+            for entry in res:
                 genres = getMovieMisc(movieID=entry[0],
                                 dataF='%s%s.data' % (self.__db, 'genres'),
                                 indexF='%s%s.index' % (self.__db, 'genres'),
                                 attrIF='%sattributes.index' % self.__db,
                                 attrKF='%sattributes.key' % self.__db)
                 if 'Adult' not in genres: newlist.append(entry)
-            rl[:] = newlist
-        return rl
+            res[:] = newlist
+            if results > 0: res[:] = res[:results]
+        # Purge empty imdbIndex and year.
+        returnl = []
+        for x in res:
+            tmpd = {'title': x[1], 'kind': x[3]}
+            if x[2]: tmpd['imdbIndex'] = x[2]
+            if x[4]: tmpd['year'] = x[4]
+            returnl.append((x[0], tmpd))
+        return returnl
 
     def get_movie_main(self, movieID):
         # Information sets provided by this method.
@@ -384,14 +460,21 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
     def _search_person(self, name, results):
         name = name.strip()
         if not name: return []
-        name1, name2, name3 = self._nameVariations(name)
-        params = {'keyFile': '%snames.key' % self.__db,
-                    'name1': name1.lower(), 'results': results}
-        if name2: params['name2'] = name2.lower()
-        if name3: params['name3'] = name3.lower()
-        # ratober functions return a sorted
-        # list of tuples (match_score, personID, personName)
-        return [(x[1], analyze_name(x[2])) for x in search_name(**params)]
+        name1, name2, name3 = nameVariations(name)
+        resultsST = results
+        if not self.doAdult: resultsST = 0
+        res =  _scan_names('%snames.key' % self.__db,
+                            name1, name2, name3, resultsST)
+        if results > 0: res[:] = res[:results]
+        res[:] = [x[1] for x in res]
+        # Purge empty imdbIndex and year.
+        returnl = []
+        for x in res:
+            tmpd = {'name': x[1]}
+            if x[2]: tmpd['imdbIndex'] = x[2]
+            returnl.append((x[0], tmpd))
+        return returnl
+
 
     def get_person_main(self, personID):
         infosets = ('main', 'biography', 'other works')

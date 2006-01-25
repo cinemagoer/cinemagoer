@@ -1,6 +1,9 @@
 /*
- * Scan IMDb titles or names ".key" files, searching for a movie title
- * or a person name.
+ * Functions used to search for a movie title or a person name
+ * in titles or names ".key" files of an installation of the
+ * IMDb's plain text data files.
+ * Another function implements a simple Ratcliff-Obershelp comparison
+ * amongst Python strings.
  *
  * Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
  * Released under the GPL license.
@@ -46,7 +49,7 @@
 #define COMPARE             2.0
 #define STRING_MAXLENDIFFER 0.75
 
-#define MXLINELEN   700
+#define MXLINELEN   512
 #define FSEP        '|'
 
 #define RO_THRESHOLD 0.6
@@ -182,14 +185,22 @@ pyratcliff(PyObject *self, PyObject *pArgs)
     char *s1 = NULL;
     char *s2 = NULL;
     PyObject *discard = NULL;
+    char s1copy[MXLINELEN];
+    char s2copy[MXLINELEN];
 
+    /* The optional PyObject parameter is here to be compatible
+     * with the pure python implementation, which uses a
+     * difflib.SequenceMatcher object. */
     if (!PyArg_ParseTuple(pArgs, "ss|O", &s1, &s2, &discard))
         return NULL;
 
-    strtolower(s1);
-    strtolower(s2);
+    strcpy(s1copy, s1);
+    strcpy(s2copy, s2);
+    /* Work on copies. */
+    strtolower(s1copy);
+    strtolower(s2copy);
 
-    return Py_BuildValue("f", ratcliff(s1, s2));
+    return Py_BuildValue("f", ratcliff(s1copy, s2copy));
 }
 
 
@@ -445,11 +456,11 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 
 static PyMethodDef ratober_methods[] = {
     {"ratcliff", pyratcliff,
-        METH_VARARGS, "Ratcliff-Obershelp similarity"},
+        METH_VARARGS, "Ratcliff-Obershelp similarity."},
     {"search_name", (PyCFunction) search_name,
-        METH_KEYWORDS, "search for a person name"},
+        METH_KEYWORDS, "Search for a person name."},
     {"search_title", (PyCFunction) search_title,
-        METH_KEYWORDS, "search for a movie title"},
+        METH_KEYWORDS, "Search for a movie title."},
     {NULL}
 };
 

@@ -26,27 +26,18 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # FIXME: this whole module was written in a veeery short amount of time.
 #        The code should be commented, rewritten and cleaned. :-)
 
-from difflib import SequenceMatcher
-
-from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem
-from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
-                        normalizeName, build_title, build_name, \
-                        analyze_name, analyze_title, re_episodes, \
-                        sortMovies, sortPeople, _articles
-from imdb.Person import Person
-from imdb.Movie import Movie
-from imdb._exceptions import IMDbDataAccessError, IMDbError
-
 import MySQLdb
 import _mysql_exceptions
 
-try:
-    from imdb.parser.local.ratober import ratcliff
-except ImportError:
-    def ratcliff(s1, s2, sm):
-        """Ratcliff-Obershelp similarity."""
-        sm.set_seq2(s2)
-        return sm.ratio()
+from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
+                    scan_names, scan_titles, titleVariations, nameVariations
+from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
+                        normalizeName, build_title, build_name, \
+                        analyze_name, analyze_title, re_episodes, \
+                        sortMovies, sortPeople
+from imdb.Person import Person
+from imdb.Movie import Movie
+from imdb._exceptions import IMDbDataAccessError, IMDbError
 
 
 _litlist = ['screenplay/teleplay', 'novel', 'adaption', 'book',
@@ -263,77 +254,45 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not title: return []
         # Up to 3 variations of the title are searched, plus the
         # long imdb canonical title, if provided.
-        sm1 = SequenceMatcher()
-        sm2 = SequenceMatcher()
-        sm3 = SequenceMatcher()
-        title1, title2, title3 = self._titleVariations(title)
+        title1, title2, title3 = titleVariations(title)
         #title1, title2, title3 = [x.lower() for x in (title1, title2, title3)]
-        sm1.set_seq1(title1)
-        sm2.set_seq2(title2)
-        if title3: sm3.set_seq1(title3)
-        hasArt = 0
-        if title2 != title1: hasArt = 1
         resd = {}
         # Build the SOUNDEX(title) IN ... clause.
         sndex = "(SOUNDEX('%s')" % _(title1)
-        if title2 != title1: sndex += ", SOUNDEX('%s')" % _(title2)
+        if title2 and title2 != title1: sndex += ", SOUNDEX('%s')" % _(title2)
         sndex += ')'
+
         sqlq = "SELECT movieid, title, imdbindex, kind, year " + \
-                "FROM titles WHERE SOUNDEX(title) IN %s " % sndex + \
-                "OR SOUNDEX(LEFT(title, LENGTH(title)-" + \
-                "LOCATE(' ,', REVERSE(title))+1)) = " + \
-                "SOUNDEX('%s')" % _(title2)
+                "FROM titles WHERE LEFT(SOUNDEX(title),5) IN %s " % sndex + \
+                "OR LEFT(SOUNDEX(LEFT(title, LENGTH(title)-" + \
+                "LOCATE(' ,', REVERSE(title))+1)),5) = " + \
+                "LEFT(SOUNDEX('%s'),5)" % _(title2)
+
         qr = list(self.query(sqlq, escape=0))
         qr += list(self.query(sqlq.replace('titles', 'akatitles', 1), escape=0))
-        for i in qr:
-            til = i[1]
-            # Distance with the canonical title (with or without article).
-            #   titleS      -> titleR
-            #   titleS, the -> titleR, the
-            ratios = [ratcliff(title1, til, sm1) + 0.05]
-            # til2 is til without the article, if present.
-            til2 = til
-            tils = til2.split(', ')
-            matchHasArt = 0
-            if tils[-1] in _articles:
-                til2 = ', '.join(tils[:-1])
-                matchHasArt = 1
-            if hasArt and not matchHasArt:
-                #   titleS[, the]  -> titleR
-                ratios.append(ratcliff(title2, til, sm2))
-            elif matchHasArt and not hasArt:
-                #   titleS  -> titleR[, the]
-                ratios.append(ratcliff(title1, til2, sm1))
-            if title3:
-                # Distance with the long imdb canonical title.
-                tmpm = {'title': i[1], 'imdbIndex': i[2],
-                        'kind': i[3], 'year': i[4]}
-                ratios.append(ratcliff(title3,
-                            build_title(tmpm, canonical=1), sm3) + 0.1)
-            ratio = max(ratios)
-            if resd.has_key(i):
-                if ratio > resd[i]: resd[i] = ratio
-            else: resd[i] = ratio
-        res = [(x[1], x[0]) for x in resd.items()]
-        res.sort()
-        res.reverse()
-        res[:] = res[:results]
+
+        resultsST = results
+        if not self.doAdult: resultsST = 0
+        res = scan_titles(qr, title1, title2, title3, resultsST)
+        if self.doAdult and results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
-        # Purge empty imdbIndex and year.
-        returnd = []
-        for x in res:
-            tmpd = {'title': x[1], 'kind': x[3]}
-            if x[2]: tmpd['imdbIndex'] = x[2]
-            if x[4]: tmpd['year'] = x[4]
-            returnd.append((x[0], tmpd))
+
         if not self.doAdult:
-            mids = '(%s)' % ', '.join([str(x[0]) for x in returnd])
+            mids = '(%s)' % ', '.join([str(x[0]) for x in res])
             adultlist = self.query('SELECT movieid FROM moviesinfo WHERE ' +
                                 'movieid IN ' + mids + ' AND infoid = 3 AND ' +
                                 'info = "Adult"', escape=0)
             adultlist = [x[0] for x in list(adultlist)]
-            returnd[:] = [x for x in returnd if x[0] not in adultlist]
-        return returnd
+            res[:] = [x for x in res if x[0] not in adultlist]
+            if results > 0: res[:] = res[:results]
+
+        returnl = []
+        for x in res:
+            tmpd = {'title': x[1], 'kind': x[3]}
+            if x[2]: tmpd['imdbIndex'] = x[2]
+            if x[4]: tmpd['year'] = x[4]
+            returnl.append((x[0], tmpd))
+        return returnl
         
     def _getDict(self, table, cols, clause='', unique=0):
         """Return a list of dictionaries with data from the given
@@ -501,71 +460,39 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     def _search_person(self, name, results):
         name = name.strip()
         if not name: return []
-        sm1 = SequenceMatcher()
-        sm2 = SequenceMatcher()
-        sm3 = SequenceMatcher()
-        name1, name2, name3 = self._nameVariations(name)
-        #name1, name2, name3 = [x.lower() for x in (name1, name2, name3)]
-        sm1.set_seq1(name1)
-        if name2: sm2.set_seq1(name2)
-        if name3: sm3.set_seq1(name3)
-        resd = {}
+        name1, name2, name3 = nameVariations(name)
 
-        sndex = "(SOUNDEX('%s')" % _(name1)
-        if name2 != name1: sndex += ", SOUNDEX('%s')" % _(name2)
+        sndex = "(LEFT(SOUNDEX('%s'),5)" % _(name1)
+        if name2 and name2 != name1:
+            sndex += ", LEFT(SOUNDEX('%s'),5)" % _(name2)
         sndex += ')'
 
         # In the database there's a list of "Surname, Name".
         # Try matching against "Surname, Name", "Surname"
         # and "Name Surname".
         sqlq = "SELECT personid, name, imdbindex FROM names WHERE " + \
-                "SOUNDEX(name) IN %s " % sndex + \
-                "OR SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)) IN %s " % sndex + \
-                "OR SOUNDEX(CONCAT(SUBSTRING_INDEX(name, ', ', -1), ' ', " + \
-                "(SUBSTRING_INDEX(name, ', ', 1)))) IN %s;" % sndex
+                "LEFT(SOUNDEX(name),5) IN %s " % sndex + \
+                "OR LEFT(SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)),5)" + \
+                " IN %s " % sndex + \
+                "OR LEFT(SOUNDEX(CONCAT(SUBSTRING_INDEX(name, ', ', -1)," + \
+                " ' ', (SUBSTRING_INDEX(name, ', ', 1)))),5) IN %s;" % sndex
         # XXX: add a "LIMIT 5000" clause or something?
 
         qr = list(self.query(sqlq, escape=0))
         qr += list(self.query(sqlq.replace('names', 'akanames', 1), escape=0))
 
-        for i in qr:
-            nil = i[1]
-            # Distance with the canonical name.
-            ratios = [ratcliff(name1, nil, sm1) + 0.05]
-            nils = nil.split(', ', 1)
-            surname = nils[0]
-            namesurname = ''
-            if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
-            if surname != nil:
-                # Distance with the "Surname" in the database.
-                ratios.append(ratcliff(name1, surname, sm1))
-                ratios.append(ratcliff(name1, namesurname, sm1))
-                if name2:
-                    ratios.append(ratcliff(name2, surname, sm2))
-                    # Distance with the "Name Surname" in the database.
-                    ratios.append(ratcliff(name2, namesurname, sm2))
-            if name3:
-                # Distance with the long imdb canonical name.
-                tmpp = {'name': i[1], 'imdbIndex': i[2]}
-                ratios.append(ratcliff(name3,
-                            build_name(tmpp, canonical=1), sm3) + 0.1)
-            ratio = max(ratios)
-            if resd.has_key(i):
-                if ratio > resd[i]: resd[i] = ratio
-            else: resd[i] = ratio
-        
-        res = [(x[1], x[0]) for x in resd.items()]
-        res.sort()
-        res.reverse()
-        res[:] = res[:results]
+        resultsST = results
+        if not self.doAdult: resultsST = 0
+        res = scan_names(qr, name1, name2, name3, resultsST)
+        if results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
         # Purge empty imdbIndex and year.
-        returnd = []
+        returnl = []
         for x in res:
             tmpd = {'name': x[1]}
             if x[2]: tmpd['imdbIndex'] = x[2]
-            returnd.append((x[0], tmpd))
-        return returnd
+            returnl.append((x[0], tmpd))
+        return returnl
 
     def get_person_main(self, personID):
         # Every person information is retrieved from here.

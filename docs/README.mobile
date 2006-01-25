@@ -21,16 +21,18 @@ Please read both the following section.
   ====================
 
 You can modify a couple of variables in the setup.py script:
-setting DO_LOCAL to 0, the parser.local package is not installed (and
-the "ratober" C module is not compiled); this is useful if your system
-doesn't have the space (more than 600Mb) for a local installation
-of the IMDb's database.  Preventing the installation of the
-parser.local package will also save at least 120Kb of disk space
-on your system.
+setting DO_LOCAL to 0, the parser.local package is not installed;
+this is useful if your system doesn't have the space (more than 600Mb)
+for a local installation of the IMDb's database.
+Preventing the installation of the parser.local package will also save
+at least 120Kb of disk space on your system.
 
 The DO_SQL variable, if set to 0, will excludes the parser.sql
-package (and the parser.common package, if DO_LOCAL is also 0);
-you don't need it if your system does not have the MySQLdb module.
+package; you don't need it if your system does not have the
+MySQLdb module.
+
+If both DO_LOCAL and DO_SQL are set to 0, the parser.common package
+is not installed, and the "ratober" C module is not compiled.
 
 If the DO_SCRIPTS variable is set to 0, the example scripts in
 the ./bin/ directory are not installed, saving about 65Kb.

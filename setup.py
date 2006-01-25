@@ -7,16 +7,11 @@ from distutils.core import setup, Extension
 
 # XXX NOTE: if you _really_ don't want to install the "local data access
 # system", set DO_LOCAL to 0.
-# The local access system requires a C module and, to be used, the _whole_
-# IMDb's database installed in your computer; this not useful/possible
-# in small devices like hand-held computers, where it makes sense to
-# also save the little space taken by the local interface package or
-# where you don't have the development environment needed to compile
-# the C module.
-# When possible it's _always safer_ to leave it to 1 (compile the C
-# module and install the local interface) even without the whole
-# IMDb's database installed; obviously it can't be used, but the
-# interface to the web database is always available.
+# The local access system requires the _whole_ IMDb's database installed
+# in your computer; this not useful/possible in small devices like
+# hand-held computers, where it makes sense to also save the little space
+# taken by the local interface package.
+# When possible it's _always safer_ to leave it to 1.
 DO_LOCAL = 1
 
 # XXX NOTE: the "sql data access system" requires the MySQLdb python
@@ -24,6 +19,12 @@ DO_LOCAL = 1
 # that must be create using the imdbpy2sql.py script.
 # Setting this to 1 will always install at least the imdbpy2sql.py script.
 DO_SQL = 1
+
+# XXX NOTE: setting at least one of DO_LOCAL and DO_SQL to 1,
+# the "ratober" C module will be compiled; if you don't have a C compiler
+# in your environment, pure-python versions of the functions in the
+# C module will be used.  Beware the they are extremely slow, especially
+# using the "local" data access system.
 
 # Install some very simple example scripts.
 DO_SCRIPTS = 1
@@ -33,7 +34,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '2.4-cvs20060124'
+version = '2.4-cvs20060125b'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -87,12 +88,12 @@ params = {'name': 'IMDbPY',
 
 if DO_LOCAL or DO_SQL:
     params['packages'] = params['packages'] + ['imdb.parser.common']
+    ratober = Extension('imdb.parser.common.ratober',
+                        ['imdb/parser/common/ratober.c'])
+    params['ext_modules'] = [ratober]
 
 if DO_LOCAL:
     params['packages'] = params['packages'] + ['imdb.parser.local']
-    ratober = Extension('imdb.parser.local.ratober',
-                        ['imdb/parser/local/ratober.c'])
-    params['ext_modules'] = [ratober]
 
 if DO_SQL:
     params['packages'] = params['packages'] + ['imdb.parser.sql']
@@ -117,6 +118,22 @@ if sys.version_info >= (2, 3):
     params['classifiers'] = filter(None, classifiers.split("\n"))
 
 
-setup(**params)
+try:
+    setup(**params)
+except SystemExit, e:
+    print '    WARNING ! WARNING ! WARNING ! WARNING ! WARNING'
+    print '    WARNING: '
+    print '    WARNING: Unable to compile the "ratober" C module.'
+    print '    WARNING: Error message:'
+    print '    WARNING:     "%s"' % str(e)
+    print '    WARNING: '
+    print '    WARNING: Restarting the setup process excluding the C module.'
+    print '    WARNING: Beware that the "sql" data access system will be'
+    print '    WARNING: slow, and the "local" data access system will be'
+    print '    WARNING: _really_ slow.'
+    print '    WARNING: '
+    print '    WARNING ! WARNING ! WARNING ! WARNING ! WARNING'
+    del params['ext_modules']
+    setup(**params)
 
 

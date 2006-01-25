@@ -4,7 +4,7 @@ locsql module (imdb.parser.common package).
 This package provides some modules containing code shared amongst
 "local" and "sql" parsers.
 
-Copyright 2005 Davide Alberani <da@erlug.linux.it> 
+Copyright 2005-2006 Davide Alberani <da@erlug.linux.it> 
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 import re
+from difflib import SequenceMatcher
 
 from imdb import IMDbBase
 from imdb.Person import Person
@@ -135,47 +136,151 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         nrefs = {}
         return self._findRefs(o, trefs, nrefs)
 
-    def _titleVariations(self, title):
-        """Build title variations useful for searches."""
-        title1 = title
-        title2 = title3 = ''
-        if re_year_index.search(title):
-            # If it appears to have a (year[/imdbIndex]) indication,
-            # assume that a long imdb canonical name was provided.
-            titldict = analyze_title(title, canonical=1)
-            # title1: the canonical name.
-            title1 = titldict['title']
-            # title3: the long imdb canonical name.
-            title3 = build_title(titldict, canonical=1)
-        else:
-            # Just a title.
-            # title1: the canonical title.
-            title1 = canonicalTitle(title)
-            title3 = ''
-        # title2 is title1 without the article, or title1 unchanged.
-        title2 = title1
-        t2s = title2.split(', ')
-        if t2s[-1] in _articles:
-            title2 = ', '.join(t2s[:-1])
-        return title1, title2, title3
 
-    def _nameVariations(self, name):
-        """Build name variations useful for searches."""
-        name1 = name
-        name2 = name3 = ''
-        if re_nameIndex.search(name):
-            # We've a name with an (imdbIndex)
-            namedict = analyze_name(name, canonical=1)
-            # name1 is the name in the canonical format.
-            name1 = namedict['name']
-            # name3 is the canonical name with the imdbIndex.
-            name3 = build_name(namedict, canonical=1)
-        else:
-            # name1 is the name in the canonical format.
-            name1 = canonicalName(name)
-            name3 = ''
-        # name2 is the name in the normal format, if it differs from name1.
-        name2 = normalizeName(name1)
-        if name1 == name2: name2 = ''
-        return name1, name2, name3
+def titleVariations(title):
+    """Build title variations useful for searches."""
+    title1 = title
+    title2 = title3 = ''
+    if re_year_index.search(title):
+        # If it appears to have a (year[/imdbIndex]) indication,
+        # assume that a long imdb canonical name was provided.
+        titldict = analyze_title(title, canonical=1)
+        # title1: the canonical name.
+        title1 = titldict['title']
+        # title3: the long imdb canonical name.
+        title3 = build_title(titldict, canonical=1)
+    else:
+        # Just a title.
+        # title1: the canonical title.
+        title1 = canonicalTitle(title)
+        title3 = ''
+    # title2 is title1 without the article, or title1 unchanged.
+    title2 = title1
+    t2s = title2.split(', ')
+    if t2s[-1] in _articles:
+        title2 = ', '.join(t2s[:-1])
+    return title1, title2, title3
+
+
+def nameVariations(name):
+    """Build name variations useful for searches."""
+    name1 = name
+    name2 = name3 = ''
+    if re_nameIndex.search(name):
+        # We've a name with an (imdbIndex)
+        namedict = analyze_name(name, canonical=1)
+        # name1 is the name in the canonical format.
+        name1 = namedict['name']
+        # name3 is the canonical name with the imdbIndex.
+        name3 = build_name(namedict, canonical=1)
+    else:
+        # name1 is the name in the canonical format.
+        name1 = canonicalName(name)
+        name3 = ''
+    # name2 is the name in the normal format, if it differs from name1.
+    name2 = normalizeName(name1)
+    if name1 == name2: name2 = ''
+    return name1, name2, name3
+
+
+try:
+    from ratober import ratcliff
+except ImportError:
+    import warnings
+    warnings.warn('Unable to import the ratober.ratcliff function.'
+                    '  Searching names and titles using the "sql" and "local"'
+                    ' data access systems will be slower.')
+
+    def ratcliff(s1, s2, sm):
+        """Ratcliff-Obershelp similarity."""
+        sm.set_seq2(s2.lower())
+        return sm.ratio()
+
+
+def scan_names(name_list, name1, name2, name3, results=0):
+    sm1 = SequenceMatcher()
+    sm2 = SequenceMatcher()
+    sm3 = SequenceMatcher()
+    sm1.set_seq1(name1.lower())
+    if name2: sm2.set_seq1(name2.lower())
+    if name3: sm3.set_seq1(name3.lower())
+    resd = {}
+    for i in name_list:
+        nil = i[1]
+        # Distance with the canonical name.
+        ratios = [ratcliff(name1, nil, sm1) + 0.05]
+        nils = nil.split(', ', 1)
+        surname = nils[0]
+        namesurname = ''
+        if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
+        if surname != nil:
+            # Distance with the "Surname" in the database.
+            ratios.append(ratcliff(name1, surname, sm1))
+            ratios.append(ratcliff(name1, namesurname, sm1))
+            if name2:
+                ratios.append(ratcliff(name2, surname, sm2))
+                # Distance with the "Name Surname" in the database.
+                ratios.append(ratcliff(name2, namesurname, sm2))
+        if name3:
+            # Distance with the long imdb canonical name.
+            tmpp = {'name': i[1], 'imdbIndex': i[2]}
+            ratios.append(ratcliff(name3,
+                        build_name(tmpp, canonical=1), sm3) + 0.1)
+        ratio = max(ratios)
+        if resd.has_key(i):
+            if ratio > resd[i]: resd[i] = ratio
+        else: resd[i] = ratio
+    
+    res = [(x[1], x[0]) for x in resd.items()]
+    res.sort()
+    res.reverse()
+    if results > 0: res[:] = res[:results]
+    return res
+
+
+def scan_titles(titles_list, title1, title2, title3, results=0):
+    sm1 = SequenceMatcher()
+    sm2 = SequenceMatcher()
+    sm3 = SequenceMatcher()
+    sm1.set_seq1(title1.lower())
+    sm2.set_seq2(title2.lower())
+    if title3: sm3.set_seq1(title3.lower())
+    hasArt = 0
+    if title2 != title1: hasArt = 1
+    resd = {}
+    for i in titles_list:
+        til = i[1]
+        # Distance with the canonical title (with or without article).
+        #   titleS      -> titleR
+        #   titleS, the -> titleR, the
+        ratios = [ratcliff(title1, til, sm1) + 0.05]
+        # til2 is til without the article, if present.
+        til2 = til
+        tils = til2.split(', ')
+        matchHasArt = 0
+        if tils[-1] in _articles:
+            til2 = ', '.join(tils[:-1])
+            matchHasArt = 1
+        if hasArt and not matchHasArt:
+            #   titleS[, the]  -> titleR
+            ratios.append(ratcliff(title2, til, sm2))
+        elif matchHasArt and not hasArt:
+            #   titleS  -> titleR[, the]
+            ratios.append(ratcliff(title1, til2, sm1))
+        if title3:
+            # Distance with the long imdb canonical title.
+            tmpm = {'title': i[1], 'imdbIndex': i[2],
+                    'kind': i[3], 'year': i[4]}
+            ratios.append(ratcliff(title3,
+                        build_title(tmpm, canonical=1), sm3) + 0.1)
+        ratio = max(ratios)
+        if resd.has_key(i):
+            if ratio > resd[i]: resd[i] = ratio
+        else: resd[i] = ratio
+    res = [(x[1], x[0]) for x in resd.items()]
+    res.sort()
+    res.reverse()
+    if results > 0: res[:] = res[:results]
+    return res
+
 

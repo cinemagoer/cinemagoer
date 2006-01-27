@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060125b "Stealth" (25 Jan 2006)
+* What's the new in release 2.4-cvs20060127 "Fascisti Su Marte" (27 Jan 2006)
   [general]
   - unified Movie and Person classes.
   - the strings used to store every kind of information about movies and
@@ -17,6 +17,11 @@
   - moved the "ratober" C module in the imdb.parser.common package,
     being used by both ""http" and "sql" data access systems.
   - C functions in the "ratober" module are always case insensitive.
+  - the setup.py script contains a work-around to make installation
+    go on even if the "ratober" C module can't be compiled (displaying
+    a warning).
+  - minor updates to documentation, to keep it in sync with changes
+    in the code.
 
   [http data access system]
   - the ParserBase class now inherits from sgmllib.SGMLParser,
@@ -32,7 +37,7 @@
   [sql data access system]
   - fixed the imdbpy2sql.py script, to handle files with spurious lines.
   - searches for names and titles are now much faster, if the
-    imdb.parser.local.ratober C module is compiled and installed.
+    imdb.parser.common.ratober C module is compiled and installed.
   - imdbpy2sql.py should be somewhat faster.
   - imdbpy2sql.py now works also on partial data (i.e. if you've not
     downloaded every single plain text file).
@@ -269,7 +274,7 @@
 
   [http data access system]
   - fixed bugs retrieving the currentRole.
-  - try to handle unicode chars.
+  - try to handle unicode chars; return unicode strings when required.
   - now the searches return also "popular titles" and
     "popular names" from the new IMDb's search system.
 

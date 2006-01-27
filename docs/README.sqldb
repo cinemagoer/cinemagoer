@@ -34,7 +34,7 @@ file included in this directory:
   # mysql -p imdb < imdb.sql
 
 To populate the database, you must run the imdbpy2sql.py script:
-  # imdbpy2sql.py -d /dir/with/plainTextDataFiles/ db=imdb user=name passwd=pwd
+  # imdbpy2sql.py -d /dir/with/plainTextDataFiles/ db=imdb user=name passwd=pwd host=hostname
 
 Notice that the command will take a long time to complete (I estimate
 between 20 minutes and 2 or 3 hours, depending on your hardware).

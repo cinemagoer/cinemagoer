@@ -6,7 +6,7 @@ IMDb's data for mobile systems.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "mobile".
 
-Copyright 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re, urllib
 from htmlentitydefs import entitydefs
-from sgmllib import entityref, charref
+##from sgmllib import entityref, charref
+entitydefs = entitydefs.copy()
 
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -53,31 +54,29 @@ re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
 entitydefs['nbsp'] = ' '
 entitydefsget = entitydefs.get
 
+entcharrefs = re.compile('&([a-zA-Z][-.a-zA-Z0-9]*?|#([0-9]+?));')
 
 def _replRef(match):
     """Replace the matched html/sgml entity and reference."""
     ret = match.group()[1:-1]
-    ret = entitydefsget(ret, ret)
+    entity = entitydefsget(ret)
+    if entity is not None: ret = unicode(entity, 'latin1')
     if ret[0] == '#':
         # Always handle character references using unichr.
-        #try:
-        #    ret = chr(int(ret[1:]))
-        #    if ret == '\xa0': ret = ' '
-        #except (ValueError, TypeError, OverflowError):
-            try:
-                ret = unichr(int(ret[1:])).encode('utf-8')
-                if ret == '\xa0': ret = ' '
-            except (ValueError, TypeError, OverflowError):
-                pass
-        #    pass
+        try:
+            ret = unichr(int(ret[1:]))##.encode('utf-8')
+            if ret == u'\xa0': ret = ' '
+        except (ValueError, TypeError, OverflowError):
+            pass
     return ret
 
 
 def _subRefs(s):
     """Return the given html string with entity and char references
     replaced."""
-    s = entityref.sub(_replRef, s)
-    s = charref.sub(_replRef, s)
+    ##s = entityref.sub(_replRef, s)
+    ##s = charref.sub(_replRef, s)
+    s = entcharrefs.sub(_replRef, s)
     return s
 
 
@@ -122,7 +121,7 @@ def _findBetween(s, begins, ends, beginindx=0):
             match = s[bi+lbegins:ei]
             lres.append(match)
             lres += _findBetween(s, begins, ends, ei)
-            #if maxRes > 0 and len(lres) >= maxRes: return lres
+            ##if maxRes > 0 and len(lres) >= maxRes: return lres
     return lres
 
 

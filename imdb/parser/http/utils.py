@@ -69,13 +69,20 @@ def _putRefs(d, titlesL, namesL):
                 _putRefs(v, titlesL, namesL)
 
 
+# Handle HTML entities.
+from htmlentitydefs import entitydefs
+entitydefs = entitydefs.copy()
+entitydefs['nbsp'] = ' '
+_sgmlentkeys = SGMLParser.entitydefs.keys()
+for _k, _v in entitydefs.items():
+    if _v[0:2] != '&#' and _k not in _sgmlentkeys:
+        entitydefs[_k] = unicode(_v, 'latin1')
+del _sgmlentkeys, _k, _v
+
+
 # XXX: this class inherits from SGMLParser; see the documentation for
 #      the "sgmllib" modules.
 class ParserBase(SGMLParser):
-
-    # Handle HTML entities.
-    from htmlentitydefs import entitydefs
-
     # The imdbID is a 7-ciphers number.
     re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
     re_imdbIDonly = re.compile(r'\b([0-9]{7})\b')
@@ -84,12 +91,12 @@ class ParserBase(SGMLParser):
     # It's set when names and titles references must be collected.
     # It can be set to 0 for search parsers.
     getRefs = 1
+
+    entitydefs = entitydefs
     
     def __init__(self, verbose=0):
         self._init()
         SGMLParser.__init__(self, verbose)
-        # Use a "normal" space in place of the non-breaking space (0240/0xA0).
-        self.entitydefs['nbsp'] = ' '
 
     def handle_charref(self, name):
         # Stupids, stupids non-breaking spaces...
@@ -98,8 +105,8 @@ class ParserBase(SGMLParser):
             self.handle_data(name)
             return
         try:
-            ret = unichr(int(name)).encode('utf-8')
-            if ret in ('\xa0', '\xc2\xa0'): ret = ' '
+            ret = unichr(int(name))##.encode('utf-8')
+            if ret == u'\xa0': ret = ' '
             self.handle_data(ret)
             return
         except (ValueError, TypeError, OverflowError):
@@ -108,7 +115,7 @@ class ParserBase(SGMLParser):
 
     def unknown_charref(self, ref):
         try:
-            n = unichr(int(ref)).encode('utf-8')
+            n = unichr(int(ref))##.encode('utf-8')
             self.handle_data(n)
         except (TypeError, ValueError, OverflowError):
             return SGMLParser.unknown_charref(self, ref)

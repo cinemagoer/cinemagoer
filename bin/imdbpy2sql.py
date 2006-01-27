@@ -169,8 +169,6 @@ class SourceFile(GzipFile):
             # re-raise the exception.
             raise
         self.start = start
-        #self.stop = None # Don't check for a STOP line, now.
-        #self.stoplen = 0
         for item in start:
             itemlen = len(item)
             for line in self:
@@ -317,17 +315,12 @@ class MoviesCache(_BaseCache):
     def populate(self):
         print ' * POPULATING MoviesCache...'
         curs.execute('SELECT movieid,title,kind,year,imdbindex FROM titles;')
-        #res = db.use_result()
-        #x = res.fetch_row()
-        #while x:
-        #    x = x[0]
         for x in fetchsome(curs, self.flushEvery):
             td = {'title': x[1], 'kind': x[2]}
             if x[3]: td['year'] = x[3]
             if x[4]: td['imdbIndex'] = x[4]
             title = build_title(td, canonical=1)
             dict.__setitem__(self, title, x[0])
-            #x = res.fetch_row()
         curs.execute('SELECT MAX(movieid) FROM titles;')
         maxid = curs.fetchall()[0][0]
         if maxid is not None: self.counter = maxid + 1
@@ -339,7 +332,6 @@ class MoviesCache(_BaseCache):
         lapp = l.append
         tmpDictiter = self._tmpDict.iteritems
         for k, v in tmpDictiter():
-            #tmp = [v]
             try:
                 t = analyze_title(k)
             except IMDbParserError:
@@ -357,14 +349,11 @@ class PersonsCache(_BaseCache):
     def populate(self):
         print ' * POPULATING PersonsCache...'
         curs.execute('SELECT personid, name, imdbindex FROM names;')
-        #res = db.use_result()
-        #x = res.fetch_row()
         for x in fetchsome(curs, self.flushEvery):
             nd = {'name': x[1]}
             if x[2]: nd['imdbIndex'] = x[2]
             name = build_name(nd, canonical=1)
             dict.__setitem__(self, name, x[0])
-            #x = res.fetch_row()
         curs.execute('SELECT MAX(personid) FROM names;')
         maxid = curs.fetchall()[0][0]
         if maxid is not None: self.counter = maxid + 1
@@ -376,15 +365,12 @@ class PersonsCache(_BaseCache):
         lapp = l.append
         tmpDictiter = self._tmpDict.iteritems
         for k, v in tmpDictiter():
-            #tmp = [v]
             try:
                 t = analyze_name(k)
             except IMDbParserError:
                 if k and k.strip():
                     print 'WARNING PersonsCache._toDB() invalid name "%s"' % k
                 continue
-            #for j in ('name', 'imdbIndex'):
-            #    tmp.append(t.get(j))
             tget = t.get
             lapp([v, tget('name'), tget('imdbIndex')])
         curs.executemany('INSERT INTO names (personid, name, imdbindex) VALUES (%s, %s, %s)', l)
@@ -444,7 +430,6 @@ class SQLData(dict):
 
 # Miscellaneous functions.
 
-##def unpack(line, headers, seps=('\t',)):
 def unpack(line, headers, sep='\t'):
     """Given a line, split at seps and return a dictionary with key
     from the header list.
@@ -457,24 +442,12 @@ def unpack(line, headers, sep='\t'):
                     'rating': '8.4', 'title': 'Incredibles, The (2004)'}
     """
     r = {}
-    #ls1 = None
-    #ls2 = []
-    #for sep in seps:
-    #    if ls1 is None:
-    #        ls1 = line.split(sep)
-    #    else:
-    #        for item in ls1:
-    #            ls2 += item.split(sep)
-    #        ls1[:] = ls2
-    #        ls2 = []
-    #ls1 = filter(None, ls1)
     ls1 = filter(None, line.split(sep))
     for index, item in enumerate(ls1):
         try: name = headers[index]
         except IndexError: name = 'item%s' % index
         r[name] = item.strip()
     return r
-
 
 def _titleNote(title):
     """Split title and notes in 'Title, The (year) {note}' format."""
@@ -550,14 +523,12 @@ def doCast(fp, roleid, rolename):
     for line in fp:
         if line and line[0] != '\t':
             if line[0] == '\n': continue
-            #sl = [x for x in line.split('\t') if x]
             sl = filter(None, line.split('\t'))
             if len(sl) != 2: continue
             name, line = sl
             pid = CACHE_PID.addUnique(name.strip())
         line = line.strip()
         ll = line.split('  ')
-        #r = _titleNote(ll[0])
         title, note = _titleNote(ll[0])
         note = note or ''
         role = ''
@@ -940,10 +911,10 @@ def nmmvFiles(fp, funct, fname):
                             realname = realname.strip()
                     if realname:
                         # XXX: check for duplicates?
-                        #if k == 'birth name':
-                        #    realname = canonicalName(realname)
-                        #else:
-                        #    realname = normalizeName(realname)
+                        ##if k == 'birth name':
+                        ##    realname = canonicalName(realname)
+                        ##else:
+                        ##    realname = normalizeName(realname)
                         akanamesdata.add((mopid, realname, imdbIndex))
         count += 1
     if guestdata is not None: guestdata.flush()
@@ -959,7 +930,7 @@ def doNMMVFiles():
             ('literature.list.gz',LIT_START,getLiterature),
             ('mpaa-ratings-reasons.list.gz',MPAA_START,getMPAA),
             ('plot.list.gz',PLOT_START,getPlot)]:
-    #for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
+    ##for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
         try:
             fp = SourceFile(fname, start=start)
         except IOError:
@@ -1114,7 +1085,7 @@ def completeCast():
     sqldata.flush()
 
 
-#global instances
+# global instances
 CACHE_MID = MoviesCache()
 CACHE_PID = PersonsCache()
 
@@ -1145,8 +1116,8 @@ def run():
     print 'RUNNING imdbpy2sql.py'
     # Populate the CACHE_MID instance.
     readMovieList()
-    #CACHE_MID.populate()
-    #CACHE_PID.populate()
+    ##CACHE_MID.populate()
+    ##CACHE_PID.populate()
     t('readMovieList()')
 
     # actors, actresses, directors, ....
@@ -1190,7 +1161,7 @@ def _kdb_handler(signum, frame):
     print 'DONE! (in %d minutes, %d seconds)' % \
             divmod(int(time.time())-BEGIN_TIME, 60)
     sys.exit()
-    
+
 
 if __name__ == '__main__':
     import signal

@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 utils module (imdb package).
 
@@ -149,8 +149,8 @@ _articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el', "l'", 'il',
             'das', 'les', 'i', 'o', 'ein', 'un', 'los', 'de', 'an',
             'una', 'eine', 'las', 'den', 'gli', 'het', 'lo',
             'os', 'az', 'ha-', 'een', 'det', 'oi', 'ang', 'ta',
-            'al-', 'dem', 'uno', "un'", 'ett', 'mga', 'Ο', 'Η',
-            'eines', 'els', 'Το', 'Οι')
+            'al-', 'dem', 'uno', "un'", 'ett', 'mga', u'Γ', u'Γ‡',
+            'eines', 'els', u'Γ”Γ―', u'ΓΓ©')
 
 # Articles in a dictionary.
 _articlesDict = dict([(x, x) for x in _articles])

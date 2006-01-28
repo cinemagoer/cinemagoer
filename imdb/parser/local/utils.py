@@ -4,7 +4,7 @@ parser.local.utils module (imdb package).
 This module provides miscellaneous utilities used by
 the imdb.parser.local classes.
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -245,7 +245,7 @@ def getRawData(dataF, offset, doCast=0, doWriters=0):
         if doCast:
             length = convBin(fread(1), 'length')
             if length > 0:
-                tmpd['currentRole'] = fread(length)
+                tmpd['currentRole'] = latin2utf(fread(length))
             tmpd['position'] = convBin(fread(1), 'position')
         if doWriters:
             orderset = convBin(fread(3), 'orderset')
@@ -261,7 +261,7 @@ def getRawData(dataF, offset, doCast=0, doWriters=0):
         if doCast:
             length = convBin(fread(1), 'length')
             if length > 0:
-                tmpd['currentRole'] = fread(length)
+                tmpd['currentRole'] = latin2utf(fread(length))
             tmpd['position'] = convBin(fread(1), 'position')
         if doWriters:
             orderset = convBin(fread(3), 'orderset')
@@ -296,7 +296,7 @@ def getLabel(ind, indexF, keyF):
     line = kfile.readline().split('|')
     ifile.close()
     kfile.close()
-    if line: return line[0]
+    if line: return latin2utf(line[0])
     return None
 
 
@@ -319,7 +319,7 @@ class KeyFScan:
             kfile.seek(step*i)
             kfile.readline()
             pos = kfile.tell()
-            ton = kfile.readline().split('|')[0]
+            ton = latin2utf(kfile.readline().split('|')[0])
             posdbapp((ton.lower(), pos))
         kfile.close()
         self.posdb = posdb
@@ -339,7 +339,7 @@ class KeyFScan:
         line = kfile.readline()
         while line:
             curTon, curID = line.split('|')
-            curTon = curTon.lower()
+            curTon = latin2utf(curTon.lower())
             if ton == curTon:
                 kfile.close()
                 return long(curID, 16)
@@ -350,4 +350,11 @@ class KeyFScan:
         kfile.close()
         return None
 
+
+def latin2utf(s):
+    """Convert a latin1 string to unicode, but only if it's needed."""
+    s = unicode(s, 'latin1', 'replace')
+    try: return str(s)
+    except UnicodeError: pass
+    return s
 

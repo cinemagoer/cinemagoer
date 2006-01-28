@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-15 -*-
+# -*- coding: utf-8 -*-
 """
 parser.local.movieParser module (imdb package).
 
@@ -6,7 +6,7 @@ This module provides the functions used to parse the
 information about movies in a local installation of the
 IMDb database.
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ from os import stat
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
-from utils import convBin, getRawData, getFullIndex, getLabel
+from utils import convBin, getRawData, getFullIndex, getLabel, latin2utf
 
 
 def parseMinusList(movieID, dataF, indexF):
@@ -46,7 +46,7 @@ def parseMinusList(movieID, dataF, indexF):
     tmplist = []
     line = fdata.readline()
     while line:
-        line = fdata.readline()
+        line = latin2utf(fdata.readline())
         if line.startswith('# '):
             if tmplist: rlist.append(' '.join(tmplist))
             break
@@ -125,7 +125,7 @@ def getPlot(movieID, plotIF, plotDF):
     # Eat the first ("MV: long imdb title") line.
     dataf.readline()
     while 1:
-        line = dataf.readline().rstrip()
+        line = latin2utf(dataf.readline().rstrip())
         if line.startswith('PL: '):
             plotltmp.append(line[4:])
         elif line.startswith('BY: '):
@@ -148,7 +148,7 @@ def getTaglines(movieID, indexF, dataF):
         tgf.seek(index)
         tgf.readline()
         while 1:
-            line = tgf.readline().strip()
+            line = latin2utf(tgf.readline().strip())
             if not line: break
             tgL.append(line)
         tgf.close()
@@ -167,7 +167,7 @@ def _parseColonList(movieID, indexF, dataF, stopKey, replaceKeys):
     fd.seek(index)
     fd.readline()
     while 1:
-        line = fd.readline()
+        line = latin2utf(fd.readline())
         if not line or line.startswith(stopKey): break
         line = line.strip()
         if not line: continue
@@ -215,7 +215,8 @@ def getBusiness(movieID, indexF, dataF):
     for k in bd.keys():
         nv = []
         for v in bd[k]:
-            v = v.replace('USD ', '$').replace('GBP ', '£').replace('EUR', '¤')
+            v = v.replace('USD ', '$')
+            v = v.replace('GBP ', u'£').replace('EUR', u'¤')
             nv.append(v)
         bd[k] = nv
     return bd
@@ -293,7 +294,7 @@ def getQuotes(movieID, dataF, indexF):
         qtf.readline()
         qttl = []
         while 1:
-            line = qtf.readline()
+            line = latin2utf(qtf.readline())
             line = line.rstrip()
             if line:
                 if line.startswith('  ') and qttl[-1] and \
@@ -382,7 +383,7 @@ def getMovieMisc(movieID, dataF, indexF, attrIF, attrKF):
         return []
     while 1:
         length = convBin(fdata.read(1), 'length')
-        strval = fdata.read(length)
+        strval = latin2utf(fdata.read(length))
         attrid = convBin(fdata.read(3), 'attrID')
         if attrid != 0xffffff:
             attr = getLabel(attrid, attrIF, attrKF)

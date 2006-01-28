@@ -24,9 +24,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re, urllib
-from htmlentitydefs import entitydefs
-##from sgmllib import entityref, charref
-entitydefs = entitydefs.copy()
 
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -34,6 +31,7 @@ from imdb.utils import analyze_title, analyze_name, canonicalName
 from imdb._exceptions import IMDbDataAccessError
 from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
                                 imdbURL_movie, imdbURL_person
+from imdb.parser.http.utils import subRefs
 
 # XXX NOTE: the first version of this module was heavily based on
 #           regular expressions.  This new version replace regexps with
@@ -49,35 +47,6 @@ re_unhtml = re.compile(r'<.+?>')
 re_unhtmlsub = re_unhtml.sub
 # imdb person or movie ids.
 re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
-
-# Here to handle non-breaking spaces.
-entitydefs['nbsp'] = ' '
-entitydefsget = entitydefs.get
-
-entcharrefs = re.compile('&([a-zA-Z][-.a-zA-Z0-9]*?|#([0-9]+?));')
-
-def _replRef(match):
-    """Replace the matched html/sgml entity and reference."""
-    ret = match.group()[1:-1]
-    entity = entitydefsget(ret)
-    if entity is not None: ret = unicode(entity, 'latin1')
-    if ret[0] == '#':
-        # Always handle character references using unichr.
-        try:
-            ret = unichr(int(ret[1:]))##.encode('utf-8')
-            if ret == u'\xa0': ret = ' '
-        except (ValueError, TypeError, OverflowError):
-            pass
-    return ret
-
-
-def _subRefs(s):
-    """Return the given html string with entity and char references
-    replaced."""
-    ##s = entityref.sub(_replRef, s)
-    ##s = charref.sub(_replRef, s)
-    s = entcharrefs.sub(_replRef, s)
-    return s
 
 
 def _unHtml(s):
@@ -139,7 +108,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         """Retrieve an html page and normalize it."""
         cont = IMDbHTTPAccessSystem._retrieve(self, url)
         cont = re_spaces.sub(' ', cont)
-        return _subRefs(cont)
+        return subRefs(cont)
 
     def _getPersons(self, s, sep='<br>', hasCr=0, aonly=0):
         """Return a list of Person objects, from the string s; items

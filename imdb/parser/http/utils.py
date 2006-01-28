@@ -34,7 +34,8 @@ re_yearKind_index = re.compile(r'(\([0-9\?]{4}(?:/[IVXLCDM]+)?\)(?: \(mini\)| \(
 
 _ltype = type([])
 _dtype = type({})
-_stypes = (type(''), type(u''))
+_uctype = type(u'')
+_stypes = (type(''), _uctype)
 _destypes = (_ltype, _dtype)
 
 def _subRefs(s, titlesL, namesL):
@@ -72,13 +73,36 @@ def _putRefs(d, titlesL, namesL):
 # Handle HTML entities.
 from htmlentitydefs import entitydefs
 entitydefs = entitydefs.copy()
+entitydefsget = entitydefs.get
 entitydefs['nbsp'] = ' '
 _sgmlentkeys = SGMLParser.entitydefs.keys()
 for _k, _v in entitydefs.items():
     if _v[0:2] != '&#' and _k not in _sgmlentkeys:
-        entitydefs[_k] = unicode(_v, 'latin1')
+        entitydefs[_k] = unicode(_v, 'latin1', 'replace')
 del _sgmlentkeys, _k, _v
 
+entcharrefs = re.compile('&([a-zA-Z][-.a-zA-Z0-9]*?|#([0-9]+?));')
+entcharrefssub = entcharrefs.sub
+def _replRef(match):
+    """Replace the matched html/sgml entity and reference."""
+    ret = match.group()[1:-1]
+    entity = entitydefsget(ret)
+    if entity is not None and type(entity) is not _uctype:
+        ret = unicode(entity, 'latin1', 'replace')
+    if ret[0] == '#':
+        # Always handle character references using unichr.
+        try:
+            ret = unichr(int(ret[1:]))##.encode('utf-8')
+            if ret == u'\xa0': ret = ' '
+        except (ValueError, TypeError, OverflowError):
+            pass
+    return ret
+
+def subRefs(s):
+    """Return the given html string with entity and char references
+    replaced."""
+    return entcharrefssub(_replRef, s)
+    
 
 # XXX: this class inherits from SGMLParser; see the documentation for
 #      the "sgmllib" modules.
@@ -141,7 +165,7 @@ class ParserBase(SGMLParser):
         not found."""
         for attr in attrs_list:
             if attr[0] == searched_attr:
-                return attr[1]
+                return subRefs(attr[1])
         return None
 
     def _init(self): pass

@@ -5,7 +5,7 @@ This module provides the functions used to parse the
 information about people in a local installation of the
 IMDb database.
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
 from imdb.utils import re_titleRef, analyze_name, build_name, normalizeName
-from utils import getRawData, getLabel, getFullIndex
+from utils import getRawData, getLabel, getFullIndex, latin2utf
 
 
 def _parseList(l, prefix, mline=1):
@@ -192,7 +192,7 @@ def getBio(personID, indexF, dataF):
     fbio.readline()
     rlines = []
     while 1:
-        line = fbio.readline()
+        line = latin2utf(fbio.readline())
         if not line or line[:4] == 'NM: ': break
         rlines.append(line)
     fbio.close()

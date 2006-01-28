@@ -8,7 +8,7 @@ E.g., for "Mel Gibson" the referred pages would be:
     biography:      http://akas.imdb.com/name/nm0000154/bio
     ...and so on...
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ class HTMLMaindetailsParser(ParserBase):
 
     def end_title(self):
         self.__in_name = 0
-        d = analyze_name(self.__name.strip())
+        d = analyze_name(self.__name.strip(), canonical=1)
         self.__person_data.update(d)
 
     def do_img(self, attrs):
@@ -153,11 +153,13 @@ class HTMLMaindetailsParser(ParserBase):
 
     def do_input(self, attrs):
         if self.__in_emailfriend:
+            # FIXME: remove! (?)
+            return
             name = self.get_attr_value(attrs, 'name')
             if name and name.lower() == 'arg':
                 value = self.get_attr_value(attrs, 'value')
                 if value:
-                    d = analyze_name(value)
+                    d = analyze_name(value, canonical=1)
                     if d.has_key('name'):
                         self.__person_data['name'] = d['name']
 
@@ -270,9 +272,9 @@ class HTMLMaindetailsParser(ParserBase):
         elif self.__in_title:
             self.__title += data
         elif self.__in_list:
-            if self.__roles and not self.__roles[-1].isspace():
-                self.__roles += ' '
-            self.__roles += data.strip()
+            ##if self.__roles and not self.__roles[-1].isspace():
+            ##    self.__roles += ' '
+            self.__roles += data
 
 
 class HTMLBioParser(ParserBase):

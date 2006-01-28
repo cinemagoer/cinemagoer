@@ -40,7 +40,7 @@ from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
                         getQuotes, getMovieLinks, getBusiness, getLiterature, \
                         getLaserdisc
 
-from utils import getFullIndex, KeyFScan
+from utils import getFullIndex, KeyFScan, latin2utf
 
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                                         titleVariations, nameVariations
@@ -58,7 +58,8 @@ try:
         res = []
         for x in sn:
             tmpd = analyze_name(x[2])
-            res.append((x[0], (x[1], tmpd['name'], tmpd.get('imdbIndex'))))
+            res.append((x[0], (x[1], latin2utf(tmpd['name']),
+                        tmpd.get('imdbIndex'))))
         return res
 except ImportError:
     import warnings
@@ -75,7 +76,8 @@ except ImportError:
             ls = line.split('|')
             if not ls[0]: continue
             named = analyze_name(ls[0])
-            yield (long(ls[1], 16), named['name'], named.get('imdbIndex'))
+            yield (long(ls[1], 16), latin2utf(named['name']),
+                    named.get('imdbIndex'))
         kf.close()
 
     def _scan_names(keyFile, name1, name2, name3, results=0):
@@ -90,8 +92,8 @@ try:
         res = []
         for x in st:
             tmpd = analyze_title(x[2])
-            res.append((x[0], (x[1], tmpd['title'], tmpd.get('imdbIndex'),
-                                tmpd['kind'], tmpd.get('year'))))
+            res.append((x[0], (x[1], latin2utf(tmpd['title']),
+                        tmpd.get('imdbIndex'), tmpd['kind'], tmpd.get('year'))))
         return res
 except ImportError:
     import warnings
@@ -108,8 +110,8 @@ except ImportError:
             ls = line.split('|')
             if not ls[0]: continue
             titled = analyze_title(ls[0])
-            yield (long(ls[1], 16), titled['title'], titled.get('imdbIndex'),
-                    titled['kind'], titled.get('year'))
+            yield (long(ls[1], 16), latin2utf(titled['title']),
+                    titled.get('imdbIndex'), titled['kind'], titled.get('year'))
         kf.close()
 
     def _scan_titles(keyFile, title1, title2, title3, results=0):

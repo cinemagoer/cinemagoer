@@ -99,8 +99,8 @@ re_entcharrefssub = re_entcharrefs.sub
 re_sgmlref = re.compile('&(%s);' % '|'.join(map(re.escape, sgmlentity)))
 re_sgmlrefsub = re_sgmlref.sub
 
-entcharrefs = re.compile('&([a-zA-Z][-.a-zA-Z0-9]*?|#([0-9]+?));')
-entcharrefssub = entcharrefs.sub
+#entcharrefs = re.compile('&([a-zA-Z][-.a-zA-Z0-9]*?|#([0-9]+?));')
+#entcharrefssub = entcharrefs.sub
 
 def _replRef(match):
     """Replace the matched html/sgml entity and reference."""

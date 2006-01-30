@@ -68,6 +68,8 @@ def IMDb(accessSystem='http', *arguments, **keywords):
                             % accessSystem
 
 
+encoding = sys.stdin.encoding or sys.getdefaultencoding()
+
 class IMDbBase:
     """The base class used to search for a movie/person and to get a
     Movie/Person object.
@@ -165,7 +167,7 @@ class IMDbBase:
         except (ValueError, OverflowError):
             results = 20
         if type(title) is not _utype:
-            title = unicode(title, sys.stdin.encoding, 'replace')
+            title = unicode(title, encoding, 'replace')
         res = self._search_movie(title, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
@@ -210,7 +212,7 @@ class IMDbBase:
         except (ValueError, OverflowError):
             results = 20
         if type(name) is not _utype:
-            name = unicode(name, sys.stdin.encoding, 'replace')
+            name = unicode(name, encoding, 'replace')
         res = self._search_person(name, results)
         return [Person.Person(personID=self._get_real_personID(pi),
                 data=pd, modFunct=self._defModFunct,

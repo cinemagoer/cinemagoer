@@ -42,9 +42,13 @@ def _subRefs(s, titlesL, namesL):
     """Replace titles in titlesL and names in namesL with
     their '(qv) versions' in the string s."""
     for title in titlesL:
+        ##if type(title) is _uctype:
+        ##    title = title.encode('latin1', 'ignore')
         if s.find(title) != -1:
             s = s.replace(title, '_%s_ (qv)' % title)
     for name in namesL:
+        ##if type(name) is _uctype:
+        ##   name = name.encode('latin1', 'ignore')
         if s.find(name) != -1:
             s = s.replace(name, "'%s' (qv)" % name)
     return s
@@ -75,20 +79,38 @@ from htmlentitydefs import entitydefs
 entitydefs = entitydefs.copy()
 entitydefsget = entitydefs.get
 entitydefs['nbsp'] = ' '
-_sgmlentkeys = SGMLParser.entitydefs.keys()
+sgmlentity = SGMLParser.entitydefs.copy()
+sgmlentityget = sgmlentity.get
+_sgmlentkeys = sgmlentity.keys()
+
+entcharrefs = {}
+entcharrefsget = entcharrefs.get
 for _k, _v in entitydefs.items():
-    if _v[0:2] != '&#' and _k not in _sgmlentkeys:
-        entitydefs[_k] = unicode(_v, 'latin1', 'replace')
+    if _k in _sgmlentkeys: continue
+    if _v[0:2] == '&#':
+        _v = unichr(int(_v[2:-1]))
+    else:
+        _v = unicode(_v, 'latin1', 'replace')
+    entcharrefs[_k] = _v
 del _sgmlentkeys, _k, _v
+
+re_entcharrefs = re.compile('&(%s);' % '|'.join(map(re.escape, entcharrefs)))
+re_entcharrefssub = re_entcharrefs.sub
+re_sgmlref = re.compile('&(%s);' % '|'.join(map(re.escape, sgmlentity)))
+re_sgmlrefsub = re_sgmlref.sub
 
 entcharrefs = re.compile('&([a-zA-Z][-.a-zA-Z0-9]*?|#([0-9]+?));')
 entcharrefssub = entcharrefs.sub
+
 def _replRef(match):
     """Replace the matched html/sgml entity and reference."""
+    ref = match.group(0)
+    return entcharrefsget(ref,ref)
+    
     ret = match.group()[1:-1]
     entity = entitydefsget(ret)
-    if entity is not None and type(entity) is not _uctype:
-        ret = unicode(entity, 'latin1', 'replace')
+    if entity is not None and type(entity) is _uctype:
+        return entity
     if ret[0] == '#':
         # Always handle character references using unichr.
         try:
@@ -98,10 +120,17 @@ def _replRef(match):
             pass
     return ret
 
-def subRefs(s):
+def subXMLRefs(s):
     """Return the given html string with entity and char references
     replaced."""
-    return entcharrefssub(_replRef, s)
+    return re_entcharrefssub(_replRef, s)
+    
+def _replSGMLRefs(match):
+    ref = match.group(0)
+    return sgmlentityget(ref, ref)
+
+def subSGMLRefs(s):
+    return re_sgmlrefsub(_replSGMLRefs, s)
     
 
 # XXX: this class inherits from SGMLParser; see the documentation for
@@ -116,7 +145,7 @@ class ParserBase(SGMLParser):
     # It can be set to 0 for search parsers.
     getRefs = 1
 
-    entitydefs = entitydefs
+    #entitydefs = entitydefs
     
     def __init__(self, verbose=0):
         self._init()
@@ -165,7 +194,7 @@ class ParserBase(SGMLParser):
         not found."""
         for attr in attrs_list:
             if attr[0] == searched_attr:
-                return subRefs(attr[1])
+                return subSGMLRefs(attr[1])
         return None
 
     def _init(self): pass
@@ -282,6 +311,9 @@ class ParserBase(SGMLParser):
     def parse(self, html_string):
         """Return the dictionary generated from the given html string."""
         self.reset()
+        html_string = subXMLRefs(html_string)
+        if type(html_string) is not _uctype:
+            html_string = unicode(html_string, 'latin1', 'replace')
         self.feed(html_string)
         if self.getRefs and self._inTTRef: self._add_ref('tt')
         data = self.get_data()

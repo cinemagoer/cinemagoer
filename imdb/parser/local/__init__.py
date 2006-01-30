@@ -54,6 +54,8 @@ try:
     from imdb.parser.common.ratober import search_name
 
     def _scan_names(keyFile, name1, name2, name3, results=0):
+        name1, name2, name3 = [x.encode('latin1', 'replace')
+                                for x in name1, name2, name3]
         sn = search_name(keyFile, name1, name2, name3, results)
         res = []
         for x in sn:
@@ -88,6 +90,8 @@ try:
     from imdb.parser.common.ratober import search_title
 
     def _scan_titles(keyFile, title1, title2, title3, results=0):
+        title1, title2, title3 = [x.encode('latin1', 'replace')
+                                    for x in title1, title2, title3]
         st = search_title(keyFile, title1, title2, title3, results)
         res = []
         for x in st:

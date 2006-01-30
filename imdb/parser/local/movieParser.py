@@ -216,7 +216,7 @@ def getBusiness(movieID, indexF, dataF):
         nv = []
         for v in bd[k]:
             v = v.replace('USD ', '$')
-            v = v.replace('GBP ', u'£').replace('EUR', u'¤')
+            v = v.replace('GBP ', u'\xa3').replace('EUR', u'\u20ac')
             nv.append(v)
         bd[k] = nv
     return bd

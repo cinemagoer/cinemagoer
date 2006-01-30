@@ -25,10 +25,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person']
 
-import types
+import types, sys
 
 from imdb import Movie, Person
 from imdb._exceptions import IMDbError, IMDbDataAccessError
+_utype = type(u'')
 
 
 # URLs of the main pages for movies and persons.
@@ -163,6 +164,8 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
+        if type(title) is not _utype:
+            title = unicode(title, sys.stdin.encoding, 'replace')
         res = self._search_movie(title, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
@@ -206,6 +209,8 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
+        if type(name) is not _utype:
+            name = unicode(name, sys.stdin.encoding, 'replace')
         res = self._search_person(name, results)
         return [Person.Person(personID=self._get_real_personID(pi),
                 data=pd, modFunct=self._defModFunct,
@@ -356,7 +361,4 @@ class IMDbBase:
                 sm_dict.update({name: member.__doc__})
         return sm_dict
 
-
-_Container = object
-#from imdb.utils import _Container
 

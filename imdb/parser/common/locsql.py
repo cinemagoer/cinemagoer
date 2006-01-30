@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
-import re
+import re, urllib
 from difflib import SequenceMatcher
 
 from imdb import IMDbBase
@@ -45,9 +45,8 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
 
     def _searchIMDbMoP(self, params):
         """Fetch the given web page from the IMDb akas server."""
-        import urllib
         from imdb.parser.http import IMDbURLopener
-        params = urllib.urlencode(params)
+        ##params = urllib.urlencode(params)
         url = 'http://akas.imdb.com/find?%s' % params
         content = ''
         try:
@@ -72,7 +71,8 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         return None if it's unable to get the imdbID.
         """
         if not titline: return None
-        params = {'q': titline, 's': 'pt'}
+        ##params = {'q': titline, 's': 'pt'}
+        params = 'q=%s&s=pt' % urllib.quote_plus(titline)
         content = self._searchIMDbMoP(params)
         if not content: return None
         from imdb.parser.http.searchMovieParser import BasicMovieParser
@@ -87,7 +87,8 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         return None if it's unable to get the imdbID.
         """
         if not name: return None
-        params = {'q': name, 's': 'pn'}
+        ##params = {'q': name, 's': 'pn'}
+        params = 'q=%s&s=pn' % urllib.quote_plus(name)
         content = self._searchIMDbMoP(params)
         if not content: return None
         from imdb.parser.http.searchPersonParser import BasicPersonParser
@@ -140,7 +141,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
 def titleVariations(title):
     """Build title variations useful for searches."""
     title1 = title
-    title2 = title3 = ''
+    title2 = title3 = u''
     if re_year_index.search(title):
         # If it appears to have a (year[/imdbIndex]) indication,
         # assume that a long imdb canonical name was provided.
@@ -153,7 +154,7 @@ def titleVariations(title):
         # Just a title.
         # title1: the canonical title.
         title1 = canonicalTitle(title)
-        title3 = ''
+        title3 = u''
     # title2 is title1 without the article, or title1 unchanged.
     title2 = title1
     t2s = title2.split(', ')
@@ -165,7 +166,7 @@ def titleVariations(title):
 def nameVariations(name):
     """Build name variations useful for searches."""
     name1 = name
-    name2 = name3 = ''
+    name2 = name3 = u''
     if re_nameIndex.search(name):
         # We've a name with an (imdbIndex)
         namedict = analyze_name(name, canonical=1)
@@ -176,10 +177,10 @@ def nameVariations(name):
     else:
         # name1 is the name in the canonical format.
         name1 = canonicalName(name)
-        name3 = ''
+        name3 = u''
     # name2 is the name in the normal format, if it differs from name1.
     name2 = normalizeName(name1)
-    if name1 == name2: name2 = ''
+    if name1 == name2: name2 = u''
     return name1, name2, name3
 
 
@@ -237,7 +238,6 @@ def scan_names(name_list, name1, name2, name3, results=0):
     if results > 0: res[:] = res[:results]
     return res
 
-
 def scan_titles(titles_list, title1, title2, title3, results=0):
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
@@ -249,7 +249,7 @@ def scan_titles(titles_list, title1, title2, title3, results=0):
     if title2 != title1: hasArt = 1
     resd = {}
     for i in titles_list:
-        til = i[1]
+        til = unicode(i[1], 'latin1')
         # Distance with the canonical title (with or without article).
         #   titleS      -> titleR
         #   titleS, the -> titleR, the

@@ -31,7 +31,7 @@ from imdb.utils import analyze_title, analyze_name, canonicalName
 from imdb._exceptions import IMDbDataAccessError
 from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
                                 imdbURL_movie, imdbURL_person
-from imdb.parser.http.utils import subRefs
+from imdb.parser.http.utils import subXMLRefs
 
 # XXX NOTE: the first version of this module was heavily based on
 #           regular expressions.  This new version replace regexps with
@@ -108,7 +108,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         """Retrieve an html page and normalize it."""
         cont = IMDbHTTPAccessSystem._retrieve(self, url)
         cont = re_spaces.sub(' ', cont)
-        return subRefs(cont)
+        return subXMLRefs(cont)
 
     def _getPersons(self, s, sep='<br>', hasCr=0, aonly=0):
         """Return a list of Person objects, from the string s; items
@@ -119,8 +119,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         plappend = pl.append
         counter = 1
         for name in names:
-            notes = ''
-            currentRole = ''
+            notes = u''
+            currentRole = u''
             fpi = name.find(' (')
             if fpi != -1:
                 fpe = name.rfind(')')
@@ -147,7 +147,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         return pl
 
     def _search_movie(self, title, results):
-        params = urllib.urlencode({'tt': 'on', 'mx': str(results), 'q': title})
+        ##params = urllib.urlencode({'tt': 'on','mx': str(results),'q': title})
+        params = 'q=%s&tt=on&mx=%s' % (urllib.quote_plus(title), str(results))
         cont = self._mretrieve(imdbURL_search % params)
         title = _findBetween(cont, '<title>', '</title>')
         res = []
@@ -287,7 +288,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         return {'data': {}}
 
     def _search_person(self, name, results):
-        params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
+        ##params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
+        params = 'q=%s&nm=on&mx=%s' % (urllib.quote_plus(name), str(results))
         cont = self._mretrieve(imdbURL_search % params)
         name = _findBetween(cont, '<title>', '</title>')
         res = []
@@ -412,8 +414,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 #if m.find('<small>playing</small>') != -1:
                 #    istvguest = 1
                 m = m.replace('<small>', ' ').replace('</small>', ' ').strip()
-                notes = ''
-                role = ''
+                notes = u''
+                role = u''
                 ms = m.split('....')
                 if len(ms) >= 1:
                     first = ms[0]

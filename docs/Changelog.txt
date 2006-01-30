@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060128 "Fascisti Su Marte" (28 Jan 2006)
+* What's the new in release 2.4-cvs20060130 "Fascisti Su Marte" (30 Jan 2006)
   [general]
   - unified Movie and Person classes.
   - the strings used to store every kind of information about movies and

@@ -214,11 +214,11 @@ class HTMLMovieParser(ParserBase):
                 self.set_item('plot outline', self.__plotoutline)
         elif link.startswith('http://pro.imdb.com'):
             self.__is_movie_status = 0
-        elif link.startswith('/titlebrowse?'):
+        elif link.startswith('/titlebrowse?') and \
+                    not self.__movie_data.has_key('title'):
             try:
                 d = analyze_title(unquote(olink[13:]))
-                if not d.has_key('title'):
-                    self.__movie_data['title'] = d['title']
+                self.__movie_data['title'] = d['title']
             except IMDbParserError:
                 pass
 

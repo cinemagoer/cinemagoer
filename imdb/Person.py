@@ -138,7 +138,7 @@ class Person(_Container):
     def __nonzero__(self):
         """The Person is "false" if the self.data does not contain a name."""
         # XXX: check the name and the personID?
-        if self.data.has_key('name'): return 1
+        if self.data.has_key('canonical name'): return 1
         return 0
 
     def __contains__(self, item):
@@ -171,7 +171,7 @@ class Person(_Container):
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Person instance."""
-        p = Person(name='', personID=self.personID, myName=self.myName,
+        p = Person(name=u'', personID=self.personID, myName=self.myName,
                     myID=self.myID, data=deepcopy(self.data, memo),
                     currentRole=self.currentRole, notes=self.notes,
                     accessSystem=self.accessSystem,
@@ -184,7 +184,7 @@ class Person(_Container):
 
     def __str__(self):
         """Simply print the short name."""
-        return self.get('name', '').encode('utf8', 'replace')
+        return self.get('name', u'').encode('utf8', 'replace')
 
     def __unicode__(self):
         """Simply print the short title."""
@@ -192,7 +192,7 @@ class Person(_Container):
 
     def summary(self):
         """Return a string with a pretty-printed summary for the person."""
-        if not self: return ''
+        if not self: return u''
         s = 'Person\n=====\nName: %s\n' % \
                                 self.get('long imdb canonical name', u'')
         bdate = self.get('birth date')

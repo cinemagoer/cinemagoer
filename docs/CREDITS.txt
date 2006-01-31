@@ -6,6 +6,8 @@ I'd like to thank the following people for their help:
 
 * Julian Mayer, for a bug report about non-ascii chars.
 
+* Wim Schut, for a bug report and a patch about movies' cover url.
+
 * Magnus Lie Hetland for an hint about the searches in sql package.
 
 * Thomas Jadjewski for a bug report about the imdbpy2sql.py script.

@@ -52,7 +52,7 @@ class HTMLMaindetailsParser(ParserBase):
         """Reset the parser."""
         self.__person_data.clear()
         self.__in_name = 0
-        self.__name = ''
+        self.__name = u''
         self.__in_birth = 0
         self.__in_death = 0
         self.__birth = ''
@@ -152,16 +152,13 @@ class HTMLMaindetailsParser(ParserBase):
         self.__in_emailfriend = 0
 
     def do_input(self, attrs):
-        if self.__in_emailfriend:
-            # FIXME: remove! (?)
-            return
+        if self.__in_emailfriend and not self.__person_data.has_key('name'):
             name = self.get_attr_value(attrs, 'name')
             if name and name.lower() == 'arg':
                 value = self.get_attr_value(attrs, 'value')
                 if value:
                     d = analyze_name(value, canonical=1)
-                    if d.has_key('name'):
-                        self.__person_data['name'] = d['name']
+                    self.__person_data.update(d)
 
     def start_ol(self, attrs): pass
 

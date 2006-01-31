@@ -224,12 +224,26 @@ class IMDbBase:
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""
         # XXX: not really useful...
+        if keywords.has_key('title'):
+            if type(keywords['title']) is not _utype:
+                keywords['title'] = unicode(keywords['title'],
+                                            encoding, 'replace')
+        elif len(arguments) > 1:
+            if type(arguments[1]) is not _utype:
+                arguments[1] = unicode(arguments[1], encoding, 'replace')
         return Movie.Movie(accessSystem=self.accessSystem,
                             *arguments, **keywords)
 
     def new_person(self, *arguments, **keywords):
         """Return a Person object."""
         # XXX: not really useful...
+        if keywords.has_key('name'):
+            if type(keywords['name']) is not _utype:
+                keywords['name'] = unicode(keywords['name'],
+                                            encoding, 'replace')
+        elif len(arguments) > 1:
+            if type(arguments[1]) is not _utype:
+                arguments[1] = unicode(arguments[1], encoding, 'replace')
         return Person.Person(accessSystem=self.accessSystem,
                                 *arguments, **keywords)
 

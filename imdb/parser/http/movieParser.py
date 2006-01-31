@@ -103,6 +103,7 @@ class HTMLMovieParser(ParserBase):
         self.__is_genres = 0
         self.__is_title = 0
         self.__title = u''
+        self.__title_short = u'' # used to retrieve the cover URL.
         self.__is_rating = 0
         self.__rating = ''
         self.__is_languages = 0
@@ -150,6 +151,7 @@ class HTMLMovieParser(ParserBase):
             d_title = analyze_title(self.__title)
             for key, item in d_title.items():
                 self.set_item(key, item)
+            self.__title_short = d_title.get('title', u'').lower()
 
     def start_table(self, attrs): pass
 
@@ -217,8 +219,10 @@ class HTMLMovieParser(ParserBase):
         elif link.startswith('/titlebrowse?') and \
                     not self.__movie_data.has_key('title'):
             try:
-                d = analyze_title(unquote(olink[13:]))
-                self.__movie_data['title'] = d['title']
+                d_title = analyze_title(unquote(olink[13:]))
+                for key, item in d_title.items():
+                    self.set_item(key, item)
+                self.__title_short = d_title.get('title', u'').lower()
             except IMDbParserError:
                 pass
 
@@ -377,7 +381,7 @@ class HTMLMovieParser(ParserBase):
             self.__is_rating = 1
         # XXX: I've a report about alttex==self.__movie_data.get('title')
         #      in some situations, but I'm not sure.
-        elif alttex == 'cover' or alttex == self.__movie_data.get('title'):
+        elif alttex == 'cover' or alttex == self.__title_short:
             # Get the URL of the cover image.
             src = self.get_attr_value(attrs, 'src')
             if src: self.set_item('cover url', src)

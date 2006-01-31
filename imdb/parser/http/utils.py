@@ -94,7 +94,7 @@ for _k, _v in entitydefs.items():
         entcharrefs[dec_code] = _v
     else:
         dec_code = '#' + str(ord(_v))
-        _v = unicode(_v, 'latin1', 'replace')
+        _v = unicode(_v, 'latin_1', 'replace')
         entcharrefs[dec_code] = _v
     entcharrefs[_k] = _v
 del _sgmlentkeys, _k, _v
@@ -114,7 +114,7 @@ def _replXMLRef(match):
     value = entcharrefsget(ref)
     if value is None and ref[0] == '#':
         ref_code = ref[1:]
-        if ref_code in ('34', '38', '60', '62', '39'): return ref
+        if ref_code in ('34', '38', '60', '62', '39'): return match.group(0)
         return unichr(int(ref[1:]))
     return value
 
@@ -150,14 +150,9 @@ class ParserBase(SGMLParser):
         SGMLParser.__init__(self, verbose)
 
     def handle_charref(self, name):
-        # Stupids, stupids non-breaking spaces...
-        if name == '160':
-            name = ' '
-            self.handle_data(name)
-            return
+        # Handles "quotes", "less than", "greater than" and so on.
         try:
-            ret = unichr(int(name))##.encode('utf-8')
-            if ret == u'\xa0': ret = ' '
+            ret = unichr(int(name))
             self.handle_data(ret)
             return
         except (ValueError, TypeError, OverflowError):
@@ -165,7 +160,6 @@ class ParserBase(SGMLParser):
         return SGMLParser.handle_charref(self, name)
 
     def unknown_charref(self, ref):
-        print 'QQQQQQQQQQQQQQQQQQQQ', ref
         try:
             n = unichr(int(ref))##.encode('utf-8')
             self.handle_data(n)
@@ -310,9 +304,9 @@ class ParserBase(SGMLParser):
     def parse(self, html_string):
         """Return the dictionary generated from the given html string."""
         self.reset()
+        if type(html_string) is not _uctype:
+            html_string = unicode(html_string, 'latin_1', 'replace')
         html_string = subXMLRefs(html_string)
-        #if type(html_string) is not _uctype:
-        #    html_string = unicode(html_string, 'latin1', 'replace')
         self.feed(html_string)
         if self.getRefs and self._inTTRef: self._add_ref('tt')
         data = self.get_data()

@@ -167,7 +167,7 @@ class Movie(_Container):
     def __nonzero__(self):
         """The Movie is "false" if the self.data does not contain a title."""
         # XXX: check the title and the movieID?
-        if self.data.has_key('title'): return 1
+        if self.data.has_key('canonical title'): return 1
         return 0
 
     def isSameTitle(self, other):
@@ -199,7 +199,7 @@ class Movie(_Container):
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Movie instance."""
-        m = Movie(title='', movieID=self.movieID, myTitle=self.myTitle,
+        m = Movie(title=u'', movieID=self.movieID, myTitle=self.myTitle,
                     myID=self.myID, data=deepcopy(self.data, memo),
                     currentRole=self.currentRole, notes=self.notes,
                     accessSystem=self.accessSystem,
@@ -211,7 +211,7 @@ class Movie(_Container):
 
     def __str__(self):
         """Simply print the short title."""
-        return self.get('title', '').encode('utf8', 'replace')
+        return self.get('title', u'').encode('utf8', 'replace')
 
     def __unicode__(self):
         """Simply print the short title."""
@@ -220,6 +220,7 @@ class Movie(_Container):
         
     def summary(self):
         """Return a string with a pretty-printed summary for the movie."""
+        if not self: return u''
         def _nameAndRole(personList, joiner=', '):
             """Build a pretty string with name and role."""
             nl = []
@@ -228,8 +229,6 @@ class Movie(_Container):
                 if person.currentRole: n += ' (%s)' % person.currentRole
                 nl.append(n)
             return joiner.join(nl)
-        if not self:
-            return ''
         s = 'Movie\n=====\nTitle: %s\n' % \
                     self.get('long imdb canonical title', u'')
         genres = self.get('genres')

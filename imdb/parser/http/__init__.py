@@ -169,9 +169,17 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def _retrieve(self, url):
         """Retrieve the given URL."""
+        encode = 'latin1'
         try:
             uopener = self.urlOpener.open(url)
             content = uopener.read()
+            info_dict = uopener.info()
+            if info_dict.has_key('Content-Type'):
+                ct_line = info_dict['Content-Type'].lower()
+                csi = ct_line.find('charset=')
+                if csi != -1:
+                    # XXX: check if it's a valid encode?
+                    encode = ct_line[csi+9:]
             uopener.close()
             self.urlOpener.close()
         except IOError, e:
@@ -179,7 +187,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
                                         'errmsg': str(e.strerror),
                                         'url': url,
                                         'proxy': self.get_proxy()}
-        return unicode(content, 'latin1')
+        return unicode(content, encode, 'replace')
 
     def _search_movie(self, title, results):
         # The URL of the query.

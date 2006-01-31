@@ -72,7 +72,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         """
         if not titline: return None
         ##params = {'q': titline, 's': 'pt'}
-        params = 'q=%s&s=pt' % urllib.quote_plus(titline)
+        params = 'q=%s&s=pt' % str(urllib.quote_plus(titline))
         content = self._searchIMDbMoP(params)
         if not content: return None
         from imdb.parser.http.searchMovieParser import BasicMovieParser
@@ -88,7 +88,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         """
         if not name: return None
         ##params = {'q': name, 's': 'pn'}
-        params = 'q=%s&s=pn' % urllib.quote_plus(name)
+        params = 'q=%s&s=pn' % str(urllib.quote_plus(name))
         content = self._searchIMDbMoP(params)
         if not content: return None
         from imdb.parser.http.searchPersonParser import BasicPersonParser
@@ -157,9 +157,9 @@ def titleVariations(title):
         title3 = u''
     # title2 is title1 without the article, or title1 unchanged.
     title2 = title1
-    t2s = title2.split(', ')
+    t2s = title2.split(u', ')
     if t2s[-1] in _articles:
-        title2 = ', '.join(t2s[:-1])
+        title2 = u', '.join(t2s[:-1])
     return title1, title2, title3
 
 
@@ -210,10 +210,10 @@ def scan_names(name_list, name1, name2, name3, results=0):
         nil = i[1]
         # Distance with the canonical name.
         ratios = [ratcliff(name1, nil, sm1) + 0.05]
-        nils = nil.split(', ', 1)
+        nils = nil.split(u', ', 1)
         surname = nils[0]
         namesurname = ''
-        if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
+        if len(nils) == 2: namesurname = u'%s %s' % (nils[1], surname)
         if surname != nil:
             # Distance with the "Surname" in the database.
             ratios.append(ratcliff(name1, surname, sm1))
@@ -256,10 +256,10 @@ def scan_titles(titles_list, title1, title2, title3, results=0):
         ratios = [ratcliff(title1, til, sm1) + 0.05]
         # til2 is til without the article, if present.
         til2 = til
-        tils = til2.split(', ')
+        tils = til2.split(u', ')
         matchHasArt = 0
         if tils[-1] in _articles:
-            til2 = ', '.join(tils[:-1])
+            til2 = u', '.join(tils[:-1])
             matchHasArt = 1
         if hasArt and not matchHasArt:
             #   titleS[, the]  -> titleR

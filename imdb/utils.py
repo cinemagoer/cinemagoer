@@ -41,8 +41,8 @@ re_episodes = re.compile('\s?\((\d+) episodes\)', re.I)
 
 
 # Common suffixes in surnames.
-_sname_suffixes = ('de', 'la', 'der', 'den', 'del', 'y', 'da', 'van',
-                    'e', 'von', 'the', 'di', 'du', 'el', 'al')
+_sname_suffixes = (u'de', u'la', u'der', u'den', u'del', u'y', u'da', u'van',
+                    u'e', u'von', u'the', u'di', u'du', u'el', u'al')
 
 def canonicalName(name):
     """Return the given name in canonical "Surname, Name" format.
@@ -56,12 +56,12 @@ def canonicalName(name):
     #      - single surname, composed name: 149235
     #        (2: 143522, 3: 4787, 4: 681, 5: 165)
     # Don't convert names already in the canonical format.
-    if name.find(', ') != -1: return name
-    sname = name.split(' ')
+    if name.find(u', ') != -1: return name
+    sname = name.split(u' ')
     snl = len(sname)
     if snl == 2:
         # Just a name and a surname: how boring...
-        name = '%s, %s' % (sname[1], sname[0])
+        name = u'%s, %s' % (sname[1], sname[0])
     elif snl > 2:
         lsname = [x.lower() for x in sname]
         if snl == 3: _indexes = (0, snl-2)
@@ -71,29 +71,29 @@ def canonicalName(name):
             if lsname[index] not in _sname_suffixes: continue
             try:
                 # Build the surname.
-                surn = '%s %s' % (sname[index], sname[index+1])
+                surn = u'%s %s' % (sname[index], sname[index+1])
                 del sname[index]
                 del sname[index]
                 try:
                     # Handle the "Jr." after the name.
-                    if lsname[index+2].startswith('jr'):
-                        surn += ' %s' % sname[index]
+                    if lsname[index+2].startswith(u'jr'):
+                        surn += u' %s' % sname[index]
                         del sname[index]
                 except (IndexError, ValueError):
                     pass
-                name = '%s, %s' % (surn, ' '.join(sname))
+                name = u'%s, %s' % (surn, u' '.join(sname))
                 break
             except ValueError:
                 continue
         else:
-            name = '%s, %s' % (sname[-1], ' '.join(sname[:-1]))
+            name = u'%s, %s' % (sname[-1], u' '.join(sname[:-1]))
     return name
 
 def normalizeName(name):
     """Return a name in the normal "Name Surname" format."""
-    sname = name.split(', ')
+    sname = name.split(u', ')
     if len(sname) == 2:
-        name = '%s %s' % (sname[1], sname[0])
+        name = u'%s %s' % (sname[1], sname[0])
     return name
 
 def analyze_name(name, canonical=0):
@@ -108,9 +108,9 @@ def analyze_name(name, canonical=0):
     name = name.strip()
     res = {}
     imdbIndex = '' # XXX: unicode?
-    opi = name.rfind('(')
+    opi = name.rfind(u'(')
     if opi != -1:
-        cpi = name.rfind(')')
+        cpi = name.rfind(u')')
         if cpi > opi and re_index.match(name[opi:cpi+1]):
             imdbIndex = name[opi+1:cpi]
             name = name[:opi].rstrip()
@@ -135,7 +135,7 @@ def build_name(name_dict, canonical=0):
         name = normalizeName(name)
     imdbIndex = name_dict.get('imdbIndex')
     if imdbIndex:
-        name += ' (%s)' % imdbIndex
+        name += u' (%s)' % imdbIndex
     return name
 
 
@@ -144,31 +144,31 @@ def build_name(name_dict, canonical=0):
 # XXX: removed 'en', 'to', 'as', 'et', 'des', 'al', 'egy', 'ye', 'da'
 #      and "'n" because they are more commonly used as non-articles
 #      at the begin of a title.
-_articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el', "l'", 'il',
-            'das', 'les', 'i', 'o', 'ein', 'un', 'los', 'de', 'an',
-            'una', 'eine', 'las', 'den', 'gli', 'het', 'lo',
-            'os', 'az', 'ha-', 'een', 'det', 'oi', 'ang', 'ta',
-            'al-', 'dem', 'uno', "un'", 'ett', 'mga', u'\xcf', u'\xc7',
-            'eines', 'els', u'\xd4\xef', u'\xcf\xe9')
+_articles = (u'the', u'la', u'a', u'die', u'der', u'le', u'el', "l'", u'il',
+            u'das', u'les', u'i', u'o', u'ein', u'un', u'los', u'de', u'an',
+            u'una', u'eine', u'las', u'den', u'gli', u'het', u'lo',
+            u'os', u'az', u'ha-', u'een', u'det', u'oi', u'ang', u'ta',
+            u'al-', u'dem', u'uno', "un'", u'ett', u'mga', u'\xcf', u'\xc7',
+            u'eines', u'els', u'\xd4\xef', u'\xcf\xe9')
 
 # Articles in a dictionary.
 _articlesDict = dict([(x, x) for x in _articles])
 _spArticles = []
 for article in _articles:
-    if article[-1] not in ("'", '-'): article += ' '
+    if article[-1] not in (u"'", u'-'): article += u' '
     _spArticles.append(article)
 
 def canonicalTitle(title):
     """Return the title in the canonic format 'Movie Title, The'."""
     try:
-        if _articlesDict.has_key(title.split(', ')[-1].lower()): return title
+        if _articlesDict.has_key(title.split(u', ')[-1].lower()): return title
     except IndexError: pass
     ltitle = title.lower()
     for article in _spArticles:
         if ltitle.startswith(article):
             lart = len(article)
-            title = '%s, %s' % (title[lart:], title[:lart])
-            if article[-1] == ' ': title = title[:-1]
+            title = u'%s, %s' % (title[lart:], title[:lart])
+            if article[-1] == u' ': title = title[:-1]
             break
     #for artSeparator in (' ', "'", '-'):
     #    article = _articlesDict.get(ltitle.split(artSeparator)[0])
@@ -184,11 +184,11 @@ def canonicalTitle(title):
 
 def normalizeTitle(title):
     """Return the title in the normal "The Title" format."""
-    stitle = title.split(', ')
+    stitle = title.split(u', ')
     if len(stitle) > 1 and _articlesDict.has_key(stitle[-1].lower()):
-        sep = ' '
-        if stitle[-1][-1] in ("'", '-'): sep = ''
-        title = '%s%s%s' % (stitle[-1], sep, ', '.join(stitle[:-1]))
+        sep = u' '
+        if stitle[-1][-1] in (u"'", u'-'): sep = u''
+        title = u'%s%s%s' % (stitle[-1], sep, u', '.join(stitle[:-1]))
     return title
 
 
@@ -237,7 +237,7 @@ def analyze_title(title, canonical=0):
             title = title[:i-1].rstrip()
     # This is a tv (mini) series: strip the '"' at the begin and at the end.
     # XXX: strip('"') is not used for compatibility with Python 2.0.
-    if title and title[0] == title[-1] == '"':
+    if title and title[0] == title[-1] == u'"':
         if not kind:
             kind = 'tv series'
         title = title[1:-1].strip()
@@ -249,9 +249,9 @@ def analyze_title(title, canonical=0):
     #                   'video movie', 'video game')
     result = {'title': title, 'kind': kind or 'movie'}
     if year and year != '????':
-        result['year'] = year
+        result['year'] = str(year)
     if imdbIndex:
-        result['imdbIndex'] = imdbIndex
+        result['imdbIndex'] = str(imdbIndex)
     return result
 
 
@@ -269,11 +269,11 @@ def build_title(title_dict, canonical=0):
     imdbIndex = title_dict.get('imdbIndex')
     year = title_dict.get('year', '????')
     if kind in ('tv series', 'tv mini series'):
-        title = '"%s"' % title
-    title += ' (%s' % year
+        title = u'"%s"' % title
+    title += u' (%s' % year
     if imdbIndex:
-        title += '/%s' % imdbIndex
-    title += ')'
+        title += u'/%s' % imdbIndex
+    title += u')'
     if kind:
         if kind == 'tv movie':
             title += ' (TV)'
@@ -362,14 +362,14 @@ def modHtmlLinks(s, titlesRefs, namesRefs):
     for title, movieO in titlesRefs.items():
         movieID = movieO.movieID
         if not movieID: continue
-        s = s.replace('_%s_ (qv)' % title,
-                        '<a href="http://akas.imdb.com/title/tt%s">%s</a>' %
+        s = s.replace(u'_%s_ (qv)' % title,
+                        u'<a href="http://akas.imdb.com/title/tt%s">%s</a>' %
                         (movieID, title))
     for name, personO in namesRefs.items():
         personID = personO.personID
         if not personID: continue
-        s = s.replace("'%s' (qv)" % name,
-                        '<a href="http://akas.imdb.com/name/nm%s">%s</a>' %
+        s = s.replace(u"'%s' (qv)" % name,
+                        u'<a href="http://akas.imdb.com/name/nm%s">%s</a>' %
                         (personID, name))
     # Remove also not referenced entries.
     s = modClearRefs(s, {}, {})

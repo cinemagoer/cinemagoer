@@ -93,7 +93,7 @@ class HTMLMovieParser(ParserBase):
         # We're managing the name of a person.
         self.__is_name = 0
         # The name and his role, (temporary) sperated by '::'.
-        self.__name = ''
+        self.__name = u''
         self.__cur_nameID = ''
         # We're in a company credit section.
         self.__is_company_cred = 0
@@ -102,12 +102,12 @@ class HTMLMovieParser(ParserBase):
         self.__countries = 0
         self.__is_genres = 0
         self.__is_title = 0
-        self.__title = ''
+        self.__title = u''
         self.__is_rating = 0
         self.__rating = ''
         self.__is_languages = 0
         self.__is_akas = 0
-        self.__aka_title = ''
+        self.__aka_title = u''
         self.__is_movie_status = 0
         self.__movie_status_sect = ''
         self.__movie_status = ''
@@ -117,7 +117,7 @@ class HTMLMovieParser(ParserBase):
         self.__mpaa = ''
         self.__inbch = 0
         self.__isplotoutline = 0
-        self.__plotoutline = ''
+        self.__plotoutline = u''
         # If true, the next data should be merged with the previous one,
         # without the '::' separator.
         self.__merge_next = 0
@@ -237,7 +237,7 @@ class HTMLMovieParser(ParserBase):
                 n = n_split[0].strip()
                 del n_split[0]
                 role = ' '.join(n_split).strip()
-                notes = ''
+                notes = u''
                 ii = role.find('(')
                 if ii != -1:
                     ei = role.rfind(')')
@@ -249,21 +249,21 @@ class HTMLMovieParser(ParserBase):
                 if sect != 'cast':
                     if notes: notes = ' %s' % notes
                     notes = role + notes
-                    role = ''
+                    role = u''
                 if sect == 'crewmembers': sect = 'miscellaneous crew'
                 # Create a Person object.
                 # XXX: check for self.__cur_nameID?
                 #      maybe it's not a good idea; is it possible for
                 #      a person to be listed without a link?
                 p = Person(name=n, currentRole=role,
-                            personID=self.__cur_nameID, accessSystem='http')
+                        personID=str(self.__cur_nameID), accessSystem='http')
                 if notes: p.notes = notes
                 if self.__movie_data.setdefault(sect, []) == []:
                     self._counter = 1
                 p.billingPos = self._counter
                 self.__movie_data[sect].append(p)
                 self._counter += 1
-            self.__name = ''
+            self.__name = u''
             self.__cur_nameID = ''
         self.__movie_status_data = ''
         self.__movie_status_sect = ''
@@ -375,7 +375,9 @@ class HTMLMovieParser(ParserBase):
             # The gold and grey stars; we're near the rating and number
             # of votes.
             self.__is_rating = 1
-        elif alttex == 'cover':
+        # XXX: I've a report about alttex==self.__movie_data.get('title')
+        #      in some situations, but I'm not sure.
+        elif alttex == 'cover' or alttex == self.__movie_data.get('title'):
             # Get the URL of the cover image.
             src = self.get_attr_value(attrs, 'src')
             if src: self.set_item('cover url', src)
@@ -504,10 +506,10 @@ class HTMLPlotParser(ParserBase):
         """Reset the parser."""
         self.__plot_data.clear()
         self.__is_plot = 0
-        self.__plot = ''
-        self.__last_plot = ''
+        self.__plot = u''
+        self.__last_plot = u''
         self.__is_plot_writer = 0
-        self.__plot_writer = ''
+        self.__plot_writer = u''
 
     def get_data(self):
         """Return the dictionary with the 'plot' key."""
@@ -524,7 +526,7 @@ class HTMLPlotParser(ParserBase):
             # the parser will read the name of the author.
             self.__last_plot = self.__plot
             self.__is_plot = 0
-            self.__plot = ''
+            self.__plot = u''
 
     def start_a(self, attrs):
         link = self.get_attr_value(attrs, 'href')
@@ -543,8 +545,8 @@ class HTMLPlotParser(ParserBase):
             self.__plot_data.setdefault('plot', []).append('%s::%s' %
                                                             (writer, plot))
             self.__is_plot_writer = 0
-            self.__plot_writer = ''
-            self.__last_plot = ''
+            self.__plot_writer = u''
+            self.__last_plot = u''
             
     def _handle_data(self, data):
         # Store text for plots and authors.
@@ -584,9 +586,9 @@ class HTMLAwardsParser(ParserBase):
         self.__cur_result = ''
         self.__cur_notes = ''
         self.__cur_category = ''
-        self.__cur_forto = ''
-        self.__cur_assigner = ''
-        self.__cur_award = ''
+        self.__cur_forto = u''
+        self.__cur_assigner = u''
+        self.__cur_award = u''
         self.__cur_sect = ''
         self.__no = 0
         self.__rowspan = 0
@@ -594,13 +596,13 @@ class HTMLAwardsParser(ParserBase):
         self.__limit = 1
         self.__is_tn = 0
         self.__cur_id = ''
-        self.__t_o_n = ''
+        self.__t_o_n = u''
         self.__to = []
         self.__for = []
         self.__with = []
         self.__begin_to_for = 0
-        self.__cur_role = ''
-        self.__cur_tn = ''
+        self.__cur_role = u''
+        self.__cur_tn = u''
         # XXX: a Person or Movie object is instantiated only once (i.e.:
         #      every reference to a given movie/person is the _same_
         #      object).
@@ -651,7 +653,7 @@ class HTMLAwardsParser(ParserBase):
            #      has a different "Result", so go back and read it.
            if self.__counter == self.__limit+1:
                 self.__cur_result = ''
-                self.__cur_award = ''
+                self.__cur_award = u''
                 self.__cur_sect = 'res'
                 self.__counter = 1
 
@@ -669,13 +671,13 @@ class HTMLAwardsParser(ParserBase):
         for key in d.keys():
             if not d[key]: del d[key]
         self.__aw_data.append(d)
-        self.__cur_notes = ''
+        self.__cur_notes = u''
         self.__cur_category = ''
-        self.__cur_forto = ''
+        self.__cur_forto = u''
         self.__with = []
         self.__to = []
         self.__for = []
-        self.__cur_role = ''
+        self.__cur_role = u''
         
     def start_th(self, attrs):
         self.__begin_aw = 0
@@ -709,9 +711,9 @@ class HTMLAwardsParser(ParserBase):
                     self.__limit = 1
                     self.__no = 0
                     self.__cur_result = ''
-                    self.__cur_notes = ''
+                    self.__cur_notes = u''
                     self.__cur_category = ''
-                    self.__cur_forto = ''
+                    self.__cur_forto = u''
                     self.__cur_award = ''
                     self.__with = []
                     self.__to = []
@@ -725,7 +727,7 @@ class HTMLAwardsParser(ParserBase):
             if tn:
                 self.__cur_id = tn[-1]
                 self.__is_tn = 1
-                self.__cur_tn = ''
+                self.__cur_tn = u''
                 if href.startswith('/name'): self.__t_o_n = 'n'
                 else: self.__t_o_n = 't'
 
@@ -739,7 +741,7 @@ class HTMLAwardsParser(ParserBase):
                 if self.__t_o_n == 't':
                     self.__begin_to_for = 1
                     m = Movie(title=self.__cur_tn,
-                                movieID=self.__cur_id,
+                                movieID=str(self.__cur_id),
                                 accessSystem='http')
                     if m in self.__movie_obj_list:
                         ind = self.__movie_obj_list.index(m)
@@ -749,7 +751,7 @@ class HTMLAwardsParser(ParserBase):
                     self.__for.append(m)
                 else:
                     p = Person(name=self.__cur_tn,
-                                personID=self.__cur_id,
+                                personID=str(self.__cur_id),
                                 currentRole=self.__cur_role,
                                 accessSystem='http')
                     if p in self.__person_obj_list:
@@ -761,7 +763,7 @@ class HTMLAwardsParser(ParserBase):
             else:
                 if self.__t_o_n == 't':
                     m = Movie(title=self.__cur_tn,
-                                movieID=self.__cur_id,
+                                movieID=str(self.__cur_id),
                                 accessSystem='http')
                     if m in self.__movie_obj_list:
                         ind = self.__movie_obj_list.index(m)
@@ -772,7 +774,7 @@ class HTMLAwardsParser(ParserBase):
                 else:
                     self.__begin_to_for = 1
                     p = Person(name=self.__cur_tn,
-                                personID=self.__cur_id,
+                                personID=str(self.__cur_id),
                                 currentRole=self.__cur_role,
                                 accessSystem='http')
                     if p in self.__person_obj_list:
@@ -781,7 +783,7 @@ class HTMLAwardsParser(ParserBase):
                     else:
                         self.__person_obj_list.append(p)
                     self.__to.append(p)
-            self.__cur_role = ''
+            self.__cur_role = u''
         self.__is_tn = 0
 
     def _handle_data(self, data):
@@ -1536,7 +1538,7 @@ class HTMLConnectionParser(ParserBase):
         sectit = self.__cnt.strip()
         if self.__in_cn and self.__mtitle and self.__cur_id and sectit:
             m = Movie(title=self.__mtitle,
-                        movieID=self.__cur_id,
+                        movieID=str(self.__cur_id),
                         accessSystem='http')
             self.__cn.setdefault(sectit, []).append(m)
             self.__mtitle = ''
@@ -1948,7 +1950,7 @@ class HTMLRecParser(ParserBase):
             if self.__curtitle:
                 if self.__curlist:
                     if self.__cur_id:
-                        m = Movie(movieID=self.__cur_id,
+                        m = Movie(movieID=str(self.__cur_id),
                                     title=self.__curtitle,
                                     accessSystem='http')
                         self.__rec.setdefault(self.__curlist, []).append(m)
@@ -2245,7 +2247,7 @@ class HTMLGuestsParser(ParserBase):
                 sn = name.split(' .... ')
                 name = sn[0]
                 role = ' '.join(sn[1:]).strip()
-                p = Person(name=name, personID=self._curid,
+                p = Person(name=name, personID=str(self._curid),
                             currentRole=role, accessSystem='http',
                             notes=note)
                 self._guests.setdefault(self._curepisode, []).append(p)

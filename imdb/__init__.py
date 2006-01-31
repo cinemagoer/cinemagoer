@@ -29,7 +29,7 @@ import types, sys
 
 from imdb import Movie, Person
 from imdb._exceptions import IMDbError, IMDbDataAccessError
-_utype = type(u'')
+_utype = type(u'') # XXX: I know this is bad...
 
 
 # URLs of the main pages for movies and persons.
@@ -68,6 +68,7 @@ def IMDb(accessSystem='http', *arguments, **keywords):
                             % accessSystem
 
 
+# XXX: I'm not sure this is a good guess.
 encoding = sys.stdin.encoding or sys.getdefaultencoding()
 
 class IMDbBase:
@@ -166,6 +167,8 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
+        # XXX: I suppose it will be much safer if the user provides
+        #      an unicode string... this is just a guess.
         if type(title) is not _utype:
             title = unicode(title, encoding, 'replace')
         res = self._search_movie(title, results)

@@ -179,13 +179,13 @@ class IMDbHTTPAccessSystem(IMDbBase):
                                         'errmsg': str(e.strerror),
                                         'url': url,
                                         'proxy': self.get_proxy()}
-        return content
+        return unicode(content, 'latin1')
 
     def _search_movie(self, title, results):
         # The URL of the query.
         # XXX: To retrieve the complete results list:
         #      params = urllib.urlencode({'more': 'tt', 'q': title})
-        #params = urllib.urlencode({'tt': 'on', 'mx': str(results), 'q': title})
+        ##params = urllib.urlencode({'tt': 'on','mx': str(results),'q': title})
         params = 'q=%s&tt=on&mx=%s' % (urllib.quote_plus(title), str(results))
         cont = self._retrieve(imdbURL_search % params)
         return search_movie_parser.parse(cont, results=results)['data']
@@ -317,7 +317,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # The URL of the query.
         # XXX: To retrieve the complete results list:
         #      params = urllib.urlencode({'more': 'nm', 'q': name})
-        #params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
+        ##params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
         params = 'q=%s&nm=on&mx=%s' % (urllib.quote_plus(name), str(results))
         cont = self._retrieve(imdbURL_search % params)
         return search_person_parser.parse(cont, results=results)['data']

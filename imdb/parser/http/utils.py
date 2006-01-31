@@ -79,6 +79,7 @@ from htmlentitydefs import entitydefs
 entitydefs = entitydefs.copy()
 entitydefsget = entitydefs.get
 entitydefs['nbsp'] = ' '
+
 sgmlentity = SGMLParser.entitydefs.copy()
 sgmlentityget = sgmlentity.get
 _sgmlentkeys = sgmlentity.keys()
@@ -88,45 +89,42 @@ entcharrefsget = entcharrefs.get
 for _k, _v in entitydefs.items():
     if _k in _sgmlentkeys: continue
     if _v[0:2] == '&#':
+        dec_code = _v[1:-1]
         _v = unichr(int(_v[2:-1]))
+        entcharrefs[dec_code] = _v
     else:
+        dec_code = '#' + str(ord(_v))
         _v = unicode(_v, 'latin1', 'replace')
+        entcharrefs[dec_code] = _v
     entcharrefs[_k] = _v
 del _sgmlentkeys, _k, _v
+entcharrefs['#160'] = u' '
 
-re_entcharrefs = re.compile('&(%s);' % '|'.join(map(re.escape, entcharrefs)))
+re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' %
+                            '|'.join(map(re.escape, entcharrefs)))
 re_entcharrefssub = re_entcharrefs.sub
+
 re_sgmlref = re.compile('&(%s);' % '|'.join(map(re.escape, sgmlentity)))
 re_sgmlrefsub = re_sgmlref.sub
 
-#entcharrefs = re.compile('&([a-zA-Z][-.a-zA-Z0-9]*?|#([0-9]+?));')
-#entcharrefssub = entcharrefs.sub
 
-def _replRef(match):
+def _replXMLRef(match):
     """Replace the matched html/sgml entity and reference."""
-    ref = match.group(0)
-    return entcharrefsget(ref,ref)
-    
-    ret = match.group()[1:-1]
-    entity = entitydefsget(ret)
-    if entity is not None and type(entity) is _uctype:
-        return entity
-    if ret[0] == '#':
-        # Always handle character references using unichr.
-        try:
-            ret = unichr(int(ret[1:]))##.encode('utf-8')
-            if ret == u'\xa0': ret = ' '
-        except (ValueError, TypeError, OverflowError):
-            pass
-    return ret
+    ref = match.group(1)
+    value = entcharrefsget(ref)
+    if value is None and ref[0] == '#':
+        ref_code = ref[1:]
+        if ref_code in ('34', '38', '60', '62', '39'): return ref
+        return unichr(int(ref[1:]))
+    return value
 
 def subXMLRefs(s):
     """Return the given html string with entity and char references
     replaced."""
-    return re_entcharrefssub(_replRef, s)
+    return re_entcharrefssub(_replXMLRef, s)
     
 def _replSGMLRefs(match):
-    ref = match.group(0)
+    ref = match.group(1)
     return sgmlentityget(ref, ref)
 
 def subSGMLRefs(s):
@@ -167,6 +165,7 @@ class ParserBase(SGMLParser):
         return SGMLParser.handle_charref(self, name)
 
     def unknown_charref(self, ref):
+        print 'QQQQQQQQQQQQQQQQQQQQ', ref
         try:
             n = unichr(int(ref))##.encode('utf-8')
             self.handle_data(n)
@@ -228,7 +227,7 @@ class ParserBase(SGMLParser):
             if self._titleRefCID and self._titleCN:
                 if not self._titlesRefs.has_key(self._titleCN):
                     try:
-                        movie = Movie(movieID=self._titleRefCID,
+                        movie = Movie(movieID=str(self._titleRefCID),
                                     title=self._titleCN, accessSystem='http')
                         self._titlesRefs[self._titleCN] = movie
                     except IMDbParserError:
@@ -244,7 +243,7 @@ class ParserBase(SGMLParser):
             if not self._namesRefs.has_key(self._nameCN):
                 try:
                     person = Person(name=self._nameCN,
-                                    personID=self._nameRefCID,
+                                    personID=str(self._nameRefCID),
                                     accessSystem='http')
                     self._namesRefs[self._nameCN] = person
                 except IMDbParserError:
@@ -312,8 +311,8 @@ class ParserBase(SGMLParser):
         """Return the dictionary generated from the given html string."""
         self.reset()
         html_string = subXMLRefs(html_string)
-        if type(html_string) is not _uctype:
-            html_string = unicode(html_string, 'latin1', 'replace')
+        #if type(html_string) is not _uctype:
+        #    html_string = unicode(html_string, 'latin1', 'replace')
         self.feed(html_string)
         if self.getRefs and self._inTTRef: self._add_ref('tt')
         data = self.get_data()

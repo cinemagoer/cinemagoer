@@ -70,7 +70,7 @@ class BasicMovieParser(ParserBase):
                 if n == 'arg': nr = self.re_imdbIDonly.findall(val)
                 else: nr = self.re_imdbID.findall(val)
                 if not nr: return
-                imdbID = nr[0]
+                imdbID = str(nr[0])
                 title = self.__page_title.strip()
                 if imdbID and title:
                     res = [(imdbID, analyze_title(title, canonical=1))]
@@ -131,7 +131,7 @@ class HTMLSearchMovieParser(ParserBase):
         if link and link.lower().startswith('/title'):
             nr = self.re_imdbID.findall(link[6:])
             if not nr: return
-            self.__current_imdbID = nr[0]
+            self.__current_imdbID = str(nr[0])
             self.__is_title = 1
 
     def end_a(self): pass

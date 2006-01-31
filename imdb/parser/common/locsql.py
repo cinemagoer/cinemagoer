@@ -249,7 +249,7 @@ def scan_titles(titles_list, title1, title2, title3, results=0):
     if title2 != title1: hasArt = 1
     resd = {}
     for i in titles_list:
-        til = unicode(i[1], 'latin1')
+        til = i[1]
         # Distance with the canonical title (with or without article).
         #   titleS      -> titleR
         #   titleS, the -> titleR, the

@@ -111,6 +111,7 @@ class Person(_Container):
 
     def set_name(self, name):
         """Set the name of the person."""
+        # XXX: convert name to unicode, if it's a plain string?
         d = analyze_name(name, canonical=1)
         self.data.update(d)
 
@@ -183,13 +184,17 @@ class Person(_Container):
 
     def __str__(self):
         """Simply print the short name."""
-        return self.get('name', '')
+        return self.get('name', '').encode('utf8', 'replace')
+
+    def __unicode__(self):
+        """Simply print the short title."""
+        return self.get('name', u'')
 
     def summary(self):
         """Return a string with a pretty-printed summary for the person."""
         if not self: return ''
         s = 'Person\n=====\nName: %s\n' % \
-                                self.get('long imdb canonical name', '')
+                                self.get('long imdb canonical name', u'')
         bdate = self.get('birth date')
         if bdate:
             s += 'Birth date: %s' % bdate
@@ -209,10 +214,14 @@ class Person(_Container):
             s += 'Biography: %s\n' % bio[0]
         director = self.get('director')
         if director:
-            s += 'Last movies directed: %s.\n' % '; '.join(director[:3])
+            d_list = [x.get('long imdb canonical title', u'')
+                        for x in director[:3]]
+            s += 'Last movies directed: %s.\n' % '; '.join(d_list)
         act = self.get('actor') or self.get('actress')
         if act:
-            s += 'Last movies acted: %s.\n' % '; '.join(act[:5])
+            a_list = [x.get('long imdb canonical title', u'')
+                        for x in act[:5]]
+            s += 'Last movies acted: %s.\n' % '; '.join(a_list)
         return s
 
 

@@ -140,6 +140,7 @@ class Movie(_Container):
 
     def set_title(self, title):
         """Set the title of the movie."""
+        # XXX: convert title to unicode, if it's a plain string?
         d_title = analyze_title(title, canonical=1)
         self.data.update(d_title)
 
@@ -210,34 +211,39 @@ class Movie(_Container):
 
     def __str__(self):
         """Simply print the short title."""
-        return self.get('title', '')
+        return self.get('title', '').encode('utf8', 'replace')
 
-    def _nameAndRole(self, personList, joiner=', '):
-        nl = []
-        for person in personList:
-            n = person.get('name', '')
-            if person.currentRole: n += ' (%s)' % person.currentRole
-            nl.append(n)
-        return joiner.join(nl)
+    def __unicode__(self):
+        """Simply print the short title."""
+        return self.get('title', u'')
+
         
     def summary(self):
         """Return a string with a pretty-printed summary for the movie."""
+        def _nameAndRole(personList, joiner=', '):
+            """Build a pretty string with name and role."""
+            nl = []
+            for person in personList:
+                n = person.get('name', u'')
+                if person.currentRole: n += ' (%s)' % person.currentRole
+                nl.append(n)
+            return joiner.join(nl)
         if not self:
             return ''
         s = 'Movie\n=====\nTitle: %s\n' % \
-                    self.get('long imdb canonical title', '')
+                    self.get('long imdb canonical title', u'')
         genres = self.get('genres')
         if genres: s += 'Genres: %s.' % ', '.join(genres)
         director = self.get('director')
         if director:
-            s += 'Director: %s.\n' % self._nameAndRole(director)
+            s += 'Director: %s.\n' % _nameAndRole(director)
         writer = self.get('writer')
         if writer:
-            s += 'Writer: %s.\n' % self._nameAndRole(writer)
+            s += 'Writer: %s.\n' % _nameAndRole(writer)
         cast = self.get('cast')
         if cast:
             cast = cast[:5]
-            s += 'Cast: %s.\n' % self._nameAndRole(cast)
+            s += 'Cast: %s.\n' % _nameAndRole(cast)
         runtime = self.get('runtimes')
         if runtime:
             s += 'Runtime: %s.\n' % ', '.join(runtime)

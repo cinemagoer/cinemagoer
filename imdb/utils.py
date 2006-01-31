@@ -107,7 +107,7 @@ def analyze_name(name, canonical=0):
     original_n = name
     name = name.strip()
     res = {}
-    imdbIndex = ''
+    imdbIndex = '' # XXX: unicode?
     opi = name.rfind('(')
     if opi != -1:
         cpi = name.rfind(')')
@@ -130,7 +130,7 @@ def build_name(name_dict, canonical=0):
     If canonical is not set, the name is returned in the normal
     "Name Surname" format.
     """
-    name = name_dict.get('name', '')
+    name = name_dict.get('name', u'')
     if not canonical:
         name = normalizeName(name)
     imdbIndex = name_dict.get('imdbIndex')
@@ -262,7 +262,7 @@ def build_title(title_dict, canonical=0):
     If canonical is not true, the title is returned in the
     normal format.
     """
-    title = title_dict.get('title', '')
+    title = title_dict.get('title', u'')
     if not canonical:
         title = normalizeTitle(title)
     kind = title_dict.get('kind')
@@ -416,7 +416,7 @@ class _Container:
     # List of keys to modify.
     keys_tomodify_list = ()
 
-    def __init__(self, myID=None, data=None, currentRole='', notes='',
+    def __init__(self, myID=None, data=None, currentRole=u'', notes=u'',
                 accessSystem=None, titlesRefs=None, namesRefs=None,
                 modFunct=None, *args, **kwds):
         """Initialize a Movie or a Person object.
@@ -455,8 +455,8 @@ class _Container:
         """Reset the object."""
         self.data = {}
         self.myID = None
-        self.currentRole = ''
-        self.notes = ''
+        self.currentRole = u''
+        self.notes = u''
         self.titlesRefs = {}
         self.namesRefs = {}
         self.modFunct = modClearRefs
@@ -468,8 +468,8 @@ class _Container:
     def clear(self):
         """Reset the dictionary."""
         self.data.clear()
-        self.currentRole = ''
-        self.notes = ''
+        self.currentRole = u''
+        self.notes = u''
         self.titlesRefs = {}
         self.namesRefs = {}
         self.current_info = []

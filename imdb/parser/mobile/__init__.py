@@ -107,8 +107,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
     def _mretrieve(self, url):
         """Retrieve an html page and normalize it."""
         cont = IMDbHTTPAccessSystem._retrieve(self, url)
+        #cont = unicode(cont, 'latin1')
         cont = re_spaces.sub(' ', cont)
-        return subXMLRefs(cont)
+        cont = subXMLRefs(cont)
+        return cont
 
     def _getPersons(self, s, sep='<br>', hasCr=0, aonly=0):
         """Return a list of Person objects, from the string s; items
@@ -139,7 +141,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 if len(stripped) == 1: name = stripped[0]
             name = _unHtml(name)
             if not (pid and name): continue
-            plappend(Person(personID=pid[0], name=name,
+            plappend(Person(personID=str(pid[0]), name=name,
                             currentRole=currentRole, notes=notes,
                             accessSystem=self.accessSystem,
                             modFunct=self._defModFunct, billingPos=counter))
@@ -424,7 +426,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     ms = ms[1:]
                 if ms: role = ' '.join(ms).strip()
                 movie = Movie(title=d['title'], accessSystem=self.accessSystem,
-                                movieID=d['movieID'],
+                                movieID=str(d['movieID']),
                                 modFunct=self._defModFunct)
                 if d.has_key('status'): movie['status'] = d['status']
                 movie.currentRole = role

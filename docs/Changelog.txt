@@ -1,13 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060130 "Fascisti Su Marte" (30 Jan 2006)
+* What's the new in release 2.4-cvs20060131 "Fascisti Su Marte" (31 Jan 2006)
   [general]
   - unified Movie and Person classes.
   - the strings used to store every kind of information about movies and
     person now are modified (substituting titles and names references)
     only when it's really needed.
-  - when required, strings with non-ascii chars are converted to unicode.
+  - strings are now converted to unicode.
   - speed improvements in functions modifyStrings, sortMovies,
     canonicalName, analyze_name, analyze_title.
   - performance improvements in every data access system.

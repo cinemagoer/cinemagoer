@@ -208,7 +208,7 @@ class HTMLMaindetailsParser(ParserBase):
                     self.__roles = self.__roles[ep+1:].strip()
             if self.__roles.startswith('.... '):
                 self.__roles = self.__roles[5:]
-            movie = Movie(movieID=self.__last_imdbID, title=tit,
+            movie = Movie(movieID=str(self.__last_imdbID), title=tit,
                             accessSystem='http')
             if notes: movie.notes = notes
             movie.currentRole = self.__roles

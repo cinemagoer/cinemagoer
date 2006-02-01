@@ -34,7 +34,7 @@ from imdb.utils import analyze_title, build_title, analyze_name, \
 
 _ltype = type([])
 _dtype = type({})
-_stypes = (type(''), type(u''))
+_stypes = (type(u''), type(''))
 
 re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
@@ -210,10 +210,10 @@ def scan_names(name_list, name1, name2, name3, results=0):
         nil = i[1]
         # Distance with the canonical name.
         ratios = [ratcliff(name1, nil, sm1) + 0.05]
-        nils = nil.split(u', ', 1)
+        nils = nil.split(', ', 1)
         surname = nils[0]
         namesurname = ''
-        if len(nils) == 2: namesurname = u'%s %s' % (nils[1], surname)
+        if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
         if surname != nil:
             # Distance with the "Surname" in the database.
             ratios.append(ratcliff(name1, surname, sm1))
@@ -256,10 +256,10 @@ def scan_titles(titles_list, title1, title2, title3, results=0):
         ratios = [ratcliff(title1, til, sm1) + 0.05]
         # til2 is til without the article, if present.
         til2 = til
-        tils = til2.split(u', ')
+        tils = til2.split(', ')
         matchHasArt = 0
         if tils[-1] in _articles:
-            til2 = u', '.join(tils[:-1])
+            til2 = ', '.join(tils[:-1])
             matchHasArt = 1
         if hasArt and not matchHasArt:
             #   titleS[, the]  -> titleR

@@ -54,24 +54,29 @@ def _subRefs(s, titlesL, namesL):
     return s
 
 
-def _putRefs(d, titlesL, namesL):
+_keys_to_modify = list(Movie.keys_tomodify_list) + \
+                    list(Person.keys_tomodify_list)
+def _putRefs(d, titlesL, namesL, lastKey=None):
     """Iterate over the strings inside list items or dictionary values,
-    and call _subRefs()."""
+    and call _subRefs() over strings that need modification."""
     td = type(d)
     if td is _ltype:
         for i in xrange(len(d)):
             ti = type(d[i])
             if ti in _stypes:
-                d[i] = _subRefs(d[i], titlesL, namesL)
+                if lastKey in _keys_to_modify:
+                    d[i] = _subRefs(d[i], titlesL, namesL)
             elif ti in _destypes:
                 _putRefs(d[i], titlesL, namesL)
     elif td is _dtype:
         for k, v in d.items():
             tv = type(v)
+            lastKey = k
             if tv is _stypes:
-                d[k] = _subRefs(v, titlesL, namesL)
+                if _keys_to_modify:
+                    d[k] = _subRefs(v, titlesL, namesL, lastKey=lastKey)
             elif tv in _destypes:
-                _putRefs(v, titlesL, namesL)
+                _putRefs(v, titlesL, namesL, lastKey=lastKey)
 
 
 # Handle HTML entities.
@@ -104,30 +109,39 @@ re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' %
                             '|'.join(map(re.escape, entcharrefs)))
 re_entcharrefssub = re_entcharrefs.sub
 
+sgmlentity.update(dict([('#34', u'"'), ('#38', u'&'),
+                        ('#60', u'<'), ('#62', u'>'), ('#39', u"'")]))
 re_sgmlref = re.compile('&(%s);' % '|'.join(map(re.escape, sgmlentity)))
 re_sgmlrefsub = re_sgmlref.sub
 
 
 def _replXMLRef(match):
-    """Replace the matched html/sgml entity and reference."""
+    """Replace the matched XML/HTML entities and references;
+    replace everything except sgml entities like &lt;, &gt;, ..."""
     ref = match.group(1)
     value = entcharrefsget(ref)
-    if value is None and ref[0] == '#':
-        ref_code = ref[1:]
-        if ref_code in ('34', '38', '60', '62', '39'): return match.group(0)
-        return unichr(int(ref[1:]))
+    if value is None:
+        if ref[0] == '#':
+            ref_code = ref[1:]
+            if ref_code in ('34', '38', '60', '62', '39'): return match.group(0)
+            else: return unichr(int(ref[1:]))
+        else:
+            return ref
     return value
 
 def subXMLRefs(s):
     """Return the given html string with entity and char references
     replaced."""
     return re_entcharrefssub(_replXMLRef, s)
-    
+
 def _replSGMLRefs(match):
+    """Replace the matched SGML entity."""
     ref = match.group(1)
     return sgmlentityget(ref, ref)
 
 def subSGMLRefs(s):
+    """Return the given html string with sgml entity and char references
+    replaced."""
     return re_sgmlrefsub(_replSGMLRefs, s)
     
 
@@ -142,9 +156,8 @@ class ParserBase(SGMLParser):
     # It's set when names and titles references must be collected.
     # It can be set to 0 for search parsers.
     getRefs = 1
+    entitydefs = sgmlentity
 
-    #entitydefs = entitydefs
-    
     def __init__(self, verbose=0):
         self._init()
         SGMLParser.__init__(self, verbose)
@@ -161,7 +174,7 @@ class ParserBase(SGMLParser):
 
     def unknown_charref(self, ref):
         try:
-            n = unichr(int(ref))##.encode('utf-8')
+            n = unichr(int(ref))
             self.handle_data(n)
         except (TypeError, ValueError, OverflowError):
             return SGMLParser.unknown_charref(self, ref)

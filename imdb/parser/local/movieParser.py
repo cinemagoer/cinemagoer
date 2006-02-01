@@ -359,7 +359,8 @@ def getMovieLinks(movieID, dataF, movieTitlIF, movieTitlKF):
     for entry in entries:
         title = getLabel(entry[2], movieTitlIF, movieTitlKF)
         if not title: continue
-        m = Movie(title=title, movieID=entry[2], accessSystem='local')
+        m = Movie(title=title, movieID=entry[2],
+                    accessSystem='local')
         sect = _links_sect.get(entry[1])
         if not sect: continue
         res.setdefault(sect, []).append(m)

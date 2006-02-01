@@ -108,7 +108,8 @@ class Movie(_Container):
 
     keys_tomodify_list = ('plot', 'trivia', 'alternate versions', 'goofs',
                         'quotes', 'dvd', 'laserdisc', 'news', 'soundtrack',
-                        'crazy credits', 'business')
+                        'crazy credits', 'business',
+                        'supplements', 'video review')
 
     def _init(self, **kwds):
         """Initialize a Movie object.
@@ -167,7 +168,7 @@ class Movie(_Container):
     def __nonzero__(self):
         """The Movie is "false" if the self.data does not contain a title."""
         # XXX: check the title and the movieID?
-        if self.data.has_key('canonical title'): return 1
+        if self.data.has_key('title'): return 1
         return 0
 
     def isSameTitle(self, other):

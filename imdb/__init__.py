@@ -29,7 +29,7 @@ import types, sys
 
 from imdb import Movie, Person
 from imdb._exceptions import IMDbError, IMDbDataAccessError
-_utype = type(u'') # XXX: I know this is bad...
+_utype = type(u'') # XXX: I know this is a bad habit...
 
 
 # URLs of the main pages for movies and persons.
@@ -69,6 +69,9 @@ def IMDb(accessSystem='http', *arguments, **keywords):
 
 
 # XXX: I'm not sure this is a good guess.
+#      I suppose that an argument of the IMDb function can be used to
+#      set a default encoding for the output, and then Movie and Person
+#      objecs can use this default encoding returning strings.
 encoding = sys.stdin.encoding or sys.getdefaultencoding()
 
 class IMDbBase:

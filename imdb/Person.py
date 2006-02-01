@@ -138,7 +138,7 @@ class Person(_Container):
     def __nonzero__(self):
         """The Person is "false" if the self.data does not contain a name."""
         # XXX: check the name and the personID?
-        if self.data.has_key('canonical name'): return 1
+        if self.data.has_key('name'): return 1
         return 0
 
     def __contains__(self, item):

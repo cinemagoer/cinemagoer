@@ -24,7 +24,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import urllib
+from urllib import FancyURLopener, quote_plus
+from codecs import lookup
 
 from imdb import IMDbBase
 from imdb._exceptions import IMDbDataAccessError
@@ -60,10 +61,10 @@ _cookie_id = 'boM2bYxz9MCsOnH9gZ0S9QHs12NWrNdApxsls1Vb5/NGrNdjcHx3dUas10UASoAjVE
 _cookie_uu = '3M3AXsquTU5Gur/Svik+ewflPm5Rk2ieY3BIPlLjyK3C0Dp9F8UoPgbTyKiGtZp4x1X+uAUGKD7BM2g+dVd8eqEzDErCoYvdcvGLvVLAen1y08hNQtALjVKAe+1hM8g9QbNonlG1/t4S82ieUsBbrSIQbq1yhV6tZ6ArvSbA7rgHc8n5AdReyAmDaJ5Wm/ee3VDoCnGj/LlBs2ieUZNorhHDKK5Q=='
 
 
-class IMDbURLopener(urllib.FancyURLopener):
+class IMDbURLopener(FancyURLopener):
     """Fetch web pages and handle errors."""
     def __init__(self, *args, **kwargs):
-        urllib.FancyURLopener.__init__(self, *args, **kwargs)
+        FancyURLopener.__init__(self, *args, **kwargs)
         # XXX: IMDb's web server doesn't like urllib-based programs,
         #      so lets fake to be Mozilla.
         #      Wow!  I'm shocked by my total lack of ethic! <g>
@@ -169,7 +170,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def _retrieve(self, url):
         """Retrieve the given URL."""
-        encode = 'latin1'
+        encode = 'latin_1'
         try:
             uopener = self.urlOpener.open(url)
             content = uopener.read()
@@ -178,8 +179,12 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 ct_line = info_dict['Content-Type'].lower()
                 csi = ct_line.find('charset=')
                 if csi != -1:
-                    # XXX: check if it's a valid encode?
-                    encode = ct_line[csi+9:]
+                    server_encode = ct_line[csi+9:]
+                    try:
+                        if lookup(server_encode):
+                            encode = server_encode
+                    except (LookupError, ValueError, TypeError):
+                        pass
             uopener.close()
             self.urlOpener.close()
         except IOError, e:
@@ -194,7 +199,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # XXX: To retrieve the complete results list:
         #      params = urllib.urlencode({'more': 'tt', 'q': title})
         ##params = urllib.urlencode({'tt': 'on','mx': str(results),'q': title})
-        params = 'q=%s&tt=on&mx=%s' % (urllib.quote_plus(title), str(results))
+        params = 'q=%s&tt=on&mx=%s' % (quote_plus(title), str(results))
         cont = self._retrieve(imdbURL_search % params)
         return search_movie_parser.parse(cont, results=results)['data']
 
@@ -326,7 +331,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # XXX: To retrieve the complete results list:
         #      params = urllib.urlencode({'more': 'nm', 'q': name})
         ##params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
-        params = 'q=%s&nm=on&mx=%s' % (urllib.quote_plus(name), str(results))
+        params = 'q=%s&nm=on&mx=%s' % (quote_plus(name), str(results))
         cont = self._retrieve(imdbURL_search % params)
         return search_person_parser.parse(cont, results=results)['data']
 

@@ -31,7 +31,7 @@ from imdb.utils import analyze_title, analyze_name, canonicalName
 from imdb._exceptions import IMDbDataAccessError
 from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
                                 imdbURL_movie, imdbURL_person
-from imdb.parser.http.utils import subXMLRefs
+from imdb.parser.http.utils import subXMLRefs, subSGMLRefs
 
 # XXX NOTE: the first version of this module was heavily based on
 #           regular expressions.  This new version replace regexps with
@@ -42,6 +42,7 @@ from imdb.parser.http.utils import subXMLRefs
 
 # To strip spaces.
 re_spaces = re.compile(r'\s+')
+re_spacessub = re_spaces.sub
 # Strip html.
 re_unhtml = re.compile(r'<.+?>')
 re_unhtmlsub = re_unhtml.sub
@@ -51,7 +52,7 @@ re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
 
 def _unHtml(s):
     """Return a string without tags and no multiple spaces."""
-    return re_spaces.sub(' ', re_unhtmlsub('', s)).strip()
+    return subSGMLRefs(re_spacessub(' ', re_unhtmlsub('', s)).strip())
 
 
 _ltypes = (type([]), type(()))
@@ -129,7 +130,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 if fpe > fpi:
                     notes = _unHtml(name[fpi:fpe+1])
                     name = name[:fpi] + name[fpe+1:]
-                    name = name.replace('&', '')
+                    lampi = name.rfind('&')
+                    if lampi != -1 and name[lampi+1:].isspace():
+                        name = name[:lampi].rstrip()
             if hasCr:
                 name = name.split(' .... ')
                 if len(name) > 1:
@@ -193,6 +196,13 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if cvurl:
             cvurl = _findBetween(cvurl[0], 'src="', '"')
             if cvurl: d['cover url'] = cvurl[0]
+        if not d.has_key('cover url'):
+            short_title = d.get('title', u'')
+            if short_title:
+                cvurl = _getTagWith(cont, 'title="%s"' % short_title)
+                if cvurl:
+                    cvurl = _findBetween(cvurl[0], 'src="', '"')
+                    if cvurl: d['cover url'] = cvurl[0]
         genres = _findBetween(cont, 'href="/Sections/Genres/', '/')
         if genres: d['genres'] = genres
         ur = _findBetween(cont, 'User Rating:</b>', ' votes)')
@@ -320,7 +330,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         name = _findBetween(s, '<title>', '</title>')
         if not name:
             raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
-        r = analyze_name(name[0], canonical=1)
+        name = _unHtml(name[0])
+        r = analyze_name(name, canonical=1)
         bdate = _findBetween(s, '<div class="ch">Date of birth',
                             ('<br>', '<dt>'))
         if bdate:
@@ -425,12 +436,13 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                         notes = first.strip()
                     ms = ms[1:]
                 if ms: role = ' '.join(ms).strip()
-                movie = Movie(title=d['title'], accessSystem=self.accessSystem,
+                m_title = _unHtml(d['title'])
+                movie = Movie(title=m_title, accessSystem=self.accessSystem,
                                 movieID=str(d['movieID']),
                                 modFunct=self._defModFunct)
-                if d.has_key('status'): movie['status'] = d['status']
-                movie.currentRole = role
-                movie.notes = notes
+                if d.has_key('status'): movie['status'] = _unHtml(d['status'])
+                if role: movie.currentRole = _unHtml(role)
+                if notes: movie.notes = _unHtml(notes)
                 r.setdefault(sectName, []).append(movie)
         return {'data': r, 'info sets': ('main', 'filmography')}
 

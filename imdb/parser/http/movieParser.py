@@ -35,7 +35,7 @@ from imdb._exceptions import IMDbParserError
 from utils import ParserBase
 
 
-_stypes = (type(''), type(u''))
+_stypes = (type(u''), type(''))
 
 
 def strip_amps(theString):

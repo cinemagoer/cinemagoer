@@ -353,8 +353,5 @@ class KeyFScan:
 
 def latin2utf(s):
     """Convert a latin1 string to unicode, but only if it's needed."""
-    s = unicode(s, 'latin1', 'replace')
-    ##try: return str(s)
-    ##except UnicodeError: pass
-    return s
+    return unicode(s, 'latin1', 'replace')
 

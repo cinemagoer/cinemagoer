@@ -35,48 +35,39 @@ re_yearKind_index = re.compile(r'(\([0-9\?]{4}(?:/[IVXLCDM]+)?\)(?: \(mini\)| \(
 _ltype = type([])
 _dtype = type({})
 _uctype = type(u'')
-_stypes = (type(''), _uctype)
+_stypes = (_uctype, type(''))
 _destypes = (_ltype, _dtype)
 
-def _subRefs(s, titlesL, namesL):
-    """Replace titles in titlesL and names in namesL with
-    their '(qv) versions' in the string s."""
-    for title in titlesL:
-        ##if type(title) is _uctype:
-        ##    title = title.encode('latin1', 'ignore')
-        if s.find(title) != -1:
-            s = s.replace(title, '_%s_ (qv)' % title)
-    for name in namesL:
-        ##if type(name) is _uctype:
-        ##   name = name.encode('latin1', 'ignore')
-        if s.find(name) != -1:
-            s = s.replace(name, "'%s' (qv)" % name)
-    return s
 
-
-_keys_to_modify = list(Movie.keys_tomodify_list) + \
-                    list(Person.keys_tomodify_list)
-def _putRefs(d, titlesL, namesL, lastKey=None):
+_modify_keys = list(Movie.keys_tomodify_list) + list(Person.keys_tomodify_list)
+#modify_people = Person.keys_tomodify_list
+def _putRefs(d, re_titles, re_names, lastKey=None):
     """Iterate over the strings inside list items or dictionary values,
-    and call _subRefs() over strings that need modification."""
+    substitutes movie titles and person names with the (qv) references."""
     td = type(d)
     if td is _ltype:
         for i in xrange(len(d)):
             ti = type(d[i])
             if ti in _stypes:
-                if lastKey in _keys_to_modify:
-                    d[i] = _subRefs(d[i], titlesL, namesL)
+                if lastKey in _modify_keys:
+                    if re_names:
+                        d[i] = re_names.sub(ur"'\1' (qv)", d[i])
+                    if re_titles:
+                        d[i] = re_titles.sub(ur'_\1_ (qv)', d[i])
             elif ti in _destypes:
-                _putRefs(d[i], titlesL, namesL)
+                _putRefs(d[i], re_titles, re_names, lastKey=lastKey)
     elif td is _dtype:
         for k, v in d.items():
             tv = type(v)
             lastKey = k
-            if tv is _stypes:
-                if _keys_to_modify:
-                    d[k] = _subRefs(v, titlesL, namesL, lastKey=lastKey)
+            if tv in _stypes:
+                if lastKey in _modify_keys:
+                    if re_names:
+                        d[k] = re_names.sub(ur"'\1' (qv)", v)
+                    if re_titles:
+                        d[k] = re_titles.sub(ur'_\1_ (qv)', v)
             elif tv in _destypes:
-                _putRefs(v, titlesL, namesL, lastKey=lastKey)
+                _putRefs(d[k], re_titles, re_names, lastKey=lastKey)
 
 
 # Handle HTML entities.
@@ -237,7 +228,7 @@ class ParserBase(SGMLParser):
                         movie = Movie(movieID=str(self._titleRefCID),
                                     title=self._titleCN, accessSystem='http')
                         self._titlesRefs[self._titleCN] = movie
-                    except IMDbParserError:
+                    except IMDbParserError, e:
                         pass
                 self._titleRefCID = ''
                 self._titleCN = ''
@@ -317,6 +308,7 @@ class ParserBase(SGMLParser):
     def parse(self, html_string):
         """Return the dictionary generated from the given html string."""
         self.reset()
+        # XXX: useful only for the testsuite.
         if type(html_string) is not _uctype:
             html_string = unicode(html_string, 'latin_1', 'replace')
         html_string = subXMLRefs(html_string)
@@ -324,7 +316,15 @@ class ParserBase(SGMLParser):
         if self.getRefs and self._inTTRef: self._add_ref('tt')
         data = self.get_data()
         if self.getRefs:
-            _putRefs(data, self._titlesRefs.keys(), self._namesRefs.keys())
+            titl_re = ur'\b(%s)\b' % '|'.join([re.escape(x) for x
+                                            in self._titlesRefs.keys()])
+            if titl_re != ur'\b()\b': re_titles = re.compile(titl_re, re.U)
+            else: re_titles = None
+            nam_re = ur'\b(%s)\b' % '|'.join([re.escape(x) for x
+                                            in self._namesRefs.keys()])
+            if nam_re != ur'\b()\b': re_names = re.compile(nam_re, re.U)
+            else: re_names = None
+            _putRefs(data, re_titles, re_names)
         # XXX: should I return a copy of data?  Answer: NO!
         return {'data': data, 'titlesRefs': self._titlesRefs,
                 'namesRefs': self._namesRefs}

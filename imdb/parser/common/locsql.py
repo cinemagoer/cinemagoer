@@ -102,19 +102,25 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         to = type(o)
         if to in _stypes:
             for title in re_titleRef.findall(o):
-                rtitle = build_title(analyze_title(title, canonical=1),
-                                    canonical=1)
+                a_title = analyze_title(title, canonical=1)
+                rtitle = build_title(a_title, canonical=1)
                 if trefs.has_key(rtitle): continue
                 movieID = self._getTitleID(rtitle)
                 if movieID is None:
                     movieID = self._getTitleID(title)
-                if movieID is None: continue
+                if movieID is None:
+                    continue
                 m = Movie(title=rtitle, movieID=movieID,
                             accessSystem=self.accessSystem)
                 trefs[rtitle] = m
+                rtitle2 = canonicalTitle(a_title.get('title', u''))
+                if rtitle2 and rtitle2 != rtitle and rtitle2 != title:
+                    trefs[rtitle2] = m
+                if title != rtitle:
+                    trefs[title] = m
             for name in re_nameRef.findall(o):
-                rname = build_name(analyze_name(name, canonical=1),
-                                    canonical=1)
+                a_name = analyze_name(name, canonical=1)
+                rname = build_name(a_name, canonical=1)
                 if nrefs.has_key(rname): continue
                 personID = self._getNameID(rname)
                 if personID is None:
@@ -123,6 +129,11 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
                 p = Person(name=rname, personID=personID,
                             accessSystem=self.accessSystem)
                 nrefs[rname] = p
+                rname2 = normalizeName(a_name.get('name', u''))
+                if rname2 and rname2 != rname:
+                    nrefs[rname2] = p
+                if name != rname and name != rname2:
+                    nrefs[name] = p
         elif to is _ltype:
             for item in o:
                 self._findRefs(item, trefs, nrefs)
@@ -185,7 +196,10 @@ def nameVariations(name):
 
 
 try:
-    from ratober import ratcliff
+    from ratober import ratcliff as _ratcliff
+    def ratcliff(s1, s2, sm):
+        return _ratcliff(s1.encode('latin_1', 'replace'),
+                        s2.encode('latin_1', 'replace'))
 except ImportError:
     import warnings
     warnings.warn('Unable to import the ratober.ratcliff function.'

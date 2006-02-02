@@ -91,6 +91,7 @@ class Movie(_Container):
                 'country':  'countries',
                 'runtime':  'runtimes',
                 'lang': 'languages',
+                'cover': 'cover url',
                 'language': 'languages',
                 'certificate':  'certificates',
                 'certifications':   'certificates',

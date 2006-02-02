@@ -356,25 +356,6 @@ def modClearRefs(s, titlesRefs, namesRefs):
     s = modClearTitleRefs(s, {}, {})
     return modClearNameRefs(s, {}, {})
 
-def modHtmlLinks(s, titlesRefs, namesRefs):
-    """Substitute references with links to the IMDb web server."""
-    for title, movieO in titlesRefs.items():
-        movieID = movieO.movieID
-        if not movieID: continue
-        s = s.replace('_%s_ (qv)' % title,
-                        '<a href="http://akas.imdb.com/title/tt%s">%s</a>' %
-                        (movieID, title))
-    for name, personO in namesRefs.items():
-        personID = personO.personID
-        if not personID: continue
-        s = s.replace("'%s' (qv)" % name,
-                        '<a href="http://akas.imdb.com/name/nm%s">%s</a>' %
-                        (personID, name))
-    # Remove also not referenced entries.
-    s = modClearRefs(s, {}, {})
-    return s
-
-
 _stypes = (type(u''), type(''))
 _ltype = type([])
 _dtype = type({})

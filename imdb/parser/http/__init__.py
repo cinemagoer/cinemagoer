@@ -28,7 +28,7 @@ from urllib import FancyURLopener, quote_plus
 from codecs import lookup
 
 from imdb import IMDbBase
-from imdb._exceptions import IMDbDataAccessError
+from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         taglines_parser, keywords_parser, \
                         alternateversions_parser, crazycredits_parser, \
@@ -116,11 +116,17 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
-        return '%07d' % int(movieID)
+        try:
+            return '%07d' % int(movieID)
+        except ValueError, e:
+            raise IMDbParserError, 'invalid movieID "%s": %s' % (movieID, e)
 
     def _normalize_personID(self, personID):
         """Normalize the given personID."""
-        return '%07d' % int(personID)
+        try:
+            return '%07d' % int(personID)
+        except ValueError, e:
+            raise IMDbParserError, 'invalid personID "%s": %s' % (personID, e)
 
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID; in this implementation

@@ -197,9 +197,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             cvurl = _findBetween(cvurl[0], 'src="', '"')
             if cvurl: d['cover url'] = cvurl[0]
         if not d.has_key('cover url'):
+            # Cover, the new style.
             short_title = d.get('title', u'')
             if short_title:
-                cvurl = _getTagWith(cont, 'title="%s"' % short_title)
+                cvurl = _getTagWith(cont, 'alt="%s"' % short_title)
+                cvurl[:] = [x for x in cvurl if x[0:4] == '<img']
                 if cvurl:
                     cvurl = _findBetween(cvurl[0], 'src="', '"')
                     if cvurl: d['cover url'] = cvurl[0]

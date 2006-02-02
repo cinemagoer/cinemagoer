@@ -103,8 +103,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         IMDbLocalAndSqlAccessSystem.__init__(self, *arguments, **keywords)
         if miscDBargs is None: miscDBargs = {}
         initdict = miscDBargs
-        initdict.update({'db': db, 'user': user, 'host': host,
-                        'passwd': passwd})
+        initdict.update({'db': db, 'user': user, 'host': host, 'passwd': passwd,
+                        'use_unicode': 'latin_1'})
         try:
             self._db = MySQLdb.connect(**initdict)
             self._curs = self._db.cursor()
@@ -139,8 +139,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         None if not found."""
         nd = analyze_name(name)
         sql = 'SELECT personid FROM names WHERE name = %s'
-        data = [nd.get('name')]
-        indx = nd.get('imdbIndex')
+        data = [nd.get('name', u'').encode('latin_1', 'replace')]
+        indx = nd.get('imdbIndex', u'').encode('latin_1', 'replace')
         if indx:
             sql += ' AND imdbindex = %s'
             data.append(indx)
@@ -159,15 +159,17 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         None if not found."""
         td = analyze_title(title)
         sql = 'SELECT movieid FROM titles WHERE title = %s AND kind = %s'
-        data = [td.get('title'), td.get('kind')]
-        indx = td.get('imdbIndex')
+        data = [td.get('title', u'').encode('latin_1', 'replace'),
+                td.get('kind', u'').encode('latin_1', 'replace')]
+        indx = td.get('imdbIndex', u'').encode('latin_1', 'replace')
         if indx:
             sql += ' AND imdbindex = %s'
             data.append(indx)
-        year = td.get('year')
+        year = td.get('year', u'').encode('latin_1', 'replace')
         if year and year != '????':
             sql += ' AND year = %s'
             data.append(year)
+        sql += ' LIMIT 1;'
         try:
             self._curs.execute(sql, data)
             res = self._curs.fetchall()
@@ -256,6 +258,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # Up to 3 variations of the title are searched, plus the
         # long imdb canonical title, if provided.
         title1, title2, title3 = titleVariations(title)
+        #title1, title2, title3 = [x.encode('latin_1', 'replace')
+        #                            for x in title1, title2, title3]
         #title1, title2, title3 = [x.lower() for x in (title1, title2, title3)]
         resd = {}
         # Build the SOUNDEX(title) IN ... clause.
@@ -581,5 +585,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     def get_person_filmography(self, personID): return self.get_person_main(personID)
     def get_person_biography(self, personID): return self.get_person_main(personID)
     def get_person_other_works(self, personID): return self.get_person_main(personID)
+
+    def __del__(self):
+        """Ensure that the connection is closed."""
+        self._db.close()
 
 

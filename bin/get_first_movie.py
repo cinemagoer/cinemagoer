@@ -27,6 +27,10 @@ title = sys.argv[1]
 
 i = imdb.IMDb()
 
+in_encoding = sys.stdin.encoding or sys.getdefaultencoding()
+out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
+
+title = unicode(title, in_encoding, 'replace'))
 try:
     # Do the search, and get the results (a list of Movie objects).
     results = i.search_movie(title)
@@ -36,11 +40,11 @@ except imdb.IMDbError, e:
     sys.exit(3)
 
 if not results:
-    print 'No matches for "%s", sorry.' % title
+    print 'No matches for "%s", sorry.' % title.encode(out_encoding, 'replace')
     sys.exit(0)
 
 # Print only the first result.
-print '    Best match for "%s"' % title
+print '    Best match for "%s"' % title.encode(out_encoding, 'replace')
 
 # This is a Movie instance.
 movie = results[0]
@@ -49,7 +53,7 @@ movie = results[0]
 # title and the year; retrieve main information:
 i.update(movie)
 
-print movie.summary()
+print movie.summary().encode(out_encoding, 'replace')
 
 
 

@@ -27,6 +27,8 @@ imdbID = sys.argv[1]
 
 i = imdb.IMDb()
 
+out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
+
 try:
     # Get a Person object with the data about the person identified by
     # the given imdbID.
@@ -48,7 +50,7 @@ if not person:
 # to access the data stored in a Person object, so look below; the
 # commented lines show some ways to retrieve information from a
 # Person object.
-print person.summary()
+print person.summary().encode(out_encoding, 'replace')
 
 # Show some info about the person.
 # This is only a short example; you can get a longer summary using

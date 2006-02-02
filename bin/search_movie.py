@@ -27,6 +27,10 @@ title = sys.argv[1]
 
 i = imdb.IMDb()
 
+in_encoding = sys.stdin.encoding or sys.getdefaultencoding()
+out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
+
+title = unicode(title, in_encoding, 'replace')
 try:
     # Do the search, and get the results (a list of Movie objects).
     results = i.search_movie(title)
@@ -36,11 +40,12 @@ except imdb.IMDbError, e:
     sys.exit(3)
 
 # Print the results.
-print '    %s results for "%s":' % (len(results), title)
+print '    %s results for "%s":' % (len(results),
+                                    title.encode(out_encoding, 'replace'))
 
 # Print the long imdb title for every movie.
 for movie in results:
     print '%s: %s' % (i.get_imdbMovieID(movie.movieID),
-                        movie['long imdb title'])
+                    movie['long imdb title'].encode(out_encoding, 'replace'))
 
 

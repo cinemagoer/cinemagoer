@@ -78,7 +78,7 @@ def _buildGuests(gl):
             if opi != -1:
                 note = g[opi:].replace('_', '"').strip()
                 g = g[:opi].strip()
-        cr = ''
+        cr = u''
         cri = g.find('_ (qv), as ')
         if cri != -1:
             cr = g[cri+11:].replace('[unknown]', '').strip()

@@ -121,6 +121,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         pl = []
         plappend = pl.append
         counter = 1
+        currentRole = u''
         for name in names:
             notes = u''
             currentRole = u''
@@ -425,19 +426,31 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                                     m[1:ey] in ('TV', 'V', 'mini', 'VG'):
                                 d['title'] += ' %s' % m[:ey+1]
                                 m = m[ey+1:].lstrip()
-                #istvguest = 0
-                #if m.find('<small>playing</small>') != -1:
-                #    istvguest = 1
-                m = m.replace('<small>', ' ').replace('</small>', ' ').strip()
+                istvguest = 0
+                if m.find('<small>playing</small>') != -1:
+                    istvguest = 1
+                    m = m.replace('<small>playing</small>', '').strip()
+                else:
+                    m=m.replace('<small>',' ').replace('</small>',' ').strip()
                 notes = u''
                 role = u''
-                ms = m.split('....')
-                if len(ms) >= 1:
-                    first = ms[0]
-                    if first and first[0] == '(':
-                        notes = first.strip()
-                    ms = ms[1:]
-                if ms: role = ' '.join(ms).strip()
+                if not istvguest:
+                    ms = m.split('....')
+                    if len(ms) >= 1:
+                        first = ms[0]
+                        if first and first[0] == '(':
+                            notes = first.strip()
+                        ms = ms[1:]
+                    if ms: role = ' '.join(ms).strip()
+                else:
+                    noteidx = m.find('(')
+                    if noteidx == -1:
+                        noteidx = m.find('in episode')
+                    if noteidx != -1:
+                        notes = m[noteidx:]
+                        role = m[:noteidx-1]
+                    else:
+                        role = m
                 m_title = _unHtml(d['title'])
                 movie = Movie(title=m_title, accessSystem=self.accessSystem,
                                 movieID=str(d['movieID']),

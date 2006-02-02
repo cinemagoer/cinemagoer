@@ -27,6 +27,10 @@ name = sys.argv[1]
 
 i = imdb.IMDb()
 
+in_encoding = sys.stdin.encoding or sys.getdefaultencoding()
+out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
+
+name = unicode(name, in_encoding, 'replace')
 try:
     # Do the search, and get the results (a list of Person objects).
     results = i.search_person(name)
@@ -36,11 +40,11 @@ except imdb.IMDbError, e:
     sys.exit(3)
 
 if not results:
-    print 'No matches for "%s", sorry.' % name
+    print 'No matches for "%s", sorry.' % name.encode(out_encoding, 'replace')
     sys.exit(0)
 
 # Print only the first result.
-print '    Best match for "%s"' % name
+print '    Best match for "%s"' % name.encode(out_encoding, 'replace')
 
 # This is a Person instance.
 person = results[0]
@@ -49,7 +53,7 @@ person = results[0]
 # name; retrieve main information:
 i.update(person)
 
-print person.summary()
+print person.summary().encode(out_encoding, 'replace')
 
 
 

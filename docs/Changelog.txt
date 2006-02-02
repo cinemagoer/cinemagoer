@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060202 "Fascisti Su Marte" (02 Feb 2006)
+* What's the new in release 2.4-cvs20060202b "Fascisti Su Marte" (02 Feb 2006)
   [general]
   - unified Movie and Person classes.
   - the strings used to store every kind of information about movies and
@@ -50,6 +50,7 @@
   [mobile data access system]
   - fixed bugs related to non-ascii chars.
   - fixed a bug retrieving the URL of the cover.
+  - retrieve currentRole/notes also for tv guest appearances.
 
   [local data access system]
   - it can work even if the "ratober" C module is not compiled;

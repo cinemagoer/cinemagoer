@@ -86,7 +86,7 @@ def getMovieCast(dataF, movieID, indexF, keyF, attrIF, attrKF, offsList=[],
             name = getLabel(personID, indexF, keyF)
             if not name: continue
             p = Person(name=name, personID=personID,
-                        currentRole=movie.get('currentRole', ''),
+                        currentRole=movie.get('currentRole', u''),
                         accessSystem='local')
             if movie.has_key('attributeID'):
                 attr = getLabel(movie['attributeID'], attrIF, attrKF)

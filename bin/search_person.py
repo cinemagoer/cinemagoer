@@ -27,6 +27,10 @@ name = sys.argv[1]
 
 i = imdb.IMDb()
 
+in_encoding = sys.stdin.encoding or sys.getdefaultencoding()
+out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
+
+name = unicode(name, in_encoding, 'replace')
 try:
     # Do the search, and get the results (a list of Person objects).
     results = i.search_person(name)
@@ -36,11 +40,12 @@ except imdb.IMDbError, e:
     sys.exit(3)
 
 # Print the results.
-print '    %s results for "%s":' % (len(results), name)
+print '    %s results for "%s":' % (len(results),
+                                    name.encode(out_encoding, 'replace'))
 
 # Print the long imdb name for every person.
 for person in results:
     print '%s: %s' % (i.get_imdbPersonID(person.personID),
-                        person['long imdb name'])
+                    person['long imdb name'].encode(out_encoding, 'replace'))
 
 

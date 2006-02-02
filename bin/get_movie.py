@@ -27,6 +27,8 @@ imdbID = sys.argv[1]
 
 i = imdb.IMDb()
 
+out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
+
 try:
     # Get a Movie object with the data about the movie identified by
     # the given imdbID.
@@ -48,7 +50,7 @@ if not movie:
 # to access the data stored in a Movie object, so look below; the
 # commented lines show some ways to retrieve information from a
 # Movie object.
-print movie.summary()
+print movie.summary().encode(out_encoding, 'replace')
 
 # Show some info about the movie.
 # This is only a short example; you can get a longer summary using

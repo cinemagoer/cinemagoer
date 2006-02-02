@@ -316,13 +316,13 @@ class ParserBase(SGMLParser):
         if self.getRefs and self._inTTRef: self._add_ref('tt')
         data = self.get_data()
         if self.getRefs:
-            titl_re = ur'\b(%s)\b' % '|'.join([re.escape(x) for x
+            titl_re = ur'(%s)' % '|'.join([re.escape(x) for x
                                             in self._titlesRefs.keys()])
-            if titl_re != ur'\b()\b': re_titles = re.compile(titl_re, re.U)
+            if titl_re != ur'()': re_titles = re.compile(titl_re, re.U)
             else: re_titles = None
-            nam_re = ur'\b(%s)\b' % '|'.join([re.escape(x) for x
+            nam_re = ur'(%s)' % '|'.join([re.escape(x) for x
                                             in self._namesRefs.keys()])
-            if nam_re != ur'\b()\b': re_names = re.compile(nam_re, re.U)
+            if nam_re != ur'()': re_names = re.compile(nam_re, re.U)
             else: re_names = None
             _putRefs(data, re_titles, re_names)
         # XXX: should I return a copy of data?  Answer: NO!

@@ -40,6 +40,7 @@ from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 
+_uctype = type(u'')
 
 _litlist = ['screenplay/teleplay', 'novel', 'adaption', 'book',
             'production process protocol', 'interviews',
@@ -273,6 +274,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 "LOCATE(' ,', REVERSE(title))+1)),5) = " + \
                 "LEFT(SOUNDEX('%s'),5)" % _(title2)
 
+        if type(sqlq) is _uctype: sqlq = sqlq.encode('latin_1', 'replace')
         qr = list(self.query(sqlq, escape=0))
         qr += list(self.query(sqlq.replace('titles', 'akatitles', 1), escape=0))
 
@@ -343,7 +345,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             duty = self._roles[group[0][4]]
             for pdata in group:
                 p = Person(personID=pdata[0], name=pdata[5],
-                            currentRole=pdata[1], notes=pdata[2],
+                            currentRole=pdata[1] or u'', notes=pdata[2] or u'',
                             accessSystem='sql')
                 if pdata[6]: p['imdbIndex'] = pdata[6]
                 p.billingPos = pdata[3]
@@ -483,6 +485,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 " ' ', (SUBSTRING_INDEX(name, ', ', 1)))),5) IN %s;" % sndex
         # XXX: add a "LIMIT 5000" clause or something?
 
+        if type(sqlq) is _uctype: sqlq = sqlq.encode('latin_1', 'replace')
         qr = list(self.query(sqlq, escape=0))
         qr += list(self.query(sqlq.replace('names', 'akanames', 1), escape=0))
 
@@ -522,7 +525,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             duty = self._roles[group[0][3]]
             for mdata in group:
                 m = Movie(movieID=mdata[0], title=mdata[4],
-                            currentRole=mdata[1], notes=mdata[2],
+                            currentRole=mdata[1] or u'', notes=mdata[2] or u'',
                             accessSystem='sql')
                 m['kind'] = mdata[6]
                 if mdata[5]: m['imdbIndex'] = mdata[5]

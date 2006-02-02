@@ -39,7 +39,7 @@ _stypes = (type(u''), type(''))
 
 
 def strip_amps(theString):
-    """Remove '&\s*' at the end of a string.
+    """Remove '&\S*' AT the end of a string.
     It's used to remove '& ' from strings like '(written by) & '.
     """
     i = theString.rfind('&')
@@ -236,7 +236,7 @@ class HTMLMovieParser(ParserBase):
             if self.__is_cast_crew:
                 # Strip final '&' (and spaces); this is here
                 # to get rid of things like the "& " in "(novel) & ".
-                self.__name = strip_amps(self.__name)
+                #self.__name = strip_amps(self.__name)
                 n_split = self.__name.split('::')
                 n = n_split[0].strip()
                 del n_split[0]
@@ -246,20 +246,20 @@ class HTMLMovieParser(ParserBase):
                 if ii != -1:
                     ei = role.rfind(')')
                     if ei != -1:
-                        notes = role[ii:ei+1].strip()
-                        role = '%s%s' % (role[:ii], role[ei+1:])
+                        notes = strip_amps(role[ii:ei+1].strip())
+                        role = strip_amps('%s%s' % (role[:ii], role[ei+1:]))
                         role = role.replace('  ', ' ').strip()
                 sect = clear_text(self.__current_section)
                 if sect != 'cast':
                     if notes: notes = ' %s' % notes
-                    notes = role + notes
+                    notes = strip_amps(role + notes).strip()
                     role = u''
                 if sect == 'crewmembers': sect = 'miscellaneous crew'
                 # Create a Person object.
                 # XXX: check for self.__cur_nameID?
                 #      maybe it's not a good idea; is it possible for
                 #      a person to be listed without a link?
-                p = Person(name=n, currentRole=role,
+                p = Person(name=strip_amps(n), currentRole=role,
                         personID=str(self.__cur_nameID), accessSystem='http')
                 if notes: p.notes = notes
                 if self.__movie_data.setdefault(sect, []) == []:

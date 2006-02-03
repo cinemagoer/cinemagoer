@@ -169,6 +169,7 @@ def canonicalTitle(title):
             title = '%s, %s' % (title[lart:], title[:lart])
             if article[-1] == ' ': title = title[:-1]
             break
+    ## XXX: an attempt using a dictionary lookup.
     ##for artSeparator in (' ', "'", '-'):
     ##    article = _articlesDict.get(ltitle.split(artSeparator)[0])
     ##    if article is not None:
@@ -559,9 +560,9 @@ class _Container:
         return [(k, self.get(k)) for k in self.keys()]
 
     # XXX: implement!
-    #def iteritems(self): return self.data.iteritems()
-    #def iterkeys(self): return self.data.iterkeys()
-    #def itervalues(self): return self.data.itervalues()
+    ##def iteritems(self): return self.data.iteritems()
+    ##def iterkeys(self): return self.data.iterkeys()
+    ##def itervalues(self): return self.data.itervalues()
 
     def values(self):
         """Return the values in the dictionary."""
@@ -608,7 +609,7 @@ class _Container:
         self.data[key] = item
 
     def __nonzero__(self):
-        """The Movie is "false" if the self.data does not contains a title."""
+        """Return true if self.data contains something."""
         if self.data: return 1
         return 0
 

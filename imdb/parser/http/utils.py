@@ -70,7 +70,7 @@ def _putRefs(d, re_titles, re_names, lastKey=None):
                 _putRefs(d[k], re_titles, re_names, lastKey=lastKey)
 
 
-# Handle HTML entities.
+# Handle HTML/XML/SGML entities.
 from htmlentitydefs import entitydefs
 entitydefs = entitydefs.copy()
 entitydefsget = entitydefs.get
@@ -228,7 +228,7 @@ class ParserBase(SGMLParser):
                         movie = Movie(movieID=str(self._titleRefCID),
                                     title=self._titleCN, accessSystem='http')
                         self._titlesRefs[self._titleCN] = movie
-                    except IMDbParserError, e:
+                    except IMDbParserError:
                         pass
                 self._titleRefCID = ''
                 self._titleCN = ''
@@ -236,7 +236,7 @@ class ParserBase(SGMLParser):
                 self._inLinkTTRef = 0
         elif self._nameRefCID and self._nameCN:
             # XXX: 'Neo' and 'Keanu Reeves' are two separated
-            #      entry in the dictionary.  Check the value instead
+            #      entry in the dictionary.  Check the ID value instead
             #      of the key?
             if not self._namesRefs.has_key(self._nameCN):
                 try:
@@ -316,6 +316,8 @@ class ParserBase(SGMLParser):
         if self.getRefs and self._inTTRef: self._add_ref('tt')
         data = self.get_data()
         if self.getRefs:
+            # It would be nice to use ur'\b(%s)\b', but it seems that
+            # some references are lost.
             titl_re = ur'(%s)' % '|'.join([re.escape(x) for x
                                             in self._titlesRefs.keys()])
             if titl_re != ur'()': re_titles = re.compile(titl_re, re.U)

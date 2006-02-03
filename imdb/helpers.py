@@ -4,7 +4,7 @@ helpers module (imdb package).
 This module provides functions not used directly by the imdb package,
 but useful for IMDbPY-based programs.
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,15 +34,17 @@ _re_hrefsub = _re_href.sub
 
 _uctype = type(u'')
 
+
 def makeCgiPrintEncoding(encoding):
     """Make a function to pretty-print strings for the web."""
     def cgiPrint(s):
         """Encode the given string using the %s encoding, and replace
-        chars outside the given codepage with XML char references.""" % encoding
+        chars outside the given charset with XML char references.""" % encoding
         s = escape(s, quote=1)
         if type(s) is _uctype: s = s.encode(encoding, 'xmlcharrefreplace')
         return s
     return cgiPrint
+
 # cgiPrint uses the latin_1 encoding.
 cgiPrint = makeCgiPrintEncoding('latin_1')
 
@@ -54,6 +56,7 @@ def makeModCGILinks(movieTxt, personTxt):
     must contains %(personID)s and %(name)s."""
     def modCGILinks(s, titlesRefs, namesRefs):
         """Substitute movies and persons references."""
+        # XXX: look ma'... more nested scopes! <g>
         def _replaceMovie(match):
             to_replace = match.group(1)
             item = titlesRefs.get(to_replace)
@@ -61,8 +64,8 @@ def makeModCGILinks(movieTxt, personTxt):
                 movieID = item.movieID
                 to_replace = movieTxt % {'movieID': movieID,
                                         'title': unicode(cgiPrint(to_replace),
-                                        'latin_1',
-                                        'xmlcharrefreplace')}
+                                                        'latin_1',
+                                                        'xmlcharrefreplace')}
             return to_replace
         def _replacePerson(match):
             to_replace = match.group(1)
@@ -71,8 +74,8 @@ def makeModCGILinks(movieTxt, personTxt):
                 personID = item.personID
                 to_replace = personTxt % {'personID': personID,
                                         'name': unicode(cgiPrint(to_replace),
-                                        'latin_1',
-                                        'xmlcharrefreplace')}
+                                                        'latin_1',
+                                                        'xmlcharrefreplace')}
             return to_replace
         s = s.replace('<', '&lt;').replace('>', '&gt;')
         s = _re_hrefsub(r'<a href="\1">\1</a>', s)
@@ -81,18 +84,18 @@ def makeModCGILinks(movieTxt, personTxt):
         return s
     return modCGILinks
 
+# links to the imdb.com web site.
 modHtmlLinks = makeModCGILinks(
     movieTxt='<a href="http://akas.imdb.com/title/tt%(movieID)s">%s</a>',
     personTxt='<a href="http://akas.imdb.com/name/nm%(personID)s">%(name)s</a>')
 
 
 def _replAllXMLRef(match):
-    """Replace the matched XML references."""
+    """Replace the matched XML reference."""
     ref = match.group(1)
     value = entcharrefsget(ref)
     if value is None:
         if ref[0] == '#':
-            ref_code = ref[1:]
             return unichr(int(ref[1:]))
         else:
             return ref

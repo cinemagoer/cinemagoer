@@ -234,9 +234,8 @@ class HTMLMovieParser(ParserBase):
         if self.__is_name and self.__current_section:
             # Every cast/crew information are separated by <tr> tags.
             if self.__is_cast_crew:
-                # Strip final '&' (and spaces); this is here
+                # Remember to Strip final '&' (and spaces),
                 # to get rid of things like the "& " in "(novel) & ".
-                #self.__name = strip_amps(self.__name)
                 n_split = self.__name.split('::')
                 n = n_split[0].strip()
                 del n_split[0]

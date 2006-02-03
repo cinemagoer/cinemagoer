@@ -182,6 +182,13 @@ class Person(_Container):
         p.billingPos = self.billingPos
         return p
 
+    def __repr__(self):
+        """String representation of a Person object."""
+        r = '<Person id:%s[%s] name:"%s">' % (self.personID, self.accessSystem,
+                                        self.get('long imdb canonical name'))
+        if type(r) is type(u''): r = r.encode('utf8', 'replace')
+        return r
+
     def __str__(self):
         """Simply print the short name."""
         return self.get('name', u'').encode('utf8', 'replace')

@@ -57,6 +57,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
             urlOpener.close()
         except (IOError, IMDbDataAccessError):
             pass
+        # XXX: convert to unicode? I don't think it's needed.
         return content
 
     def _getTitleID(self, title):
@@ -213,6 +214,8 @@ except ImportError:
 
 
 def scan_names(name_list, name1, name2, name3, results=0):
+    """Scan a list of names, searching for best matches against
+    the given variations."""
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
     sm3 = SequenceMatcher()
@@ -253,6 +256,8 @@ def scan_names(name_list, name1, name2, name3, results=0):
     return res
 
 def scan_titles(titles_list, title1, title2, title3, results=0):
+    """Scan a list of titles, searching for best matches against
+    the given variations."""
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
     sm3 = SequenceMatcher()

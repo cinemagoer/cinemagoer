@@ -72,6 +72,8 @@ def IMDb(accessSystem='http', *arguments, **keywords):
 #      I suppose that an argument of the IMDb function can be used to
 #      set a default encoding for the output, and then Movie and Person
 #      objecs can use this default encoding returning strings.
+#      Anyway, passing unicode strings to search_movie() and search_person()
+#      methods is always safer.
 encoding = sys.stdin.encoding or sys.getdefaultencoding()
 
 class IMDbBase:

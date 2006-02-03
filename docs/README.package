@@ -17,6 +17,12 @@ Sections in this file:
 * EXCEPTIONS
 * OTHER SOURCES OF INFO
 
+  UNICODE NOTICE
+  ==============
+
+Since release 2.4, IMDbPY internally manages every information about
+movies and people using unicode strings.  Please read the README.utf8 file.
+
 
   GENERAL USAGE
   =============

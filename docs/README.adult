@@ -1,8 +1,9 @@
   IMDbPY for (too) sensitive people
   =================================
 
-Since version 2.0, by default adult movies are included in
-the result of the search_movie() and search_person() methods.
+Since version 2.0 (shame on me!  I've noticed this only after more
+than a year of development!!!) by default adult movies are included
+in the result of the search_movie() and search_person() methods.
 
 If for some unintelligible reason you don't want classics
 like "Debbie Does Dallas" to show up in your list of results,

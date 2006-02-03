@@ -59,6 +59,13 @@ If you want to insert the content of the plain text data files
 into a SQL database, read the "README.sqldb" file.
 
 
+  UNICODE NOTICE
+  ==============
+
+Since release 2.4, IMDbPY internally manages every information about
+movies and people using unicode strings.  Please read the README.utf8 file.
+
+
   FEATURES
   ========
 

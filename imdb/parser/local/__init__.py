@@ -49,14 +49,15 @@ _ltype = type([])
 _dtype = type({})
 _stypes = (type(u''), type(''))
 
-
 try:
     from imdb.parser.common.ratober import search_name
 
     def _scan_names(keyFile, name1, name2, name3, results=0):
+        """Scan the given file, using the ratober.search_name
+        C function, for name variations."""
         # the search_name function in the ratober C module manages
         # latin_1 encoded strings.
-        name1, name2, name3 = [x.encode('latin1', 'replace')
+        name1, name2, name3 = [x.encode('latin_1', 'replace')
                                 for x in name1, name2, name3]
         sn = search_name(keyFile, name1, name2, name3, results)
         res = []
@@ -74,6 +75,8 @@ except ImportError:
     from imdb.parser.common.locsql import scan_names
 
     def _readNamesKeyFile(keyFile):
+        """Iterate over the given file, returning tuples suited for
+        the common.locsql.scan_names function."""
         try: kf = open(keyFile, 'r')
         except IOError, e: raise IMDbDataAccessError, str(e)
         for line in kf:
@@ -85,6 +88,8 @@ except ImportError:
         kf.close()
 
     def _scan_names(keyFile, name1, name2, name3, results=0):
+        """Scan the given file, using the common.locsql.scan_names
+        pure-Python function, for name variations."""
         return scan_names(_readNamesKeyFile(keyFile),
                             name1, name2, name3, results)
 
@@ -92,7 +97,9 @@ try:
     from imdb.parser.common.ratober import search_title
 
     def _scan_titles(keyFile, title1, title2, title3, results=0):
-        title1, title2, title3 = [x.encode('latin1', 'replace')
+        """Scan the given file, using the ratober.search_title
+        C function, for title variations."""
+        title1, title2, title3 = [x.encode('latin_1', 'replace')
                                     for x in title1, title2, title3]
         st = search_title(keyFile, title1, title2, title3, results)
         res = []
@@ -110,6 +117,8 @@ except ImportError:
     from imdb.parser.common.locsql import scan_titles
 
     def _readTitlesKeyFile(keyFile):
+        """Iterate over the given file, returning tuples suited for
+        the common.locsql.scan_titles function."""
         try: kf = open(keyFile, 'r')
         except IOError, e: raise IMDbDataAccessError, str(e)
         for line in kf:
@@ -121,6 +130,8 @@ except ImportError:
         kf.close()
 
     def _scan_titles(keyFile, title1, title2, title3, results=0):
+        """Scan the given file, using the common.locsql.scan_titles
+        pure-Python function, for title variations."""
         return scan_titles(_readTitlesKeyFile(keyFile),
                             title1, title2, title3, results)
 
@@ -144,7 +155,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         self.__db = os.path.normcase(self.__db)
         if not os.path.isdir(self.__db):
             raise IMDbDataAccessError, '"%s" is not a directory' % self.__db
-        # Used to quickly get the mopID for a given title/name.
+        # These indices are used to quickly get the mopID
+        # for a given title/name.
         self.__namesScan = KeyFScan('%snames.key' % self.__db)
         self.__titlesScan = KeyFScan('%stitles.key' % self.__db)
         self.do_adult_search(adultSearch)
@@ -501,6 +513,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         if akas: res['akas'] = akas
         # XXX: horrible hack!  The getBio() function is not able to
         #      retrieve the movieID!
+        #      A cleaner solution, would be to NOT return Movies object
+        #      at first, from the getBio() function.
         if res.has_key('notable tv guest appearances'):
             nl = []
             for m in res['notable tv guest appearances']:

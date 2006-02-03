@@ -69,6 +69,9 @@ def _buildGuests(gl):
     rl = []
     rlapp = rl.append
     for g in gl:
+        # When used from imdbpy2sql.py script, latin_1 strings are passed.
+        if type(g) is not type(u''):
+            g = unicode(g, 'latin_1', 'replace')
         titl = re_titleRef.findall(g)
         if len(titl) != 1: continue
         note = ''

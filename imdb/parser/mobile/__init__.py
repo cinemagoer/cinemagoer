@@ -108,7 +108,6 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
     def _mretrieve(self, url):
         """Retrieve an html page and normalize it."""
         cont = IMDbHTTPAccessSystem._retrieve(self, url)
-        #cont = unicode(cont, 'latin1')
         cont = re_spaces.sub(' ', cont)
         cont = subXMLRefs(cont)
         return cont
@@ -167,14 +166,14 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             mid = None
             if midtag: mid = _findBetween(midtag[0], 'value="', '"')
             if not (mid and title): return res
-            res[:] = [(mid[0], analyze_title(title, canonical=1))]
+            res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
         else:
             lis = _findBetween(cont, '<li>', ['</li>', '<br>'])
             for li in lis:
                 imdbid = re_imdbID.findall(li)
                 mtitle = _unHtml(li)
                 if not (imdbid and mtitle): continue
-                res.append((imdbid[0], analyze_title(mtitle, canonical=1)))
+                res.append((str(imdbid[0]), analyze_title(mtitle, canonical=1)))
         return res
 
     def get_movie_main(self, movieID):
@@ -317,14 +316,14 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             pid = None
             if pidtag: pid = _findBetween(pidtag[0], '/name/nm', '/')
             if not (pid and name): return res
-            res[:] = [(pid[0], analyze_name(name, canonical=1))]
+            res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:
             lis = _findBetween(cont, '<li>', ['<small', '</li>', '<br'])
             for li in lis:
                 pid = re_imdbID.findall(li)
                 pname = _unHtml(li)
                 if not (pid and pname): continue
-                res.append((pid[0], analyze_name(pname, canonical=1)))
+                res.append((str(pid[0]), analyze_name(pname, canonical=1)))
         return res
 
     def get_person_main(self, personID):
@@ -443,6 +442,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                         ms = ms[1:]
                     if ms: role = ' '.join(ms).strip()
                 else:
+                    # XXX: strip quotes from strings like "Himself"?
                     noteidx = m.find('(')
                     if noteidx == -1:
                         noteidx = m.find('in episode')

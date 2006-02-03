@@ -211,6 +211,13 @@ class Movie(_Container):
         m.set_mod_funct(self.modFunct)
         return m
 
+    def __repr__(self):
+        """String representation of a Movie object."""
+        r = '<Movie id:%s[%s] title:"%s">' % (self.movieID, self.accessSystem,
+                                        self.get('long imdb canonical title'))
+        if type(r) is type(u''): r = r.encode('utf8', 'replace')
+        return r
+
     def __str__(self):
         """Simply print the short title."""
         return self.get('title', u'').encode('utf8', 'replace')

@@ -19,6 +19,7 @@ imdb (package)
  +-> Movie
  +-> Person
  +-> utils
+ +-> helpers
  +-> parser (package)
        |
        +-> http (package)
@@ -41,7 +42,10 @@ imdb (package)
        |
        +-> common (package)
             |
-            +-> ratober
+            +-> ratober (C module)
+            +-> locsql
+
+
 
 Description:
 imdb (package): contains the IMDb function, the IMDbBase class and imports
@@ -81,11 +85,15 @@ in parser.http, with some method overridden to be many times faster (from
 much CPU power.
 
 The parser.common package contains code common to different packages;
-so far there's only the locsql and the ratober modules, both used by
+so far there're only the locsql and the ratober modules, both used by
 "local" and "sql" data access systems.
 The ratober module is a C module, used to search names.keys and titles.key
 files from the "local" data access system.  It also contains a C function
 used to speed up the "sql" data access system.
+
+The helpers module contains functions and other goodies not directly
+used by the IMDbPY package, but that can be useful to develop
+IMDbPY-based programs.
 
 
   GENERIC DESCRIPTION

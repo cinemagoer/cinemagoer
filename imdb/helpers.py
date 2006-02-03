@@ -24,8 +24,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import re
 from cgi import escape
 
+# The modClearRefs can be used to strip names and titles references from
+# the strings in Movie and Person objects.
 from utils import modClearRefs, re_titleRef, re_nameRef
-from imdb.parser.http.utils import re_entcharrefssub, entcharrefsget
+from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
+                                    entcharrefsget, subXMLRefs, subSGMLRefs
 
 
 # An URL, more or less.
@@ -86,14 +89,24 @@ def makeModCGILinks(movieTxt, personTxt):
 
 # links to the imdb.com web site.
 modHtmlLinks = makeModCGILinks(
-    movieTxt='<a href="http://akas.imdb.com/title/tt%(movieID)s">%s</a>',
+    movieTxt='<a href="http://akas.imdb.com/title/tt%(movieID)s">%(title)s</a>',
     personTxt='<a href="http://akas.imdb.com/name/nm%(personID)s">%(name)s</a>')
 
+
+everyentcharrefs = entcharrefs.copy()
+for k, v in {'lt':u'<','gt':u'>','amp':u'&','quot':u'"','apos':u'\''}.items():
+    everyentcharrefs[k] = v
+    everyentcharrefs['#%s' % ord(v)] = v
+everyentcharrefsget = everyentcharrefs.get
+re_everyentcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' %
+                            '|'.join(map(re.escape, everyentcharrefs)))
+re_everyentcharrefssub = re_everyentcharrefs.sub
 
 def _replAllXMLRef(match):
     """Replace the matched XML reference."""
     ref = match.group(1)
-    value = entcharrefsget(ref)
+    print ref
+    value = everyentcharrefsget(ref)
     if value is None:
         if ref[0] == '#':
             return unichr(int(ref[1:]))
@@ -101,9 +114,9 @@ def _replAllXMLRef(match):
             return ref
     return value
 
-def subAllXMLRefs(s):
-    """Return the given string with entity and char references
+def subXMLHTMLSGMLRefs(s):
+    """Return the given string with XML/HTML/SGML entity and char references
     replaced."""
-    return re_entcharrefssub(_replAllXMLRef, s)
+    return re_everyentcharrefssub(_replAllXMLRef, s)
 
 

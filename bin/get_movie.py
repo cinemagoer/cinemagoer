@@ -7,6 +7,25 @@ Usage: get_movie "imdbID"
 Show some info about the movie with the given imdbID (e.g. '0133093'
 for "The Matrix".
 """
+# Parameters to initialize the IMDb class.
+IMDB_PARAMS = {
+    # The used access system. 'web' means that you're retrieving data
+    # from the IMDb web server.
+    'accessSystem': 'web'
+    #'accessSystem': 'mobile'
+    # XXX: if you've a local installation of the IMDb database,
+    # comment the above line and uncomment the following two.
+    #'accessSystem': 'local',
+    #'dbDirectory':  '/usr/local/imdb' # or, in a Windows environment:
+    #'dbDirectory':  'D:/imdb-20060107'
+    
+    # XXX: parameters for a SQL installation.
+    #'accessSystem': 'sql',
+    #'db': 'imdb',
+    #'user': 'name',
+    #'passwd': 'yourPassword',
+    #'host': 'localhost'
+}
 
 import sys
 
@@ -25,7 +44,7 @@ if len(sys.argv) != 2:
 
 imdbID = sys.argv[1]
 
-i = imdb.IMDb()
+i = imdb.IMDb(**IMDB_PARAMS)
 
 out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 

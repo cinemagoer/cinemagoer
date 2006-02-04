@@ -349,7 +349,15 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     '%stitles.key' % self.__db,
                     '%sattributes.index' % self.__db,
                     '%sattributes.key' % self.__db)
-        if akas: res['akas'] = akas
+        if akas:
+            for i in xrange(len(akas)):
+                ts = akas[i].split('::')
+                if len(ts) != 2: continue
+                t = ts[0]
+                n = ts[1]
+                nt = self._changeAKAencoding(n, t)
+                if nt is not None: akas[i] = '%s::%s' % (nt, n)
+            res['akas'] = akas
         return {'data': res, 'info sets': infosets}
 
     def get_movie_plot(self, movieID):

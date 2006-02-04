@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 import re, urllib
 from difflib import SequenceMatcher
+from codecs import lookup
 
 from imdb import IMDbBase
 from imdb.Person import Person
@@ -148,6 +149,27 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         trefs = {}
         nrefs = {}
         return self._findRefs(o, trefs, nrefs)
+
+    def _changeAKAencoding(self, akanotes, akatitle):
+        """Return akatitle in the correct charset, as specified in
+        the akanotes field; if akatitle doesn't need to be modified,
+        return None."""
+        oti = akanotes.find('(original ')
+        if oti == -1: return None
+        ote = akanotes[oti+10:].find(' title)')
+        if ote != -1:
+            cs_info = akanotes[oti+10:oti+10+ote].lower().split()
+            for e in cs_info:
+                if e in ('script', '', 'cyrillic', 'greek'): continue
+                if e.startswith('iso-') and e.find('latin') != -1:
+                    e = e[4:].replace('-', '')
+                try:
+                    codec = lookup(e)
+                    lat1 = akatitle.encode('latin_1', 'replace')
+                    return unicode(lat1, e, 'replace')
+                except (LookupError, ValueError, TypeError):
+                    continue
+        return None
 
 
 def titleVariations(title):

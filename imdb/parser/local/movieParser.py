@@ -324,7 +324,7 @@ def getAkaTitles(movieID, akaDF, titlesIF, titlesKF, attrIF , attrKF):
         akaTitle = getLabel(entry[1], titlesIF, titlesKF)
         if not akaTitle: continue
         attr = getLabel(entry[2], attrIF, attrKF)
-        if attr: akaTitle += ' %s' % attr
+        if attr: akaTitle += '::%s' % attr
         if akaTitle: res.append(akaTitle)
     return res
 

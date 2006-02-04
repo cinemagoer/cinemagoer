@@ -371,7 +371,10 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if t[1]: td['imdbIndex'] = t[1]
                 if t[3]: td['year'] = t[3]
                 nt = build_title(td, canonical=1)
-                if t[4]: nt += '::%s' % t[4]
+                if t[4]:
+                    net = self._changeAKAencoding(t[4], nt)
+                    if net is not None: nt = net
+                    nt += '::%s' % t[4]
                 if nt not in res['akas']: res['akas'].append(nt)
         # Do some transformation to preserve consistency with other
         # data access systems.

@@ -105,7 +105,6 @@ re_everyentcharrefssub = re_everyentcharrefs.sub
 def _replAllXMLRef(match):
     """Replace the matched XML reference."""
     ref = match.group(1)
-    print ref
     value = everyentcharrefsget(ref)
     if value is None:
         if ref[0] == '#':

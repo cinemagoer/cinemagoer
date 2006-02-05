@@ -16,6 +16,8 @@ NOTE: it's always time to clean the code! <g>
 * Compatibility with Python 2.2 and previous versions is not assured
   for every data access system (the imdbpy2sql.py script for sure
   requires at least Python 2.3).
+* I have a testsuite, but it's not ready to be make public;
+  clean and extend it.
 
 
 [searches]
@@ -76,9 +78,6 @@ NOTE: it's always time to clean the code! <g>
 
 
 [local data access system]
-* in the aka-titles list there're aliases in different charsets,
-  like Cyrillic KOI8-R and Greek ISO-8859-7.
-  So far, they are handled as ISO-8859-1, and this is wrong.
 * There's probably a bug converting the rating to a float;
   see: ER (1994) (TV), but I suspect this to be a mkdb bug.
 * The 'votes' key is not correctly stored for very high values;
@@ -123,9 +122,6 @@ It's free software, after all.
 Things to do:
 * Support for other SQL database (like PostgresSQL), and try to be
   database-independent.
-* in the aka-titles list there're aliases in different charsets,
-  like Cyrillic KOI8-R and Greek ISO-8859-7.
-  So far, they are handled as ISO-8859-1, and this is wrong.
 * The imdbpy2sql.py script MUST be run on a database with empty tables;
   unfortunately so far a SQL installation can't be "updated" without
   recreating the database from scratch.

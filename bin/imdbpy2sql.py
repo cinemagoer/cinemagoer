@@ -293,8 +293,9 @@ class _BaseCache(dict):
 
     def add(self, key):
         """Insert a new key and return its value."""
+        c = self.counter
         self[key] = None
-        return self.counter
+        return c
     
     def addUnique(self, key):
         """Insert a new key and return its value; if the key is already

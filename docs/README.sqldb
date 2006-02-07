@@ -47,6 +47,11 @@ In the end, the database will require between 900MB and 1GB of disc space.
 The imdbpy2sql.py will print a lot of debug information on standard output;
 you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
 
+NOTE: it's possible that the imdbpy2sql.py will print out some "Warnings"
+      strings (a lot of it, if your database's charset is utf-8); I'm still
+      studying the issue, but it should not be a real problem (see also
+      the note in the TODO.txt file).
+
 
   SQL USAGE
   =========

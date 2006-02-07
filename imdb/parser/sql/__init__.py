@@ -105,7 +105,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if miscDBargs is None: miscDBargs = {}
         initdict = miscDBargs
         initdict.update({'db': db, 'user': user, 'host': host, 'passwd': passwd,
-                        'use_unicode': 'latin_1'})
+                        'use_unicode': 'latin1'})
         try:
             self._db = MySQLdb.connect(**initdict)
             self._curs = self._db.cursor()
@@ -113,6 +113,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             errstr = 'Error connecting to database (PARAMS: %s)' % initdict
             errstr += '\n%s' % str(e)
             raise IMDbDataAccessError, errstr
+        try: self._curs.execute('SET NAMES "latin1";')
+        except _mysql_exceptions.MySQLError: pass
         self._roles = dict(self.query('SELECT id, role FROM roletypes;'))
         self._roles[-1] = 'cast'
         info = list(self.query('SELECT id, info FROM infotypes;'))

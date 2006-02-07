@@ -215,12 +215,12 @@ class Movie(_Container):
         """String representation of a Movie object."""
         r = '<Movie id:%s[%s] title:"%s">' % (self.movieID, self.accessSystem,
                                         self.get('long imdb canonical title'))
-        if type(r) is type(u''): r = r.encode('utf8', 'replace')
+        if type(r) is type(u''): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):
         """Simply print the short title."""
-        return self.get('title', u'').encode('utf8', 'replace')
+        return self.get('title', u'').encode('utf_8', 'replace')
 
     def __unicode__(self):
         """Simply print the short title."""

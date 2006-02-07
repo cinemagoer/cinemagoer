@@ -2,7 +2,7 @@
   ===============
 
 Starting with release 2.4, IMDbPY internally manages (almost) every string
-using unicode, with utf-8 encoding.
+using unicode, with UTF-8 encoding.
 
 The good: we can correctly manage "foreign" names, titles and other
           information.

@@ -186,12 +186,12 @@ class Person(_Container):
         """String representation of a Person object."""
         r = '<Person id:%s[%s] name:"%s">' % (self.personID, self.accessSystem,
                                         self.get('long imdb canonical name'))
-        if type(r) is type(u''): r = r.encode('utf8', 'replace')
+        if type(r) is type(u''): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):
         """Simply print the short name."""
-        return self.get('name', u'').encode('utf8', 'replace')
+        return self.get('name', u'').encode('utf_8', 'replace')
 
     def __unicode__(self):
         """Simply print the short title."""

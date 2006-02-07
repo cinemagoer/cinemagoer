@@ -28,7 +28,7 @@ import os, sys, getopt, time, re
 from gzip import GzipFile
 
 import MySQLdb
-from _mysql_exceptions import OperationalError
+from _mysql_exceptions import OperationalError, MySQLError
 
 from imdb.utils import analyze_title, analyze_name, build_name, build_title
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
@@ -77,6 +77,8 @@ for arg in args:
 # Connect to the database.
 db = MySQLdb.connect(**CONN_PARAMS)
 curs = db.cursor()
+try: curs.execute('SET NAMES "latin1";')
+except MySQLError: pass
 
 
 # Show time consumed by the single function call.
@@ -559,7 +561,7 @@ def doCast(fp, roleid, rolename):
         sqldata.add(currset)
         if count % 10000 == 0:
             print 'SCANNING %s: %s' % (rolename, name)
-        count += 1    
+        count += 1
     sqldata.flush()
     print 'CLOSING %s...' % rolename
 

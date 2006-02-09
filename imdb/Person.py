@@ -61,6 +61,8 @@ class Person(_Container):
                   'otherworks': 'other works',
                   "maltin's biography":
                         "biography from leonard maltin's movie encyclopedia",
+                  "leonard maltin's biography":
+                        "biography from leonard maltin's movie encyclopedia",
                   'real name': 'birth name',
                   'where are they now': 'where now',
                   'personal quotes': 'quotes',
@@ -184,6 +186,7 @@ class Person(_Container):
 
     def __repr__(self):
         """String representation of a Person object."""
+        # XXX: add also currentRole and notes, if present?
         r = '<Person id:%s[%s] name:"%s">' % (self.personID, self.accessSystem,
                                         self.get('long imdb canonical name'))
         if type(r) is type(u''): r = r.encode('utf_8', 'replace')

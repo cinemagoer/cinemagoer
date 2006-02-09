@@ -71,7 +71,7 @@ def IMDb(accessSystem='http', *arguments, **keywords):
 # XXX: I'm not sure this is a good guess.
 #      I suppose that an argument of the IMDb function can be used to
 #      set a default encoding for the output, and then Movie and Person
-#      objecs can use this default encoding returning strings.
+#      objects can use this default encoding, returning strings.
 #      Anyway, passing unicode strings to search_movie() and search_person()
 #      methods is always safer.
 encoding = sys.stdin.encoding or sys.getdefaultencoding()
@@ -94,7 +94,8 @@ class IMDbBase:
         default by the Person and Movie objects, when accessing
         their text fields.
         """
-        # The function used to output the strings.
+        # The function used to output the strings that need modification (the
+        # ones containing references to movie titles and person names).
         self._defModFunct = defaultModFunct
         
     def _normalize_movieID(self, movieID):
@@ -139,7 +140,7 @@ class IMDbBase:
 
     def get_movie(self, movieID, info=Movie.Movie.default_info, modFunct=None):
         """Return a Movie object for the given movieID.
-        
+
         The movieID is something used to univocally identify a movie;
         it can be the imdbID used by the IMDb web server, a file
         pointer, a line number in a file, an ID in a database, etc.

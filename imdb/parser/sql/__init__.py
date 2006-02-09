@@ -72,8 +72,8 @@ def _reGroupDict(d, newgr):
         if k in newgrks:
             r.setdefault(newgr[k][0], {})[newgr[k][1]] = v
             # A not-so-clearer version:
-            #r.setdefault(newgr[k][0], {})
-            #r[newgr[k][0]][newgr[k][1]] = v
+            ##r.setdefault(newgr[k][0], {})
+            ##r[newgr[k][0]][newgr[k][1]] = v
         else: r[k] = v
     return r
 
@@ -261,9 +261,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # Up to 3 variations of the title are searched, plus the
         # long imdb canonical title, if provided.
         title1, title2, title3 = titleVariations(title)
-        #title1, title2, title3 = [x.encode('latin_1', 'replace')
-        #                            for x in title1, title2, title3]
-        #title1, title2, title3 = [x.lower() for x in (title1, title2, title3)]
         resd = {}
         # Build the SOUNDEX(title) IN ... clause.
         sndex = "(SOUNDEX('%s')" % _(title1)

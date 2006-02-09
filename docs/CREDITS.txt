@@ -6,7 +6,7 @@ I'd like to thank the following people for their help:
 
 * Julian Mayer, for a bug report about non-ascii chars.
 
-* Wim Schut and "eccentric", for bug reports and a patchs about
+* Wim Schut and "eccentric", for bug reports and a patches about
   movies' cover url.
 
 * Magnus Lie Hetland for an hint about the searches in sql package.

@@ -63,8 +63,7 @@ try:
         res = []
         for x in sn:
             tmpd = analyze_name(latin2utf(x[2]))
-            res.append((x[0], (x[1], tmpd['name'],
-                        tmpd.get('imdbIndex'))))
+            res.append((x[0], (x[1], tmpd['name'], tmpd.get('imdbIndex'))))
         return res
 except ImportError:
     import warnings
@@ -83,8 +82,7 @@ except ImportError:
             ls = line.split('|')
             if not ls[0]: continue
             named = analyze_name(latin2utf(ls[0]))
-            yield (long(ls[1], 16), named['name'],
-                    named.get('imdbIndex'))
+            yield (long(ls[1], 16), named['name'], named.get('imdbIndex'))
         kf.close()
 
     def _scan_names(keyFile, name1, name2, name3, results=0):
@@ -350,6 +348,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     '%sattributes.index' % self.__db,
                     '%sattributes.key' % self.__db)
         if akas:
+            # normalize encoding.
             for i in xrange(len(akas)):
                 ts = akas[i].split('::')
                 if len(ts) != 2: continue

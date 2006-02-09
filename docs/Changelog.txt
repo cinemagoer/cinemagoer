@@ -1,13 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.4-cvs20060207 "Munich" (07 Feb 2006)
+* What's the new in release 2.4 "Munich" (09 Feb 2006)
   [general]
+  - strings are now unicode/utf8.
   - unified Movie and Person classes.
   - the strings used to store every kind of information about movies and
     person now are modified (substituting titles and names references)
     only when it's really needed.
-  - strings are now converted to unicode.
   - speed improvements in functions modifyStrings, sortMovies,
     canonicalName, analyze_name, analyze_title.
   - performance improvements in every data access system.
@@ -18,9 +18,12 @@
   - C functions in the "ratober" module are always case insensitive.
   - the setup.py script contains a work-around to make installation
     go on even if the "ratober" C module can't be compiled (displaying
-    a warning).
+    a warning), since it's now optional.
   - minor updates to documentation, to keep it in sync with changes
     in the code.
+  - the new helpers.py module contains functions useful to write
+    IMDbPY-based programs.
+  - new doc file README.utf8, about unicode support.
 
   [http data access system]
   - the ParserBase class now inherits from sgmllib.SGMLParser,
@@ -33,6 +36,9 @@
   - fixed bugs related to non-ascii chars.
   - fixed a bug retrieving the URL of the cover.
   - fixed a nasty bug retrieving the title field.
+  - retrieve the 'merchandising links' page.
+  - support for the new "episodes cast" page for tv series.
+  - fixed a horrible bug retrieving guests information for tv series.
 
   [sql data access system]
   - fixed the imdbpy2sql.py script, to handle files with spurious lines.

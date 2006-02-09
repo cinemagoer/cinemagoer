@@ -68,9 +68,10 @@ def _buildGuests(gl):
     """Return a list of Movie objects from a list of GA lines."""
     rl = []
     rlapp = rl.append
+    _uctype = type(u'')
     for g in gl:
-        # When used from imdbpy2sql.py script, latin_1 strings are passed.
-        if type(g) is not type(u''):
+        # When used by the imdbpy2sql.py script, latin_1 strings are passed.
+        if type(g) is not _uctype:
             g = unicode(g, 'latin_1', 'replace')
         titl = re_titleRef.findall(g)
         if len(titl) != 1: continue

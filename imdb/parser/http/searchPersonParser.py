@@ -7,7 +7,7 @@ for a given person.
 E.g., when searching for the name "Mel Gibson", the parsed page would be:
     http://akas.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,19 +42,19 @@ class BasicPersonParser(ParserBase):
 
     def _reset(self):
         """Reset the parser."""
-        self.__in_title = 0
-        self.__name = ''
-        self.__result = []
+        self._in_title = 0
+        self._name = ''
+        self._result = []
 
     def get_data(self):
         """Return a list with a single tuple (imdb, {title_dict})."""
-        return self.__result
+        return self._result
 
     def start_title(self, attrs):
-        self.__in_title = 1
+        self._in_title = 1
 
     def end_title(self):
-        self.__in_title = 0
+        self._in_title = 0
 
     def start_a(self, attrs):
         href = self.get_attr_value(attrs, 'href')
@@ -66,18 +66,18 @@ class BasicPersonParser(ParserBase):
         if href.startswith('/name/nm') and \
                 href.find('/board') != -1:
             rpid = self.re_imdbID.findall(href)
-            if rpid and self.__name:
+            if rpid and self._name:
                 pid = str(rpid[-1])
-                d = analyze_name(self.__name, canonical=1)
+                d = analyze_name(self._name, canonical=1)
                 res = [(pid, d)]
                 self.reset()
-                self.__result = res
+                self._result = res
     
     def end_a(self): pass
     
     def _handle_data(self, data):
-        if self.__in_title:
-            self.__name += data
+        if self._in_title:
+            self._name += data
 
 
 class HTMLSearchPersonParser(ParserBase):
@@ -89,15 +89,15 @@ class HTMLSearchPersonParser(ParserBase):
 
     def _reset(self):
         """Reset the parser."""
-        self.__begin_list = 0
-        self.__results = []
-        self.__in_title = 0
-        self.__in_list = 0
-        self.__current_imdbID = ''
-        self.__is_name = 0
-        self.__name = ''
-        self.__no_more = 0
-        self.__stop = 0
+        self._begin_list = 0
+        self._results = []
+        self._in_title = 0
+        self._in_list = 0
+        self._current_imdbID = ''
+        self._is_name = 0
+        self._name = ''
+        self._no_more = 0
+        self._stop = 0
 
     def parse(self, cont, results=None):
         self.maxres = results
@@ -105,75 +105,75 @@ class HTMLSearchPersonParser(ParserBase):
 
     def get_data(self):
         """Return a list of tuples (imdbID, {name_dict})."""
-        return self.__results
+        return self._results
 
     def start_title(self, attrs):
-        self.__in_title = 1
+        self._in_title = 1
 
     def end_title(self):
-        self.__in_title = 0
+        self._in_title = 0
 
     def start_ol(self, attrs):
-        self.__in_list = 1
+        self._in_list = 1
 
     def end_ol(self):
-        self.__in_list = 0
+        self._in_list = 0
 
     def start_a(self, attrs):
         href = self.get_attr_value(attrs, 'href')
         if href and href.lower().startswith('/name'):
             nr = self.re_imdbID.findall(href[6:])
             if not nr: return
-            self.__current_imdbID = str(nr[0])
-            self.__is_name = 1
+            self._current_imdbID = str(nr[0])
+            self._is_name = 1
 
     def end_a(self): pass
 
     def start_small(self, attrs):
-        self.__no_more = 1
+        self._no_more = 1
 
     def end_small(self): pass
 
     def start_li(self, attrs): pass
     
     def end_li(self):
-        if self.__in_list and self.__is_name and self.__current_imdbID \
-                and self.__name:
+        if self._in_list and self._is_name and self._current_imdbID \
+                and self._name:
             res = {}
-            d = analyze_name(self.__name.strip(), canonical=1)
+            d = analyze_name(self._name.strip(), canonical=1)
             res.update(d)
-            self.__results.append((self.__current_imdbID.strip(), d))
-            if self.maxres is not None and self.maxres <= len(self.__results):
-                self.__stop = 1
-            self.__name = ''
-            self.__current_imdbID = ''
-            self.__is_name = 0
-            self.__in_name = 0
-        self.__no_more = 0
+            self._results.append((self._current_imdbID.strip(), d))
+            if self.maxres is not None and self.maxres <= len(self._results):
+                self._stop = 1
+            self._name = ''
+            self._current_imdbID = ''
+            self._is_name = 0
+            self._in_name = 0
+        self._no_more = 0
 
     def _handle_data(self, data):
-        if self.__stop:
-            res = self.__results
+        if self._stop:
+            res = self._results
             self.reset()
-            self.__results = res
+            self._results = res
             return
         sldata = data.strip().lower()
-        if self.__in_title:
+        if self._in_title:
             dls = data.strip().lower()
             if not dls.startswith('imdb name'):
                 # A direct hit!
                 rawdata = self.rawdata
                 self.reset()
                 bpp = BasicPersonParser()
-                self.__results = bpp.parse(rawdata)['data']
-        elif self.__in_list and self.__is_name and not self.__no_more:
-            self.__name += data
+                self._results = bpp.parse(rawdata)['data']
+        elif self._in_list and self._is_name and not self._no_more:
+            self._name += data
         elif sldata.find('exact match') != -1 or \
                 sldata.find('partial match') != -1 or \
                 sldata.find('approx match') != -1 or \
                 sldata.find('approximate match') != -1 or \
                 sldata.find('popular names') != -1:
-            self.__begin_list = 1
+            self._begin_list = 1
 
 
 # The used object.

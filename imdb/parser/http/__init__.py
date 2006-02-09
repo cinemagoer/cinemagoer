@@ -40,7 +40,7 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         newsgrouprev_parser, misclinks_parser, \
                         soundclips_parser, videoclips_parser, news_parser, \
                         photosites_parser, amazonrev_parser, guests_parser, \
-                        business_parser
+                        business_parser, sales_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
@@ -180,17 +180,21 @@ class IMDbHTTPAccessSystem(IMDbBase):
         try:
             uopener = self.urlOpener.open(url)
             content = uopener.read()
-            info_dict = uopener.info()
-            if info_dict.has_key('Content-Type'):
-                ct_line = info_dict['Content-Type'].lower()
-                csi = ct_line.find('charset=')
-                if csi != -1:
-                    server_encode = ct_line[csi+9:]
-                    try:
-                        if lookup(server_encode):
-                            encode = server_encode
-                    except (LookupError, ValueError, TypeError):
-                        pass
+            server_encode = uopener.info().getparam('charset')
+            # look at the content-type HTML meta tag.
+            if server_encode is None and content:
+                first_bytes = content[:512]
+                begin_h = first_bytes.find('text/html; charset=')
+                if begin_h != -1:
+                    end_h = first_bytes[19+begin_h:].find('"')
+                    if end_h != -1:
+                        server_encode = first_bytes[19+begin_h:19+begin_h+end_h]
+            if server_encode:
+                try:
+                    if lookup(server_encode):
+                        encode = server_encode
+                except (LookupError, ValueError, TypeError):
+                    pass
             uopener.close()
             self.urlOpener.close()
         except IOError, e:
@@ -329,8 +333,12 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return amazonrev_parser.parse(cont)
 
     def get_movie_guests(self, movieID):
-        cont = self._retrieve(imdbURL_movie % movieID + 'guests')
-        return guests_parser.parser(cont)
+        cont = self._retrieve(imdbURL_movie % movieID + 'epcast')
+        return guests_parser.parse(cont)
+
+    def get_movie_merchandising_links(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'sales')
+        return sales_parser.parse(cont)
 
     def _search_person(self, name, results):
         # The URL of the query.

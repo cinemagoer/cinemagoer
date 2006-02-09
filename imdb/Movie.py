@@ -34,8 +34,8 @@ class Movie(_Container):
         movieObject['information']
     to get a list of the kind of information stored in a
     Movie object, use the keys() method; some useful aliases
-    are defined (as "plot summary" for the "plot" key); see the
-    keys_alias dictionary.
+    are defined (as "casting" for the "casting director" key); see
+    the keys_alias dictionary.
     """
     # The default sets of information retrieved.
     default_info = ('main', 'plot')
@@ -105,7 +105,11 @@ class Movie(_Container):
                 'guest appearances': 'guests',
                 'tv guests': 'guests',
                 'notable tv guest appearances': 'guests',
-                'amazon review': 'amazon reviews'}
+                'episodes cast': 'guests',
+                'amazon review': 'amazon reviews',
+                'merchandising': 'merchandising links',
+                'merchandise': 'merchandising links',
+                'sales': 'merchandising links'}
 
     keys_tomodify_list = ('plot', 'trivia', 'alternate versions', 'goofs',
                         'quotes', 'dvd', 'laserdisc', 'news', 'soundtrack',
@@ -213,6 +217,7 @@ class Movie(_Container):
 
     def __repr__(self):
         """String representation of a Movie object."""
+        # XXX: add also currentRole and notes, if present?
         r = '<Movie id:%s[%s] title:"%s">' % (self.movieID, self.accessSystem,
                                         self.get('long imdb canonical title'))
         if type(r) is type(u''): r = r.encode('utf_8', 'replace')

@@ -1,7 +1,7 @@
 """
 locsql module (imdb.parser.common package).
 
-This package provides some modules containing code shared amongst
+This module provides some functions and classes shared amongst
 "local" and "sql" parsers.
 
 Copyright 2005-2006 Davide Alberani <da@erlug.linux.it> 
@@ -160,6 +160,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         if ote != -1:
             cs_info = akanotes[oti+10:oti+10+ote].lower().split()
             for e in cs_info:
+                # excludes some strings that clearly are not encoding.
                 if e in ('script', '', 'cyrillic', 'greek'): continue
                 if e.startswith('iso-') and e.find('latin') != -1:
                     e = e[4:].replace('-', '')

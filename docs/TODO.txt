@@ -62,9 +62,8 @@ NOTE: it's always time to clean the code! <g>
   parsed every needed information, as HTMLSearchMovieParser does.
 * Access to the "my IMDb" functions for registered users would
   be really cool.
-* Gather more movies' data: user comments, merchandising links,
-  laserdisc details, trailers, posters, photo gallery, on tv,
-  schedule links, showtimes, message boards.
+* Gather more movies' data: user comments, laserdisc details, trailers,
+  posters, photo gallery, on tv, schedule links, showtimes, message boards.
 * Gather more people's data: photo gallery.
 
 
@@ -120,8 +119,8 @@ Again: if there's something that bother you, write some code.
 It's free software, after all.
 
 Things to do:
-* Support for other SQL database (like PostgresSQL), and try to be
-  database-independent.
+* Support for other SQL database (like PostgresSQL, SQLite, ...), and try
+  to be database-independent.
 * The imdbpy2sql.py script MUST be run on a database with empty tables;
   unfortunately so far a SQL installation can't be "updated" without
   recreating the database from scratch.

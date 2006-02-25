@@ -9,6 +9,8 @@ I'd like to thank the following people for their help:
 * Wim Schut and "eccentric", for bug reports and a patches about
   movies' cover url.
 
+* Alfio Ferrara, for a bug report about the get_first_movie.py script.
+
 * Magnus Lie Hetland for an hint about the searches in sql package.
 
 * Thomas Jadjewski for a bug report about the imdbpy2sql.py script.

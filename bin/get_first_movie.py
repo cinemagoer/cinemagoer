@@ -49,7 +49,7 @@ i = imdb.IMDb(**IMDB_PARAMS)
 in_encoding = sys.stdin.encoding or sys.getdefaultencoding()
 out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
-title = unicode(title, in_encoding, 'replace'))
+title = unicode(title, in_encoding, 'replace')
 try:
     # Do the search, and get the results (a list of Movie objects).
     results = i.search_movie(title)

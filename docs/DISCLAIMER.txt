@@ -23,11 +23,6 @@ Read also http://www.imdb.com/help/show_leaf?usedatasoftware
 
 IMDbPY (and the author) is not affiliated with Internet Movie Database Inc.
 
-You're NOT allowed to use IMDbPY as a base to develop robots or crawlers.
-Also, you CAN'T grant public access to the IMDb's data, processed/managed
-by IMDbPY, if not otherwise stated by the IMDb's policy; you MUST use
-IMDbPY for your own personal and non-commercial use.
-
 Remember that you always have to accept the above mentioned conditions.
 
 

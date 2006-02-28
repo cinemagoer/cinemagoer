@@ -152,6 +152,8 @@ class HTMLMovieParser(ParserBase):
             for key, item in d_title.items():
                 self.set_item(key, item)
             self._title_short = d_title.get('title', u'').lower()
+            if d_title.get('kind') in ('tv series', 'tv mini series'):
+                self._title_short = '"%s"' % self._title_short
 
     def start_table(self, attrs): pass
 
@@ -378,8 +380,6 @@ class HTMLMovieParser(ParserBase):
             # The gold and grey stars; we're near the rating and number
             # of votes.
             self._is_rating = 1
-        # XXX: I've a report about alttex==self._movie_data.get('title')
-        #      in some situations, but I'm not sure.
         elif alttex == 'cover' or alttex == self._title_short:
             # Get the URL of the cover image.
             src = self.get_attr_value(attrs, 'src')

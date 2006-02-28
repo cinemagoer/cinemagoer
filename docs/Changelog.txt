@@ -1,6 +1,16 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 2.5.cvs20060228 "Ballistic: Ecks vs. Sever" (28 Feb 2006)
+  [general]
+  - modified the DISCLAIMER.txt file to be compliant to the
+    debian guidelines.
+  - fixed a bug in the get_first_movie.py script.
+
+  [http and mobile data access systems]
+  - fixed a bug retrieving cover url for tv (mini) series.
+
+
 * What's the new in release 2.4 "Munich" (09 Feb 2006)
   [general]
   - strings are now unicode/utf8.

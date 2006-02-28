@@ -200,7 +200,12 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             # Cover, the new style.
             short_title = d.get('title', u'')
             if short_title:
+                if d.get('kind') in ('tv series', 'tv mini series'):
+                    short_title = '&#34;%s&#34;' % short_title
                 cvurl = _getTagWith(cont, 'alt="%s"' % short_title)
+                if not cvurl:
+                    cvurl = _getTagWith(cont, 'alt="%s"' %
+                                        short_title.replace('#34', 'quot'))
                 cvurl[:] = [x for x in cvurl if x[0:4] == '<img']
                 if cvurl:
                     cvurl = _findBetween(cvurl[0], 'src="', '"')

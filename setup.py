@@ -34,7 +34,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '2.4'
+version = '2.5.cvs20060228'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -78,6 +78,8 @@ params = {'name': 'IMDbPY',
       'long_description': long_desc,
       'author': 'Davide Alberani',
       'author_email': 'da@erlug.linux.it',
+      'contact': 'IMDbPY-devel mailing list',
+      'contact_email': 'imdbpy-devel@lists.sourceforge.net',
       'maintainer': 'Davide Alberani',
       'maintainer_email': 'da@erlug.linux.it',
       'url': home_page,

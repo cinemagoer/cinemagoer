@@ -4,6 +4,11 @@ I'd like to thank the following people for their help:
 * Tero Saarni, for the series 60 GUI and a lot of testing and
   debugging.
 
+* Ana Guerrero, for the official debian package.
+
+* Sebastian Pölsterl, for a bug report about the cover url for
+  tv (mini) series.
+
 * Julian Mayer, for a bug report about non-ascii chars.
 
 * Wim Schut and "eccentric", for bug reports and a patches about

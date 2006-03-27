@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from copy import copy, deepcopy
+from time import strptime, strftime
 
 from imdb._exceptions import IMDbParserError
 
@@ -38,6 +39,8 @@ re_index = re.compile(r'^\(([IVXLCDM]+)\)$')
 
 # Match the number of episodes.
 re_episodes = re.compile('\s?\((\d+) episodes\)', re.I)
+
+re_episode_info = re.compile(r'{(.+?)?\s?(\([0-9\?]{4}-[0-9\?]{1,2}-[0-9\?]{1,2}\))?\s?(\(#[0-9]+\.[0-9]+\))?}')
 
 # Common suffixes in surnames.
 _sname_suffixes = ('de', 'la', 'der', 'den', 'del', 'y', 'da', 'van',
@@ -192,7 +195,44 @@ def normalizeTitle(title):
     return title
 
 
-def analyze_title(title, canonical=0):
+def _split_series_episode(title):
+    """Return the series and the episode titles; if this is not a
+    series' episode, the returned series title is empty.
+    This function recognize two different styles:
+        "The Series" An Episode (2005)
+        "The Series" (2004) {An Episode (2005) (#season.episode)}"""
+    series_title = ''
+    episode_or_year = ''
+    if title[0:1] == '"':
+        second_quot = title[1:].find('"') + 2
+        if second_quot != 1: # a second " was found.
+            episode_or_year = title[second_quot:].lstrip()
+            first_char = episode_or_year[0:1]
+            if not first_char: return series_title, episode_or_year
+            if first_char != '(':
+                # There is not a (year) but the title of the episode;
+                # that means this is an episode title, as returned by
+                # the web server.
+                series_title = title[:second_quot]
+            elif episode_or_year[-1:] == '}':
+                    # Title of the episode, as in the plain text data files.
+                    begin_eps = episode_or_year.find('{')
+                    if begin_eps == -1: return series_title, episode_or_year
+                    series_title = title[:second_quot+begin_eps].rstrip()
+                    # episode_or_year is returned with the {...}
+                    episode_or_year = episode_or_year[begin_eps:]
+    return series_title, episode_or_year
+
+
+def is_series_episode(title):
+    """Return True if 'title' is an series episode."""
+    title = title.strip()
+    if _split_series_episode(title)[0]: return 1
+    return 0
+
+
+def analyze_title(title, canonical=None,
+                    canonicalSeries=0, canonicalEpisode=0):
     """Analyze the given title and return a dictionary with the
     "stripped" title, the kind of the show ("movie", "tv series", etc.),
     the year of production and the optional imdbIndex (a roman number
@@ -202,16 +242,64 @@ def analyze_title(title, canonical=0):
     
     raise an IMDbParserError exception if the title is not valid.
     """
+    if canonical is not None:
+        canonicalSeries = canonicalEpisode = canonical
     original_t = title
+    result = {}
     title = title.strip()
     year = ''
     kind = ''
     imdbIndex = ''
+    series_title, episode_or_year = _split_series_episode(title)
+    if series_title:
+        # It's an episode of a series.
+        series_d = analyze_title(series_title, canonical=canonicalEpisode)
+        oad = sen = ep_year = ''
+        # Plain text data files format.
+        if episode_or_year[0:1] == '{' and episode_or_year[-1:] == '}':
+            match = re_episode_info.findall(episode_or_year)
+            if match:
+                # Episode title, original air date and #season.episode
+                episode_or_year, oad, sen = match[0]
+                if not oad:
+                    # No year, but the title is something like (2005-04-12)
+                    if episode_or_year and episode_or_year[0] == '(' and \
+                                    episode_or_year[-1:] == ')':
+                        oad = episode_or_year
+                        if oad[1:5] and oad[5:6] == '-':
+                            ep_year = oad[1:5]
+        elif episode_or_year.startswith('Episode dated'):
+            oad = episode_or_year[14:]
+            if oad[-4:].isdigit():
+                ep_year = oad[-4:]
+        episode_d = analyze_title(episode_or_year, canonical=canonicalEpisode)
+        episode_d['kind'] = 'episode'
+        episode_d['episode of'] = series_d
+        if oad:
+            episode_d['original air date'] = oad[1:-1]
+            if ep_year and episode_d.get('year') is None:
+                episode_d['year'] = ep_year
+        if sen:
+            seas, epn = sen[2:-1].split('.')
+            if seas:
+                # Set season and episode.
+                try: seas = int(seas)
+                except: pass
+                try: epn = int(epn)
+                except: epn
+                episode_d['season'] = seas
+                episode_d['episode'] = epn
+        return episode_d
     # First of all, search for the kind of show.
-    # XXX: Number of entries at 27 jan 2005:
-    #      {'(mini)': 4858, '(V)': 35501, '(VG)': 4301, '(TV)': 58443}
-    #      tv series: 42454
-    # XXX: more up-to-date statistics: http://us.imdb.com/database_statistics
+    # XXX: Number of entries at 18 Mar 2006:
+    #      movie:        344,892
+    #      episode:      272,862
+    #      tv movie:      53,269
+    #      tv series:     37,065
+    #      video movie:   44,062
+    #      tv mini series: 4,757
+    #      video game:     4,472
+    #      More up-to-date statistics: http://us.imdb.com/database_statistics
     if title.endswith('(TV)'):
         kind = 'tv movie'
         title = title[:-4].rstrip()
@@ -245,9 +333,10 @@ def analyze_title(title, canonical=0):
         raise IMDbParserError, 'invalid title: "%s"' % original_t
     if canonical:
         title = canonicalTitle(title)
-    # 'kind' is one in ('movie', 'tv series', 'tv mini series', 'tv movie'
-    #                   'video movie', 'video game')
-    result = {'title': title, 'kind': kind or 'movie'}
+    # 'kind' is one in ('movie', 'episode', 'tv series', 'tv mini series',
+    #                   'tv movie', 'video movie', 'video game')
+    result['title'] = title
+    result['kind'] = kind or 'movie'
     if year and year != '????':
         result['year'] = str(year)
     if imdbIndex:
@@ -255,25 +344,110 @@ def analyze_title(title, canonical=0):
     return result
 
 
-def build_title(title_dict, canonical=0):
+_web_format = '%d %B %Y'
+_ptdf_format = '(%Y-%m-%d)'
+def _convertTime(title, fromPTDFtoWEB=1):
+    """Convert a time expressed in the pain text data files, to
+    the 'Episode dated ...' format used on the web site; if
+    fromPTDFtoWEB is false, the inverted conversion is applied."""
+    try:
+        if fromPTDFtoWEB:
+            from_format = _ptdf_format
+            to_format = _web_format
+        else:
+            from_format = 'Episode dated %s' % _web_format
+            to_format = _ptdf_format
+        t = strptime(title, from_format)
+        title = strftime(to_format, t)
+        if fromPTDFtoWEB:
+            if title[0] == '0': title = title[1:]
+            title = 'Episode dated %s' % title
+    except ValueError:
+        pass
+    return title
+
+
+def build_title(title_dict, canonical=None,
+                canonicalSeries=0, canonicalEpisode=0, ptdf=0, _doYear=1):
     """Given a dictionary that represents a "long" IMDb title,
     return a string.
 
     If canonical is not true, the title is returned in the
     normal format.
+
+    If ptdf is true, the plain text data files format is used.
     """
+    if canonical is not None:
+        canonicalSeries = canonicalEpisode = canonical
+    pre_title = ''
+    kind = title_dict.get('kind')
+    episode_of = title_dict.get('episode of')
+    if kind == 'episode' and episode_of is not None:
+        # Works with both Movie instances and plain dictionaries.
+        doYear = 0
+        if ptdf:
+            doYear = 1
+        pre_title = build_title(episode_of, canonical=canonicalSeries,
+                                ptdf=0, _doYear=doYear)
+        ep_dict = {'title': title_dict.get('title', ''),
+                    'imdbIndex': title_dict.get('imdbIndex')}
+        ##doYear = 1
+        ##ep_year = title_dict.get('year', '????')
+        ##if ptdf:
+        ##    if ep_year is not None:
+        ##        ep_dict['year'] = ep_year
+        ##    else: doYear = 0
+        ##else:
+        ##    ep_dict['year'] = ep_year
+        ep_title = ep_dict['title']
+        if not ptdf:
+            doYear = 1
+            ep_dict['year'] = title_dict.get('year', '????')
+            if ep_title[0:1] == '(' and ep_title[-1:] == ')' and \
+                    ep_title[1:5].isdigit():
+                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=1)
+        else:
+            doYear = 0
+            if ep_title.startswith('Episode dated'):
+                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=0)
+        episode_title = build_title(ep_dict,
+                            canonical=canonicalEpisode, ptdf=ptdf,
+                            _doYear=doYear)
+        if ptdf:
+            oad = title_dict.get('original air date', '')
+            if len(oad) == 10 and oad[4] == '-' and oad[7] == '-' and \
+                        episode_title.find(oad) == -1:
+                episode_title += ' (%s)' % oad
+            seas = title_dict.get('season')
+            if seas is not None:
+                episode_title += ' (#%s' % seas
+                episode = title_dict.get('episode')
+                if episode is not None:
+                    episode_title += '.%s' % episode
+                episode_title += ')'
+            episode_title = '{%s}' % episode_title
+        return '%s %s' % (pre_title, episode_title)
+        #series_title = episode_of.get('canonical title')
+        #if series_title is None:
+        #    series_title = episode_of.get('title', '')
+        #if not canonicalSeries:
+        #    series_title = normalizeTitle(series_title)
+        #pre_title = '"%s"' % series_title
+        #canonical = canonicalEpisode
     title = title_dict.get('title', '')
     if not canonical:
         title = normalizeTitle(title)
-    kind = title_dict.get('kind')
-    imdbIndex = title_dict.get('imdbIndex')
-    year = title_dict.get('year', '????')
+    if pre_title:
+        title = '%s %s' % (pre_title, title)
     if kind in ('tv series', 'tv mini series'):
         title = '"%s"' % title
-    title += ' (%s' % year
-    if imdbIndex:
-        title += '/%s' % imdbIndex
-    title += ')'
+    if _doYear:
+        imdbIndex = title_dict.get('imdbIndex')
+        year = title_dict.get('year', '????')
+        title += ' (%s' % year
+        if imdbIndex:
+            title += '/%s' % imdbIndex
+        title += ')'
     if kind:
         if kind == 'tv movie':
             title += ' (TV)'
@@ -304,6 +478,10 @@ def sortMovies(m1, m2):
     # Ok, these movies have the same production year...
     m1t = m1.get('canonical title', _last)
     m2t = m2.get('canonical title', _last)
+    # It should works also with normal dictionaries (returned from searches).
+    if m1t is _last and m2t is _last:
+        m1t = m1.get('title', _last)
+        m2t = m2.get('title', _last)
     if m1t < m2t: return -1
     if m1t > m2t: return 1
     # Ok, these movies have the same title...
@@ -324,6 +502,9 @@ def sortPeople(p1, p2):
     if p1b < p2b: return -1
     p1n = p1.get('canonical name', _last)
     p2n = p2.get('canonical name', _last)
+    if p1n is _last and p2n is _last:
+        p1n = p1.get('name', _last)
+        p2n = p2.get('name', _last)
     if p1n > p2n: return 1
     if p1n < p2n: return -1
     p1i = p1.get('imdbIndex', _last)
@@ -506,6 +687,10 @@ class _Container:
         else:
             self.data = data
 
+    def getID(self):
+        """Return movie or person ID."""
+        raise NotImplementedError, 'override this method'
+
     def __cmp__(self, other):
         """Compare two Movie or Person objects."""
         # XXX: only check the title/name and the movieID/personID?
@@ -515,6 +700,15 @@ class _Container:
         if self.data == other.data:
             return 0
         return 1
+
+    def __hash__(self):
+        """Hash for this object."""
+        theID = self.getID()
+        if theID is not None and self.accessSystem not in ('UNKNOWN', None):
+            s4h = '%s:%s' % (self.accessSystem, theID)
+        else:
+            s4h = repr(self)
+        return hash(s4h)
 
     def __len__(self):
         return len(self.data)
@@ -596,7 +790,15 @@ class _Container:
 
     def popitem(self):
         return self.data.popitem()
-    
+
+    def __repr__(self):
+        """String representation of an object."""
+        raise NotImplementedError, 'override this method'
+
+    def __str__(self):
+        """Movie title or person name."""
+        raise NotImplementedError, 'override this method'
+
     def __contains__(self, key):
         raise NotImplementedError, 'override this method'
 

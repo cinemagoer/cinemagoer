@@ -26,6 +26,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import re
+
 from urllib import unquote
 
 from imdb.Person import Person
@@ -74,6 +76,8 @@ class HTMLMovieParser(ParserBase):
 
     # Do not gather names and titles references.
     getRefs = 0
+
+    re_airdate = re.compile(r'(.*)\(season (\d+), episode (\d+)\)', re.I)
 
     def _init(self):
         self._movie_data = {}
@@ -124,6 +128,17 @@ class HTMLMovieParser(ParserBase):
         self._merge_next = 0
         # Counter for the billing position in credits.
         self._counter = 1
+        # For tv series.
+        self._in_h1 = 0
+        self._in_strong_title = 0
+        self._seen_title_br = 0
+        self._in_episode_title = 0
+        self._episode_title = u''
+        self._in_series_title = 0
+        self._series_title = u''
+        self._in_series_info = 0
+        self._series_info = ''
+        self._cur_id = ''
 
     def append_item(self, sect, data):
         """Append a new value in the given section of the dictionary."""
@@ -151,9 +166,24 @@ class HTMLMovieParser(ParserBase):
             d_title = analyze_title(self._title)
             for key, item in d_title.items():
                 self.set_item(key, item)
+            # XXX: what about _title_short for tv series' episodes?
             self._title_short = d_title.get('title', u'').lower()
             if d_title.get('kind') in ('tv series', 'tv mini series'):
                 self._title_short = '"%s"' % self._title_short
+
+    def start_h1(self, attrs):
+        self._in_h1 = 1
+
+    def end_h1(self):
+        self._in_h1 = 0
+
+    def start_strong(self, attrs):
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls.strip().lower() == 'title':
+            self._in_strong_title = 1
+
+    def end_strong(self):
+        self._in_strong_title = 0
 
     def start_table(self, attrs): pass
 
@@ -216,6 +246,10 @@ class HTMLMovieParser(ParserBase):
             self._isplotoutline = 0
             if self._plotoutline:
                 self.set_item('plot outline', self._plotoutline)
+        elif self._in_series_title:
+            ids = self.re_imdbID.findall(link)
+            if ids:
+                self._cur_id = ids[-1]
         elif link.startswith('http://pro.imdb.com'):
             self._is_movie_status = 0
         elif link.startswith('/titlebrowse?') and \
@@ -331,6 +365,36 @@ class HTMLMovieParser(ParserBase):
             self._isplotoutline = 0
             if self._plotoutline:
                 self.set_item('plot outline', self._plotoutline)
+        elif self._in_series_title:
+            self._in_series_title = 0
+            st = self._series_title.strip()
+            if st and self._cur_id:
+                d_title = analyze_title(st, canonical=1)
+                m = Movie(movieID=str(self._cur_id), data=d_title,
+                            accessSystem='http')
+                self._movie_data['kind'] = 'episode'
+                self._movie_data['episode of'] = m
+            self._series_title = u''
+        elif self._in_series_info:
+            self._in_series_info = 0
+            si = ' '.join([x for x in self._series_info.split() if x])
+            if si:
+                aid = self.re_airdate.findall(si)
+                if aid and len(aid[0]) == 3:
+                    date, season, episode = aid[0]
+                    date = date.strip()
+                    try: season = int(season)
+                    except: pass
+                    try: episode = int(episode)
+                    except: pass
+                    if date and date != '????':
+                        self.set_item('original air date', date)
+                    # Handle also "episode 0".
+                    if season or type(season) is type(0):
+                        self.set_item('season', season)
+                    if episode or type(season) is type(0):
+                        self.set_item('episode', episode)
+            self._series_info = ''
         elif self._is_runtimes and self._runtimes:
             self._is_runtimes = 0
             rt = self._runtimes.replace(' min', '')
@@ -338,11 +402,33 @@ class HTMLMovieParser(ParserBase):
             episodes = re_episodes.findall(rt)
             if episodes:
                 rt = re_episodes.sub('', rt)
-                self.set_item('episodes', episodes[0])
+                episodes = episodes[0]
+                try: episodes = int(episodes)
+                except: pass
+                self.set_item('number of episodes', episodes)
             rl = [x.strip() for x in rt.split('/')]
             if rl: self.set_item('runtimes', rl)
         if self.mdparse:
             self.end_tr()
+        if self._in_h1 and self._in_strong_title:
+            self._seen_title_br = 1
+        else:
+            self._seen_title_br = 0
+
+    def start_small(self, attrs):
+        if self._in_h1 and self._in_strong_title and self._seen_title_br:
+            self._in_episode_title = 1
+
+    def end_small(self):
+        if self._in_episode_title:
+            self._in_episode_title = 0
+            self._episode_title = self._episode_title.strip()
+            if self._episode_title:
+                d_title = analyze_title(self._episode_title, canonical=1)
+                for key, item in d_title.items():
+                    if key == 'kind': continue
+                    self.set_item(key, item)
+                self._episode_title = u''
 
     def start_li(self, attrs): pass
 
@@ -469,8 +555,19 @@ class HTMLMovieParser(ParserBase):
             self._is_languages = 0
         elif self._isplotoutline:
             self._plotoutline += data
-        elif self._inbch and sldata.startswith('plot outline:'):
-            self._isplotoutline = 1
+        elif self._in_series_title:
+            self._series_title += data
+        elif self._in_series_info:
+            self._series_info += data
+        elif self._inbch:
+            if sldata.startswith('plot outline:'):
+                self._isplotoutline = 1
+            elif sldata.startswith('tv series:'):
+                self._in_series_title = 1
+            elif sldata.startswith('original air date'):
+                self._in_series_info = 1
+        elif self._in_episode_title:
+            self._episode_title += data
         elif sldata.startswith('also known as'):
             self._is_akas = 1
         elif sldata.startswith('runtime:'):
@@ -2402,6 +2499,169 @@ class HTMLSalesParser(ParserBase):
             self._cur_descr += data
 
 
+class HTMLEpisodesParser(ParserBase):
+    """Parser for the "episode list" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        eparser = HTMLEpisodesParser()
+        result = eparser.parse(episodes_html_string)
+    """
+
+    # Do not gather names and titles references.
+    getRefs = 0
+
+    def _reset(self):
+        self._in_html_title = 0
+        self._series = None
+        self._html_title = ''
+        self._episodes = {}
+        self._in_h1 = 0
+        self._in_episodes_h1 = 0
+        self._cur_season = 0
+        self._cur_episode = None
+        self._in_episodes = 0
+        self._in_td_eps = 0
+        self._in_td_title = 1
+        self._in_title = 0
+        self._cur_title = ''
+        self._curid = ''
+        self._eps_counter = 1
+        self._cur_info = 'title'
+        self._info = {}
+        self._info_text = ''
+
+    def get_data(self):
+        if self._episodes: return {'episodes': self._episodes}
+        else: return {}
+
+    def start_title(self, attrs):
+        self._in_html_title = 1
+
+    def end_title(self):
+        self._in_html_title = 0
+        title = self._html_title
+        if title.lower().startswith('episodes for'):
+            title = title[12:].strip()
+        if title:
+            self._series = Movie(data=analyze_title(title, canonical=1),
+                                accessSystem='http')
+        self._html_title = ''
+        self._series
+    
+    def start_h1(self, attrs):
+        self._in_h1 = 1
+
+    def end_h1(self):
+        self._in_h1 = 0
+
+    def start_table(self, attrs):
+        if self._in_episodes_h1:
+            self._in_episodes = 1
+
+    def end_table(self):
+        self._in_episodes = 0
+
+    def start_a(self, attrs):
+        if not self._in_episodes: return
+        if self._in_td_title:
+            href = self.get_attr_value(attrs, 'href')
+            if href and href.startswith('/title/tt'):
+                curid = self.re_imdbID.findall(href)
+                if curid:
+                    self._in_title = 1
+                    self._cur_title = ''
+                    self._curid = curid[-1]
+                    return
+        name = self.get_attr_value(attrs, 'name')
+        if name and name.lower().startswith('season-'):
+            cs = name[7:]
+            try: cs = int(cs)
+            except: pass
+            self._cur_season = cs
+            self._eps_counter = 1
+
+    def end_a(self):
+        if self._in_title: self._in_title = 0
+
+    def start_td(self, attrs):
+        if self._in_episodes:
+            self._in_td_eps = 1
+
+    def end_td(self):
+        if self._in_td_title:
+            self._in_td_eps = 0
+            self._in_td_title = 0
+            self._info_text = self._info_text.strip()
+            if self._info_text and self._cur_info != 'title':
+                self._info[self._cur_info] = self._info_text
+                self._info_text = ''
+            if self._cur_title and self._curid:
+                m = Movie(title=self._cur_title,
+                            movieID=str(self._curid),
+                            accessSystem='http')
+                m['kind'] = 'episode'
+                if self._cur_season not in self._episodes:
+                    self._episodes[self._cur_season] = {}
+                ce = self._cur_episode
+                if ce is None:
+                    ce = self._eps_counter
+                if self._series is not None:
+                    m['episode of'] = self._series
+                m['season'] = self._cur_season
+                m['episode'] = ce
+                self._episodes[self._cur_season][ce] = m
+                self._eps_counter += 1
+                self._cur_title = ''
+                self._curid = ''
+                self._cur_episode = None
+                for key, value in self._info.items():
+                    if key == 'original air date':
+                        if value[-4:].isdigit() and \
+                                    m.get('year', '????') == '????':
+                            m['year'] = value[-4:]
+                    m[key] = value
+            self._cur_info = 'title'
+            self._info_text = ''
+            self._info = {}
+
+    def do_br(self, attrs):
+        if self._in_td_title:
+            self._info_text = self._info_text.strip()
+            if self._info_text and self._cur_info != 'title':
+                self._info[self._cur_info] = self._info_text
+                self._info_text = ''
+            if self._cur_info == 'title':
+                self._cur_info = 'original air date'
+            elif self._cur_info == 'original air date':
+                self._cur_info = 'plot'
+
+    def _handle_data(self, data):
+        if self._in_h1 and data.strip().lower().startswith('episodes'):
+            self._in_episodes_h1 = 1
+        elif self._in_td_eps:
+            ldata = data.lower()
+            if ldata.find('season') != -1:
+                fe = ldata.find('episode')
+                if fe != -1:
+                    self._in_td_title = 1
+                    ce = ''
+                    for char in ldata[fe+8:].strip():
+                        if char.isdigit(): ce += char
+                        else: break
+                    try: ce = int(ce)
+                    except: ce = None
+                    self._cur_episode = ce
+        elif self._in_html_title:
+            self._html_title += data
+        if self._in_title:
+            self._cur_title += data
+        elif self._cur_info != 'title' and self._in_td_title:
+            self._info_text += data
+
+
 # The used instances.
 movie_parser = HTMLMovieParser()
 plot_parser = HTMLPlotParser()
@@ -2444,4 +2704,5 @@ news_parser = HTMLNewsParser()
 amazonrev_parser = HTMLAmazonReviewsParser()
 guests_parser = HTMLGuestsParser()
 sales_parser = HTMLSalesParser()
+episodes_parser = HTMLEpisodesParser()
 

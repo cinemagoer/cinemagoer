@@ -26,7 +26,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.Movie import Movie
-from imdb.utils import analyze_name, build_name, canonicalName, normalizeName
+from imdb.utils import analyze_name, build_name, canonicalName, \
+                        normalizeName, analyze_title
 from utils import ParserBase
 
 
@@ -60,8 +61,10 @@ class HTMLMaindetailsParser(ParserBase):
         self._in_list = 0
         self._in_title = 0
         self._title = ''
+        self._seen_br = 0
         self._roles = ''
         self._last_imdbID = ''
+        self._get_imdbID = 0
         self._in_sect = 0
         self._in_b = 0
         self._sect_name = ''
@@ -117,6 +120,7 @@ class HTMLMaindetailsParser(ParserBase):
             self._in_list = 0
 
     def do_br(self, attrs):
+        self._seen_br = 1
         # Birth/death date/notes are separated by a <br> tag.
         if self._in_birth and self._birth:
             self._birth += '::'
@@ -169,6 +173,8 @@ class HTMLMaindetailsParser(ParserBase):
 
     def start_li(self, attrs):
         self._in_list = 1
+        self._seen_br = 0
+        self._get_imdbID = 1
 
     def end_li(self):
         if self._title and self._sect_name:
@@ -202,7 +208,7 @@ class HTMLMaindetailsParser(ParserBase):
                 ep = self._roles.rfind(')')
                 if ep != -1:
                     notes = self._roles[sp:ep+1]
-                    self._roles = self._roles[ep+1:].strip()
+                    self._roles = self._roles[:sp-1].strip()
             if self._roles.startswith('.... '):
                 self._roles = self._roles[5:]
             movie = Movie(movieID=str(self._last_imdbID), title=tit,
@@ -214,6 +220,7 @@ class HTMLMaindetailsParser(ParserBase):
         self._title = ''
         self._roles = ''
         self._in_list = 0
+        self._seen_br = 0
 
     def start_dd(self, attrs): pass
 
@@ -230,11 +237,12 @@ class HTMLMaindetailsParser(ParserBase):
     def start_a(self, attrs):
         href = self.get_attr_value(attrs, 'href')
         # A movie title.
-        if href and href.find('/title/tt') != -1:
+        if self._get_imdbID and href and href.find('/title/tt') != -1:
             self._in_title = 1
             imdbID = self.re_imdbID.findall(href)
             if imdbID:
                 self._last_imdbID = imdbID[-1]
+                self._get_imdbID = 0
         elif self._in_b:
             name = self.get_attr_value(attrs, 'name')
             if name: self._in_sect = 1
@@ -266,7 +274,7 @@ class HTMLMaindetailsParser(ParserBase):
             self._in_akas = 1
         elif self._in_sect:
             self._sect_name += sldata
-        elif self._in_title:
+        elif self._in_title and not self._seen_br:
             self._title += data
         elif self._in_list:
             ##if self._roles and not self._roles[-1].isspace():
@@ -448,6 +456,154 @@ class HTMLOtherWorksParser(ParserBase):
             self._cow += data
 
 
+class HTMLSeriesParser(ParserBase):
+    """Parser for the "by TV series" page of a given person.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        sparser = HTMLSeriesParser()
+        result = sparser.parse(filmoseries_html_string)
+    """
+
+    # Do not gather names and titles references.
+    getRefs = 0
+
+    def _reset(self):
+        """Reset the parser."""
+        self._episodes = {}
+        self._seen_h1 = 0
+        self._in_b = 0
+        self._in_episodes = 0
+        self._in_ol = 0
+        self._in_li = 0
+        self._in_series_title = 0
+        self._series_id = None
+        self._cur_series_title = u''
+        self._cur_series = None
+        self._in_episode_title = 0
+        self._episode_id = None
+        self._cur_episode_title = u''
+        self._in_misc_info = 0
+        self._misc_info = u''
+        self._in_i = 0
+
+    def get_data(self):
+        """Return the dictionary."""
+        if not self._episodes: return {}
+        return {'episodes': self._episodes}
+
+    def start_h1(self, attrs): pass
+
+    def end_h1(self): self._seen_h1 = 1
+
+    def start_b(self, attrs): self._in_b = 1
+
+    def end_b(self): self._in_b = 0
+
+    def start_i(self, attrs): self._in_i = 1
+
+    def end_i(self): self._in_i = 0
+
+    def start_ol(self, attrs): self._in_ol = 1
+
+    def end_ol(self):
+        self._in_ol = 0
+        self._cur_series_title = u''
+        self._cur_series = None
+        self._series_id = None
+
+    def start_li(self, attrs): self._in_li = 1
+
+    def end_li(self):
+        self._in_li = 0
+        if self._in_episodes:
+            et = self._cur_episode_title.strip()
+            minfo = self._misc_info.strip()
+            if et and self._episode_id:
+                eps_data = analyze_title(et, canonical=1)
+                eps_data['kind'] = 'episode'
+                e = Movie(movieID=str(self._episode_id), data=eps_data,
+                            accessSystem='http')
+                e['episode of'] = self._cur_series
+                if minfo.startswith('('):
+                    pe = minfo.find(')')
+                    if pe != -1:
+                        date = minfo[1:pe]
+                        if date != '????':
+                            e['original air date'] = date
+                            if eps_data.get('year', '????') == '????':
+                                syear = date.split()[-1]
+                                if syear.isdigit():
+                                    e['year'] = syear
+                rolei = minfo.find(' - ')
+                if rolei != -1:
+                    role = ''
+                    role = minfo[rolei+3:].strip()
+                    notei = role.rfind('(')
+                    note = ''
+                    if notei != -1 and role and role[-1] == ')':
+                        note = role[notei:]
+                        role = role[:notei].strip()
+                    e.notes = note
+                    e.currentRole = role
+                self._episodes.setdefault(self._cur_series, []).append(e)
+            self._cur_episode_title = u''
+            self._episode_id = None
+        self._in_misc_info = 0
+        self._misc_info = u''
+
+    def start_a(self, attrs):
+        if not self._in_episodes: return
+        if self._in_ol:
+            if not self._in_li: return
+            href = self.get_attr_value(attrs, 'href')
+            if not href: return
+            mid = self.re_imdbID.findall(href)
+            if not mid: return
+            self._in_episode_title = 1
+            self._episode_id = mid[0]
+            return
+        else:
+            href = self.get_attr_value(attrs, 'href')
+            if not href: return
+            mid = self.re_imdbID.findall(href)
+            if not mid: return
+            self._in_series_title = 1
+            self._series_id = mid[0]
+
+    def end_a(self):
+        if self._in_episode_title:
+            self._in_episode_title = 0
+            self._in_misc_info = 1
+        elif self._in_series_title:
+            self._in_series_title = 0
+            st = self._cur_series_title.strip()
+            if st and self._series_id is not None:
+                series_data = analyze_title(st, canonical=1)
+                s = Movie(movieID=str(self._series_id), data=series_data,
+                                accessSystem='http')
+                self._cur_series = s
+
+    def _handle_data(self, data):
+        if self._seen_h1 and self._in_b:
+            if data.strip().lower().find('filmography by series'):
+                self._seen_h1 = 0
+                self._in_episodes = 1
+                return
+        elif self._in_episode_title:
+            self._cur_episode_title += data
+        elif self._in_series_title:
+            self._cur_series_title += data
+        elif self._in_misc_info:
+            # Handles roles like "director".
+            if self._in_i:
+                # XXX: put these info in the "notes" property?
+                data = data.lower()
+            self._misc_info += data
+
+
 # The used instances.
 maindetails_parser = HTMLMaindetailsParser()
 bio_parser = HTMLBioParser()
@@ -463,4 +619,5 @@ from movieParser import HTMLTechParser
 publicity_parser = HTMLTechParser()
 publicity_parser.kind = 'publicity'
 from movieParser import news_parser
+person_series_parser = HTMLSeriesParser()
 

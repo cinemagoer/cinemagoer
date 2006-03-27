@@ -28,6 +28,8 @@ from urllib import FancyURLopener, quote_plus
 from codecs import lookup
 
 from imdb import IMDbBase
+from imdb.Movie import Movie
+from imdb.utils import analyze_title
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         taglines_parser, keywords_parser, \
@@ -40,12 +42,12 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         newsgrouprev_parser, misclinks_parser, \
                         soundclips_parser, videoclips_parser, news_parser, \
                         photosites_parser, amazonrev_parser, guests_parser, \
-                        business_parser, sales_parser
+                        business_parser, sales_parser, episodes_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
                         person_officialsites_parser, publicity_parser, \
-                        agent_parser
+                        agent_parser, person_series_parser
 from searchPersonParser import search_person_parser
 from utils import ParserBase
 
@@ -340,6 +342,21 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(imdbURL_movie % movieID + 'sales')
         return sales_parser.parse(cont)
 
+    def get_movie_episodes(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'episodes')
+        data_d = episodes_parser.parse(cont)
+        # set movie['episode of'] for every episode of the series.
+        if data_d.get('data', {}).has_key('episodes'):
+            nr_eps = 0
+            for season in data_d['data']['episodes'].values():
+                for episode in season.values():
+                    episode['episode of'].movieID = movieID
+                    nr_eps += 1
+            # Number of episodes.
+            if nr_eps:
+                data_d['data']['number of episodes'] = nr_eps
+        return data_d
+
     def _search_person(self, name, results):
         # The URL of the query.
         # XXX: To retrieve the complete results list:
@@ -385,5 +402,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_person_news(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'news')
         return news_parser.parse(cont)
+
+    def get_person_episodes(self, personID):
+        cont = self._retrieve(imdbURL_person % personID + 'filmoseries')
+        return person_series_parser.parse(cont)
 
 

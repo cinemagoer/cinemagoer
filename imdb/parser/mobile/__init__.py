@@ -56,6 +56,7 @@ def _unHtml(s):
 
 
 _ltypes = (type([]), type(()))
+_inttype = type(0)
 
 def _getTagWith(s, cont):
     """Return the html tags in the 's' string containing the 'cont'
@@ -184,6 +185,47 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
         title = _unHtml(title[0])
         d = analyze_title(title, canonical=1)
+        tv_series = _findBetween(cont, 'TV Series:</b>', '</a>')
+        if tv_series: mid = re_imdbID.findall(tv_series[0])
+        else: mid = None
+        if tv_series and mid:
+            s_title = _unHtml(tv_series[0])
+            s_data = analyze_title(s_title, canonical=1)
+            m = Movie(movieID=str(mid), data=s_data, accessSystem='mobile')
+            d['kind'] = 'episode'
+            d['episode of'] = m
+            d['movieID'] = mid[0]
+            ep_title = _findBetween(cont, '<h1><strong class="title">',
+                                            '</strong></h1>')
+            if ep_title:
+                ep_title = _findBetween(ep_title[0], '<small>', '</small>')
+            if ep_title:
+                s_data = analyze_title(ep_title[0], canonical=1)
+                del s_data['kind']
+                d.update(s_data)
+        air_date = _findBetween(cont, 'Original Air Date:</b>', '<br><br>')
+        if air_date:
+            air_date = air_date[0]
+            vi = air_date.find('(')
+            if vi != -1:
+                date = air_date[:vi].strip()
+                if date != '????':
+                    d['original air date'] = date
+                air_date = air_date[vi:]
+                season = _findBetween(air_date, 'Season', ',')
+                if season:
+                    season = season[0].strip()
+                    try: season = int(season)
+                    except: pass
+                    if season or type(season) is _inttype:
+                        d['season'] = season
+                episode = _findBetween(air_date, 'Episode', ')')
+                if episode:
+                    episode = episode[0].strip()
+                    try: episode = int(episode)
+                    except: pass
+                    if episode or type(season) is _inttype:
+                        d['episode'] = episode
         direct = _findBetween(cont, 'Directed by</b><br>', '<br> <br>')
         if direct:
             dirs = self._getPersons(direct[0], aonly=1)
@@ -269,6 +311,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if mpaa: d['mpaa'] = _unHtml(mpaa[0])
         runtimes = _findBetween(cont, 'Runtime:</b>', '<br>')
         if runtimes:
+            # XXX: number of episodes?
             rt = [x.strip().replace(' min', '')
                     for x in runtimes[0].split('/')]
             d['runtimes'] = rt
@@ -418,8 +461,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     if fae != -1:
                         m = m[:fai] + m[fai+fae+4:]
                 tvi = m.find('<small>TV Series</small>')
-                if tvi != -1 and d['title'][0] != '"':
-                    d['title'] = '"%s"' % d['title']
+                if tvi != -1:
                     m = m[:tvi] + m[tvi+24:]
                 m = m.strip()
                 for x in xrange(2):

@@ -293,10 +293,10 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 
         if (name3 != NULL && strrchr(origLine, ')') != NULL) {
             char origLineLower[MXLINELEN];
-	    strcpy(origLineLower, origLine);
+            strcpy(origLineLower, origLine);
             strtolower(origLineLower);
             ratio = MAX(ratio, ratcliff(name3, origLineLower) + 0.1);
-	}
+       }
     
         if (ratio >= RO_THRESHOLD)
             PyList_Append(result, Py_BuildValue("(dis)",
@@ -402,7 +402,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             if (linelen > 2 && line[linelen-1] == '"')
                 line[linelen-1] = '\0';
         }
-	strtolower(line);
+        strtolower(line);
 
         /* If the current line has an article, strip it and put the new
          * line in noArt. */
@@ -433,10 +433,10 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 
         if (title3 != NULL) {
             char origLineLower[MXLINELEN];
-	    strcpy(origLineLower, origLine);
-	    strtolower(origLineLower);
+            strcpy(origLineLower, origLine);
+            strtolower(origLineLower);
             ratio = MAX(ratio, ratcliff(title3, origLineLower) + 0.1);
-	}
+        }
 
         if (ratio >= RO_THRESHOLD)
             PyList_Append(result, Py_BuildValue("(dis)",
@@ -454,6 +454,89 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 }
 
 
+/* Return a list of pairs (movieID, "long imdb episode title") with
+ * every episode of the given series. */
+static PyObject*
+get_episodes(PyObject *self, PyObject *pArgs)
+{
+    long movieID = 0L;
+    FILE *indexFile;
+    char *indexFileName = NULL;
+    FILE *keyFile;
+    char *keyFileName = NULL;
+    long kfIndex = 0L;
+    int i = 0;
+    int read_char;
+    char line[MXLINELEN];
+    char series[MXLINELEN];
+    int seriesLen = 0;
+    char *cp;
+    char *key;
+
+    PyObject *result = PyList_New(0);
+
+    if (!PyArg_ParseTuple(pArgs, "lss", &movieID, &indexFileName, &keyFileName))
+        return NULL;
+    
+    if (movieID < 0) {
+        PyErr_SetString(PyExc_ValueError, "movieID must be positive.");
+        return NULL;
+    }
+
+    if ((indexFile = fopen(indexFileName, "r")) == NULL) {
+        PyErr_SetFromErrno(PyExc_IOError);
+        return NULL;
+    }
+
+    fseek(indexFile, 4L*movieID, 0);
+    for (i = 0; i < 4; i++) {
+        if ((read_char = fgetc(indexFile)) == EOF) {
+            PyErr_SetString(PyExc_IOError,
+                            "unable to read indexFile; movieID too high?");
+            return NULL;
+        }
+        kfIndex |= read_char << i*8L;
+    }
+    fclose(indexFile);
+
+    if ((keyFile = fopen(keyFileName, "r")) == NULL) {
+        PyErr_SetFromErrno(PyExc_IOError);
+        return NULL;
+    }
+
+    fseek(keyFile, kfIndex, 0);
+    fgets(series, MXLINELEN, keyFile);
+    if ((cp = strrchr(series, FSEP)) != NULL) {
+        *cp = '\0';
+    }
+    seriesLen = strlen(series);
+
+    if (series[0] != '"' || series[seriesLen-1] != ')')
+        return Py_BuildValue("O", result);
+
+    while (fgets(line, MXLINELEN, keyFile) != NULL) {
+        if (strncmp(line, series, seriesLen)) 
+            break;
+
+        if ((cp = strrchr(line, FSEP)) != NULL) {
+            *cp = '\0';
+            key = cp+1;
+        } else {
+            continue;
+        }
+
+        if (line[seriesLen+1] != '{' || line[strlen(line)-1] != '}')
+            break;
+
+        PyList_Append(result, Py_BuildValue("(is)",
+                        strtol(key, NULL, 16), line));
+    }
+    fclose(keyFile);
+
+    return Py_BuildValue("O", result);
+}
+
+
 static PyMethodDef ratober_methods[] = {
     {"ratcliff", pyratcliff,
         METH_VARARGS, "Ratcliff-Obershelp similarity."},
@@ -461,6 +544,8 @@ static PyMethodDef ratober_methods[] = {
         METH_KEYWORDS, "Search for a person name."},
     {"search_title", (PyCFunction) search_title,
         METH_KEYWORDS, "Search for a movie title."},
+    {"get_episodes", get_episodes,
+        METH_VARARGS, "Return a list of episodes of the given series."},
     {NULL}
 };
 

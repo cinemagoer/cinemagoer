@@ -147,18 +147,39 @@ class Movie(_Container):
     def set_title(self, title):
         """Set the title of the movie."""
         # XXX: convert title to unicode, if it's a plain string?
+        # XXX: what if an episode title is provided?
         d_title = analyze_title(title, canonical=1)
         self.data.update(d_title)
 
     def _additional_keys(self):
         """Valid keys to append to the data.keys() list."""
+        addkeys = []
         if self.data.has_key('title'):
-            return ['canonical title', 'long imdb title',
-                    'long imdb canonical title']
-        return []
+            addkeys += ['canonical title', 'long imdb title',
+                        'long imdb canonical title']
+        if self.data.has_key('episode of'):
+            addkeys += ['long imdb episode title', 'series title',
+                        'canonical series title', 'episode title',
+                        'canonical episode title']
+        return addkeys
 
     def _getitem(self, key):
         """Handle special keys."""
+        if self.data.has_key('episode of'):
+            if key == 'long imdb episode title':
+                return build_title(self.data, canonical=0)
+            elif key == 'series title':
+                ser_title = self.data['episode of'].get('canonical title') or \
+                            self.data['episode of']['title']
+                return normalizeTitle(ser_title)
+            elif key == 'canonical series title':
+                ser_title = self.data['episode of'].get('canonical title') or \
+                            self.data['episode of']['title']
+                return ser_title
+            elif key == 'episode title':
+                return normalizeTitle(self.data.get('title', u''))
+            elif key == 'canonical episode title':
+                return self.data.get('title', u'')
         if self.data.has_key('title'):
             if key == 'title':
                 return normalizeTitle(self.data['title'])
@@ -169,6 +190,10 @@ class Movie(_Container):
             elif key == 'long imdb canonical title':
                 return build_title(self.data, canonical=1)
         return None
+
+    def getID(self):
+        """Return the movieID."""
+        return self.movieID
 
     def __nonzero__(self):
         """The Movie is "false" if the self.data does not contain a title."""
@@ -218,8 +243,12 @@ class Movie(_Container):
     def __repr__(self):
         """String representation of a Movie object."""
         # XXX: add also currentRole and notes, if present?
-        r = '<Movie id:%s[%s] title:"%s">' % (self.movieID, self.accessSystem,
-                                        self.get('long imdb canonical title'))
+        if self.has_key('long imdb episode title'):
+            title = self.get('long imdb episode title')
+        else:
+            title = self.get('long imdb canonical title')
+        r = '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
+                                                title)
         if type(r) is type(u''): r = r.encode('utf_8', 'replace')
         return r
 
@@ -231,7 +260,6 @@ class Movie(_Container):
         """Simply print the short title."""
         return self.get('title', u'')
 
-        
     def summary(self):
         """Return a string with a pretty-printed summary for the movie."""
         if not self: return u''

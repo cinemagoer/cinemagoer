@@ -38,6 +38,9 @@ _re_href = re.compile(r'(http://.+?)(?=\s|$)', re.I)
 _re_hrefsub = _re_href.sub
 
 _uctype = type(u'')
+_ltype = type([])
+_ttype = type(())
+_seqtype = (_ltype, _ttype)
 
 
 def makeCgiPrintEncoding(encoding):
@@ -119,5 +122,30 @@ def subXMLHTMLSGMLRefs(s):
     """Return the given string with XML/HTML/SGML entity and char references
     replaced."""
     return re_everyentcharrefssub(_replAllXMLRef, s)
+
+
+def sortedSeasons(m):
+    """Return a sorted list of seasons of the given series."""
+    seasons = m.get('episodes', {}).keys()
+    seasons.sort()
+    return seasons
+
+
+def sortedEpisodes(m, season=None):
+    """Return a sorted list of episodes of the given series,
+    considering only the specified season(s) (every season, if None)."""
+    episodes = []
+    seasons = season
+    if season is None:
+        seasons = sortedSeasons(m)
+    else:
+        if type(season) not in _seqtype:
+            seasons = [season]
+    for s in seasons:
+        eps_indx = m.get('episodes', {}).get(s, {}).keys()
+        eps_indx.sort()
+        for e in eps_indx:
+            episodes.append(m['episodes'][s][e])
+    return episodes
 
 

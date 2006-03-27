@@ -196,7 +196,8 @@ canonical title; string; the title in the canonical format,
                          like "Untouchables, The".
 long imdb canonical title; string; "Patriot, The (2000)".
 year; string; the year of release or '????' if unknown.
-kind; string; one in ('movie', 'tv series', 'tv mini series', 'video game')
+kind; string; one in ('movie', 'tv series', 'tv mini series', 'video game',
+                      'video movie', 'tv movie', 'episode')
 imdbIndex; string; the roman number for movies with the same title/year.
 director; Person list; a list of director's name (e.g.: ['Brian De Palma'])
 cast; Person list; list of actor/actress, with the currentRole instance
@@ -208,7 +209,7 @@ rating; string; user rating on IMDb from 1 to 10 (e.g. '7.8')
 votes; string; number of votes (e.g. '24,101')
 runtimes; string list; in minutes ['119'] or something like ['USA:118',
           'UK:116']
-episodes; string; number or episodes for a series.
+number of episodes; int; number or episodes for a series.
 color info; string list; ["Color (Technicolor)"]
 countries; string list; production's country ['USA', 'Italy']
 genres; string list; one or more in (Action, Adventure, Adult, Animation,
@@ -219,6 +220,15 @@ akas; string list; list of aka for this movie
 languages; string list; list of languages
 certificates; string list; ['UK:15', 'USA:R']
 mpaa; string; the mpaa rating
+episodes (series only); dictionary of dictionary; one key for every season,
+                        one key for every episode in the season.
+episode of (episode only); Movie object; the parent series for an episode.
+season (episode only); int; the season number.
+episode (episode only); int; the number of the episode in the season.
+long imdb episode title (episode only); string; episode and series title.
+series title; string.
+canonical series title; string.
+
 
 Other keys that contain a list of Person objects are: costume designer,
 sound crew, crewmembers, editor, production manager, visual effects,

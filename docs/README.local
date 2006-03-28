@@ -19,6 +19,15 @@ From the same page, download also the latest version (3.24, as
 I'm writing) of the Col Needham's command line programs (moviedb),
 under the tools directory.
 
+NOTE: the current (3.24) moviedb version is old an it was not
+thought with tv series episodes support in mind.
+It can still work very well, but you've to modify some constants
+in the code: edit the "moviedb.h" file in the "src" directory,
+and change MAXTITLES to _at least_ 1200000 and MAXNAKAENTRIES
+to 700000.
+See http://us.imdb.com/database_statistics for more up-to-date
+statistics.
+
 Install moviedb; in a stage of the installation, the mkdb program will
 generate a lot of data and index files in the directory specified by
 the DBDIR variable in the Makefile.

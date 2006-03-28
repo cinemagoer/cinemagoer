@@ -143,6 +143,14 @@ of the imdb.IMDb class which must define at least the following methods:
  _normalize_movieID(movieID) - must convert the provided movieID in a
                                format suitable for internal use (e.g.:
                                convert a string to a long int).
+                               NOTE: as a rule of thumb you _always_ need
+                               to provide a way to convert a "string
+                               representation of the movieID" into the
+                               internally used format, and the internally
+                               used format should _always_ be converted to
+                               a string, in a way or another.
+                               Rationale: a movieID can be passed from the
+                               command line, or from a web browser.
  _normalize_personID(personID) - idem.
  _get_real_movieID(movieID) - return the true movieID; useful to handle
                               title aliases.

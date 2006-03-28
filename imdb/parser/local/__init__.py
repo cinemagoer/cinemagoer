@@ -50,6 +50,49 @@ _dtype = type({})
 _stypes = (type(u''), type(''))
 
 try:
+    from imdb.parser.common.ratober import get_episodes
+except ImportError:
+    import warnings
+    warnings.warn('Unable to import the ratober.get_episodes function.'
+                    '  Retrieving episodes list of tv series will be'
+                    '  a bit slower.')
+
+    def get_episodes(movieID, indexFile, keyFile):
+        if movieID < 0:
+            raise IOError, "movieID must be positive."
+        try:
+            ifile = open(indexFile, 'rb')
+        except IOError, e:
+            raise IMDbDataAccessError, str(e)
+        ifile.seek(4L*movieID, 0)
+        indexStr = ifile.read(4)
+        ifile.close()
+        if len(indexStr) != 4:
+            raise IOError, "unable to read indexFile; movieID too high?"
+        kfIndex = 0L
+        for i in (0, 1, 2, 3):
+            kfIndex |= ord(indexStr[i]) << i*8L;
+        try:
+            kfile = open(keyFile, 'rt')
+        except IOError, e:
+            raise IMDbDataAccessError, str(e)
+        kfile.seek(kfIndex, 0)
+        seriesTitle = kfile.readline().split('|')[0].strip()
+        if seriesTitle[0:1] != '"' or seriesTitle[-1:] != ')':
+            return []
+        stLen = len(seriesTitle)
+        results = []
+        for line in kfile:
+            if not line.strip(): break
+            epsTitle, epsID = line.split('|')
+            if epsTitle[:stLen] != seriesTitle: break
+            if epsTitle[stLen+1] != '{' or epsTitle[-1] != '}':
+                break
+            results.append((int(epsID.strip(), 16), epsTitle))
+        kfile.close()
+        return results
+
+try:
     from imdb.parser.common.ratober import search_name
 
     def _scan_names(keyFile, name1, name2, name3, results=0):
@@ -339,7 +382,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
             episodes = re_episodes.findall(rt)
             if episodes:
                 res['runtimes'][0] = re_episodes.sub('', rt)
-                res['episodes'] = episodes[0]
+                res['number of episodes'] = episodes[0]
         # AKA titles.
         akas = getAkaTitles(movieID,
                     '%saka-titles.data' % self.__db,
@@ -357,6 +400,20 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 nt = self._changeAKAencoding(n, t)
                 if nt is not None: akas[i] = '%s::%s' % (nt, n)
             res['akas'] = akas
+        if res.get('kind') == 'episode':
+            # Things to do if this is a tv series episode.
+            episodeOf = res.get('episode of')
+            if episodeOf is not None:
+                parentSeries = Movie(data=res['episode of'],
+                                            accessSystem='local')
+                seriesID = self._getTitleID(parentSeries.get(
+                                            'long imdb canonical title'))
+                parentSeries.movieID = seriesID
+                res['episode of'] = parentSeries
+            if not res.get('year'):
+                year = getFullIndex('%smovies.data' % self.__db,
+                                    movieID, kind='moviedata', rindex=1)
+                if year: res['year'] = year
         return {'data': res, 'info sets': infosets}
 
     def get_movie_plot(self, movieID):
@@ -484,6 +541,36 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                         'titlesRefs': trefs, 'namesRefs': nrefs}
         return {'data': {}}
 
+    def _buildEpisodes(self, eps_list, parentID):
+        episodes = {}
+        parentTitle = getLabel(parentID, '%stitles.index' % self.__db,
+                            '%stitles.key' % self.__db)
+        parentSeries = Movie(title=parentTitle,
+                            movieID=parentID, accessSystem='local')
+        for episodeID, episodeTitle in eps_list:
+            episodeTitle = unicode(episodeTitle, 'latin_1', 'replace')
+            data = analyze_title(episodeTitle, canonical=1)
+            m = Movie(data=data, movieID=episodeID, accessSystem='local')
+            m['episode of'] = parentSeries
+            if data.get('year') is None:
+                year = getFullIndex('%smovies.data' % self.__db,
+                                    key=episodeID, kind='moviedata', rindex=1)
+                if year: m['year'] = year
+            season = data.get('season', 'UNKNOWN')
+            if not episodes.has_key(season): episodes[season] = {}
+            ep_number = data.get('episode')
+            if ep_number is None:
+                ep_number = max((episodes[season].keys() or [0])) + 1
+            episodes[season][ep_number] = m
+        return episodes
+
+    def get_movie_episodes(self, movieID):
+        me = get_episodes(movieID, '%stitles.index' % self.__db,
+                                    '%stitles.key' % self.__db)
+        if me:
+            return {'data': {'episodes': self._buildEpisodes(me, movieID)}}
+        return {'data': {}}
+
     def _search_person(self, name, results):
         name = name.strip()
         if not name: return []
@@ -522,6 +609,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         #      retrieve the movieID!
         #      A cleaner solution, would be to NOT return Movies object
         #      at first, from the getBio() function.
+        # XXX: anyway, this is no more needed, since "guest appearances"
+        #      are gone, with the new tv series episodes support.
         if res.has_key('notable tv guest appearances'):
             nl = []
             for m in res['notable tv guest appearances']:
@@ -538,7 +627,9 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 'titlesRefs': trefs, 'namesRefs': nrefs}
 
     def get_person_filmography(self, personID):
+        infosets = ['filmography']
         res = {}
+        episodes = {}
         works = ('actor', 'actresse', 'producer', 'writer',
                 'cinematographer', 'composer', 'costume-designer',
                 'director', 'editor', 'miscellaneou', 'production-designer')
@@ -565,9 +656,37 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     params['doWriters'] = 1
                 params['dataF'] = '%s%ss.data' % (self.__db, key)
                 data = getFilmography(**params)
-                data.sort(sortMovies)
-                res[name] = data
-        return {'data': res}
+                movies = []
+                eps = []
+                # Split normal titles from episodes.
+                for d in data:
+                    if d.get('kind') != 'episode':
+                        movies.append(d)
+                    else:
+                        eps.append(d)
+                movies.sort(sortMovies)
+                res[name] = movies
+                for e in eps:
+                    series = Movie(data=e['episode of'], accessSystem='local')
+                    seriesID = self._getTitleID(series.get(
+                                                'long imdb canonical title'))
+                    series.movieID = seriesID
+                    if not e.get('year'):
+                        year = getFullIndex('%smovies.data' % self.__db,
+                                            e.movieID, kind='moviedata',
+                                            rindex=1)
+                        if year: e['year'] = year
+                    if not e.currentRole and name not in ('actor', 'actress'):
+                        if e.notes: e.notes = ' (%s)' % e.notes
+                        e.notes = '(%s)%s' % (name, e.notes)
+                    episodes.setdefault(series, []).append(e)
+        if episodes:
+            for k in episodes:
+                episodes[k].sort(sortMovies)
+                episodes[k].reverse()
+            res['episodes'] = episodes
+            infosets.append('episodes')
+        return {'data': res, 'info sets': tuple(infosets)}
 
     def get_person_biography(self, personID):
         return self.get_person_main(personID)

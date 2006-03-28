@@ -1,13 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.5.cvs20060327 "Ninja Terminator" (27 Mar 2006)
+* What's the new in release 2.5.cvs20060328 "Serenity" (28 Mar 2006)
   [general]
   - modified the DISCLAIMER.txt file to be compliant to the
     debian guidelines.
   - fixed a bug in the get_first_movie.py script.
   - Movie and Person instances are now hashable.
   - modified functions analyze_title and build_title to support tv episodes.
+  - minor updates to the documentation.
 
   [http data access system]
   - fixed a bug regarding currentRole for tv series.
@@ -20,7 +21,8 @@
   - fixed a bug with tv series titles.
 
   [local data access system]
-  - new get_episodes function in the ratober C module; still unused.
+  - support for the new style for tv series; see the README.series file.
+  - new get_episodes function in the ratober C module.
 
 
 * What's the new in release 2.4 "Munich" (09 Feb 2006)

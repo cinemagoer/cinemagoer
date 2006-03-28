@@ -63,7 +63,8 @@ _dataset_list = (('plot', (TITLE_ID, FULL_OFFSET)),
                 ('filmcount', (COUNT,)),
                 ('length', (BYTE,)),
                 ('orderset', (BYTE, BYTE, BYTE)),
-                ('mlinks', (TITLE_ID, BYTE, TITLE_ID)))
+                ('mlinks', (TITLE_ID, BYTE, TITLE_ID)),
+                ('moviedata', (TITLE_ID, INT, INT, ATTR)))
 
 def _buildStruct(items):
     """Build a tuple of ('struct_string', struct_size, struct_items)."""

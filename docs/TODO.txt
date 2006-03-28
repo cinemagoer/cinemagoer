@@ -16,12 +16,11 @@ NOTE: it's always time to clean the code! <g>
 * Compatibility with Python 2.2 and previous versions is not assured
   for every data access system (the imdbpy2sql.py script for sure
   requires at least Python 2.3).
-* I have a testsuite, but it's not ready to be make public;
-  clean and extend it.
 
 
 [searches]
 * Support advanced query for movie titles/person names.
+* Better support for tv series episodes.
 
 
 [Movie objects]
@@ -29,6 +28,9 @@ NOTE: it's always time to clean the code! <g>
   info stored in a Movie object).
 * Should the __contains__() methods descend into nested lists
   and dictionaries?
+  Answer: YES, especially with tv series episodes support!
+* Should a movie object automatically build a Movie object, when
+  a 'episode of' dictionary is in the data?
 * For TV series the list of directors/writers returned by 'local'
   and 'sql' is a long list with every single episodes listed in the
   'notes' attribute (i.e.: the same person is listed more than one time,

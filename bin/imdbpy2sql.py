@@ -23,12 +23,25 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+#~ uri = 'mysql://user:password@localhost/testDatabase'
+uri = 'sqlite:/:memory:'
+#~ uri = 'sqlite:/home/cowo/programmi/imdbpy/test.db'
+
 
 import os, sys, getopt, time, re
 from gzip import GzipFile
 
-import MySQLdb
-from _mysql_exceptions import OperationalError, MySQLError
+#~ import MySQLdb
+#~ from _mysql_exceptions import OperationalError, MySQLError
+
+from sqlobject import *
+from imdb.parser.sql.dbschema import *
+from imdb.utils import soundex
+
+##conn = connectionForURI(uri)
+conn = setConnection(uri)
+dropTables()
+createTables()
 
 from imdb.utils import analyze_title, analyze_name, build_name, build_title
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
@@ -75,11 +88,36 @@ for arg in args:
 
 
 # Connect to the database.
-db = MySQLdb.connect(**CONN_PARAMS)
+##db = MySQLdb.connect(**CONN_PARAMS)
+db = conn.makeConnection()
 curs = db.cursor()
-try: curs.execute('SET NAMES "latin1";')
-except MySQLError: pass
+#try: curs.execute('SET NAMES "latin1";')
+#except MySQLError: pass
 
+#~ TABLES = {}
+#~ COLS = {}
+#~ for table in DB_TABLES:
+    #~ _n = table.q.tableName
+    #~ TABLES[table] = _n
+    #~ COLS[table] = {}
+    #~ for column in table.sqlmeta.columns.keys():
+        #~ COLS[table][column] = table.sqlmeta.columns[column].dbName
+
+def tableName(table):
+    return table.q.tableName
+
+def colName(table, column):
+    return table.sqlmeta.columns[column].dbName
+
+
+#~ SQL_TITLE = 'INSERT INTO %s (id, %s, %s, %s, %s)' % (TABLES[Title],
+                    #~ COLS[Title]['title'], COLS[Title]['kindID'],
+                    #~ COLS[Title]['productionYear'], COLS[Title]['imdbIndex'])
+#~ SQL_TITLE += ' VALUES (%s, %s, %s, %s, %s)'
+
+#~ SQL_NAME = 'INSERT INTO %s (id, %s, %s)' % (TABLES[Name], COLS[Name]['name'],
+                                            #~ COLS[Name]['imdbIndex'])
+#~ SQL_NAME += ' VALUES (%s, %s, %s)'
 
 # Show time consumed by the single function call.
 CTIME = int(time.time())
@@ -92,8 +130,8 @@ def t(s):
 
 
 # Handle laserdisc keys.
-for key, value in _ldk.items():
-    _ldk[key] = 'LD %s' % value
+#~ for key, value in _ldk.items():
+    #~ _ldk[key] = 'LD %s' % value
 
 
 # Tags to identify where the meaningful data begin/end in files.
@@ -214,28 +252,28 @@ def getSectionHash(fp):
         curSectList[:] = []
         curTitle = ''
 
-NMMVSections = dict([(x, None) for x in ('MV: ', 'NM: ', 'OT: ', 'MOVI')])
-NMMVSectionsHASK = NMMVSections.has_key
-def getSectionNMMV(fp):
-    """Return sections separated by lines starting with 'NM: ', 'MV: ',
-    'OT: ' or 'MOVI'."""
-    curSectList = []
-    curSectListApp = curSectList.append
-    curNMMV = ''
-    joiner = ''.join
-    for line in fp:
-        if NMMVSectionsHASK(line[:4]):
-            if curSectList and curNMMV:
-                yield curNMMV, joiner(curSectList)
-                curSectList[:] = []
-                curNMMV = ''
-            if line[:4] == 'MOVI': curNMMV = line[6:]
-            else: curNMMV = line[4:]
-        elif not (line and line[0] == '-'): curSectListApp(line)
-    if curSectList and curNMMV:
-        yield curNMMV, joiner(curSectList)
-        curSectList[:] = []
-        curNMMV = ''
+#~ NMMVSections = dict([(x, None) for x in ('MV: ', 'NM: ', 'OT: ', 'MOVI')])
+#~ NMMVSectionsHASK = NMMVSections.has_key
+#~ def getSectionNMMV(fp):
+    #~ """Return sections separated by lines starting with 'NM: ', 'MV: ',
+    #~ 'OT: ' or 'MOVI'."""
+    #~ curSectList = []
+    #~ curSectListApp = curSectList.append
+    #~ curNMMV = ''
+    #~ joiner = ''.join
+    #~ for line in fp:
+        #~ if NMMVSectionsHASK(line[:4]):
+            #~ if curSectList and curNMMV:
+                #~ yield curNMMV, joiner(curSectList)
+                #~ curSectList[:] = []
+                #~ curNMMV = ''
+            #~ if line[:4] == 'MOVI': curNMMV = line[6:]
+            #~ else: curNMMV = line[4:]
+        #~ elif not (line and line[0] == '-'): curSectListApp(line)
+    #~ if curSectList and curNMMV:
+        #~ yield curNMMV, joiner(curSectList)
+        #~ curSectList[:] = []
+        #~ curNMMV = ''
 
 
 class _BaseCache(dict):
@@ -247,7 +285,8 @@ class _BaseCache(dict):
         self.flushEvery = flushEvery
         self._tmpDict = {}
         if d is not None:
-            for k, v in d.iteritems(): self[k] = v
+            self.update(d)
+            #~ for k, v in d.iteritems(): self[k] = v
 
     def __setitem__(self, key, value):
         """Every time a key is set, its value is discarded and substituted
@@ -262,28 +301,31 @@ class _BaseCache(dict):
 
     def flush(self):
         """Flush to the database."""
-        if self._tmpDict:
-            try:
-                self._toDB()
-                self._tmpDict.clear()
-            except OperationalError, e:
-                # Dataset too large; split it in two and retry.
-                if not (e and e[0] == 1153): raise OperationalError, e
-                print ' * TOO MANY DATA (%s items), SPLITTING...' % \
-                        len(self._tmpDict)
-                c1 = self.__class__()
-                c2 = self.__class__()
-                newflushEvery = self.flushEvery / 2
-                c1.flushEvery = newflushEvery
-                c2.flushEvery = newflushEvery
-                poptmpd = self._tmpDict.popitem
-                for x in xrange(len(self._tmpDict)/2):
-                    k, v = poptmpd()
-                    c1._tmpDict[k] = v
-                c2._tmpDict = self._tmpDict
-                c1.flush()
-                c2.flush()
-                self._tmpDict.clear()
+        if not self._tmpDict:
+            return
+        self._toDB()
+        self._tmpDict.clear()
+        #~ try:
+            #~ self._toDB()
+            #~ self._tmpDict.clear()
+        #~ except OperationalError, e:
+            #~ # Dataset too large; split it in two and retry.
+            #~ if not (e and e[0] == 1153): raise OperationalError, e
+            #~ print ' * TOO MANY DATA (%s items), SPLITTING...' % \
+                    #~ len(self._tmpDict)
+            #~ c1 = self.__class__()
+            #~ c2 = self.__class__()
+            #~ newflushEvery = self.flushEvery / 2
+            #~ c1.flushEvery = newflushEvery
+            #~ c2.flushEvery = newflushEvery
+            #~ poptmpd = self._tmpDict.popitem
+            #~ for x in xrange(len(self._tmpDict)/2):
+                #~ k, v = poptmpd()
+                #~ c1._tmpDict[k] = v
+            #~ c2._tmpDict = self._tmpDict
+            #~ c1.flush()
+            #~ c2.flush()
+            #~ self._tmpDict.clear()
 
     def populate(self):
         """Populate the dictionary from the database."""
@@ -298,7 +340,7 @@ class _BaseCache(dict):
         c = self.counter
         self[key] = None
         return c
-    
+
     def addUnique(self, key):
         """Insert a new key and return its value; if the key is already
         in the dictionary, its previous  value is returned."""
@@ -314,26 +356,51 @@ def fetchsome(curs, size=18000):
         for r in res: yield r
 
 class MoviesCache(_BaseCache):
-    """Manage the movies list."""
+    """
+    Manage the movies list.
+    """
+    #These are the column names used in the DB
+    titleCol = colName(Title, 'title')
+    imdbIndexCol = colName(Title, 'imdbIndex')
+    kindCol = colName(Title, 'kindID')
+    productionYearCol = colName(Title, 'productionYear')
+    imdbIDCol = colName(Title, 'imdbID')
+    phoneticCodeCol = colName(Title, 'phoneticCode')
     def populate(self):
         print ' * POPULATING MoviesCache...'
-        curs.execute('SELECT movieid,title,kind,year,imdbindex FROM titles;')
-        for x in fetchsome(curs, self.flushEvery):
-            td = {'title': x[1], 'kind': x[2]}
-            if x[3]: td['year'] = x[3]
-            if x[4]: td['imdbIndex'] = x[4]
+        titles = Title.select()
+        for x in titles: #one row at a time. TODO: Check performance!
+            td = {
+                'title': x.title,
+                'kind': x.kind,
+            }
+            if (x.productionYear):
+                td['year'] = x.productionYear
+            if (x.imdbIndex):
+                td['imdbIndex'] = x.imdbIndex
+
             title = build_title(td, canonical=1)
-            dict.__setitem__(self, title, x[0])
-        curs.execute('SELECT MAX(movieid) FROM titles;')
-        maxid = curs.fetchall()[0][0]
-        if maxid is not None: self.counter = maxid + 1
-        else: self.counter = 1
+            dict.__setitem__(self, title, x.id)
+        self.counter = int(x.id) + 1
+        #~ curs.execute('SELECT id, %s, %s, %s, %s FROM %s;'%(COLS[Title]['title'],
+                        #~ COLS[Title]['kindID'], COLS[Title]['productionYear'],
+                        #~ COLS[Title]['imdbIndex'], TABLES[Title]))
+        #~ for x in fetchsome(curs, self.flushEvery):
+            #~ td = {'title': x[1], 'kind': x[2]}
+            #~ if x[3]: td['year'] = x[3]
+            #~ if x[4]: td['imdbIndex'] = x[4]
+            #~ title = build_title(td, canonical=1)
+            #~ dict.__setitem__(self, title, x[0])
+        #~ curs.execute('SELECT MAX(id) FROM %s;' % TABLES[Title])
+        #~ maxid = curs.fetchall()[0][0]
+        #~ if maxid is not None: self.counter = maxid + 1
+        #~ else: self.counter = 1
 
     def _toDB(self):
         print ' * FLUSHING MoviesCache...'
-        l = []
-        lapp = l.append
         tmpDictiter = self._tmpDict.iteritems
+        count = 0
+        SQLCache = []
         for k, v in tmpDictiter():
             try:
                 t = analyze_title(k)
@@ -342,30 +409,69 @@ class MoviesCache(_BaseCache):
                     print 'WARNING MoviesCache._toDB() invalid title "%s"' % k
                 continue
             tget = t.get
-            lapp([v, tget('title'), tget('kind'),
-                    tget('year'), tget('imdbIndex')])
-        curs.executemany('INSERT INTO titles (movieid, title, kind, year, imdbindex) VALUES (%s, %s, %s, %s, %s)', l)
+            title = unicode(tget('title'), "latin_1").encode('utf-8')
+            kwds = {
+                self.titleCol: title,
+                self.imdbIndexCol: tget('imdbIndex'),
+                self.kindCol: KIND_IDS[tget('kind')],
+                self.phoneticCodeCol: soundex(title)
+            }
+            #productionYear
+            year = tget('year')
+            if year == '????':
+                year = None
+            elif not year:
+                pass
+            else:
+                try:
+                    year = int(year)
+                except:
+                    year = None
+            kwds[self.productionYearCol] = year
+            kwds[self.imdbIDCol] = v
+            #Build the SQL code
+            insertObj = sqlbuilder.Insert(Title.sqlmeta.table, values=kwds)
+            count += 1
+            if (count % 100) == 0:
+                while (len(SQLCache) > 0):
+                    conn.query( SQLCache.pop() )
+            else:
+                SQLCache.append ( conn.sqlrepr(insertObj) )
 
 
 class PersonsCache(_BaseCache):
     """Manage the persons list."""
+    nameCol = colName(Name, 'name')
+    imdbIndexCol = colName(Name, 'imdbIndex')
     def populate(self):
         print ' * POPULATING PersonsCache...'
-        curs.execute('SELECT personid, name, imdbindex FROM names;')
-        for x in fetchsome(curs, self.flushEvery):
-            nd = {'name': x[1]}
-            if x[2]: nd['imdbIndex'] = x[2]
-            name = build_name(nd, canonical=1)
-            dict.__setitem__(self, name, x[0])
-        curs.execute('SELECT MAX(personid) FROM names;')
-        maxid = curs.fetchall()[0][0]
-        if maxid is not None: self.counter = maxid + 1
-        else: self.counter = 1
-  
+        persons = Name.select()
+        for x in persons:
+            data = {'name': x.name}
+            if (x.imdbIndex):
+                data['imdbIndex'] = x.imdbIndex
+            name = build_name(data, canonical=1)
+            dict.__setitem__(self, name, x.id)
+        self.counter = int(x.id) + 1
+        #~ curs.execute('SELECT id, %s, %s FROM %s;' % (COLS[Name]['name'],
+                                                #~ COLS[Name]['imdbIndex'],
+                                                #~ TABLES[Name]))
+        #~ for x in fetchsome(curs, self.flushEvery):
+            #~ nd = {'name': x[1]}
+            #~ if x[2]: nd['imdbIndex'] = x[2]
+            #~ name = build_name(nd, canonical=1)
+            #~ dict.__setitem__(self, name, x[0])
+        #~ curs.execute('SELECT MAX(id) FROM %s;' % TABLES[Name])
+        #~ maxid = curs.fetchall()[0][0]
+        #~ if maxid is not None: self.counter = maxid + 1
+        #~ else: self.counter = 1
+
     def _toDB(self):
         print ' * FLUSHING PersonsCache...'
-        l = []
-        lapp = l.append
+        count = 0
+        SQLCache = []
+        #~ l = []
+        #~ lapp = l.append
         tmpDictiter = self._tmpDict.iteritems
         for k, v in tmpDictiter():
             try:
@@ -375,82 +481,93 @@ class PersonsCache(_BaseCache):
                     print 'WARNING PersonsCache._toDB() invalid name "%s"' % k
                 continue
             tget = t.get
-            lapp([v, tget('name'), tget('imdbIndex')])
-        curs.executemany('INSERT INTO names (personid, name, imdbindex) VALUES (%s, %s, %s)', l)
+            kwds = {
+                self.nameCol: tget('name'),
+                self.imdbIndexCol: tget('imdbIndex')
+            }
+            insertObj = sqlbuilder.Insert(Name.sqlmeta.table, values=kwds)
+            count += 1
+            if (count % 100) == 0:
+                while (len(SQLCache) > 0):
+                    conn.query( SQLCache.pop() )
+            else:
+                SQLCache.append ( conn.sqlrepr(insertObj) )
+            #~ lapp((v, tget('name'), tget('imdbIndex')))
+        #~ curs.executemany(SQL_NAME, l)
 
 
-class SQLData(dict):
-    """Variable set of information, to be stored from time to time
-    to the SQL database."""
-    def __init__(self, d={}, sqlString='', flushEvery=20000, counterInit=1):
-        dict.__init__(self)
-        self.counterInit = counterInit
-        self.counter = counterInit
-        self.flushEvery = flushEvery
-        self.sqlString = sqlString
-        for k, v in d.items(): self[k] = v
+#~ class SQLData(dict):
+    #~ """Variable set of information, to be stored from time to time
+    #~ to the SQL database."""
+    #~ def __init__(self, d={}, sqlString='', flushEvery=20000, counterInit=1):
+        #~ dict.__init__(self)
+        #~ self.counterInit = counterInit
+        #~ self.counter = counterInit
+        #~ self.flushEvery = flushEvery
+        #~ self.sqlString = sqlString
+        #~ for k, v in d.items(): self[k] = v
 
-    def __setitem__(self, key, value):
-        """The value is discarded, the counter is used as the 'real' key
-        and the user's 'key' is used as its values."""
-        counter = self.counter
-        if counter % self.flushEvery == 0:
-            self.flush()
-        dict.__setitem__(self, counter, key)
-        self.counter += 1
+    #~ def __setitem__(self, key, value):
+        #~ """The value is discarded, the counter is used as the 'real' key
+        #~ and the user's 'key' is used as its values."""
+        #~ counter = self.counter
+        #~ if counter % self.flushEvery == 0:
+            #~ self.flush()
+        #~ dict.__setitem__(self, counter, key)
+        #~ self.counter += 1
 
-    def add(self, key):
-        self[key] = None
+    #~ def add(self, key):
+        #~ self[key] = None
 
-    def flush(self):
-        if not self: return
-        try:
-            self._toDB()
-            self.clear()
-            self.counter = self.counterInit
-        except OperationalError, e:
-            if not (e and e[0] == 1153): raise OperationalError, e
-            print ' * TOO MANY DATA (%s items), SPLITTING...' % len(self)
-            newdata = self.__class__()
-            newflushEvery = self.flushEvery / 2
-            self.flushEvery = newflushEvery
-            newdata.flushEvery = newflushEvery
-            newdata.sqlString = self.sqlString
-            popitem = self.popitem
-            dsi = dict.__setitem__
-            for x in xrange(len(self)/2):
-                k, v = popitem()
-                dsi(newdata, k, v)
-            newdata.flush()
-            self.flush()
-            self.clear()
-            self.counter = self.counterInit
+    #~ def flush(self):
+        #~ if not self: return
+        #~ try:
+            #~ self._toDB()
+            #~ self.clear()
+            #~ self.counter = self.counterInit
+        #~ except OperationalError, e:
+            #~ if not (e and e[0] == 1153): raise OperationalError, e
+            #~ print ' * TOO MANY DATA (%s items), SPLITTING...' % len(self)
+            #~ newdata = self.__class__()
+            #~ newflushEvery = self.flushEvery / 2
+            #~ self.flushEvery = newflushEvery
+            #~ newdata.flushEvery = newflushEvery
+            #~ newdata.sqlString = self.sqlString
+            #~ popitem = self.popitem
+            #~ dsi = dict.__setitem__
+            #~ for x in xrange(len(self)/2):
+                #~ k, v = popitem()
+                #~ dsi(newdata, k, v)
+            #~ newdata.flush()
+            #~ self.flush()
+            #~ self.clear()
+            #~ self.counter = self.counterInit
 
-    def _toDB(self):
-        print ' * FLUSHING SQLData...'
-        curs.executemany(self.sqlString, self.values())
+    #~ def _toDB(self):
+        #~ print ' * FLUSHING SQLData...'
+        #~ curs.executemany(self.sqlString, self.values())
 
 
 # Miscellaneous functions.
 
-def unpack(line, headers, sep='\t'):
-    """Given a line, split at seps and return a dictionary with key
-    from the header list.
-    E.g.:
-        line = '      0000000124    8805   8.4  Incredibles, The (2004)'
-        header = ('votes distribution', 'votes', 'rating', 'title')
-        seps=('  ',)
+#~ def unpack(line, headers, sep='\t'):
+    #~ """Given a line, split at seps and return a dictionary with key
+    #~ from the header list.
+    #~ E.g.:
+        #~ line = '      0000000124    8805   8.4  Incredibles, The (2004)'
+        #~ header = ('votes distribution', 'votes', 'rating', 'title')
+        #~ seps=('  ',)
 
-    will returns: {'votes distribution': '0000000124', 'votes': '8805',
-                    'rating': '8.4', 'title': 'Incredibles, The (2004)'}
-    """
-    r = {}
-    ls1 = filter(None, line.split(sep))
-    for index, item in enumerate(ls1):
-        try: name = headers[index]
-        except IndexError: name = 'item%s' % index
-        r[name] = item.strip()
-    return r
+    #~ will returns: {'votes distribution': '0000000124', 'votes': '8805',
+                    #~ 'rating': '8.4', 'title': 'Incredibles, The (2004)'}
+    #~ """
+    #~ r = {}
+    #~ ls1 = filter(None, line.split(sep))
+    #~ for index, item in enumerate(ls1):
+        #~ try: name = headers[index]
+        #~ except IndexError: name = 'item%s' % index
+        #~ r[name] = item.strip()
+    #~ return r
 
 def _titleNote(title):
     """Split title and notes in 'Title, The (year) {note}' format."""
@@ -465,37 +582,37 @@ def _titleNote(title):
     return rt, rn
 
 
-def _parseMinusList(fdata):
-    """Parse a list of lines starting with '- '."""
-    rlist = []
-    tmplist = []
-    for line in fdata:
-        if line and line[:2] == '- ':
-            if tmplist: rlist.append(' '.join(tmplist))
-            l = line[2:].strip()
-            if l: tmplist[:] = [l]
-            else: tmplist[:] = []
-        else:
-            l = line.strip()
-            if l: tmplist.append(l)
-    if tmplist: rlist.append(' '.join(tmplist))
-    return rlist
+#~ def _parseMinusList(fdata):
+    #~ """Parse a list of lines starting with '- '."""
+    #~ rlist = []
+    #~ tmplist = []
+    #~ for line in fdata:
+        #~ if line and line[:2] == '- ':
+            #~ if tmplist: rlist.append(' '.join(tmplist))
+            #~ l = line[2:].strip()
+            #~ if l: tmplist[:] = [l]
+            #~ else: tmplist[:] = []
+        #~ else:
+            #~ l = line.strip()
+            #~ if l: tmplist.append(l)
+    #~ if tmplist: rlist.append(' '.join(tmplist))
+    #~ return rlist
 
 
-def _parseColonList(lines, replaceKeys):
-    """Parser for lists with "TAG: value" strings."""
-    out = {}
-    for line in lines:
-        line = line.strip()
-        if not line: continue
-        cols = line.split(':', 1)
-        if len(cols) < 2: continue
-        k = cols[0]
-        k = replaceKeys.get(k, k)
-        v = ' '.join(cols[1:]).strip()
-        if not out.has_key(k): out[k] = []
-        out[k].append(v)
-    return out
+#~ def _parseColonList(lines, replaceKeys):
+    #~ """Parser for lists with "TAG: value" strings."""
+    #~ out = {}
+    #~ for line in lines:
+        #~ line = line.strip()
+        #~ if not line: continue
+        #~ cols = line.split(':', 1)
+        #~ if len(cols) < 2: continue
+        #~ k = cols[0]
+        #~ k = replaceKeys.get(k, k)
+        #~ v = ' '.join(cols[1:]).strip()
+        #~ if not out.has_key(k): out[k] = []
+        #~ out[k].append(v)
+    #~ return out
 
 
 # Functions used to manage data files.
@@ -511,17 +628,28 @@ def readMovieList():
         if count % 10000 == 0:
             print 'SCANNING movies: %s (movieid: %s)' % (title, mid)
         count += 1
+        if (count == 10000): break
     CACHE_MID.flush()
     mdbf.close()
 
 
 def doCast(fp, roleid, rolename):
     """Populate the cast table."""
+    kwds = {}
     pid = None
     count = 0
+    SQLCache = []
     name = ''
-    sqlstr = 'INSERT INTO cast (personid, movieid, currentrole, note, nrorder, roleid) VALUES (%s, %s, %s, %s, %s, ' + str(roleid) + ')'
-    sqldata = SQLData(sqlString=sqlstr)
+    personCol = colName(CastInfo, 'personID')
+    movieCol = colName(CastInfo, 'movieID')
+    personRoleCol = colName(CastInfo, 'personRole')
+    noteCol = colName(CastInfo, 'note')
+    nrOrderCol = colName(CastInfo, 'nrOrder')
+    roleCol = colName(CastInfo, 'roleID')
+
+    #~ sqlstr = 'INSERT INTO %s (%s, %s, %s, %s, %s, %s)' % (TABLES[CastInfo], COLS[CastInfo]['personID'], COLS[CastInfo]['movieID'], COLS[CastInfo]['personRole'], COLS[CastInfo]['note'], COLS[CastInfo]['nrOrder'], COLS[CastInfo]['roleID'])
+    #~ sqlstr += ' VALUES (%s, %s, %s, %s, %s, ' + str(roleid) + ')'
+    #~ sqldata = SQLData(sqlString=sqlstr)
     if rolename == 'miscellaneous crew': sqldata.flushEvery = 10000
     for line in fp:
         if line and line[0] != '\t':
@@ -555,27 +683,39 @@ def doCast(fp, roleid, rolename):
                                     ((long(os[1])-1) * 100) + (long(os[0])-1)
                         except ValueError:
                             pass
+        #Get the MovieID for this cast object
         movieid = CACHE_MID.addUnique(title)
-        currset = (pid, movieid, role or None,
-                    note or None, order or None)
-        sqldata.add(currset)
+
+        kwds[personCol] = pid
+        kwds[movieCol] = movieid
+        kwds[personRoleCol] = role or None
+        kwds[noteCol] = note or None
+        kwds[nrOrderCol] = order or None
+        kwds[roleCol] = roleid
+        insertObj = sqlbuilder.Insert(CastInfo.sqlmeta.table, values=kwds)
+        SQLCache.append( conn.sqlrepr(insertObj) )
+        #~ currset = (pid, movieid, role or None,
+                    #~ note or None, order or None)
+        #~ sqldata.add(currset)
         if count % 10000 == 0:
-            print 'SCANNING %s: %s' % (rolename, name)
+            print 'SCANNING %s: %s' %
+                (rolename, unicode(name, 'latin-1').encode('utf-8'))
         count += 1
-    sqldata.flush()
+    #Execute the INSERTs
+    while (len(SQLCache) > 0):
+        conn.query( SQLCache.pop() )
+    #~ sqldata.flush()
     print 'CLOSING %s...' % rolename
 
 
 def castLists():
-    """Read files listed in the 'role' column of the 'roletypes' table."""
-    db.query('SELECT id, role FROM roletypes;')
-    res = db.store_result()
-    i = res.fetch_row()
-    while i:
-        roleid = i[0][0]
-        rolename = fname = i[0][1]
-        if rolename == 'guest':
-            i = res.fetch_row()
+    """
+    Obtain the list of filenames to check from the roles in the RoleType table.
+    """
+    for x in RoleType.select():
+        roleid = x.id
+        rolename = fname = x.role
+        if (rolename == 'guest'):
             continue
         fname = fname.replace(' ', '-')
         if fname == 'actress': fname = 'actresses.list.gz'
@@ -585,540 +725,633 @@ def castLists():
         try:
             f = SourceFile(fname, start=CAST_START, stop=CAST_STOP)
         except IOError:
-            i = res.fetch_row()
+            print "Error reading %d, skipping role %s" % (fname, rolename)
             continue
         doCast(f, roleid, rolename)
         f.close()
-        i = res.fetch_row()
         t('castLists(%s)' % rolename)
 
-
-def doAkaNames():
-    """People's akas."""
-    pid = None
-    count = 0
-    try: fp = SourceFile('aka-names.list.gz', start=AKAN_START)
-    except IOError: return
-    sqldata = SQLData(sqlString='INSERT INTO akanames (personid, name, imdbindex) VALUES (%s, %s, %s)')
-    for line in fp:
-        if line and line[0] != ' ':
-            if line[0] == '\n': continue
-            pid = CACHE_PID.addUnique(line.strip())
-        else:
-            line = line.strip()
-            if line[:5] == '(aka ': line = line[5:]
-            if line[-1:] == ')': line = line[:-1]
-            try:
-                name = analyze_name(line)
-            except IMDbParserError:
-                if line: print 'WARNING: wrong name "%s"' % line
-                continue
-            sqldata.add((pid, name.get('name'), name.get('imdbIndex')))
-            if count % 10000 == 0:
-                print 'SCANNING akanames:', line
-            count += 1
-    sqldata.flush()
-    fp.close()
+    #~ db.query('SELECT id, %s FROM %s;' % (COLS[RoleType]['role'],
+                                        #~ TABLES[RoleType]))
+    #~ res = db.store_result()
+    #~ i = res.fetch_row()
+    #~ while i:
+        #~ roleid = i[0][0]
+        #~ rolename = fname = i[0][1]
+        #~ if rolename == 'guest':
+            #~ i = res.fetch_row()
+            #~ continue
+        #~ fname = fname.replace(' ', '-')
+        #~ if fname == 'actress': fname = 'actresses.list.gz'
+        #~ elif fname == 'miscellaneous-crew': fname = 'miscellaneous.list.gz'
+        #~ else: fname = fname + 's.list.gz'
+        #~ print 'DOING', fname
+        #~ try:
+            #~ f = SourceFile(fname, start=CAST_START, stop=CAST_STOP)
+        #~ except IOError:
+            #~ i = res.fetch_row()
+            #~ continue
+        #~ doCast(f, roleid, rolename)
+        #~ f.close()
+        #~ i = res.fetch_row()
+        #~ t('castLists(%s)' % rolename)
 
 
-def doAkaTitles():
-    """Movies' akas."""
-    mid = None
-    count = 0
-    sqldata = SQLData(sqlString='INSERT INTO akatitles (movieid, title, imdbindex, kind, year, note) VALUES (%s, %s, %s, %s, %s, %s)', flushEvery=10000)
-    for fname, start in (('aka-titles.list.gz',AKAT_START),
-                    ('italian-aka-titles.list.gz',AKAT_IT_START),
-                    ('german-aka-titles.list.gz',AKAT_DE_START),
-                    ('iso-aka-titles.list.gz',AKAT_ISO_START),
-                    (os.path.join('contrib','hungarian-aka-titles.list.gz'),
-                        AKAT_HU_START),
-                    (os.path.join('contrib','norwegian-aka-titles.list.gz'),
-                        AKAT_NO_START)):
-        incontrib = 0
-        pwarning = 1
-        if start in (AKAT_HU_START, AKAT_NO_START):
-            pwarning = 0
-            incontrib = 1
-        try:
-            fp = SourceFile(fname, start=start,
-                            stop='---------------------------',
-                            pwarning=pwarning)
-        except IOError:
-            continue
-        for line in fp:
-            if line and line[0] != ' ':
-                if line[0] == '\n': continue
-                mid = CACHE_MID.addUnique(line.strip())
-            else:
-                res = unpack(line.strip(), ('title', 'note'))
-                if incontrib:
-                    if res.get('note'): res['note'] += ' '
-                    else: res['note'] = ''
-                    if start == AKAT_HU_START: res['note'] += '(Hungary)'
-                    elif start == AKAT_NO_START: res['note'] += '(Norway)'
-                akat = res.get('title', '')
-                if akat[:5] == '(aka ': akat = akat[5:]
-                if akat[-2:] == '))': akat = akat[:-1]
-                if count % 10000 == 0:
-                    print 'SCANNING %s: %s' % \
-                            (fname[:-8].replace('-', ' '), akat)
-                try:
-                    akat = analyze_title(akat)
-                except IMDbParserError, e:
-                    if akat.strip():
-                        print 'WARNING doAkaTitles() invalid title "%s"' % akat
-                    continue
-                ce = (mid, akat.get('title'), akat.get('imdbIndex'),
-                        akat.get('kind'), akat.get('year'), res.get('note'))
-                sqldata.add(ce)
-                count += 1
-        sqldata.flush()
-        fp.close()
+#~ def doAkaNames():
+    #~ """People's akas."""
+    #~ pid = None
+    #~ count = 0
+    #~ try: fp = SourceFile('aka-names.list.gz', start=AKAN_START)
+    #~ except IOError: return
+    #~ sqlString = 'INSERT INTO %s (%s, %s, %s)' % (TABLES[AkaName],
+                    #~ COLS[AkaName]['personID'], COLS[AkaName]['name'],
+                    #~ COLS[AkaName]['imdbIndex'])
+    #~ sqlString += ' VALUES (%s, %s, %s)'
+    #~ sqldata = SQLData(sqlString=sqlString)
+    #~ for line in fp:
+        #~ if line and line[0] != ' ':
+            #~ if line[0] == '\n': continue
+            #~ pid = CACHE_PID.addUnique(line.strip())
+        #~ else:
+            #~ line = line.strip()
+            #~ if line[:5] == '(aka ': line = line[5:]
+            #~ if line[-1:] == ')': line = line[:-1]
+            #~ try:
+                #~ name = analyze_name(line)
+            #~ except IMDbParserError:
+                #~ if line: print 'WARNING: wrong name "%s"' % line
+                #~ continue
+            #~ sqldata.add((pid, name.get('name'), name.get('imdbIndex')))
+            #~ if count % 10000 == 0:
+                #~ print 'SCANNING akanames:', line
+            #~ count += 1
+    #~ sqldata.flush()
+    #~ fp.close()
 
 
-def doMovieLinks():
-    """Connections between movies."""
-    mid = None
-    count = 0
-    sqldata = SQLData(sqlString='INSERT INTO movielinks (movieid, movietoid, linktypeid, note) VALUES (%s, %s, %s, %s)', flushEvery=10000)
-    try: fp = SourceFile('movie-links.list.gz', start=LINK_START)
-    except IOError: return
-    onote = ''
-    tonote = ''
-    for line in fp:
-        if line and line[0] != ' ':
-            if line[0] == '\n': continue
-            title, onote = _titleNote(line.strip())
-            mid = CACHE_MID.addUnique(title)
-            onote = onote or ''
-            if count % 10000 == 0:
-                print 'SCANNING movielinks:', title
-        else:
-            link = line.strip()
-            theid = None
-            for k, v in MOVIELINK_IDS:
-                if link.startswith('(%s' % k):
-                    theid = v
-                    break
-            if theid is None: continue
-            totitle = link[len(k)+2:-1].strip()
-            totitle, tonote = _titleNote(totitle)
-            note = ''
-            if onote:
-                note = 'MV note: %s' % onote
-            if tonote:
-                if note: note += ', '
-                note += 'LN note: %s' % tonote
-            totitleid = CACHE_MID.addUnique(totitle)
-            sqldata.add((mid, totitleid, theid, note or None))
-        count += 1
-    sqldata.flush()
-    fp.close()
+#~ def doAkaTitles():
+    #~ """Movies' akas."""
+    #~ mid = None
+    #~ count = 0
+    #~ sqlString = 'INSERT INTO %s (%s, %s, %s, %s, %s, %s)' % (TABLES[AkaTitle],
+            #~ COLS[AkaTitle]['movieID'], COLS[AkaTitle]['title'],
+            #~ COLS[AkaTitle]['imdbIndex'], COLS[AkaTitle]['kindID'],
+            #~ COLS[AkaTitle]['productionYear'], COLS[AkaTitle]['note'])
+    #~ sqlString += ' VALUES (%s, %s, %s, %s, %s, %s)'
+    #~ sqldata = SQLData(sqlString=sqlString, flushEvery=10000)
+    #~ for fname, start in (('aka-titles.list.gz',AKAT_START),
+                    #~ ('italian-aka-titles.list.gz',AKAT_IT_START),
+                    #~ ('german-aka-titles.list.gz',AKAT_DE_START),
+                    #~ ('iso-aka-titles.list.gz',AKAT_ISO_START),
+                    #~ (os.path.join('contrib','hungarian-aka-titles.list.gz'),
+                        #~ AKAT_HU_START),
+                    #~ (os.path.join('contrib','norwegian-aka-titles.list.gz'),
+                        #~ AKAT_NO_START)):
+        #~ incontrib = 0
+        #~ pwarning = 1
+        #~ if start in (AKAT_HU_START, AKAT_NO_START):
+            #~ pwarning = 0
+            #~ incontrib = 1
+        #~ try:
+            #~ fp = SourceFile(fname, start=start,
+                            #~ stop='---------------------------',
+                            #~ pwarning=pwarning)
+        #~ except IOError:
+            #~ continue
+        #~ for line in fp:
+            #~ if line and line[0] != ' ':
+                #~ if line[0] == '\n': continue
+                #~ mid = CACHE_MID.addUnique(line.strip())
+            #~ else:
+                #~ res = unpack(line.strip(), ('title', 'note'))
+                #~ if incontrib:
+                    #~ if res.get('note'): res['note'] += ' '
+                    #~ else: res['note'] = ''
+                    #~ if start == AKAT_HU_START: res['note'] += '(Hungary)'
+                    #~ elif start == AKAT_NO_START: res['note'] += '(Norway)'
+                #~ akat = res.get('title', '')
+                #~ if akat[:5] == '(aka ': akat = akat[5:]
+                #~ if akat[-2:] == '))': akat = akat[:-1]
+                #~ if count % 10000 == 0:
+                    #~ print 'SCANNING %s: %s' % \
+                            #~ (fname[:-8].replace('-', ' '), akat)
+                #~ try:
+                    #~ akat = analyze_title(akat)
+                #~ except IMDbParserError, e:
+                    #~ if akat.strip():
+                        #~ print 'WARNING doAkaTitles() invalid title "%s"' % akat
+                    #~ continue
+                #~ ce = (mid, akat.get('title'), akat.get('imdbIndex'),
+                        #~ KIND_IDS[akat.get('kind')], akat.get('year'),
+                        #~ res.get('note'))
+                #~ sqldata.add(ce)
+                #~ count += 1
+        #~ sqldata.flush()
+        #~ fp.close()
 
 
-def minusHashFiles(fp, funct, defaultid, descr):
-    """A file with lines starting with '# ' and '- '."""
-    sqls = 'INSERT INTO moviesinfo (movieid, infoid, info, note) VALUES (%s, %s, %s, %s)'
-    sqldata = SQLData(sqlString=sqls)
-    sqldata.flushEvery = 2500
-    if descr == 'quotes': sqldata.flushEvery = 4000
-    elif descr == 'soundtracks': sqldata.flushEvery = 3000
-    elif descr == 'trivia': sqldata.flushEvery = 3000
-    count = 0
-    for title, text in fp.getByHashSections():
-        title = title.strip()
-        title, note = _titleNote(title)
-        d = funct(text.split('\n'))
-        mid = CACHE_MID.addUnique(title)
-        if count % 10000 == 0:
-            print 'SCANNING %s: %s' % (descr, title)
-        for data in d:
-            sqldata.add((mid, defaultid, data, note))
-        count += 1
-    sqldata.flush()
+#~ def doMovieLinks():
+    #~ """Connections between movies."""
+    #~ mid = None
+    #~ count = 0
+    #~ sqlString = 'INSERT INTO %s (%s, %s, %s, %s)' % (TABLES[MovieLink],
+                #~ COLS[MovieLink]['movieID'], COLS[MovieLink]['linkedMovieID'],
+                #~ COLS[MovieLink]['linkTypeID'], COLS[MovieLink]['note'])
+    #~ sqlString += ' VALUES (%s, %s, %s, %s)'
+    #~ sqldata = SQLData(sqlString=sqlString, flushEvery=10000)
+    #~ try: fp = SourceFile('movie-links.list.gz', start=LINK_START)
+    #~ except IOError: return
+    #~ onote = ''
+    #~ tonote = ''
+    #~ for line in fp:
+        #~ if line and line[0] != ' ':
+            #~ if line[0] == '\n': continue
+            #~ title, onote = _titleNote(line.strip())
+            #~ mid = CACHE_MID.addUnique(title)
+            #~ onote = onote or ''
+            #~ if count % 10000 == 0:
+                #~ print 'SCANNING movielinks:', title
+        #~ else:
+            #~ link = line.strip()
+            #~ theid = None
+            #~ for k, v in MOVIELINK_IDS:
+                #~ if link.startswith('(%s' % k):
+                    #~ theid = v
+                    #~ break
+            #~ if theid is None: continue
+            #~ totitle = link[len(k)+2:-1].strip()
+            #~ totitle, tonote = _titleNote(totitle)
+            #~ note = ''
+            #~ if onote:
+                #~ note = 'MV note: %s' % onote
+            #~ if tonote:
+                #~ if note: note += ', '
+                #~ note += 'LN note: %s' % tonote
+            #~ totitleid = CACHE_MID.addUnique(totitle)
+            #~ sqldata.add((mid, totitleid, theid, note or None))
+        #~ count += 1
+    #~ sqldata.flush()
+    #~ fp.close()
 
 
-def doMinusHashFiles():
-    """Files with lines starting with '# ' and '- '."""
-    for fname, start in [('alternate versions',AV_START),
-                         ('goofs',GOOFS_START), ('crazy credits',CC_START),
-                         ('quotes',QUOTES_START),
-                         ('soundtracks',SNDT_START),
-                         ('trivia',TRIV_START)]:
-        try:
-            fp = SourceFile(fname.replace(' ', '-')+'.list.gz', start=start,
-                        stop=MINHASH_STOP)
-        except IOError:
-            continue
-        funct = _parseMinusList
-        if fname == 'quotes': funct = getQuotes
-        index = fname
-        if index == 'soundtracks': index = 'soundtrack'
-        minusHashFiles(fp, funct, INFO_TYPES[index], fname)
-        fp.close()
+#~ def minusHashFiles(fp, funct, defaultid, descr):
+    #~ """A file with lines starting with '# ' and '- '."""
+    #~ sqls = 'INSERT INTO %s (%s, %s, %s, %s)' % (TABLES[MovieInfo],
+            #~ COLS[MovieInfo]['movieID'], COLS[MovieInfo]['infoTypeID'],
+            #~ COLS[MovieInfo]['info'], COLS[MovieInfo]['note'])
+    #~ sqls += ' VALUES (%s, %s, %s, %s)'
+    #~ sqldata = SQLData(sqlString=sqls)
+    #~ sqldata.flushEvery = 2500
+    #~ if descr == 'quotes': sqldata.flushEvery = 4000
+    #~ elif descr == 'soundtracks': sqldata.flushEvery = 3000
+    #~ elif descr == 'trivia': sqldata.flushEvery = 3000
+    #~ count = 0
+    #~ for title, text in fp.getByHashSections():
+        #~ title = title.strip()
+        #~ title, note = _titleNote(title)
+        #~ d = funct(text.split('\n'))
+        #~ mid = CACHE_MID.addUnique(title)
+        #~ if count % 10000 == 0:
+            #~ print 'SCANNING %s: %s' % (descr, title)
+        #~ for data in d:
+            #~ sqldata.add((mid, defaultid, data, note))
+        #~ count += 1
+    #~ sqldata.flush()
 
 
-def getTaglines():
-    """Movie's taglines."""
-    try: fp = SourceFile('taglines.list.gz', start=TAGL_START, stop=TAGL_STOP)
-    except IOError: return
-    sqls = 'INSERT INTO moviesinfo (movieid, infoid, info, note) VALUES (%s, %s, %s, %s)'
-    sqldata = SQLData(sqlString=sqls, flushEvery=10000)
-    count = 0
-    for title, text in fp.getByHashSections():
-        title = title.strip()
-        title, note = _titleNote(title)
-        mid = CACHE_MID.addUnique(title)
-        for tag in text.split('\n'):
-            tag = tag.strip()
-            if not tag: continue
-            if count % 10000 == 0:
-                print 'SCANNING taglines:', title
-            sqldata.add((mid, INFO_TYPES['taglines'], tag, note))
-        count += 1
-    sqldata.flush()
-    fp.close()
-        
-
-def getQuotes(lines):
-    """Movie's quotes."""
-    quotes = []
-    qttl = []
-    for line in lines:
-        if line and line[:2] == '  ' and qttl and qttl[-1] and \
-                not qttl[-1].endswith('::'):
-            line = line.lstrip()
-            if line: qttl[-1] += ' %s' % line
-        elif not line.strip():
-            if qttl: quotes.append('::'.join(qttl))
-            qttl[:] = []
-        else:
-            line = line.lstrip()
-            if line: qttl.append(line)
-    if qttl: quotes.append('::'.join(qttl))
-    return quotes
+#~ def doMinusHashFiles():
+    #~ """Files with lines starting with '# ' and '- '."""
+    #~ for fname, start in [('alternate versions',AV_START),
+                         #~ ('goofs',GOOFS_START), ('crazy credits',CC_START),
+                         #~ ('quotes',QUOTES_START),
+                         #~ ('soundtracks',SNDT_START),
+                         #~ ('trivia',TRIV_START)]:
+        #~ try:
+            #~ fp = SourceFile(fname.replace(' ', '-')+'.list.gz', start=start,
+                        #~ stop=MINHASH_STOP)
+        #~ except IOError:
+            #~ continue
+        #~ funct = _parseMinusList
+        #~ if fname == 'quotes': funct = getQuotes
+        #~ index = fname
+        #~ if index == 'soundtracks': index = 'soundtrack'
+        #~ minusHashFiles(fp, funct, INFO_TYPES[index], fname)
+        #~ fp.close()
 
 
-def getBusiness(lines):
-    """Movie's business information."""
-    bd = _parseColonList(lines, _bus)
-    for k in bd.keys():
-        nv = []
-        for v in bd[k]:
-            v = v.replace('USD ', '$').replace('GBP ', '£').replace('EUR', '¤')
-            nv.append(v)
-        bd[k] = nv
-    return bd
+#~ def getTaglines():
+    #~ """Movie's taglines."""
+    #~ try: fp = SourceFile('taglines.list.gz', start=TAGL_START, stop=TAGL_STOP)
+    #~ except IOError: return
+    #~ sqls = 'INSERT INTO %s (%s, %s, %s, %s)' % (TABLES[MovieInfo],
+            #~ COLS[MovieInfo]['movieID'], COLS[MovieInfo]['infoTypeID'],
+            #~ COLS[MovieInfo]['info'], COLS[MovieInfo]['note'])
+    #~ sqls += ' VALUES (%s, %s, %s, %s)'
+    #~ sqldata = SQLData(sqlString=sqls, flushEvery=10000)
+    #~ count = 0
+    #~ for title, text in fp.getByHashSections():
+        #~ title = title.strip()
+        #~ title, note = _titleNote(title)
+        #~ mid = CACHE_MID.addUnique(title)
+        #~ for tag in text.split('\n'):
+            #~ tag = tag.strip()
+            #~ if not tag: continue
+            #~ if count % 10000 == 0:
+                #~ print 'SCANNING taglines:', title
+            #~ sqldata.add((mid, INFO_TYPES['taglines'], tag, note))
+        #~ count += 1
+    #~ sqldata.flush()
+    #~ fp.close()
 
 
-def getLaserDisc(lines):
-    """Laserdisc information."""
-    d = _parseColonList(lines, _ldk)
-    for k, v in d.iteritems():
-        d[k] = ' '.join(v)
-    return d
+#~ def getQuotes(lines):
+    #~ """Movie's quotes."""
+    #~ quotes = []
+    #~ qttl = []
+    #~ for line in lines:
+        #~ if line and line[:2] == '  ' and qttl and qttl[-1] and \
+                #~ not qttl[-1].endswith('::'):
+            #~ line = line.lstrip()
+            #~ if line: qttl[-1] += ' %s' % line
+        #~ elif not line.strip():
+            #~ if qttl: quotes.append('::'.join(qttl))
+            #~ qttl[:] = []
+        #~ else:
+            #~ line = line.lstrip()
+            #~ if line: qttl.append(line)
+    #~ if qttl: quotes.append('::'.join(qttl))
+    #~ return quotes
 
 
-def getLiterature(lines):
-    """Movie's literature information."""
-    return _parseColonList(lines, _lit)
+#~ def getBusiness(lines):
+    #~ """Movie's business information."""
+    #~ bd = _parseColonList(lines, _bus)
+    #~ for k in bd.keys():
+        #~ nv = []
+        #~ for v in bd[k]:
+            #~ v = v.replace('USD ', '$').replace('GBP ', '£').replace('EUR', '¤')
+            #~ nv.append(v)
+        #~ bd[k] = nv
+    #~ return bd
 
 
-_mpaa = {'RE': 'mpaa'}
-def getMPAA(lines):
-    """Movie's mpaa information."""
-    d = _parseColonList(lines, _mpaa)
-    for k, v in d.iteritems():
-        d[k] = ' '.join(v)
-    return d
+#~ def getLaserDisc(lines):
+    #~ """Laserdisc information."""
+    #~ d = _parseColonList(lines, _ldk)
+    #~ for k, v in d.iteritems():
+        #~ d[k] = ' '.join(v)
+    #~ return d
 
 
-def nmmvFiles(fp, funct, fname):
-    """Files with sections separated by 'MV: ' or 'NM: '."""
-    count = 0
-    sqlsP = 'INSERT INTO personsinfo (personid, infoid, info, note) VALUES (%s, %s, %s, %s)'
-    sqlsM = 'INSERT INTO moviesinfo (movieid, infoid, info, note) VALUES (%s, %s, %s, %s)'
-    if fname == 'biographies.list.gz':
-        datakind = 'person'
-        sqls = sqlsP
-        curs.execute('SELECT id FROM roletypes WHERE role = "guest";')
-        guestid = curs.fetchone()[0]
-        guestdata = SQLData(sqlString='INSERT INTO cast (personid, movieid, currentrole, note, roleid) VALUES (%s, %s, %s, %s, ' + str(guestid) + ')')
-        guestdata.flushEvery = 10000
-        akanamesdata = SQLData(sqlString='INSERT INTO akanames (personid, name, imdbindex) VALUES (%s, %s, %s)')
-    else:
-        datakind = 'movie'
-        sqls = sqlsM
-        guestdata = None
-        akanamesdata = None
-    sqldata = SQLData(sqlString=sqls)
-    if fname == 'plot.list.gz': sqldata.flushEvery = 1000
-    elif fname == 'literature.list.gz': sqldata.flushEvery = 5000
-    elif fname == 'business.list.gz': sqldata.flushEvery = 10000
-    elif fname == 'biographies.list.gz': sqldata.flushEvery = 5000
-    _ltype = type([])
-    for ton, text in fp.getByNMMVSections():
-        ton = ton.strip()
-        if not ton: continue
-        note = None
-        if datakind == 'movie':
-            ton, note = _titleNote(ton)
-            mopid = CACHE_MID.addUnique(ton)
-        else: mopid = CACHE_PID.addUnique(ton)
-        if count % 10000 == 0:
-            print 'SCANNING %s: %s' % (fname[:-8].replace('-', ' '), ton)
-        d = funct(text.split('\n'))
-        for k, v in d.iteritems():
-            if k != 'notable tv guest appearances':
-                theid = INFO_TYPES.get(k)
-                if theid is None:
-                    print 'WARNING key "%s" of ton "%s" not in INFO_TYPES' % \
-                                (k, ton)
-                    continue
-            if type(v) is _ltype:
-                for i in v:
-                    if k == 'notable tv guest appearances':
-                        # Put "guest" information in the cast table.
-                        title = i.get('long imdb canonical title')
-                        if not title: continue
-                        movieid = CACHE_MID.addUnique(title)
-                        guestdata.add((mopid, movieid, i.currentRole or None,
-                                        i.notes or None))
-                        continue
-                    if k in ('plot', 'mini biography'):
-                        s = i.split('::')
-                        if len(s) == 2:
-                            if note: note += ' '
-                            note = '(author: %s)' % s[0]
-                            i = s[1]
-                    if i: sqldata.add((mopid, theid, i, note))
-                    note = None
-            else:
-                if v: sqldata.add((mopid, theid, v, note))
-            if k in ('nick names', 'birth name') and v:
-                # Put also the birth name/nick names in the list of aliases.
-                if k == 'birth name': realnames = [v]
-                else: realnames = v
-                for realname in realnames:
-                    imdbIndex = re_nameImdbIndex.findall(realname) or None
-                    if imdbIndex:
-                        imdbIndex = imdbIndex[0]
-                        realname = re_nameImdbIndex.sub('', realname)
-                    # Strip misc notes.
-                    fpi = realname.find('(')
-                    if fpi != -1:
-                        lpi = realname.rfind(')')
-                        if lpi != -1:
-                            realname = '%s %s' % (realname[:fpi].strip(),
-                                                    realname[lpi:].strip())
-                            realname = realname.strip()
-                    if realname:
-                        # XXX: check for duplicates?
-                        ##if k == 'birth name':
-                        ##    realname = canonicalName(realname)
-                        ##else:
-                        ##    realname = normalizeName(realname)
-                        akanamesdata.add((mopid, realname, imdbIndex))
-        count += 1
-    if guestdata is not None: guestdata.flush()
-    if akanamesdata is not None: akanamesdata.flush()
-    sqldata.flush()
+#~ def getLiterature(lines):
+    #~ """Movie's literature information."""
+    #~ return _parseColonList(lines, _lit)
 
 
-def doNMMVFiles():
-    """Files with large sections, about movies and persons."""
-    for fname, start, funct in [('biographies.list.gz',BIO_START,_parseBiography),
-            ('business.list.gz',BUS_START,getBusiness),
-            ('laserdisc.list.gz',LSD_START,getLaserDisc),
-            ('literature.list.gz',LIT_START,getLiterature),
-            ('mpaa-ratings-reasons.list.gz',MPAA_START,getMPAA),
-            ('plot.list.gz',PLOT_START,getPlot)]:
-    ##for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
-        try:
-            fp = SourceFile(fname, start=start)
-        except IOError:
-            continue
-        if fname == 'literature.list.gz': fp.set_stop(LIT_STOP)
-        elif fname == 'business.list.gz': fp.set_stop(BUS_STOP)
-        nmmvFiles(fp, funct, fname)
-        fp.close()
-        t('doNMMVFiles(%s)' % fname[:-8].replace('-', ' '))
+#~ _mpaa = {'RE': 'mpaa'}
+#~ def getMPAA(lines):
+    #~ """Movie's mpaa information."""
+    #~ d = _parseColonList(lines, _mpaa)
+    #~ for k, v in d.iteritems():
+        #~ d[k] = ' '.join(v)
+    #~ return d
 
 
-def doMiscMovieInfo():
-    """Files with information on a single line about movies."""
-    sqldata = SQLData(sqlString='INSERT INTO moviesinfo (movieid, infoid, info, note) VALUES (%s, %s, %s, %s)')
-    for dataf in (('certificates.list.gz',CER_START),
-                    ('color-info.list.gz',COL_START),
-                    ('countries.list.gz',COU_START),
-                    ('distributors.list.gz',DIS_START),
-                    ('genres.list.gz',GEN_START),
-                    ('keywords.list.gz',KEY_START),
-                    ('language.list.gz',LAN_START),
-                    ('locations.list.gz',LOC_START),
-                    ('miscellaneous-companies.list.gz',MIS_START),
-                    ('production-companies.list.gz',PRO_START),
-                    ('running-times.list.gz',RUN_START),
-                    ('sound-mix.list.gz',SOU_START),
-                    ('special-effects-companies.list.gz',SFX_START),
-                    ('technical.list.gz',TCN_START),
-                    ('release-dates.list.gz',RELDATE_START)):
-        try:
-            fp = SourceFile(dataf[0], start=dataf[1])
-        except IOError:
-            continue
-        typeindex = dataf[0][:-8].replace('-', ' ')
-        if typeindex == 'running times': typeindex = 'runtimes'
-        elif typeindex == 'technical': typeindex = 'tech info'
-        elif typeindex == 'language': typeindex = 'languages'
-        infoid =  INFO_TYPES[typeindex]
-        count = 0
-        if dataf[0] in ('distributors.list.gz', 'locations.list.gz',
-                        'miscellaneous-companies.list.gz'):
-            sqldata.flushEvery = 10000
-        else:
-            sqldata.flushEvery = 20000
-        for line in fp:
-            data = unpack(line.strip(), ('title', 'info', 'note'))
-            if not data.has_key('title'): continue
-            if not data.has_key('info'): continue
-            title, note = _titleNote(data['title'])
-            mid = CACHE_MID.addUnique(title)
-            if data.has_key('note'):
-                if note:
-                    note += ' '
-                    note += data['note']
-                else:
-                    note = data['note']
-            if count % 10000 == 0:
-                print 'SCANNING %s: %s' % (dataf[0][:-8].replace('-', ' '),
-                                                data['title'])
-            sqldata.add((mid, infoid, data['info'], note))
-            count += 1
-        sqldata.flush()
-        fp.close()
-        t('doMiscMovieInfo(%s)' % dataf[0][:-8].replace('-', ' '))
-        
-
-def getRating():
-    """Movie's rating."""
-    try: fp = SourceFile('ratings.list.gz', start=RAT_START, stop=RAT_STOP)
-    except IOError: return
-    sqldata = SQLData(sqlString='INSERT INTO moviesinfo (movieid, infoid, info) VALUES (%s, %s, %s)')
-    count = 0
-    for line in fp:
-        data = unpack(line, ('votes distribution', 'votes', 'rating', 'title'),
-                        sep='  ')
-        if not data.has_key('title'): continue
-        title = data['title'].strip()
-        mid = CACHE_MID.addUnique(title)
-        if count % 10000 == 0:
-                print 'SCANNING rating:', title
-        sqldata.add((mid, INFO_TYPES['votes distribution'],
-                    data.get('votes distribution')))
-        sqldata.add((mid, INFO_TYPES['votes'], data.get('votes')))
-        sqldata.add((mid, INFO_TYPES['rating'], data.get('rating')))
-        count += 1
-    sqldata.flush()
-    fp.close()
-
-
-def getTopBottomRating():
-    """Movie's rating, scanning for top 250 and bottom 100."""
-    for what in ('top 250 rank', 'bottom 10 rank'):
-        if what == 'top 250 rank': st = RAT_TOP250_START
-        else: st = RAT_BOT10_START
-        try: fp = SourceFile('ratings.list.gz', start=st, stop=TOPBOT_STOP)
-        except IOError: break
-        sqldata = SQLData(sqlString='INSERT INTO moviesinfo (movieid, infoid, info) VALUES (%s, ' + str(INFO_TYPES[what]) + ', %s)')
-        count = 1
-        print 'SCANNING %s...' % what
-        for line in fp:
-            data = unpack(line, ('votes distribution', 'votes', 'rank',
-                            'title'), sep='  ')
-            if not data.has_key('title'): continue
-            title = data['title'].strip()
-            mid = CACHE_MID.addUnique(title)
-            if what == 'top 250 rank': rank = count
-            else: rank = 11 - count
-            sqldata.add((mid, rank))
-            count += 1
-        sqldata.flush()
-        fp.close()
-
-
-def getPlot(lines):
-    """Movie's plot."""
-    plotl = []
-    plotlappend = plotl.append
-    plotltmp = []
-    plotltmpappend = plotltmp.append
-    for line in lines:
-        linestart = line[:4]
-        if linestart == 'PL: ':
-            plotltmpappend(line[4:])
-        elif linestart == 'BY: ':
-            plotlappend('%s::%s' % (line[4:].strip(), ' '.join(plotltmp)))
-            plotltmp[:] = []
-    return {'plot': plotl}
+#~ def nmmvFiles(fp, funct, fname):
+    #~ """Files with sections separated by 'MV: ' or 'NM: '."""
+    #~ count = 0
+    #~ sqlsP = 'INSERT INTO %s (%s, %s, %s, %s)' % (TABLES[PersonInfo],
+                #~ COLS[PersonInfo]['personID'], COLS[PersonInfo]['infoTypeID'],
+                #~ COLS[PersonInfo]['info'], COLS[PersonInfo]['note'])
+    #~ sqlsP += ' VALUES (%s, %s, %s, %s)'
+    #~ sqlsM = 'INSERT INTO %s (%s, %s, %s, %s)' % (TABLES[MovieInfo],
+                #~ COLS[MovieInfo]['movieID'], COLS[MovieInfo]['infoTypeID'],
+                #~ COLS[MovieInfo]['info'], COLS[MovieInfo]['note'])
+    #~ sqlsM += ' VALUES (%s, %s, %s, %s)'
+    #~ if fname == 'biographies.list.gz':
+        #~ datakind = 'person'
+        #~ sqls = sqlsP
+        #~ curs.execute('SELECT id FROM %s WHERE %s = "guest";'%(TABLES[RoleType],
+                        #~ COLS[RoleType]['role']))
+        #~ guestid = curs.fetchone()[0]
+        #~ gdsqlString = 'INSERT INTO %s (%s, %s, %s, %s, %s)' % \
+                #~ (TABLES[CastInfo], COLS[CastInfo]['personID'],
+                #~ COLS[CastInfo]['movieID'], COLS[CastInfo]['personRole'],
+                #~ COLS[CastInfo]['note'], COLS[CastInfo]['roleID'])
+        #~ gdsqlString += ' VALUES (%s, %s, %s, %s, ' + str(guestid) + ')'
+        #~ guestdata = SQLData(sqlString=gdsqlString)
+        #~ guestdata.flushEvery = 10000
+        #~ ansqlString = 'INSERT INTO %s (%s, %s, %s)' % (TABLES[AkaName],
+                #~ COLS[AkaName]['personID'], COLS[AkaName]['name'],
+                #~ COLS[AkaName]['imdbIndex'])
+        #~ ansqlString += ' VALUES (%s, %s, %s)'
+        #~ akanamesdata = SQLData(sqlString=ansqlString)
+    #~ else:
+        #~ datakind = 'movie'
+        #~ sqls = sqlsM
+        #~ guestdata = None
+        #~ akanamesdata = None
+    #~ sqldata = SQLData(sqlString=sqls)
+    #~ if fname == 'plot.list.gz': sqldata.flushEvery = 1000
+    #~ elif fname == 'literature.list.gz': sqldata.flushEvery = 5000
+    #~ elif fname == 'business.list.gz': sqldata.flushEvery = 10000
+    #~ elif fname == 'biographies.list.gz': sqldata.flushEvery = 5000
+    #~ _ltype = type([])
+    #~ for ton, text in fp.getByNMMVSections():
+        #~ ton = ton.strip()
+        #~ if not ton: continue
+        #~ note = None
+        #~ if datakind == 'movie':
+            #~ ton, note = _titleNote(ton)
+            #~ mopid = CACHE_MID.addUnique(ton)
+        #~ else: mopid = CACHE_PID.addUnique(ton)
+        #~ if count % 10000 == 0:
+            #~ print 'SCANNING %s: %s' % (fname[:-8].replace('-', ' '), ton)
+        #~ d = funct(text.split('\n'))
+        #~ for k, v in d.iteritems():
+            #~ if k != 'notable tv guest appearances':
+                #~ theid = INFO_TYPES.get(k)
+                #~ if theid is None:
+                    #~ print 'WARNING key "%s" of ton "%s" not in INFO_TYPES' % \
+                                #~ (k, ton)
+                    #~ continue
+            #~ if type(v) is _ltype:
+                #~ for i in v:
+                    #~ if k == 'notable tv guest appearances':
+                        #~ # Put "guest" information in the cast table.
+                        #~ title = i.get('long imdb canonical title')
+                        #~ if not title: continue
+                        #~ movieid = CACHE_MID.addUnique(title)
+                        #~ guestdata.add((mopid, movieid, i.currentRole or None,
+                                        #~ i.notes or None))
+                        #~ continue
+                    #~ if k in ('plot', 'mini biography'):
+                        #~ s = i.split('::')
+                        #~ if len(s) == 2:
+                            #~ if note: note += ' '
+                            #~ note = '(author: %s)' % s[0]
+                            #~ i = s[1]
+                    #~ if i: sqldata.add((mopid, theid, i, note))
+                    #~ note = None
+            #~ else:
+                #~ if v: sqldata.add((mopid, theid, v, note))
+            #~ if k in ('nick names', 'birth name') and v:
+                #~ # Put also the birth name/nick names in the list of aliases.
+                #~ if k == 'birth name': realnames = [v]
+                #~ else: realnames = v
+                #~ for realname in realnames:
+                    #~ imdbIndex = re_nameImdbIndex.findall(realname) or None
+                    #~ if imdbIndex:
+                        #~ imdbIndex = imdbIndex[0]
+                        #~ realname = re_nameImdbIndex.sub('', realname)
+                    #~ # Strip misc notes.
+                    #~ fpi = realname.find('(')
+                    #~ if fpi != -1:
+                        #~ lpi = realname.rfind(')')
+                        #~ if lpi != -1:
+                            #~ realname = '%s %s' % (realname[:fpi].strip(),
+                                                    #~ realname[lpi:].strip())
+                            #~ realname = realname.strip()
+                    #~ if realname:
+                        #~ # XXX: check for duplicates?
+                        #~ ##if k == 'birth name':
+                        #~ ##    realname = canonicalName(realname)
+                        #~ ##else:
+                        #~ ##    realname = normalizeName(realname)
+                        #~ akanamesdata.add((mopid, realname, imdbIndex))
+        #~ count += 1
+    #~ if guestdata is not None: guestdata.flush()
+    #~ if akanamesdata is not None: akanamesdata.flush()
+    #~ sqldata.flush()
 
 
-def completeCast():
-    """Movie's complete cast/crew information."""
-    sqldata = SQLData(sqlString='INSERT INTO completecast (movieid, object, status, note) VALUES (%s, %s, %s, %s)')
-    for fname, start in [('complete-cast.list.gz',COMPCAST_START),
-                        ('complete-crew.list.gz',COMPCREW_START)]:
-        try:
-            fp = SourceFile(fname, start=start, stop=COMP_STOP)
-        except IOError:
-            continue
-        if fname == 'complete-cast.list.gz': obj = 'cast'
-        else: obj = 'crew'
-        count = 0
-        for line in fp:
-            ll = [x for x in line.split('\t') if x]
-            if len(ll) != 2: continue
-            title, note = _titleNote(ll[0])
-            mid = CACHE_MID.addUnique(title)
-            if count % 10000 == 0:
-                print 'SCANNING %s: %s' % (fname[:-8].replace('-', ' '), title)
-            sqldata.add((mid, obj, ll[1].lower(), note))
-            count += 1
-        fp.close()
-    sqldata.flush()
+#~ def doNMMVFiles():
+    #~ """Files with large sections, about movies and persons."""
+    #~ for fname, start, funct in [('biographies.list.gz',BIO_START,_parseBiography),
+            #~ ('business.list.gz',BUS_START,getBusiness),
+            #~ ('laserdisc.list.gz',LSD_START,getLaserDisc),
+            #~ ('literature.list.gz',LIT_START,getLiterature),
+            #~ ('mpaa-ratings-reasons.list.gz',MPAA_START,getMPAA),
+            #~ ('plot.list.gz',PLOT_START,getPlot)]:
+    #~ ##for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
+        #~ try:
+            #~ fp = SourceFile(fname, start=start)
+        #~ except IOError:
+            #~ continue
+        #~ if fname == 'literature.list.gz': fp.set_stop(LIT_STOP)
+        #~ elif fname == 'business.list.gz': fp.set_stop(BUS_STOP)
+        #~ nmmvFiles(fp, funct, fname)
+        #~ fp.close()
+        #~ t('doNMMVFiles(%s)' % fname[:-8].replace('-', ' '))
+
+
+#~ def doMiscMovieInfo():
+    #~ """Files with information on a single line about movies."""
+    #~ sqls = 'INSERT INTO %s (%s, %s, %s, %s)' % (TABLES[MovieInfo],
+            #~ COLS[MovieInfo]['movieID'], COLS[MovieInfo]['infoTypeID'],
+            #~ COLS[MovieInfo]['info'], COLS[MovieInfo]['note'])
+    #~ sqls += ' VALUES (%s, %s, %s, %s)'
+    #~ sqldata = SQLData(sqlString=sqls)
+    #~ for dataf in (('certificates.list.gz',CER_START),
+                    #~ ('color-info.list.gz',COL_START),
+                    #~ ('countries.list.gz',COU_START),
+                    #~ ('distributors.list.gz',DIS_START),
+                    #~ ('genres.list.gz',GEN_START),
+                    #~ ('keywords.list.gz',KEY_START),
+                    #~ ('language.list.gz',LAN_START),
+                    #~ ('locations.list.gz',LOC_START),
+                    #~ ('miscellaneous-companies.list.gz',MIS_START),
+                    #~ ('production-companies.list.gz',PRO_START),
+                    #~ ('running-times.list.gz',RUN_START),
+                    #~ ('sound-mix.list.gz',SOU_START),
+                    #~ ('special-effects-companies.list.gz',SFX_START),
+                    #~ ('technical.list.gz',TCN_START),
+                    #~ ('release-dates.list.gz',RELDATE_START)):
+        #~ try:
+            #~ fp = SourceFile(dataf[0], start=dataf[1])
+        #~ except IOError:
+            #~ continue
+        #~ typeindex = dataf[0][:-8].replace('-', ' ')
+        #~ if typeindex == 'running times': typeindex = 'runtimes'
+        #~ elif typeindex == 'technical': typeindex = 'tech info'
+        #~ elif typeindex == 'language': typeindex = 'languages'
+        #~ infoid =  INFO_TYPES[typeindex]
+        #~ count = 0
+        #~ if dataf[0] in ('distributors.list.gz', 'locations.list.gz',
+                        #~ 'miscellaneous-companies.list.gz'):
+            #~ sqldata.flushEvery = 10000
+        #~ else:
+            #~ sqldata.flushEvery = 20000
+        #~ for line in fp:
+            #~ data = unpack(line.strip(), ('title', 'info', 'note'))
+            #~ if not data.has_key('title'): continue
+            #~ if not data.has_key('info'): continue
+            #~ title, note = _titleNote(data['title'])
+            #~ mid = CACHE_MID.addUnique(title)
+            #~ if data.has_key('note'):
+                #~ if note:
+                    #~ note += ' '
+                    #~ note += data['note']
+                #~ else:
+                    #~ note = data['note']
+            #~ if count % 10000 == 0:
+                #~ print 'SCANNING %s: %s' % (dataf[0][:-8].replace('-', ' '),
+                                                #~ data['title'])
+            #~ sqldata.add((mid, infoid, data['info'], note))
+            #~ count += 1
+        #~ sqldata.flush()
+        #~ fp.close()
+        #~ t('doMiscMovieInfo(%s)' % dataf[0][:-8].replace('-', ' '))
+
+
+#~ def getRating():
+    #~ """Movie's rating."""
+    #~ try: fp = SourceFile('ratings.list.gz', start=RAT_START, stop=RAT_STOP)
+    #~ except IOError: return
+    #~ sqls = 'INSERT INTO %s (%s, %s, %s)' % (TABLES[MovieInfo],
+            #~ COLS[MovieInfo]['movieID'], COLS[MovieInfo]['infoTypeID'],
+            #~ COLS[MovieInfo]['info'])
+    #~ sqls += ' VALUES (%s, %s, %s)'
+    #~ sqldata = SQLData(sqlString=sqls)
+    #~ count = 0
+    #~ for line in fp:
+        #~ data = unpack(line, ('votes distribution', 'votes', 'rating', 'title'),
+                        #~ sep='  ')
+        #~ if not data.has_key('title'): continue
+        #~ title = data['title'].strip()
+        #~ mid = CACHE_MID.addUnique(title)
+        #~ if count % 10000 == 0:
+                #~ print 'SCANNING rating:', title
+        #~ sqldata.add((mid, INFO_TYPES['votes distribution'],
+                    #~ data.get('votes distribution')))
+        #~ sqldata.add((mid, INFO_TYPES['votes'], data.get('votes')))
+        #~ sqldata.add((mid, INFO_TYPES['rating'], data.get('rating')))
+        #~ count += 1
+    #~ sqldata.flush()
+    #~ fp.close()
+
+
+#~ def getTopBottomRating():
+    #~ """Movie's rating, scanning for top 250 and bottom 100."""
+    #~ for what in ('top 250 rank', 'bottom 10 rank'):
+        #~ if what == 'top 250 rank': st = RAT_TOP250_START
+        #~ else: st = RAT_BOT10_START
+        #~ try: fp = SourceFile('ratings.list.gz', start=st, stop=TOPBOT_STOP)
+        #~ except IOError: break
+        #~ sqls = 'INSERT INTO %s (%s, %s, %s) ' % (TABLES[MovieInfo],
+                #~ COLS[MovieInfo]['movieID'], COLS[MovieInfo]['infoTypeID'],
+                #~ COLS[MovieInfo]['info'])
+        #~ sqls += ' VALUES (%s, ' + str(INFO_TYPES[what]) + ', %s)'
+        #~ sqldata = SQLData(sqlString=sqls)
+        #~ count = 1
+        #~ print 'SCANNING %s...' % what
+        #~ for line in fp:
+            #~ data = unpack(line, ('votes distribution', 'votes', 'rank',
+                            #~ 'title'), sep='  ')
+            #~ if not data.has_key('title'): continue
+            #~ title = data['title'].strip()
+            #~ mid = CACHE_MID.addUnique(title)
+            #~ if what == 'top 250 rank': rank = count
+            #~ else: rank = 11 - count
+            #~ sqldata.add((mid, rank))
+            #~ count += 1
+        #~ sqldata.flush()
+        #~ fp.close()
+
+
+#~ def getPlot(lines):
+    #~ """Movie's plot."""
+    #~ plotl = []
+    #~ plotlappend = plotl.append
+    #~ plotltmp = []
+    #~ plotltmpappend = plotltmp.append
+    #~ for line in lines:
+        #~ linestart = line[:4]
+        #~ if linestart == 'PL: ':
+            #~ plotltmpappend(line[4:])
+        #~ elif linestart == 'BY: ':
+            #~ plotlappend('%s::%s' % (line[4:].strip(), ' '.join(plotltmp)))
+            #~ plotltmp[:] = []
+    #~ return {'plot': plotl}
+
+
+#~ def completeCast():
+    #~ """Movie's complete cast/crew information."""
+    #~ sqls = 'INSERT INTO %s (%s, %s, %s, %s)' % (TABLES[CompleteCast],
+            #~ COLS[CompleteCast]['movieID'], COLS[CompleteCast]['subjectID'],
+            #~ COLS[CompleteCast]['statusID'], COLS[CompleteCast]['note'])
+    #~ sqls += ' VALUES (%s, %s, %s, %s)'
+    #~ sqldata = SQLData(sqlString=sqls)
+    #~ for fname, start in [('complete-cast.list.gz',COMPCAST_START),
+                        #~ ('complete-crew.list.gz',COMPCREW_START)]:
+        #~ try:
+            #~ fp = SourceFile(fname, start=start, stop=COMP_STOP)
+        #~ except IOError:
+            #~ continue
+        #~ if fname == 'complete-cast.list.gz': obj = 'cast'
+        #~ else: obj = 'crew'
+        #~ count = 0
+        #~ for line in fp:
+            #~ ll = [x for x in line.split('\t') if x]
+            #~ if len(ll) != 2: continue
+            #~ title, note = _titleNote(ll[0])
+            #~ mid = CACHE_MID.addUnique(title)
+            #~ if count % 10000 == 0:
+                #~ print 'SCANNING %s: %s' % (fname[:-8].replace('-', ' '), title)
+            #~ sqldata.add((mid, CCAST_TYPES[obj],
+                        #~ CCAST_TYPES[ll[1].lower().strip()], note))
+            #~ count += 1
+        #~ fp.close()
+    #~ sqldata.flush()
 
 
 # global instances
 CACHE_MID = MoviesCache()
 CACHE_PID = PersonsCache()
 
-INFO_TYPES = {}
-curs.execute('SELECT id, info FROM infotypes;')
-results = curs.fetchall()
-for item in results:
-    INFO_TYPES[item[1]] = item[0]
+#~ INFO_TYPES = {}
+#~ curs.execute('SELECT id, %s FROM %s;' % (colName(InfoType, 'info'),
+                                        #~ tableName(InfoType)))
+#~ results = curs.fetchall()
+#~ for item in results:
+    #~ INFO_TYPES[item[1]] = item[0]
 
-def _cmpfunc(x, y):
-    """Sort a list of tuples, by the length of the first item (in reverse)."""
-    lx = len(x[0])
-    ly = len(y[0])
-    if lx > ly: return -1
-    elif lx < ly: return 1
-    return 0
+#~ def _cmpfunc(x, y):
+    #~ """Sort a list of tuples, by the length of the first item (in reverse)."""
+    #~ lx = len(x[0])
+    #~ ly = len(y[0])
+    #~ if lx > ly: return -1
+    #~ elif lx < ly: return 1
+    #~ return 0
 
-MOVIELINK_IDS = []
-curs.execute('SELECT id, type FROM linktypes;')
-results = curs.fetchall()
-for item in results:
-    MOVIELINK_IDS.append((item[1], item[0]))
-MOVIELINK_IDS.sort(_cmpfunc)
+#~ MOVIELINK_IDS = []
+#~ curs.execute('SELECT id, %s FROM %s;' % (colName(LinkType, 'link'),
+                                        #~ tableName(LinkType)))
+#~ results = curs.fetchall()
+#~ for item in results:
+    #~ MOVIELINK_IDS.append((item[1], item[0]))
+#~ MOVIELINK_IDS.sort(_cmpfunc)
 
+"""
+KIND_IDS is a dict which maps kind names to their IDs, like
+'movie' : 1
+"""
+KIND_IDS = {}
+for x in list(KindType.select()):
+    KIND_IDS[x.kind] = x.id
+
+#~ CCAST_TYPES = {}
+#~ curs.execute('SELECT id, %s FROM %s;' % (colName(CompCastType, 'kind'),
+                                        #~ tableName(CompCastType)))
+#~ results = curs.fetchall()
+#~ for k, v in results:
+    #~ CCAST_TYPES[v] = k
 
 # begin the iterations...
 def run():
     print 'RUNNING imdbpy2sql.py'
     # Populate the CACHE_MID instance.
-    readMovieList()
+    #~ readMovieList()
     ##CACHE_MID.populate()
     ##CACHE_PID.populate()
     t('readMovieList()')
@@ -1126,27 +1359,27 @@ def run():
     # actors, actresses, directors, ....
     castLists()
 
-    doAkaNames()
-    t('doAkaNames()')
-    doAkaTitles()
-    t('doAkaTitles()')
+    #~ doAkaNames()
+    #~ t('doAkaNames()')
+    #~ doAkaTitles()
+    #~ t('doAkaTitles()')
 
-    doMinusHashFiles()
-    t('doMinusHashFiles()')
+    #~ doMinusHashFiles()
+    #~ t('doMinusHashFiles()')
 
-    doNMMVFiles()
+    #~ doNMMVFiles()
 
-    doMiscMovieInfo()
-    doMovieLinks()
-    t('doMovieLinks()')
-    getRating()
-    t('getRating()')
-    getTaglines()
-    t('getTaglines()')
-    getTopBottomRating()
-    t('getTopBottomRating()')
-    completeCast()
-    t('completeCast()')
+    #~ doMiscMovieInfo()
+    #~ doMovieLinks()
+    #~ t('doMovieLinks()')
+    #~ getRating()
+    #~ t('getRating()')
+    #~ getTaglines()
+    #~ t('getTaglines()')
+    #~ getTopBottomRating()
+    #~ t('getTopBottomRating()')
+    #~ completeCast()
+    #~ t('completeCast()')
 
     # Flush caches.
     CACHE_MID.flush()
@@ -1160,7 +1393,7 @@ def _kdb_handler(signum, frame):
     """Die gracefully."""
     print 'INTERRUPT REQUEST RECEIVED FROM USER.  FLUSHING CACHES...'
     CACHE_MID.flush()
-    CACHE_PID.flush()
+    #~ CACHE_PID.flush()
     print 'DONE! (in %d minutes, %d seconds)' % \
             divmod(int(time.time())-BEGIN_TIME, 60)
     sys.exit()

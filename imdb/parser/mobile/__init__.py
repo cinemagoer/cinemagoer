@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re, urllib
+from types import ListType, TupleType
 
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -55,7 +56,6 @@ def _unHtml(s):
     return subSGMLRefs(re_spacessub(' ', re_unhtmlsub('', s)).strip())
 
 
-_ltypes = (type([]), type(()))
 _inttype = type(0)
 
 def _getTagWith(s, cont):
@@ -81,7 +81,7 @@ def _findBetween(s, begins, ends, beginindx=0):
     bi = s.find(begins, beginindx)
     if bi != -1:
         lbegins = len(begins)
-        if type(ends) in _ltypes:
+        if isinstance(ends, (ListType, TupleType)):
             eset = [s.find(end, bi+lbegins) for end in ends]
             eset[:] = [x for x in eset if x != -1]
             if not eset: ei = -1

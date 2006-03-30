@@ -25,11 +25,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person']
 
-import types, sys
+import sys
+from types import UnicodeType, TupleType, ListType, MethodType
 
 from imdb import Movie, Person
 from imdb._exceptions import IMDbError, IMDbDataAccessError
-_utype = type(u'') # XXX: I know this is a bad habit...
 
 
 # URLs of the main pages for movies and persons.
@@ -126,7 +126,7 @@ class IMDbBase:
         for name in dir(self.__class__):
             if name.startswith(prefname) and name not in excludes:
                 member = getattr(self.__class__, name)
-                if type(member) is types.MethodType:
+                if isinstance(member, MethodType):
                     infoset.append(name[preflen:].replace('_', ' '))
         return infoset
 
@@ -175,7 +175,7 @@ class IMDbBase:
             results = 20
         # XXX: I suppose it will be much safer if the user provides
         #      an unicode string... this is just a guess.
-        if type(title) is not _utype:
+        if not isinstance(title, UnicodeType):
             title = unicode(title, encoding, 'replace')
         res = self._search_movie(title, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
@@ -220,7 +220,7 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if type(name) is not _utype:
+        if not isinstance(name, UnicodeType):
             name = unicode(name, encoding, 'replace')
         res = self._search_person(name, results)
         return [Person.Person(personID=self._get_real_personID(pi),
@@ -231,11 +231,11 @@ class IMDbBase:
         """Return a Movie object."""
         # XXX: not really useful...
         if keywords.has_key('title'):
-            if type(keywords['title']) is not _utype:
+            if not isinstance(keywords['title'], UnicodeType):
                 keywords['title'] = unicode(keywords['title'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if type(arguments[1]) is not _utype:
+            if not isinstance(arguments[1], UnicodeType):
                 arguments[1] = unicode(arguments[1], encoding, 'replace')
         return Movie.Movie(accessSystem=self.accessSystem,
                             *arguments, **keywords)
@@ -244,11 +244,11 @@ class IMDbBase:
         """Return a Person object."""
         # XXX: not really useful...
         if keywords.has_key('name'):
-            if type(keywords['name']) is not _utype:
+            if not isinstance(keywords['name'], UnicodeType):
                 keywords['name'] = unicode(keywords['name'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if type(arguments[1]) is not _utype:
+            if not isinstance(arguments[1], UnicodeType):
                 arguments[1] = unicode(arguments[1], encoding, 'replace')
         return Person.Person(accessSystem=self.accessSystem,
                                 *arguments, **keywords)
@@ -290,7 +290,7 @@ class IMDbBase:
                 info = self.get_movie_infoset()
             else:
                 info = self.get_person_infoset()
-        if type(info) not in (types.TupleType, types.ListType):
+        if not isinstance(info, (TupleType, ListType)):
             info = (info,)
         res = {}
         for i in info:
@@ -374,7 +374,7 @@ class IMDbBase:
         base_methods = []
         for name in dir(IMDbBase):
             member = getattr(IMDbBase, name)
-            if type(member) is types.MethodType:
+            if isinstance(member, MethodType):
                 base_methods.append(name)
         for name in dir(self.__class__):
             if name.startswith('_') or name in base_methods or \
@@ -382,7 +382,7 @@ class IMDbBase:
                     name.startswith('get_person_'):
                 continue
             member = getattr(self.__class__, name)
-            if type(member) is types.MethodType:
+            if isinstance(member, MethodType):
                 sm_dict.update({name: member.__doc__})
         return sm_dict
 

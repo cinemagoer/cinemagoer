@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
+from types import UnicodeType, StringType, ListType, TupleType
 from copy import copy, deepcopy
 from time import strptime, strftime
 
@@ -538,31 +539,25 @@ def modClearRefs(s, titlesRefs, namesRefs):
     s = modClearTitleRefs(s, {}, {})
     return modClearNameRefs(s, {}, {})
 
-_stypes = (type(u''), type(''))
-_ltype = type([])
-_dtype = type({})
-_todescend = (_ltype, _dtype)
 
 def modifyStrings(o, modFunct, titlesRefs, namesRefs):
     """Modify a string (or string values in a dictionary or strings
     in a list), using the provided modFunct function and titlesRefs
     and namesRefs references dictionaries."""
-    to = type(o)
-    if to in _stypes:
+    if isinstance(o, (UnicodeType, StringType)):
         return modFunct(o, titlesRefs, namesRefs)
-    elif to in _todescend:
+    elif isinstance(o, (ListType, TupleType)):
         _stillorig = 1
-        if to is _ltype: keys = xrange(len(o))
+        if isinstance(o, ListType): keys = xrange(len(o))
         else: keys = o.keys()
         for i in keys:
             v = o[i]
-            tv = type(v)
-            if tv in _stypes:
+            if isinstance(v, (UnicodeType, StringType)):
                 if _stillorig:
                     o = copy(o)
                     _stillorig = 0
                 o[i] = modFunct(v, titlesRefs, namesRefs)
-            elif tv in _todescend:
+            elif isinstance(v, (ListType, TupleType)):
                 modifyStrings(o[i], modFunct, titlesRefs, namesRefs)
     return o
 

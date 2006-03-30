@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import types
+from types import UnicodeType, ListType, TupleType
 from copy import deepcopy
 
 from imdb.utils import analyze_title, build_title, normalizeTitle, _Container
@@ -222,7 +222,7 @@ class Movie(_Container):
         if not isinstance(item, Person):
             return 0
         for i in self.data.values():
-            if type(i) in (types.ListType, types.TupleType):
+            if isinstance(i, (ListType, TupleType)):
                 for j in i:
                     if isinstance(j, Person) and item.isSamePerson(j):
                         return 1
@@ -249,7 +249,7 @@ class Movie(_Container):
             title = self.get('long imdb canonical title')
         r = '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
                                                 title)
-        if type(r) is type(u''): r = r.encode('utf_8', 'replace')
+        if isinstance(r, UnicodeType): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):

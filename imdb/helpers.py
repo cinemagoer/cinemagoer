@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from cgi import escape
+from types import UnicodeType, TupleType, ListType
 
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
@@ -37,11 +38,6 @@ from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
 _re_href = re.compile(r'(http://.+?)(?=\s|$)', re.I)
 _re_hrefsub = _re_href.sub
 
-_uctype = type(u'')
-_ltype = type([])
-_ttype = type(())
-_seqtype = (_ltype, _ttype)
-
 
 def makeCgiPrintEncoding(encoding):
     """Make a function to pretty-print strings for the web."""
@@ -49,7 +45,8 @@ def makeCgiPrintEncoding(encoding):
         """Encode the given string using the %s encoding, and replace
         chars outside the given charset with XML char references.""" % encoding
         s = escape(s, quote=1)
-        if type(s) is _uctype: s = s.encode(encoding, 'xmlcharrefreplace')
+        if isinstance(s, UnicodeType):
+            s = s.encode(encoding, 'xmlcharrefreplace')
         return s
     return cgiPrint
 
@@ -139,7 +136,7 @@ def sortedEpisodes(m, season=None):
     if season is None:
         seasons = sortedSeasons(m)
     else:
-        if type(season) not in _seqtype:
+        if not isinstance(season, (TupleType, ListType)):
             seasons = [season]
     for s in seasons:
         eps_indx = m.get('episodes', {}).get(s, {}).keys()

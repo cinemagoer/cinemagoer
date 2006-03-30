@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
+from types import UnicodeType, StringType, ListType, TupleType, DictType
 from sgmllib import SGMLParser
 
 from imdb._exceptions import IMDbParserError
@@ -32,41 +33,31 @@ from imdb.Person import Person
 # Year, imdbIndex and kind.
 re_yearKind_index = re.compile(r'(\([0-9\?]{4}(?:/[IVXLCDM]+)?\)(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)')
 
-_ltype = type([])
-_dtype = type({})
-_uctype = type(u'')
-_stypes = (_uctype, type(''))
-_destypes = (_ltype, _dtype)
-
 
 _modify_keys = list(Movie.keys_tomodify_list) + list(Person.keys_tomodify_list)
-#modify_people = Person.keys_tomodify_list
 def _putRefs(d, re_titles, re_names, lastKey=None):
     """Iterate over the strings inside list items or dictionary values,
     substitutes movie titles and person names with the (qv) references."""
-    td = type(d)
-    if td is _ltype:
+    if isinstance(d, ListType):
         for i in xrange(len(d)):
-            ti = type(d[i])
-            if ti in _stypes:
+            if isinstance(d[i], (UnicodeType, StringType)):
                 if lastKey in _modify_keys:
                     if re_names:
                         d[i] = re_names.sub(ur"'\1' (qv)", d[i])
                     if re_titles:
                         d[i] = re_titles.sub(ur'_\1_ (qv)', d[i])
-            elif ti in _destypes:
+            elif isinstance(d[i], (ListType, DictType)):
                 _putRefs(d[i], re_titles, re_names, lastKey=lastKey)
-    elif td is _dtype:
+    elif isinstance(d, DictType):
         for k, v in d.items():
-            tv = type(v)
             lastKey = k
-            if tv in _stypes:
+            if isinstance(v, (UnicodeType, StringType)):
                 if lastKey in _modify_keys:
                     if re_names:
                         d[k] = re_names.sub(ur"'\1' (qv)", v)
                     if re_titles:
                         d[k] = re_titles.sub(ur'_\1_ (qv)', v)
-            elif tv in _destypes:
+            elif isinstance(v, (ListType, DictType)):
                 _putRefs(d[k], re_titles, re_names, lastKey=lastKey)
 
 
@@ -309,7 +300,7 @@ class ParserBase(SGMLParser):
         """Return the dictionary generated from the given html string."""
         self.reset()
         # XXX: useful only for the testsuite.
-        if type(html_string) is not _uctype:
+        if not isinstance(html_string, UnicodeType):
             html_string = unicode(html_string, 'latin_1', 'replace')
         html_string = subXMLRefs(html_string)
         self.feed(html_string)

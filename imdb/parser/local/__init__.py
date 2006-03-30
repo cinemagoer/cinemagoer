@@ -33,21 +33,14 @@ from imdb.utils import analyze_title, analyze_name, re_episodes, \
                         sortMovies, sortPeople
 from imdb.Person import Person
 from imdb.Movie import Movie
-
 from personParser import getFilmography, getBio, getAkaNames
 from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
                         getPlot, getRatingData, getMovieMisc, getTaglines, \
                         getQuotes, getMovieLinks, getBusiness, getLiterature, \
                         getLaserdisc
-
 from utils import getFullIndex, KeyFScan, latin2utf
-
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                                         titleVariations, nameVariations
-
-_ltype = type([])
-_dtype = type({})
-_stypes = (type(u''), type(''))
 
 try:
     from imdb.parser.common.ratober import get_episodes
@@ -106,7 +99,7 @@ try:
         res = []
         for x in sn:
             tmpd = analyze_name(latin2utf(x[2]))
-            res.append((x[0], (x[1], tmpd['name'], tmpd.get('imdbIndex'))))
+            res.append((x[0], (x[1], tmpd)))
         return res
 except ImportError:
     import warnings
@@ -125,7 +118,7 @@ except ImportError:
             ls = line.split('|')
             if not ls[0]: continue
             named = analyze_name(latin2utf(ls[0]))
-            yield (long(ls[1], 16), named['name'], named.get('imdbIndex'))
+            yield (long(ls[1], 16), named)
         kf.close()
 
     def _scan_names(keyFile, name1, name2, name3, results=0):
@@ -146,8 +139,7 @@ try:
         res = []
         for x in st:
             tmpd = analyze_title(latin2utf(x[2]))
-            res.append((x[0], (x[1], tmpd['title'],
-                        tmpd.get('imdbIndex'), tmpd['kind'], tmpd.get('year'))))
+            res.append((x[0], (x[1], tmpd)))
         return res
 except ImportError:
     import warnings
@@ -157,23 +149,28 @@ except ImportError:
 
     from imdb.parser.common.locsql import scan_titles
 
-    def _readTitlesKeyFile(keyFile):
+    def _readTitlesKeyFile(keyFile, searchingEpisode=0):
         """Iterate over the given file, returning tuples suited for
         the common.locsql.scan_titles function."""
         try: kf = open(keyFile, 'r')
         except IOError, e: raise IMDbDataAccessError, str(e)
         for line in kf:
             ls = line.split('|')
-            if not ls[0]: continue
-            titled = analyze_title(latin2utf(ls[0]))
-            yield (long(ls[1], 16), titled['title'],
-                    titled.get('imdbIndex'), titled['kind'], titled.get('year'))
+            t = ls[0]
+            if not t: continue
+            if searchingEpisode:
+                if t[-1] != '}': continue
+            elif t[-1] == '}': continue
+            titled = analyze_title(latin2utf(t))
+            yield (long(ls[1], 16), titled)
         kf.close()
 
     def _scan_titles(keyFile, title1, title2, title3, results=0):
         """Scan the given file, using the common.locsql.scan_titles
         pure-Python function, for title variations."""
-        return scan_titles(_readTitlesKeyFile(keyFile),
+        se = 0
+        if title3 and title3[-1] == '}': se = 1
+        return scan_titles(_readTitlesKeyFile(keyFile, searchingEpisode=se),
                             title1, title2, title3, results)
 
 
@@ -296,14 +293,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if 'Adult' not in genres: newlist.append(entry)
             res[:] = newlist
             if results > 0: res[:] = res[:results]
-        # Purge empty imdbIndex and year.
-        returnl = []
-        for x in res:
-            tmpd = {'title': x[1], 'kind': x[3]}
-            if x[2]: tmpd['imdbIndex'] = x[2]
-            if x[4]: tmpd['year'] = x[4]
-            returnl.append((x[0], tmpd))
-        return returnl
+        return res
 
     def get_movie_main(self, movieID):
         # Information sets provided by this method.
@@ -581,13 +571,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                             name1, name2, name3, resultsST)
         if results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
-        # Purge empty imdbIndex and year.
-        returnl = []
-        for x in res:
-            tmpd = {'name': x[1]}
-            if x[2]: tmpd['imdbIndex'] = x[2]
-            returnl.append((x[0], tmpd))
-        return returnl
+        return res
 
 
     def get_person_main(self, personID):

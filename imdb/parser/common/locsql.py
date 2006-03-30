@@ -21,6 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 import re, urllib
+from types import UnicodeType, StringType, ListType, TupleType, DictType
 from difflib import SequenceMatcher
 from codecs import lookup
 
@@ -32,10 +33,6 @@ from imdb.utils import analyze_title, build_title, analyze_name, \
                         build_name, canonicalTitle, canonicalName, \
                         normalizeName, re_titleRef, re_nameRef, \
                         re_year_index, _articles
-
-_ltype = type([])
-_dtype = type({})
-_stypes = (type(u''), type(''))
 
 re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
@@ -101,8 +98,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
 
     def _findRefs(self, o, trefs, nrefs):
         """Find titles or names references in strings."""
-        to = type(o)
-        if to in _stypes:
+        if isinstance(o, (UnicodeType, StringType)):
             for title in re_titleRef.findall(o):
                 a_title = analyze_title(title, canonical=1)
                 rtitle = build_title(a_title, canonical=1)
@@ -136,10 +132,10 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
                     nrefs[rname2] = p
                 if name != rname and name != rname2:
                     nrefs[name] = p
-        elif to is _ltype:
+        elif isinstance(o, (ListType, TupleType)):
             for item in o:
                 self._findRefs(item, trefs, nrefs)
-        elif to is _dtype:
+        elif isinstance(o, DictType):
             for value in o.values():
                 self._findRefs(value, trefs, nrefs)
         return (trefs, nrefs)
@@ -184,7 +180,7 @@ def titleVariations(title):
         # title1: the canonical name.
         title1 = titldict['title']
         # title3: the long imdb canonical name.
-        title3 = build_title(titldict, canonical=1)
+        title3 = build_title(titldict, canonical=1, ptdf=1)
     else:
         # Just a title.
         # title1: the canonical title.
@@ -239,6 +235,7 @@ except ImportError:
 def scan_names(name_list, name1, name2, name3, results=0):
     """Scan a list of names, searching for best matches against
     the given variations."""
+    RO_THRESHOLD = 0.6
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
     sm3 = SequenceMatcher()
@@ -246,8 +243,8 @@ def scan_names(name_list, name1, name2, name3, results=0):
     if name2: sm2.set_seq1(name2.lower())
     if name3: sm3.set_seq1(name3.lower())
     resd = {}
-    for i in name_list:
-        nil = i[1]
+    for i, n_data in name_list:
+        nil = n_data['name']
         # Distance with the canonical name.
         ratios = [ratcliff(name1, nil, sm1) + 0.05]
         nils = nil.split(', ', 1)
@@ -264,15 +261,14 @@ def scan_names(name_list, name1, name2, name3, results=0):
                 ratios.append(ratcliff(name2, namesurname, sm2))
         if name3:
             # Distance with the long imdb canonical name.
-            tmpp = {'name': i[1], 'imdbIndex': i[2]}
             ratios.append(ratcliff(name3,
-                        build_name(tmpp, canonical=1), sm3) + 0.1)
+                        build_name(n_data, canonical=1), sm3) + 0.1)
         ratio = max(ratios)
-        if resd.has_key(i):
-            if ratio > resd[i]: resd[i] = ratio
-        else: resd[i] = ratio
-    
-    res = [(x[1], x[0]) for x in resd.items()]
+        if ratio >= RO_THRESHOLD:
+            if resd.has_key(i):
+                if ratio > resd[i][0]: resd[i] = (ratio, (i, n_data))
+            else: resd[i] = (ratio, (i, n_data))
+    res = resd.values()
     res.sort()
     res.reverse()
     if results > 0: res[:] = res[:results]
@@ -281,45 +277,55 @@ def scan_names(name_list, name1, name2, name3, results=0):
 def scan_titles(titles_list, title1, title2, title3, results=0):
     """Scan a list of titles, searching for best matches against
     the given variations."""
+    RO_THRESHOLD = 0.6
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
     sm3 = SequenceMatcher()
     sm1.set_seq1(title1.lower())
     sm2.set_seq2(title2.lower())
-    if title3: sm3.set_seq1(title3.lower())
+    searchingEpisode = 0
+    if title3:
+        sm3.set_seq1(title3.lower())
+        if title3[-1] == '}': searchingEpisode = 1
     hasArt = 0
     if title2 != title1: hasArt = 1
     resd = {}
-    for i in titles_list:
-        til = i[1]
+    for i, t_data in titles_list:
+        if searchingEpisode:
+            if t_data.get('kind') != 'episode': continue
+        elif t_data.get('kind') == 'episode': continue
+        til = t_data['title']
         # Distance with the canonical title (with or without article).
         #   titleS      -> titleR
         #   titleS, the -> titleR, the
-        ratios = [ratcliff(title1, til, sm1) + 0.05]
-        # til2 is til without the article, if present.
-        til2 = til
-        tils = til2.split(', ')
-        matchHasArt = 0
-        if tils[-1] in _articles:
-            til2 = ', '.join(tils[:-1])
-            matchHasArt = 1
-        if hasArt and not matchHasArt:
-            #   titleS[, the]  -> titleR
-            ratios.append(ratcliff(title2, til, sm2))
-        elif matchHasArt and not hasArt:
-            #   titleS  -> titleR[, the]
-            ratios.append(ratcliff(title1, til2, sm1))
+        if not searchingEpisode:
+            ratios = [ratcliff(title1, til, sm1) + 0.05]
+            # til2 is til without the article, if present.
+            til2 = til
+            tils = til2.split(', ')
+            matchHasArt = 0
+            if tils[-1] in _articles:
+                til2 = ', '.join(tils[:-1])
+                matchHasArt = 1
+            if hasArt and not matchHasArt:
+                #   titleS[, the]  -> titleR
+                ratios.append(ratcliff(title2, til, sm2))
+            elif matchHasArt and not hasArt:
+                #   titleS  -> titleR[, the]
+                ratios.append(ratcliff(title1, til2, sm1))
+        else:
+            ratios = [0.0]
         if title3:
             # Distance with the long imdb canonical title.
-            tmpm = {'title': i[1], 'imdbIndex': i[2],
-                    'kind': i[3], 'year': i[4]}
             ratios.append(ratcliff(title3,
-                        build_title(tmpm, canonical=1), sm3) + 0.1)
+                        build_title(t_data, canonical=1, ptdf=1), sm3) + 0.1)
         ratio = max(ratios)
-        if resd.has_key(i):
-            if ratio > resd[i]: resd[i] = ratio
-        else: resd[i] = ratio
-    res = [(x[1], x[0]) for x in resd.items()]
+        if ratio >= RO_THRESHOLD:
+            if resd.has_key(i):
+                if ratio > resd[i][0]:
+                    resd[i] = (ratio, (i, t_data))
+            else: resd[i] = (ratio, (i, t_data))
+    res = resd.values()
     res.sort()
     res.reverse()
     if results > 0: res[:] = res[:results]

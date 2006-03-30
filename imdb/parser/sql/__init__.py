@@ -27,6 +27,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # FIXME: this whole module was written in a veeery short amount of time.
 #        The code should be commented, rewritten and cleaned. :-)
 
+from types import UnicodeType
+
 import MySQLdb
 import _mysql_exceptions
 
@@ -39,8 +41,6 @@ from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError, IMDbError
-
-_uctype = type(u'')
 
 _litlist = ['screenplay/teleplay', 'novel', 'adaption', 'book',
             'production process protocol', 'interviews',
@@ -273,7 +273,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 "LOCATE(' ,', REVERSE(title))+1)),5) = " + \
                 "LEFT(SOUNDEX('%s'),5)" % _(title2)
 
-        if type(sqlq) is _uctype: sqlq = sqlq.encode('latin_1', 'replace')
+        if isinstance(sqlq, UnicodeType):
+            sqlq = sqlq.encode('latin_1', 'replace')
         qr = list(self.query(sqlq, escape=0))
         qr += list(self.query(sqlq.replace('titles', 'akatitles', 1), escape=0))
 
@@ -487,7 +488,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 " ' ', (SUBSTRING_INDEX(name, ', ', 1)))),5) IN %s;" % sndex
         # XXX: add a "LIMIT 5000" clause or something?
 
-        if type(sqlq) is _uctype: sqlq = sqlq.encode('latin_1', 'replace')
+        if isinstance(sqlq, UnicodeType):
+            sqlq = sqlq.encode('latin_1', 'replace')
         qr = list(self.query(sqlq, escape=0))
         qr += list(self.query(sqlq.replace('names', 'akanames', 1), escape=0))
 

@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-
+from types import UnicodeType, StringType
 from urllib import unquote
 
 from imdb.Person import Person
@@ -35,9 +35,6 @@ from imdb.Movie import Movie
 from imdb.utils import analyze_title, re_episodes
 from imdb._exceptions import IMDbParserError
 from utils import ParserBase
-
-
-_stypes = (type(u''), type(''))
 
 
 def strip_amps(theString):
@@ -149,7 +146,7 @@ class HTMLMovieParser(ParserBase):
 
     def set_item(self, sect, data):
         """Put a single value (a string, normally) in the dictionary."""
-        if type(data) in _stypes:
+        if isinstance(data, (UnicodeType, StringType)):
             data = clear_text(data)
         self._movie_data[clear_text(sect)] = data
 
@@ -1477,7 +1474,7 @@ class HTMLRatingsParser(ParserBase):
                     sd = sd[:i]
                     try: sd = int(sd)
                     except (ValueError, OverflowError): pass
-                    if type(sd) is type(1):
+                    if type(sd) is type(0):
                         self._rank['top 250 rank'] = sd
             elif sdata.startswith('Arithmetic mean = '):
                 if sdata[-1] == '.': sdata = sdata[:-1]
@@ -1490,7 +1487,7 @@ class HTMLRatingsParser(ParserBase):
                 med = sdata[9:]
                 try: med = int(med)
                 except (ValueError, OverflowError): pass
-                if type(med) is type(1):
+                if type(med) is type(0):
                     self._rank['median'] = med
         if self._in_demo:
             if self._next_is_demo_vote:

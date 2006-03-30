@@ -49,6 +49,7 @@
 #define COMPARE             2.0
 #define STRING_MAXLENDIFFER 0.75
 
+/* As of 26 Mar 2006, the longest title is 280 chars. */
 #define MXLINELEN   512
 #define FSEP        '|'
 
@@ -340,6 +341,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     unsigned int nrResults = 0;
     unsigned short artlen = 0;
     unsigned short linelen = 0;
+    unsigned short searchingEpisode = 0;
     unsigned int count = 0;
     char noArt[MXLINELEN] = "";
     static char *argnames[] = {"keyFile", "title1", "title2", "title3",
@@ -359,10 +361,14 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     else
         strtolower(title2);
 
-    if (title3 == NULL || strlen(title3) == 0)
+    if (title3 == NULL || strlen(title3) == 0) {
         title3 = NULL;
-    else
+    } else {
         strtolower(title3);
+        /* Is this a tv series episode? */
+        if (title3[strlen(title3)-1] == '}')
+            searchingEpisode = 1;
+    }
 
     if ((keyFile = fopen(keyFileName, "r")) == NULL) {
         PyErr_SetFromErrno(PyExc_IOError);
@@ -389,47 +395,63 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             key = cp+1;
             strcpy(origLine, line);
         } else { continue; }
-        /* Strip the (year[/imdbIndex]) */
-        while ((cp = strrchr(line, '(')) != NULL) {
-            *(cp-1) = '\0';
-            if ((cp+1)[0] == '1' || (cp+1)[0] == '2' || (cp+1)[0] == '?')
-                break;
-        }
-        /* Strip the quotes around the TV series titles. */
-        if (line[0] == '"') {
-            strcpy(line, &(line[1]));
-            linelen = strlen(line);
-            if (linelen > 2 && line[linelen-1] == '"')
-                line[linelen-1] = '\0';
-        }
-        strtolower(line);
 
-        /* If the current line has an article, strip it and put the new
-         * line in noArt. */
-        matchHasArt = 0;
-        if (strrchr(line, ',') != NULL) {
-            /* Strip the article. */
-            linelen = strlen(line);
-            for (count = 0; count < ART_COUNT; count++) {
-                artlen = strlen(articlesNoSP[count]);
-                if (linelen >= artlen+2 &&
-                        !strncmp(articlesNoSP[count],
-                        &(line[linelen-artlen]), artlen) &&
-                        !strncmp(&(line[linelen-artlen-2]), ", ", 2)) {
-                    strcpy(noArt, line);
-                    noArt[linelen-artlen-2] = '\0';
-                    matchHasArt = 1;
+        /* We're searching a tv series episode, and this is not one. */
+        if (searchingEpisode) {
+            if (line[strlen(line)-1] != '}')
+                continue;
+        } else {
+            if (line[strlen(line)-1] == '}')
+                continue;
+        }
+
+        /* Check against title1 and title2 if and only if we're not
+         * searching for a tv series episode. */
+        if (!searchingEpisode) {
+            /* Strip the (year[/imdbIndex]) */
+            while ((cp = strrchr(line, '(')) != NULL) {
+                *(cp-1) = '\0';
+                if ((cp+1)[0] == '1' || (cp+1)[0] == '2' || (cp+1)[0] == '?')
                     break;
+            }
+            /* Strip the quotes around the TV series titles. */
+            if (line[0] == '"') {
+                strcpy(line, &(line[1]));
+                linelen = strlen(line);
+                if (linelen > 2 && line[linelen-1] == '"')
+                    line[linelen-1] = '\0';
+            }
+            strtolower(line);
+
+            /* If the current line has an article, strip it and put the new
+             * line in noArt. */
+            matchHasArt = 0;
+            if (strrchr(line, ',') != NULL) {
+                /* Strip the article. */
+                linelen = strlen(line);
+                for (count = 0; count < ART_COUNT; count++) {
+                    artlen = strlen(articlesNoSP[count]);
+                    if (linelen >= artlen+2 &&
+                            !strncmp(articlesNoSP[count],
+                            &(line[linelen-artlen]), artlen) &&
+                            !strncmp(&(line[linelen-artlen-2]), ", ", 2)) {
+                        strcpy(noArt, line);
+                        noArt[linelen-artlen-2] = '\0';
+                        matchHasArt = 1;
+                        break;
+                    }
                 }
             }
+
+            ratio = ratcliff(title1, line) + 0.05;
+
+            if (matchHasArt && !hasArt)
+                ratio = MAX(ratio, ratcliff(title1, noArt));
+            else if (hasArt && !matchHasArt && title2 != NULL)
+                ratio = MAX(ratio, ratcliff(title2, line));
+        } else {
+            ratio = 0.0;
         }
-
-        ratio = ratcliff(title1, line) + 0.05;
-
-        if (matchHasArt && !hasArt)
-            ratio = MAX(ratio, ratcliff(title1, noArt));
-        else if (hasArt && !matchHasArt && title2 != NULL)
-            ratio = MAX(ratio, ratcliff(title2, line));
 
         if (title3 != NULL) {
             char origLineLower[MXLINELEN];

@@ -697,9 +697,9 @@ def doCast(fp, roleid, rolename):
         #~ currset = (pid, movieid, role or None,
                     #~ note or None, order or None)
         #~ sqldata.add(currset)
-        if count % 10000 == 0:
-            print 'SCANNING %s: %s' %
-                (rolename, unicode(name, 'latin-1').encode('utf-8'))
+        if (count % 10000) == 0:
+            print u'SCANNING %s: %s' % \
+                (rolename, unicode(name, 'latin-1'))
         count += 1
     #Execute the INSERTs
     while (len(SQLCache) > 0):
@@ -757,36 +757,48 @@ def castLists():
         #~ t('castLists(%s)' % rolename)
 
 
-#~ def doAkaNames():
-    #~ """People's akas."""
-    #~ pid = None
-    #~ count = 0
-    #~ try: fp = SourceFile('aka-names.list.gz', start=AKAN_START)
-    #~ except IOError: return
+def doAkaNames():
+    """People's akas."""
+    count = 0
+    kwds = {}
+    SQLCache = []
+    personCol = colName(AkaName, 'person')
+    nameCol = colName(AkaName, 'name')
+    imdbIndexCol = colName(AkaName, 'imdbIndex')
+
+    try: fp = SourceFile('aka-names.list.gz', start=AKAN_START)
+    except IOError: return
     #~ sqlString = 'INSERT INTO %s (%s, %s, %s)' % (TABLES[AkaName],
                     #~ COLS[AkaName]['personID'], COLS[AkaName]['name'],
                     #~ COLS[AkaName]['imdbIndex'])
     #~ sqlString += ' VALUES (%s, %s, %s)'
     #~ sqldata = SQLData(sqlString=sqlString)
-    #~ for line in fp:
-        #~ if line and line[0] != ' ':
-            #~ if line[0] == '\n': continue
-            #~ pid = CACHE_PID.addUnique(line.strip())
-        #~ else:
-            #~ line = line.strip()
-            #~ if line[:5] == '(aka ': line = line[5:]
-            #~ if line[-1:] == ')': line = line[:-1]
-            #~ try:
-                #~ name = analyze_name(line)
-            #~ except IMDbParserError:
-                #~ if line: print 'WARNING: wrong name "%s"' % line
-                #~ continue
+    for line in fp:
+        if line and line[0] != ' ':
+            if line[0] == '\n': continue
+            kwds[personCol] = CACHE_PID.addUnique(line.strip())
+        else:
+            line = line.strip()
+            if line[:5] == '(aka ': line = line[5:]
+            if line[-1:] == ')': line = line[:-1]
+            try:
+                name = analyze_name(line)
+            except IMDbParserError:
+                if line: print 'WARNING: wrong name "%s"' % line
+                continue
+
+            kwds[nameCol] = name.get('name')
+            kwds[imdbIndexCol] = name.get('imdbIndex')
+            insertObj = sqlbuilder.Insert(AkaName.sqlmeta.table, values=kwds)
+            SQLCache.append( conn.sqlrepr(insertObj) )
             #~ sqldata.add((pid, name.get('name'), name.get('imdbIndex')))
-            #~ if count % 10000 == 0:
-                #~ print 'SCANNING akanames:', line
-            #~ count += 1
+            if count % 10000 == 0:
+                print 'SCANNING akanames:', line
+            count += 1
+    while (len(SQLCache) > 0):
+        conn.query( SQLCache.pop() )
     #~ sqldata.flush()
-    #~ fp.close()
+    fp.close()
 
 
 #~ def doAkaTitles():
@@ -1359,8 +1371,8 @@ def run():
     # actors, actresses, directors, ....
     castLists()
 
-    #~ doAkaNames()
-    #~ t('doAkaNames()')
+    doAkaNames()
+    t('doAkaNames()')
     #~ doAkaTitles()
     #~ t('doAkaTitles()')
 

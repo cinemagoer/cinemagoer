@@ -149,15 +149,22 @@ except ImportError:
 
     from imdb.parser.common.locsql import scan_titles
 
-    def _readTitlesKeyFile(keyFile, searchingEpisode=0):
+    def _readTitlesKeyFile(keyFile, searchingEpisode=0, lenTitle=1):
         """Iterate over the given file, returning tuples suited for
         the common.locsql.scan_titles function."""
+        STRING_MAXLENDIFFER = 0.7
+        lenTitle = float(lenTitle)
         try: kf = open(keyFile, 'r')
         except IOError, e: raise IMDbDataAccessError, str(e)
         for line in kf:
             ls = line.split('|')
             t = ls[0]
             if not t: continue
+            l_t = len(t)
+            if (lenTitle > l_t): threshold = l_t / lenTitle
+            else: threshold = lenTitle / l_t
+            # don't compare too different lenght strings.
+            if threshold < STRING_MAXLENDIFFER: continue
             if searchingEpisode:
                 if t[-1] != '}': continue
             elif t[-1] == '}': continue
@@ -170,7 +177,8 @@ except ImportError:
         pure-Python function, for title variations."""
         se = 0
         if title3 and title3[-1] == '}': se = 1
-        return scan_titles(_readTitlesKeyFile(keyFile, searchingEpisode=se),
+        return scan_titles(_readTitlesKeyFile(keyFile, searchingEpisode=se,
+                            lenTitle=len(title3 or title1)),
                             title1, title2, title3, results)
 
 
@@ -254,7 +262,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         """
         titline = getLabel(movieID, '%stitles.index' % self.__db,
                             '%stitles.key' % self.__db)
-        return self._httpMovieID(titline)
+        if titline is None: return None
+        return self.title2imdbID(titline)
 
     def get_imdbPersonID(self, personID):
         """Translate a personID in an imdbID.
@@ -263,7 +272,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         """
         name = getLabel(personID, '%snames.index' % self.__db,
                         '%snames.key' % self.__db)
-        return self._httpPersonID(name)
+        if name is None: return None
+        return self.name2imdbID(name)
 
     def do_adult_search(self, doAdult):
         """If set to 0 or False, movies in the Adult category are not
@@ -661,8 +671,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                                             rindex=1)
                         if year: e['year'] = year
                     if not e.currentRole and name not in ('actor', 'actress'):
-                        if e.notes: e.notes = ' (%s)' % e.notes
-                        e.notes = '(%s)%s' % (name, e.notes)
+                        if e.notes: e.notes = ' %s' % e.notes
+                        e.notes = '[%s]%s' % (name, e.notes)
                     episodes.setdefault(series, []).append(e)
         if episodes:
             for k in episodes:

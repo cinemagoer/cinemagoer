@@ -24,7 +24,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 from types import UnicodeType, ListType, TupleType
 from copy import deepcopy
 
-from imdb.utils import analyze_title, build_title, normalizeTitle, _Container
+from imdb.utils import analyze_title, build_title, normalizeTitle, \
+                        flatten, _Container
 
 
 class Movie(_Container):
@@ -205,6 +206,7 @@ class Movie(_Container):
         """Return true if this and the compared object have the same
         long imdb title and/or movieID.
         """
+        # XXX: obsolete?
         if not isinstance(other, self.__class__): return 0
         if self.data.has_key('title') and \
                 other.data.has_key('title') and \
@@ -221,11 +223,9 @@ class Movie(_Container):
         from Person import Person
         if not isinstance(item, Person):
             return 0
-        for i in self.data.values():
-            if isinstance(i, (ListType, TupleType)):
-                for j in i:
-                    if isinstance(j, Person) and item.isSamePerson(j):
-                        return 1
+        for p in flatten(self.data, yieldDictKeys=1, scalar=Person):
+            if item.isSame(p):
+                return 1
         return 0
 
     def __deepcopy__(self, memo):

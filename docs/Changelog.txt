@@ -1,19 +1,24 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.5.cvs20060329 "Serenity" (29 Mar 2006)
+* What's the new in release 2.5.cvs20060402 "Melissa P." (02 Apr 2006)
   [general]
-  - support for the new style for tv series; see the README.series file.
-  - modified the DISCLAIMER.txt file to be compliant to the
-    debian guidelines.
+  - support of the new style for tv series; see the README.series file.
+  - modified the DISCLAIMER.txt file to be compliant to the debian guidelines.
   - fixed a bug in the get_first_movie.py script.
   - Movie and Person instances are now hashable.
   - modified functions analyze_title and build_title to support tv episodes.
   - use isinstance for type checking.
   - minor updates to the documentation.
+  - the imdbID for Movie and Person instances is now searched if either
+    one of movieID/personID and title/name is provided.
+  - introduced the isSame() method for both Movie and Person classes,
+    useful to compare object, by movieID/personID and accessSystem.
+  - __contains__() methods are now recursive.
 
   [http data access system]
   - fixed a bug regarding currentRole for tv series.
+  - now the BasicMovieParser class handles tv series.
 
   [http and mobile data access systems]
   - fixed a bug retrieving cover url for tv (mini) series.

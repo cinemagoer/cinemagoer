@@ -30,6 +30,7 @@ from types import UnicodeType, TupleType, ListType, MethodType
 
 from imdb import Movie, Person
 from imdb._exceptions import IMDbError, IMDbDataAccessError
+from imdb.utils import build_title, build_name
 
 
 # URLs of the main pages for movies and persons.
@@ -40,8 +41,7 @@ imdbURL_person_main = 'http://akas.imdb.com/name/nm%s/'
 def IMDb(accessSystem='http', *arguments, **keywords):
     """Return an instance of the appropriate class.
     The accessSystem parameter is used to specify the kind of
-    the preferred access system.
-    """
+    the preferred access system."""
     if accessSystem in ('http', 'web', 'html'):
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
@@ -81,8 +81,7 @@ class IMDbBase:
     Movie/Person object.
     
     This class cannot directly fetch data of any kind and so you
-    have to search the "real" code into a subclass.
-    """
+    have to search the "real" code into a subclass."""
 
     # The name of the preferred access system (MUST be overridden
     # in the subclasses).
@@ -148,8 +147,7 @@ class IMDbBase:
         info is the list of sets of information to retrieve.
 
         If specified, modFunct will be the function used by the Movie
-        object when accessing its text fields (like 'plot').
-        """
+        object when accessing its text fields (like 'plot')."""
         movieID = self._normalize_movieID(movieID)
         movieID = self._get_real_movieID(movieID)
         movie = Movie.Movie(movieID=movieID, accessSystem=self.accessSystem)
@@ -167,8 +165,7 @@ class IMDbBase:
 
     def search_movie(self, title, results=20):
         """Return a list of Movie objects for a query for the given title.
-        The results argument is the maximum number of results to return.
-        """
+        The results argument is the maximum number of results to return."""
         try:
             results = int(results)
         except (ValueError, OverflowError):
@@ -193,8 +190,7 @@ class IMDbBase:
         info is the list of sets of information to retrieve.
         
         If specified, modFunct will be the function used by the Person
-        object when accessing its text fields (like 'plot').
-        """
+        object when accessing its text fields (like 'plot')."""
         personID = self._normalize_personID(personID)
         personID = self._get_real_personID(personID)
         person = Person.Person(personID=personID,
@@ -214,8 +210,7 @@ class IMDbBase:
     def search_person(self, name, results=20):
         """Return a list of Person objects for a query for the given name.
 
-        The results argument is the maximum number of results to return.
-        """
+        The results argument is the maximum number of results to return."""
         try:
             results = int(results)
         except (ValueError, OverflowError):
@@ -260,8 +255,7 @@ class IMDbBase:
         info is the list of sets of information to retrieve.
 
         If override is set, the information are retrieved and updated
-        even if they're already in the object.
-        """
+        even if they're already in the object."""
         # XXX: should this be a method of the Movie and Person classes?
         #      NO!  What for Movie and Person instances created by
         #      external functions?
@@ -316,19 +310,64 @@ class IMDbBase:
 
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID (the ID used by the IMDb
-        web server; must be overridden by the subclass.
-        """
+        web server; must be overridden by the subclass."""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
 
     def get_imdbPersonID(self, personID):
         """Translate a personID in a imdbID (the ID used by the IMDb
-        web server; must be overridden by the subclass.
-        """
+        web server; must be overridden by the subclass."""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
+
+    def _searchIMDb(self, params):
+        """Fetch the given web page from the IMDb akas server."""
+        from imdb.parser.http import IMDbURLopener
+        url = 'http://akas.imdb.com/find?%s' % params
+        content = ''
+        try:
+            urlOpener = IMDbURLopener()
+            uopener = urlOpener.open(url)
+            content = uopener.read()
+            uopener.close()
+            urlOpener.close()
+        except (IOError, IMDbDataAccessError):
+            pass
+        # XXX: convert to unicode? I don't think it's needed.
+        return content
+
+    def title2imdbID(self, title):
+        """Translate a movie title (in the plain text data files format)
+        to an imdbID.
+        Try an Exact Primary Title search on IMDb;
+        return None if it's unable to get the imdbID."""
+        if not title: return None
+        import urllib
+        params = 'q=%s&s=pt' % str(urllib.quote_plus(title))
+        content = self._searchIMDb(params)
+        if not content: return None
+        from imdb.parser.http.searchMovieParser import BasicMovieParser
+        mparser = BasicMovieParser()
+        result = mparser.parse(content)
+        if not (result and result.get('data')): return None
+        return result['data'][0][0]
+
+    def name2imdbID(self, name):
+        """Translate a person name in an imdbID.
+        Try an Exact Primary Name search on IMDb;
+        return None if it's unable to get the imdbID."""
+        if not name: return None
+        import urllib
+        params = 'q=%s&s=pn' % str(urllib.quote_plus(name))
+        content = self._searchIMDb(params)
+        if not content: return None
+        from imdb.parser.http.searchPersonParser import BasicPersonParser
+        pparser = BasicPersonParser()
+        result = pparser.parse(content)
+        if not (result and result.get('data')): return None
+        return result['data'][0][0]
 
     def get_imdbID(self, mop):
         """Return the imdbID for the given Movie or Person object."""
@@ -338,35 +377,33 @@ class IMDbBase:
         else:
             as = IMDb(mop.accessSystem)
         if isinstance(mop, Movie.Movie):
-            imdbID = as.get_imdbMovieID(mop.movieID)
+            if mop.movieID is not None:
+                imdbID = as.get_imdbMovieID(mop.movieID)
+            else:
+                imdbID = as.title2imdbID(build_title(mop, canonical=1, ptdf=1))
         elif isinstance(mop, Person.Person):
-            imdbID = as.get_imdbPersonID(mop.personID)
+            if mop.personID is not None:
+                imdbID = as.get_imdbPersonID(mop.personID)
+            else:
+                imdbID = as.name2imdbID(build_name(mop, canonical=1))
         else:
             raise IMDbError, 'object ' + repr(mop) + \
                         ' is not a Movie or Person instance'
         return imdbID
 
     def get_imdbURL(self, mop):
-        """Return the main IMDb URL for the given Movie or Person object."""
-        url = ''
-        if mop.accessSystem == self.accessSystem:
-            as = self
-        else:
-            as = IMDb(mop.accessSystem)
+        """Return the main IMDb URL for the given Movie or Person object,
+        or None if unable to get it."""
+        imdbID = self.get_imdbID(mop)
+        if imdbID is None: return None
         if isinstance(mop, Movie.Movie):
-            if mop.movieID is None: return None
-            imdbID = as.get_imdbMovieID(mop.movieID)
-            if imdbID is None: return ''
-            url = imdbURL_movie_main % imdbID
+            url_firstPart = imdbURL_movie_main
         elif isinstance(mop, Person.Person):
-            if mop.personID is None: return None
-            imdbID = as.get_imdbPersonID(mop.personID)
-            if imdbID is None: return ''
-            url = imdbURL_person_main % imdbID
+            url_firstPart = imdbURL_person_main
         else:
             raise IMDbError, 'object ' + repr(mop) + \
                         ' is not a Movie or Person instance'
-        return url
+        return url_firstPart % imdbID
 
     def get_special_methods(self):
         """Return the special methods defined by the subclass."""

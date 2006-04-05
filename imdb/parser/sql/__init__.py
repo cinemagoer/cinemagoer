@@ -209,7 +209,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         titline = build_title(self._getDict('titles',
                             ('title', 'imdbIndex', 'kind', 'year'),
                             'movieid = %s' % movieID, unique=1), canonical=1)
-        imdbID = self._httpMovieID(titline)
+        imdbID = self._title2imdbID(titline)
         # If the imdbID was retrieved from the web and was not in the
         # database, update the database (ignoring errors, because it's
         # possibile that the current user has not update privileges).
@@ -234,7 +234,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         namline = build_name(self._getDict('names',
                             ('name', 'imdbIndex'),
                             'personid = %s' % personID, unique=1), canonical=1)
-        imdbID = self._httpPersonID(namline)
+        imdbID = self._name2imdbID(namline)
         if imdbID is not None:
             self.query('UPDATE names SET imdbid = %s WHERE personid = %s;' %
                         (imdbID, personID))

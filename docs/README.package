@@ -111,13 +111,21 @@ The search_person(name) and get_person(personID) methods work the same
 way as search_movie(title) and get_movie(movieID).
 
 The get_imdbMovieID(movieID) and get_imdbPersonID(personID) take,
-respectively, a movieID and a personID and returns the relative imdbID.
+respectively, a movieID and a personID and return the relative imdbID;
+it's safer to use the get_imdbID(MovieOrPersonObject) method.
+
+The title2imdbID(title) and name2imdbID(name) take, respectively,
+a movie title (in the plain text data files format) and a person name,
+and return the relative imdbID; when possibile it's safer to use
+the get_imdbID(MovieOrPersonObject) method.
+These functions _always_ need to connect to the IMDb's web site.
 
 The get_imdbID(MovieOrPersonObject) method returns the imdbID for
 the given Movie or Person object.
 
 The get_imdbURL(MovieOrPersonObject) method returns a string with the main
-IMDb URL for the given Movie or Person object.
+IMDb URL for the given Movie or Person object; it tries to do its best
+to retrieve the URL.
 
 The update(MovieOrPersonObject) method takes an instance of a Movie
 or Person class and retrieve every available information.

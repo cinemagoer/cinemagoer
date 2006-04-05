@@ -71,6 +71,10 @@ class IMDbURLopener(FancyURLopener):
         #      so lets fake to be Mozilla.
         #      Wow!  I'm shocked by my total lack of ethic! <g>
         self.addheaders = [('User-agent', 'Mozilla/5.0')]
+        # This class is used also to perform "Exact Primary [Title|Name]"
+        # searches, and so by default the cookie is set.
+        c_header = 'id=%s; uu=%s' % (_cookie_id, _cookie_uu)
+        self.addheaders.append(('Cookie', c_header))
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
         raise IMDbDataAccessError, {'url': 'http:%s' % url,

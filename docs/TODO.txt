@@ -16,6 +16,7 @@ NOTE: it's always time to clean the code! <g>
 * Compatibility with Python 2.2 and previous versions is not assured
   for every data access system (the imdbpy2sql.py script for sure
   requires at least Python 2.3).
+* The analyze_title/build_title functions are somewhat too complex.
 
 
 [searches]

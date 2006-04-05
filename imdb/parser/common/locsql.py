@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
-import re, urllib
+import re
 from types import UnicodeType, StringType, ListType, TupleType, DictType
 from difflib import SequenceMatcher
 from codecs import lookup
@@ -41,67 +41,18 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
     """Base class for methods shared by the 'local' and the 'sql'
     data access systems."""
 
-    def _searchIMDbMoP(self, params):
-        """Fetch the given web page from the IMDb akas server."""
-        from imdb.parser.http import IMDbURLopener
-        ##params = urllib.urlencode(params)
-        url = 'http://akas.imdb.com/find?%s' % params
-        content = ''
-        try:
-            urlOpener = IMDbURLopener()
-            uopener = urlOpener.open(url)
-            content = uopener.read()
-            uopener.close()
-            urlOpener.close()
-        except (IOError, IMDbDataAccessError):
-            pass
-        # XXX: convert to unicode? I don't think it's needed.
-        return content
-
     def _getTitleID(self, title):
         raise NotImplementedError, 'override this method'
 
     def _getNameID(self, name):
         raise NotImplementedError, 'override this method'
 
-    def _httpMovieID(self, titline):
-        """Translate a movieID in an imdbID.
-        Try an Exact Primary Title search on IMDb;
-        return None if it's unable to get the imdbID.
-        """
-        if not titline: return None
-        ##params = {'q': titline, 's': 'pt'}
-        params = 'q=%s&s=pt' % str(urllib.quote_plus(titline))
-        content = self._searchIMDbMoP(params)
-        if not content: return None
-        from imdb.parser.http.searchMovieParser import BasicMovieParser
-        mparser = BasicMovieParser()
-        result = mparser.parse(content)
-        if not (result and result.get('data')): return None
-        return result['data'][0][0]
-
-    def _httpPersonID(self, name):
-        """Translate a personID in an imdbID.
-        Try an Exact Primary Name search on IMDb;
-        return None if it's unable to get the imdbID.
-        """
-        if not name: return None
-        ##params = {'q': name, 's': 'pn'}
-        params = 'q=%s&s=pn' % str(urllib.quote_plus(name))
-        content = self._searchIMDbMoP(params)
-        if not content: return None
-        from imdb.parser.http.searchPersonParser import BasicPersonParser
-        pparser = BasicPersonParser()
-        result = pparser.parse(content)
-        if not (result and result.get('data')): return None
-        return result['data'][0][0]
-
     def _findRefs(self, o, trefs, nrefs):
         """Find titles or names references in strings."""
         if isinstance(o, (UnicodeType, StringType)):
             for title in re_titleRef.findall(o):
                 a_title = analyze_title(title, canonical=1)
-                rtitle = build_title(a_title, canonical=1)
+                rtitle = build_title(a_title, canonical=1, ptdf=1)
                 if trefs.has_key(rtitle): continue
                 movieID = self._getTitleID(rtitle)
                 if movieID is None:

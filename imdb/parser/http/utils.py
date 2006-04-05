@@ -133,6 +133,7 @@ class ParserBase(SGMLParser):
     # The imdbID is a 7-ciphers number.
     re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
     re_imdbIDonly = re.compile(r'\b([0-9]{7})\b')
+    re_airdate = re.compile(r'(.*)\(season (\d+), episode (\d+)\)', re.I)
     _re_imdbIDmatch = re.compile(r'(nm|tt)[0-9]{7}\b')
 
     # It's set when names and titles references must be collected.

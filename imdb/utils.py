@@ -20,8 +20,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+from __future__ import generators
 import re
-from types import UnicodeType, StringType, ListType, TupleType
+from types import UnicodeType, StringType, ListType, TupleType, DictType
 from copy import copy, deepcopy
 from time import strptime, strftime
 
@@ -50,14 +51,14 @@ _sname_suffixes = ('de', 'la', 'der', 'den', 'del', 'y', 'da', 'van',
 def canonicalName(name):
     """Return the given name in canonical "Surname, Name" format.
     It assumes that name is in the 'Name Surname' format."""
-    # XXX: some statistics (over 1698193 names):
-    #      - just a surname:                 36614
-    #      - single surname, single name:  1461621
-    #      - composed surname, composed name: 6126
-    #      - composed surname, single name:  44597
-    #        (2: 39998, 3: 4175, 4: 356)
-    #      - single surname, composed name: 149235
-    #        (2: 143522, 3: 4787, 4: 681, 5: 165)
+    # XXX: some statistics (over 1852406 names):
+    #      - just a surname:                 51921
+    #      - single surname, single name:  1792759
+    #      - composed surname, composed name: 7726
+    #      - composed surname, single name:  55623
+    #        (2: 49259, 3: 5502, 4: 551)
+    #      - single surname, composed name: 186604
+    #        (2: 178315, 3: 6573, 4: 1219, 5: 352)
     # Don't convert names already in the canonical format.
     if name.find(', ') != -1: return name
     sname = name.split(' ')
@@ -133,7 +134,8 @@ def build_name(name_dict, canonical=0):
     If canonical is not set, the name is returned in the normal
     "Name Surname" format.
     """
-    name = name_dict.get('name', '')
+    name = name_dict.get('canonical name') or name_dict.get('name', '')
+    if not name: return u''
     if not canonical:
         name = normalizeName(name)
     imdbIndex = name_dict.get('imdbIndex')
@@ -143,16 +145,35 @@ def build_name(name_dict, canonical=0):
 
 
 # List of articles.
-# XXX: are 'agapi mou' and  'liebling' articles?
-# XXX: removed 'en', 'to', 'as', 'et', 'des', 'al', 'egy', 'ye', 'da'
-#      and "'n" because they are more commonly used as non-articles
-#      at the begin of a title.
-_articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el', "l'", 'il',
-            'das', 'les', 'i', 'o', 'ein', 'un', 'los', 'de', 'an',
-            'una', 'eine', 'las', 'den', 'gli', 'het', 'lo',
-            'os', 'az', 'ha-', 'een', 'det', 'oi', 'ang', 'ta',
-            'al-', 'dem', 'uno', "un'", 'ett', 'mga', u'\xcf', u'\xc7',
-            'eines', 'els', u'\xd4\xef', u'\xcf\xe9')
+# XXX: Managing titles in a lot of different languages, a function to recognize
+# an initial article can't be perfect; sometimes we'll stumble upon a short
+# word that is an article in some language, but it's not in another; in these
+# situations we have to choose if we want to interpret this little word
+# as an article or not (remember that we don't know what the original language
+# of the title was).
+# Example: 'da' is an article in (I think) Dutch and it's used as an article
+# even in some American slangs.  Unfortunately it's also a preposition in
+# Italian, and it's widely used in Mandarin (for whatever it means!).
+# Running a script over the whole list of titles (and aliases), I've found
+# that 'da' is used as an article only 20 times, and as another thing 255
+# times, so I've decided to _always_ consider 'da' as a non article.
+#
+# Here is a list of words that are _never_ considered as articles, complete
+# with the cound of times they are used in a way or another:
+# 'en' (314 vs 507), 'to' (236 vs 589), 'as' (183 vs 231), 'et' (67 vs 79),
+# 'des' (69 vs 123), 'al' (57 vs 247), 'egy' (28 vs 32), 'ye' (14 vs 55),
+# 'da' (20 vs 255), "'n" (7 vs 12)
+#
+# I've left in the list 'i' (1614 vs 1707) and 'uno' (49 vs 51)
+# I'm not sure what '-al' is, and so I've left it out...
+#
+# List of articles:
+_articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el',
+            "l'", 'il', 'das', 'les', 'o', 'ein', 'i', 'un', 'los', 'de',
+            'an', 'una', 'las', 'eine', 'den', 'gli', 'het', 'os', 'lo',
+            'az', 'det', 'ha-', 'een', 'ang', 'oi', 'ta', 'al-', 'dem',
+            'mga', 'uno', "un'", 'ett', u'\xcf', 'eines', u'\xc7', 'els',
+            u'\xd4\xef', u'\xcf\xe9')
 
 # Articles in a dictionary.
 _articlesDict = dict([(x, x) for x in _articles])
@@ -204,24 +225,34 @@ def _split_series_episode(title):
         "The Series" (2004) {An Episode (2005) (#season.episode)}"""
     series_title = ''
     episode_or_year = ''
-    if title[0:1] == '"':
+    if title[-1:] == '}':
+        # Title of the episode, as in the plain text data files.
+        begin_eps = title.rfind('{')
+        if begin_eps == -1: return '', ''
+        series_title = title[:begin_eps].rstrip()
+        # episode_or_year is returned with the {...}
+        episode_or_year = title[begin_eps:]
+        if episode_or_year[:12] == '{SUSPENDED}}': return '', ''
+    # XXX: works only with tv series; it's still unclear whether
+    #      IMDb will support episodes for tv mini series and tv movies...
+    elif title[0:1] == '"':
         second_quot = title[1:].find('"') + 2
         if second_quot != 1: # a second " was found.
             episode_or_year = title[second_quot:].lstrip()
             first_char = episode_or_year[0:1]
-            if not first_char: return series_title, episode_or_year
+            if not first_char: return '', ''
             if first_char != '(':
                 # There is not a (year) but the title of the episode;
                 # that means this is an episode title, as returned by
                 # the web server.
                 series_title = title[:second_quot]
-            elif episode_or_year[-1:] == '}':
-                    # Title of the episode, as in the plain text data files.
-                    begin_eps = episode_or_year.find('{')
-                    if begin_eps == -1: return series_title, episode_or_year
-                    series_title = title[:second_quot+begin_eps].rstrip()
-                    # episode_or_year is returned with the {...}
-                    episode_or_year = episode_or_year[begin_eps:]
+            ##elif episode_or_year[-1:] == '}':
+            ##        # Title of the episode, as in the plain text data files.
+            ##        begin_eps = episode_or_year.find('{')
+            ##        if begin_eps == -1: return series_title, episode_or_year
+            ##        series_title = title[:second_quot+begin_eps].rstrip()
+            ##        # episode_or_year is returned with the {...}
+            ##        episode_or_year = episode_or_year[begin_eps:]
     return series_title, episode_or_year
 
 
@@ -428,14 +459,15 @@ def build_title(title_dict, canonical=None,
                 episode_title += ')'
             episode_title = '{%s}' % episode_title
         return '%s %s' % (pre_title, episode_title)
-        #series_title = episode_of.get('canonical title')
-        #if series_title is None:
-        #    series_title = episode_of.get('title', '')
-        #if not canonicalSeries:
-        #    series_title = normalizeTitle(series_title)
-        #pre_title = '"%s"' % series_title
-        #canonical = canonicalEpisode
-    title = title_dict.get('title', '')
+        ##series_title = episode_of.get('canonical title')
+        ##if series_title is None:
+        ##    series_title = episode_of.get('title', '')
+        ##if not canonicalSeries:
+        ##    series_title = normalizeTitle(series_title)
+        ##pre_title = '"%s"' % series_title
+        ##canonical = canonicalEpisode
+    title = title_dict.get('canonical title') or title_dict.get('title', '')
+    if not title: return u''
     if not canonical:
         title = normalizeTitle(title)
     if pre_title:
@@ -560,6 +592,34 @@ def modifyStrings(o, modFunct, titlesRefs, namesRefs):
             elif isinstance(v, (ListType, TupleType)):
                 modifyStrings(o[i], modFunct, titlesRefs, namesRefs)
     return o
+
+
+def flatten(seq, to_descend=(ListType, DictType, TupleType),
+            yieldDictKeys=0, scalar=None):
+    """Iterate over nested lists and dictionaries; to_descend is a type
+    of a tuple of types to be considered non-scalar; if yieldDictKeys is
+    true, also dictionaries' keys are yielded; if scalar is not None, only
+    items of the given type(s) are yielded."""
+    if not isinstance(seq, to_descend):
+        if scalar is None or isinstance(seq, scalar):
+            yield seq
+    else:
+        if isinstance(seq, DictType):
+            if yieldDictKeys:
+                # Yield also the keys of the dictionary.
+                for key in seq.iterkeys():
+                    for k in flatten(key, to_descend=to_descend,
+                                yieldDictKeys=yieldDictKeys, scalar=scalar):
+                        yield k
+            for value in seq.itervalues():
+                for v in flatten(value, to_descend=to_descend,
+                                yieldDictKeys=yieldDictKeys, scalar=scalar):
+                    yield v
+        else:
+            for item in seq:
+                for i in flatten(item, to_descend=to_descend,
+                                yieldDictKeys=yieldDictKeys, scalar=scalar):
+                    yield i
 
 
 class _Container:
@@ -704,6 +764,11 @@ class _Container:
         else:
             s4h = repr(self)
         return hash(s4h)
+
+    def isSame(self, other):
+        if not isinstance(other, self.__class__): return 0
+        if hash(self) == hash(other): return 1
+        return 0
 
     def __len__(self):
         return len(self.data)

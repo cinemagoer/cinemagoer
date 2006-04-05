@@ -47,7 +47,7 @@
 #define DONTCOMPARE_NULL    0.0
 #define DONTCOMPARE_SAME    1.0
 #define COMPARE             2.0
-#define STRING_MAXLENDIFFER 0.75
+#define STRING_MAXLENDIFFER 0.7
 
 /* As of 26 Mar 2006, the longest title is 280 chars. */
 #define MXLINELEN   512
@@ -59,23 +59,21 @@
 
 
 /* List of articles.
-   XXX: are "agapi mou" and  "liebling" articles? */
+   XXX: see comments about articles in the imdb.utils module. */
 #define ART_COUNT    45
 char *articles[ART_COUNT] = {"the ", "la ", "a ", "die ", "der ", "le ", "el ",
-            "l'", "il ", "das ", "les ", "i ", "o ", "ein ", "un ", "los ",
-            "de ", "an ", "una ", "eine ", "las ", "den ", "gli ", "het ",
-            "lo ", "os ", "az ", "ha-", "een ", "det ",
-            "oi ", "ang ", "ta ", "al-", "dem ",
-            "uno ", "un'", "ett ", "mga ", "Ο ", "Η ",
-            "eines ", "els ", "Το ", "Οι "};
+        "l'", "il ", "das ", "les ", "o ", "ein ", "i ", "un ", "los ", "de ",
+        "an ", "una ", "las ", "eine ", "den ", "gli ", "het ","os ", "lo ",
+        "az ", "det ","ha-", "een ", "ang ", "oi ", "ta ", "al-", "dem ",
+        "mga ", "uno ", "un'", "ett ", "Ο ", "eines ", "Η ","els ", "Το ",
+        "Οι "};
 
 char *articlesNoSP[ART_COUNT] = {"the", "la", "a", "die", "der", "le", "el",
-           "l'", "il", "das", "les", "i", "o", "ein", "un", "los",
-           "de", "an", "una", "eine", "las", "den", "gli", "het",
-           "lo", "os", "az", "ha-", "een", "det",
-           "oi", "ang", "ta", "al-", "dem",
-           "uno", "un'", "ett", "mga", "Ο", "Η",
-           "eines", "els", "Το", "Οι"};
+        "l'", "il", "das", "les", "o", "ein", "i", "un", "los", "de",
+        "an", "una", "las", "eine", "den", "gli", "het", "os", "lo",
+        "az", "det","ha-", "een", "ang", "oi", "ta", "al-", "dem",
+        "mga", "uno", "un'", "ett", "Ο", "eines", "Η", "els", "Το",
+        "Οι"};
 
 
 //*****************************************

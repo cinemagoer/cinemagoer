@@ -488,6 +488,7 @@ class HTMLSeriesParser(ParserBase):
         self._in_misc_info = 0
         self._misc_info = u''
         self._in_i = 0
+        self._got_i_info = 0
 
     def get_data(self):
         """Return the dictionary."""
@@ -514,7 +515,9 @@ class HTMLSeriesParser(ParserBase):
         self._cur_series = None
         self._series_id = None
 
-    def start_li(self, attrs): self._in_li = 1
+    def start_li(self, attrs):
+        self._in_li = 1
+        self._got_i_info = 0
 
     def end_li(self):
         self._in_li = 0
@@ -539,15 +542,21 @@ class HTMLSeriesParser(ParserBase):
                                     e['year'] = syear
                 rolei = minfo.find(' - ')
                 if rolei != -1:
-                    role = ''
-                    role = minfo[rolei+3:].strip()
-                    notei = role.rfind('(')
-                    note = ''
-                    if notei != -1 and role and role[-1] == ')':
-                        note = role[notei:]
-                        role = role[:notei].strip()
-                    e.notes = note
-                    e.currentRole = role
+                    if not self._got_i_info:
+                        role = ''
+                        role = minfo[rolei+3:].strip()
+                        notei = role.rfind('(')
+                        note = ''
+                        if notei != -1 and role and role[-1] == ')':
+                            note = role[notei:]
+                            role = role[:notei].strip()
+                        e.notes = note
+                        e.currentRole = role
+                    else:
+                        randn = minfo[rolei+3:].strip().split()
+                        note = '[%s]' % randn[0]
+                        note += ' '.join(randn[1:])
+                        e.notes = note
                 self._episodes.setdefault(self._cur_series, []).append(e)
             self._cur_episode_title = u''
             self._episode_id = None
@@ -599,8 +608,9 @@ class HTMLSeriesParser(ParserBase):
         elif self._in_misc_info:
             # Handles roles like "director".
             if self._in_i:
-                # XXX: put these info in the "notes" property?
+                # Put these info in the "notes" property.
                 data = data.lower()
+                self._got_i_info = 1
             self._misc_info += data
 
 

@@ -24,7 +24,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 from types import UnicodeType, ListType, TupleType
 from copy import deepcopy
 
-from imdb.utils import analyze_name, build_name, normalizeName, _Container
+from imdb.utils import analyze_name, build_name, normalizeName, \
+                        flatten, _Container
 
 
 class Person(_Container):
@@ -152,14 +153,12 @@ class Person(_Container):
         from Movie import Movie
         if not isinstance(item, Movie):
             return 0
-        for i in self.data.values():
-            if isinstance(i, (ListType, TupleType)):
-                for j in i:
-                    if isinstance(j, Movie) and item.isSameTitle(j):
-                        return 1
+        for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
+            if item.isSame(m):
+                return 1
         return 0
 
-    def isSamePerson(self, other):
+    def isSameName(self, other):
         """Return true if two persons have the same name and imdbIndex
         and/or personID.
         """
@@ -174,6 +173,7 @@ class Person(_Container):
                 self.personID and self.personID == other.personID:
             return 1
         return 0
+    isSamePerson = isSameName # XXX: just for compatibility.
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Person instance."""

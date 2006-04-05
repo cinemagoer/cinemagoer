@@ -74,8 +74,6 @@ class HTMLMovieParser(ParserBase):
     # Do not gather names and titles references.
     getRefs = 0
 
-    re_airdate = re.compile(r'(.*)\(season (\d+), episode (\d+)\)', re.I)
-
     def _init(self):
         self._movie_data = {}
         # If true, we're parsing the "maindetails" page; if false,

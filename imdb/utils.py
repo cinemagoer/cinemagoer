@@ -22,12 +22,43 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from __future__ import generators
 import re
+import string
 from types import UnicodeType, StringType, ListType, TupleType, DictType
 from copy import copy, deepcopy
 from time import strptime, strftime
 
 from imdb._exceptions import IMDbParserError
 
+#generate translation table only once. used to translate into soundex numbers
+table = string.maketrans('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123012002245501262301020201230120022455012623010202')
+
+def soundex(str):
+    "Return the soundex value to a string argument."
+
+    if not str:
+        return "0000" # could be Z000 for compatibility with other implementations
+
+    # must be uppercase
+    first_char = string.upper(str[0])
+
+    str = string.translate(str, table)
+
+    # remove duplicate numbers in-a-row
+    str2 = " "
+    for x in str:
+        if x != str2[-1]:
+            str2 = str2 + x
+
+    # remove all 0s
+    str2 = string.replace(str2,"0","")
+
+    # replace the " " and the first nubmer with the first letter
+    str2 = first_char + str2[2:]
+
+    # pad with zeros
+    str2 = str2+"0"*(4-len(str2))
+
+    return str2[:4]
 
 # The regular expression for the "long" year format of IMDb, like
 # "(1998)" and "(1986/II)", where the optional roman number (that I call
@@ -105,7 +136,7 @@ def analyze_name(name, canonical=0):
     keys, from the given string.
     If canonical is true, it tries to convert the  name to
     the canonical "Surname, Name" format.
-    
+
     raise an IMDbParserError exception if the name is not valid.
     """
     original_n = name
@@ -271,7 +302,7 @@ def analyze_title(title, canonical=None,
     used to distinguish between movies with the same title and year).
     If canonical is true, the title is converted to the canonical
     format.
-    
+
     raise an IMDbParserError exception if the title is not valid.
     """
     if canonical is not None:
@@ -710,7 +741,7 @@ class _Container:
     def has_current_info(self, val):
         """Return true if the given set of information is in the list."""
         return val in self.current_info
-    
+
     def set_mod_funct(self, modFunct):
         """Set the fuction used to modify the strings."""
         if modFunct is None: modFunct = modClearRefs
@@ -719,7 +750,7 @@ class _Container:
     def update_titlesRefs(self, titlesRefs):
         """Update the dictionary with the references to movies."""
         self.titlesRefs.update(titlesRefs)
-    
+
     def get_titlesRefs(self):
         """Return the dictionary with the references to movies."""
         return self.titlesRefs

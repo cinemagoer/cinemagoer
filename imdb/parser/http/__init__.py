@@ -76,6 +76,44 @@ class IMDbURLopener(FancyURLopener):
         c_header = 'id=%s; uu=%s' % (_cookie_id, _cookie_uu)
         self.addheaders.append(('Cookie', c_header))
 
+    def retrieve_unicode(self, url):
+        """Retrieves the given URL, and returns a unicode string,
+        trying to guess the encoding of the data (assuming latin_1
+        by default)"""
+        encode = None
+        try:
+            uopener = self.open(url)
+            content = uopener.read()
+            server_encode = uopener.info().getparam('charset')
+            # look at the content-type HTML meta tag.
+            if server_encode is None and content:
+                first_bytes = content[:512]
+                begin_h = first_bytes.find('text/html; charset=')
+                if begin_h != -1:
+                    end_h = first_bytes[19+begin_h:].find('"')
+                    if end_h != -1:
+                        server_encode = first_bytes[19+begin_h:19+begin_h+end_h]
+            if server_encode:
+                try:
+                    if lookup(server_encode):
+                        encode = server_encode
+                except (LookupError, ValueError, TypeError):
+                    pass
+            uopener.close()
+            self.close()
+        except IOError, e:
+            raise IMDbDataAccessError, {'errcode': e.errno,
+                                        'errmsg': str(e.strerror),
+                                        'url': url,
+                                        'proxy': self.proxies.get('http', '')}
+        if encode is None:
+            encode = 'latin_1'
+            # The detection of the encoding is error prone...
+            import warnings
+            warnings.warn('Unable to detect the encoding of the retrieved '
+                        'page [%s]; falling back to default latin1.' % encode)
+        return unicode(content, encode, 'replace')
+
     def http_error_default(self, url, fp, errcode, errmsg, headers):
         raise IMDbDataAccessError, {'url': 'http:%s' % url,
                                     'errcode': errcode,
@@ -182,33 +220,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def _retrieve(self, url):
         """Retrieve the given URL."""
-        encode = 'latin_1'
-        try:
-            uopener = self.urlOpener.open(url)
-            content = uopener.read()
-            server_encode = uopener.info().getparam('charset')
-            # look at the content-type HTML meta tag.
-            if server_encode is None and content:
-                first_bytes = content[:512]
-                begin_h = first_bytes.find('text/html; charset=')
-                if begin_h != -1:
-                    end_h = first_bytes[19+begin_h:].find('"')
-                    if end_h != -1:
-                        server_encode = first_bytes[19+begin_h:19+begin_h+end_h]
-            if server_encode:
-                try:
-                    if lookup(server_encode):
-                        encode = server_encode
-                except (LookupError, ValueError, TypeError):
-                    pass
-            uopener.close()
-            self.urlOpener.close()
-        except IOError, e:
-            raise IMDbDataAccessError, {'errcode': e.errno,
-                                        'errmsg': str(e.strerror),
-                                        'url': url,
-                                        'proxy': self.get_proxy()}
-        return unicode(content, encode, 'replace')
+        return self.urlOpener.retrieve_unicode(url)
 
     def _search_movie(self, title, results):
         # The URL of the query.

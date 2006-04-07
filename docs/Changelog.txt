@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.5.cvs20060402 "Melissa P." (02 Apr 2006)
+* What's the new in release 2.5.cvs20060406 "Melissa P." (06 Apr 2006)
   [general]
   - support of the new style for tv series; see the README.series file.
   - modified the DISCLAIMER.txt file to be compliant to the debian guidelines.

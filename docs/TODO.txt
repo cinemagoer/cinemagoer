@@ -7,13 +7,10 @@ NOTE: it's always time to clean the code! <g>
 
 
 [general]
-* Searching names and titles with "local" and "sql" data access systems
-  is somewhat a mess: the various functions should return/manage
-  information in a more coherent way.
 * Write better summary() methods for Movie and Person classes.
 * Some portions of code are poorly commented.
 * The documentation is written in my funny English.
-* Compatibility with Python 2.2 and previous versions is not assured
+* Compatibility with Python 2.2 and previous versions is no more assured
   for every data access system (the imdbpy2sql.py script for sure
   requires at least Python 2.3).
 * The analyze_title/build_title functions are somewhat too complex.
@@ -21,15 +18,11 @@ NOTE: it's always time to clean the code! <g>
 
 [searches]
 * Support advanced query for movie titles/person names.
-* Better support for tv series episodes.
 
 
 [Movie objects]
 * Define invariable names for the sections (the keys you use to access
   info stored in a Movie object).
-* Should the __contains__() methods descend into nested lists
-  and dictionaries?
-  Answer: YES, especially with tv series episodes support!
 * Should a movie object automatically build a Movie object, when
   a 'episode of' dictionary is in the data?
 * For TV series the list of directors/writers returned by 'local'
@@ -52,6 +45,7 @@ NOTE: it's always time to clean the code! <g>
   movies/shows where they were not acting.
   In 'local' and 'sql', these movies/shows are listed in the
   "actor" or "actress" list.
+  Check if this is still true, with the new IMDb's schema.
 
 
 [http data access system]
@@ -94,7 +88,6 @@ NOTE: it's always time to clean the code! <g>
 * Some files are not considered: mpaa-ratings-reasons.list,
   miscellaneous-companies.list (but they're used by the 'sql' data
   access system).
-* methods like get_imdbMovieID() should use the mobile access system?
 * You need the mkdb executable from the moviedb program to generate the
   database/index files; moviedb is not open source software (although
   it can be downloaded and used without paying money).

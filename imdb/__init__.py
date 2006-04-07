@@ -323,19 +323,15 @@ class IMDbBase:
         raise NotImplementedError, 'override this method'
 
     def _searchIMDb(self, params):
-        """Fetch the given web page from the IMDb akas server."""
+        """Fetch the given search page from the IMDb akas server."""
         from imdb.parser.http import IMDbURLopener
         url = 'http://akas.imdb.com/find?%s' % params
-        content = ''
+        content = u''
         try:
             urlOpener = IMDbURLopener()
-            uopener = urlOpener.open(url)
-            content = uopener.read()
-            uopener.close()
-            urlOpener.close()
+            content = urlOpener.retrieve_unicode(url)
         except (IOError, IMDbDataAccessError):
             pass
-        # XXX: convert to unicode? I don't think it's needed.
         return content
 
     def title2imdbID(self, title):

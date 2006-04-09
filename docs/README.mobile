@@ -32,7 +32,7 @@ package; you don't need it if your system does not have the
 MySQLdb module.
 
 If both DO_LOCAL and DO_SQL are set to 0, the parser.common package
-is not installed, and the "ratober" C module is not compiled.
+is not installed, and the "cutils" C module is not compiled.
 
 If the DO_SCRIPTS variable is set to 0, the example scripts in
 the ./bin/ directory are not installed, saving about 65Kb.

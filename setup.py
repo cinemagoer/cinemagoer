@@ -21,7 +21,7 @@ DO_LOCAL = 1
 DO_SQL = 1
 
 # XXX NOTE: setting at least one of DO_LOCAL and DO_SQL to 1,
-# the "ratober" C module will be compiled; if you don't have a C compiler
+# the "cutils" C module will be compiled; if you don't have a C compiler
 # in your environment, pure-python versions of the functions in the
 # C module will be used.  Beware the they are extremely slow, especially
 # using the "local" data access system.
@@ -34,7 +34,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like "-cvsYearMonthDay-OptionalChar".
-version = '2.5.cvs20060406'
+version = '2.5.cvs20060409'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -90,9 +90,9 @@ params = {'name': 'IMDbPY',
 
 if DO_LOCAL or DO_SQL:
     params['packages'] = params['packages'] + ['imdb.parser.common']
-    ratober = Extension('imdb.parser.common.ratober',
-                        ['imdb/parser/common/ratober.c'])
-    params['ext_modules'] = [ratober]
+    cutils = Extension('imdb.parser.common.cutils',
+                        ['imdb/parser/common/cutils.c'])
+    params['ext_modules'] = [cutils]
 
 if DO_LOCAL:
     params['packages'] = params['packages'] + ['imdb.parser.local']
@@ -125,7 +125,7 @@ try:
 except SystemExit, e:
     print '    WARNING ! WARNING ! WARNING ! WARNING ! WARNING'
     print '    WARNING: '
-    print '    WARNING: Unable to compile the "ratober" C module.'
+    print '    WARNING: Unable to compile the "cutils" C module.'
     print '    WARNING: Error message:'
     print '    WARNING:     "%s"' % str(e)
     print '    WARNING: '

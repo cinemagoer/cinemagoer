@@ -42,6 +42,40 @@ from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 
+try:
+    from imdb.parser.common.cutils import soundex
+except ImportError:
+    import warnings
+    warnings.warn('Unable to import the cutils.soundex function.'
+                    '  Searches of movie titles and person names will be'
+                    ' a bit slower.')
+    import string
+
+    _all_chars = string.maketrans('', '')
+    _keep_chars = 'bcdfgjklmnpqrstvxzBCDFGJKLMNPQRSTVXZ'
+    _del_nonascii = _all_chars.translate(_all_chars, _keep_chars)
+    _soundTable = string.maketrans(_keep_chars, 2*'123122245512623122')
+
+    def soundex(s):
+        """Return the soundex code for the given string."""
+        # Maximum length of the soundex code.
+        SOUNDEX_LEN = 5
+        # Remove everything but ascii chars.
+        s = s.translate(_all_chars, _del_nonascii)
+        if not s: return '0'
+        s = s.upper()
+        first_char = s[0]
+        # Use the _soundTable to translate the string in the soundexCode.
+        s = s.translate(_soundTable)
+        # Remove duplicated consecutive digits.
+        sl = [s[0]]
+        sl_append = sl.append
+        for i in xrange(1, len(s)):
+            if s[i] != s[i-1]:
+                sl_append(s[i])
+        s = ''.join(sl)
+        return first_char + s[1:SOUNDEX_LEN]
+
 _litlist = ['screenplay/teleplay', 'novel', 'adaption', 'book',
             'production process protocol', 'interviews',
             'printed media reviews', 'essays', 'other literature']

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.5.cvs20060406 "Melissa P." (06 Apr 2006)
+* What's the new in release 2.5.cvs20060409 "Inside man" (09 Apr 2006)
   [general]
   - support of the new style for tv series; see the README.series file.
   - modified the DISCLAIMER.txt file to be compliant to the debian guidelines.
@@ -15,6 +15,7 @@
   - introduced the isSame() method for both Movie and Person classes,
     useful to compare object, by movieID/personID and accessSystem.
   - __contains__() methods are now recursive.
+  - renamed the "ratober" C module to "cutils".
 
   [http data access system]
   - fixed a bug regarding currentRole for tv series.
@@ -27,9 +28,13 @@
   - fixed a bug with tv series titles.
 
   [local data access system]
-  - new get_episodes function in the ratober C module.
+  - new get_episodes function in the cutils/ratober C module.
   - search functions (both C and pure python) are now faster and
     support tv series episodes.
+
+  [sql data access system]
+  - added in the cutils C module the soundex function, and a fall back
+    Python only version in the parser.sql package.
 
 
 * What's the new in release 2.4 "Munich" (09 Feb 2006)

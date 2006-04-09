@@ -43,12 +43,12 @@ from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                                         titleVariations, nameVariations
 
 try:
-    from imdb.parser.common.ratober import get_episodes
+    from imdb.parser.common.cutils import get_episodes
 except ImportError:
     import warnings
-    warnings.warn('Unable to import the ratober.get_episodes function.'
+    warnings.warn('Unable to import the cutils.get_episodes function.'
                     '  Retrieving episodes list of tv series will be'
-                    '  a bit slower.')
+                    ' a bit slower.')
 
     def get_episodes(movieID, indexFile, keyFile):
         if movieID < 0:
@@ -86,12 +86,12 @@ except ImportError:
         return results
 
 try:
-    from imdb.parser.common.ratober import search_name
+    from imdb.parser.common.cutils import search_name
 
     def _scan_names(keyFile, name1, name2, name3, results=0):
-        """Scan the given file, using the ratober.search_name
+        """Scan the given file, using the cutils.search_name
         C function, for name variations."""
-        # the search_name function in the ratober C module manages
+        # the search_name function in the cutils C module manages
         # latin_1 encoded strings.
         name1, name2, name3 = [x.encode('latin_1', 'replace')
                                 for x in name1, name2, name3]
@@ -103,7 +103,7 @@ try:
         return res
 except ImportError:
     import warnings
-    warnings.warn('Unable to import the ratober.search_name function.'
+    warnings.warn('Unable to import the cutils.search_name function.'
                     '  Searching names using the "local" data access system'
                     ' will be REALLY slow.')
 
@@ -128,10 +128,10 @@ except ImportError:
                             name1, name2, name3, results)
 
 try:
-    from imdb.parser.common.ratober import search_title
+    from imdb.parser.common.cutils import search_title
 
     def _scan_titles(keyFile, title1, title2, title3, results=0):
-        """Scan the given file, using the ratober.search_title
+        """Scan the given file, using the cutils.search_title
         C function, for title variations."""
         title1, title2, title3 = [x.encode('latin_1', 'replace')
                                     for x in title1, title2, title3]
@@ -143,7 +143,7 @@ try:
         return res
 except ImportError:
     import warnings
-    warnings.warn('Unable to import the ratober.search_title function.'
+    warnings.warn('Unable to import the cutils.search_title function.'
                     '  Searching titles using the "local" data access system'
                     ' will be REALLY slow.')
 

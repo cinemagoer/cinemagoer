@@ -42,7 +42,7 @@ imdb (package)
        |
        +-> common (package)
             |
-            +-> ratober (C module)
+            +-> cutils (C module)
             +-> locsql
 
 
@@ -85,11 +85,18 @@ in parser.http, with some method overridden to be many times faster (from
 much CPU power.
 
 The parser.common package contains code common to different packages;
-so far there're only the locsql and the ratober modules, both used by
+so far there're only the locsql and the cutils modules, both used by
 "local" and "sql" data access systems.
-The ratober module is a C module, used to search names.keys and titles.key
-files from the "local" data access system.  It also contains a C function
-used to speed up the "sql" data access system.
+The cutils module is a C module containing C function to speed up the
+IMDbPY package; for every function defined here, a (slower!) pure Python
+fall back is provided where it's needed.
+So far in the cutils module are included functions used to search
+names.keys and titles.key files by the "local" data access system,
+a function to get a list of episodes titles, provided the movieID
+of a tv series (scanning titles.key), a function to calculate the
+Ratcliff-Obershelp similarity of two Python strings and another
+function to return the soundex code of a given Python string.
+
 
 The helpers module contains functions and other goodies not directly
 used by the IMDbPY package, but that can be useful to develop

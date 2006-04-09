@@ -167,13 +167,13 @@ def nameVariations(name):
 
 
 try:
-    from ratober import ratcliff as _ratcliff
+    from cutils import ratcliff as _ratcliff
     def ratcliff(s1, s2, sm):
         return _ratcliff(s1.encode('latin_1', 'replace'),
                         s2.encode('latin_1', 'replace'))
 except ImportError:
     import warnings
-    warnings.warn('Unable to import the ratober.ratcliff function.'
+    warnings.warn('Unable to import the cutils.ratcliff function.'
                     '  Searching names and titles using the "sql" and "local"'
                     ' data access systems will be slower.')
 

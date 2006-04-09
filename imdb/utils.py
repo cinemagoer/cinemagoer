@@ -29,37 +29,6 @@ from time import strptime, strftime
 
 from imdb._exceptions import IMDbParserError
 
-#generate translation table only once. used to translate into soundex numbers
-table = string.maketrans('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123012002245501262301020201230120022455012623010202')
-
-def soundex(str):
-    "Return the soundex value to a string argument."
-
-    if not str:
-        return "0000" # could be Z000 for compatibility with other implementations
-
-    # must be uppercase
-    first_char = string.upper(str[0])
-
-    str = string.translate(str, table)
-
-    # remove duplicate numbers in-a-row
-    str2 = " "
-    for x in str:
-        if x != str2[-1]:
-            str2 = str2 + x
-
-    # remove all 0s
-    str2 = string.replace(str2,"0","")
-
-    # replace the " " and the first nubmer with the first letter
-    str2 = first_char + str2[2:]
-
-    # pad with zeros
-    str2 = str2+"0"*(4-len(str2))
-
-    return str2[:4]
-
 # The regular expression for the "long" year format of IMDb, like
 # "(1998)" and "(1986/II)", where the optional roman number (that I call
 # "imdbIndex" after the slash is used for movies with the same title

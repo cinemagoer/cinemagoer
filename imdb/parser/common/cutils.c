@@ -1,14 +1,30 @@
 /*
- * Functions used to search for a movie title or a person name
- * in titles or names ".key" files of an installation of the
- * IMDb's plain text data files.
- * Another function implements a simple Ratcliff-Obershelp comparison
- * amongst Python strings.
+ * cutils.c module.
+ * 
+ * Miscellaneous functions to speed up the IMDbPY package.
+ * 
+ * Contents:
+ * - pyratcliff():
+ *   Function that implements the Ratcliff-Obershelp comparison
+ *   amongst Python strings.
+ *
+ * - search_title(), search_name():
+ *   Functions used to search for a movie title or a person name
+ *   in titles or names ".key" files of an installation of the
+ *   IMDb's plain text data files.
+ *
+ * - get_episodes():
+ *   Given the movieID of a tv series, scans the titles.key file
+ *   and returns a list of episode titles.
+ *
+ * - pysoundex():
+ *   Return a soundex code string, for the given string.
  *
  * Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
  * Released under the GPL license.
  * 
- * Heavily based on code from the "simil" Python module.
+ * NOTE: The Ratcliff-Obershelp part was heavily based on code from the
+ * "simil" Python module.
  * The "simil" module is copyright of Luca Montecchiani <cbm64 _at_ inwind.it>
  * and can be found here: http://spazioinwind.libero.it/montecchiani/
  * It was released under the GPL license; original comments are leaved
@@ -16,6 +32,8 @@
  * 
  */
 
+
+/*========== Ratcliff-Obershelp ==========*/
 /*****************************************************************************
  *
  * Stolen code from : 
@@ -203,6 +221,7 @@ pyratcliff(PyObject *self, PyObject *pArgs)
 }
 
 
+/*========== titles and names searches ==========*/
 /* Search for the 'name1', 'name2' and 'name3' name variations
  * in the key file keyFileName, returning at most nrResults results.
  *
@@ -474,6 +493,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 }
 
 
+/*========== tv series episodes ==========*/
 /* Return a list of pairs (movieID, "long imdb episode title") with
  * every episode of the given series. */
 static PyObject*
@@ -557,7 +577,67 @@ get_episodes(PyObject *self, PyObject *pArgs)
 }
 
 
-static PyMethodDef ratober_methods[] = {
+/*========== soundex ==========*/
+/* Max length of the soundex code to output (an uppercase char and
+ * _at most_ 4 digits). */
+#define SOUNDEX_LEN 5
+
+/* Group Number Lookup Table  */
+static char soundTable[26] =
+{ 0 /* A */, '1' /* B */, '2' /* C */, '3' /* D */, 0 /* E */, '1' /* F */,
+ '2' /* G */, 0 /* H */, 0 /* I */, '2' /* J */, '2' /* K */, '4' /* L */,
+ '5' /* M */, '5' /* N */, 0 /* O */, '1' /* P */, '2' /* Q */, '6' /* R */,
+ '2' /* S */, '3' /* T */, 0 /* U */, '1' /* V */, 0 /* W */, '2' /* X */,
+  0 /* Y */, '2' /* Z */};
+
+static PyObject*
+pysoundex(PyObject *self, PyObject *pArgs)
+{
+    int i, j, n;
+    char *s = NULL;
+    char word[MXLINELEN];
+    char soundCode[SOUNDEX_LEN+1];
+    char c;
+
+    if (!PyArg_ParseTuple(pArgs, "s", &s))
+        return NULL;
+
+    j = 0;
+    n = strlen(s);
+
+    /* Convert to uppercase and exclude non-ascii chars. */
+    for (i = 0; i < n; i++) {
+        c = toupper(s[i]);
+        if (c < 91 && c > 64) {
+            word[j] = c;
+            j++;
+        }
+    }
+    word[j] = '\0';
+
+    n = strlen(word);
+    if (n == 0) {
+        /* If the string is empty, returns "0". */
+        return Py_BuildValue("s", "0");
+    }
+    soundCode[0] = word[0];
+
+    /* Build the soundCode string. */
+    j = 1;
+    for (i = 1; j < SOUNDEX_LEN && i < n; i++) {
+        c = soundTable[(word[i]-65)];
+        /* Compact zeroes and equal consecutive digits ("12234112"->"123412") */
+        if (c != 0 && c != soundCode[j-1]) {
+                soundCode[j++] = c;
+        }
+    }
+    soundCode[j] = '\0';
+
+    return Py_BuildValue("s", soundCode);
+}
+
+
+static PyMethodDef cutils_methods[] = {
     {"ratcliff", pyratcliff,
         METH_VARARGS, "Ratcliff-Obershelp similarity."},
     {"search_name", (PyCFunction) search_name,
@@ -566,14 +646,16 @@ static PyMethodDef ratober_methods[] = {
         METH_KEYWORDS, "Search for a movie title."},
     {"get_episodes", get_episodes,
         METH_VARARGS, "Return a list of episodes of the given series."},
+    {"soundex", pysoundex,
+        METH_VARARGS, "Soundex code for strings."},
     {NULL}
 };
 
 
 void
-initratober(void)
+initcutils(void)
 {
-    Py_InitModule("ratober", ratober_methods);
+    Py_InitModule("cutils", cutils_methods);
 }
 
 

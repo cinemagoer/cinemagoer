@@ -366,6 +366,7 @@ class MoviesCache(_BaseCache):
     productionYearCol = colName(Title, 'productionYear')
     imdbIDCol = colName(Title, 'imdbID')
     phoneticCodeCol = colName(Title, 'phoneticCode')
+    episodeOfCol = colName(Title, 'episodeOfID')
     def populate(self):
         print ' * POPULATING MoviesCache...'
         titles = Title.select()
@@ -410,12 +411,14 @@ class MoviesCache(_BaseCache):
                 continue
             tget = t.get
             title = unicode(tget('title'), "latin_1").encode('utf-8')
-            kwds = {
-                self.titleCol: title,
-                self.imdbIndexCol: tget('imdbIndex'),
-                self.kindCol: KIND_IDS[tget('kind')],
-                self.phoneticCodeCol: soundex(title)
-            }
+            #~ kwds = {
+            kwds = {}
+            kwds[self.titleCol] = title
+            kwds[self.imdbIndexCol] = tget('imdbIndex')
+            kwds[self.kindCol] = KIND_IDS[tget('kind')]
+            kwds[self.phoneticCodeCol] = soundex(title)
+            kwds[self.episodeOfCol] = tget('episodeOf')
+            #~ }
             #productionYear
             year = tget('year')
             if year == '????':
@@ -550,24 +553,24 @@ class PersonsCache(_BaseCache):
 
 # Miscellaneous functions.
 
-#~ def unpack(line, headers, sep='\t'):
-    #~ """Given a line, split at seps and return a dictionary with key
-    #~ from the header list.
-    #~ E.g.:
-        #~ line = '      0000000124    8805   8.4  Incredibles, The (2004)'
-        #~ header = ('votes distribution', 'votes', 'rating', 'title')
-        #~ seps=('  ',)
+def unpack(line, headers, sep='\t'):
+    """Given a line, split at seps and return a dictionary with key
+    from the header list.
+    E.g.:
+        line = '      0000000124    8805   8.4  Incredibles, The (2004)'
+        header = ('votes distribution', 'votes', 'rating', 'title')
+        seps=('  ',)
 
-    #~ will returns: {'votes distribution': '0000000124', 'votes': '8805',
-                    #~ 'rating': '8.4', 'title': 'Incredibles, The (2004)'}
-    #~ """
-    #~ r = {}
-    #~ ls1 = filter(None, line.split(sep))
-    #~ for index, item in enumerate(ls1):
-        #~ try: name = headers[index]
-        #~ except IndexError: name = 'item%s' % index
-        #~ r[name] = item.strip()
-    #~ return r
+    will returns: {'votes distribution': '0000000124', 'votes': '8805',
+                    'rating': '8.4', 'title': 'Incredibles, The (2004)'}
+    """
+    r = {}
+    ls1 = filter(None, line.split(sep))
+    for index, item in enumerate(ls1):
+        try: name = headers[index]
+        except IndexError: name = 'item%s' % index
+        r[name] = item.strip()
+    return r
 
 def _titleNote(title):
     """Split title and notes in 'Title, The (year) {note}' format."""
@@ -582,21 +585,21 @@ def _titleNote(title):
     return rt, rn
 
 
-#~ def _parseMinusList(fdata):
-    #~ """Parse a list of lines starting with '- '."""
-    #~ rlist = []
-    #~ tmplist = []
-    #~ for line in fdata:
-        #~ if line and line[:2] == '- ':
-            #~ if tmplist: rlist.append(' '.join(tmplist))
-            #~ l = line[2:].strip()
-            #~ if l: tmplist[:] = [l]
-            #~ else: tmplist[:] = []
-        #~ else:
-            #~ l = line.strip()
-            #~ if l: tmplist.append(l)
-    #~ if tmplist: rlist.append(' '.join(tmplist))
-    #~ return rlist
+def _parseMinusList(fdata):
+    """Parse a list of lines starting with '- '."""
+    rlist = []
+    tmplist = []
+    for line in fdata:
+        if line and line[:2] == '- ':
+            if tmplist: rlist.append(' '.join(tmplist))
+            l = line[2:].strip()
+            if l: tmplist[:] = [l]
+            else: tmplist[:] = []
+        else:
+            l = line.strip()
+            if l: tmplist.append(l)
+    if tmplist: rlist.append(' '.join(tmplist))
+    return rlist
 
 
 #~ def _parseColonList(lines, replaceKeys):
@@ -801,65 +804,84 @@ def doAkaNames():
     fp.close()
 
 
-#~ def doAkaTitles():
-    #~ """Movies' akas."""
+def doAkaTitles():
+    """Movies' akas."""
+    kwds = {}
+    SQLCache = []
+    movieCol = colName(AkaTitle, 'movieID')
+    titleCol = colName(AkaTitle, 'title')
+    imdbIndexCol = colName(AkaTitle, 'imdbIndex')
+    kindCol = colName(AkaTitle, 'kindID')
+    productionYearCol = colName(AkaTitle, 'productionYear')
+    noteCol = colName(AkaTitle, 'note')
     #~ mid = None
-    #~ count = 0
+    count = 0
     #~ sqlString = 'INSERT INTO %s (%s, %s, %s, %s, %s, %s)' % (TABLES[AkaTitle],
             #~ COLS[AkaTitle]['movieID'], COLS[AkaTitle]['title'],
             #~ COLS[AkaTitle]['imdbIndex'], COLS[AkaTitle]['kindID'],
             #~ COLS[AkaTitle]['productionYear'], COLS[AkaTitle]['note'])
     #~ sqlString += ' VALUES (%s, %s, %s, %s, %s, %s)'
     #~ sqldata = SQLData(sqlString=sqlString, flushEvery=10000)
-    #~ for fname, start in (('aka-titles.list.gz',AKAT_START),
-                    #~ ('italian-aka-titles.list.gz',AKAT_IT_START),
-                    #~ ('german-aka-titles.list.gz',AKAT_DE_START),
-                    #~ ('iso-aka-titles.list.gz',AKAT_ISO_START),
-                    #~ (os.path.join('contrib','hungarian-aka-titles.list.gz'),
-                        #~ AKAT_HU_START),
-                    #~ (os.path.join('contrib','norwegian-aka-titles.list.gz'),
-                        #~ AKAT_NO_START)):
-        #~ incontrib = 0
-        #~ pwarning = 1
-        #~ if start in (AKAT_HU_START, AKAT_NO_START):
-            #~ pwarning = 0
-            #~ incontrib = 1
-        #~ try:
-            #~ fp = SourceFile(fname, start=start,
-                            #~ stop='---------------------------',
-                            #~ pwarning=pwarning)
-        #~ except IOError:
-            #~ continue
-        #~ for line in fp:
-            #~ if line and line[0] != ' ':
-                #~ if line[0] == '\n': continue
-                #~ mid = CACHE_MID.addUnique(line.strip())
-            #~ else:
-                #~ res = unpack(line.strip(), ('title', 'note'))
-                #~ if incontrib:
-                    #~ if res.get('note'): res['note'] += ' '
-                    #~ else: res['note'] = ''
-                    #~ if start == AKAT_HU_START: res['note'] += '(Hungary)'
-                    #~ elif start == AKAT_NO_START: res['note'] += '(Norway)'
-                #~ akat = res.get('title', '')
-                #~ if akat[:5] == '(aka ': akat = akat[5:]
-                #~ if akat[-2:] == '))': akat = akat[:-1]
-                #~ if count % 10000 == 0:
-                    #~ print 'SCANNING %s: %s' % \
-                            #~ (fname[:-8].replace('-', ' '), akat)
-                #~ try:
-                    #~ akat = analyze_title(akat)
-                #~ except IMDbParserError, e:
-                    #~ if akat.strip():
-                        #~ print 'WARNING doAkaTitles() invalid title "%s"' % akat
-                    #~ continue
+    for fname, start in (('aka-titles.list.gz',AKAT_START),
+                    ('italian-aka-titles.list.gz',AKAT_IT_START),
+                    ('german-aka-titles.list.gz',AKAT_DE_START),
+                    ('iso-aka-titles.list.gz',AKAT_ISO_START),
+                    (os.path.join('contrib','hungarian-aka-titles.list.gz'),
+                        AKAT_HU_START),
+                    (os.path.join('contrib','norwegian-aka-titles.list.gz'),
+                        AKAT_NO_START)):
+        incontrib = 0
+        pwarning = 1
+        if start in (AKAT_HU_START, AKAT_NO_START):
+            pwarning = 0
+            incontrib = 1
+        try:
+            fp = SourceFile(fname, start=start,
+                            stop='---------------------------',
+                            pwarning=pwarning)
+        except IOError:
+            continue
+        for line in fp:
+            if line and line[0] != ' ': #this is the movie name
+                if line[0] == '\n': continue
+                kwds[movieCol] = CACHE_MID.addUnique(line.strip())
+            else: #this is an akaname
+                res = unpack(line.strip(), ('title', 'note'))
+                assert res is not None, \
+                    u"Cannot identify title and note in this text: %s" % (line)
+                if incontrib:
+                    if res.get('note'): res['note'] += ' '
+                    else: res['note'] = ''
+                    if start == AKAT_HU_START: res['note'] += '(Hungary)'
+                    elif start == AKAT_NO_START: res['note'] += '(Norway)'
+                akat = res.get('title', '')
+                if akat[:5] == '(aka ': akat = akat[5:]
+                if akat[-2:] == '))': akat = akat[:-1]
+                if count % 10000 == 0:
+                    print 'SCANNING %s: %s' % \
+                            (fname[:-8].replace('-', ' '), akat)
+                try:
+                    akat = analyze_title(akat)
+                except IMDbParserError, e:
+                    if akat.strip():
+                        print 'WARNING doAkaTitles() invalid title "%s"' % akat
+                    continue
+                kwds[titleCol] = akat.get('title')
+                kwds[imdbIndexCol] = akat.get('imdbIndex')
+                kwds[kindCol] = KIND_IDS[akat.get('kind')]
+                kwds[productionYearCol] = akat.get('year')
+                kwds[noteCol] = res.get('note')
+                insertObj = sqlbuilder.Insert(AkaTitle.sqlmeta.table, values=kwds)
+                SQLCache.append( conn.sqlrepr(insertObj) )
                 #~ ce = (mid, akat.get('title'), akat.get('imdbIndex'),
                         #~ KIND_IDS[akat.get('kind')], akat.get('year'),
                         #~ res.get('note'))
                 #~ sqldata.add(ce)
-                #~ count += 1
+                count += 1
+        while (len(SQLCache) > 0):
+            conn.query( SQLCache.pop() )
         #~ sqldata.flush()
-        #~ fp.close()
+        fp.close()
 
 
 #~ def doMovieLinks():
@@ -906,8 +928,13 @@ def doAkaNames():
     #~ fp.close()
 
 
-#~ def minusHashFiles(fp, funct, defaultid, descr):
-    #~ """A file with lines starting with '# ' and '- '."""
+def minusHashFiles(fp, funct, defaultid, descr):
+    """A file with lines starting with '# ' and '- '."""
+    kwds = {}
+    movieCol = colName(MovieInfo, 'movieID')
+    infoTypeCol = colName(MovieInfo, 'infoTypeID')
+    infoCol = colName(MovieInfo, 'info')
+    noteCol = colName(MovieInfo, 'note')
     #~ sqls = 'INSERT INTO %s (%s, %s, %s, %s)' % (TABLES[MovieInfo],
             #~ COLS[MovieInfo]['movieID'], COLS[MovieInfo]['infoTypeID'],
             #~ COLS[MovieInfo]['info'], COLS[MovieInfo]['note'])
@@ -917,38 +944,44 @@ def doAkaNames():
     #~ if descr == 'quotes': sqldata.flushEvery = 4000
     #~ elif descr == 'soundtracks': sqldata.flushEvery = 3000
     #~ elif descr == 'trivia': sqldata.flushEvery = 3000
-    #~ count = 0
-    #~ for title, text in fp.getByHashSections():
-        #~ title = title.strip()
-        #~ title, note = _titleNote(title)
-        #~ d = funct(text.split('\n'))
-        #~ mid = CACHE_MID.addUnique(title)
-        #~ if count % 10000 == 0:
-            #~ print 'SCANNING %s: %s' % (descr, title)
-        #~ for data in d:
+    count = 0
+    for title, text in fp.getByHashSections():
+        title = title.strip()
+        title, note = _titleNote(title)
+        d = funct(text.split('\n'))
+        mid = CACHE_MID.addUnique(title)
+        if count % 10000 == 0:
+            print 'SCANNING %s: %s' % (descr, title)
+        for data in d:
             #~ sqldata.add((mid, defaultid, data, note))
-        #~ count += 1
+            kwds[movieCol] = mid
+            kwds[infoTypeCol] = defaultid
+            kwds[infoCol] = data
+            kwds[noteCol] = note
+            insertObj = sqlbuilder.Insert(MovieInfo.sqlmeta.table, values=kwds)
+            conn.query( conn.sqlrepr(insertObj) )
+        count += 1
     #~ sqldata.flush()
 
 
-#~ def doMinusHashFiles():
-    #~ """Files with lines starting with '# ' and '- '."""
-    #~ for fname, start in [('alternate versions',AV_START),
-                         #~ ('goofs',GOOFS_START), ('crazy credits',CC_START),
-                         #~ ('quotes',QUOTES_START),
-                         #~ ('soundtracks',SNDT_START),
-                         #~ ('trivia',TRIV_START)]:
-        #~ try:
-            #~ fp = SourceFile(fname.replace(' ', '-')+'.list.gz', start=start,
-                        #~ stop=MINHASH_STOP)
-        #~ except IOError:
-            #~ continue
-        #~ funct = _parseMinusList
-        #~ if fname == 'quotes': funct = getQuotes
-        #~ index = fname
-        #~ if index == 'soundtracks': index = 'soundtrack'
-        #~ minusHashFiles(fp, funct, INFO_TYPES[index], fname)
-        #~ fp.close()
+def doMinusHashFiles():
+    """Files with lines starting with '# ' and '- '."""
+    for fname, start in [('alternate versions',AV_START),
+                         ('goofs',GOOFS_START), ('crazy credits',CC_START),
+                         ('quotes',QUOTES_START),
+                         ('soundtracks',SNDT_START),
+                         ('trivia',TRIV_START)]:
+        try:
+            fp = SourceFile(fname.replace(' ', '-')+'.list.gz', start=start,
+                        stop=MINHASH_STOP)
+        except IOError:
+            continue
+        funct = _parseMinusList
+        if fname == 'quotes': funct = getQuotes
+        index = fname
+        if index == 'soundtracks': index = 'soundtrack'
+        minusHashFiles(fp, funct, INFO_TYPES[index], fname)
+        fp.close()
 
 
 #~ def getTaglines():
@@ -976,23 +1009,23 @@ def doAkaNames():
     #~ fp.close()
 
 
-#~ def getQuotes(lines):
-    #~ """Movie's quotes."""
-    #~ quotes = []
-    #~ qttl = []
-    #~ for line in lines:
-        #~ if line and line[:2] == '  ' and qttl and qttl[-1] and \
-                #~ not qttl[-1].endswith('::'):
-            #~ line = line.lstrip()
-            #~ if line: qttl[-1] += ' %s' % line
-        #~ elif not line.strip():
-            #~ if qttl: quotes.append('::'.join(qttl))
-            #~ qttl[:] = []
-        #~ else:
-            #~ line = line.lstrip()
-            #~ if line: qttl.append(line)
-    #~ if qttl: quotes.append('::'.join(qttl))
-    #~ return quotes
+def getQuotes(lines):
+    """Movie's quotes."""
+    quotes = []
+    qttl = []
+    for line in lines:
+        if line and line[:2] == '  ' and qttl and qttl[-1] and \
+                not qttl[-1].endswith('::'):
+            line = line.lstrip()
+            if line: qttl[-1] += ' %s' % line
+        elif not line.strip():
+            if qttl: quotes.append('::'.join(qttl))
+            qttl[:] = []
+        else:
+            line = line.lstrip()
+            if line: qttl.append(line)
+    if qttl: quotes.append('::'.join(qttl))
+    return quotes
 
 
 #~ def getBusiness(lines):
@@ -1321,63 +1354,54 @@ def doAkaNames():
 CACHE_MID = MoviesCache()
 CACHE_PID = PersonsCache()
 
-#~ INFO_TYPES = {}
-#~ curs.execute('SELECT id, %s FROM %s;' % (colName(InfoType, 'info'),
-                                        #~ tableName(InfoType)))
-#~ results = curs.fetchall()
-#~ for item in results:
-    #~ INFO_TYPES[item[1]] = item[0]
+INFO_TYPES = {}
+for x in InfoType.select():
+    INFO_TYPES[x.info] = x.id
 
-#~ def _cmpfunc(x, y):
-    #~ """Sort a list of tuples, by the length of the first item (in reverse)."""
-    #~ lx = len(x[0])
-    #~ ly = len(y[0])
-    #~ if lx > ly: return -1
-    #~ elif lx < ly: return 1
-    #~ return 0
+def _cmpfunc(x, y):
+    """Sort a list of tuples, by the length of the first item (in reverse)."""
+    lx = len(x[0])
+    ly = len(y[0])
+    if lx > ly: return -1
+    elif lx < ly: return 1
+    return 0
 
-#~ MOVIELINK_IDS = []
-#~ curs.execute('SELECT id, %s FROM %s;' % (colName(LinkType, 'link'),
-                                        #~ tableName(LinkType)))
-#~ results = curs.fetchall()
-#~ for item in results:
-    #~ MOVIELINK_IDS.append((item[1], item[0]))
-#~ MOVIELINK_IDS.sort(_cmpfunc)
+MOVIELINK_IDS = []
+for x in LinkType.select():
+    MOVIELINK_IDS.append( (x.link, x.id) )
+MOVIELINK_IDS.sort(_cmpfunc)
 
 """
 KIND_IDS is a dict which maps kind names to their IDs, like
 'movie' : 1
 """
 KIND_IDS = {}
-for x in list(KindType.select()):
+for x in KindType.select():
     KIND_IDS[x.kind] = x.id
 
-#~ CCAST_TYPES = {}
-#~ curs.execute('SELECT id, %s FROM %s;' % (colName(CompCastType, 'kind'),
-                                        #~ tableName(CompCastType)))
-#~ results = curs.fetchall()
-#~ for k, v in results:
-    #~ CCAST_TYPES[v] = k
+CCAST_TYPES = {}
+for x in CompCastType.select():
+    CCAST_TYPES[x.kind] = x.id
 
 # begin the iterations...
 def run():
     print 'RUNNING imdbpy2sql.py'
     # Populate the CACHE_MID instance.
-    #~ readMovieList()
+    readMovieList()
     ##CACHE_MID.populate()
     ##CACHE_PID.populate()
     t('readMovieList()')
 
     # actors, actresses, directors, ....
-    castLists()
+    #~ castLists()
 
-    doAkaNames()
-    t('doAkaNames()')
+    #~ doAkaNames()
+    #~ t('doAkaNames()')
     #~ doAkaTitles()
     #~ t('doAkaTitles()')
 
-    #~ doMinusHashFiles()
-    #~ t('doMinusHashFiles()')
+    doMinusHashFiles()
+    t('doMinusHashFiles()')
 
     #~ doNMMVFiles()
 
@@ -1405,7 +1429,7 @@ def _kdb_handler(signum, frame):
     """Die gracefully."""
     print 'INTERRUPT REQUEST RECEIVED FROM USER.  FLUSHING CACHES...'
     CACHE_MID.flush()
-    #~ CACHE_PID.flush()
+    CACHE_PID.flush()
     print 'DONE! (in %d minutes, %d seconds)' % \
             divmod(int(time.time())-BEGIN_TIME, 60)
     sys.exit()

@@ -6,6 +6,9 @@ class AkaName(SQLObject):
     person = ForeignKey('Name', notNone=True)
     name = UnicodeCol(length=255, notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
+    phoneticCode1 = StringCol(default=None)
+    phoneticCode2 = StringCol(default=None)
+    phoneticCode3 = StringCol(default=None)
 
 class KindType(SQLObject):
     """this table is for values like 'movie', 'tv series', 'video games'..."""
@@ -17,6 +20,7 @@ class AkaTitle(SQLObject):
     imdbIndex = UnicodeCol(length=12, default=None)
     kind = ForeignKey('KindType', notNone=True)
     productionYear = IntCol(default=None)
+    phoneticCode = StringCol(default=None)
     note = UnicodeCol(length=255, default=None)
 
 class CastInfo(SQLObject):
@@ -58,6 +62,9 @@ class Name(SQLObject):
     name = UnicodeCol(length=255, notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
     imdbID = IntCol(default=None)
+    phoneticCode1 = StringCol(default=None)
+    phoneticCode2 = StringCol(default=None)
+    phoneticCode3 = StringCol(default=None)
 
 class PersonInfo(SQLObject):
     person = ForeignKey('Name', notNone=True)

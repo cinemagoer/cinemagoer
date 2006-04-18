@@ -617,8 +617,8 @@ pysoundex(PyObject *self, PyObject *pArgs)
 
     n = strlen(word);
     if (n == 0) {
-        /* If the string is empty, returns "0". */
-        return Py_BuildValue("s", "0");
+        /* If the string is empty, returns None. */
+        return Py_BuildValue("");
     }
     soundCode[0] = word[0];
 

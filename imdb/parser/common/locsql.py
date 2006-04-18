@@ -120,42 +120,49 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         return None
 
 
-def titleVariations(title):
+def titleVariations(title, fromPtdf=0):
     """Build title variations useful for searches."""
-    title1 = title
+    if fromPtdf: title1 = u''
+    else: title1 = title
     title2 = title3 = u''
-    if re_year_index.search(title):
+    if fromPtdf or re_year_index.search(title):
         # If it appears to have a (year[/imdbIndex]) indication,
         # assume that a long imdb canonical name was provided.
         titldict = analyze_title(title, canonical=1)
         # title1: the canonical name.
         title1 = titldict['title']
-        # title3: the long imdb canonical name.
-        title3 = build_title(titldict, canonical=1, ptdf=1)
+        if titldict['kind'] != 'episode':
+            # title3: the long imdb canonical name.
+            if fromPtdf: title3 = title
+            else: title3 = build_title(titldict, canonical=1, ptdf=1)
     else:
         # Just a title.
         # title1: the canonical title.
         title1 = canonicalTitle(title)
         title3 = u''
     # title2 is title1 without the article, or title1 unchanged.
-    title2 = title1
-    t2s = title2.split(u', ')
-    if t2s[-1] in _articles:
-        title2 = u', '.join(t2s[:-1])
+    if title1:
+        title2 = title1
+        t2s = title2.split(u', ')
+        if t2s[-1] in _articles:
+            title2 = u', '.join(t2s[:-1])
     return title1, title2, title3
 
 
-def nameVariations(name):
+def nameVariations(name, fromPtdf=0):
     """Build name variations useful for searches."""
-    name1 = name
-    name2 = name3 = u''
-    if re_nameIndex.search(name):
+    name1 = name2 = name3 = u''
+    if fromPtdf or re_nameIndex.search(name):
         # We've a name with an (imdbIndex)
         namedict = analyze_name(name, canonical=1)
         # name1 is the name in the canonical format.
         name1 = namedict['name']
         # name3 is the canonical name with the imdbIndex.
-        name3 = build_name(namedict, canonical=1)
+        if fromPtdf:
+            if namedict.has_key('imdbIndex'):
+                name3 = name
+        else:
+            name3 = build_name(namedict, canonical=1)
     else:
         # name1 is the name in the canonical format.
         name1 = canonicalName(name)

@@ -1,12 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.5.cvs20060409 "Inside man" (09 Apr 2006)
+* What's the new in release 2.5.cvs20060418 "Jason X" (18 Apr 2006)
   [general]
   - support of the new style for tv series; see the README.series file.
   - modified the DISCLAIMER.txt file to be compliant to the debian guidelines.
   - fixed a bug in the get_first_movie.py script.
-  - Movie and Person instances are now hashable.
+  - Movie and Person instances are now hashable, so that they can be used
+    as dictionary keys.
   - modified functions analyze_title and build_title to support tv episodes.
   - use isinstance for type checking.
   - minor updates to the documentation.
@@ -15,11 +16,15 @@
   - introduced the isSame() method for both Movie and Person classes,
     useful to compare object, by movieID/personID and accessSystem.
   - __contains__() methods are now recursive.
+  - two new functions in the IMDbBase class, title2imdbID() and name2imdbID()
+    are used to get the imdbID, given a movie title or person name.
+  - two new functions in the helpers module, sortedSeasons() and
+    sortedEpisodes(), useful to manage lists/dictionaries of tv series
+    episodes.
   - renamed the "ratober" C module to "cutils".
 
   [http data access system]
   - fixed a bug regarding currentRole for tv series.
-  - now the BasicMovieParser class handles tv series.
 
   [http and mobile data access systems]
   - fixed a bug retrieving cover url for tv (mini) series.
@@ -29,11 +34,10 @@
 
   [local data access system]
   - new get_episodes function in the cutils/ratober C module.
-  - search functions (both C and pure python) are now faster and
-    support tv series episodes.
+  - search functions (both C and pure python) are now a lot faster.
 
   [sql data access system]
-  - added in the cutils C module the soundex function, and a fall back
+  - added in the cutils C module the soundex() function, and a fall back
     Python only version in the parser.sql package.
 
 

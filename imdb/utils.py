@@ -434,7 +434,7 @@ def build_title(title_dict, canonical=None,
         ep_title = ep_dict['title']
         if not ptdf:
             doYear = 1
-            ep_dict['year'] = title_dict.get('year', '????')
+            ep_dict['year'] = title_dict.get('year') or '????'
             if ep_title[0:1] == '(' and ep_title[-1:] == ')' and \
                     ep_title[1:5].isdigit():
                 ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=1)
@@ -476,7 +476,7 @@ def build_title(title_dict, canonical=None,
         title = '"%s"' % title
     if _doYear:
         imdbIndex = title_dict.get('imdbIndex')
-        year = title_dict.get('year', '????')
+        year = title_dict.get('year') or '????'
         title += ' (%s' % year
         if imdbIndex:
             title += '/%s' % imdbIndex

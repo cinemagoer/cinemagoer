@@ -6,7 +6,7 @@ I'd like to thank the following people for their help:
 
 * Ana Guerrero, for the official debian package.
 
-* Sebastian PÃ¶lsterl, for a bug report about the cover url for
+* Sebastian Pölsterl, for a bug report about the cover url for
   tv (mini) series.
 
 * Julian Mayer, for a bug report and a patch about non-ascii chars.

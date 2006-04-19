@@ -174,9 +174,9 @@ Now you've to modify the imdb.IMDb function so that, when the right
 data access system is selected with the "accessSystem" parameter, an
 instance of your newly created class is returned.
 
-NOTE: this is a somewhat misleading example: I've already written a
-data access system for mysql (it's called 'sql').  Maybe I'll find
-a better example...
+NOTE: this is a somewhat misleading example: we already have a
+data access system for sql database (it's called 'sql' and it supports
+also MySQL, amongst other).  Maybe I'll find a better example...
 E.g.: if you want to call your new data access system "mysql" (meaning
 that the data are stored in a mysql database), you've to add to the imdb.IMDb
 function something like:

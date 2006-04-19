@@ -3,12 +3,18 @@
 
 Since version 2.1 it's possible to transfer the whole IMDb's
 database from the plain text data files into a SQL database.
+Starting with version 2.5 every database supported by the SQLObject
+Object Relational Manager can be used to store and retrieve
+movies and persons information.
+This means that MySQL, PostgreSQL, SQLite, Firebird, MAX DB,
+Sybase and MSSQL are supported and, as your read this text,
+maybe other database backends were added.
 
-So far the MySQL database is supported; see the TODO.txt
-file for more details.
+You need the SQLObject package, at least version 0.8.
 
-You need the MySQLdb package.
-It can be downloaded from http://sourceforge.net/projects/mysql-python/
+SQLObject home page: http://sqlobject.org/
+SVN command to retrieve the latest development version:
+  svn co http://svn.colorstudy.com/SQLObject/trunk SQLObject
 
 
   SQL DATABASE INSTALLATION
@@ -25,16 +31,35 @@ instead of every single file; the files not downloaded, will be skipped.
 This feature is still quite untested, so please report any bug.
 
 
-Create a database named imdb (or whatever you like),
-using the mysqladmin tool:
+Create a database named "imdb" (or whatever you like),
+using the tool provided by your database; as an example, for MySQL
+you will use the 'mysqladmin' command:
   # mysqladmin -p create imdb
+For PostgreSQL, you have to use the "createdb" command:
+  # createdb -W imdb
 
-Now create the tables in this database, using the "imdb.sql"
-file included in this directory:
-  # mysql -p imdb < imdb.sql
+To create the tables and to populate the database, you must run
+the imdbpy2sql.py script:
+  # imdbpy2sql.py -d /dir/with/plainTextDataFiles/ 'URI'
 
-To populate the database, you must run the imdbpy2sql.py script:
-  # imdbpy2sql.py -d /dir/with/plainTextDataFiles/ db=imdb user=name passwd=pwd host=hostname
+Where the 'URI' argument is a string representing the connection
+to your database, with the schema:
+  scheme://[user[:password]@]host[:port]/database[?parameters]
+
+Where 'scheme' is one in "sqlite", "mysql", "postgres", "firebird",
+"interbase", "maxdb", "sapdb", "mssql", "sybase".
+
+Some examples:
+    mysql://user:password@host/database
+    mysql://host/database?debug=1
+    postgres://user@host/database?debug=&cache=
+    postgres:///full/path/to/socket/database
+    postgres://host:5432/database
+    sqlite:///full/path/to/database
+    sqlite:/C|/full/path/to/database
+    sqlite:/:memory:
+
+For other information you can read the SQLObject documentation.
 
 Notice that the command will take a long time to complete; I estimate
 between 20 minutes and 2 or 3 hours, depending on your hardware (I've tested
@@ -58,7 +83,7 @@ NOTE: it's possible that the imdbpy2sql.py will print out some "Warnings"
 
 Now you can use IMDbPY with the database:
   from imdb import IMDb
-  i = IMDb('sql', db='imdb', user='user', passwd='pwd')
+  i = IMDb('sql', uri='YOUR_URI_STRING')
   resList = i.search_movie('the incredibles')
   for x in resList: print x
   ti = resList[0]

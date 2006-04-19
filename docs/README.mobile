@@ -29,7 +29,8 @@ at least 120Kb of disk space on your system.
 
 The DO_SQL variable, if set to 0, will excludes the parser.sql
 package; you don't need it if your system does not have the
-MySQLdb module.
+SQLObject module and you don't want to store the whole IMDb's plain
+text database files in a SQL database.
 
 If both DO_LOCAL and DO_SQL are set to 0, the parser.common package
 is not installed, and the "cutils" C module is not compiled.

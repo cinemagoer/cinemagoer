@@ -15,6 +15,23 @@ class KindType(SQLObject):
     kind = UnicodeCol(length=15, default=None, alternateID=True)
 
 class AkaTitle(SQLObject):
+    # XXX: I fear that it's safer to set notNone to False, here.
+    #        alias for akas are stored completely in the AkaTitle table;
+    #        this means that episodes will set also a "tv series" alias
+    #        name.
+    #        Reading the aka-title.list file it looks like there are
+    #        episode titles with aliases to different titles for both
+    #        the episode and the series title, while for just the series
+    #        there are no aliases.
+    #        E.g.:
+    #        aka title                                 original title
+    # "Series, The" (2005) {The Episode}     "Other Title" (2005) {Other Title}
+    # But there is no:
+    # "Series, The" (2005)                   "Other Title" (2005)
+    #
+    # Another option is to handle these cases, and add the "Other Title" (2005)
+    # AKA and make it point to the "Series, The" (2005) original title.
+    # I'm not sure this can be always feasible.
     movie = ForeignKey('Title', notNone=True)
     title = UnicodeCol(length=255, notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
@@ -22,6 +39,7 @@ class AkaTitle(SQLObject):
     productionYear = IntCol(default=None)
     phoneticCode = StringCol(default=None)
     note = UnicodeCol(length=255, default=None)
+    episodeOf = ForeignKey('AkaTitle', default=None)
 
 class CastInfo(SQLObject):
     person = ForeignKey('Name', notNone=True)
@@ -82,7 +100,7 @@ class Title(SQLObject):
     productionYear = IntCol(default=None)
     imdbID = IntCol(default=None)
     phoneticCode = StringCol(default=None)
-    episodeOf = ForeignKey('Episodes')
+    episodeOf = ForeignKey('Title', default=None)
 
 class Episodes(SQLObject):
     episodeID = IntCol(alternateID=True, notNone=True)

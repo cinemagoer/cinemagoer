@@ -423,6 +423,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             se = se.strip()
             sn = w[eti+1:].strip().lower()
             if se and sn: ws.append((se, sn))
+        # XXX: I think "guest appearances" are gone.
         if s.find('<a href="#guest-appearances"') != -1:
             ws.append(('guest-appearances', 'notable tv guest appearances'))
         if s.find('<a href="#archive">') != -1:
@@ -541,5 +542,4 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if sect == 'birth name': data = canonicalName(data)
             d[sect] = data
         return {'data': d}
-
 

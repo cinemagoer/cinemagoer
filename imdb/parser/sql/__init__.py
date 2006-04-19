@@ -2,7 +2,8 @@
 parser.sql package (imdb package).
 
 This package provides the IMDbSqlAccessSystem class used to access
-IMDb's data through a SQL database.
+IMDb's data through a SQL database.  Every database supported by
+the SQLObject Object Relational Manager is available.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "sql", "database" or "db".
 
@@ -26,13 +27,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # FIXME: this whole module was written in a veeery short amount of time.
 #        The code should be commented, rewritten and cleaned. :-)
 
-##from types import UnicodeType
-
-##import MySQLdb
-##import _mysql_exceptions
 from sqlobject.sqlbuilder import *
-from dbschema import *
 
+from dbschema import *
 
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                     scan_names, scan_titles, titleVariations, nameVariations
@@ -127,11 +124,6 @@ _buslist = ['budget', 'weekend gross', 'gross', 'opening weekend', 'rentals',
 _busd = dict([(x, ('business', x)) for x in _buslist])
 
 
-def _(s):
-    """Escape some harmful chars."""
-    return s.replace('\\', '\\\\').replace("'", "\\'").replace('"', '\\"')
-
-
 def _reGroupDict(d, newgr):
     """Regroup keys in the d dictionary in subdictionaries, based on
     the scheme in the newgr dictionary.
@@ -175,46 +167,49 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     def __init__(self, uri, adultSearch=1, *arguments, **keywords):
         """Initialize the access system."""
         IMDbLocalAndSqlAccessSystem.__init__(self, *arguments, **keywords)
-        ##if miscDBargs is None: miscDBargs = {}
-        ##initdict = miscDBargs
-        ##initdict.update({'db': db, 'user': user, 'host': host,
-        ##                'passwd': passwd, 'use_unicode': 'latin1'})
+        # Set the connection to the database.
         self._connection = setConnection(uri)
-        ##try:
-        ##    self._db = MySQLdb.connect(**initdict)
-        ##    self._curs = self._db.cursor()
-        ##except _mysql_exceptions.Error, e:
-        ##    errstr = 'Error connecting to database (PARAMS: %s)' % initdict
-        ##    errstr += '\n%s' % str(e)
-        ##    raise IMDbDataAccessError, errstr
-        ##try: self._curs.execute('SET NAMES "latin1";')
-        ##except _mysql_exceptions.MySQLError: pass
-        ##self._roles = dict(self.query('SELECT id, role FROM roletypes;'))
-        ##self._roles = {}
-        ##for rt in RoleType.select(): self._roles[rt.id] = str(rt.role)
-        ##self._roles[-1] = 'cast'
+        # Maps movie's kind strings to kind ids.
         self._kind = {}
         for kt in KindType.select(): self._kind[str(kt.kind)] = kt.id
-        ##info = list(self.query('SELECT id, info FROM infotypes;'))
         info = [(it.id, it.info) for it in InfoType.select()]
-        ldgroup = {}
+        self._moviesubs = {}
         # Build self._moviesubs, a dictionary used to rearrange
         # the data structure for a movie object.
-        for v in info:
-            v = v[1]
-            if not v.startswith('LD '): continue
-            ldgroup[v] = ('laserdisc', v[3:])
-        self._moviesubs = ldgroup
+        for vid, vinfo in info:
+            if not vinfo.startswith('LD '): continue
+            self._moviesubs[vinfo] = ('laserdisc', vinfo[3:])
         self._moviesubs.update(_litd)
         self._moviesubs.update(_busd)
-        # Dictionary used to convert between infoids and info labels.
-        ##self._info = dict(info + [(x[1], x[0]) for x in info])
-        # Collect the ids for actors and actresses from the db.
-        ##self._actids = [x[0] for x in self._roles.items()
-        ##                if x[1] in ('actor', 'actress')]
-        ##lt = self.query('SELECT id, type FROM linktypes;')
-        ##self._linktypes = dict([(lt.id, lt.link) for lt in LinkType.select()])
         self.do_adult_search(adultSearch)
+
+    def _getTitleID(self, title):
+        """Given a long imdb canonical title, returns a movieID or
+        None if not found."""
+        td = analyze_title(title)
+        condition = None
+        if td['kind'] == 'episode':
+            epof = build_title(td['episode of'], canonical=1)
+            seriesID = [s.id for s in Title.select(
+                        AND(Title.q.title == epof['title'],
+                            Title.q.imdbIndex == epof.get('imdbIndex'),
+                           Title.q.kindID == self._kind[epof['kind']],
+                           Title.q.productionYear == epof.get('year')))]
+            if seriesID:
+                condition = AND(IN(Title.q.episodeOfID, seriesID),
+                                Title.q.title == td['title'],
+                                Title.q.imdbIndex == td.get('imdbIndex'),
+                                Title.q.kindID == self._kind[td['kind']],
+                                Title.q.productionYear == td.get('year'))
+        if condition is None:
+            condition = AND(Title.q.title == td['title'],
+                            Title.q.imdbIndex == td.get('imdbIndex'),
+                            Title.q.kindID == self._kind[td['kind']],
+                            Title.q.productionYear == td.get('year'))
+        res = Title.select(condition)
+        if res.count() != 1:
+            return None
+        return res[0].id
 
     def _getNameID(self, name):
         """Given a long imdb canonical name, returns a personID or
@@ -225,53 +220,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if res.count() != 1:
             return None
         return res[0].id
-        ##sql = 'SELECT personid FROM names WHERE name = %s'
-        ##data = [nd.get('name', u'').encode('latin_1', 'replace')]
-        ##indx = nd.get('imdbIndex', u'').encode('latin_1', 'replace')
-        ##if indx:
-        ##    sql += ' AND imdbindex = %s'
-        ##    data.append(indx)
-        ##sql += ' LIMIT 1;'
-        ##try:
-        ##    self._curs.execute(sql, data)
-        ##    res = self._curs.fetchall()
-        ##except _mysql_exceptions.Error, e:
-        ##    raise IMDbDataAccessError, 'Error in _getNameID("%s"):\n%s' % \
-        ##                                (name, str(e))
-        ##if not res: return None
-        ##return res[0][0]
-
-    def _getTitleID(self, title):
-        """Given a long imdb canonical title, returns a movieID or
-        None if not found."""
-        td = analyze_title(title)
-        res = Title.select(AND(Title.q.title == td['title'],
-                                Title.q.imdbIndex == td.get('imdbIndex'),
-                                Title.q.kindID == self._kind[td['kind']],
-                                Title.q.productionYear == td.get('year')))
-        if res.count() != 1:
-            return None
-        return res[0].id
-        ##sql = 'SELECT movieid FROM titles WHERE title = %s AND kind = %s'
-        ##data = [td.get('title', u'').encode('latin_1', 'replace'),
-        ##        td.get('kind', u'').encode('latin_1', 'replace')]
-        ##indx = td.get('imdbIndex', u'').encode('latin_1', 'replace')
-        ##if indx:
-        ##    sql += ' AND imdbindex = %s'
-        ##    data.append(indx)
-        ##year = td.get('year', u'').encode('latin_1', 'replace')
-        ##if year and year != '????':
-        ##    sql += ' AND year = %s'
-        ##    data.append(year)
-        ##sql += ' LIMIT 1;'
-        ##try:
-        ##    self._curs.execute(sql, data)
-        ##    res = self._curs.fetchall()
-        ##except _mysql_exceptions.Error, e:
-        ##   raise IMDbDataAccessError, 'Error in _getTitleID("%s"):\n%s' % \
-        ##                                (title, str(e))
-        ##if not res: return None
-        ##return res[0][0]
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -288,20 +236,31 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         except (ValueError, OverflowError):
             raise IMDbError, 'personID "%s" can\'t be converted to integer' % \
                             personID
-    
+
+    def _get_movie_data(self, movieID, fromAka=0):
+        if not fromAka: Table = Title
+        else: Table = AkaTitle
+        m = Table.get(movieID)
+        mdict = {'title': m.title, 'kind': str(m.kind.kind),
+                'year': m.productionYear, 'imdbIndex': m.imdbIndex}
+        if mdict['imdbIndex'] is None: del mdict['imdbIndex']
+        if mdict['year'] is None: del mdict['year']
+        else: mdict['year'] = str(mdict['year'])
+        episodeOfID = m.episodeOfID
+        if episodeOfID is not None:
+            mdict['episode of'] = self._get_movie_data(episodeOfID, fromAka)
+        return mdict
+
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID.
         If not in the database, try an Exact Primary Title search on IMDb;
         return None if it's unable to get the imdbID.
         """
-        ##imdbID = self.query('SELECT imdbid FROM titles WHERE ' +
-        ##                    'movieid = %s LIMIT 1;' % movieID)[0][0]
         try: movie = Title.get(movieID)
         except SQLObjectNotFound: return None
         imdbID = movie.imdbID
         if imdbID is not None: return '%07d' % imdbID
-        m_dict = {'title': movie.title, 'imdbIndex': movie.imdbIndex,
-                    'year': movie.productionYear, 'kind': movie.kind.kind}
+        m_dict = self._get_movie_data(movie.id)
         titline = build_title(m_dict, canonical=1, ptdf=1)
         imdbID = self._title2imdbID(titline)
         # If the imdbID was retrieved from the web and was not in the
@@ -312,13 +271,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if imdbID is not None:
             try: movie.imdbID = imdbID
             except SQLObjectNotFound: pass
-        ##try:
-        ##    if imdbID is not None:
-        ##        movie.imdbID = imdbID
-        ##        self.query('UPDATE titles SET imdbid = %s WHERE movieid = %s;'%
-        ##                    (imdbID, movieID))
-        ##except IMDbDataAccessError:
-        ##    pass
         return imdbID
 
     def get_imdbPersonID(self, personID):
@@ -326,8 +278,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         If not in the database, try an Exact Primary Name search on IMDb;
         return None if it's unable to get the imdbID.
         """
-        ##imdbID = self.query('SELECT imdbid FROM names WHERE ' +
-        ##                    'personid = %s LIMIT 1;' % personID)[0][0]
         try: person = Name.get(personID)
         except SQLObjectNotFound: return None
         imdbID = person.imdbID
@@ -338,25 +288,12 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if imdbID is not None:
             try: person.imdbID = imdbID
             except SQLObjectNotFound: pass
-            ##self.query('UPDATE names SET imdbid = %s WHERE personid = %s;' %
-            ##            (imdbID, personID))
         return imdbID
 
     def do_adult_search(self, doAdult):
         """If set to 0 or False, movies in the Adult category are not
         shown in the results of a search."""
         self.doAdult = doAdult
-
-    ##def query(self, sql, escape=1):
-    ##    """Execute a SQL query and returns the results."""
-    ##    try:
-    ##        if escape: sql = _(sql)
-    ##        ##self._curs.execute(sql)
-    ##        return self._connection.queryAll(sql)
-    ##        ##return self._curs.fetchall()
-    ##    except _mysql_exceptions.Error, e:
-    ##        raise IMDbDataAccessError, 'Error in query("%s"):\n%s' % \
-    ##                                (sql, str(e))
 
     def _search_movie(self, title, results):
         title = title.strip()
@@ -368,37 +305,15 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # Up to 3 variations of the title are searched, plus the
         # long imdb canonical title, if provided.
         title1, title2, title3 = titleVariations(title)
-        ##resd = {}
-        # Build the SOUNDEX(title) IN ... clause.
 
-        qr = [(q.id,
-                {'title': q.title,
-                'imdbIndex': q.imdbIndex,
-                'kind': str(q.kind.kind),
-                'year': q.productionYear})
-            for q in Title.select(Title.q.phoneticCode == soundexCode)]
-
-        qr += [(q.movieID,
-                {'title': q.title,
-                'imdbIndex': q.imdbIndex,
-                'kind': str(q.kind.kind),
-                'year': q.productionYear})
-            for q in AkaTitle.select(AkaTitle.q.phoneticCode == soundexCode)]
-
-        ##sndex = "(SOUNDEX('%s')" % _(title1)
-        ##if title2 and title2 != title1: sndex += ", SOUNDEX('%s')" % _(title2)
-        ##sndex += ')'
-
-        ##sqlq = "SELECT movieid, title, imdbindex, kind, year " + \
-        ##        "FROM titles WHERE LEFT(SOUNDEX(title),5) IN %s " % sndex + \
-        ##        "OR LEFT(SOUNDEX(LEFT(title, LENGTH(title)-" + \
-        ##        "LOCATE(' ,', REVERSE(title))+1)),5) = " + \
-        ##        "LEFT(SOUNDEX('%s'),5)" % _(title2)
-
-        ##if isinstance(sqlq, UnicodeType):
-        ##    sqlq = sqlq.encode('latin_1', 'replace')
-        ##qr = list(self.query(sqlq, escape=0))
-        ##qr += list(self.query(sqlq.replace('titles', 'akatitles', 1), escape=0))
+        try:
+            qr = [(q.id, self._get_movie_data(q.id)) for q
+                    in Title.select(Title.q.phoneticCode == soundexCode)]
+            qr += [(q.movieID, self._get_movie_data(q.id, fromAka=1)) for q
+                    in AkaTitle.select(AkaTitle.q.phoneticCode == soundexCode)]
+        except SQLObjectNotFound, e:
+            raise IMDbDataAccessError, \
+                    'unable to search the database: "%s"' % str(e)
 
         resultsST = results
         if not self.doAdult: resultsST = 0
@@ -406,101 +321,38 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if self.doAdult and results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
 
-        if not self.doAdult:
+        if res and not self.doAdult:
+            mids = [x[0] for x in res]
+            genreID = InfoType.select(InfoType.q.info == 'genres')[0].id
             adultlist = [al.id for al
                         in MovieInfo.select(
-                            AND(MovieInfo.q.infoType.info == 'genres',
-                                MovieInfo.q.info == 'Adult'))]
-            ##mids = '(%s)' % ', '.join([str(x[0]) for x in res])
-            ##adultlist = self.query('SELECT movieid FROM moviesinfo WHERE ' +
-            ##                    'movieid IN ' + mids + ' AND infoid = 3 AND '+
-            ##                    'info = "Adult"', escape=0)
-            ##adultlist = [x[0] for x in list(adultlist)]
+                            AND(MovieInfo.q.infoTypeID == genreID,
+                                MovieInfo.q.info == 'Adult',
+                                IN(MovieInfo.q.id, mids)))]
             res[:] = [x for x in res if x[0] not in adultlist]
             if results > 0: res[:] = res[:results]
-
-        returnl = []
-        for x in res:
-            #tmpd = {'title': x[1], 'kind': x[3]}
-            tmpd = x[1]
-            if tmpd.get('imdbIndex') is None:
-                del tmpd['imdbIndex']
-            if tmpd.get('year') is None:
-                del tmpd['year']
-            else:
-                tmpd['year'] = str(tmpd['year'])
-            returnl.append((x[0], tmpd))
-        return returnl
+        return res
         
-    ##def _getDict(self, table, cols, clause='', unique=0):
-    ##    """Return a list of dictionaries with data from the given
-    ##    table and columns; if unique is specified, only the first
-    ##    result is returned."""
-    ##    if clause: clause = ' WHERE %s' % clause
-    ##    if unique: clause += ' LIMIT 1'
-    ##    res = self.query('SELECT %s FROM %s%s;' %
-    ##                        (', '.join(cols).lower(), table, clause))
-    ##    res = [dict(zip(cols, x)) for x in res]
-    ##    if unique and res: return res[0]
-    ##    return res
-
     def get_movie_main(self, movieID):
         # Every movie information is retrieved from here.
         infosets = self.get_movie_infoset()
-        ##res = self._getDict('titles',
-        ##                    ('title', 'imdbIndex', 'kind', 'year'),
-        ##                    'movieid = %s' % movieID, unique=1)
-        m = Title.get(movieID)
-        res = {'title': m.title, 'kind': str(m.kind.kind),
-                'year': m.productionYear, 'imdbIndex': m.imdbIndex}
-        if not res:
-            raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
-        if res['imdbIndex'] is None: del res['imdbIndex']
-        if res['year'] is None: del res['year']
-        else: res['year'] = str(res['year'])
+        try:
+            res = self._get_movie_data(movieID)
+        except SQLObjectNotFound, e:
+            raise IMDbDataAccessError, \
+                    'unable to get movieID "%s": "%s"' % (movieID, str(e))
         if not res:
             raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
         # Collect cast information.
-        ##cast = CastInfo.select(CastInfo.q.movieID == movieID)
-        ##castdata = []
-        ##castdata = [[i.personID, i.roleID, i.note, i.nrOrder] for i in p]
-
-        ##for person in cast:
-        ##    p = Name.get(person.personID)
-        ##    role = str(person.role.role)
-        ##    if role in ('actor', 'actress'): role = 'cast'
-        ##    castdata.append((p.id, person.personRole, person.note,
-        ##                    person.nrOrder, role,
-        ##                    p.name, p.imdbIndex))
         castdata = [[cd.personID, cd.personRole, cd.note, cd.nrOrder,
                     str(cd.role.role), cd.person.name, cd.person.imdbIndex]
                     for cd in CastInfo.select(CastInfo.q.movieID == movieID)]
         for p in castdata:
-            if p[4] in ('actor', 'actress'): p[4] = 'cast'
-        #cast = CastInfo.select(CastInfo.q.movieID == movieID,
-        #    join=INNERJOINUsing(None, Name, (Name.q.id,)))#, using_columns=(Name.q.id,)))
-        #print cast
-        #for c in cast:
-        #    print c.name
-        
-        ##castdata = list(self.query('SELECT name.person_id, cast.role, ' +
-        ##           'cast_info.note, cast_info.nr_order, cast_info.role_id, ' +
-        ##                'name.name, name.imdb_index FROM cast_info ' +
-        ##                'INNER JOIN name USING (person_id) WHERE ' +
-        ##                'cast_info.movie_id = %s' % movieID))
-        ##return res
-        # Change id for actor and actress to -1, so that they both will
-        # be included in the 'cast' list.
-        #tmpcast = []
-        #for i in castdata:
-        #    if i[4] in ('actor', 'actress'):
-        #        tmpcast.append((i[0], i[1], i[2], i[3], 'cast', i[5], i[6]))
-        #    else:
-        #        tmpcast.append(i)
+            if p[4] in ('actor', 'actress'):
+                p[4] = 'cast'
         # Regroup by role/duty (cast, writer, director, ...)
         castdata[:] =  _groupListBy(castdata, 4)
         for group in castdata:
-            #duty = self._roles[group[0][4]]
             duty = group[0][4]
             for pdata in group:
                 p = Person(personID=pdata[0], name=pdata[5],
@@ -511,36 +363,51 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 res.setdefault(duty, []).append(p)
             res[duty].sort(sortPeople)
         # Info about the movie.
-        ##minfo = self.query('SELECT infoid, info, note from moviesinfo ' +
-        ##                    'WHERE movieid = %s' % movieID)
         minfo = [(m.infoType.info, m.info, m.note)
                 for m in MovieInfo.select(MovieInfo.q.movieID == movieID)]
         minfo = _groupListBy(minfo, 0)
         for group in minfo:
-            ##sect = self._info[group[0][0]]
             sect = group[0][0]
             for mdata in group:
                 data = mdata[1]
                 if mdata[2]: data += '::%s' % mdata[2]
                 res.setdefault(sect, []).append(data)
         # AKA titles.
-        ##akat = self.query('SELECT title, imdbindex, kind, year, note ' +
-        ##                    'FROM akatitles WHERE movieid = %s;' % movieID)
-        akat = [(at.title, at.imdbIndex, at.kind.kind,
-                at.productionYear, at.note) for at in
-                AkaTitle.select(AkaTitle.q.movieID == movieID)]
+        akat = [(self._get_movie_data(at.id, fromAka=1), at.note)
+                for at in AkaTitle.select(AkaTitle.q.movieID == movieID)]
         if akat:
             res['akas'] = []
-            for t in akat:
-                td = {'title': t[0], 'kind': t[2]}
-                if t[1]: td['imdbIndex'] = t[1]
-                if t[3]: td['year'] = t[3]
-                nt = build_title(td, canonical=1)
-                if t[4]:
-                    net = self._changeAKAencoding(t[4], nt)
+            for td, note in akat:
+                nt = build_title(td, canonical=1, ptdf=1)
+                if note:
+                    net = self._changeAKAencoding(note, nt)
                     if net is not None: nt = net
-                    nt += '::%s' % t[4]
+                    nt += '::%s' % note
                 if nt not in res['akas']: res['akas'].append(nt)
+        # Complete cast/crew.
+        compcast = [(cc.subject.kind, cc.subject.kind, cc.note) for cc
+                    in CompleteCast.select(CompleteCast.q.movieID == movieID)]
+        if compcast:
+            for entry in compcast:
+                val = entry[1]
+                if entry[2]: val += '::%s' % entry[2]
+                res['complete %s' % entry[0]] = val
+        # Movie connections.
+        mlinks = [[ml.linkedMovieID, ml.linkType.link, ml.note]
+                    for ml in MovieLink.select(MovieLink.q.movieID == movieID)]
+        if mlinks:
+            for ml in mlinks:
+                lmovieData = self._get_movie_data(ml[0])
+                m = Movie(movieID=ml[0], data=lmovieData, accessSystem='sql')
+                if ml[2] is not None: m.notes = ml[2]
+                ml[0] = m
+            res['connections'] = {}
+            mlinks[:] = _groupListBy(mlinks, 1)
+            for group in mlinks:
+                lt = group[0][1]
+                res['connections'][lt] = [i[0] for i in group]
+        # Regroup laserdisc information.
+        res = _reGroupDict(res, self._moviesubs)
         # Do some transformation to preserve consistency with other
         # data access systems.
         if res.has_key('plot'):
@@ -553,47 +420,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     else: nl.append(i)
                 else: nl.append(i)
             res['plot'][:] = nl
-        # Complete cast/crew.
-        ##compcast=self.query('SELECT object, status, note FROM completecast ' +
-        ##                    'WHERE movieid = %s;' % movieID)
-        compcast = [(cc.subject.kind, cc.subject.kind, cc.note)
-                for cc in CompleteCast.select(CompleteCast.q.movieID == movieID)]
-        if compcast:
-            for entry in compcast:
-                val = entry[1]
-                if entry[2]: val += '::%s' % entry[2]
-                res['complete %s' % entry[0]] = val
-        # Movie connections.
-        ##mlinks = list(self.query('SELECT movietoid, linktypeid, note ' +
-        ##                        'FROM movielinks ' +
-        ##                        'WHERE movieid = %s' % movieID))
-        mlinks = [(ml.linkedMovie, ml.linkType.link, ml.note)
-                    for ml in MovieLink.select(MovieLink.q.movieID == movieID)]
-        if mlinks:
-            midto = [str(x[0]) for x in mlinks]
-            midd = {}
-            midl = [(m.id, m.title, m.imdbIndex, m.productionYear,
-                    m.kind.kind) for m in Title.select(IN(Title.q.id, midto))]
-            #midl = self.query('SELECT movieid, title, imdbIndex, year, kind ' +
-            ##                    'FROM titles WHERE movieid in (%s);' %
-            ##                    ', '.join(midto))
-            for j in midl:
-                m = Movie(movieID=j[0], title=j[1], accessSystem='sql')
-                m['kind'] = str(j[4])
-                if j[3]: m['year'] = str(j[3])
-                if j[2]: m['imdbIndex'] = j[2]
-                midd[j[0]] = m
-            res['connections'] = {}
-            mlinks[:] = _groupListBy(mlinks, 1)
-            for group in mlinks:
-                ##lt = self._linktypes[group[0][1]]
-                lt = group[0][1]
-                res['connections'][lt] = []
-                for item in group:
-                    m = midd[item[0]]
-                    if item[2]: m.notes = item[2]
-                    res['connections'][lt].append(m)
-        res = _reGroupDict(res, self._moviesubs)
         # Other transformations.
         if res.has_key('runtimes') and len(res['runtimes']) > 0:
             rt = res['runtimes'][0]
@@ -621,23 +447,26 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 'info sets': infosets}
 
     # Just to know what kind of information are available.
-    def get_movie_alternate_versions(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_business(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_connections(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_crazy_credits(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_goofs(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_keywords(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_literature(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_locations(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_plot(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_quotes(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_release_dates(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_soundtrack(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_taglines(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_technical(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_trivia(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_vote_details(self, movieID): return self.get_movie_main(movieID)
-    def get_movie_guests(self, movieID): return self.get_movie_main(movieID)
+    get_movie_alternate_versions = get_movie_main
+    get_movie_business = get_movie_main
+    get_movie_connections = get_movie_main
+    get_movie_crazy_credits = get_movie_main
+    get_movie_goofs = get_movie_main
+    get_movie_keywords = get_movie_main
+    get_movie_literature = get_movie_main
+    get_movie_locations = get_movie_main
+    get_movie_plot = get_movie_main
+    get_movie_quotes = get_movie_main
+    get_movie_release_dates = get_movie_main
+    get_movie_soundtrack = get_movie_main
+    get_movie_taglines = get_movie_main
+    get_movie_technical = get_movie_main
+    get_movie_trivia = get_movie_main
+    get_movie_vote_details = get_movie_main
+    # XXX: is 'guest' still needed?  I think every GA reference in
+    #      the biographies.list file was removed.
+    #get_movie_guests = get_movie_main
+    get_movie_episodes = get_movie_main
 
     def _search_person(self, name, results):
         name = name.strip()
@@ -646,27 +475,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not s_name: return []
         soundexCode = soundex(s_name)
         name1, name2, name3 = nameVariations(name)
-
-        ##sndex = "(LEFT(SOUNDEX('%s'),5)" % _(name1)
-        ##if name2 and name2 != name1:
-        ##    sndex += ", LEFT(SOUNDEX('%s'),5)" % _(name2)
-        ##sndex += ')'
-
-        # In the database there's a list of "Surname, Name".
-        # Try matching against "Surname, Name", "Surname"
-        # and "Name Surname".
-        ##sqlq = "SELECT personid, name, imdbindex FROM names WHERE " + \
-        ##        "LEFT(SOUNDEX(name),5) IN %s " % sndex + \
-        ##        "OR LEFT(SOUNDEX(SUBSTRING_INDEX(name, ', ', 1)),5)" + \
-        ##        " IN %s " % sndex + \
-        ##        "OR LEFT(SOUNDEX(CONCAT(SUBSTRING_INDEX(name, ', ', -1)," + \
-        ##        " ' ', (SUBSTRING_INDEX(name, ', ', 1)))),5) IN %s;" % sndex
-        # XXX: add a "LIMIT 5000" clause or something?
-
-        ##if isinstance(sqlq, UnicodeType):
-        ##    sqlq = sqlq.encode('latin_1', 'replace')
-        ##qr = list(self.query(sqlq, escape=0))
-        ##qr += list(self.query(sqlq.replace('names', 'akanames', 1), escape=0))
 
         # If the soundex is None, compare only with the first
         # phoneticCode column.
@@ -681,21 +489,23 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             condition = ISNULL(Name.q.phoneticCode1)
             conditionAka = ISNULL(AkaName.q.phoneticCode1)
 
-        qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
-                for q in Name.select(condition)]
-
-        qr += [(q.movieID, {'name': q.name, 'imdbIndex': q.imdbIndex})
-                for q in AkaName.select(conditionAka)]
+        try:
+            qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
+                    for q in Name.select(condition)]
+            qr += [(q.movieID, {'name': q.name, 'imdbIndex': q.imdbIndex})
+                    for q in AkaName.select(conditionAka)]
+        except SQLObjectNotFound, e:
+            raise IMDbDataAccessError, \
+                    'unable to search the database: "%s"' % str(e)
 
         resultsST = results
         if not self.doAdult: resultsST = 0
         res = scan_names(qr, name1, name2, name3, resultsST)
         if results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
-        # Purge empty imdbIndex and year.
+        # Purge empty imdbIndex.
         returnl = []
         for x in res:
-            ##tmpd = {'name': x[1]}
             tmpd = x[1]
             if tmpd['imdbIndex'] is None:
                 del tmpd['imdbIndex']
@@ -705,62 +515,47 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     def get_person_main(self, personID):
         # Every person information is retrieved from here.
         infosets = self.get_person_infoset()
-        p = Name.get(personID)
+        try:
+            p = Name.get(personID)
+        except SQLObjectNotFound, e:
+            raise IMDbDataAccessError, \
+                    'unable to get personID "%s": "%s"' % (personID, str(e))
         res = {'name': p.name, 'imdbIndex': p.imdbIndex}
-        ##res = self._getDict('names', ('name', 'imdbIndex'),
-        ##                    'personid = %s' % personID, unique=1)
-        if not res:
-            raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
         if res['imdbIndex'] is None: del res['imdbIndex']
         if not res:
             raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
         # Collect cast information.
-        ##castdata = list(self.query('SELECT cast.movieid, cast.currentRole, ' +
-        ##                'cast.note, cast.roleid, ' +
-        ##                'titles.title, titles.imdbindex, titles.kind, ' +
-        ##                'titles.year FROM cast ' +
-        ##                'INNER JOIN titles USING (movieid) WHERE ' +
-        ##                'cast.personid = %s' % personID))
         castdata = [(cd.movieID, cd.personRole, cd.note, cd.role.role,
-                    cd.movie.title, cd.movie.imdbIndex, cd.movie.kind.kind,
-                    cd.movie.productionYear)
+                    self._get_movie_data(cd.movieID))
                 for cd in CastInfo.select(CastInfo.q.personID == personID)]
-        #for m in castdata:
-        #    md = Title.get(m[0])
-        #    m += [md.title, md.imdbIndex, md.kind.kind, md.productionYear]
         # Regroup by role/duty (cast, writer, director, ...)
         castdata[:] =  _groupListBy(castdata, 3)
         for group in castdata:
-            ##duty = self._roles[group[0][3]]
             duty = group[0][3]
             for mdata in group:
-                m = Movie(movieID=mdata[0], title=mdata[4],
-                            currentRole=mdata[1] or u'', notes=mdata[2] or u'',
+                m = Movie(movieID=mdata[0], data=mdata[4],
+                            currentRole=mdata[1] or u'',
+                            notes=mdata[2] or u'',
                             accessSystem='sql')
-                m['kind'] = mdata[6]
-                if mdata[5]: m['imdbIndex'] = mdata[5]
-                if mdata[7]: m['year'] = mdata[7]
                 res.setdefault(duty, []).append(m)
             res[duty].sort(sortMovies)
+        # XXX: is 'guest' still needed?  I think every GA reference in
+        #      the biographies.list file was removed.
         if res.has_key('guest'):
             res['notable tv guest appearances'] = res['guest']
             del res['guest']
         # Info about the person.
-        ##pinfo = self.query('SELECT infoid, info, note from personsinfo ' +
-        ##                    'WHERE personid = %s' % personID)
         pinfo = [(pi.infoType.info, pi.info, pi.note)
                 for pi in PersonInfo.select(PersonInfo.q.personID == personID)]
+        # Regroup by duty.
         pinfo = _groupListBy(pinfo, 0)
         for group in pinfo:
-            ##sect = self._info[group[0][0]]
             sect = group[0][0]
             for pdata in group:
                 data = pdata[1]
                 if pdata[2]: data += '::%s' % pdata[2]
                 res.setdefault(sect, []).append(data)
         # AKA names.
-        ##akan = self.query('SELECT name, imdbindex ' +
-        ##                    'FROM akanames WHERE personid = %s;' % personID)
         akan = [(an.name, an.imdbIndex)
                 for an in AkaName.select(AkaName.q.personID == personID)]
         if akan:
@@ -800,12 +595,12 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 'info sets': infosets}
 
     # Just to know what kind of information are available.
-    def get_person_filmography(self, personID): return self.get_person_main(personID)
-    def get_person_biography(self, personID): return self.get_person_main(personID)
-    def get_person_other_works(self, personID): return self.get_person_main(personID)
+    get_person_filmography = get_person_main
+    get_person_biography = get_person_main
+    get_person_other_works = get_person_main
+    get_person_episodes = get_person_main
 
     def __del__(self):
         """Ensure that the connection is closed."""
         self._connection.close()
-
 

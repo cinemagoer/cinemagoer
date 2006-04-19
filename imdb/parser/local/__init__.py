@@ -583,7 +583,6 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         res[:] = [x[1] for x in res]
         return res
 
-
     def get_person_main(self, personID):
         infosets = ('main', 'biography', 'other works')
         nl = getLabel(personID, '%snames.index' % self.__db,
@@ -621,7 +620,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 'titlesRefs': trefs, 'namesRefs': nrefs}
 
     def get_person_filmography(self, personID):
-        infosets = ['filmography']
+        infosets = ('filmography', 'episodes')
         res = {}
         episodes = {}
         works = ('actor', 'actresse', 'producer', 'writer',
@@ -679,13 +678,9 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 episodes[k].sort(sortMovies)
                 episodes[k].reverse()
             res['episodes'] = episodes
-            infosets.append('episodes')
         return {'data': res, 'info sets': tuple(infosets)}
 
-    def get_person_biography(self, personID):
-        return self.get_person_main(personID)
-
-    def get_person_other_works(self, personID):
-        return self.get_person_main(personID)
-
+    get_person_biography = get_person_main
+    get_person_other_works = get_person_main
+    get_person_episodes = get_person_filmography
 

@@ -55,11 +55,11 @@ you can access movie data through the e-mail interface, etc. etc.
   Supported access systems  |  Aliases  |  Description
  ---------------------------+-----------+------------------------------------
             'http'          |   'web',  | information are fetched through
-                            |   'html'  | the http://akas.imdb.com web server
+                            |   'html'  | the http://akas.imdb.com web server.
  ---------------------------+-----------+------------------------------------
              'sql'          |   'db',   | information are fetched through
-                            | 'database'| a SQL database (so far only MySQL
-                            |           | is supported).
+                            | 'database'| a SQL database (every database
+                            |           | supported by SQLObject is available).
  ---------------------------+-----------+------------------------------------
            'mobile'         |           | same as 'httpThin', but string
                             |           | methods are used for parsing.

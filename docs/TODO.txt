@@ -126,12 +126,6 @@ Things to do:
 * The database layout sucks (what about indexes?  I'm not sure they are
   ok this way).
 * The SQL queries I've written are probably crap.
-* Running the imdbpy2sql.py script will still issue some Warnings, from
-  the MySQLdb module.  This is especially true for the readMovieList()
-  function.
-  NOTE: this is due to data truncation in 'note' field, where information
-  are longer than 255 chars; see mysql-python bug #1295308:
-  http://sf.net/tracker/index.php?func=detail&aid=1295308&group_id=22307&atid=374932
 * The imdbpy2sql.py is slow and takes a lot of time, but honestly this
   is a minor issue, and I fear there're few chances to see substantial
   improvements.

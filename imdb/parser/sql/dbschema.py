@@ -4,7 +4,7 @@ from sqlobject import *
 
 class AkaName(SQLObject):
     person = ForeignKey('Name', notNone=True)
-    name = UnicodeCol(length=255, notNone=True)
+    name = UnicodeCol(notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
     phoneticCode1 = StringCol(default=None)
     phoneticCode2 = StringCol(default=None)
@@ -33,19 +33,19 @@ class AkaTitle(SQLObject):
     # AKA and make it point to the "Series, The" (2005) original title.
     # I'm not sure this can be always feasible.
     movie = ForeignKey('Title', notNone=True)
-    title = UnicodeCol(length=255, notNone=True)
+    title = UnicodeCol(notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
     kind = ForeignKey('KindType', notNone=True)
     productionYear = IntCol(default=None)
     phoneticCode = StringCol(default=None)
-    note = UnicodeCol(length=255, default=None)
+    note = UnicodeCol(default=None)
     episodeOf = ForeignKey('AkaTitle', default=None)
 
 class CastInfo(SQLObject):
     person = ForeignKey('Name', notNone=True)
     movie = ForeignKey('Title', notNone=True)
-    personRole = UnicodeCol(length=255, default=None)
-    note = UnicodeCol(length=255, default=None)
+    personRole = UnicodeCol(default=None)
+    note = UnicodeCol(default=None)
     nrOrder = IntCol(default=None)
     role = ForeignKey('RoleType', notNone=True)
 
@@ -56,7 +56,7 @@ class CompleteCast(SQLObject):
     movie = ForeignKey('Title')
     subject = ForeignKey('CompCastType', notNone=True)
     status = ForeignKey('CompCastType', notNone=True)
-    note = UnicodeCol(length=255, default=None)
+    note = UnicodeCol(default=None)
 
 class InfoType(SQLObject):
     info = UnicodeCol(length=32,notNone=True, alternateID=True)
@@ -68,46 +68,50 @@ class MovieLink(SQLObject):
     movie = ForeignKey('Title', notNone=True)
     linkedMovie = ForeignKey('Title', notNone=True)
     linkType = ForeignKey('LinkType', notNone=True)
-    note = UnicodeCol(length=255, default=None)
+    note = UnicodeCol(default=None)
 
 class MovieInfo(SQLObject):
     movie = ForeignKey('Title', notNone=True)
     infoType = ForeignKey('InfoType', notNone=True)
     info = UnicodeCol(notNone=True)
-    note = UnicodeCol(length=255, default=None)
+    note = UnicodeCol(default=None)
 
 class Name(SQLObject):
-    name = UnicodeCol(length=255, notNone=True)
+    """
+    namePcodeCf is the soundex of the name in the canonical format.
+    namePcodeNf is the soundex of the name in the normal format, if different
+    from namePcodeCf.
+    surnamePcode is the soundex of the surname, if different from the
+    other two values
+    """
+    name = UnicodeCol(notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
     imdbID = IntCol(default=None)
-    phoneticCode1 = StringCol(default=None)
-    phoneticCode2 = StringCol(default=None)
-    phoneticCode3 = StringCol(default=None)
+    namePcodeCf = StringCol(length=5, default=None)
+    namePcodeNf = StringCol(length=5, default=None)
+    surnamePcode = StringCol(length=5, default=None)
 
 class PersonInfo(SQLObject):
     person = ForeignKey('Name', notNone=True)
     infoType = ForeignKey('InfoType', notNone=True)
     info = UnicodeCol(notNone=True)
-    note = UnicodeCol(length=255, default=None)
+    note = UnicodeCol(default=None)
 
 class RoleType(SQLObject):
     role = UnicodeCol(length=32, notNone=True, alternateID=True)
 
 class Title(SQLObject):
-    title = UnicodeCol(length=255, notNone=True)
+    title = UnicodeCol(notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
     kind = ForeignKey('KindType', notNone=True)
     productionYear = IntCol(default=None)
     imdbID = IntCol(default=None)
-    phoneticCode = StringCol(default=None)
+    phoneticCode = StringCol(length=5, default=None)
     episodeOf = ForeignKey('Title', default=None)
-
-class Episodes(SQLObject):
-    episodeID = IntCol(alternateID=True, notNone=True)
 
 DB_TABLES = [Name, KindType, Title, AkaName, AkaTitle, RoleType, CastInfo,
         CompCastType, CompleteCast, InfoType, LinkType, MovieLink, MovieInfo,
-        PersonInfo, Episodes]
+        PersonInfo]
 
 def setConnection(uri):
     """Set connection for every table."""

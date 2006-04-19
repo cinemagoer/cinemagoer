@@ -36,14 +36,14 @@ from gzip import GzipFile
 
 from sqlobject import *
 from imdb.parser.sql.dbschema import *
-from imdb.utils import soundex
+from imdb.parser.common.cutils import soundex
 
 ##conn = connectionForURI(uri)
 conn = setConnection(uri)
 dropTables()
 createTables()
 
-from imdb.utils import analyze_title, analyze_name, build_name, build_title
+from imdb.utils import analyze_title, analyze_name, build_name, build_title, normalizeName, _articles
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError
@@ -397,6 +397,20 @@ class MoviesCache(_BaseCache):
         #~ if maxid is not None: self.counter = maxid + 1
         #~ else: self.counter = 1
 
+    def title_soundex(self, title):
+        """Return the soundex code for the given title; the (optional) ending
+        article is pruned.  It assumes to receive a title without year/imdbIndex
+        or kind indications, but just the title string, as the one in the
+        analyze_title(title)['title'] value."""
+        # Prune non-ascii chars from the string.
+        title = title.encode('ascii', 'ignore')
+        if not title: return None
+        ts = title.split(', ')
+        # Strip the ending article, if any.
+        if ts[-1] in _articles:
+            title = ', '.join(ts[:-1])
+        return soundex(title)
+
     def _toDB(self):
         print ' * FLUSHING MoviesCache...'
         tmpDictiter = self._tmpDict.iteritems
@@ -410,15 +424,19 @@ class MoviesCache(_BaseCache):
                     print 'WARNING MoviesCache._toDB() invalid title "%s"' % k
                 continue
             tget = t.get
-            title = unicode(tget('title'), "latin_1").encode('utf-8')
-            #~ kwds = {
             kwds = {}
+            if (tget('kind') == 'episode'):
+                #series extended title
+                title = unicode(build_title( tget('episodeOf'), canonical=1 ))
+                seriesID = CACHE_MID.addUnique()
+                kwds[self.episodeOfCol] = seriesID
+            else:
+                title = unicode(tget('title'), "latin_1").encode('utf-8')
             kwds[self.titleCol] = title
             kwds[self.imdbIndexCol] = tget('imdbIndex')
             kwds[self.kindCol] = KIND_IDS[tget('kind')]
-            kwds[self.phoneticCodeCol] = soundex(title)
-            kwds[self.episodeOfCol] = tget('episodeOf')
-            #~ }
+            kwds[self.phoneticCodeCol] = self.title_soundex(title)
+
             #productionYear
             year = tget('year')
             if year == '????':
@@ -431,7 +449,7 @@ class MoviesCache(_BaseCache):
                 except:
                     year = None
             kwds[self.productionYearCol] = year
-            kwds[self.imdbIDCol] = v
+            kwds[Title.sqlmeta.idName] = v
             #Build the SQL code
             insertObj = sqlbuilder.Insert(Title.sqlmeta.table, values=kwds)
             count += 1
@@ -584,6 +602,26 @@ def _titleNote(title):
             rt = title[:sb] + title[eb+1:].strip()
     return rt, rn
 
+def name_soundexes(name):
+    """Return three soundex codes for the given name; the name is assumed
+    to be in the 'surname, name' format, without the imdbIndex indication,
+    as the one in the analyze_name(name)['name'] value.
+    The first one is the soundex of the name in the canonical format.
+    The second is the soundex of the name in the normal format, if different
+    from the first one.
+    The third is the soundex of the surname, if different from the
+    other two values."""
+    # Prune non-ascii chars from the string.
+    name = name.encode('ascii', 'ignore')
+    if not name: return (None, None, None)
+    s1 = soundex(name)
+    name_normal = normalizeName(name)
+    s2 = soundex(name_normal)
+    if s1 == s2: s2 = None
+    namesplit = name.split(', ')
+    s3 = soundex(namesplit[0])
+    if s3 and s3 in (s1, s2): s3 = None
+    return (s1, s2, s3)
 
 def _parseMinusList(fdata):
     """Parse a list of lines starting with '- '."""
@@ -1062,9 +1100,19 @@ def getQuotes(lines):
     #~ return d
 
 
-#~ def nmmvFiles(fp, funct, fname):
-    #~ """Files with sections separated by 'MV: ' or 'NM: '."""
-    #~ count = 0
+def nmmvFiles(fp, funct, fname):
+    """Files with sections separated by 'MV: ' or 'NM: '."""
+    PI_personCol = colName(PersonInfo, 'personID')
+    PI_infoTypeCol = colName(PersonInfo, 'infoTypeID')
+    PI_infoCol = colName(PersonInfo, 'info')
+    PI_noteCol = colName(PersonInfo, 'note')
+    CI_personCol = colName(CastInfo, 'personID')
+    CI_movieCol = colName(CastInfo, 'movieID')
+    CI_personRoleCol = colName(CastInfo, 'personRole')
+    CI_noteCol = colName(CastInfo, 'note')
+    CI_nrOrderCol = colName(CastInfo, 'nrOrder')
+    CI_roleCol = colName(CastInfo, 'roleID')
+    count = 0
     #~ sqlsP = 'INSERT INTO %s (%s, %s, %s, %s)' % (TABLES[PersonInfo],
                 #~ COLS[PersonInfo]['personID'], COLS[PersonInfo]['infoTypeID'],
                 #~ COLS[PersonInfo]['info'], COLS[PersonInfo]['note'])
@@ -1073,12 +1121,14 @@ def getQuotes(lines):
                 #~ COLS[MovieInfo]['movieID'], COLS[MovieInfo]['infoTypeID'],
                 #~ COLS[MovieInfo]['info'], COLS[MovieInfo]['note'])
     #~ sqlsM += ' VALUES (%s, %s, %s, %s)'
-    #~ if fname == 'biographies.list.gz':
-        #~ datakind = 'person'
+    if fname == 'biographies.list.gz':
+        datakind = 'person'
+        roleObj = RoleType.byRole(u"guest")
         #~ sqls = sqlsP
         #~ curs.execute('SELECT id FROM %s WHERE %s = "guest";'%(TABLES[RoleType],
                         #~ COLS[RoleType]['role']))
         #~ guestid = curs.fetchone()[0]
+        guestID = roleObj.id
         #~ gdsqlString = 'INSERT INTO %s (%s, %s, %s, %s, %s)' % \
                 #~ (TABLES[CastInfo], COLS[CastInfo]['personID'],
                 #~ COLS[CastInfo]['movieID'], COLS[CastInfo]['personRole'],
@@ -1091,53 +1141,61 @@ def getQuotes(lines):
                 #~ COLS[AkaName]['imdbIndex'])
         #~ ansqlString += ' VALUES (%s, %s, %s)'
         #~ akanamesdata = SQLData(sqlString=ansqlString)
-    #~ else:
-        #~ datakind = 'movie'
+    else:
+        datakind = 'movie'
         #~ sqls = sqlsM
-        #~ guestdata = None
-        #~ akanamesdata = None
+        guestdata = None
+        akanamesdata = None
     #~ sqldata = SQLData(sqlString=sqls)
     #~ if fname == 'plot.list.gz': sqldata.flushEvery = 1000
     #~ elif fname == 'literature.list.gz': sqldata.flushEvery = 5000
     #~ elif fname == 'business.list.gz': sqldata.flushEvery = 10000
     #~ elif fname == 'biographies.list.gz': sqldata.flushEvery = 5000
-    #~ _ltype = type([])
-    #~ for ton, text in fp.getByNMMVSections():
-        #~ ton = ton.strip()
-        #~ if not ton: continue
-        #~ note = None
-        #~ if datakind == 'movie':
-            #~ ton, note = _titleNote(ton)
-            #~ mopid = CACHE_MID.addUnique(ton)
-        #~ else: mopid = CACHE_PID.addUnique(ton)
-        #~ if count % 10000 == 0:
-            #~ print 'SCANNING %s: %s' % (fname[:-8].replace('-', ' '), ton)
-        #~ d = funct(text.split('\n'))
-        #~ for k, v in d.iteritems():
-            #~ if k != 'notable tv guest appearances':
-                #~ theid = INFO_TYPES.get(k)
-                #~ if theid is None:
-                    #~ print 'WARNING key "%s" of ton "%s" not in INFO_TYPES' % \
-                                #~ (k, ton)
-                    #~ continue
-            #~ if type(v) is _ltype:
-                #~ for i in v:
-                    #~ if k == 'notable tv guest appearances':
-                        #~ # Put "guest" information in the cast table.
-                        #~ title = i.get('long imdb canonical title')
-                        #~ if not title: continue
-                        #~ movieid = CACHE_MID.addUnique(title)
+    _ltype = type([])
+    kwds = {}
+    for ton, text in fp.getByNMMVSections():
+        ton = ton.strip()
+        if not ton: continue
+        note = None
+        if datakind == 'movie':
+            ton, note = _titleNote(ton)
+            mopid = CACHE_MID.addUnique(ton)
+        else: mopid = CACHE_PID.addUnique(ton)
+        if count % 10000 == 0:
+            print 'SCANNING %s: %s' % (fname[:-8].replace('-', ' '), ton)
+        d = funct(text.split('\n'))
+        for k, v in d.iteritems():
+            if k != 'notable tv guest appearances':
+                theid = INFO_TYPES.get(k)
+                if theid is None:
+                    print 'WARNING key "%s" of ton "%s" not in INFO_TYPES' % \
+                                (k, ton)
+                    continue
+            if type(v) is _ltype:
+                for i in v:
+                    if k == 'notable tv guest appearances':
+                        # Put "guest" information in the cast table.
+                        title = i.get('long imdb canonical title')
+                        if not title: continue
+                        movieid = CACHE_MID.addUnique(title)
                         #~ guestdata.add((mopid, movieid, i.currentRole or None,
                                         #~ i.notes or None))
-                        #~ continue
-                    #~ if k in ('plot', 'mini biography'):
-                        #~ s = i.split('::')
-                        #~ if len(s) == 2:
-                            #~ if note: note += ' '
-                            #~ note = '(author: %s)' % s[0]
-                            #~ i = s[1]
-                    #~ if i: sqldata.add((mopid, theid, i, note))
-                    #~ note = None
+                        kwds[CI_movieCol] = movieid
+                        kwds[CI_personCol] = mopid
+                        kwds[CI_roleCol] = guestID
+                        kwds[CI_personRoleCol] = i.currentRole or None
+                        kwds[CI_noteCol] = i.notes or None
+                        insertObj = sqlbuilder.Insert(CastInfo.sqlmeta.table, values=kwds)
+                        conn.query( conn.sqlrepr(insertObj) )
+                        continue
+                    if k in ('plot', 'mini biography'):
+                        s = i.split('::')
+                        if len(s) == 2:
+                            if note: note += ' '
+                            note = '(author: %s)' % s[0]
+                            i = s[1]
+                    if i: sqldata.add((mopid, theid, i, note))
+                    note = None
             #~ else:
                 #~ if v: sqldata.add((mopid, theid, v, note))
             #~ if k in ('nick names', 'birth name') and v:
@@ -1170,24 +1228,24 @@ def getQuotes(lines):
     #~ sqldata.flush()
 
 
-#~ def doNMMVFiles():
-    #~ """Files with large sections, about movies and persons."""
-    #~ for fname, start, funct in [('biographies.list.gz',BIO_START,_parseBiography),
-            #~ ('business.list.gz',BUS_START,getBusiness),
-            #~ ('laserdisc.list.gz',LSD_START,getLaserDisc),
-            #~ ('literature.list.gz',LIT_START,getLiterature),
-            #~ ('mpaa-ratings-reasons.list.gz',MPAA_START,getMPAA),
-            #~ ('plot.list.gz',PLOT_START,getPlot)]:
-    #~ ##for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
-        #~ try:
-            #~ fp = SourceFile(fname, start=start)
-        #~ except IOError:
-            #~ continue
-        #~ if fname == 'literature.list.gz': fp.set_stop(LIT_STOP)
-        #~ elif fname == 'business.list.gz': fp.set_stop(BUS_STOP)
-        #~ nmmvFiles(fp, funct, fname)
-        #~ fp.close()
-        #~ t('doNMMVFiles(%s)' % fname[:-8].replace('-', ' '))
+def doNMMVFiles():
+    """Files with large sections, about movies and persons."""
+    for fname, start, funct in [('biographies.list.gz',BIO_START,_parseBiography),
+            ('business.list.gz',BUS_START,getBusiness),
+            ('laserdisc.list.gz',LSD_START,getLaserDisc),
+            ('literature.list.gz',LIT_START,getLiterature),
+            ('mpaa-ratings-reasons.list.gz',MPAA_START,getMPAA),
+            ('plot.list.gz',PLOT_START,getPlot)]:
+    ##for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
+        try:
+            fp = SourceFile(fname, start=start)
+        except IOError:
+            continue
+        if fname == 'literature.list.gz': fp.set_stop(LIT_STOP)
+        elif fname == 'business.list.gz': fp.set_stop(BUS_STOP)
+        nmmvFiles(fp, funct, fname)
+        fp.close()
+        t('doNMMVFiles(%s)' % fname[:-8].replace('-', ' '))
 
 
 #~ def doMiscMovieInfo():
@@ -1400,8 +1458,8 @@ def run():
     #~ doAkaTitles()
     #~ t('doAkaTitles()')
 
-    doMinusHashFiles()
-    t('doMinusHashFiles()')
+    #~ doMinusHashFiles()
+    #~ t('doMinusHashFiles()')
 
     #~ doNMMVFiles()
 

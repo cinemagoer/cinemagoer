@@ -1,14 +1,40 @@
-#!/usr/bin/env python
+"""
+parser.sql.dbschema module (imdb.parser.sql package).
+
+This package provides the SQLObject's classes used to describe
+the layout of the database used by thr imdb.parser.sql package.
+Every database supported by the SQLObject Object Relational Manager
+is available.
+
+Copyright 2005-2006 Davide Alberani <da@erlug.linux.it> 
+               2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+"""
+
 
 from sqlobject import *
+
 
 class AkaName(SQLObject):
     person = ForeignKey('Name', notNone=True)
     name = UnicodeCol(notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
-    phoneticCode1 = StringCol(default=None)
-    phoneticCode2 = StringCol(default=None)
-    phoneticCode3 = StringCol(default=None)
+    namePcodeCf = StringCol(length=5, default=None)
+    namePcodeNf = StringCol(length=5, default=None)
+    surnamePcode = StringCol(length=5, default=None)
 
 class KindType(SQLObject):
     """this table is for values like 'movie', 'tv series', 'video games'..."""
@@ -32,18 +58,23 @@ class AkaTitle(SQLObject):
     # Another option is to handle these cases, and add the "Other Title" (2005)
     # AKA and make it point to the "Series, The" (2005) original title.
     # I'm not sure this can be always feasible.
-    movie = ForeignKey('Title', notNone=True)
+    movie = ForeignKey('Title', notNone=False)
     title = UnicodeCol(notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
     kind = ForeignKey('KindType', notNone=True)
     productionYear = IntCol(default=None)
     phoneticCode = StringCol(default=None)
+    ##episodeOf = ForeignKey('AkaTitle', default=None)
+    episodeOfID = IntCol(default=None)
+    seasonNr = IntCol(default=None)
+    episodeNr = IntCol(default=None)
     note = UnicodeCol(default=None)
-    episodeOf = ForeignKey('AkaTitle', default=None)
 
 class CastInfo(SQLObject):
-    person = ForeignKey('Name', notNone=True)
-    movie = ForeignKey('Title', notNone=True)
+    #person = ForeignKey('Name', notNone=True)
+    personID = IntCol(notNone=True)
+    #movie = ForeignKey('Title', notNone=True)
+    movieID = IntCol(notNone=True)
     personRole = UnicodeCol(default=None)
     note = UnicodeCol(default=None)
     nrOrder = IntCol(default=None)
@@ -56,7 +87,7 @@ class CompleteCast(SQLObject):
     movie = ForeignKey('Title')
     subject = ForeignKey('CompCastType', notNone=True)
     status = ForeignKey('CompCastType', notNone=True)
-    note = UnicodeCol(default=None)
+    #note = UnicodeCol(default=None)
 
 class InfoType(SQLObject):
     info = UnicodeCol(length=32,notNone=True, alternateID=True)
@@ -68,7 +99,7 @@ class MovieLink(SQLObject):
     movie = ForeignKey('Title', notNone=True)
     linkedMovie = ForeignKey('Title', notNone=True)
     linkType = ForeignKey('LinkType', notNone=True)
-    note = UnicodeCol(default=None)
+    ##note = UnicodeCol(default=None)
 
 class MovieInfo(SQLObject):
     movie = ForeignKey('Title', notNone=True)
@@ -107,7 +138,10 @@ class Title(SQLObject):
     productionYear = IntCol(default=None)
     imdbID = IntCol(default=None)
     phoneticCode = StringCol(length=5, default=None)
-    episodeOf = ForeignKey('Title', default=None)
+    #episodeOf = ForeignKey('Title', default=None)
+    episodeOfID = IntCol(default=None)
+    seasonNr = IntCol(default=None)
+    episodeNr = IntCol(default=None)
 
 DB_TABLES = [Name, KindType, Title, AkaName, AkaTitle, RoleType, CastInfo,
         CompCastType, CompleteCast, InfoType, LinkType, MovieLink, MovieInfo,
@@ -118,6 +152,8 @@ def setConnection(uri):
     conn = connectionForURI(uri)
     for table in DB_TABLES:
         table.setConnection(conn)
+        table.sqlmeta.cacheValues = False
+        table._cacheValue = False
     return conn
 
 def dropTables(ifExists=True, connectURI=None):

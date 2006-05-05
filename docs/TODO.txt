@@ -14,6 +14,8 @@ NOTE: it's always time to clean the code! <g>
   for every data access system (the imdbpy2sql.py script for sure
   requires at least Python 2.3).
 * The analyze_title/build_title functions are somewhat too complex.
+* for local and sql data access systems: some episode titles are
+  marked as {{SUSPENDED}}; they should probably be ignored.
 
 
 [searches]

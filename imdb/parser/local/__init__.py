@@ -658,7 +658,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     else:
                         eps.append(d)
                 movies.sort(sortMovies)
-                res[name] = movies
+                if movies:
+                    res[name] = movies
                 for e in eps:
                     series = Movie(data=e['episode of'], accessSystem='local')
                     seriesID = self._getTitleID(series.get(

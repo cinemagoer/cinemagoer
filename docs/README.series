@@ -32,6 +32,12 @@ the result will be:
 The 'episode of' key can be a dictionary or a Movie class instance with
 the same information.
 
+The build_title() function takes an optional argument: ptdf; is it's
+set to false (the default), it returns the title of the episode in
+the format used by the IMDb's web server ("Series, The" An Episode (2005)),
+otherwise it uses the format used by the plain text data files (something
+like "Series, The" (2004) {An Episode (#2.5)})
+
 
   SERIES
   ======

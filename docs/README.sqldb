@@ -13,7 +13,7 @@ maybe other database backends were added.
 You need the SQLObject package, at least version 0.8.
 
 SQLObject home page: http://sqlobject.org/
-SVN command to retrieve the latest development version:
+SVN command to download the latest development version:
   svn co http://svn.colorstudy.com/SQLObject/trunk SQLObject
 
 
@@ -40,7 +40,7 @@ For PostgreSQL, you have to use the "createdb" command:
 
 To create the tables and to populate the database, you must run
 the imdbpy2sql.py script:
-  # imdbpy2sql.py -d /dir/with/plainTextDataFiles/ 'URI'
+  # imdbpy2sql.py -d /dir/with/plainTextDataFiles/ -u 'URI'
 
 Where the 'URI' argument is a string representing the connection
 to your database, with the schema:
@@ -71,11 +71,6 @@ In the end, the database will require between 900MB and 1GB of disc space.
 
 The imdbpy2sql.py will print a lot of debug information on standard output;
 you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
-
-NOTE: it's possible that the imdbpy2sql.py will print out some "Warnings"
-      strings (a lot of it, if your database's charset is utf-8); I'm still
-      studying the issue, but it should not be a real problem (see also
-      the note in the TODO.txt file).
 
 
   SQL USAGE

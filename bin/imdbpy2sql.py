@@ -211,7 +211,7 @@ def title_soundex(title):
     if not title: return None
     ts = title.split(', ')
     # Strip the ending article, if any.
-    if ts[-1] in _articles:
+    if ts[-1].lower() in _articles:
         title = ', '.join(ts[:-1])
     return soundex(title)
 

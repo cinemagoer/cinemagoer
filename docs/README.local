@@ -23,8 +23,8 @@ NOTE: the current (3.24) moviedb version is old an it was not
 thought with tv series episodes support in mind.
 It can still work very well, but you've to modify some constants
 in the code: edit the "moviedb.h" file in the "src" directory,
-and change MAXTITLES to _at least_ 1200000 and MAXNAKAENTRIES
-to 700000.
+and change MAXTITLES to _at least_ 1400000, MAXNAKAENTRIES
+to 700000 and LINKSTART to 1000000.
 See http://us.imdb.com/database_statistics for more up-to-date
 statistics.
 

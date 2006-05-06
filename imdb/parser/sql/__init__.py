@@ -268,6 +268,10 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         title_dict = analyze_title(title, canonical=1)
         s_title = title_dict['title']
         if not s_title: return []
+        s_title_split = s_title.split(', ')
+        if len(s_title_split) > 1 and s_title_split[-1].lower() in _articles:
+            s_title_rebuilt = ', '.join(s_title_split[:-1])
+            if s_title_rebuilt: s_title = s_title_rebuilt
         if isinstance(s_title, UnicodeType):
             s_title = s_title.encode('ascii', 'ignore')
         soundexCode = soundex(s_title)

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.5.cvs20060506 "Ninja: Silent Assassin" (06 May 2006)
+* What's the new in release 2.5.cvs20060507 "Zombie Honeymoon" (07 May 2006)
   [general]
   - support of the new style for tv series; see the README.series file.
   - modified the DISCLAIMER.txt file to be compliant to the debian guidelines.

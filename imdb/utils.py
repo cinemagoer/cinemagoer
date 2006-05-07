@@ -296,10 +296,13 @@ def analyze_title(title, canonical=None,
                 if not oad:
                     # No year, but the title is something like (2005-04-12)
                     if episode_or_year and episode_or_year[0] == '(' and \
-                                    episode_or_year[-1:] == ')':
+                                    episode_or_year[-1:] == ')' and \
+                                    episode_or_year[1:2] != '#':
                         oad = episode_or_year
                         if oad[1:5] and oad[5:6] == '-':
                             ep_year = oad[1:5]
+                if not oad and not sen and episode_or_year.startswith('(#'):
+                    sen = episode_or_year
         elif episode_or_year.startswith('Episode dated'):
             oad = episode_or_year[14:]
             if oad[-4:].isdigit():

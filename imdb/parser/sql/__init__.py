@@ -209,13 +209,28 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         else: Table = AkaTitle
         m = Table.get(movieID)
         mdict = {'title': m.title, 'kind': str(m.kind.kind),
-                'year': m.productionYear, 'imdbIndex': m.imdbIndex}
+                'year': m.productionYear, 'imdbIndex': m.imdbIndex,
+                'season': m.seasonNr, 'episode': m.episodeNr}
         if mdict['imdbIndex'] is None: del mdict['imdbIndex']
         if mdict['year'] is None: del mdict['year']
         else: mdict['year'] = str(mdict['year'])
+        if mdict['season'] is None: del mdict['season']
+        else:
+            try: mdict['season'] = int(mdict['season'])
+            except: pass
+        if mdict['episode'] is None: del mdict['episode']
+        else:
+            try: mdict['episode'] = int(mdict['episode'])
+            except: pass
         episodeOfID = m.episodeOfID
         if episodeOfID is not None:
-            mdict['episode of'] = self._get_movie_data(episodeOfID, fromAka)
+            ser_dict = self._get_movie_data(episodeOfID, fromAka)
+            mdict['episode of'] = Movie(data=ser_dict, movieID=episodeOfID,
+                                        accessSystem='sql')
+            if fromAka:
+                ser_note = AkaTitle.get(episodeOfID).note
+                if ser_note:
+                    mdict['episode of'].notes = ser_note
         return mdict
 
     def get_imdbMovieID(self, movieID):
@@ -318,15 +333,17 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         try:
             qr = [(q.id, self._get_movie_data(q.id))
                     for q in Title.select(condition)]
-            qr += [(q.movieID, self._get_movie_data(q.id, fromAka=1))
+            q2 = [(q.movieID, self._get_movie_data(q.id, fromAka=1))
                     for q in AkaTitle.select(conditionAka)]
+            qr += q2
         except SQLObjectNotFound, e:
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
 
         resultsST = results
         if not self.doAdult: resultsST = 0
-        res = scan_titles(qr, title1, title2, title3, resultsST)
+        res = scan_titles(qr, title1, title2, title3, resultsST,
+                            ro_thresold=0.0)
         if self.doAdult and results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
 
@@ -415,6 +432,30 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             for group in mlinks:
                 lt = group[0][1]
                 res['connections'][lt] = [i[0] for i in group]
+        # Episodes.
+        episodes = {}
+        eps_list = list(Title.select(Title.q.episodeOfID == movieID))
+        eps_list.sort()
+        if eps_list:
+            ps_data = {'title': res['title'], 'kind': res['kind'],
+                        'year': res.get('year'),
+                        'imdbIndex': res.get('imdbIndex')}
+            parentSeries = Movie(movieID=movieID, data=ps_data,
+                                accessSystem='sql')
+            for episode in eps_list:
+                episodeID = episode.id
+                episode_data = self._get_movie_data(episodeID)
+                m = Movie(movieID=episodeID, data=episode_data,
+                            accessSystem='sql')
+                m['episode of'] = parentSeries
+                season = episode_data.get('season', 'UNKNOWN')
+                if not episodes.has_key(season): episodes[season] = {}
+                ep_number = episode_data.get('episode')
+                if ep_number is None:
+                    ep_number = max((episodes[season].keys() or [0])) + 1
+                episodes[season][ep_number] = m
+            res['episodes'] = episodes
+            res['number of episodes'] = sum([len(x) for x in episodes.values()])
         # Regroup laserdisc information.
         res = _reGroupDict(res, self._moviesubs)
         # Do some transformation to preserve consistency with other
@@ -437,7 +478,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 res['runtimes'][0] = re_episodes.sub('', rt)
                 if res['runtimes'][0][-2:] == '::':
                     res['runtimes'][0] = res['runtimes'][0][:-2]
-                res['episodes'] = episodes[0]
+                #res['number of episodes'] = episodes[0]
         if res.has_key('year'):
             res['year'] = str(res['year'])
         if res.has_key('votes'):
@@ -542,15 +583,30 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 for cd in CastInfo.select(CastInfo.q.personID == personID)]
         # Regroup by role/duty (cast, writer, director, ...)
         castdata[:] =  _groupListBy(castdata, 3)
+        episodes = {}
         for group in castdata:
-            duty = group[0][3]
             for mdata in group:
+                duty = orig_duty = group[0][3]
+                note = mdata[2] or u''
+                if mdata[4].has_key('episode of'):
+                    duty = 'episodes'
+                    if orig_duty not in ('actor', 'actress'):
+                        if note: note = ' %s' % note
+                        note = '[%s]%s' % (orig_duty, note)
                 m = Movie(movieID=mdata[0], data=mdata[4],
                             currentRole=mdata[1] or u'',
-                            notes=mdata[2] or u'',
-                            accessSystem='sql')
-                res.setdefault(duty, []).append(m)
-            res[duty].sort(sortMovies)
+                            notes=note, accessSystem='sql')
+                if duty != 'episodes':
+                    res.setdefault(duty, []).append(m)
+                else:
+                    episodes.setdefault(m['episode of'], []).append(m)
+            if duty != 'episodes':
+                res[duty].sort(sortMovies)
+            else:
+                for k in episodes:
+                    episodes[k].sort(sortMovies)
+                    episodes[k].reverse()
+                res[duty] = episodes
         # XXX: is 'guest' still needed?  I think every GA reference in
         #      the biographies.list file was removed.
         if res.has_key('guest'):

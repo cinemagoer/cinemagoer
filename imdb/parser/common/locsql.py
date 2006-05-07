@@ -190,10 +190,11 @@ except ImportError:
         return sm.ratio()
 
 
-def scan_names(name_list, name1, name2, name3, results=0):
+def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None):
     """Scan a list of names, searching for best matches against
     the given variations."""
-    RO_THRESHOLD = 0.6
+    if ro_thresold is not None: RO_THRESHOLD = ro_thresold
+    else: RO_THRESHOLD = 0.6
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
     sm3 = SequenceMatcher()
@@ -232,10 +233,12 @@ def scan_names(name_list, name1, name2, name3, results=0):
     if results > 0: res[:] = res[:results]
     return res
 
-def scan_titles(titles_list, title1, title2, title3, results=0):
+def scan_titles(titles_list, title1, title2, title3, results=0,
+                ro_thresold=None):
     """Scan a list of titles, searching for best matches against
     the given variations."""
-    RO_THRESHOLD = 0.6
+    if ro_thresold is not None: RO_THRESHOLD = ro_thresold
+    else: RO_THRESHOLD = 0.6
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
     sm3 = SequenceMatcher()
@@ -262,7 +265,7 @@ def scan_titles(titles_list, title1, title2, title3, results=0):
             til2 = til
             tils = til2.split(', ')
             matchHasArt = 0
-            if tils[-1] in _articles:
+            if tils[-1].lower() in _articles:
                 til2 = ', '.join(tils[:-1])
                 matchHasArt = 1
             if hasArt and not matchHasArt:

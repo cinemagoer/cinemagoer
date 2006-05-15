@@ -1,5 +1,10 @@
 
-Davide Alberani
+NOTE: see also CONTRIBUTORS.txt for a list of developers of important
+portions of the code and CREDITS.txt for a list of people who
+contributed with hints, patches and so on.
+
+
+AUTHOR: Davide Alberani
 
 e-mail:		da@erlug.linux.it or alberanid@libero.it
 IMDbPY page:	http://imdbpy.sf.net/

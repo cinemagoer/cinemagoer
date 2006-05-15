@@ -1,4 +1,7 @@
 
+See also CONTRIBUTORS.txt for a list of the most important developers.
+
+
 I'd like to thank the following people for their help:
 
 * Tero Saarni, for the series 60 GUI and a lot of testing and

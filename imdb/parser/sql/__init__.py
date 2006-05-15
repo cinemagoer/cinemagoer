@@ -7,7 +7,7 @@ the SQLObject Object Relational Manager is available.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "sql", "database" or "db".
 
-Copyright 2005-2006 Davide Alberani <da@erlug.linux.it> 
+Copyright 2005-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -154,7 +154,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         td = analyze_title(title)
         condition = None
         if td['kind'] == 'episode':
-            epof = build_title(td['episode of'], canonical=1)
+            epof = td['episode of']
             seriesID = [s.id for s in Title.select(
                         AND(Title.q.title == epof['title'].encode('utf_8'),
                             Title.q.imdbIndex == epof.get('imdbIndex'),
@@ -244,7 +244,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if imdbID is not None: return '%07d' % imdbID
         m_dict = self._get_movie_data(movie.id)
         titline = build_title(m_dict, canonical=1, ptdf=1)
-        imdbID = self._title2imdbID(titline)
+        imdbID = self.title2imdbID(titline)
         # If the imdbID was retrieved from the web and was not in the
         # database, update the database (ignoring errors, because it's
         # possibile that the current user has not update privileges).
@@ -266,7 +266,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if imdbID is not None: return '%07d' % imdbID
         n_dict = {'name': person.name, 'imdbIndex': person.imdbIndex}
         namline = build_name(n_dict, canonical=1)
-        imdbID = self._name2imdbID(namline)
+        imdbID = self.name2imdbID(namline)
         if imdbID is not None:
             try: person.imdbID = imdbID
             except SQLObjectNotFound: pass
@@ -358,7 +358,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             res[:] = [x for x in res if x[0] not in adultlist]
             if results > 0: res[:] = res[:results]
         return res
-        
+
     def get_movie_main(self, movieID):
         # Every movie information is retrieved from here.
         infosets = self.get_movie_infoset()

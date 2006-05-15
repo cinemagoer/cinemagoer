@@ -223,7 +223,7 @@ countries; string list; production's country ['USA', 'Italy']
 genres; string list; one or more in (Action, Adventure, Adult, Animation,
 		Comedy, Crime, Documentary, Drama, Family, Fantasy, Film-Noir,
 		Horror, Musical, Mystery, Romance, Sci-Fi, Short, Thriller,
-		War, Western)
+		War, Western) and other genres defined by IMDb.
 akas; string list; list of aka for this movie
 languages; string list; list of languages
 certificates; string list; ['UK:15', 'USA:R']

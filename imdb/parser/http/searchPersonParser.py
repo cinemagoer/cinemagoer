@@ -32,7 +32,7 @@ from utils import ParserBase
 #      Anyway, it's used by the local access system, to get the imdbID.
 class BasicPersonParser(ParserBase):
     """Simply get the name of a person and the imdbID.
-    
+
     It's used by the HTMLSearchPersonParser class to return a result
     for a direct match (when a search on IMDb results in a single
     person, the web server sends directly the person page.
@@ -72,9 +72,9 @@ class BasicPersonParser(ParserBase):
                 res = [(pid, d)]
                 self.reset()
                 self._result = res
-    
+
     def end_a(self): pass
-    
+
     def _handle_data(self, data):
         if self._in_title:
             self._name += data
@@ -135,7 +135,7 @@ class HTMLSearchPersonParser(ParserBase):
     def end_small(self): pass
 
     def start_li(self, attrs): pass
-    
+
     def end_li(self):
         if self._in_list and self._is_name and self._current_imdbID \
                 and self._name:

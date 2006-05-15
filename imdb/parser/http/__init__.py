@@ -186,7 +186,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def set_proxy(self, proxy):
         """Set the web proxy to use.
-        
+
         It should be a string like 'http://localhost:8080/'; if the
         string is empty, no proxy will be used.
         If set, the value of the environment variable HTTP_PROXY is

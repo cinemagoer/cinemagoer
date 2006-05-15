@@ -125,7 +125,7 @@ def subSGMLRefs(s):
     """Return the given html string with sgml entity and char references
     replaced."""
     return re_sgmlrefsub(_replSGMLRefs, s)
-    
+
 
 # XXX: this class inherits from SGMLParser; see the documentation for
 #      the "sgmllib" modules.

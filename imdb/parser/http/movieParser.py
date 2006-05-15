@@ -315,7 +315,7 @@ class HTMLMovieParser(ParserBase):
         elif self._is_cast_crew and self._current_section:
             if self._is_name:
                 self._name += '::'
-    
+
     def do_br(self, attrs):
         if self._is_company_cred:
             # Sometimes companies are separated by <br> tags.
@@ -589,7 +589,7 @@ class HTMLPlotParser(ParserBase):
     the akas.imdb.com server.  The final result will be a
     dictionary, with a 'plot' key, containing a list
     of string with the structure: 'summary_author <author@email>::summary'.
-    
+
     Example:
         pparser = HTMLPlotParser()
         result = pparser.parse(plot_summary_html_string)
@@ -669,7 +669,7 @@ class HTMLAwardsParser(ParserBase):
         self._aw_data = []
         # We're managing awards for a person or a movie?
         self.subject = 'title'
-    
+
     def _reset(self):
         """Reset the parser."""
         self._aw_data = []
@@ -773,7 +773,7 @@ class HTMLAwardsParser(ParserBase):
         self._to = []
         self._for = []
         self._cur_role = u''
-        
+
     def start_th(self, attrs):
         self._begin_aw = 0
 
@@ -947,7 +947,7 @@ class HTMLTaglinesParser(ParserBase):
             self._in_tl = 1
 
     def start_p(self, attrs): pass
-    
+
     def end_p(self):
         if self._in_tl and self._ctl:
             self._tl.append(self._ctl.strip())
@@ -1050,7 +1050,7 @@ class HTMLAlternateVersionsParser(ParserBase):
 
     def end_ul(self):
         self._in_av = 0
-        
+
     def start_li(self, attrs):
         if self._in_av:
             self._in_avd = 1
@@ -1139,7 +1139,7 @@ class HTMLCrazyCreditsParser(ParserBase):
     def start_pre(self, attrs):
         if self._in_cc:
             self._in_cc2 = 1
-    
+
     def end_pre(self):
         if self._in_cc2:
             self.app()
@@ -1157,7 +1157,7 @@ class HTMLCrazyCreditsParser(ParserBase):
             self._cc.append(self._ccc.replace('\n', ' '))
             self._ccc = ''
             self._nrbr = 0
-    
+
     def _handle_data(self, data):
         if self._in_cc2:
             self._ccc += data
@@ -1193,14 +1193,14 @@ class HTMLGoofsParser(ParserBase):
 
     def end_ul(self):
         self._in_go = 0
-        
+
     def start_b(self, attrs):
         if self._in_go2:
             self._in_gok = 1
 
     def end_b(self):
         self._in_gok = 0
-            
+
     def start_li(self, attrs):
         if self._in_go:
             self._in_go2 = 1
@@ -1258,7 +1258,7 @@ class HTMLQuotesParser(ParserBase):
         name = self.get_attr_value(attrs, 'name')
         if name and name.startswith('qt'):
             self._in_quo2 = 1
-    
+
     def end_a(self): pass
 
     def do_hr(self, attrs):
@@ -1277,7 +1277,7 @@ class HTMLQuotesParser(ParserBase):
     def do_br(self, attrs):
         if self._in_quo and self._in_quo2 and self._cquo:
             self._cquo = '%s::' % self._cquo.strip()
-    
+
     def _handle_data(self, data):
         if self._in_quo and self._in_quo2:
             data = data.replace('\n', ' ')
@@ -1318,7 +1318,7 @@ class HTMLReleaseinfoParser(ParserBase):
             self._in_rl = 1
 
     def end_th(self): pass
-        
+
     def start_a(self, attrs):
         if self._in_rl:
             href = self.get_attr_value(attrs, 'href')
@@ -1331,7 +1331,7 @@ class HTMLReleaseinfoParser(ParserBase):
             if self._crl:
                 self._crl += '::'
             self._is_country = 0
-     
+
     def start_tr(self, attrs): pass
 
     def end_tr(self):
@@ -1445,7 +1445,7 @@ class HTMLRatingsParser(ParserBase):
 
     def end_p(self):
         self._in_p = 0
-    
+
     def start_a(self, attrs):
         href = self.get_attr_value(attrs, 'href')
         if href and href.startswith('ratings-'):
@@ -1454,7 +1454,7 @@ class HTMLRatingsParser(ParserBase):
 
     def end_a(self):
         self._in_demo_t = 0
-    
+
     def _handle_data(self, data):
         if self._in_b and data == 'Rating':
             self._in_total = 1
@@ -1520,7 +1520,7 @@ class HTMLOfficialsitesParser(ParserBase):
 
     def _init(self):
         self.kind = 'official sites'
-    
+
     def _reset(self):
         """Reset the parser."""
         self._in_os = 0
@@ -1545,7 +1545,7 @@ class HTMLOfficialsitesParser(ParserBase):
     def start_ol(self, attrs):
         if self._in_os:
             self._in_os2 = 1
-    
+
     def end_ol(self):
         if self._in_os2:
             self._in_os2 = 0
@@ -1570,9 +1570,9 @@ class HTMLOfficialsitesParser(ParserBase):
                     if href.startswith('/'): href = href[1:]
                     href = 'http://akas.imdb.com/%s' % href
                 self._cosl = href
-        
+
     def end_a(self): pass
-    
+
     def _handle_data(self, data):
         if self._in_os3:
             self._cos += data
@@ -1626,7 +1626,7 @@ class HTMLConnectionParser(ParserBase):
         tn = self.re_imdbID.findall(href)
         if tn:
             self._cur_id = tn[-1]
-    
+
     def end_a(self): pass
 
     def do_br(self, attrs):
@@ -1663,7 +1663,7 @@ class HTMLTechParser(ParserBase):
 
     def _init(self):
         self.kind = 'something else'
-    
+
     def _reset(self):
         """Reset the parser."""
         self._tc = {}
@@ -1672,7 +1672,7 @@ class HTMLTechParser(ParserBase):
         self._indd = 0
         self._cur_sect = ''
         self._curdata = ['']
-    
+
     def get_data(self):
         """Return the dictionary."""
         if self.kind == 'locations':
@@ -1901,7 +1901,7 @@ class HTMLDvdParser(ParserBase):
             self._coldata += '::'
 
     def end_li(self): pass
-            
+
     def start_h3(self, attrs):
         if self._indvd:
             self._intitle = 1
@@ -2007,7 +2007,7 @@ class HTMLRecParser(ParserBase):
         self._intable = 0
         self._inb = 0
         self._cur_id = ''
-    
+
     def get_data(self):
         if not self._rec: return {}
         return {'recommendations': self._rec}
@@ -2185,7 +2185,7 @@ class HTMLAmazonReviewsParser(ParserBase):
         self._cur_text = ''
         self._cur_link = ''
         self._cur_revkind = ''
-    
+
     def get_data(self):
         """Return the dictionary."""
         if not self._reviews: return {}
@@ -2410,11 +2410,12 @@ class HTMLSalesParser(ParserBase):
         self._get_descr = 0
         self._in_a = 0
         self._in_dd = 0
+        self._cur_link_text = ''
 
     def get_data(self):
         if not self._sales: return {}
         return {'merchandising links': self._sales}
-    
+
     def start_h3(self, attrs):
         self._in_h3 = 1
         self._cur_type = ''
@@ -2429,7 +2430,7 @@ class HTMLSalesParser(ParserBase):
             clsl = cls.lower()
             if clsl == 'w_rowtable_colcover':
                 self._get_img = 1
-            elif clsl == 'w_rowtable_coldetails':
+            elif clsl in ('w_rowtable_colshop', 'w_rowtable_coldetails'):
                 self._get_descr = 1
                 self._cur_descr = ''
 
@@ -2441,6 +2442,10 @@ class HTMLSalesParser(ParserBase):
             self._get_img = 0
             src = self.get_attr_value(attrs, 'src')
             if src: self._cur_info['cover'] = src
+        if self._get_descr:
+            alttxt = self.get_attr_value(attrs, 'alt')
+            if alttxt:
+                self._cur_link_text = alttxt
 
     def end_img(self): pass
 
@@ -2450,11 +2455,15 @@ class HTMLSalesParser(ParserBase):
         self._cur_descr = self._cur_descr.strip()
         if self._cur_descr:
             self._cur_info['description'] = self._cur_descr
-            self._cur_descr = ''
-            if self._cur_info:
-                self._sales.setdefault(self._cur_type,
-                                        []).append(self._cur_info)
-                self._cur_info = {}
+        self._cur_descr = ''
+        self._cur_link_text = self._cur_link_text.strip()
+        if self._cur_link_text:
+            self._cur_info['link-text'] = self._cur_link_text
+        self._cur_link_text = ''
+        if self._cur_info:
+            self._sales.setdefault(self._cur_type,
+                                    []).append(self._cur_info)
+            self._cur_info = {}
 
     def start_dt(self, attrs):
         self._in_dt = 1
@@ -2545,7 +2554,7 @@ class HTMLEpisodesParser(ParserBase):
                                 accessSystem='http')
         self._html_title = ''
         self._series
-    
+
     def start_h1(self, attrs):
         self._in_h1 = 1
 

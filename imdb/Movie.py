@@ -107,6 +107,7 @@ class Movie(_Container):
                 'tv guests': 'guests',
                 'notable tv guest appearances': 'guests',
                 'episodes cast': 'guests',
+                'episodes number': 'number of episodes',
                 'amazon review': 'amazon reviews',
                 'merchandising': 'merchandising links',
                 'merchandise': 'merchandising links',
@@ -148,7 +149,6 @@ class Movie(_Container):
     def set_title(self, title):
         """Set the title of the movie."""
         # XXX: convert title to unicode, if it's a plain string?
-        # XXX: what if an episode title is provided?
         d_title = analyze_title(title, canonical=1)
         self.data.update(d_title)
 

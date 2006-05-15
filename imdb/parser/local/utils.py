@@ -122,7 +122,7 @@ def convBin(s, kind):
     are converted, while other types are left untouched.
     The number of items in the tuple depends on the structure
     specified with the kind argument.
-    
+
     If the result contains a single elements, this is returned
     instead of the tuple."""
     kentry = dataset_dict[kind]

@@ -48,7 +48,7 @@ class HTMLMaindetailsParser(ParserBase):
     def _init(self):
         # This is the dictionary that will be returned by the parse() method.
         self._person_data = {}
-        
+
     def _reset(self):
         """Reset the parser."""
         self._person_data.clear()
@@ -101,7 +101,7 @@ class HTMLMaindetailsParser(ParserBase):
                     self._person_data['miscellaneouscrew']
             del self._person_data['miscellaneouscrew']
         return self._person_data
-    
+
     def start_title(self, attrs):
         self._in_name = 1
 
@@ -277,8 +277,6 @@ class HTMLMaindetailsParser(ParserBase):
         elif self._in_title and not self._seen_br:
             self._title += data
         elif self._in_list:
-            ##if self._roles and not self._roles[-1].isspace():
-            ##    self._roles += ' '
             self._roles += data
 
 
@@ -356,7 +354,7 @@ class HTMLBioParser(ParserBase):
                     self._bio_data.has_key('mini biography'):
                 self._bio_data['mini biography'][-1] = '%s::%s' % (d_split[0],
                                     self._bio_data['mini biography'][-1])
-                    
+
             elif d_split:
                 # Multiple items are added separately (e.g.: 'trivia' is
                 # a list of strings).
@@ -388,7 +386,7 @@ class HTMLBioParser(ParserBase):
                 self._sect_name.strip().lower() in \
                 ('salary', 'salary history'):
             if self._sect_data: self._sect_data += '@@@@'
-    
+
     def _handle_data(self, data):
         if self._in_sect_name:
             self._sect_name += data
@@ -412,7 +410,7 @@ class HTMLOtherWorksParser(ParserBase):
 
     def _init(self):
         self.kind = 'other works'
-    
+
     def _reset(self):
         """Reset the parser."""
         self._in_ow = 0
@@ -447,7 +445,7 @@ class HTMLOtherWorksParser(ParserBase):
     def end_dl(self):
         self.do_br([])
         self._in_ow = 0
-    
+
     def _handle_data(self, data):
         if self._in_ow:
             if self._dostrip:

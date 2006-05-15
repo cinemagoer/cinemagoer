@@ -27,11 +27,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from imdb.utils import analyze_title
 from utils import ParserBase
+from imdb.Movie import Movie
 
 
 class BasicMovieParser(ParserBase):
     """Simply get the title of a movie and the imdbID.
-    
+
     It's used by the HTMLSearchMovieParser class to return a result
     for a direct match (when a search on IMDb results in a single
     movie, the web server sends directly the movie page."""
@@ -81,11 +82,6 @@ class BasicMovieParser(ParserBase):
                 if not nr: return
                 imdbID = str(nr[0])
                 self._movieID = imdbID
-                ##title = self._page_title.strip()
-                ##if imdbID and title:
-                ##   res = [(imdbID, analyze_title(title, canonical=1))]
-                ##    self.reset()
-                ##    self._result = res
 
     def end_input(self): pass
 
@@ -170,7 +166,7 @@ class HTMLSearchMovieParser(ParserBase):
         self._current_title = ''
         self._no_more = 0
         self._stop = 0
-    
+
     def parse(self, cont, results=None):
         self.maxres = results
         return ParserBase.parse(self, cont)

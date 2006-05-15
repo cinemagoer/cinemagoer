@@ -1,0 +1,11 @@
+
+People who contributed with a substantial amount of work and that
+share the copyright over some portions of the code:
+
+NAME: Giuseppe "Cowo" Corbelli
+EMAIL: <cowo --> lugbs.linux.it>
+DESCRIPTION: provided a lot of code and hints to integrate IMDbPY
+with SQLObject, working on the imdbpy2sql.py script and the dbschema.py
+module.
+
+

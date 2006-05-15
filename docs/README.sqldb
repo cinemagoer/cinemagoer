@@ -1,3 +1,14 @@
+
+NOTE: due to a series of limitation, the current (2.5) release
+contains an imdbpy2sql.py script that is _a lot_ slower than
+specified below; to complete, it can take even 6 hours or more.
+
+For the next release we plan to drop the use of SQLObject and
+switch to SQLAlchemy or other tools, to restore acceptable performances.
+If you want to help, please subscribe the imdbpy-devel mailing list at:
+  http://imdbpy.sf.net/?page=help#ml
+ 
+
   SQL
   ===
 
@@ -62,15 +73,34 @@ Some examples:
 For other information you can read the SQLObject documentation.
 
 Notice that the command will take a long time to complete; I estimate
-between 20 minutes and 2 or 3 hours, depending on your hardware (I've tested
-MySQL 3.23; MySQL 5 seems to be somewhat slower, but maybe it's because
-I've not fine-tuned it).
+2 or 3 hours, depending on your hardware (I've tested MySQL 3.23; MySQL 5
+seems to be somewhat slower, but maybe it's because I've not fine-tuned it).
 It will also requires a lot of memory (RAM or swap space), in the
 range of 150/200 megabytes.
-In the end, the database will require between 900MB and 1GB of disc space.
+In the end, the database will require between 1GB and 2GB of disc space.
 
 The imdbpy2sql.py will print a lot of debug information on standard output;
 you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
+
+
+  NOTE
+  ====
+
+The performances are hugely dependant upon the underlying Python
+module/package used to access the database.
+MySQL, for instance, has a executemany() method of the cursor object
+that accept multiple data insertion with a single SQL statement; other
+database requires a call to the execute() method for every single row
+of data, and they will be much slower - about 6 or 7 times slower than
+MySQL.
+
+
+  SQLITE NOTE
+  ===========
+
+It seems that, with older versions of the python-sqlite package, the first
+run may fail; if you get a DatabaseError exception saying "no such table",
+try running again the command with the same arguments.
 
 
   SQL USAGE

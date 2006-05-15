@@ -28,7 +28,7 @@ from types import ListType, TupleType
 
 from imdb.Movie import Movie
 from imdb.Person import Person
-from imdb.utils import analyze_title, analyze_name, canonicalName
+from imdb.utils import analyze_title, analyze_name, canonicalName, re_episodes
 from imdb._exceptions import IMDbDataAccessError
 from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
                                 imdbURL_movie, imdbURL_person
@@ -312,9 +312,17 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         runtimes = _findBetween(cont, 'Runtime:</b>', '<br>')
         if runtimes:
             # XXX: number of episodes?
-            rt = [x.strip().replace(' min', '')
-                    for x in runtimes[0].split('/')]
-            d['runtimes'] = rt
+            runtimes = runtimes[0]
+            episodes = re_episodes.findall(runtimes)
+            if episodes:
+                runtimes = re_episodes.sub('', runtimes)
+                episodes = episodes[0]
+                try: episodes = int(episodes)
+                except: pass
+                d['number of episodes'] = episodes
+            runtimes = [x.strip().replace(' min', '')
+                    for x in runtimes.split('/')]
+            d['runtimes'] = runtimes
         country = _findBetween(cont, 'href="/Sections/Countries/', ['"', '/'])
         if country: d['countries'] = country
         lang = _findBetween(cont, 'href="/Sections/Languages/', ['"', '/'])
@@ -410,7 +418,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             hs[:] = _findBetween(hs[0], 'src="', '"')
             if hs: r['headshot'] = hs[0]
         workkind = _findBetween(s, '<b><a name=', '</a> - filmography')
-        
+
         ws = []
         for w in workkind:
             if w and w[0] == '"': w = w[1:]

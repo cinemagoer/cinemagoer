@@ -40,8 +40,8 @@ major version you're using.
 To know what major version of python you've installed, run:
     $ python -V
 
-It should return a string like "Python 2.2.1"; in this example
-the major version is "2.2".
+It should return a string like "Python 2.3.5"; in this example
+the major version is "2.3".
 Now copy the "./imdb" directory:
     # cp -r ./imdb /usr/local/lib/python{MAJORVERSION}/site-packages/
 
@@ -57,6 +57,13 @@ read the "README.local" file.
 
 If you want to insert the content of the plain text data files
 into a SQL database, read the "README.sqldb" file.
+
+
+  HELP
+  ====
+
+Refer to the web site http://imdbpy.sf.net/ and subscribe to the
+mailing list:  http://imdbpy.sf.net/?page=help#ml
 
 
   UNICODE NOTICE
@@ -116,7 +123,8 @@ suitable for systems with limited bandwidth but normal CPU power.
   ======================================
 
 * Returns every information available in the plain text data files.
-  
+* Every database supported by SQLObject is available.
+
 
   FEATURES OF THE LOCAL DATA ACCESS SYSTEM
   ========================================

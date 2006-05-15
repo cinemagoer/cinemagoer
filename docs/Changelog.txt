@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.5.cvs20060507 "Zombie Honeymoon" (07 May 2006)
+* What's the new in release 2.5.cvs20060512 "Zombie Honeymoon" (12 May 2006)
   [general]
   - support of the new style for tv series; see the README.series file.
   - modified the DISCLAIMER.txt file to be compliant to the debian guidelines.
@@ -22,21 +22,25 @@
     sortedEpisodes(), useful to manage lists/dictionaries of tv series
     episodes.
   - renamed the "ratober" C module to "cutils".
+  - added CONTRIBUTORS.txt file.
 
   [http data access system]
   - fixed a bug regarding currentRole for tv series.
+  - fixed a bug about the "merchandising links" page.
 
   [http and mobile data access systems]
   - fixed a bug retrieving cover url for tv (mini) series.
 
   [mobile data access system]
   - fixed a bug with tv series titles.
+  - retrieves the number of episodes for tv series.
 
   [local data access system]
   - new get_episodes function in the cutils/ratober C module.
   - search functions (both C and pure python) are now a lot faster.
 
   [sql data access system]
+  - uses the SQLObject ORM to support a wide range of database engines.
   - added in the cutils C module the soundex() function, and a fall back
     Python only version in the parser.sql package.
 

@@ -46,7 +46,6 @@ imdb (package)
             +-> locsql
 
 
-
 Description:
 imdb (package): contains the IMDb function, the IMDbBase class and imports
                 the IMDbError exception class.

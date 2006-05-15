@@ -6,7 +6,7 @@ IMDb's data through a local installation.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "local" or "files".
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it> 
+Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ except ImportError:
 
     def get_episodes(movieID, indexFile, keyFile):
         if movieID < 0:
-            raise IOError, "movieID must be positive."
+            raise IMDbDataAccessError, "movieID must be positive."
         try:
             ifile = open(indexFile, 'rb')
         except IOError, e:
@@ -61,7 +61,8 @@ except ImportError:
         indexStr = ifile.read(4)
         ifile.close()
         if len(indexStr) != 4:
-            raise IOError, "unable to read indexFile; movieID too high?"
+            raise IMDbDataAccessError, \
+                    "unable to read indexFile; movieID too high?"
         kfIndex = 0L
         for i in (0, 1, 2, 3):
             kfIndex |= ord(indexStr[i]) << i*8L;
@@ -220,7 +221,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
     def get_lastMovieID(self):
         """Return the last movieID"""
         return self._get_lastID('%stitles.index' % self.__db)
-    
+
     def get_lastPersonID(self):
         """Return the last personID"""
         return self._get_lastID('%snames.index' % self.__db)
@@ -463,7 +464,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         if goo: return {'data': {'goofs': goo},
                         'titlesRefs': trefs, 'namesRefs': nrefs}
         return {'data': {}}
-    
+
     def get_movie_soundtrack(self, movieID):
         goo = parseMinusList(movieID, '%ssoundtracks.data' % self.__db,
                             '%ssoundtracks.index' % self.__db)
@@ -526,13 +527,13 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         if mb: return {'data': {'business': mb},
                         'titlesRefs': trefs, 'namesRefs': nrefs}
         return {'data': {}}
-    
+
     def get_movie_literature(self, movieID):
         ml = getLiterature(movieID, '%sliterature.index' % self.__db,
                             '%sliterature.data' % self.__db)
         if ml: return {'data': {'literature': ml}}
         return {'data': {}}
-    
+
     def get_movie_laserdisc(self, movieID):
         ml = getLaserdisc(movieID, '%slaserdisc.index' % self.__db,
                             '%slaserdisc.data' % self.__db)
@@ -565,8 +566,11 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         return episodes
 
     def get_movie_episodes(self, movieID):
-        me = get_episodes(movieID, '%stitles.index' % self.__db,
-                                    '%stitles.key' % self.__db)
+        try:
+            me = get_episodes(movieID, '%stitles.index' % self.__db,
+                                        '%stitles.key' % self.__db)
+        except IOError, e:
+            raise IMDbDataAccessError, str(e)
         if me:
             return {'data': {'episodes': self._buildEpisodes(me, movieID)}}
         return {'data': {}}
@@ -603,7 +607,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         #      A cleaner solution, would be to NOT return Movies object
         #      at first, from the getBio() function.
         # XXX: anyway, this is no more needed, since "guest appearances"
-        #      are gone, with the new tv series episodes support.
+        #      are gone with the new tv series episodes support.
         if res.has_key('notable tv guest appearances'):
             nl = []
             for m in res['notable tv guest appearances']:

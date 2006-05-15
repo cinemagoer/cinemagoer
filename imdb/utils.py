@@ -321,7 +321,7 @@ def analyze_title(title, canonical=None,
                 try: seas = int(seas)
                 except: pass
                 try: epn = int(epn)
-                except: epn
+                except: pass
                 episode_d['season'] = seas
                 episode_d['episode'] = epn
         return episode_d
@@ -426,14 +426,6 @@ def build_title(title_dict, canonical=None,
                                 ptdf=0, _doYear=doYear)
         ep_dict = {'title': title_dict.get('title', ''),
                     'imdbIndex': title_dict.get('imdbIndex')}
-        ##doYear = 1
-        ##ep_year = title_dict.get('year', '????')
-        ##if ptdf:
-        ##    if ep_year is not None:
-        ##        ep_dict['year'] = ep_year
-        ##    else: doYear = 0
-        ##else:
-        ##    ep_dict['year'] = ep_year
         ep_title = ep_dict['title']
         if not ptdf:
             doYear = 1
@@ -462,13 +454,6 @@ def build_title(title_dict, canonical=None,
                 episode_title += ')'
             episode_title = '{%s}' % episode_title
         return '%s %s' % (pre_title, episode_title)
-        ##series_title = episode_of.get('canonical title')
-        ##if series_title is None:
-        ##    series_title = episode_of.get('title', '')
-        ##if not canonicalSeries:
-        ##    series_title = normalizeTitle(series_title)
-        ##pre_title = '"%s"' % series_title
-        ##canonical = canonicalEpisode
     title = title_dict.get('canonical title') or title_dict.get('title', '')
     if not title: return u''
     if not canonical:
@@ -761,6 +746,7 @@ class _Container:
 
     def __hash__(self):
         """Hash for this object."""
+        # XXX: does it always work correctly?
         theID = self.getID()
         if theID is not None and self.accessSystem not in ('UNKNOWN', None):
             s4h = '%s:%s' % (self.accessSystem, theID)

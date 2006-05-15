@@ -43,10 +43,17 @@ re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 HELP = """imdbpy2sql usage:
     %s -d /directory/with/PlainTextDataFiles/ -u URI
-        # NOTE: URI is something like:
-                mysql://da:q1w2e3@localhost/imdb
-                postgres://postgres:q1w2e3@localhost/test
+
+        # NOTE: URI is something along the line:
+                scheme://[user[:password]@]host[:port]/database[?parameters]
+
+                Examples:
+                mysql://user:password@host/database
+                postgres://user@host/database
                 sqlite:/tmp/imdb.db
+                sqlite:/C|/full/path/to/database
+
+                See README.sqldb for more information.
 """ % sys.argv[0]
 
 # Directory containing the IMDb's Plain Text Data Files.
@@ -102,7 +109,7 @@ print 'DROPPING current database...',
 sys.stdout.flush()
 dropTables()
 print 'done!'
-print 'CREATING new tables...'
+print 'CREATING new tables...',
 sys.stdout.flush()
 createTables()
 print 'done!'
@@ -176,7 +183,7 @@ def createSQLstr(table, cols, command='INSERT'):
             count += 1
     sqlstr += '(%s) ' % ', '.join(colNames)
     sqlstr += 'VALUES (%s)' % ', '.join(values)
-    if DB_NAME not in ('mysql', 'postgres', 'sqlite') and \
+    if DB_NAME not in ('mysql', 'postgres') and \
             PARAM_STYLE in ('named', 'pyformat'):
         converter = _makeConvNamed(convCols)
     else:
@@ -395,23 +402,18 @@ class _BaseCache(dict):
     """Base class for Movie and Person basic information."""
     def __init__(self, d=None, flushEvery=18000, counterInit=1):
         dict.__init__(self)
-        self.set_counter_generator(counterInit)
+        self.set_counter_init(counterInit)
         # Flush data into the SQL database every flushEvery entries.
         self.flushEvery = flushEvery
         self._tmpDict = {}
         self._flushing = 0
         self._deferredData = {}
+        self._recursionLevel = 1
         if d is not None:
             for k, v in d.iteritems(): self[k] = v
 
-    def set_counter_generator(self, counterInit):
+    def set_counter_init(self, counterInit):
         self.counterInit = self.counter = counterInit
-        def _counter():
-            counter = counterInit
-            while 1:
-                yield counter
-                counter += 1
-        self.get_counter = _counter()
 
     def __setitem__(self, key, value):
         """Every time a key is set, its value is discarded and substituted
@@ -426,10 +428,16 @@ class _BaseCache(dict):
         else:
             self._deferredData[key] = counter
 
-    def flush(self, quiet=0):
+    def flush(self, quiet=0, _resetRecursion=1):
         """Flush to the database."""
         if self._flushing: return
         self._flushing = 1
+        if _resetRecursion: self._recursionLevel = 1
+        if self._recursionLevel >= 5:
+            print 'WARNING recursion level exceded trying to flush data'
+            print 'WARNING this batch of data is lost.'
+            self._tmpDict.clear()
+            return
         if self._tmpDict:
             try:
                 self._toDB(quiet)
@@ -438,6 +446,7 @@ class _BaseCache(dict):
                 # Dataset too large; split it in two and retry.
                 print ' * TOO MANY DATA (%s items), SPLITTING...' % \
                         len(self._tmpDict)
+                self._recursionLevel += 1
                 c1 = self.__class__()
                 c2 = self.__class__()
                 newflushEvery = self.flushEvery / 2
@@ -448,8 +457,8 @@ class _BaseCache(dict):
                     k, v = poptmpd()
                     c1._tmpDict[k] = v
                 c2._tmpDict = self._tmpDict
-                c1.flush()
-                c2.flush()
+                c1.flush(quiet=quiet, _resetRecursion=0)
+                c2.flush(quiet=quiet, _resetRecursion=0)
                 self._tmpDict.clear()
         self._flushing = 0
         # Flush also deferred data.
@@ -468,15 +477,16 @@ class _BaseCache(dict):
 
     def add(self, key, miscData=None):
         """Insert a new key and return its value."""
-        self.counter = c = self.get_counter.next()
+        c = self.counter
         # miscData=[('a_dict', 'value')] will set self.a_dict's c key
         # to 'value'.
         if miscData is not None:
             for d_name, data in miscData:
                 getattr(self, d_name)[c] = data
         self[key] = None
+        self.counter += 1
         return c
-    
+
     def addUnique(self, key, miscData=None):
         """Insert a new key and return its value; if the key is already
         in the dictionary, its previous  value is returned."""
@@ -538,8 +548,7 @@ class MoviesCache(_BaseCache):
                 mdict['episode of'] = series_d
             title = build_title(mdict, canonical=1, ptdf=1)
             dict.__setitem__(self, title, x[0])
-        #self.counter = Title.select().count() + 1
-        self.set_counter_generator(Title.select().count() + 1)
+        self.counter = Title.select().count() + 1
         Title.sqlmeta.cacheValues = _oldcacheValues
 
     def _toDB(self, quiet=0):
@@ -604,9 +613,9 @@ class PersonsCache(_BaseCache):
             if x[2]: nd['imdbIndex'] = x[2]
             name = build_name(nd, canonical=1)
             dict.__setitem__(self, name, x[0])
-        self.set_counter_generator(Name.select().count() + 1)
+        self.counter = Name.select().count() + 1
         Name.sqlmeta.cacheValues = _oldcacheValues
-  
+
     def _toDB(self, quiet=0):
         if not quiet:
             print ' * FLUSHING PersonsCache...'
@@ -646,6 +655,7 @@ class SQLData(dict):
         self.flushEvery = flushEvery
         self.sqlString = sqlString
         self.converter = converter
+        self._recursionLevel = 1
         for k, v in d.items(): self[k] = v
 
     def __setitem__(self, key, value):
@@ -660,19 +670,27 @@ class SQLData(dict):
     def add(self, key):
         self[key] = None
 
-    def flush(self):
+    def flush(self, _resetRecursion=1):
         if not self: return
         # XXX: it's safer to flush MoviesCache and PersonsCache, to preserve
         #      consistency of ForeignKey, but it can also slow down everything
         #      a bit...
         CACHE_MID.flush(quiet=1)
         CACHE_PID.flush(quiet=1)
+        if _resetRecursion: self._recursionLevel = 1
+        if self._recursionLevel >= 5:
+            print 'WARNING recursion level exceded trying to flush data'
+            print 'WARNING this batch of data is lost.'
+            self.clear()
+            self.counter = self.counterInit
+            return
         try:
             self._toDB()
             self.clear()
             self.counter = self.counterInit
         except OperationalError, e:
             print ' * TOO MANY DATA (%s items), SPLITTING...' % len(self)
+            self._recursionLevel += 1
             newdata = self.__class__()
             newflushEvery = self.flushEvery / 2
             self.flushEvery = newflushEvery
@@ -683,8 +701,8 @@ class SQLData(dict):
             for x in xrange(len(self)/2):
                 k, v = popitem()
                 dsi(newdata, k, v)
-            newdata.flush()
-            self.flush()
+            newdata.flush(_resetRecursion=0)
+            self.flush(_resetRecursion=0)
             self.clear()
             self.counter = self.counterInit
 
@@ -901,12 +919,6 @@ class AkasMoviesCache(MoviesCache):
             new_item.append(self.notes.get(the_id))
             new_dataListapp(tuple(new_item))
         new_dataList.reverse()
-        #for d in dataList:
-        #    the_id = d[0]
-        #    d.append(self.notes.get(the_id))
-        #    original_title_id = self.ids.get(the_id)
-        #    d[0] = original_title_id
-        #    d.insert(0, the_id)
         CURS.executemany(self.sqlstr, self.converter(new_dataList))
 CACHE_MID_AKAS = AkasMoviesCache()
 
@@ -1123,7 +1135,7 @@ def nmmvFiles(fp, funct, fname):
     count = 0
     sqlsP = (PersonInfo, ['personID', 'infoTypeID', 'info', 'note'])
     sqlsM = (MovieInfo, ['movieID', 'infoTypeID', 'info', 'note'])
-    
+
     if fname == 'biographies.list.gz':
         datakind = 'person'
         sqls = sqlsP
@@ -1196,14 +1208,6 @@ def nmmvFiles(fp, funct, fname):
                     if imdbIndex:
                         imdbIndex = imdbIndex[0]
                         realname = re_nameImdbIndex.sub('', realname)
-                    # Strip misc notes.
-                    fpi = realname.find('(')
-                    if fpi != -1:
-                        lpi = realname.rfind(')')
-                        if lpi != -1:
-                            realname = '%s %s' % (realname[:fpi].strip(),
-                                                    realname[lpi:].strip())
-                            realname = realname.strip()
                     if realname:
                         # XXX: check for duplicates?
                         ##if k == 'birth name':

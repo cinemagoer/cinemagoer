@@ -117,20 +117,12 @@ Again: if there's something that bother you, write some code.
 It's free software, after all.
 
 Things to do:
-* Support for other SQL database (like PostgresSQL, SQLite, ...), and try
-  to be database-independent.
 * The imdbpy2sql.py script MUST be run on a database with empty tables;
   unfortunately so far a SQL installation can't be "updated" without
   recreating the database from scratch.
   IMDb releases also "diff" files to keep the plain text files updated;
   it would be wonderful to directly use these diff files to upgrade the
   SQL database, but I think this is a nearly impossible task.
-* The database layout sucks (what about indexes?  I'm not sure they are
-  ok this way).
-* The SQL queries I've written are probably crap.
-* The imdbpy2sql.py is slow and takes a lot of time, but honestly this
-  is a minor issue, and I fear there're few chances to see substantial
-  improvements.
-* Comment the imdbpy2sql.py script.
-
+* split in various methods the gathering of information about movies
+  and persons.
 

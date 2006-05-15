@@ -4,7 +4,7 @@ locsql module (imdb.parser.common package).
 This module provides some functions and classes shared amongst
 "local" and "sql" parsers.
 
-Copyright 2005-2006 Davide Alberani <da@erlug.linux.it> 
+Copyright 2005-2006 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -112,7 +112,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
                 if e.startswith('iso-') and e.find('latin') != -1:
                     e = e[4:].replace('-', '')
                 try:
-                    codec = lookup(e)
+                    lookup(e)
                     lat1 = akatitle.encode('latin_1', 'replace')
                     return unicode(lat1, e, 'replace')
                 except (LookupError, ValueError, TypeError):
@@ -121,7 +121,8 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
 
 
 def titleVariations(title, fromPtdf=0):
-    """Build title variations useful for searches."""
+    """Build title variations useful for searches; if fromPtdf is true,
+    the input is assumed to be in the plain text data files format."""
     if fromPtdf: title1 = u''
     else: title1 = title
     title2 = title3 = u''
@@ -150,7 +151,8 @@ def titleVariations(title, fromPtdf=0):
 
 
 def nameVariations(name, fromPtdf=0):
-    """Build name variations useful for searches."""
+    """Build name variations useful for searches; if fromPtdf is true,
+    the input is assumed to be in the plain text data files format."""
     name1 = name2 = name3 = u''
     if fromPtdf or re_nameIndex.search(name):
         # We've a name with an (imdbIndex)

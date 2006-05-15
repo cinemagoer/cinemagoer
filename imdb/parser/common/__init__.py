@@ -4,7 +4,7 @@ parser.common package (imdb package).
 This package provides some modules containing code shared amongst
 different parsers.
 
-Copyright 2005 Davide Alberani <da@erlug.linux.it> 
+Copyright 2005 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -9,6 +9,9 @@ I'd like to thank the following people for their help:
 
 * Ana Guerrero, for the official debian package.
 
+* none none (dclist at gmail.com) for a useful hint and code to
+  retrieve a movie/person object, given an URL.
+
 * Sebastian Pölsterl, for a bug report about the cover url for
   tv (mini) series.
 

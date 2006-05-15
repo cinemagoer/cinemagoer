@@ -17,13 +17,10 @@ IMDB_PARAMS = {
     #'accessSystem': 'local',
     #'dbDirectory':  '/usr/local/imdb' # or, in a Windows environment:
     #'dbDirectory':  'D:/imdb-20060107'
-    
+
     # XXX: parameters for a SQL installation.
     #'accessSystem': 'sql',
-    #'db': 'imdb',
-    #'user': 'name',
-    #'passwd': 'yourPassword',
-    #'host': 'localhost'
+    #'uri': 'mysql://userName:yourPassword@localhost/dbName'
 }
 
 import sys

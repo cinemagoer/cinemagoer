@@ -30,8 +30,10 @@ from types import UnicodeType, TupleType, ListType
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
 from utils import modClearRefs, re_titleRef, re_nameRef
+from imdb import IMDb
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
                                     entcharrefsget, subXMLRefs, subSGMLRefs
+import Movie, Person
 
 
 # An URL, more or less.
@@ -144,5 +146,28 @@ def sortedEpisodes(m, season=None):
         for e in eps_indx:
             episodes.append(m['episodes'][s][e])
     return episodes
+
+
+# Idea an portions of the code courtesy of none none (dclist at gmail.com)
+_re_imdbIDurl = re.compile(r'\b(nm|tt)([0-9]{7})\b')
+def get_byURL(url, info=None, args=None, kwds=None):
+    """Return a Movie or Person object for the given URL; info is the
+    info set to retrieve, args and kwds are respectively a list and a
+    dictionary or arguments to initialize the data access system.
+    Returns None if unable to correctly parse the url; can raise
+    exceptions if unable to retrieve the data."""
+    if args is None: args = []
+    if kwds is None: kwds = {}
+    ia = IMDb(*args, **kwds)
+    match = _re_imdbIDurl.search(url)
+    if not match:
+        return None
+    imdbtype = match.group(1)
+    imdbID = match.group(2)
+    if imdbtype == 'tt':
+        return ia.get_movie(imdbID, info=info)
+    elif imdbtype == 'nm':
+        return ia.get_person(imdbID, info=info)
+    return None
 
 

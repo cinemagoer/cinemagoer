@@ -1,9 +1,9 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.5.cvs20060512 "Zombie Honeymoon" (12 May 2006)
+* What's the new in release 2.5 "Ninja Thunderbolt" (15 May 2006)
   [general]
-  - support of the new style for tv series; see the README.series file.
+  - support for tv series episodes; see the README.series file.
   - modified the DISCLAIMER.txt file to be compliant to the debian guidelines.
   - fixed a bug in the get_first_movie.py script.
   - Movie and Person instances are now hashable, so that they can be used
@@ -14,13 +14,15 @@
   - the imdbID for Movie and Person instances is now searched if either
     one of movieID/personID and title/name is provided.
   - introduced the isSame() method for both Movie and Person classes,
-    useful to compare object, by movieID/personID and accessSystem.
+    useful to compare object by movieID/personID and accessSystem.
   - __contains__() methods are now recursive.
   - two new functions in the IMDbBase class, title2imdbID() and name2imdbID()
     are used to get the imdbID, given a movie title or person name.
   - two new functions in the helpers module, sortedSeasons() and
     sortedEpisodes(), useful to manage lists/dictionaries of tv series
     episodes.
+  - in the helpers module, the get_byURL() function can be used to retrieve
+    a Movie or Person object for the given URL.
   - renamed the "ratober" C module to "cutils".
   - added CONTRIBUTORS.txt file.
 
@@ -38,6 +40,8 @@
   [local data access system]
   - new get_episodes function in the cutils/ratober C module.
   - search functions (both C and pure python) are now a lot faster.
+  - updated the documentation with work-arounds to make the mkdb program
+    works with a recent set of plain text data files.
 
   [sql data access system]
   - uses the SQLObject ORM to support a wide range of database engines.

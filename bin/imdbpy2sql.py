@@ -426,7 +426,7 @@ class _BaseCache(dict):
         if not self._flushing:
             self._tmpDict[key] = counter
         else:
-            self._deferredData[key] = counter
+            self._deferredData[key] = self.counter + 1
 
     def flush(self, quiet=0, _resetRecursion=1):
         """Flush to the database."""
@@ -1475,10 +1475,10 @@ _HEARD = 0
 def _kdb_handler(signum, frame):
     """Die gracefully."""
     global _HEARD
-    print 'INTERRUPT REQUEST RECEIVED FROM USER.  FLUSHING CACHES...'
     if _HEARD:
         print "EHI!  DON'T PUSH ME!  I'VE HEARD YOU THE FIRST TIME! :-)"
         return
+    print 'INTERRUPT REQUEST RECEIVED FROM USER.  FLUSHING CACHES...'
     _HEARD = 1
     # XXX: trap _every_ error?
     try: CACHE_MID.flush()

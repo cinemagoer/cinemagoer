@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 2.6.cvs20060521 "The Child" (21 May 2006)
+  [http data access system]
+  - fixed a bug retrieving runtimes and akas information.
+
+
 * What's the new in release 2.5 "Ninja Thunderbolt" (15 May 2006)
   [general]
   - support for tv series episodes; see the README.series file.

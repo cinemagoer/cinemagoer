@@ -554,13 +554,6 @@ class HTMLMovieParser(ParserBase):
             self._series_title += data
         elif self._in_series_info:
             self._series_info += data
-        elif self._inbch:
-            if sldata.startswith('plot outline:'):
-                self._isplotoutline = 1
-            elif sldata.startswith('tv series:'):
-                self._in_series_title = 1
-            elif sldata.startswith('original air date'):
-                self._in_series_info = 1
         elif self._in_episode_title:
             self._episode_title += data
         elif sldata.startswith('also known as'):
@@ -571,6 +564,13 @@ class HTMLMovieParser(ParserBase):
             self._is_movie_status = 1
         # XXX: the following branches are here to manage the "maindetails"
         #      page of a movie, instead of the "combined" page.
+        elif self._inbch:
+            if sldata.startswith('plot outline:'):
+                self._isplotoutline = 1
+            elif sldata.startswith('tv series:'):
+                self._in_series_title = 1
+            elif sldata.startswith('original air date'):
+                self._in_series_info = 1
         if self.mdparse:
             if sldata.startswith('cast overview, first billed only'):
                 self._is_cast_crew = 1

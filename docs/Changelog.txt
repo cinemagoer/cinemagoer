@@ -1,9 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.6.cvs20060521 "The Child" (21 May 2006)
+* What's the new in release 2.6.cvs20060522 "The Child" (22 May 2006)
   [http data access system]
   - fixed a bug retrieving runtimes and akas information.
+
+  [sql data access system]
+  - fixed a bug inserting information about top250 and bottom10 films rank.
 
 
 * What's the new in release 2.5 "Ninja Thunderbolt" (15 May 2006)

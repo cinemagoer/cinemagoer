@@ -1328,8 +1328,8 @@ def getTopBottomRating():
         try: fp = SourceFile('ratings.list.gz', start=st, stop=TOPBOT_STOP)
         except IOError: break
         sqldata = SQLData(table=MovieInfo,
-                    cols=['movieID', 'infoTypeID',
-                    RawValue('info', str(INFO_TYPES[what]))])
+                    cols=['movieID',
+                        RawValue('infoTypeID', str(INFO_TYPES[what])), 'info'])
         count = 1
         print 'SCANNING %s...' % what
         for line in fp:

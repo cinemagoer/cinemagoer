@@ -584,9 +584,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # Regroup by role/duty (cast, writer, director, ...)
         castdata[:] =  _groupListBy(castdata, 3)
         episodes = {}
+        seenDuties = []
         for group in castdata:
             for mdata in group:
                 duty = orig_duty = group[0][3]
+                if duty not in seenDuties: seenDuties.append(orig_duty)
                 note = mdata[2] or u''
                 if mdata[4].has_key('episode of'):
                     duty = 'episodes'
@@ -600,13 +602,14 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     res.setdefault(duty, []).append(m)
                 else:
                     episodes.setdefault(m['episode of'], []).append(m)
-            if duty != 'episodes':
+        if episodes:
+            for k in episodes:
+                episodes[k].sort(sortMovies)
+                episodes[k].reverse()
+            res['episodes'] = episodes
+        for duty in seenDuties:
+            if res.has_key(duty):
                 res[duty].sort(sortMovies)
-            else:
-                for k in episodes:
-                    episodes[k].sort(sortMovies)
-                    episodes[k].reverse()
-                res[duty] = episodes
         # XXX: is 'guest' still needed?  I think every GA reference in
         #      the biographies.list file was removed.
         if res.has_key('guest'):

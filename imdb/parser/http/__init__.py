@@ -42,7 +42,8 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         newsgrouprev_parser, misclinks_parser, \
                         soundclips_parser, videoclips_parser, news_parser, \
                         photosites_parser, amazonrev_parser, guests_parser, \
-                        business_parser, sales_parser, episodes_parser
+                        business_parser, sales_parser, episodes_parser, \
+                        eprating_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
@@ -361,7 +362,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_episodes(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'episodes')
         data_d = episodes_parser.parse(cont)
-        # set movie['episode of'] for every episode of the series.
+        # set movie['episode of'].movieID for every episode of the series.
         if data_d.get('data', {}).has_key('episodes'):
             nr_eps = 0
             for season in data_d['data']['episodes'].values():
@@ -371,6 +372,16 @@ class IMDbHTTPAccessSystem(IMDbBase):
             # Number of episodes.
             if nr_eps:
                 data_d['data']['number of episodes'] = nr_eps
+        return data_d
+
+    def get_movie_episodes_rating(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'epdate')
+        data_d = eprating_parser.parse(cont)
+        # set movie['episode of'].movieID for every episode.
+        if data_d.get('data', {}).has_key('episodes rating'):
+            for item in data_d['data']['episodes rating']:
+                episode = item['episode']
+                episode['episode of'].movieID = movieID
         return data_d
 
     def _search_person(self, name, results):

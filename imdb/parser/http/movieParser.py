@@ -642,7 +642,7 @@ class HTMLPlotParser(ParserBase):
             self._is_plot_writer = 0
             self._plot_writer = u''
             self._last_plot = u''
-            
+
     def _handle_data(self, data):
         # Store text for plots and authors.
         if self._is_plot:
@@ -1502,6 +1502,130 @@ class HTMLRatingsParser(ParserBase):
             self._cur_demo_t = 'all votes'
 
 
+class HTMLEpisodesRatings(ParserBase):
+    """Parser for the "episode ratings ... by date" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        erparser = HTMLEpisodesRatings()
+        result = erparser.parse(eprating_html_string)
+    """
+
+    # Do not gather names and titles references.
+    getRefs = 0
+
+    def _reset(self):
+        """Reset the parser."""
+        self._res = []
+        self._cur_data = {}
+        self._in_h4 = 0
+        self._in_rating = 0
+        self._cur_info = 'season.episode'
+        self._cur_info_txt = u''
+        self._cur_id = ''
+        self._in_title = 0
+        self._series_title = u''
+        self._series_obj = None
+        self._in_td = 0
+
+    def get_data(self):
+        """Return the dictionary."""
+        if not self._res: return {}
+        return {'episodes rating': self._res}
+
+    def start_title(self, attrs):
+        self._in_title = 1
+
+    def end_title(self):
+        self._in_title = 0
+        self._series_title = self._series_title.strip()
+        if self._series_title:
+            self._series_obj = Movie(title=self._series_title,
+                                    accessSystem='http')
+
+    def start_h4(self, attrs):
+        self._in_h4 = 1
+
+    def end_h4(self):
+        self._in_h4 = 0
+
+    def start_table(self, attrs): pass
+
+    def end_table(self): self._in_rating = 0
+
+    def start_tr(self, attrs):
+        if self._in_rating:
+            self._cur_info = 'season.episode'
+            self._cur_info_txt = u''
+
+    def end_tr(self):
+        if not self._in_rating: return
+        if self._series_obj is None: return
+        if self._cur_data and self._cur_id:
+            ep_title = self._series_title
+            ep_title += 'u {%s' % self._cur_data['episode']
+            if self._cur_data.has_key('season.episode'):
+                ep_title += u' (#%s)' % self._cur_data['season.episode']
+                del self._cur_data['season.episode']
+            ep_title += u'}'
+            m = Movie(title=ep_title, movieID=self._cur_id, accessSystem='http')
+            m['episode of'] = self._series_obj
+            self._cur_data['episode'] = m
+            if self._cur_data.has_key('rating'):
+                try:
+                    self._cur_data['rating'] = float(self._cur_data['rating'])
+                except ValueError:
+                    pass
+            if self._cur_data.has_key('votes'):
+                try:
+                    self._cur_data['votes'] = int(self._cur_data['votes'])
+                except (ValueError, OverflowError):
+                    pass
+            self._res.append(self._cur_data)
+        self._cur_data = {}
+        self._cur_id = ''
+
+    def start_td(self, attrs):
+        self._in_td = 1
+
+    def end_td(self):
+        self._in_td = 0
+        if not self._in_rating: return
+        self._cur_info_txt = self._cur_info_txt.strip()
+        if self._cur_info_txt:
+            self._cur_data[self._cur_info] = self._cur_info_txt
+        self._cur_info_txt = u''
+        if self._cur_info == 'season.episode':
+            self._cur_info = 'episode'
+        elif self._cur_info == 'episode':
+            self._cur_info = 'rating'
+        elif self._cur_info == 'rating':
+            self._cur_info = 'votes'
+        elif self._cur_info == 'votes':
+            self._cur_info = 'season.episode'
+
+    def start_a(self, attrs):
+        if not (self._in_rating and self._cur_info == 'episode'):
+            return
+        href = self.get_attr_value(attrs, 'href')
+        if not href: return
+        curid = self.re_imdbID.findall(href)
+        if not curid: return
+        self._cur_id = curid[-1]
+
+    def end_a(self): pass
+
+    def _handle_data(self, data):
+        if self._in_rating and self._in_td:
+            self._cur_info_txt += data
+        if self._in_h4 and data.strip().lower() == 'rated episodes':
+            self._in_rating = 1
+        if self._in_title:
+            self._series_title += data
+
+
 class HTMLOfficialsitesParser(ParserBase):
     """Parser for the "official sites", "external reviews", "newsgroup
     reviews", "miscellaneous links", "sound clips", "video clips" and
@@ -1859,7 +1983,7 @@ class HTMLDvdParser(ParserBase):
             self._inth = 1
             span = self.get_attr_value(attrs, 'colspan')
             if span:
-                try:self._thmult = int(span)
+                try: self._thmult = int(span)
                 except (ValueError, OverflowError): pass
 
     def end_th(self):
@@ -2709,4 +2833,5 @@ amazonrev_parser = HTMLAmazonReviewsParser()
 guests_parser = HTMLGuestsParser()
 sales_parser = HTMLSalesParser()
 episodes_parser = HTMLEpisodesParser()
+eprating_parser = HTMLEpisodesRatings()
 

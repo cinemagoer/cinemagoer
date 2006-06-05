@@ -29,8 +29,8 @@ import os
 from stat import ST_SIZE
 
 from imdb._exceptions import IMDbDataAccessError, IMDbError
-from imdb.utils import analyze_title, analyze_name, re_episodes, \
-                        sortMovies, sortPeople
+from imdb.utils import analyze_title, analyze_name, re_episodes
+
 from imdb.Person import Person
 from imdb.Movie import Movie
 from personParser import getFilmography, getBio, getAkaNames
@@ -330,7 +330,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                             'offsList': midx, 'doCast': 1}
                 actl += getMovieCast(**params)
         if actl:
-            actl.sort(sortPeople)
+            actl.sort()
             res['cast'] = actl
         # List of other workers.
         works = ('writer', 'cinematographer', 'composer',
@@ -357,7 +357,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     params['doWriters'] = 1
                 params['dataF'] = '%s%ss.data' % (self.__db, key)
                 data = getMovieCast(**params)
-                if name == 'writer': data.sort(sortPeople)
+                if name == 'writer': data.sort()
                 res[name] = data
         # Rating.
         rt = self.get_movie_vote_details(movieID)['data']
@@ -616,7 +616,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 m.movieID = movieID
                 nl.append(m)
             if nl:
-                nl.sort(sortMovies)
+                nl.sort()
                 res['notable tv guest appearances'][:] = nl
             else: del res['notable tv guest appearances']
         trefs, nrefs = self._extractRefs(res)
@@ -661,7 +661,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                         movies.append(d)
                     else:
                         eps.append(d)
-                movies.sort(sortMovies)
+                movies.sort()
                 if movies:
                     res[name] = movies
                 for e in eps:
@@ -680,7 +680,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                     episodes.setdefault(series, []).append(e)
         if episodes:
             for k in episodes:
-                episodes[k].sort(sortMovies)
+                episodes[k].sort()
                 episodes[k].reverse()
             res['episodes'] = episodes
         return {'data': res, 'info sets': tuple(infosets)}

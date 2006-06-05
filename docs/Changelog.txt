@@ -1,8 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.6.cvs20060528 "Cry_Wolf" (28 May 2006)
+* What's the new in release 2.6.cvs20060605 "X-Men: The Last Stand" (05 Jun 2006)
+  [general]
+  - renamed sortMovies to cmpMovies and sortPeople to cmpPeople; these
+    function are now used to compare Movie/Person objects.
+    The cmpMovies also handles tv series episodes.
+
   [http data access system]
+  - now information about "episodes rating" are retrieved.
   - fixed a bug retrieving runtimes and akas information.
 
   [sql data access system]

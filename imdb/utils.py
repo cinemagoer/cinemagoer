@@ -489,11 +489,33 @@ class _LastC:
 
 _last = _LastC()
 
-def sortMovies(m1, m2):
-    """Sort movies by year, in reverse order; the imdbIndex is checked
+def cmpMovies(m1, m2):
+    """Compare two movies by year, in reverse order; the imdbIndex is checked
     for movies with the same year of production and title."""
-    m1y = int(m1.get('year', 0))
-    m2y = int(m2.get('year', 0))
+    # Sort tv series' episodes.
+    m1e = m1.get('episode of')
+    m2e = m2.get('episode of')
+    if m1e is not None and m2e is not None:
+        cmp_series = cmpMovies(m1e, m2e)
+        if cmp_series != 0:
+            return cmp_series
+        m1s = m1.get('season')
+        m2s = m2.get('season')
+        if m1s is not None and m2s is not None:
+            if m1s < m2s:
+                return 1
+            elif m1s > m2s:
+                return -1
+            m1p = m1.get('episode')
+            m2p = m2.get('episode')
+            if m1p < m2p:
+                return 1
+            elif m1p > m2p:
+                return -1
+    if m1e is None: m1y = int(m1.get('year', 0))
+    else: m1y = int(m1e.get('year', 0))
+    if m2e is None: m2y = int(m2.get('year', 0))
+    else: m2y = int(m2e.get('year', 0))
     if m1y > m2y: return -1
     if m1y < m2y: return 1
     # Ok, these movies have the same production year...
@@ -513,8 +535,8 @@ def sortMovies(m1, m2):
     return 0
 
 
-def sortPeople(p1, p2):
-    """Sort people by billingPos, name and imdbIndex."""
+def cmpPeople(p1, p2):
+    """Compare two people by billingPos, name and imdbIndex."""
     p1b = p1.billingPos
     if p1b is None: p1b = _last
     p2b = p2.billingPos
@@ -620,6 +642,8 @@ class _Container:
 
     # List of keys to modify.
     keys_tomodify_list = ()
+
+    cmpFunct = None
 
     def __init__(self, myID=None, data=None, currentRole=u'', notes=u'',
                 accessSystem=None, titlesRefs=None, namesRefs=None,
@@ -736,13 +760,9 @@ class _Container:
 
     def __cmp__(self, other):
         """Compare two Movie or Person objects."""
-        # XXX: only check the title/name and the movieID/personID?
-        # XXX: comparison should be used to sort movies/person?
-        if not isinstance(other, self.__class__):
-            return -1
-        if self.data == other.data:
-            return 0
-        return 1
+        # XXX: raise an exception?
+        if self.cmpFunct is None: return -1
+        return self.cmpFunct(other)
 
     def __hash__(self):
         """Hash for this object."""

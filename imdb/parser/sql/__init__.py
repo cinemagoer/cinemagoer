@@ -37,8 +37,7 @@ from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                     scan_names, scan_titles, titleVariations, nameVariations
 from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
                         normalizeName, build_title, build_name, \
-                        analyze_name, analyze_title, re_episodes, \
-                        sortMovies, sortPeople, _articles
+                        analyze_name, analyze_title, re_episodes, _articles
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError, IMDbError
@@ -389,7 +388,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if pdata[6]: p['imdbIndex'] = pdata[6]
                 p.billingPos = pdata[3]
                 res.setdefault(duty, []).append(p)
-            res[duty].sort(sortPeople)
+            res[duty].sort()
         # Info about the movie.
         minfo = [(m.infoType.info, m.info, m.note)
                 for m in MovieInfo.select(MovieInfo.q.movieID == movieID)]
@@ -604,12 +603,12 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     episodes.setdefault(m['episode of'], []).append(m)
         if episodes:
             for k in episodes:
-                episodes[k].sort(sortMovies)
+                episodes[k].sort()
                 episodes[k].reverse()
             res['episodes'] = episodes
         for duty in seenDuties:
             if res.has_key(duty):
-                res[duty].sort(sortMovies)
+                res[duty].sort()
         # XXX: is 'guest' still needed?  I think every GA reference in
         #      the biographies.list file was removed.
         if res.has_key('guest'):

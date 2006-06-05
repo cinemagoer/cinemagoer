@@ -25,7 +25,7 @@ from types import UnicodeType, ListType, TupleType
 from copy import deepcopy
 
 from imdb.utils import analyze_title, build_title, normalizeTitle, \
-                        flatten, _Container
+                        flatten, _Container, cmpMovies
 
 
 class Movie(_Container):
@@ -118,9 +118,11 @@ class Movie(_Container):
                         'crazy credits', 'business',
                         'supplements', 'video review')
 
+    cmpFunct = cmpMovies
+
     def _init(self, **kwds):
         """Initialize a Movie object.
-        
+
         *movieID* -- the unique identifier for the movie.
         *title* -- the title of the Movie, if not in the data dictionary.
         *myTitle* -- your personal title for the movie.

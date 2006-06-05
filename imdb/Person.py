@@ -25,7 +25,7 @@ from types import UnicodeType, ListType, TupleType
 from copy import deepcopy
 
 from imdb.utils import analyze_name, build_name, normalizeName, \
-                        flatten, _Container
+                        flatten, _Container, cmpPeople
 
 
 class Person(_Container):
@@ -76,6 +76,8 @@ class Person(_Container):
                         'books', 'biographical movies', 'portrayed',
                         'where now', 'interviews', 'articles',
                         "biography from leonard maltin's movie encyclopedia")
+
+    cmpFunct = cmpPeople
 
     def _init(self, **kwds):
         """Initialize a Person object.

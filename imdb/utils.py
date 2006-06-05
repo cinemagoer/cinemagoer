@@ -762,6 +762,7 @@ class _Container:
         """Compare two Movie or Person objects."""
         # XXX: raise an exception?
         if self.cmpFunct is None: return -1
+        if not isinstance(other, self.__class__): return -1
         return self.cmpFunct(other)
 
     def __hash__(self):

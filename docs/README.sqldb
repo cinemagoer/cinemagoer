@@ -1,10 +1,9 @@
 
-NOTE: due to a series of limitation, the current (2.5) release
-contains an imdbpy2sql.py script that is _a lot_ slower than
-specified below; to complete, it can take even 6 hours or more.
+NOTE: this release (2.6-cvs) contains huge performances improvements;
+while still using the SQLObject ORM, the imdbpy2sql.py script can take
+just a pair of hours to complete, instead of the 6 or more hours of the
+previous version.
 
-For the next release we plan to drop the use of SQLObject and
-switch to SQLAlchemy or other tools, to restore acceptable performances.
 If you want to help, please subscribe the imdbpy-devel mailing list at:
   http://imdbpy.sf.net/?page=help#ml
  

@@ -349,11 +349,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if res and not self.doAdult:
             mids = [x[0] for x in res]
             genreID = InfoType.select(InfoType.q.info == 'genres')[0].id
-            adultlist = [al.id for al
+            adultlist = [al.movieID for al
                         in MovieInfo.select(
                             AND(MovieInfo.q.infoTypeID == genreID,
                                 MovieInfo.q.info == 'Adult',
-                                IN(MovieInfo.q.id, mids)))]
+                                IN(MovieInfo.q.movieID, mids)))]
             res[:] = [x for x in res if x[0] not in adultlist]
             if results > 0: res[:] = res[:results]
         return res

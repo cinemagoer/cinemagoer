@@ -9,8 +9,9 @@ I'd like to thank the following people for their help:
 
 * Ana Guerrero, for the official debian package.
 
-* Martin Arpon for a bug report about "runtime" information not
-  being parsed.
+* Martin Arpon and Andreas Schoenle for bug reports (and patches)
+  about "runtime", "aka titles" and "production notes" information
+  not being parsed.
 
 * none none (dclist at gmail.com) for a useful hint and code to
   retrieve a movie/person object, given an URL.

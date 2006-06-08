@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.6.cvs20060605b "X-Men: The Last Stand" (05 Jun 2006)
+* What's the new in release 2.6.cvs20060608 "Spirited Away" (08 Jun 2006)
   [general]
   - renamed sortMovies to cmpMovies and sortPeople to cmpPeople; these
     function are now used to compare Movie/Person objects.
@@ -12,8 +12,12 @@
   - fixed a bug retrieving runtimes and akas information.
 
   [sql data access system]
+  - now at insert-time the tables doesn't have indexes, which are
+    added later, resulting in a huge improvement of the performances
+    of the imdbpy2sql.py script.
   - fixed a bug inserting information about top250 and bottom10 films rank.
   - fixed a bug sorting movies in people's filmography.
+  - fixed a bug filtering out adult-only movies.
 
 
 * What's the new in release 2.5 "Ninja Thunderbolt" (15 May 2006)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: UTF-8 -*-
 """
 imdbpy2sql.py script.
 
@@ -1466,6 +1465,12 @@ def run():
     # Flush caches.
     CACHE_MID.flush()
     CACHE_PID.flush()
+    t('fushing caches...')
+
+    print 'building database indexes (this may take a while)'
+    sys.stdout.flush()
+    createIndexes()
+    t('createIndexes()')
 
     print 'DONE! (in %d minutes, %d seconds)' % \
             divmod(int(time.time())-BEGIN_TIME, 60)

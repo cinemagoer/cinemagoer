@@ -37,10 +37,10 @@ class AkaName(SQLObject):
     namePcodeCf = StringCol(length=5, default=None)
     namePcodeNf = StringCol(length=5, default=None)
     surnamePcode = StringCol(length=5, default=None)
-    pNameIdx = DatabaseIndex({'column': name, 'length': 5}, imdbIndex)
-    namePcodeCfIdx = DatabaseIndex(namePcodeCf)
-    namePcodeNfIdx = DatabaseIndex(namePcodeNf)
-    surnamePcodeIdx = DatabaseIndex(surnamePcode)
+    #pNameIdx = DatabaseIndex({'column': name, 'length': 5}, imdbIndex)
+    #namePcodeCfIdx = DatabaseIndex(namePcodeCf)
+    #namePcodeNfIdx = DatabaseIndex(namePcodeNf)
+    #surnamePcodeIdx = DatabaseIndex(surnamePcode)
 
 class KindType(SQLObject):
     """this table is for values like 'movie', 'tv series', 'video games'..."""
@@ -70,10 +70,10 @@ class AkaTitle(SQLObject):
     seasonNr = IntCol(default=None)
     episodeNr = IntCol(default=None)
     note = UnicodeCol(default=None)
-    mTitleIdx = DatabaseIndex({'column': title, 'length': 5}, imdbIndex,
-                                kind, productionYear)
-    phoneticCodeIdx = DatabaseIndex(phoneticCode)
-    episodeOfIDIdx = DatabaseIndex(episodeOfID)
+    #mTitleIdx = DatabaseIndex({'column': title, 'length': 5}, imdbIndex,
+    #                            kind, productionYear)
+    #phoneticCodeIdx = DatabaseIndex(phoneticCode)
+    #episodeOfIDIdx = DatabaseIndex(episodeOfID)
 
 class CastInfo(SQLObject):
     ##person = ForeignKey('Name', notNone=True)
@@ -84,8 +84,8 @@ class CastInfo(SQLObject):
     note = UnicodeCol(default=None)
     nrOrder = IntCol(default=None)
     role = ForeignKey('RoleType', notNone=True)
-    personIDIdx = DatabaseIndex(personID)
-    movieIDIdx = DatabaseIndex(movieID)
+    #personIDIdx = DatabaseIndex(personID)
+    #movieIDIdx = DatabaseIndex(movieID)
 
 class CompCastType(SQLObject):
     kind = UnicodeCol(length=32, notNone=True, alternateID=True)
@@ -94,7 +94,7 @@ class CompleteCast(SQLObject):
     movie = ForeignKey('Title')
     subject = ForeignKey('CompCastType', notNone=True)
     status = ForeignKey('CompCastType', notNone=True)
-    movieIDIdx = DatabaseIndex(movie)
+    #movieIDIdx = DatabaseIndex(movie)
 
 class InfoType(SQLObject):
     info = UnicodeCol(length=32,notNone=True, alternateID=True)
@@ -106,14 +106,14 @@ class MovieLink(SQLObject):
     movie = ForeignKey('Title', notNone=True)
     linkedMovie = ForeignKey('Title', notNone=True)
     linkType = ForeignKey('LinkType', notNone=True)
-    movieIDIdx = DatabaseIndex(movie)
+    #movieIDIdx = DatabaseIndex(movie)
 
 class MovieInfo(SQLObject):
     movie = ForeignKey('Title', notNone=True)
     infoType = ForeignKey('InfoType', notNone=True)
     info = UnicodeCol(notNone=True)
     note = UnicodeCol(default=None)
-    movieIDIdx = DatabaseIndex(movie)
+    #movieIDIdx = DatabaseIndex(movie)
 
 class Name(SQLObject):
     """
@@ -129,18 +129,17 @@ class Name(SQLObject):
     namePcodeCf = StringCol(length=5, default=None)
     namePcodeNf = StringCol(length=5, default=None)
     surnamePcode = StringCol(length=5, default=None)
-    pNameIdx = DatabaseIndex({'column': name, 'length': 5}, imdbIndex)
-    namePcodeCfIdx = DatabaseIndex(namePcodeCf)
-    namePcodeNfIdx = DatabaseIndex(namePcodeNf)
-    surnamePcodeIdx = DatabaseIndex(surnamePcode)
-
+    #pNameIdx = DatabaseIndex({'column': name, 'length': 5}, imdbIndex)
+    #namePcodeCfIdx = DatabaseIndex(namePcodeCf)
+    #namePcodeNfIdx = DatabaseIndex(namePcodeNf)
+    #surnamePcodeIdx = DatabaseIndex(surnamePcode)
 
 class PersonInfo(SQLObject):
     person = ForeignKey('Name', notNone=True)
     infoType = ForeignKey('InfoType', notNone=True)
     info = UnicodeCol(notNone=True)
     note = UnicodeCol(default=None)
-    personIDIdx = DatabaseIndex(person)
+    #personIDIdx = DatabaseIndex(person)
 
 class RoleType(SQLObject):
     role = UnicodeCol(length=32, notNone=True, alternateID=True)
@@ -156,10 +155,10 @@ class Title(SQLObject):
     episodeOfID = IntCol(default=None)
     seasonNr = IntCol(default=None)
     episodeNr = IntCol(default=None)
-    mTitleIdx = DatabaseIndex({'column': title, 'length': 5}, imdbIndex,
-                                kind, productionYear)
-    phoneticCodeIdx = DatabaseIndex(phoneticCode)
-    episodeOfIDIdx = DatabaseIndex(episodeOfID)
+    #mTitleIdx = DatabaseIndex({'column': title, 'length': 5}, imdbIndex,
+    #                            kind, productionYear)
+    #phoneticCodeIdx = DatabaseIndex(phoneticCode)
+    #episodeOfIDIdx = DatabaseIndex(episodeOfID)
 
 
 DB_TABLES = [Name, KindType, Title, AkaName, AkaTitle, RoleType, CastInfo,
@@ -184,12 +183,12 @@ def dropTables(ifExists=True, connectURI=None):
     for table in DB_TABLES_DROP:
         table.dropTable(ifExists)
 
-def createTables(connectURI=None):
+def createTables(connectURI=None, ifNotExists=True):
     """Create the tables and insert default values."""
     if connectURI is not None:
         setConnection(connectURI)
     for table in DB_TABLES:
-        table.createTable()
+        table.createTable(ifNotExists=ifNotExists)
     for kind in ('movie', 'tv series', 'tv movie', 'video movie',
                 'tv mini series', 'video game', 'episode'):
         KindType(kind=kind)
@@ -243,4 +242,47 @@ def createTables(connectURI=None):
             'miscellaneous crew', 'production designer', 'guest')
     for role in ROLES:
         RoleType(role=role)
+
+
+def _hasIndex(table, index):
+    """Return True if the named index is already in the given table."""
+    return index.name in [idx.name for idx in table.sqlmeta.indexes]
+
+
+def createIndexes(ifNotExists=True, connectURI=None):
+    """Create the indexes in the database."""
+    if connectURI is not None:
+        setConnection(connectURI)
+    indexesDef = [
+        (AkaName, [DatabaseIndex({'column': 'name', 'length': 5}, 'imdbIndex',
+                        name='idx_name'),
+                    DatabaseIndex('namePcodeCf', name='idx_pcodecf'),
+                    DatabaseIndex('namePcodeNf', name='idx_pcodenf'),
+                    DatabaseIndex('surnamePcode', name='idx_pcode')]),
+        (AkaTitle, [DatabaseIndex({'column': 'title', 'length': 5},
+                                    'imdbIndex', 'kind', 'productionYear',
+                                    name='idx_title'),
+                    DatabaseIndex('phoneticCode', name='idx_pcode'),
+                    DatabaseIndex('episodeOfID', name='idx_epof')]),
+        (CastInfo, [DatabaseIndex('personID', name='idx_pid'),
+                    DatabaseIndex('movieID', name='idx_mid')]),
+        (CompleteCast, [DatabaseIndex('movie', name='idx_mid')]),
+        (MovieLink, [DatabaseIndex('movie', name='idx_mid')]),
+        (MovieInfo, [DatabaseIndex('movie', name='idx_mid')]),
+        (Name, [DatabaseIndex({'column': 'name', 'length': 5}, 'imdbIndex',
+                                name='idx_name'),
+                    DatabaseIndex('namePcodeCf', name='idx_pcodecf'),
+                    DatabaseIndex('namePcodeNf', name='idx_pcodenf'),
+                    DatabaseIndex('surnamePcode', name='idx_pcode')]),
+        (PersonInfo, [DatabaseIndex('person', name='idx_pid')]),
+        (Title, [DatabaseIndex({'column': 'title', 'length': 5},
+                                    'imdbIndex', 'kind', 'productionYear',
+                                    name='idx_title'),
+                    DatabaseIndex('phoneticCode', name='idx_pcode'),
+                    DatabaseIndex('episodeOfID', name='idx_epof')])]
+    for table, indexes in indexesDef:
+        for index in indexes:
+            if not _hasIndex(table, index):
+                table.sqlmeta.addIndex(index)
+        table.createIndexes(ifNotExists=ifNotExists)
 

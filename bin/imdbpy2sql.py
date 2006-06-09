@@ -425,7 +425,8 @@ class _BaseCache(dict):
         if not self._flushing:
             self._tmpDict[key] = counter
         else:
-            self._deferredData[key] = self.counter + 1
+            self.counter += 1
+            self._deferredData[key] = self.counter
 
     def flush(self, quiet=0, _resetRecursion=1):
         """Flush to the database."""
@@ -465,6 +466,7 @@ class _BaseCache(dict):
             self._tmpDict = self._deferredData
             self.flush()
             self._deferredData = {}
+        connectObject.commit()
 
     def populate(self):
         """Populate the dictionary from the database."""
@@ -704,6 +706,7 @@ class SQLData(dict):
             self.flush(_resetRecursion=0)
             self.clear()
             self.counter = self.counterInit
+        connectObject.commit()
 
     def _toDB(self):
         print ' * FLUSHING SQLData...'
@@ -831,7 +834,7 @@ def doCast(fp, roleid, rolename):
         movieid = CACHE_MID.addUnique(title)
         sqldata.add((pid, movieid, role, note, order))
         if count % 10000 == 0:
-            print 'SCANNING', rolename, ':',
+            print 'SCANNING %s:' % rolename,
             print _(name)
         count += 1
     sqldata.flush()
@@ -892,7 +895,7 @@ def doAkaNames():
 
 
 class AkasMoviesCache(MoviesCache):
-    """A MoviesCache-like class used to populate the AkATitle table."""
+    """A MoviesCache-like class used to populate the AkaTitle table."""
     className = 'AkasMoviesCache'
 
     def __init__(self, *args, **kdws):
@@ -903,6 +906,11 @@ class AkasMoviesCache(MoviesCache):
                             'title', 'imdbIndex', 'kindID', 'productionYear',
                             'phoneticCode', 'episodeOfID', 'seasonNr',
                             'episodeNr', 'note'))
+
+    def flush(self, *args, **kwds):
+        # Preserve consistency of ForeignKey.
+        CACHE_MID.flush(quiet=1)
+        super(AkasMoviesCache, self).flush(*args, **kwds)
 
     def _runCommand(self, dataList):
         new_dataList = []
@@ -1444,6 +1452,7 @@ def run():
     t('doAkaNames()')
     doAkaTitles()
     t('doAkaTitles()')
+
     doMinusHashFiles()
     t('doMinusHashFiles()')
 

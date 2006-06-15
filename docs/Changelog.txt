@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.6.cvs20060609 "Spirited Away" (08 Jun 2006)
+* What's the new in release 2.6.cvs20060615 "The Omen" (15 Jun 2006)
   [general]
   - renamed sortMovies to cmpMovies and sortPeople to cmpPeople; these
     function are now used to compare Movie/Person objects.
@@ -18,6 +18,7 @@
   - fixed a bug inserting information about top250 and bottom10 films rank.
   - fixed a bug sorting movies in people's filmography.
   - fixed a bug filtering out adult-only movies.
+  - removed unused ForeignKeys.
   - fixed a bug filtering with databases that require a commit() call,
     after a call to executemany().
   - fixed a bug inserting aka titles in database that checks for foreign

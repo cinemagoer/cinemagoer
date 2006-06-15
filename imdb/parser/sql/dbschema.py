@@ -31,16 +31,12 @@ from sqlobject import *
 #      means poor performances at insert-time.
 
 class AkaName(SQLObject):
-    person = ForeignKey('Name', notNone=True)
+    personID = IntCol(notNone=True)
     name = UnicodeCol(notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
     namePcodeCf = StringCol(length=5, default=None)
     namePcodeNf = StringCol(length=5, default=None)
     surnamePcode = StringCol(length=5, default=None)
-    #pNameIdx = DatabaseIndex({'column': name, 'length': 5}, imdbIndex)
-    #namePcodeCfIdx = DatabaseIndex(namePcodeCf)
-    #namePcodeNfIdx = DatabaseIndex(namePcodeNf)
-    #surnamePcodeIdx = DatabaseIndex(surnamePcode)
 
 class KindType(SQLObject):
     """this table is for values like 'movie', 'tv series', 'video games'..."""
@@ -59,42 +55,32 @@ class AkaTitle(SQLObject):
     # "Series, The" (2005) {The Episode}     "Other Title" (2005) {Other Title}
     # But there is no:
     # "Series, The" (2005)                   "Other Title" (2005)
-    movie = ForeignKey('Title', notNone=False)
+    movieID = IntCol(notNone=False)
     title = UnicodeCol(notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
-    kind = ForeignKey('KindType', notNone=True)
+    kindID = IntCol(notNone=True)
     productionYear = IntCol(default=None)
     phoneticCode = StringCol(length=5, default=None)
-    ##episodeOf = ForeignKey('AkaTitle', default=None)
     episodeOfID = IntCol(default=None)
     seasonNr = IntCol(default=None)
     episodeNr = IntCol(default=None)
     note = UnicodeCol(default=None)
-    #mTitleIdx = DatabaseIndex({'column': title, 'length': 5}, imdbIndex,
-    #                            kind, productionYear)
-    #phoneticCodeIdx = DatabaseIndex(phoneticCode)
-    #episodeOfIDIdx = DatabaseIndex(episodeOfID)
 
 class CastInfo(SQLObject):
-    ##person = ForeignKey('Name', notNone=True)
     personID = IntCol(notNone=True)
-    ##movie = ForeignKey('Title', notNone=True)
     movieID = IntCol(notNone=True)
     personRole = UnicodeCol(default=None)
     note = UnicodeCol(default=None)
     nrOrder = IntCol(default=None)
-    role = ForeignKey('RoleType', notNone=True)
-    #personIDIdx = DatabaseIndex(personID)
-    #movieIDIdx = DatabaseIndex(movieID)
+    roleID = IntCol(notNone=True)
 
 class CompCastType(SQLObject):
     kind = UnicodeCol(length=32, notNone=True, alternateID=True)
 
 class CompleteCast(SQLObject):
-    movie = ForeignKey('Title')
-    subject = ForeignKey('CompCastType', notNone=True)
-    status = ForeignKey('CompCastType', notNone=True)
-    #movieIDIdx = DatabaseIndex(movie)
+    movieID = IntCol()
+    subjectID = IntCol(notNone=True)
+    statusID = IntCol(notNone=True)
 
 class InfoType(SQLObject):
     info = UnicodeCol(length=32,notNone=True, alternateID=True)
@@ -103,17 +89,15 @@ class LinkType(SQLObject):
     link = UnicodeCol(length=32, notNone=True, alternateID=True)
 
 class MovieLink(SQLObject):
-    movie = ForeignKey('Title', notNone=True)
-    linkedMovie = ForeignKey('Title', notNone=True)
-    linkType = ForeignKey('LinkType', notNone=True)
-    #movieIDIdx = DatabaseIndex(movie)
+    movieID = IntCol(notNone=True)
+    linkedMovieID = IntCol(notNone=True)
+    linkTypeID = IntCol(notNone=True)
 
 class MovieInfo(SQLObject):
-    movie = ForeignKey('Title', notNone=True)
-    infoType = ForeignKey('InfoType', notNone=True)
+    movieID = IntCol(notNone=True)
+    infoTypeID = IntCol(notNone=True)
     info = UnicodeCol(notNone=True)
     note = UnicodeCol(default=None)
-    #movieIDIdx = DatabaseIndex(movie)
 
 class Name(SQLObject):
     """
@@ -129,17 +113,12 @@ class Name(SQLObject):
     namePcodeCf = StringCol(length=5, default=None)
     namePcodeNf = StringCol(length=5, default=None)
     surnamePcode = StringCol(length=5, default=None)
-    #pNameIdx = DatabaseIndex({'column': name, 'length': 5}, imdbIndex)
-    #namePcodeCfIdx = DatabaseIndex(namePcodeCf)
-    #namePcodeNfIdx = DatabaseIndex(namePcodeNf)
-    #surnamePcodeIdx = DatabaseIndex(surnamePcode)
 
 class PersonInfo(SQLObject):
-    person = ForeignKey('Name', notNone=True)
-    infoType = ForeignKey('InfoType', notNone=True)
+    personID = IntCol(notNone=True)
+    infoTypeID = IntCol(notNone=True)
     info = UnicodeCol(notNone=True)
     note = UnicodeCol(default=None)
-    #personIDIdx = DatabaseIndex(person)
 
 class RoleType(SQLObject):
     role = UnicodeCol(length=32, notNone=True, alternateID=True)
@@ -147,18 +126,13 @@ class RoleType(SQLObject):
 class Title(SQLObject):
     title = UnicodeCol(notNone=True)
     imdbIndex = UnicodeCol(length=12, default=None)
-    kind = ForeignKey('KindType', notNone=True)
+    kindID = IntCol(notNone=True)
     productionYear = IntCol(default=None)
     imdbID = IntCol(default=None)
     phoneticCode = StringCol(length=5, default=None)
-    ##episodeOf = ForeignKey('Title', default=None)
     episodeOfID = IntCol(default=None)
     seasonNr = IntCol(default=None)
     episodeNr = IntCol(default=None)
-    #mTitleIdx = DatabaseIndex({'column': title, 'length': 5}, imdbIndex,
-    #                            kind, productionYear)
-    #phoneticCodeIdx = DatabaseIndex(phoneticCode)
-    #episodeOfIDIdx = DatabaseIndex(episodeOfID)
 
 
 DB_TABLES = [Name, KindType, Title, AkaName, AkaTitle, RoleType, CastInfo,

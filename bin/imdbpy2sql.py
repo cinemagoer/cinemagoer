@@ -1476,6 +1476,9 @@ def run():
     CACHE_PID.flush()
     t('fushing caches...')
 
+    print 'TOTAL TIME TO INSERT DATA: %d minutes, %d seconds' % \
+            divmod(int(time.time())-BEGIN_TIME, 60)
+
     print 'building database indexes (this may take a while)'
     sys.stdout.flush()
     createIndexes()

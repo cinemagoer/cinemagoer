@@ -135,8 +135,27 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         self._connection = setConnection(uri)
         # Maps movie's kind strings to kind ids.
         self._kind = {}
-        for kt in KindType.select(): self._kind[str(kt.kind)] = kt.id
+        self._kindRev = {}
+        for kt in KindType.select():
+            self._kind[kt.id] = str(kt.kind)
+            self._kindRev[str(kt.kind)] = kt.id
+        self._role = {}
+        self._roleRev = {}
+        for rl in RoleType.select():
+            self._role[rl.id] = str(rl.role)
+            self._roleRev[str(rl.role)] = rl.id
+        self._info = {}
+        self._infoRev = {}
+        for inf in InfoType.select():
+            self._info[inf.id] = str(inf.info)
+            self._infoRev[str(inf.info)] = inf.id
         info = [(it.id, it.info) for it in InfoType.select()]
+        self._compcast = {}
+        for cc in CompCastType.select():
+            self._compcast[cc.id] = str(cc.kind)
+        self._link = {}
+        for lt in LinkType.select():
+            self._link[lt.id] = str(lt.link)
         self._moviesubs = {}
         # Build self._moviesubs, a dictionary used to rearrange
         # the data structure for a movie object.
@@ -157,18 +176,18 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             seriesID = [s.id for s in Title.select(
                         AND(Title.q.title == epof['title'].encode('utf_8'),
                             Title.q.imdbIndex == epof.get('imdbIndex'),
-                           Title.q.kindID == self._kind[epof['kind']],
+                           Title.q.kindID == self._kindRev[epof['kind']],
                            Title.q.productionYear == epof.get('year')))]
             if seriesID:
                 condition = AND(IN(Title.q.episodeOfID, seriesID),
                                 Title.q.title == td['title'].encode('utf_8'),
                                 Title.q.imdbIndex == td.get('imdbIndex'),
-                                Title.q.kindID == self._kind[td['kind']],
+                                Title.q.kindID == self._kindRev[td['kind']],
                                 Title.q.productionYear == td.get('year'))
         if condition is None:
             condition = AND(Title.q.title == td['title'].encode('utf_8'),
                             Title.q.imdbIndex == td.get('imdbIndex'),
-                            Title.q.kindID == self._kind[td['kind']],
+                            Title.q.kindID == self._kindRev[td['kind']],
                             Title.q.productionYear == td.get('year'))
         res = Title.select(condition)
         if res.count() != 1:
@@ -207,7 +226,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not fromAka: Table = Title
         else: Table = AkaTitle
         m = Table.get(movieID)
-        mdict = {'title': m.title, 'kind': str(m.kind.kind),
+        mdict = {'title': m.title, 'kind': self._kind[m.kindID],
                 'year': m.productionYear, 'imdbIndex': m.imdbIndex,
                 'season': m.seasonNr, 'episode': m.episodeNr}
         if mdict['imdbIndex'] is None: del mdict['imdbIndex']
@@ -273,6 +292,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
 
     def do_adult_search(self, doAdult):
         """If set to 0 or False, movies in the Adult category are not
+        episodeOf = title_dict.get('episode of')
         shown in the results of a search."""
         self.doAdult = doAdult
 
@@ -282,15 +302,20 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         title_dict = analyze_title(title, canonical=1)
         s_title = title_dict['title']
         if not s_title: return []
-        s_title_split = s_title.split(', ')
-        if len(s_title_split) > 1 and s_title_split[-1].lower() in _articles:
-            s_title_rebuilt = ', '.join(s_title_split[:-1])
-            if s_title_rebuilt: s_title = s_title_rebuilt
+        episodeOf = title_dict.get('episode of')
+
+        if not episodeOf:
+            s_title_split = s_title.split(', ')
+            if len(s_title_split) >1 and s_title_split[-1].lower() in _articles:
+                s_title_rebuilt = ', '.join(s_title_split[:-1])
+                if s_title_rebuilt: s_title = s_title_rebuilt
+        else:
+            s_title = normalizeTitle(s_title)
         if isinstance(s_title, UnicodeType):
             s_title = s_title.encode('ascii', 'ignore')
+
         soundexCode = soundex(s_title)
 
-        episodeOf = title_dict.get('episode of')
         # XXX: improve the search restricting the kindID if the
         #      "kind" of the input differs from "movie"?
         condition = conditionAka = None
@@ -306,10 +331,10 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             if seriesIDs:
                 condition = AND(Title.q.phoneticCode == soundexCode,
                                 IN(Title.q.episodeOfID, seriesIDs),
-                                Title.q.kindID == self._kind['episode'])
+                                Title.q.kindID == self._kindRev['episode'])
                 conditionAka = AND(AkaTitle.q.phoneticCode == soundexCode,
                                 IN(AkaTitle.q.episodeOfID, seriesIDs),
-                                AkaTitle.q.kindID == self._kind['episode'])
+                                AkaTitle.q.kindID == self._kindRev['episode'])
             else:
                 # XXX: bad situation: we have found no matching series;
                 #      try searching everything (both episodes and
@@ -320,9 +345,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                                 IN(AkaTitle.q.episodeOfID, seriesIDs))
         if condition is None:
             # XXX: excludes episodes?
-            condition = AND(Title.q.kindID != self._kind['episode'],
+            condition = AND(Title.q.kindID != self._kindRev['episode'],
                             Title.q.phoneticCode == soundexCode)
-            conditionAka = AND(AkaTitle.q.kindID != self._kind['episode'],
+            conditionAka = AND(AkaTitle.q.kindID != self._kindRev['episode'],
                             AkaTitle.q.phoneticCode == soundexCode)
 
         # Up to 3 variations of the title are searched, plus the
@@ -348,7 +373,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
 
         if res and not self.doAdult:
             mids = [x[0] for x in res]
-            genreID = InfoType.select(InfoType.q.info == 'genres')[0].id
+            genreID = self._infoRev['genres']
             adultlist = [al.movieID for al
                         in MovieInfo.select(
                             AND(MovieInfo.q.infoTypeID == genreID,
@@ -370,7 +395,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
         # Collect cast information.
         castdata = [[cd.personID, cd.personRole, cd.note, cd.nrOrder,
-                    str(cd.role.role)]
+                    self._role[cd.roleID]]
                     for cd in CastInfo.select(CastInfo.q.movieID == movieID)]
         for p in castdata:
             person = Name.get(p[0])
@@ -390,7 +415,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 res.setdefault(duty, []).append(p)
             res[duty].sort()
         # Info about the movie.
-        minfo = [(m.infoType.info, m.info, m.note)
+        minfo = [(self._info[m.infoTypeID], m.info, m.note)
                 for m in MovieInfo.select(MovieInfo.q.movieID == movieID)]
         minfo = _groupListBy(minfo, 0)
         for group in minfo:
@@ -412,14 +437,14 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     nt += '::%s' % note
                 if nt not in res['akas']: res['akas'].append(nt)
         # Complete cast/crew.
-        compcast = [(cc.subject.kind, cc.subject.kind) for cc
-                    in CompleteCast.select(CompleteCast.q.movieID == movieID)]
+        compcast = [(self._compcast[cc.subjectID], self._compcast[cc.statusID])
+            for cc in CompleteCast.select(CompleteCast.q.movieID == movieID)]
         if compcast:
             for entry in compcast:
                 val = entry[1]
                 res['complete %s' % entry[0]] = val
         # Movie connections.
-        mlinks = [[ml.linkedMovieID, ml.linkType.link]
+        mlinks = [[ml.linkedMovieID, self._link[ml.linkTypeID]]
                     for ml in MovieLink.select(MovieLink.q.movieID == movieID)]
         if mlinks:
             for ml in mlinks:
@@ -577,7 +602,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not res:
             raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
         # Collect cast information.
-        castdata = [(cd.movieID, cd.personRole, cd.note, cd.role.role,
+        castdata = [(cd.movieID, cd.personRole, cd.note, self._role[cd.roleID],
                     self._get_movie_data(cd.movieID))
                 for cd in CastInfo.select(CastInfo.q.personID == personID)]
         # Regroup by role/duty (cast, writer, director, ...)
@@ -615,7 +640,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             res['notable tv guest appearances'] = res['guest']
             del res['guest']
         # Info about the person.
-        pinfo = [(pi.infoType.info, pi.info, pi.note)
+        pinfo = [(self._info[pi.infoTypeID], pi.info, pi.note)
                 for pi in PersonInfo.select(PersonInfo.q.personID == personID)]
         # Regroup by duty.
         pinfo = _groupListBy(pinfo, 0)

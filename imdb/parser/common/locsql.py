@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
+
 import re
 from types import UnicodeType, StringType, ListType, TupleType, DictType
 from difflib import SequenceMatcher
@@ -31,8 +32,8 @@ from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
 from imdb.utils import analyze_title, build_title, analyze_name, \
                         build_name, canonicalTitle, canonicalName, \
-                        normalizeName, re_titleRef, re_nameRef, \
-                        re_year_index, _articles
+                        normalizeName, normalizeTitle, re_titleRef, \
+                        re_nameRef, re_year_index, _articles
 
 re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
@@ -136,6 +137,9 @@ def titleVariations(title, fromPtdf=0):
             # title3: the long imdb canonical name.
             if fromPtdf: title3 = title
             else: title3 = build_title(titldict, canonical=1, ptdf=1)
+        else:
+            title1 = normalizeTitle(title1)
+            title3 = build_title(titldict, canonical=1, ptdf=1)
     else:
         # Just a title.
         # title1: the canonical title.
@@ -145,7 +149,7 @@ def titleVariations(title, fromPtdf=0):
     if title1:
         title2 = title1
         t2s = title2.split(u', ')
-        if t2s[-1] in _articles:
+        if t2s[-1].lower() in _articles:
             title2 = u', '.join(t2s[:-1])
     return title1, title2, title3
 
@@ -235,8 +239,9 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None):
     if results > 0: res[:] = res[:results]
     return res
 
+
 def scan_titles(titles_list, title1, title2, title3, results=0,
-                ro_thresold=None):
+                searchingEpisode=0, ro_thresold=None):
     """Scan a list of titles, searching for best matches against
     the given variations."""
     if ro_thresold is not None: RO_THRESHOLD = ro_thresold
@@ -246,7 +251,7 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
     sm3 = SequenceMatcher()
     sm1.set_seq1(title1.lower())
     sm2.set_seq2(title2.lower())
-    searchingEpisode = 0
+    #searchingEpisode = 0
     if title3:
         sm3.set_seq1(title3.lower())
         if title3[-1] == '}': searchingEpisode = 1

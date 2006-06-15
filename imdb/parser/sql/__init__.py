@@ -367,6 +367,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         resultsST = results
         if not self.doAdult: resultsST = 0
         res = scan_titles(qr, title1, title2, title3, resultsST,
+                            searchingEpisode=episodeOf is not None,
                             ro_thresold=0.0)
         if self.doAdult and results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]

@@ -413,7 +413,7 @@ def build_title(title_dict, canonical=None,
     If ptdf is true, the plain text data files format is used.
     """
     if canonical is not None:
-        canonicalSeries = canonicalEpisode = canonical
+        canonicalSeries = canonical
     pre_title = ''
     kind = title_dict.get('kind')
     episode_of = title_dict.get('episode of')

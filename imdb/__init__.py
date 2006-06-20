@@ -79,7 +79,7 @@ encoding = sys.stdin.encoding or sys.getdefaultencoding()
 class IMDbBase:
     """The base class used to search for a movie/person and to get a
     Movie/Person object.
-    
+
     This class cannot directly fetch data of any kind and so you
     have to search the "real" code into a subclass."""
 
@@ -96,12 +96,12 @@ class IMDbBase:
         # The function used to output the strings that need modification (the
         # ones containing references to movie titles and person names).
         self._defModFunct = defaultModFunct
-        
+
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
         # By default, do nothing.
         return movieID
-    
+
     def _normalize_personID(self, personID):
         """Normalize the given personID."""
         # By default, do nothing.
@@ -182,13 +182,13 @@ class IMDbBase:
     def get_person(self, personID, info=Person.Person.default_info,
                     modFunct=None):
         """Return a Person object for the given personID.
-        
+
         The personID is something used to univocally identify a person;
         it can be the imdbID used by the IMDb web server, a file
         pointer, a line number in a file, an ID in a database, etc.
 
         info is the list of sets of information to retrieve.
-        
+
         If specified, modFunct will be the function used by the Person
         object when accessing its text fields (like 'plot')."""
         personID = self._normalize_personID(personID)
@@ -418,5 +418,4 @@ class IMDbBase:
             if isinstance(member, MethodType):
                 sm_dict.update({name: member.__doc__})
         return sm_dict
-
 

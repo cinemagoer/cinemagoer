@@ -133,17 +133,15 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         IMDbLocalAndSqlAccessSystem.__init__(self, *arguments, **keywords)
         # Set the connection to the database.
         self._connection = setConnection(uri)
-        # Maps movie's kind strings to kind ids.
+        # Maps some IDs to the corresponding strings.
         self._kind = {}
         self._kindRev = {}
         for kt in KindType.select():
             self._kind[kt.id] = str(kt.kind)
             self._kindRev[str(kt.kind)] = kt.id
         self._role = {}
-        self._roleRev = {}
         for rl in RoleType.select():
             self._role[rl.id] = str(rl.role)
-            self._roleRev[str(rl.role)] = rl.id
         self._info = {}
         self._infoRev = {}
         for inf in InfoType.select():

@@ -65,7 +65,9 @@ class BasicMovieParser(ParserBase):
 
     def end_title(self):
         self._reading_page_title = 0
-        self._result = analyze_title(self._page_title, canonical=1)
+        t = self._page_title.strip()
+        if t.find('IMDb Title') != -1 and t.find('Search') != -1: return
+        self._result = analyze_title(t, canonical=1)
 
     def start_input(self, attrs):
         # XXX: read the movieID from the "send this page to a friend" form.

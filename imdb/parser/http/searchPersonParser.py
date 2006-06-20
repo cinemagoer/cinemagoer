@@ -67,8 +67,11 @@ class BasicPersonParser(ParserBase):
                 href.find('/board') != -1:
             rpid = self.re_imdbID.findall(href)
             if rpid and self._name:
+                n = self._name.strip()
+                if n.find('IMDb Name') != -1 and n.find('Search') != -1:
+                    return
                 pid = str(rpid[-1])
-                d = analyze_name(self._name, canonical=1)
+                d = analyze_name(n, canonical=1)
                 res = [(pid, d)]
                 self.reset()
                 self._result = res

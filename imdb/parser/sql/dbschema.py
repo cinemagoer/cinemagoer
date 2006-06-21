@@ -228,32 +228,35 @@ def createIndexes(ifNotExists=True, connectURI=None):
     if connectURI is not None:
         setConnection(connectURI)
     indexesDef = [
-        (AkaName, [DatabaseIndex({'column': 'name', 'length': 5}, 'imdbIndex',
-                        name='idx_name'),
+        (AkaName, [
+                    # Is this needed?
+                    # DatabaseIndex({'column': 'name', 'length': 5}, 'imdbIndex',
+                        # name='idx_name'),
+                    DatabaseIndex('personID', name='idx_person'),
                     DatabaseIndex('namePcodeCf', name='idx_pcodecf'),
                     DatabaseIndex('namePcodeNf', name='idx_pcodenf'),
                     DatabaseIndex('surnamePcode', name='idx_pcode')]),
-        (AkaTitle, [DatabaseIndex({'column': 'title', 'length': 5},
-                                    'imdbIndex', 'kind', 'productionYear',
-                                    name='idx_title'),
+        (AkaTitle, [
+                    # Is this needed?
+                    # DatabaseIndex({'column': 'title', 'length': 5},
+                                    # 'imdbIndex', 'kind', 'productionYear',
+                                    # name='idx_title'),
+                    DatabaseIndex('movieID', name='idx_movieid'),
                     DatabaseIndex('phoneticCode', name='idx_pcode'),
                     DatabaseIndex('episodeOfID', name='idx_epof')]),
         (CastInfo, [DatabaseIndex('personID', name='idx_pid'),
                     DatabaseIndex('movieID', name='idx_mid')]),
-        (CompleteCast, [DatabaseIndex('movie', name='idx_mid')]),
-        (MovieLink, [DatabaseIndex('movie', name='idx_mid')]),
-        (MovieInfo, [DatabaseIndex('movie', name='idx_mid')]),
-        (Name, [DatabaseIndex({'column': 'name', 'length': 5}, 'imdbIndex',
-                                name='idx_name'),
-                    DatabaseIndex('namePcodeCf', name='idx_pcodecf'),
-                    DatabaseIndex('namePcodeNf', name='idx_pcodenf'),
-                    DatabaseIndex('surnamePcode', name='idx_pcode')]),
-        (PersonInfo, [DatabaseIndex('person', name='idx_pid')]),
-        (Title, [DatabaseIndex({'column': 'title', 'length': 5},
-                                    'imdbIndex', 'kind', 'productionYear',
-                                    name='idx_title'),
-                    DatabaseIndex('phoneticCode', name='idx_pcode'),
-                    DatabaseIndex('episodeOfID', name='idx_epof')])]
+        (CompleteCast, [DatabaseIndex('movieID', name='idx_mid')]),
+        (MovieLink, [DatabaseIndex('movieID', name='idx_mid')]),
+        (MovieInfo, [DatabaseIndex('movieID', name='idx_mid')]),
+        (Name, [DatabaseIndex('name', name='idx_name'),
+                DatabaseIndex('namePcodeCf', name='idx_pcodecf'),
+                DatabaseIndex('namePcodeNf', name='idx_pcodenf'),
+                DatabaseIndex('surnamePcode', name='idx_pcode')]),
+        (PersonInfo, [DatabaseIndex('personID', name='idx_pid')]),
+        (Title, [DatabaseIndex('title', name='idx_title'),
+                DatabaseIndex('phoneticCode', name='idx_pcode'),
+                DatabaseIndex('episodeOfID', name='idx_epof')])]
     for table, indexes in indexesDef:
         for index in indexes:
             if not _hasIndex(table, index):

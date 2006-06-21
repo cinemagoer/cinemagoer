@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.6.cvs20060620 "Firefly" (20 Jun 2006)
+* What's the new in release 2.6.cvs20060621 "Firefly" (21 Jun 2006)
   [general]
   - renamed sortMovies to cmpMovies and sortPeople to cmpPeople; these
     function are now used to compare Movie/Person objects.
@@ -26,6 +26,7 @@
     after a call to executemany().
   - fixed a bug inserting aka titles in database that checks for foreign
     keys consistency.
+  - improved the exceptions handling.
 
 
 * What's the new in release 2.5 "Ninja Thunderbolt" (15 May 2006)

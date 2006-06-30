@@ -37,9 +37,9 @@ The ugly: converting to unicode a program so huge, born without unicode
   INPUT
   =====
 
-Search for a movie title or a person name, you (or another program) should
-pass a unicode string, encoded specifying your local charset. E.g., you're
-writing on a terminal with iso-8859-1 charset (aka latin-1):
+Searching for a movie title or a person name, you (or another program)
+should pass a unicode string, encoded specifying your local charset.
+E.g., you're writing on a terminal with iso-8859-1 charset (aka latin-1):
  >>> from imdb import IMDb
  >>> ia = IMDb()
  >>>
@@ -69,7 +69,7 @@ in the charset you will use to display/save/send it:
  >>> from imdb import IMDb
  >>> ia = IMDb()
  >>>
- >>> gmv_str = unicode('gian maria volonte', 'ascii') # optional, i's ascii...
+ >>> gmv_str = unicode('gian maria volonte', 'ascii') # optional, IT'S ascii...
  >>> gmv = ia.search_person(gmv_str)[0]
  >>> ia.update(gmv) # fetch the default set of information.
  >>>

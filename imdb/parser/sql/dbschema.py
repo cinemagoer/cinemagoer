@@ -139,9 +139,10 @@ DB_TABLES = [Name, KindType, Title, AkaName, AkaTitle, RoleType, CastInfo,
         CompCastType, CompleteCast, InfoType, LinkType, MovieLink, MovieInfo,
         PersonInfo]
 
-def setConnection(uri):
+def setConnection(uri, debug=False):
     """Set connection for every table."""
     conn = connectionForURI(uri)
+    conn.debug = debug
     for table in DB_TABLES:
         table.setConnection(conn)
         table.sqlmeta.cacheValues = False

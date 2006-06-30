@@ -14,13 +14,13 @@ Sections in this file:
   for systems with normal CPU power, but insufficient bandwidth.
 * OTHER TIPS
 
-Please read both the following section.
+Please read all the following section.
 
 
   INSTALLATION OPTIONS
   ====================
 
-You can modify a couple of variables in the setup.py script:
+You can modify some variables in the setup.py script:
 setting DO_LOCAL to 0, the parser.local package is not installed;
 this is useful if your system doesn't have the space (more than 600Mb)
 for a local installation of the IMDb's database.

@@ -8,7 +8,7 @@ AUTHOR: Davide Alberani
 
 e-mail:		da@erlug.linux.it or alberanid@libero.it
 IMDbPY page:	http://imdbpy.sf.net/
-my homepage:	http://erlug.linux.it/~da/
+my homepage:	http://erlug.linux.it/~da/ (Italian)
 my cine-blog:	http://cinemelma.blogspot.com/ (Italian)
 Jabber ID:	alberanid@jabber.linux.it (I'm on-line only from time to time)
 ICQ UIN:	83641305 (nick 'Mad77') (I'm on-line only from time to time)

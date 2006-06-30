@@ -23,7 +23,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-
+from __future__ import generators
 import os, sys, getopt, time, re
 from gzip import GzipFile
 from types import UnicodeType
@@ -48,7 +48,7 @@ HELP = """imdbpy2sql usage:
 
                 Examples:
                 mysql://user:password@host/database
-                postgres://user@host/database
+                postgres://user:password@host/database
                 sqlite:/tmp/imdb.db
                 sqlite:/C|/full/path/to/database
 
@@ -101,17 +101,6 @@ CURS = connectObject.cursor()
 # Name of the database and style of the parameters.
 DB_NAME = conn.dbName
 PARAM_STYLE = conn.module.paramstyle
-
-
-# Truncate the current database.
-print 'DROPPING current database...',
-sys.stdout.flush()
-dropTables()
-print 'done!'
-print 'CREATING new tables...',
-sys.stdout.flush()
-createTables()
-print 'done!'
 
 
 def tableName(table):
@@ -396,12 +385,17 @@ def getSectionNMMV(fp):
         curSectList[:] = []
         curNMMV = ''
 
+def counter(initValue=1):
+    """A counter implemented using a generator."""
+    i = initValue
+    while 1:
+        yield i
+        i += 1
 
 class _BaseCache(dict):
     """Base class for Movie and Person basic information."""
-    def __init__(self, d=None, flushEvery=18000, counterInit=1):
+    def __init__(self, d=None, flushEvery=200000):
         dict.__init__(self)
-        self.set_counter_init(counterInit)
         # Flush data into the SQL database every flushEvery entries.
         self.flushEvery = flushEvery
         self._tmpDict = {}
@@ -411,22 +405,17 @@ class _BaseCache(dict):
         if d is not None:
             for k, v in d.iteritems(): self[k] = v
 
-    def set_counter_init(self, counterInit):
-        self.counterInit = self.counter = counterInit
-
-    def __setitem__(self, key, value):
-        """Every time a key is set, its value is discarded and substituted
-        with counter; every flushEvery, the temporary dictionary is
+    def __setitem__(self, key, counter):
+        """Every time a key is set, its value is the counter;
+        every flushEvery, the temporary dictionary is
         flushed to the database, and then zeroed."""
-        counter = self.counter
         if counter % self.flushEvery == 0:
             self.flush()
         dict.__setitem__(self, key, counter)
         if not self._flushing:
             self._tmpDict[key] = counter
         else:
-            self.counter += 1
-            self._deferredData[key] = self.counter
+            self._deferredData[key] = self.counter.next()
 
     def flush(self, quiet=0, _resetRecursion=1):
         """Flush to the database."""
@@ -444,27 +433,37 @@ class _BaseCache(dict):
                 self._tmpDict.clear()
             except OperationalError, e:
                 # Dataset too large; split it in two and retry.
-                print ' * TOO MANY DATA (%s items), SPLITTING...' % \
-                        len(self._tmpDict)
+                print ' * TOO MANY DATA (%s items), SPLITTING (run #%d)...' % \
+                        (len(self._tmpDict), self._recursionLevel)
                 self._recursionLevel += 1
                 c1 = self.__class__()
                 c2 = self.__class__()
                 newflushEvery = self.flushEvery / 2
                 c1.flushEvery = newflushEvery
+                c1._recursionLevel = self._recursionLevel
                 c2.flushEvery = newflushEvery
+                c2._recursionLevel = self._recursionLevel
                 poptmpd = self._tmpDict.popitem
                 for x in xrange(len(self._tmpDict)/2):
                     k, v = poptmpd()
                     c1._tmpDict[k] = v
                 c2._tmpDict = self._tmpDict
                 c1.flush(quiet=quiet, _resetRecursion=0)
+                c1._tmpDict.clear()
+                if len(c1) > 0:
+                    self.update(c1)
+                del c1
                 c2.flush(quiet=quiet, _resetRecursion=0)
+                c2._tmpDict.clear()
+                if len(c2) > 0:
+                    self.update(c2)
+                del c2
                 self._tmpDict.clear()
         self._flushing = 0
         # Flush also deferred data.
         if self._deferredData:
             self._tmpDict = self._deferredData
-            self.flush()
+            self.flush(quiet=1)
             self._deferredData = {}
         connectObject.commit()
 
@@ -478,14 +477,13 @@ class _BaseCache(dict):
 
     def add(self, key, miscData=None):
         """Insert a new key and return its value."""
-        c = self.counter
+        c = self.counter.next()
         # miscData=[('a_dict', 'value')] will set self.a_dict's c key
         # to 'value'.
         if miscData is not None:
             for d_name, data in miscData:
                 getattr(self, d_name)[c] = data
-        self[key] = None
-        self.counter += 1
+        self[key] = c
         return c
 
     def addUnique(self, key, miscData=None):
@@ -495,7 +493,7 @@ class _BaseCache(dict):
         else: return self.add(key, miscData)
 
 
-def fetchsome(curs, size=18000):
+def fetchsome(curs, size=20000):
     """Yes, I've read the Python Cookbook! :-)"""
     while 1:
         res = CURS.fetchmany(size)
@@ -505,6 +503,7 @@ def fetchsome(curs, size=18000):
 class MoviesCache(_BaseCache):
     """Manage the movies list."""
     className = 'MoviesCache'
+    counter = counter()
 
     def __init__(self, *args, **kwds):
         _BaseCache.__init__(self, *args, **kwds)
@@ -549,7 +548,7 @@ class MoviesCache(_BaseCache):
                 mdict['episode of'] = series_d
             title = build_title(mdict, canonical=1, ptdf=1)
             dict.__setitem__(self, title, x[0])
-        self.counter = Title.select().count() + 1
+        self.counter = counter(Title.select().count() + 1)
         Title.sqlmeta.cacheValues = _oldcacheValues
 
     def _toDB(self, quiet=0):
@@ -592,6 +591,7 @@ class MoviesCache(_BaseCache):
 
 class PersonsCache(_BaseCache):
     """Manage the persons list."""
+    counter = counter()
 
     def __init__(self, *args, **kwds):
         _BaseCache.__init__(self, *args, **kwds)
@@ -614,7 +614,7 @@ class PersonsCache(_BaseCache):
             if x[2]: nd['imdbIndex'] = x[2]
             name = build_name(nd, canonical=1)
             dict.__setitem__(self, name, x[0])
-        self.counter = Name.select().count() + 1
+        self.counter = counter(Name.select().count() + 1)
         Name.sqlmeta.cacheValues = _oldcacheValues
 
     def _toDB(self, quiet=0):
@@ -690,9 +690,11 @@ class SQLData(dict):
             self.clear()
             self.counter = self.counterInit
         except OperationalError, e:
-            print ' * TOO MANY DATA (%s items), SPLITTING...' % len(self)
+            print ' * TOO MANY DATA (%s items), SPLITTING (run #%d)...' % \
+                    (len(self), self._recursionLevel)
             self._recursionLevel += 1
             newdata = self.__class__()
+            newdata._recursionLevel = self._recursionLevel
             newflushEvery = self.flushEvery / 2
             self.flushEvery = newflushEvery
             newdata.flushEvery = newflushEvery
@@ -703,6 +705,7 @@ class SQLData(dict):
                 k, v = popitem()
                 dsi(newdata, k, v)
             newdata.flush(_resetRecursion=0)
+            del newdata
             self.flush(_resetRecursion=0)
             self.clear()
             self.counter = self.counterInit
@@ -897,9 +900,11 @@ def doAkaNames():
 class AkasMoviesCache(MoviesCache):
     """A MoviesCache-like class used to populate the AkaTitle table."""
     className = 'AkasMoviesCache'
+    counter = counter()
 
     def __init__(self, *args, **kdws):
         MoviesCache.__init__(self, *args, **kdws)
+        self.flushEvery = 50000
         self.notes = {}
         self.ids = {}
         self.sqlstr, self.converter = createSQLstr(AkaTitle, ('id', 'movieID',
@@ -1438,6 +1443,17 @@ for x in CompCastType.select():
 # begin the iterations...
 def run():
     print 'RUNNING imdbpy2sql.py'
+    # Truncate the current database.
+    print 'DROPPING current database...',
+    sys.stdout.flush()
+    dropTables()
+    print 'done!'
+    print 'CREATING new tables...',
+    sys.stdout.flush()
+    createTables()
+    print 'done!'
+    t('dropping and recreating the database')
+
     # Populate the CACHE_MID instance.
     readMovieList()
     ##CACHE_MID.populate()

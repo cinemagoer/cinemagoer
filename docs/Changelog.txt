@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.6.cvs20060622 "Firefly" (22 Jun 2006)
+* What's the new in release 2.6.cvs20060630 "Mortuary" (30 Jun 2006)
   [general]
   - renamed sortMovies to cmpMovies and sortPeople to cmpPeople; these
     function are now used to compare Movie/Person objects.
@@ -22,10 +22,13 @@
   - fixed a bug sorting movies in people's filmography.
   - fixed a bug filtering out adult-only movies.
   - removed unused ForeignKeys in the dbschema module.
-  - fixed a bug filtering with databases that require a commit() call,
+  - fixed a bug inserting data in databases that require a commit() call,
     after a call to executemany().
   - fixed a bug inserting aka titles in database that checks for foreign
     keys consistency.
+  - fixed an obscure bug splitting too huge data sets.
+  - MoviesCache and PersonsCache are now flushed few times.
+  - fixed a bug handling excessive recursion.
   - improved the exceptions handling.
 
 

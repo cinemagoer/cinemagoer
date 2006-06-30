@@ -94,7 +94,7 @@ IMDbPY package; for every function defined here, a (slower!) pure Python
 fall back is provided where it's needed.
 So far in the cutils module are included functions used to search
 names.keys and titles.key files by the "local" data access system,
-a function to get a list of episodes titles, provided the movieID
+a function to get a list of episodes titles provided the movieID
 of a tv series (scanning titles.key), a function to calculate the
 Ratcliff-Obershelp similarity of two Python strings and another
 function to return the soundex code of a given Python string.

@@ -126,22 +126,17 @@ suitable for systems with limited bandwidth but normal CPU power.
 * Every database supported by SQLObject is available.
 
 
-  FEATURES OF THE LOCAL DATA ACCESS SYSTEM
-  ========================================
-
-* Retrieve almost every information available, in a decently short time.
-
-
-  FEATURES OF THE MOBILE DATA ACCESS SYSTEM
-  =========================================
-
-* Returns every information available in the plain text data files.
-
-
   FEATURES OF THE MOBILE DATA ACCESS SYSTEM
   =========================================
 
 * Very lightweight, returns almost every needed information.
 * Accessories data sets (like 'goofs', 'trivia' and so on) are always
   available (being a subclass of the 'http' data access system).
+
+
+  FEATURES OF THE LOCAL DATA ACCESS SYSTEM
+  ========================================
+
+* Retrieve almost every available information, in a decently short time.
+
 

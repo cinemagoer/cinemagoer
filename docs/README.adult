@@ -64,6 +64,7 @@ systems (i.e.: you can set the 'adultSearch' argument and use
 the 'do_adult_search' method).
 
 Notice that for the local and the sql data access systems only
-results from the search_movie() method are filtered.
+results from the search_movie() method are filtered: there's no
+easy (and fast) way to tell that an actor/actress is a porn-star.
 
 

@@ -54,7 +54,7 @@ you can access movie data through the e-mail interface, etc. etc.
 
   Supported access systems  |  Aliases  |  Description
  ---------------------------+-----------+------------------------------------
-            'http'          |   'web',  | information are fetched through
+  (default) 'http'          |   'web',  | information are fetched through
                             |   'html'  | the http://akas.imdb.com web server.
  ---------------------------+-----------+------------------------------------
              'sql'          |   'db',   | information are fetched through

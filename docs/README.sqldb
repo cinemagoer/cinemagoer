@@ -96,6 +96,9 @@ I've done some tests, using an AMD Athlon 1800+, 512MB of RAM:
  ----------------------+-----------------------------------------------------
    MySQL 5.0 ISAM      |  95 (75/20)
    PostgreSQL 8.1      |  190 (177/13)
+   SQLite 3.2          | not tested: it seems way too slow: maybe 35 _hours_
+                       | to complete; maybe I've misconfigured or I'm
+                       | misusing it.
  
 
   NOTE

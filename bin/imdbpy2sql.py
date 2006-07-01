@@ -443,6 +443,11 @@ class _BaseCache(dict):
                 c1._recursionLevel = self._recursionLevel
                 c2.flushEvery = newflushEvery
                 c2._recursionLevel = self._recursionLevel
+                if self.className == 'MoviesCache':
+                    c1.episodesYear = c2.episodesYear = self.episodesYear
+                elif self.className == 'AkasMoviesCache':
+                    c1.notes = c2.notes = self.notes
+                    c1.ids = c2.ids = self.ids
                 poptmpd = self._tmpDict.popitem
                 for x in xrange(len(self._tmpDict)/2):
                     k, v = poptmpd()
@@ -693,12 +698,12 @@ class SQLData(dict):
             print ' * TOO MANY DATA (%s items), SPLITTING (run #%d)...' % \
                     (len(self), self._recursionLevel)
             self._recursionLevel += 1
-            newdata = self.__class__()
+            newdata = self.__class__(sqlString=self.sqlString,
+                                    converter=self.converter)
             newdata._recursionLevel = self._recursionLevel
             newflushEvery = self.flushEvery / 2
             self.flushEvery = newflushEvery
             newdata.flushEvery = newflushEvery
-            newdata.sqlString = self.sqlString
             popitem = self.popitem
             dsi = dict.__setitem__
             for x in xrange(len(self)/2):

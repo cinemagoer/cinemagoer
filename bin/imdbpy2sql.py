@@ -1410,9 +1410,6 @@ def completeCast():
 CACHE_MID = MoviesCache()
 CACHE_PID = PersonsCache()
 
-INFO_TYPES = {}
-for x in InfoType.select():
-    INFO_TYPES[x.info] = x.id
 
 
 def _cmpfunc(x, y):
@@ -1423,21 +1420,29 @@ def _cmpfunc(x, y):
     elif lx < ly: return 1
     return 0
 
+INFO_TYPES = {}
 MOVIELINK_IDS = []
-for x in LinkType.select():
-    MOVIELINK_IDS.append((x.link, len(x.link), x.id))
-MOVIELINK_IDS.sort(_cmpfunc)
-
 KIND_IDS = {}
 KIND_STRS = {}
-for x in KindType.select():
-    KIND_IDS[x.kind] = x.id
-    KIND_STRS[x.id] = x.kind
-
-
 CCAST_TYPES = {}
-for x in CompCastType.select():
-    CCAST_TYPES[x.kind] = x.id
+
+def readConstants():
+    """Read constants from the database."""
+    global INFO_TYPES, MOVIELINK_IDS, KIND_IDS, KIND_STRS, CCAST_TYPES
+
+    for x in InfoType.select():
+        INFO_TYPES[x.info] = x.id
+
+    for x in LinkType.select():
+        MOVIELINK_IDS.append((x.link, len(x.link), x.id))
+    MOVIELINK_IDS.sort(_cmpfunc)
+
+    for x in KindType.select():
+        KIND_IDS[x.kind] = x.id
+        KIND_STRS[x.id] = x.kind
+
+    for x in CompCastType.select():
+        CCAST_TYPES[x.kind] = x.id
 
 
 # begin the iterations...
@@ -1451,6 +1456,7 @@ def run():
     print 'CREATING new tables...',
     sys.stdout.flush()
     createTables()
+    readConstants()
     print 'done!'
     t('dropping and recreating the database')
 
@@ -1489,7 +1495,9 @@ def run():
 
     # Flush caches.
     CACHE_MID.flush()
+    CACHE_MID.clear()
     CACHE_PID.flush()
+    CACHE_PID.clear()
     t('fushing caches...')
 
     print 'TOTAL TIME TO INSERT DATA: %d minutes, %d seconds' % \

@@ -1,5 +1,5 @@
 
-NOTE: this release (2.6-cvs) contains huge performances improvements;
+NOTE: this release (2.6) contains huge performances improvements;
 while still using the SQLObject ORM, the imdbpy2sql.py script can take
 just a pair of hours to complete, instead of the 6 or more hours of the
 previous version.
@@ -20,7 +20,8 @@ This means that MySQL, PostgreSQL, SQLite, Firebird, MAX DB,
 Sybase and MSSQL are supported and, as your read this text,
 maybe other database backends were added.
 
-You need the SQLObject package, at least version 0.8.
+You need the SQLObject package, at least version 0.8; even better
+if you can download the latest SVN snapshot.
 
 SQLObject home page: http://sqlobject.org/
 SVN command to download the latest development version:
@@ -39,7 +40,6 @@ so don't start mirroring everything!).
 Starting from release 2.4, you can just download the files you need,
 instead of every single file; the files not downloaded, will be skipped.
 This feature is still quite untested, so please report any bug.
-
 
 Create a database named "imdb" (or whatever you like),
 using the tool provided by your database; as an example, for MySQL
@@ -61,8 +61,8 @@ Where 'scheme' is one in "sqlite", "mysql", "postgres", "firebird",
 
 Some examples:
     mysql://user:password@host/database
+    postgres://user:password@host/database
     mysql://host/database?debug=1
-    postgres://user@host/database?debug=&cache=
     postgres:///full/path/to/socket/database
     postgres://host:5432/database
     sqlite:///full/path/to/database
@@ -71,27 +71,38 @@ Some examples:
 
 For other information you can read the SQLObject documentation.
 
-Notice that the command will take a long time to complete; I estimate
-2 or 3 hours, depending on your hardware (I've tested MySQL 3.23; MySQL 5
-seems to be somewhat slower, but maybe it's because I've not fine-tuned it).
-It will also requires a lot of memory (RAM or swap space), in the
-range of 150/200 megabytes.
+
+  TIMING
+  ======
+
+The performances are hugely dependant upon the underlying Python
+module/package used to access the database.
+The fastest database appears to be MySQL, with about 95 minutes to
+complete on my test system (read below).
+A lot of memory (RAM or swap space) is required, in the range of
+at least 150/200 megabytes.
 In the end, the database will require between 1GB and 2GB of disc space.
 
-The imdbpy2sql.py will print a lot of debug information on standard output;
-you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
+As said, the performances varies greatly using a database server or another:
+MySQL, for instance, has an executemany() method of the cursor object
+that accept multiple data insertion with a single SQL statement; other
+database requires a call to the execute() method for every single row
+of data, and they will be much slower - from 2 to 7 times slower than
+MySQL.
 
+I've done some tests, using an AMD Athlon 1800+, 512MB of RAM:
+
+      database         |  time in minutes: total (insert data/create indexes)
+ ----------------------+-----------------------------------------------------
+   MySQL 5.0 ISAM      |  95 (75/20)
+   PostgreSQL 8.1      |  190 (177/13)
+ 
 
   NOTE
   ====
 
-The performances are hugely dependant upon the underlying Python
-module/package used to access the database.
-MySQL, for instance, has a executemany() method of the cursor object
-that accept multiple data insertion with a single SQL statement; other
-database requires a call to the execute() method for every single row
-of data, and they will be much slower - about 6 or 7 times slower than
-MySQL.
+The imdbpy2sql.py will print a lot of debug information on standard output;
+you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
 
 
   SQLITE NOTE

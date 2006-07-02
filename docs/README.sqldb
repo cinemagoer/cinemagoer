@@ -80,8 +80,8 @@ module/package used to access the database.
 The fastest database appears to be MySQL, with about 95 minutes to
 complete on my test system (read below).
 A lot of memory (RAM or swap space) is required, in the range of
-at least 150/200 megabytes.
-In the end, the database will require between 1GB and 2GB of disc space.
+at least 150/200 megabytes (plus more for the database server).
+In the end, the database will require between 1.5GB and 3GB of disc space.
 
 As said, the performances varies greatly using a database server or another:
 MySQL, for instance, has an executemany() method of the cursor object
@@ -94,12 +94,18 @@ I've done some tests, using an AMD Athlon 1800+, 512MB of RAM:
 
       database         |  time in minutes: total (insert data/create indexes)
  ----------------------+-----------------------------------------------------
-   MySQL 5.0 ISAM      |  95 (75/20)
+   MySQL 5.0 MyISAM    |  95 (75/20)
+   MYSQL 5.0 InnoDB    |  ??? (80/???)
+                       |  maybe I've not cofigurated it properly: it
+                       |  looks like the creation of the indexes will
+                       |  more then 2 or 3 hours.
    PostgreSQL 8.1      |  190 (177/13)
    SQLite 3.2          | not tested: it seems way too slow: maybe 35 _hours_
                        | to complete; maybe I've misconfigured or I'm
                        | misusing it.
- 
+
+If you have different experiences, please tell me!
+
 
   NOTE
   ====

@@ -394,7 +394,7 @@ def counter(initValue=1):
 
 class _BaseCache(dict):
     """Base class for Movie and Person basic information."""
-    def __init__(self, d=None, flushEvery=200000):
+    def __init__(self, d=None, flushEvery=100000):
         dict.__init__(self)
         # Flush data into the SQL database every flushEvery entries.
         self.flushEvery = flushEvery

@@ -138,7 +138,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbDataAccessError, \
                     'unable to connect to the database server; ' + \
                     'complete message: "%s"' % str(e)
-        self.OperationalError = self._connection.module.OperationalError
+        self.Error = self._connection.module.Error
         # Maps some IDs to the corresponding strings.
         self._kind = {}
         self._kindRev = {}
@@ -146,7 +146,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             for kt in KindType.select():
                 self._kind[kt.id] = str(kt.kind)
                 self._kindRev[str(kt.kind)] = kt.id
-        except self.OperationalError:
+        except self.Error:
             # NOTE: you can also get the error, but - at least with
             #       MySQL - it also contains the password, and I don't
             #       like the idea to print it out.
@@ -281,7 +281,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # those times... <g>
         if imdbID is not None:
             try: movie.imdbID = imdbID
-            except self.OperationalError: pass
+            except self.Error: pass
         return imdbID
 
     def get_imdbPersonID(self, personID):
@@ -298,7 +298,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         imdbID = self.name2imdbID(namline)
         if imdbID is not None:
             try: person.imdbID = imdbID
-            except self.OperationalError: pass
+            except self.Error: pass
         return imdbID
 
     def do_adult_search(self, doAdult):

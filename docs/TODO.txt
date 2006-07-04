@@ -13,7 +13,7 @@ NOTE: it's always time to clean the code! <g>
 * Compatibility with Python 2.2 and previous versions is no more assured
   for every data access system (the imdbpy2sql.py script for sure
   requires at least Python 2.3).
-* The analyze_title/build_title functions are too complex.
+* The analyze_title/build_title functions are grown too complex.
 * for local and sql data access systems: some episode titles are
   marked as {{SUSPENDED}}; they should probably be ignored.
 
@@ -123,6 +123,4 @@ Things to do:
   IMDb releases also "diff" files to keep the plain text files updated;
   it would be wonderful to directly use these diff files to upgrade the
   SQL database, but I think this is a nearly impossible task.
-* split in various methods the gathering of information about movies
-  and persons.
 

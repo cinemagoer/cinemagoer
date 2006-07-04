@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.6.cvs20060702 "A Children's Game" (02 Jul 2006)
+* What's the new in release 2.6 "They Live" (04 Jul 2006)
   [general]
   - renamed sortMovies to cmpMovies and sortPeople to cmpPeople; these
     function are now used to compare Movie/Person objects.
@@ -12,6 +12,7 @@
   - fixed a bug retrieving runtimes and akas information.
   - fixed an obscure bug trying an Exact Primary Title/Name search when
     the provided title was wrong/incomplete.
+  - support for the new format of the "DVD details" page.
 
   [sql data access system]
   - now at insert-time the tables doesn't have indexes, which are

@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from __future__ import generators
 import re
-import string
 from types import UnicodeType, StringType, ListType, TupleType, DictType
 from copy import copy, deepcopy
 from time import strptime, strftime

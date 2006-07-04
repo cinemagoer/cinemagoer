@@ -33,7 +33,6 @@ from utils import modClearRefs, re_titleRef, re_nameRef
 from imdb import IMDb
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
                                     entcharrefsget, subXMLRefs, subSGMLRefs
-import Movie, Person
 
 
 # An URL, more or less.

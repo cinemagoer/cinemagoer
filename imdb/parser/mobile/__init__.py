@@ -491,12 +491,28 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 role = u''
                 if not istvguest:
                     ms = m.split('....')
-                    if len(ms) >= 1:
-                        first = ms[0]
-                        if first and first[0] == '(':
-                            notes = first.strip()
-                        ms = ms[1:]
-                    if ms: role = ' '.join(ms).strip()
+                    if len(ms) == 2:
+                        notes = ms[0].strip().replace('  ', ' ')
+                        role = ms[1].strip()
+                        fn = role.find('(')
+                        if fn != -1:
+                            en = role.rfind(')')
+                            pnote = role[fn:en+1].strip()
+                            role = '%s %s' % (role[:fn].strip(),
+                                            role[en+1:].strip())
+                            role = role.strip()
+                            if pnote:
+                                if notes: notes += ' '
+                                notes += pnote
+                    else:
+                        notes = ''.join(ms).strip().replace('  ', ' ')
+                        role = u''
+                    #if len(ms) >= 1:
+                    #    first = ms[0]
+                    #    if first and first[0] == '(':
+                    #        notes = first.strip()
+                    #    ms = ms[1:]
+                    #if ms: role = ' '.join(ms).strip()
                 else:
                     # XXX: strip quotes from strings like "Himself"?
                     noteidx = m.find('(')

@@ -1,6 +1,16 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 2.7.cvs20060706 "They Live" (06 Jul 2006)
+  [http data access system]
+  - fixed a minor bug retrieving information about persons, with movies
+    in production.
+
+  [mobile data access system]
+  - fixed a minor bug retrieving information about persons, with movies
+    in production.
+
+
 * What's the new in release 2.6 "They Live" (04 Jul 2006)
   [general]
   - renamed sortMovies to cmpMovies and sortPeople to cmpPeople; these

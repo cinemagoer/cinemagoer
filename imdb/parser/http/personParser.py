@@ -67,11 +67,13 @@ class HTMLMaindetailsParser(ParserBase):
         self._get_imdbID = 0
         self._in_sect = 0
         self._in_b = 0
+        self._in_i = 0
         self._sect_name = ''
         self._in_emailfriend = 0
         self._in_akas = 0
-        self._aka = ''
+        self._aka = u''
         self._akas = []
+        self._cur_status = u''
 
     def get_data(self):
         """Return the dictionary."""
@@ -171,6 +173,12 @@ class HTMLMaindetailsParser(ParserBase):
         self._in_sect = 0
         self._sect_name = ''
 
+    def start_i(self, attrs):
+        self._in_i = 1
+
+    def end_i(self):
+        self._in_i = 0
+
     def start_li(self, attrs):
         self._in_list = 1
         self._seen_br = 0
@@ -203,18 +211,37 @@ class HTMLMaindetailsParser(ParserBase):
             elif self._roles.startswith('(VG)'):
                 tit += ' (VG)'
                 self._roles = self._roles[4:].strip()
-            sp = self._roles.find('(')
-            if sp != -1:
-                ep = self._roles.rfind(')')
-                if ep != -1:
-                    notes = self._roles[sp:ep+1]
-                    self._roles = self._roles[:sp-1].strip()
-            if self._roles.startswith('.... '):
-                self._roles = self._roles[5:]
+            has_note = 0
+            if self._roles.find('(') != -1: has_note = 1
+            sp = self._roles.split('....')
+            if len(sp) == 2:
+                notes = sp[0].strip().replace('  ', ' ')
+                self._roles = sp[1].strip()
+                fn = self._roles.find('(')
+                if fn != -1:
+                    en = self._roles.rfind(')')
+                    pnote = self._roles[fn:en+1].strip()
+                    self._roles = '%s %s' % (self._roles[:fn].strip(),
+                                            self._roles[en+1:].strip())
+                    self._roles = self._roles.strip()
+                    if pnote:
+                        if notes: notes += ' '
+                        notes += pnote
+            else:
+                notes = ''.join(sp).strip().replace('  ', ' ')
+                self._roles = ''
             movie = Movie(movieID=str(self._last_imdbID), title=tit,
                             accessSystem='http')
             if notes: movie.notes = notes
             movie.currentRole = self._roles
+            self._cur_status = self._cur_status.strip()
+            if self._cur_status:
+                if self._cur_status[0] == '(':
+                    self._cur_status = self._cur_status[1:]
+                if self._cur_status[-1] == ')':
+                    self._cur_status = self._cur_status[:-1]
+                movie['status'] = '%s' % self._cur_status
+                self._cur_status = u''
             sect = self._sect_name.strip().lower()
             self._person_data.setdefault(sect, []).append(movie)
         self._title = ''
@@ -277,7 +304,10 @@ class HTMLMaindetailsParser(ParserBase):
         elif self._in_title and not self._seen_br:
             self._title += data
         elif self._in_list:
-            self._roles += data
+            if self._in_i:
+                self._cur_status += data
+            else:
+                self._roles += data
 
 
 class HTMLBioParser(ParserBase):

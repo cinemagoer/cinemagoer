@@ -56,12 +56,15 @@ except imdb.IMDbError, e:
     sys.exit(3)
 
 # Print the results.
-print '    %s results for "%s":' % (len(results),
+print '    %s result%s for "%s":' % (len(results),
+                                    ('', 's')[len(results) != 1],
                                     name.encode(out_encoding, 'replace'))
+print 'personID\t: imdbID : name'
 
 # Print the long imdb name for every person.
 for person in results:
-    print '%s: %s' % (i.get_imdbPersonID(person.personID),
+    print '%s\t: %s : %s' % (person.personID,
+                    i.get_imdbID(person),
                     person['long imdb name'].encode(out_encoding, 'replace'))
 
 

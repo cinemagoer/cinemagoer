@@ -56,12 +56,15 @@ except imdb.IMDbError, e:
     sys.exit(3)
 
 # Print the results.
-print '    %s results for "%s":' % (len(results),
+print '    %s result%s for "%s":' % (len(results),
+                                    ('', 's')[len(results) != 1],
                                     title.encode(out_encoding, 'replace'))
+print 'movieID\t: imdbID : title'
 
 # Print the long imdb title for every movie.
 for movie in results:
-    print '%s: %s' % (i.get_imdbMovieID(movie.movieID),
+    print '%s\t: %s : %s' % (movie.movieID,
+                    i.get_imdbID(movie),
                     movie['long imdb title'].encode(out_encoding, 'replace'))
 
 

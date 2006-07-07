@@ -9,6 +9,8 @@ I'd like to thank the following people for their help:
 
 * Ana Guerrero, for the official debian package.
 
+* Alain Michel, for a bug report about search_*.py and get_*.py scripts.
+
 * Martin Arpon and Andreas Schoenle for bug reports (and patches)
   about "runtime", "aka titles" and "production notes" information
   not being parsed.

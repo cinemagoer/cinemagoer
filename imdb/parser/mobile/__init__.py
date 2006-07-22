@@ -290,13 +290,15 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if castdata:
             castdata = castdata[0]
             fl = castdata.find('href=')
-            if fl != -1: castdata = '< a' + castdata[fl:]
+            if fl != -1: castdata = '<a ' + castdata[fl:]
             smib = castdata.find('<tr><td align="center" colspan="3"><small>')
             if smib != -1:
                 smie = castdata.rfind('</small></td></tr>')
                 if smie != -1:
                     castdata = castdata[:smib].strip() + \
                                 castdata[smie+18:].strip()
+            castdata = castdata.replace(' bgcolor="#F0F0F0"', '')
+            castdata = castdata.replace(' bgcolor="#FFFFFF"', '')
             cast = self._getPersons(castdata, sep='</tr><tr>', hasCr=1)
             if cast: d['cast'] = cast
         # FIXME: doesn't catch "complete title", which is not

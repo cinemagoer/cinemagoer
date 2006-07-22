@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.7.cvs20060707 "Chicken Little" (07 Jul 2006)
+* What's the new in release 2.7.cvs20060722 "Silent Hill" (22 Jul 2006)
   [general]
   - fixed search_movie.py and search_person.py scripts; now they return
     both the movieID/personID and the imdbID.
@@ -11,6 +11,8 @@
     in production.
 
   [mobile data access system]
+  - fixed a major bug with the cast list, after the changes to the
+    IMDb web site.
   - fixed a minor bug retrieving information about persons, with movies
     in production.
 

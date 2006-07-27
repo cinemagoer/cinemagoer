@@ -280,8 +280,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # There're times when I think I'm a genius; this one of
         # those times... <g>
         if imdbID is not None:
-            try: movie.imdbID = imdbID
-            except self.Error: pass
+            try: movie.imdbID = int(imdbID)
+            except: pass
         return imdbID
 
     def get_imdbPersonID(self, personID):
@@ -297,8 +297,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         namline = build_name(n_dict, canonical=1)
         imdbID = self.name2imdbID(namline)
         if imdbID is not None:
-            try: person.imdbID = imdbID
-            except self.Error: pass
+            try: person.imdbID = int(imdbID)
+            except: pass
         return imdbID
 
     def do_adult_search(self, doAdult):

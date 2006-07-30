@@ -154,8 +154,6 @@ def _parseBiography(biol):
             res.setdefault('pictorials', []).append(x[6:].strip())
         elif x6 == 'CV: * ':
             res.setdefault('magazine covers', []).append(x[6:].strip())
-        elif x6 == 'WN: * ':
-            res.setdefault('where now', []).append(x[6:].strip())
         elif x4 == 'NK: ':
             res.setdefault('nick names', []).append(normalizeName(x[4:]))
         elif x6 == 'PI: * ':
@@ -174,6 +172,8 @@ def _parseBiography(biol):
     if books: res['books'] = books
     agent = _parseList(biol, 'AG')
     if agent: res['agent address'] = agent
+    wherenow = _parseList(biol, 'WN')
+    if wherenow: res['where now'] = wherenow[0]
     biomovies = _parseList(biol, 'BT')
     if biomovies: res['biographical movies'] = biomovies
     guestapp = _buildGuests([x[6:].strip() for x in biol if x[:6] == 'GA: * '])

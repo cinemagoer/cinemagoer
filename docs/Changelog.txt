@@ -1,10 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.7.cvs20060726 "Chassen" (26 Jul 2006)
+* What's the new in release 2.7.cvs20060730 "The Darkling" (30 Jul 2006)
   [general]
   - fixed search_movie.py and search_person.py scripts; now they return
     both the movieID/personID and the imdbID.
+  - the IMDbPY account was configured to hide the mini-headshots.
 
   [http data access system]
   - fixed a minor bug retrieving information about persons, with movies
@@ -18,6 +19,10 @@
 
   [sql data access system]
   - fixed a(nother) bug updating imdbID for movies and persons.
+
+  [local data access system]
+  - "where now" information now correctly handles multiple lines (also
+    affecting the imdbpy2sql.py script).
 
 
 * What's the new in release 2.6 "They Live" (04 Jul 2006)

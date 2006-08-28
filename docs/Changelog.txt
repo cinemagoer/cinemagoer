@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.7.cvs20060819 "The Graveyard" (19 Aug 2006)
+* What's the new in release 2.7.cvs20060827 "Demonic Toys" (27 Aug 2006)
   [general]
   - fixed search_movie.py and search_person.py scripts; now they return
     both the movieID/personID and the imdbID.
@@ -10,10 +10,12 @@
   [http data access system]
   - fixed a minor bug retrieving information about persons, with movies
     in production.
+  - fixed support for cast list of tv series.
 
   [mobile data access system]
   - fixed a major bug with the cast list, after the changes to the
     IMDb web site.
+  - fixed support for cast list of tv series.
   - fixed a minor bug retrieving information about persons, with movies
     in production.
 

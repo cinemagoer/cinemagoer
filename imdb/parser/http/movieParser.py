@@ -116,6 +116,7 @@ class HTMLMovieParser(ParserBase):
         self._is_mpaa = 0
         self._mpaa = ''
         self._inbch = 0
+        self._in_blackcatheader = 0
         self._isplotoutline = 0
         self._plotoutline = u''
         # If true, the next data should be merged with the previous one,
@@ -447,11 +448,14 @@ class HTMLMovieParser(ParserBase):
             cls = cls.lower()
             if cls == 'ch':
                 self._inbch = 1
-            elif self.mdparse and cls == 'blackcatheader':
-                self.end_table()
+            elif cls == 'blackcatheader':
+                self._in_blackcatheader = 1
+                if self.mdparse:
+                    self.end_table()
 
     def end_b(self):
         if self._inbch: self._inbch = 0
+        if self._in_blackcatheader: self._in_blackcatheader = 0
 
     def do_img(self, attrs):
         alttex = self.get_attr_value(attrs, 'alt')
@@ -571,6 +575,11 @@ class HTMLMovieParser(ParserBase):
                 self._in_series_title = 1
             elif sldata.startswith('original air date'):
                 self._in_series_info = 1
+        elif self._in_blackcatheader:
+            # An hack to support also the tv series' pages.
+            if sldata == 'cast':
+                self._is_cast_crew = 1
+                self._current_section = 'cast'
         if self.mdparse:
             if sldata.startswith('cast overview, first billed only'):
                 self._is_cast_crew = 1

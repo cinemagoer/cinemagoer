@@ -143,6 +143,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if aonly:
                 stripped = _findBetween(name, '>', '</a>')
                 if len(stripped) == 1: name = stripped[0]
+            if name[0:1] == '>': name = name[1:]
             name = _unHtml(name)
             if not (pid and name): continue
             plappend(Person(personID=str(pid[0]), name=name,

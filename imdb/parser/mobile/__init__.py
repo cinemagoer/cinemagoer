@@ -113,7 +113,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
 
     def _mretrieve(self, url, size=-1):
         """Retrieve an html page and normalize it."""
-        cont = self._retrieve(self, url, size=size)
+        cont = self._retrieve(url, size=size)
         return self._clean_html(cont)
 
     def _getPersons(self, s, sep='<br>', hasCr=0, aonly=0):

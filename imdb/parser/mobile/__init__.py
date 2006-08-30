@@ -106,12 +106,15 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         IMDbHTTPAccessSystem.__init__(self, isThin, *arguments, **keywords)
         self.accessSystem = 'mobile'
 
-    def _mretrieve(self, url):
+    def _clean_html(self, html):
+        """Normalize the retrieve html."""
+        html = re_spaces.sub(' ', html)
+        return subXMLRefs(html)
+
+    def _mretrieve(self, url, size=-1):
         """Retrieve an html page and normalize it."""
-        cont = IMDbHTTPAccessSystem._retrieve(self, url)
-        cont = re_spaces.sub(' ', cont)
-        cont = subXMLRefs(cont)
-        return cont
+        cont = self._retrieve(self, url, size=size)
+        return self._clean_html(cont)
 
     def _getPersons(self, s, sep='<br>', hasCr=0, aonly=0):
         """Return a list of Person objects, from the string s; items
@@ -155,8 +158,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
 
     def _search_movie(self, title, results):
         ##params = urllib.urlencode({'tt': 'on','mx': str(results),'q': title})
-        params = 'q=%s&tt=on&mx=%s' % (urllib.quote_plus(title), str(results))
-        cont = self._mretrieve(imdbURL_search % params)
+        #params = 'q=%s&tt=on&mx=%s' % (urllib.quote_plus(title), str(results))
+        #cont = self._mretrieve(imdbURL_search % params)
+        cont = self._get_search_content('tt', title, results)
         title = _findBetween(cont, '<title>', '</title>')
         res = []
         if not title: return res
@@ -364,8 +368,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
 
     def _search_person(self, name, results):
         ##params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
-        params = 'q=%s&nm=on&mx=%s' % (urllib.quote_plus(name), str(results))
-        cont = self._mretrieve(imdbURL_search % params)
+        #params = 'q=%s&nm=on&mx=%s' % (urllib.quote_plus(name), str(results))
+        #cont = self._mretrieve(imdbURL_search % params)
+        cont = self._get_search_content('nm', name, results)
         name = _findBetween(cont, '<title>', '</title>')
         res = []
         if not name: return res

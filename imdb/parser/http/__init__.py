@@ -77,14 +77,14 @@ class IMDbURLopener(FancyURLopener):
         c_header = 'id=%s; uu=%s' % (_cookie_id, _cookie_uu)
         self.addheaders.append(('Cookie', c_header))
 
-    def retrieve_unicode(self, url):
+    def retrieve_unicode(self, url, size=-1):
         """Retrieves the given URL, and returns a unicode string,
         trying to guess the encoding of the data (assuming latin_1
         by default)"""
         encode = None
         try:
             uopener = self.open(url)
-            content = uopener.read()
+            content = uopener.read(size=size)
             server_encode = uopener.info().getparam('charset')
             # look at the content-type HTML meta tag.
             if server_encode is None and content:
@@ -219,17 +219,36 @@ class IMDbHTTPAccessSystem(IMDbBase):
             c_header = 'id=%s; uu=%s' % (cookie_id, cookie_uu)
             self.urlOpener.addheaders += [('Cookie', c_header)]
 
-    def _retrieve(self, url):
+    def _retrieve(self, url, size=-1):
         """Retrieve the given URL."""
-        return self.urlOpener.retrieve_unicode(url)
+        return self.urlOpener.retrieve_unicode(url, size=size)
+
+    def _get_search_content(self, kind, ton, results):
+        """Retrieve the web page for a given search.
+        kind can be tt (for titles) or nm (for names)
+        ton is the title or the name to search.
+        results is the maximum number of results to be retrieved."""
+        params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
+        cont = self._retrieve(imdbURL_search % params)
+        if cont.find('more than 500 partial matches') == -1:
+            return cont
+        # The retrieved page contains no results, because too many
+        # titles or names contain the string we're looking for.
+        if kind == 'nm':
+            params = 'q=%s;more=nm' % quote_plus(ton)
+        else:
+            params = 'q=%s;more=tt' % quote_plus(ton)
+        size = 22528 + results * 512
+        return self._retrieve(imdbURL_search % params, size=size)
 
     def _search_movie(self, title, results):
         # The URL of the query.
         # XXX: To retrieve the complete results list:
         #      params = urllib.urlencode({'more': 'tt', 'q': title})
         ##params = urllib.urlencode({'tt': 'on','mx': str(results),'q': title})
-        params = 'q=%s&tt=on&mx=%s' % (quote_plus(title), str(results))
-        cont = self._retrieve(imdbURL_search % params)
+        #params = 'q=%s&tt=on&mx=%s' % (quote_plus(title), str(results))
+        #cont = self._retrieve(imdbURL_search % params)
+        cont = self._get_search_content('tt', title, results)
         return search_movie_parser.parse(cont, results=results)['data']
 
     def get_movie_main(self, movieID):
@@ -389,8 +408,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # XXX: To retrieve the complete results list:
         #      params = urllib.urlencode({'more': 'nm', 'q': name})
         ##params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
-        params = 'q=%s&nm=on&mx=%s' % (quote_plus(name), str(results))
-        cont = self._retrieve(imdbURL_search % params)
+        #params = 'q=%s&nm=on&mx=%s' % (quote_plus(name), str(results))
+        #cont = self._retrieve(imdbURL_search % params)
+        cont = self._get_search_content('nm', name, results)
         return search_person_parser.parse(cont, results=results)['data']
 
     def get_person_main(self, personID):

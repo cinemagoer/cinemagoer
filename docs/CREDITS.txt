@@ -21,6 +21,8 @@ I'd like to thank the following people for their help:
 * Sebastian Pölsterl, for a bug report about the cover url for
   tv (mini) series.
 
+* Martin Kirst for many hints and the work on the imdbpyweb program.
+
 * Julian Mayer, for a bug report and a patch about non-ascii chars.
 
 * Wim Schut and "eccentric", for bug reports and a patches about

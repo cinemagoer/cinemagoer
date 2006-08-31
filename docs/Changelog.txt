@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.7.cvs20060830 "P" (30 Aug 2006)
+* What's the new in release 2.7.cvs20060831 "P" (31 Aug 2006)
   [general]
   - fixed search_movie.py and search_person.py scripts; now they return
     both the movieID/personID and the imdbID.

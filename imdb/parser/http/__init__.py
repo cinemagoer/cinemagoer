@@ -83,6 +83,8 @@ class IMDbURLopener(FancyURLopener):
         by default)"""
         encode = None
         try:
+            if size != -1:
+                self.addheader('Range', 'bytes=0-%d' % size)
             uopener = self.open(url)
             content = uopener.read(size=size)
             server_encode = uopener.info().getparam('charset')
@@ -101,8 +103,16 @@ class IMDbURLopener(FancyURLopener):
                 except (LookupError, ValueError, TypeError):
                     pass
             uopener.close()
+            if size != -1:
+                for index in xrange(len(self.addheaders)):
+                    if self.addheaders[index][0] == 'Range':
+                        del self.addheaders[index]
             self.close()
         except IOError, e:
+            if size != -1:
+                for index in xrange(len(self.addheaders)):
+                    if self.addheaders[index][0] == 'Range':
+                        del self.addheaders[index]
             raise IMDbDataAccessError, {'errcode': e.errno,
                                         'errmsg': str(e.strerror),
                                         'url': url,

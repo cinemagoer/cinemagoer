@@ -282,7 +282,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_keywords(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'keywords')
-        return taglines_parser.parse(cont)
+        return keywords_parser.parse(cont)
 
     def get_movie_alternate_versions(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'alternateversions')

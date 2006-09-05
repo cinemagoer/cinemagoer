@@ -13,7 +13,11 @@ NOTE: it's always time to clean the code! <g>
 * Compatibility with Python 2.2 and previous versions is no more assured
   for every data access system (the imdbpy2sql.py script for sure
   requires at least Python 2.3).
-* The analyze_title/build_title functions are grown too complex.
+* The analyze_title/build_title functions are grown too complex and
+  beyond their initial goals.
+* the 'year' keyword can probably be an int, instead of a string;
+  the '????' case can be handled directly by the analyze_title/build_title
+  functions.
 * for local and sql data access systems: some episode titles are
   marked as {{SUSPENDED}}; they should probably be ignored.
 

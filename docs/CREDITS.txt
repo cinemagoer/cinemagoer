@@ -9,6 +9,9 @@ I'd like to thank the following people for their help:
 
 * Ana Guerrero, for the official debian package.
 
+* Michael G. Noll for a bug report and a patch to fix a bug
+  retrieving 'plot keywords'.
+
 * Alain Michel, for a bug report about search_*.py and get_*.py scripts.
 
 * Martin Arpon and Andreas Schoenle for bug reports (and patches)

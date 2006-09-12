@@ -306,6 +306,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                                 castdata[smie+18:].strip()
             castdata = castdata.replace(' bgcolor="#F0F0F0"', '')
             castdata = castdata.replace(' bgcolor="#FFFFFF"', '')
+            castdata = castdata.replace('/tr> <tr', '/tr><tr')
             cast = self._getPersons(castdata, sep='</tr><tr', hasCr=1)
             if cast: d['cast'] = cast
         # FIXME: doesn't catch "complete title", which is not

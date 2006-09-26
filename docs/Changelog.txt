@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.7.cvs20060912 "Cobbra vs. Ninja" (12 Sep 2006)
+* What's the new in release 2.7 "Pitch Black" (26 Sep 2006)
   [general]
   - fixed search_movie.py and search_person.py scripts; now they return
     both the movieID/personID and the imdbID.
@@ -14,6 +14,7 @@
     in production.
   - fixed support for cast list of tv series.
   - fixed a bug retrieving 'plot keywords'.
+  - some left out company credits are now properly handled.
 
   [mobile data access system]
   - fixed a major bug with the cast list, after the changes to the
@@ -21,6 +22,7 @@
   - fixed support for cast list of tv series.
   - fixed a minor bug retrieving information about persons, with movies
     in production.
+  - now every AKA title is correctly parsed.
 
   [sql data access system]
   - fixed a(nother) bug updating imdbID for movies and persons.

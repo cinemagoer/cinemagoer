@@ -41,6 +41,8 @@ NOTE: it's always time to clean the code! <g>
   notes ("written by", "as Aka Name", ...)
 * The 'laserdisc' information for 'local' and 'sql' is probabily
   wrong: I think they merge data from different laserdisc titles.
+* there are links to hollywoodreporter.com that are not bathered in
+  the "external reviews" page.
 
 
 [Person objects]

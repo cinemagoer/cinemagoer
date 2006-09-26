@@ -117,6 +117,7 @@ class HTMLMovieParser(ParserBase):
         self._mpaa = ''
         self._inbch = 0
         self._in_blackcatheader = 0
+        self._cur_blackcatheader = ''
         self._isplotoutline = 0
         self._plotoutline = u''
         # If true, the next data should be merged with the previous one,
@@ -223,6 +224,12 @@ class HTMLMovieParser(ParserBase):
             if ind != -1:
                 sect = sect[:ind]
             self._current_section = sect
+        elif link.startswith('/company') and self._cur_blackcatheader:
+            self._is_company_cred = 1
+            self._current_section = self._cur_blackcatheader.lower()
+            # To not override the other section with the same name.
+            if self._current_section == 'special effects':
+                self._current_section = 'special effects companies'
         # Sections like 'cast', 'director', 'writer', etc. all
         # begin with a link to a "/Glossary" page.
         elif link.startswith('/glossary'):
@@ -434,12 +441,13 @@ class HTMLMovieParser(ParserBase):
             self._company_data = strip_amps(self._company_data)
             self.append_item(self._current_section, self._company_data)
             self._company_data = ''
-            self._is_company_cred = 0
+            #self._is_company_cred = 0
 
     def start_ul(self, attrs): pass
 
     def end_ul(self):
         self._is_company_cred = 0
+        self._cur_blackcatheader = ''
 
     def start_b(self, attrs):
         self._is_akas = 0
@@ -450,6 +458,7 @@ class HTMLMovieParser(ParserBase):
                 self._inbch = 1
             elif cls == 'blackcatheader':
                 self._in_blackcatheader = 1
+                self._cur_blackcatheader = ''
                 if self.mdparse:
                     self.end_table()
 
@@ -580,6 +589,8 @@ class HTMLMovieParser(ParserBase):
             if sldata == 'cast':
                 self._is_cast_crew = 1
                 self._current_section = 'cast'
+            else:
+                self._cur_blackcatheader += data
         if self.mdparse:
             if sldata.startswith('cast overview, first billed only'):
                 self._is_cast_crew = 1

@@ -312,8 +312,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         # FIXME: doesn't catch "complete title", which is not
         #        included in <i> tags.
         #        See "Gehr Nany Fgbevrf 11", movieID: 0282910
-        akas = _findBetween(cont, '<i class="transl">', '<br')
+        akas = _findBetween(cont, '<b class="ch">Also Known As:</b>',
+                                    '<b class="ch">')
         if akas:
+            akas[:] = [x for x in akas[0].split('<br>') if x.strip()]
             akas = [_unHtml(x).replace(' (','::(', 1).replace(' [','::[')
                     for x in akas]
             d['akas'] = akas

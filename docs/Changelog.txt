@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 2.8.cvs20060927 "V for Vendetta" (27 Sep 2006)
+  [http data access system]
+  - fixed a bug with 'miscellaneous companies'.
+
+
 * What's the new in release 2.7 "Pitch Black" (26 Sep 2006)
   [general]
   - fixed search_movie.py and search_person.py scripts; now they return

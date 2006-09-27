@@ -230,6 +230,8 @@ class HTMLMovieParser(ParserBase):
             # To not override the other section with the same name.
             if self._current_section == 'special effects':
                 self._current_section = 'special effects companies'
+            elif self._current_section == 'other companies':
+                self._current_section = 'miscellaneous companies'
         # Sections like 'cast', 'director', 'writer', etc. all
         # begin with a link to a "/Glossary" page.
         elif link.startswith('/glossary'):

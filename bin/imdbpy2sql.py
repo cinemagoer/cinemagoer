@@ -436,34 +436,51 @@ class _BaseCache(dict):
                 print ' * TOO MANY DATA (%s items), SPLITTING (run #%d)...' % \
                         (len(self._tmpDict), self._recursionLevel)
                 self._recursionLevel += 1
-                c1 = self.__class__()
-                c2 = self.__class__()
-                newflushEvery = self.flushEvery / 2
-                c1.flushEvery = newflushEvery
-                c1._recursionLevel = self._recursionLevel
-                c2.flushEvery = newflushEvery
-                c2._recursionLevel = self._recursionLevel
-                if self.className == 'MoviesCache':
-                    c1.episodesYear = c2.episodesYear = self.episodesYear
-                elif self.className == 'AkasMoviesCache':
-                    c1.notes = c2.notes = self.notes
-                    c1.ids = c2.ids = self.ids
+                ## new code!
+                ## the same class instance (self) is used, instead of
+                ## creating two separated objects.
+                oldflushEvery = self.flushEvery
+                self.flushEvery = self.flushEvery / 2
+                self._flushing = 0
+                firstHalf = {}
                 poptmpd = self._tmpDict.popitem
                 for x in xrange(len(self._tmpDict)/2):
                     k, v = poptmpd()
-                    c1._tmpDict[k] = v
-                c2._tmpDict = self._tmpDict
-                c1.flush(quiet=quiet, _resetRecursion=0)
-                c1._tmpDict.clear()
-                if len(c1) > 0:
-                    self.update(c1)
-                del c1
-                c2.flush(quiet=quiet, _resetRecursion=0)
-                c2._tmpDict.clear()
-                if len(c2) > 0:
-                    self.update(c2)
-                del c2
-                self._tmpDict.clear()
+                    firstHalf[k] = v
+                self.flush(quiet=quiet, _resetRecursion=0)
+                self._tmpDict = firstHalf
+                self.flush(quiet=quiet, _resetRecursion=0)
+                self.flushEvery = oldflushEvery
+                ## old code!
+                #c1 = self.__class__()
+                #c2 = self.__class__()
+                #newflushEvery = self.flushEvery / 2
+                #c1.flushEvery = newflushEvery
+                #c1._recursionLevel = self._recursionLevel
+                #c2.flushEvery = newflushEvery
+                #c2._recursionLevel = self._recursionLevel
+                #if self.className == 'MoviesCache':
+                #    c1.episodesYear = c2.episodesYear = self.episodesYear
+                #elif self.className == 'AkasMoviesCache':
+                #    c1.notes = c2.notes = self.notes
+                #    c1.ids = c2.ids = self.ids
+                #poptmpd = self._tmpDict.popitem
+                #for x in xrange(len(self._tmpDict)/2):
+                #    k, v = poptmpd()
+                #    c1._tmpDict[k] = v
+                #c2._tmpDict = self._tmpDict
+                #c1.flush(quiet=quiet, _resetRecursion=0)
+                #c1._tmpDict.clear()
+                #if len(c1) > 0:
+                #    self.update(c1)
+                #    #c2.update(c1)
+                #del c1
+                #c2.flush(quiet=quiet, _resetRecursion=0)
+                #c2._tmpDict.clear()
+                #if len(c2) > 0:
+                #    self.update(c2)
+                #del c2
+                #self._tmpDict.clear()
         self._flushing = 0
         # Flush also deferred data.
         if self._deferredData:

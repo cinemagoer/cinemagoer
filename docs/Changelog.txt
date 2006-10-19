@@ -1,9 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.8.cvs20060927 "V for Vendetta" (27 Sep 2006)
+* What's the new in release 2.8.cvs20061019 "Heathers" (19 Oct 2006)
   [http data access system]
   - fixed a bug with 'miscellaneous companies'.
+
+  [sql data access system]
+  - first changes to fix a nasty bug in imdbpy2sql.py that will show up
+    splitting a data set too large to be sent in a single shot to the
+    database.
 
 
 * What's the new in release 2.7 "Pitch Black" (26 Sep 2006)

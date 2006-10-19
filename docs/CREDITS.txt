@@ -9,6 +9,9 @@ I'd like to thank the following people for their help:
 
 * Ana Guerrero, for the official debian package.
 
+* Jay Klein for a bug report and testing to fix a nasty bug in the
+  imdbpy2sql.py script (splitting too large data sets).
+
 * Michael G. Noll for a bug report and a patch to fix a bug
   retrieving 'plot keywords'.
 

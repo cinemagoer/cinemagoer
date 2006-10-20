@@ -401,7 +401,7 @@ class _BaseCache(dict):
         self._tmpDict = {}
         self._flushing = 0
         self._deferredData = {}
-        self._recursionLevel = 1
+        self._recursionLevel = 0
         if d is not None:
             for k, v in d.iteritems(): self[k] = v
 
@@ -417,14 +417,13 @@ class _BaseCache(dict):
         else:
             self._deferredData[key] = self.counter.next()
 
-    def flush(self, quiet=0, _resetRecursion=1):
+    def flush(self, quiet=0, _recursionLevel=0):
         """Flush to the database."""
         if self._flushing: return
         self._flushing = 1
-        if _resetRecursion: self._recursionLevel = 1
-        if self._recursionLevel >= 5:
+        if _recursionLevel >= 5:
             print 'WARNING recursion level exceded trying to flush data'
-            print 'WARNING this batch of data is lost.'
+            print 'WARNING this batch of data is lost (%s).' % self.className
             self._tmpDict.clear()
             return
         if self._tmpDict:
@@ -433,54 +432,29 @@ class _BaseCache(dict):
                 self._tmpDict.clear()
             except OperationalError, e:
                 # Dataset too large; split it in two and retry.
-                print ' * TOO MANY DATA (%s items), SPLITTING (run #%d)...' % \
-                        (len(self._tmpDict), self._recursionLevel)
-                self._recursionLevel += 1
                 ## new code!
                 ## the same class instance (self) is used, instead of
                 ## creating two separated objects.
-                oldflushEvery = self.flushEvery
-                self.flushEvery = self.flushEvery / 2
+                _recursionLevel += 1
                 self._flushing = 0
                 firstHalf = {}
                 poptmpd = self._tmpDict.popitem
-                for x in xrange(len(self._tmpDict)/2):
+                originalLength = len(self._tmpDict)
+                for x in xrange(1 + originalLength/2):
                     k, v = poptmpd()
                     firstHalf[k] = v
-                self.flush(quiet=quiet, _resetRecursion=0)
+                print ' * TOO MANY DATA (%s items in %s), recursion: %s' % \
+                                                        (originalLength,
+                                                        self.className,
+                                                        _recursionLevel)
+                print '   * SPLITTING (run 1 of 2), recursion: %s' % \
+                                                        _recursionLevel
+                self.flush(quiet=quiet, _recursionLevel=_recursionLevel)
                 self._tmpDict = firstHalf
-                self.flush(quiet=quiet, _resetRecursion=0)
-                self.flushEvery = oldflushEvery
-                ## old code!
-                #c1 = self.__class__()
-                #c2 = self.__class__()
-                #newflushEvery = self.flushEvery / 2
-                #c1.flushEvery = newflushEvery
-                #c1._recursionLevel = self._recursionLevel
-                #c2.flushEvery = newflushEvery
-                #c2._recursionLevel = self._recursionLevel
-                #if self.className == 'MoviesCache':
-                #    c1.episodesYear = c2.episodesYear = self.episodesYear
-                #elif self.className == 'AkasMoviesCache':
-                #    c1.notes = c2.notes = self.notes
-                #    c1.ids = c2.ids = self.ids
-                #poptmpd = self._tmpDict.popitem
-                #for x in xrange(len(self._tmpDict)/2):
-                #    k, v = poptmpd()
-                #    c1._tmpDict[k] = v
-                #c2._tmpDict = self._tmpDict
-                #c1.flush(quiet=quiet, _resetRecursion=0)
-                #c1._tmpDict.clear()
-                #if len(c1) > 0:
-                #    self.update(c1)
-                #    #c2.update(c1)
-                #del c1
-                #c2.flush(quiet=quiet, _resetRecursion=0)
-                #c2._tmpDict.clear()
-                #if len(c2) > 0:
-                #    self.update(c2)
-                #del c2
-                #self._tmpDict.clear()
+                print '   * SPLITTING (run 2 of 2), recursion: %s' % \
+                                                        _recursionLevel
+                self.flush(quiet=quiet, _recursionLevel=_recursionLevel)
+                self._tmpDict.clear()
         self._flushing = 0
         # Flush also deferred data.
         if self._deferredData:

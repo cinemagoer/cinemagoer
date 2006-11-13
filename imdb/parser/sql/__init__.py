@@ -201,7 +201,10 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                             Title.q.kindID == self._kindRev[td['kind']],
                             Title.q.productionYear == td.get('year'))
         res = Title.select(condition)
-        if res.count() != 1:
+        try:
+            if res.count() != 1:
+                return None
+        except UnicodeDecodeError:
             return None
         return res[0].id
 
@@ -210,8 +213,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         None if not found."""
         nd = analyze_name(name)
         res = Name.select(AND(Name.q.name == nd['name'].encode('utf_8'),
-                                Name.q.imdbIndex == str(nd.get('imdbIndex'))))
-        if res.count() != 1:
+                                Name.q.imdbIndex == nd.get('imdbIndex')))
+        try:
+            if res.count() != 1:
+                return None
+        except UnicodeDecodeError:
             return None
         return res[0].id
 

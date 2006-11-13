@@ -40,7 +40,7 @@ from imdb._exceptions import IMDbParserError
 
 re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
-HELP = """imdbpy2sql usage:
+HELP = """imdbpy2sql.py usage:
     %s -d /directory/with/PlainTextDataFiles/ -u URI
 
         # NOTE: URI is something along the line:

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.8.cvs20061020 "Match Point" (20 Oct 2006)
+* What's the new in release 2.8.cvs20061113 "The Ultimate Ninja" (13 Nov 2006)
   [http data access system]
   - fixed a bug with 'miscellaneous companies'.
 
@@ -9,6 +9,7 @@
   - first changes to fix a nasty bug in imdbpy2sql.py that will show up
     splitting a data set too large to be sent in a single shot to the
     database.
+  - temporary fix for a unicode bug with recent versions of SQLObject.
 
 
 * What's the new in release 2.7 "Pitch Black" (26 Sep 2006)

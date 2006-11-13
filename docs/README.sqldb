@@ -1,10 +1,10 @@
 
-NOTE: this release (2.6) contains huge performances improvements;
-while still using the SQLObject ORM, the imdbpy2sql.py script can take
-just a pair of hours to complete, instead of the 6 or more hours of the
-previous version.
-
-If you want to help, please subscribe the imdbpy-devel mailing list at:
+NOTE: the imdbpy2sql.py script, used to populate a database using
+the data in the IMDb's plain text data files, is a critical piece
+of IMDbPY: it's based on the SQLObject ORM to be database-independent
+and contains a lot of tricks to be as fast as possible; however there
+are huge margins for improvements; if you want to help, please read the
+TODO.txt file and subscribe the imdbpy-devel mailing list at:
   http://imdbpy.sf.net/?page=help#ml
  
 
@@ -90,15 +90,17 @@ database requires a call to the execute() method for every single row
 of data, and they will be much slower - from 2 to 7 times slower than
 MySQL.
 
-I've done some tests, using an AMD Athlon 1800+, 512MB of RAM:
+I've done some tests, using an AMD Athlon 1800+, 512MB of RAM, over a
+complete plain text data files set (as of 12 Nov 2006, with about
+890.000 titles and over 2.000.000 names):
 
       database         |  time in minutes: total (insert data/create indexes)
  ----------------------+-----------------------------------------------------
-   MySQL 5.0 MyISAM    |  95 (75/20)
+   MySQL 5.0 MyISAM    |  115 (95/20)
    MYSQL 5.0 InnoDB    |  ??? (80/???)
                        |  maybe I've not cofigurated it properly: it
                        |  looks like the creation of the indexes will
-                       |  more then 2 or 3 hours.
+                       |  take more than 2 or 3 hours.
    PostgreSQL 8.1      |  190 (177/13)
    SQLite 3.2          | not tested: it seems way too slow: maybe 35 _hours_
                        | to complete; maybe I've misconfigured or I'm

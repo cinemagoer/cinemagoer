@@ -141,7 +141,7 @@ DB_TABLES = [Name, KindType, Title, AkaName, AkaTitle, RoleType, CastInfo,
 
 def setConnection(uri, debug=False):
     """Set connection for every table."""
-    conn = connectionForURI(uri)
+    conn = connectionForURI(uri, use_unicode=1, sqlobject_encoding='utf8')
     conn.debug = debug
     for table in DB_TABLES:
         table.setConnection(conn)

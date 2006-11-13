@@ -177,6 +177,13 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         self._moviesubs.update(_busd)
         self.do_adult_search(adultSearch)
 
+    def _buildNULLCondition(self, col, val):
+        """Build a comparison for columns where values can be NULL."""
+        if val is None:
+            return ISNULL(col)
+        else:
+            return col == val
+
     def _getTitleID(self, title):
         """Given a long imdb canonical title, returns a movieID or
         None if not found."""
@@ -186,18 +193,21 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             epof = td['episode of']
             seriesID = [s.id for s in Title.select(
                         AND(Title.q.title == epof['title'].encode('utf_8'),
-                            Title.q.imdbIndex == epof.get('imdbIndex'),
+                            self._buildNULLCondition(Title.q.imdbIndex,
+                                                    epof.get('imdbIndex')),
                            Title.q.kindID == self._kindRev[epof['kind']],
                            Title.q.productionYear == epof.get('year')))]
             if seriesID:
                 condition = AND(IN(Title.q.episodeOfID, seriesID),
                                 Title.q.title == td['title'].encode('utf_8'),
-                                Title.q.imdbIndex == td.get('imdbIndex'),
+                                self._buildNULLCondition(Title.q.imdbIndex,
+                                                        td.get('imdbIndex')),
                                 Title.q.kindID == self._kindRev[td['kind']],
                                 Title.q.productionYear == td.get('year'))
         if condition is None:
             condition = AND(Title.q.title == td['title'].encode('utf_8'),
-                            Title.q.imdbIndex == td.get('imdbIndex'),
+                            self._buildNULLCondition(Title.q.imdbIndex,
+                                                    td.get('imdbIndex')),
                             Title.q.kindID == self._kindRev[td['kind']],
                             Title.q.productionYear == td.get('year'))
         res = Title.select(condition)
@@ -213,11 +223,13 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         None if not found."""
         nd = analyze_name(name)
         res = Name.select(AND(Name.q.name == nd['name'].encode('utf_8'),
-                                Name.q.imdbIndex == nd.get('imdbIndex')))
+                                self._buildNULLCondition(Name.q.imdbIndex,
+                                                        nd.get('imdbIndex'))))
         try:
+            c = res.count()
             if res.count() != 1:
                 return None
-        except UnicodeDecodeError:
+        except UnicodeDecodeError, e:
             return None
         return res[0].id
 

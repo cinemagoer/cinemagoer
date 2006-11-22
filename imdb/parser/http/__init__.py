@@ -43,7 +43,7 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         soundclips_parser, videoclips_parser, news_parser, \
                         photosites_parser, amazonrev_parser, guests_parser, \
                         business_parser, sales_parser, episodes_parser, \
-                        eprating_parser
+                        eprating_parser, movie_faqs_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
@@ -412,6 +412,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 episode = item['episode']
                 episode['episode of'].movieID = movieID
         return data_d
+
+    def get_movie_faqs(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'faq')
+        return movie_faqs_parser.parse(cont)
 
     def _search_person(self, name, results):
         # The URL of the query.

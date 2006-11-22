@@ -109,11 +109,20 @@ complete plain text data files set (as of 12 Nov 2006, with about
 If you have different experiences, please tell me!
 
 
-  NOTE
-  ====
+  NOTES
+  =====
 
+[save the output]
 The imdbpy2sql.py will print a lot of debug information on standard output;
 you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
+
+[adult titles]
+Beware that, while running, the imdbpy2sql.py script will output a lot
+of strings containing both person names and movie titles.  The script
+has absolutely no way to know that the processed title is an adult-only
+movie, so... if you leave it running and your little daughter runs to you
+screaming 'daddy!  daddy!  what kind of animals trains Rocco in the
+documentary "Rocco: Animal Trainer 17"???'... well it's not my fault! ;-)
 
 
   SQLITE NOTE

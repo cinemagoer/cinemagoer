@@ -114,12 +114,14 @@ class Movie(_Container):
                 'amazon review': 'amazon reviews',
                 'merchandising': 'merchandising links',
                 'merchandise': 'merchandising links',
-                'sales': 'merchandising links'}
+                'sales': 'merchandising links',
+                'faq': 'faqs',
+                'frequently asked questions': 'faqs'}
 
     keys_tomodify_list = ('plot', 'trivia', 'alternate versions', 'goofs',
                         'quotes', 'dvd', 'laserdisc', 'news', 'soundtrack',
-                        'crazy credits', 'business',
-                        'supplements', 'video review')
+                        'crazy credits', 'business', 'supplements',
+                        'video review', 'faqs')
 
     cmpFunct = cmpMovies
 

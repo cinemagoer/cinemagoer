@@ -2702,6 +2702,91 @@ class HTMLEpisodesParser(ParserBase):
             self._info_text += data
 
 
+class HTMLFaqsParser(ParserBase):
+    """Parser for the "FAQ" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        fparser = HTMLFaqParser()
+        result = fparser.parse(faq_html_string)
+    """
+
+    # Do not gather names and titles references.
+    getRefs = 1
+
+    def _reset(self):
+        self._faqs = []
+        self._in_content = 0
+        self._in_question = 0
+        self._in_answer = 0
+        self._question = u''
+        self._answer = u''
+        self._in_spoiler = 0
+
+    def get_data(self):
+        if not self._faqs: return {}
+        return {'faqs': self._faqs}
+
+    def start_div(self, attrs):
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls.lower().strip() == 'swiki_content':
+            self._in_content = 1
+
+    def end_div(self):
+        self._question = self._question.strip()
+        self._answer = self._answer.strip()
+        if self._in_content and self._question and self._answer:
+            self._faqs.append(u'%s::%s' % (self._question, self._answer))
+        self._in_content = 0
+        self._in_question = 0
+        self._in_answer = 0
+        self._question = u''
+        self._answer = u''
+
+    def start_h3(self, attrs):
+        if not self._in_content: return
+        self._in_question = 1
+
+    def end_h3(self):
+        if not self._in_content: return
+        self._in_question = 0
+        self._in_answer = 1
+
+    def do_br(self, attrs):
+        if self._in_answer and self._answer:
+            pass
+            self._answer += '\n'
+
+    def start_span(self, attrs):
+        if not self._in_content: return
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls.strip().lower():
+            self._in_spoiler = 1
+        else:
+            return
+        if self._in_answer:
+            self._answer += u'[spoiler]'
+        elif self._in_question:
+            self._question += u'[spoiler]'
+
+    def end_span(self):
+        if not self._in_spoiler: return
+        self._in_spoiler = 0
+        if self._in_answer:
+            self._answer += u'[/spoiler]'
+        elif self._in_question:
+            self._question += u'[/spoiler]'
+
+    def _handle_data(self, data):
+        if not self._in_content: return
+        if self._in_answer:
+            self._answer += data.replace('\n', ' ')
+        elif self._in_question:
+            self._question += data
+
+
 # The used instances.
 movie_parser = HTMLMovieParser()
 plot_parser = HTMLPlotParser()
@@ -2746,4 +2831,5 @@ guests_parser = HTMLGuestsParser()
 sales_parser = HTMLSalesParser()
 episodes_parser = HTMLEpisodesParser()
 eprating_parser = HTMLEpisodesRatings()
+movie_faqs_parser = HTMLFaqsParser()
 

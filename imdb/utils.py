@@ -839,6 +839,9 @@ class _Container:
             return 0
         return 1
 
+    # XXX: really useful???
+    #      consider also that this will confuse people who meant to
+    #      call ia.update(movieObject, 'data set') instead.
     def update(self, dict):
         self.data.update(dict)
 

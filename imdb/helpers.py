@@ -147,7 +147,7 @@ def sortedEpisodes(m, season=None):
     return episodes
 
 
-# Idea an portions of the code courtesy of none none (dclist at gmail.com)
+# Idea and portions of the code courtesy of none none (dclist at gmail.com)
 _re_imdbIDurl = re.compile(r'\b(nm|tt)([0-9]{7})\b')
 def get_byURL(url, info=None, args=None, kwds=None):
     """Return a Movie or Person object for the given URL; info is the

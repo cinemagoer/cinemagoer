@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.8.cvs20061122 "Ninja Dragon" (22 Nov 2006)
+* What's the new in release 2.8.cvs20061123 "Dr. Strangelove" (23 Nov 2006)
   [http data access system]
   - fixed a bug with 'miscellaneous companies'.
   - added support for the movies' "FAQ" page.

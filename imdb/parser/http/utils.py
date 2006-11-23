@@ -170,8 +170,8 @@ class ParserBase(SGMLParser):
         self._titlesRefs = {}
         self._titleRefCID = ''
         self._nameRefCID = ''
-        self._titleCN = ''
-        self._nameCN = ''
+        self._titleCN = u''
+        self._nameCN = u''
         self._inTTRef = 0
         self._inLinkTTRef = 0
         self._inNMRef = 0
@@ -223,7 +223,7 @@ class ParserBase(SGMLParser):
                     except IMDbParserError:
                         pass
                 self._titleRefCID = ''
-                self._titleCN = ''
+                self._titleCN = u''
                 self._inTTRef = 0
                 self._inLinkTTRef = 0
         elif self._nameRefCID and self._nameCN:
@@ -239,7 +239,7 @@ class ParserBase(SGMLParser):
                 except IMDbParserError:
                     pass
             self._nameRefCID = ''
-            self._nameCN = ''
+            self._nameCN = u''
             self._inNMRef = 0
 
     def _refs_anchor_bgn(self, attrs):

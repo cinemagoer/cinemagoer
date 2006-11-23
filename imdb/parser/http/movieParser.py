@@ -2713,8 +2713,13 @@ class HTMLFaqsParser(ParserBase):
         result = fparser.parse(faq_html_string)
     """
 
-    # Do not gather names and titles references.
     getRefs = 1
+
+    def feed(self, html_string):
+        # FIXME: horrible hack!  For some reason no version of the
+        #        SGMLParser class can handle <tag/> instead of <tag />
+        html_string = html_string.replace('<br/>', '')
+        ParserBase.feed(self, html_string)
 
     def _reset(self):
         self._faqs = []
@@ -2724,26 +2729,43 @@ class HTMLFaqsParser(ParserBase):
         self._question = u''
         self._answer = u''
         self._in_spoiler = 0
+        self._in_pre = 0
 
     def get_data(self):
         if not self._faqs: return {}
         return {'faqs': self._faqs}
 
-    def start_div(self, attrs):
-        cls = self.get_attr_value(attrs, 'class')
-        if cls and cls.lower().strip() == 'swiki_content':
-            self._in_content = 1
+    def start_pre(self, attrs): self._in_pre = 1
 
-    def end_div(self):
-        self._question = self._question.strip()
-        self._answer = self._answer.strip()
-        if self._in_content and self._question and self._answer:
-            self._faqs.append(u'%s::%s' % (self._question, self._answer))
+    def end_pre(self): self._in_pre = 0
+
+    def start_ul(self, attrs):
         self._in_content = 0
-        self._in_question = 0
-        self._in_answer = 0
         self._question = u''
         self._answer = u''
+        self._in_question = 0
+        self._in_answer = 0
+
+    def end_ul(self): pass
+
+    def start_div(self, attrs):
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls.strip().lower() == 'swiki_content':
+            self._in_content = 1
+            self._in_question = 1
+            self._in_answer = 0
+
+    def end_div(self):
+        if not self._in_content: return
+        self._question = self._question.strip()
+        self._answer = self._answer.strip()
+        if self._question and self._answer:
+            self._faqs.append(u'%s::%s' % (self._question, self._answer))
+            self._in_content = 0
+            self._in_question = 0
+            self._in_answer = 0
+            self._question = u''
+            self._answer = u''
 
     def start_h3(self, attrs):
         if not self._in_content: return
@@ -2756,7 +2778,6 @@ class HTMLFaqsParser(ParserBase):
 
     def do_br(self, attrs):
         if self._in_answer and self._answer:
-            pass
             self._answer += '\n'
 
     def start_span(self, attrs):
@@ -2782,7 +2803,8 @@ class HTMLFaqsParser(ParserBase):
     def _handle_data(self, data):
         if not self._in_content: return
         if self._in_answer:
-            self._answer += data.replace('\n', ' ')
+            if not self._in_pre: data = data.replace('\n', ' ')
+            self._answer += data
         elif self._in_question:
             self._question += data
 

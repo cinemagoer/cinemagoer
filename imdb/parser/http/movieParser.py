@@ -2715,12 +2715,6 @@ class HTMLFaqsParser(ParserBase):
 
     getRefs = 1
 
-    def feed(self, html_string):
-        # FIXME: horrible hack!  For some reason no version of the
-        #        SGMLParser class can handle <tag/> instead of <tag />
-        html_string = html_string.replace('<br/>', '')
-        ParserBase.feed(self, html_string)
-
     def _reset(self):
         self._faqs = []
         self._in_content = 0

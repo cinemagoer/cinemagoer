@@ -96,6 +96,10 @@ sgmlentity.update(dict([('#34', u'"'), ('#38', u'&'),
 re_sgmlref = re.compile('&(%s);' % '|'.join(map(re.escape, sgmlentity)))
 re_sgmlrefsub = re_sgmlref.sub
 
+# Matches XML-only single tags, like <br/> ; they are unvalid in HTML,
+# but sometimes they can be found.
+re_xmltags = re.compile('<([a-zA-Z]+)/>')
+
 
 def _replXMLRef(match):
     """Replace the matched XML/HTML entities and references;
@@ -304,6 +308,8 @@ class ParserBase(SGMLParser):
         if not isinstance(html_string, UnicodeType):
             html_string = unicode(html_string, 'latin_1', 'replace')
         html_string = subXMLRefs(html_string)
+        # Fix invalid HTML single tags like <br/>
+        html_string = re_xmltags.sub('<\\1 />', html_string)
         self.feed(html_string)
         if self.getRefs and self._inTTRef: self._add_ref('tt')
         data = self.get_data()

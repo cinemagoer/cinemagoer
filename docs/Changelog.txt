@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.8.cvs20061124 "Dr. Strangelove" (24 Nov 2006)
+* What's the new in release 2.8.cvs20061125 "London Voodoo" (25 Nov 2006)
   [general]
   - fix for environments that override sys.stdin.
 
@@ -9,6 +9,7 @@
   - fixed a bug with 'miscellaneous companies'.
   - added support for the movies' "FAQ" page.
   - generic fix for XML single tags (unvalid HTML tags) like <br/>
+  - fixed a bug retrieving the list of episodes for tv series.
 
   [sql data access system]
   - first changes to fix a nasty bug in imdbpy2sql.py that will show up

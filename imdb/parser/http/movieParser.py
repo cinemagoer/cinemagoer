@@ -2557,7 +2557,7 @@ class HTMLEpisodesParser(ParserBase):
     def _reset(self):
         self._in_html_title = 0
         self._series = None
-        self._html_title = ''
+        self._html_title = u''
         self._episodes = {}
         self._in_h1 = 0
         self._in_episodes_h1 = 0
@@ -2567,12 +2567,14 @@ class HTMLEpisodesParser(ParserBase):
         self._in_td_eps = 0
         self._in_td_title = 1
         self._in_title = 0
-        self._cur_title = ''
+        self._cur_title = u''
         self._curid = ''
+        self._lastid = ''
         self._eps_counter = 1
         self._cur_info = 'title'
         self._info = {}
-        self._info_text = ''
+        self._info_text = u''
+        self._ignore_this_table = 0
 
     def get_data(self):
         if self._episodes: return {'episodes': self._episodes}
@@ -2598,23 +2600,31 @@ class HTMLEpisodesParser(ParserBase):
         self._in_h1 = 0
 
     def start_table(self, attrs):
+        if self._in_td_eps: self._ignore_this_table = 1
         if self._in_episodes_h1:
             self._in_episodes = 1
 
     def end_table(self):
-        self._in_episodes = 0
+        if self._ignore_this_table:
+            self._ignore_this_table = 0
+            return
+
+    def do_hr(self, attrs):
+        self._in_td_eps = 0
 
     def start_a(self, attrs):
-        if not self._in_episodes: return
-        if self._in_td_title:
-            href = self.get_attr_value(attrs, 'href')
-            if href and href.startswith('/title/tt'):
-                curid = self.re_imdbID.findall(href)
-                if curid:
+        if self._ignore_this_table: return
+        href = self.get_attr_value(attrs, 'href')
+        if href and href.startswith('/title/tt'):
+            curid = self.re_imdbID.findall(href)
+            if curid:
+                if self._in_td_title:
                     self._in_title = 1
-                    self._cur_title = ''
+                    self._cur_title = u''
                     self._curid = curid[-1]
                     return
+                else:
+                    self._lastid = curid
         name = self.get_attr_value(attrs, 'name')
         if name and name.lower().startswith('season-'):
             cs = name[7:]
@@ -2624,13 +2634,16 @@ class HTMLEpisodesParser(ParserBase):
             self._eps_counter = 1
 
     def end_a(self):
+        if self._ignore_this_table: return
         if self._in_title: self._in_title = 0
 
     def start_td(self, attrs):
+        if self._ignore_this_table: return
         if self._in_episodes:
             self._in_td_eps = 1
 
     def end_td(self):
+        if self._ignore_this_table: return
         if self._in_td_title:
             self._in_td_eps = 0
             self._in_td_title = 0
@@ -2654,7 +2667,7 @@ class HTMLEpisodesParser(ParserBase):
                 m['episode'] = ce
                 self._episodes[self._cur_season][ce] = m
                 self._eps_counter += 1
-                self._cur_title = ''
+                self._cur_title = u''
                 self._curid = ''
                 self._cur_episode = None
                 for key, value in self._info.items():
@@ -2668,6 +2681,7 @@ class HTMLEpisodesParser(ParserBase):
             self._info = {}
 
     def do_br(self, attrs):
+        if self._ignore_this_table: return
         if self._in_td_title:
             self._info_text = self._info_text.strip()
             if self._info_text and self._cur_info != 'title':
@@ -2679,6 +2693,7 @@ class HTMLEpisodesParser(ParserBase):
                 self._cur_info = 'plot'
 
     def _handle_data(self, data):
+        if self._ignore_this_table: return
         if self._in_h1 and data.strip().lower().startswith('episodes'):
             self._in_episodes_h1 = 1
         elif self._in_td_eps:
@@ -2694,6 +2709,11 @@ class HTMLEpisodesParser(ParserBase):
                     try: ce = int(ce)
                     except: ce = None
                     self._cur_episode = ce
+            elif ldata.find('episode dated') != -1:
+                self._in_td_title = 1
+                self._cur_title = data.strip()
+                self._curid = self._lastid
+                self._cur_episode = self._eps_counter
         elif self._in_html_title:
             self._html_title += data
         if self._in_title:

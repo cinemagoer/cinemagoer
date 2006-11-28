@@ -588,13 +588,19 @@ class HTMLMovieParser(ParserBase):
                 self._in_series_info = 1
         elif self._in_blackcatheader:
             # An hack to support also the tv series' pages.
-            if sldata == 'cast':
+            if sldata in ('series cast summary:', 'series cast',
+                            'cast:', 'cast'):
                 self._is_cast_crew = 1
                 self._current_section = 'cast'
             else:
                 self._cur_blackcatheader += data
         if self.mdparse:
-            if sldata.startswith('cast overview, first billed only'):
+            if sldata[:7] == 'series ':
+                sldata = sldata[7:]
+            if sldata.startswith('cast overview'):
+                self._is_cast_crew = 1
+                self._current_section = 'cast'
+            elif sldata.startswith('cast summary'):
                 self._is_cast_crew = 1
                 self._current_section = 'cast'
             elif sldata.startswith('directed by'):
@@ -2729,8 +2735,8 @@ class HTMLFaqsParser(ParserBase):
     dictionary, with a key for every relevant section.
 
     Example:
-        fparser = HTMLFaqParser()
-        result = fparser.parse(faq_html_string)
+        fparser = HTMLFaqsParser()
+        result = fparser.parse(faqs_html_string)
     """
 
     getRefs = 1
@@ -2823,6 +2829,105 @@ class HTMLFaqsParser(ParserBase):
             self._question += data
 
 
+class HTMLAiringParser(ParserBase):
+    """Parser for the "airing" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        aparser = HTMLAiringParser()
+        result = aparser.parse(airing_html_string)
+    """
+
+    getRefs = 0
+
+    def _reset(self):
+        self._air = []
+        self._in_air_info = 0
+        self._in_ch = 0
+        self._cur_info = 'date'
+        self._cur_data = {}
+        self._cur_txt = u''
+        self._in_html_title = 0
+        self._title = u''
+        self._cur_id = ''
+
+    def get_data(self):
+        if not self._air: return {}
+        return {'airing': self._air}
+
+    def start_title(self, attrs): self._in_html_title = 1
+
+    def end_title(self):
+        self._in_html_title = 0
+        self._title = self._title.strip()
+
+    def start_a(self, attrs):
+        href = self.get_attr_value(attrs, 'href')
+        ids = self.re_imdbID.findall(href)
+        if ids:
+            self._cur_id = ids[-1]
+
+    def end_a(self): pass
+
+    def start_b(self, attrs):
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls.strip().lower() == 'ch':
+            self._in_ch = 1
+
+    def end_b(self): pass
+
+    def start_table(self, attrs): pass
+
+    def end_table(self): self._in_air_info = 0
+
+    def start_td(self, attrs):
+        if not self._in_air_info: return
+        self._cur_txt = u''
+
+    def end_td(self):
+        if not self._in_air_info: return
+        self._cur_txt = self._cur_txt.strip()
+        if self._cur_txt and self._cur_info != 'episode':
+            self._cur_data[self._cur_info] = self._cur_txt
+            self._cur_txt = u''
+        if self._cur_info == 'date':
+            self._cur_info = 'time'
+        elif self._cur_info == 'time':
+            self._cur_info = 'channel'
+        elif self._cur_info == 'channel':
+            self._cur_info = 'episode'
+        elif self._cur_info == 'episode':
+            self._cur_info = 'season'
+            if self._cur_txt and self._title:
+                m = Movie(title='%s {%s}' % (self._title, self._cur_txt),
+                            movieID=str(self._cur_id), accessSystem='http')
+                self._cur_data['episode'] = m
+        elif self._cur_info == 'season':
+            self._cur_info = 'episode'
+
+    def start_tr(self, attrs):
+        self._cur_txt = u''
+        self._cur_data = {}
+        self._cur_info = 'date'
+
+    def end_tr(self):
+        if self._cur_info == 'episode':
+            if self._cur_data:
+                if 'episode' in self._cur_data:
+                    self._air.append(self._cur_data)
+                self._cur_data = {}
+
+    def _handle_data(self, data):
+        if self._in_ch and data.lower().startswith('next us tv airings'):
+            self._in_air_info = 1
+        if self._in_html_title:
+            self._title += data
+        if not self._in_air_info: return
+        self._cur_txt += data
+
+
 # The used instances.
 movie_parser = HTMLMovieParser()
 plot_parser = HTMLPlotParser()
@@ -2868,4 +2973,5 @@ sales_parser = HTMLSalesParser()
 episodes_parser = HTMLEpisodesParser()
 eprating_parser = HTMLEpisodesRatings()
 movie_faqs_parser = HTMLFaqsParser()
+airing_parser = HTMLAiringParser()
 

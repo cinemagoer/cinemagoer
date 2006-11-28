@@ -1,21 +1,27 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.8.cvs20061125 "London Voodoo" (25 Nov 2006)
+* What's the new in release 2.8.cvs20061128 "Killer's Kiss" (28 Nov 2006)
   [general]
-  - fix for environments that override sys.stdin.
+  - fix for environments where sys.stdin was overridden by a custom object.
 
   [http data access system]
-  - fixed a bug with 'miscellaneous companies'.
   - added support for the movies' "FAQ" page.
-  - generic fix for XML single tags (unvalid HTML tags) like <br/>
+  - now the "full credits" (aka "full cast and crew") page can be parsed;
+    it's mostly useful for tv series, because this page is complete while
+    the "combined details" one is partial.
+    E.g.
+        ia.update(tvSeries, 'full credits')
+  - added support for the movies' "on television" (ia.update(movie, "airing"))
+  - fixed a bug with 'miscellaneous companies'.
   - fixed a bug retrieving the list of episodes for tv series.
+  - fixed a bug with tv series episodes' cast.
+  - generic fix for XML single tags (unvalid HTML tags) like <br/>
 
   [sql data access system]
-  - first changes to fix a nasty bug in imdbpy2sql.py that will show up
-    splitting a data set too large to be sent in a single shot to the
-    database.
-  - temporary fix for a unicode bug with recent versions of SQLObject.
+  - fix for a unicode bug with recent versions of SQLObject and MySQL.
+  - fix for a nasty bug in imdbpy2sql.py that will show up splitting a
+    data set too large to be sent in a single shot to the database.
 
 
 * What's the new in release 2.7 "Pitch Black" (26 Sep 2006)

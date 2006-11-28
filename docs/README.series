@@ -94,6 +94,28 @@ Summary of keys of the Movie object for a series:
   'episodes': dictionary (seasons) of dictionary (episodes in the season).
 
 
+  FULL CREDITS
+  ============
+
+Retrieving credits for a tv series, you may notice that many long lists
+(like "cast", "writers", ...) are incomplete.
+You can fetch the complete list of cast and crew with the "full credits"
+data set; e.g.:
+  from imdb import IMDb
+  i = IMDb()
+  m = i.get_movie('0285331')  # 24.
+  print len(m['cast']) # wooah!  Only 7 person in the cast of 24?!?!
+  i.update(m, 'full credits')
+  print len(m['cast']) # yup!  More than 300 persons!
+
+
+  RATINGS
+  =======
+
+You can retrieve rating information about every episode in a tv series
+using the 'episodes rating' data set.
+ 
+
   PEOPLE
   ======
 

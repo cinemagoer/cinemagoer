@@ -2678,6 +2678,7 @@ class HTMLEpisodesParser(ParserBase):
                 self._cur_episode = None
                 for key, value in self._info.items():
                     if key == 'original air date':
+                        value = value[18:].strip()
                         if value[-4:].isdigit() and \
                                     m.get('year', '????') == '????':
                             m['year'] = value[-4:]
@@ -2865,6 +2866,7 @@ class HTMLAiringParser(ParserBase):
 
     def start_a(self, attrs):
         href = self.get_attr_value(attrs, 'href')
+        if not href: return
         ids = self.re_imdbID.findall(href)
         if ids:
             self._cur_id = ids[-1]

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.8.cvs20061128 "Killer's Kiss" (28 Nov 2006)
+* What's the new in release 2.8.cvs20061129 "Killer's Kiss" (28 Nov 2006)
   [general]
   - fix for environments where sys.stdin was overridden by a custom object.
 
@@ -17,6 +17,7 @@
   - fixed a bug retrieving the list of episodes for tv series.
   - fixed a bug with tv series episodes' cast.
   - generic fix for XML single tags (unvalid HTML tags) like <br/>
+  - fixed a minor bug with 'original air date'.
 
   [sql data access system]
   - fix for a unicode bug with recent versions of SQLObject and MySQL.

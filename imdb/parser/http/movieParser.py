@@ -2852,6 +2852,7 @@ class HTMLAiringParser(ParserBase):
         self._cur_txt = u''
         self._in_html_title = 0
         self._title = u''
+        self._title_kind = ''
         self._cur_id = ''
 
     def get_data(self):
@@ -2863,6 +2864,7 @@ class HTMLAiringParser(ParserBase):
     def end_title(self):
         self._in_html_title = 0
         self._title = self._title.strip()
+        self._title_kind = analyze_title(self._title, canonical=1)['kind']
 
     def start_a(self, attrs):
         href = self.get_attr_value(attrs, 'href')
@@ -2901,7 +2903,10 @@ class HTMLAiringParser(ParserBase):
         elif self._cur_info == 'channel':
             self._cur_info = 'episode'
         elif self._cur_info == 'episode':
-            self._cur_info = 'season'
+            if self._title_kind == 'episode':
+                self._cur_info = 'date'
+            else:
+                self._cur_info = 'season'
             if self._cur_txt and self._title:
                 m = Movie(title='%s {%s}' % (self._title, self._cur_txt),
                             movieID=str(self._cur_id), accessSystem='http')
@@ -2910,19 +2915,20 @@ class HTMLAiringParser(ParserBase):
             self._cur_info = 'episode'
 
     def start_tr(self, attrs):
+        if not self._in_air_info: return
         self._cur_txt = u''
         self._cur_data = {}
         self._cur_info = 'date'
 
     def end_tr(self):
-        if self._cur_info == 'episode':
-            if self._cur_data:
-                if 'episode' in self._cur_data:
-                    self._air.append(self._cur_data)
-                self._cur_data = {}
+        if not self._in_air_info: return
+        if self._cur_data:
+            if 'episode' in self._cur_data:
+                self._air.append(self._cur_data)
+            self._cur_data = {}
 
     def _handle_data(self, data):
-        if self._in_ch and data.lower().startswith('next us tv airings'):
+        if self._in_ch and data.lower().startswith('next us tv airing'):
             self._in_air_info = 1
         if self._in_html_title:
             self._title += data

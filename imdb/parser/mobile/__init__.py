@@ -160,7 +160,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         ##params = urllib.urlencode({'tt': 'on','mx': str(results),'q': title})
         #params = 'q=%s&tt=on&mx=%s' % (urllib.quote_plus(title), str(results))
         #cont = self._mretrieve(imdbURL_search % params)
-        cont = self._get_search_content('tt', title, results)
+        cont = subXMLRefs(self._get_search_content('tt', title, results))
         title = _findBetween(cont, '<title>', '</title>')
         res = []
         if not title: return res
@@ -373,7 +373,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         ##params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
         #params = 'q=%s&nm=on&mx=%s' % (urllib.quote_plus(name), str(results))
         #cont = self._mretrieve(imdbURL_search % params)
-        cont = self._get_search_content('nm', name, results)
+        cont = subXMLRefs(self._get_search_content('nm', name, results))
         name = _findBetween(cont, '<title>', '</title>')
         res = []
         if not name: return res

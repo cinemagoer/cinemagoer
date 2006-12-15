@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.8.cvs20061129b "Killer's Kiss" (28 Nov 2006)
+* What's the new in release 2.8 "Apollo 13" (14 Dec 2006)
   [general]
   - fix for environments where sys.stdin was overridden by a custom object.
 
@@ -9,7 +9,7 @@
   - added support for the movies' "FAQ" page.
   - now the "full credits" (aka "full cast and crew") page can be parsed;
     it's mostly useful for tv series, because this page is complete while
-    the "combined details" one is partial.
+    "combined details" contains only partial data.
     E.g.
         ia.update(tvSeries, 'full credits')
   - added support for the movies' "on television" (ia.update(movie, "airing"))
@@ -23,6 +23,10 @@
   - fix for a unicode bug with recent versions of SQLObject and MySQL.
   - fix for a nasty bug in imdbpy2sql.py that will show up splitting a
     data set too large to be sent in a single shot to the database.
+
+  [mobile data access system]
+  - fixed a bug searching titles and names, where XML char references
+    were not converted.
 
 
 * What's the new in release 2.7 "Pitch Black" (26 Sep 2006)

@@ -341,7 +341,9 @@ class IMDbBase:
         return None if it's unable to get the imdbID."""
         if not title: return None
         import urllib
-        params = 'q=%s&s=pt' % str(urllib.quote_plus(title))
+        if isinstance(title, unicode):
+            title = title.encode('utf-8')
+        params = 'q=%s;s=pt' % str(urllib.quote_plus(title))
         content = self._searchIMDb(params)
         if not content: return None
         from imdb.parser.http.searchMovieParser import BasicMovieParser
@@ -356,7 +358,9 @@ class IMDbBase:
         return None if it's unable to get the imdbID."""
         if not name: return None
         import urllib
-        params = 'q=%s&s=pn' % str(urllib.quote_plus(name))
+        if isinstance(name, unicode):
+            name = name.encode('utf-8')
+        params = 'q=%s;s=pn' % str(urllib.quote_plus(name))
         content = self._searchIMDb(params)
         if not content: return None
         from imdb.parser.http.searchPersonParser import BasicPersonParser

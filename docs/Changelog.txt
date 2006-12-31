@@ -1,6 +1,15 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 2.9.cvs20061231 "Ninja The Protector" (31 Dec
+2006)
+  [http]
+  - first try to fix some unicode-related problems, searching for
+    movie titles and person names; also changed the queries used to
+    search titles/names; the IMDb's form seems to be an always moving
+    target...
+
+
 * What's the new in release 2.8 "Apollo 13" (14 Dec 2006)
   [general]
   - fix for environments where sys.stdin was overridden by a custom object.

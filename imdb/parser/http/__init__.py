@@ -238,16 +238,20 @@ class IMDbHTTPAccessSystem(IMDbBase):
         kind can be tt (for titles) or nm (for names)
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
-        params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
+        if isinstance(ton, unicode):
+            ton = ton.encode('utf-8')
+        #params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
+        params = 's=%s;mx=%s;q=%s' % (kind, str(results), quote_plus(ton))
         cont = self._retrieve(imdbURL_search % params)
         if cont.find('more than 500 partial matches') == -1:
             return cont
         # The retrieved page contains no results, because too many
         # titles or names contain the string we're looking for.
-        if kind == 'nm':
-            params = 'q=%s;more=nm' % quote_plus(ton)
-        else:
-            params = 'q=%s;more=tt' % quote_plus(ton)
+        params = 'q=%s;more=%s' % (quote_plus(ton), kind)
+        #if kind == 'nm':
+        #    params = 'q=%s;more=nm' % quote_plus(ton)
+        #else:
+        #    params = 'q=%s;more=tt' % quote_plus(ton)
         size = 22528 + results * 512
         return self._retrieve(imdbURL_search % params, size=size)
 

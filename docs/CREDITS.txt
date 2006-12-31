@@ -30,7 +30,7 @@ I'd like to thank the following people for their help:
   retrieve a movie/person object, given an URL.
 
 * Sebastian Pölsterl, for a bug report about the cover url for
-  tv (mini) series.
+  tv (mini) series, and another one about search_* methods.
 
 * Martin Kirst for many hints and the work on the imdbpyweb program.
 
@@ -47,8 +47,6 @@ I'd like to thank the following people for their help:
 
 * Trevor MacPhail, for a bug report about search_* methods and
   the ParserBase.parse method.
-
-* Sebastian Pölsterl, for a bug report about search_* methods.
 
 * Guillaume Wisniewski, for a bug report.
 

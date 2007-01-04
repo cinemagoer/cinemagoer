@@ -55,11 +55,12 @@ def makeCgiPrintEncoding(encoding):
 cgiPrint = makeCgiPrintEncoding('latin_1')
 
 
-def makeModCGILinks(movieTxt, personTxt):
+def makeModCGILinks(movieTxt, personTxt, encoding='latin_1'):
     """Make a function used to pretty-print movies and persons refereces;
     movieTxt and personTxt are the strings used for the substitutions.
     movieTxt must contains %(movieID)s and %(title)s, while personTxt
     must contains %(personID)s and %(name)s."""
+    _cgiPrint = makeCgiPrintEncoding(encoding)
     def modCGILinks(s, titlesRefs, namesRefs):
         """Substitute movies and persons references."""
         # XXX: look ma'... more nested scopes! <g>
@@ -69,8 +70,8 @@ def makeModCGILinks(movieTxt, personTxt):
             if item:
                 movieID = item.movieID
                 to_replace = movieTxt % {'movieID': movieID,
-                                        'title': unicode(cgiPrint(to_replace),
-                                                        'latin_1',
+                                        'title': unicode(_cgiPrint(to_replace),
+                                                        encoding,
                                                         'xmlcharrefreplace')}
             return to_replace
         def _replacePerson(match):
@@ -79,8 +80,8 @@ def makeModCGILinks(movieTxt, personTxt):
             if item:
                 personID = item.personID
                 to_replace = personTxt % {'personID': personID,
-                                        'name': unicode(cgiPrint(to_replace),
-                                                        'latin_1',
+                                        'name': unicode(_cgiPrint(to_replace),
+                                                        encoding,
                                                         'xmlcharrefreplace')}
             return to_replace
         s = s.replace('<', '&lt;').replace('>', '&gt;')
@@ -91,9 +92,11 @@ def makeModCGILinks(movieTxt, personTxt):
     return modCGILinks
 
 # links to the imdb.com web site.
-modHtmlLinks = makeModCGILinks(
-    movieTxt='<a href="http://akas.imdb.com/title/tt%(movieID)s">%(title)s</a>',
-    personTxt='<a href="http://akas.imdb.com/name/nm%(personID)s">%(name)s</a>')
+_movieTxt = '<a href="http://akas.imdb.com/title/tt%(movieID)s">%(title)s</a>'
+_personTxt = '<a href="http://akas.imdb.com/name/nm%(personID)s">%(name)s</a>'
+modHtmlLinks = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt)
+modHtmlLinksASCII = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt,
+                                    encoding='ascii')
 
 
 everyentcharrefs = entcharrefs.copy()

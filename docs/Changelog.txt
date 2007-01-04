@@ -1,8 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.9.cvs20061231 "Ninja The Protector" (31 Dec
-2006)
+* What's the new in release 2.9.cvs20070103 "Kickboxer 3: The Art Of War" (03 Jan 2007)
+  [global]
+  - minor clean-ups and functions added to the helpers module.
+
   [http]
   - first try to fix some unicode-related problems, searching for
     movie titles and person names; also changed the queries used to

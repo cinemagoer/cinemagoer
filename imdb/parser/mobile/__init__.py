@@ -30,7 +30,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import analyze_title, analyze_name, canonicalName, re_episodes
 from imdb._exceptions import IMDbDataAccessError
-from imdb.parser.http import IMDbHTTPAccessSystem, imdbURL_search, \
+from imdb.parser.http import IMDbHTTPAccessSystem, \
                                 imdbURL_movie, imdbURL_person
 from imdb.parser.http.utils import subXMLRefs, subSGMLRefs
 

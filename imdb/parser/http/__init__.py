@@ -7,7 +7,7 @@ the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "http" or "web"
 or "html" (this is the default).
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -240,7 +240,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         results is the maximum number of results to be retrieved."""
         if isinstance(ton, unicode):
             ton = ton.encode('utf-8')
-        #params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
+        ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
         params = 's=%s;mx=%s;q=%s' % (kind, str(results), quote_plus(ton))
         cont = self._retrieve(imdbURL_search % params)
         if cont.find('more than 500 partial matches') == -1:
@@ -248,10 +248,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # The retrieved page contains no results, because too many
         # titles or names contain the string we're looking for.
         params = 'q=%s;more=%s' % (quote_plus(ton), kind)
-        #if kind == 'nm':
-        #    params = 'q=%s;more=nm' % quote_plus(ton)
-        #else:
-        #    params = 'q=%s;more=tt' % quote_plus(ton)
+        ##if kind == 'nm':
+        ##    params = 'q=%s;more=nm' % quote_plus(ton)
+        ##else:
+        ##    params = 'q=%s;more=tt' % quote_plus(ton)
         size = 22528 + results * 512
         return self._retrieve(imdbURL_search % params, size=size)
 
@@ -260,8 +260,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # XXX: To retrieve the complete results list:
         #      params = urllib.urlencode({'more': 'tt', 'q': title})
         ##params = urllib.urlencode({'tt': 'on','mx': str(results),'q': title})
-        #params = 'q=%s&tt=on&mx=%s' % (quote_plus(title), str(results))
-        #cont = self._retrieve(imdbURL_search % params)
+        ##params = 'q=%s&tt=on&mx=%s' % (quote_plus(title), str(results))
+        ##cont = self._retrieve(imdbURL_search % params)
         cont = self._get_search_content('tt', title, results)
         return search_movie_parser.parse(cont, results=results)['data']
 

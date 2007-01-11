@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.9.cvs20070103 "Kickboxer 3: The Art Of War" (03 Jan 2007)
+* What's the new in release 2.9.cvs20070111 "Cherry Falls" (11 Jan 2007)
   [global]
   - minor clean-ups and functions added to the helpers module.
 
@@ -10,6 +10,9 @@
     movie titles and person names; also changed the queries used to
     search titles/names; the IMDb's form seems to be an always moving
     target...
+
+  [mobile]
+  - fixed a problem searching exact matches (movie titles only).
 
 
 * What's the new in release 2.8 "Apollo 13" (14 Dec 2006)

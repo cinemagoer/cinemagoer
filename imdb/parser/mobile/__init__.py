@@ -169,8 +169,12 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             # XXX: a direct hit!
             title = _unHtml(title[0])
             midtag = _getTagWith(cont, 'name="arg"')
+            if not midtag: midtag = _getTagWith(cont, 'name="auto"')
             mid = None
-            if midtag: mid = _findBetween(midtag[0], 'value="', '"')
+            if midtag:
+                mid = _findBetween(midtag[0], 'value="', '"')
+                if mid and not mid[0].isdigit():
+                    mid = re_imdbID.findall(mid[0])
             if not (mid and title): return res
             res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
         else:

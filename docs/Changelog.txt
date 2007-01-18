@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.9.cvs20070111 "Cherry Falls" (11 Jan 2007)
+* What's the new in release 2.9.cvs20070117 "Immortel (ad vitam)" (17 Jan 2007)
   [global]
   - minor clean-ups and functions added to the helpers module.
 
@@ -13,6 +13,8 @@
 
   [mobile]
   - fixed a problem searching exact matches (movie titles only).
+  - fixed a bug with cast entries, after minor changes to the IMDb's
+    web site HTML.
 
 
 * What's the new in release 2.8 "Apollo 13" (14 Dec 2006)

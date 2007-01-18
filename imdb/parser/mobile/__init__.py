@@ -6,7 +6,7 @@ IMDb's data for mobile systems.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "mobile".
 
-Copyright 2005-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import re, urllib
+import re
 from types import ListType, TupleType
 
 from imdb.Movie import Movie
@@ -310,6 +310,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                                 castdata[smie+18:].strip()
             castdata = castdata.replace(' bgcolor="#F0F0F0"', '')
             castdata = castdata.replace(' bgcolor="#FFFFFF"', '')
+            castdata = castdata.replace(' bgcolor="#f0f0f0"', '')
+            castdata = castdata.replace(' bgcolor="#ffffff"', '')
             castdata = castdata.replace('/tr> <tr', '/tr><tr')
             cast = self._getPersons(castdata, sep='</tr><tr', hasCr=1)
             if cast: d['cast'] = cast

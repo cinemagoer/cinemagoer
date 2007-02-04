@@ -53,9 +53,11 @@ def _parseList(l, prefix, mline=1):
             if ltmp:
                 reslapp(joiner(ltmp))
                 ltmp[:] = []
-            ltmpapp(line[firstlen:].strip())
+            data = line[firstlen:].strip()
+            if data: ltmpapp(data)
         elif mline and line[:otherlen] == otherl:
-                ltmpapp(line[otherlen:].strip())
+                data = line[otherlen:].strip()
+                if data: ltmpapp(data)
         else:
             if ltmp:
                 reslapp(joiner(ltmp))
@@ -115,6 +117,28 @@ def _parseBioBy(l):
                 tmpbio[:] = []
     return bios
 
+def _getDateAndNotes(s):
+    """Parse (birth|death) date and notes."""
+    s = s.strip()
+    if not s: return ('', '')
+    notes = ''
+    if s[0].isdigit() or s.split()[0].lower() in ('c.', 'january', 'february',
+                                                'march', 'april', 'may', 'june',
+                                                'july', 'august', 'september',
+                                                'october', 'november',
+                                                'december', 'ca.', 'circa',
+                                                '????,'):
+        i = s.find(',')
+        if i != -1:
+            notes = s[i+1:].strip()
+            s = s[:i]
+    else:
+        notes = s
+        s = ''
+    if s == '????': s = ''
+    return s, notes
+
+
 def _parseBiography(biol):
     """Parse the biographies.data file."""
     res = {}
@@ -126,19 +150,29 @@ def _parseBiography(biol):
         x4 = x[:4]
         x6 = x[:6]
         if x4 == 'DB: ':
-            bdate = x.strip()
-            i = bdate.find(',')
-            if i != -1:
-                res['birth notes'] = bdate[i+1:].strip()
-                bdate = bdate[:i]
-            res['birth date'] = bdate[4:]
+            date, notes = _getDateAndNotes(x[4:])
+            if date:
+                res['birth date'] = date
+            if notes:
+                res['birth notes'] = notes
+            #bdate = x.strip()
+            #i = bdate.find(',')
+            #if i != -1:
+            #    res['birth notes'] = bdate[i+1:].strip()
+            #    bdate = bdate[:i]
+            #res['birth date'] = bdate[4:]
         elif x4 == 'DD: ':
-            ddate = x.strip()
-            i = ddate.find(',')
-            if i != -1:
-                res['death notes'] = ddate[i+1:].strip()
-                ddate = ddate[:i]
-            res['death date'] = ddate[4:]
+            date, notes = _getDateAndNotes(x[4:])
+            if date:
+                res['death date'] = date
+            if notes:
+                res['death notes'] = notes
+            #ddate = x.strip()
+            #i = ddate.find(',')
+            #if i != -1:
+            #    res['death notes'] = ddate[i+1:].strip()
+            #    ddate = ddate[:i]
+            #res['death date'] = ddate[4:]
         elif x6 == 'SP: * ':
             res.setdefault('spouse', []).append(x[6:].strip())
         elif x4 == 'RN: ':

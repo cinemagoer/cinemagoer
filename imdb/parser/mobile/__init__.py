@@ -146,8 +146,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if aonly:
                 stripped = _findBetween(name, '>', '</a>')
                 if len(stripped) == 1: name = stripped[0]
-            if name[0:1] == '>': name = name[1:]
             name = _unHtml(name)
+            gt_indx = name.find('>')
+            if gt_indx != -1:
+                name = name[gt_indx+1:].lstrip()
             if not (pid and name): continue
             plappend(Person(personID=str(pid[0]), name=name,
                             currentRole=currentRole, notes=notes,
@@ -158,8 +160,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
 
     def _search_movie(self, title, results):
         ##params = urllib.urlencode({'tt': 'on','mx': str(results),'q': title})
-        #params = 'q=%s&tt=on&mx=%s' % (urllib.quote_plus(title), str(results))
-        #cont = self._mretrieve(imdbURL_search % params)
+        ##params = 'q=%s&tt=on&mx=%s' % (urllib.quote_plus(title), str(results))
+        ##cont = self._mretrieve(imdbURL_search % params)
         cont = subXMLRefs(self._get_search_content('tt', title, results))
         title = _findBetween(cont, '<title>', '</title>')
         res = []
@@ -308,10 +310,6 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 if smie != -1:
                     castdata = castdata[:smib].strip() + \
                                 castdata[smie+18:].strip()
-            castdata = castdata.replace(' bgcolor="#F0F0F0"', '')
-            castdata = castdata.replace(' bgcolor="#FFFFFF"', '')
-            castdata = castdata.replace(' bgcolor="#f0f0f0"', '')
-            castdata = castdata.replace(' bgcolor="#ffffff"', '')
             castdata = castdata.replace('/tr> <tr', '/tr><tr')
             cast = self._getPersons(castdata, sep='</tr><tr', hasCr=1)
             if cast: d['cast'] = cast
@@ -377,8 +375,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
 
     def _search_person(self, name, results):
         ##params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
-        #params = 'q=%s&nm=on&mx=%s' % (urllib.quote_plus(name), str(results))
-        #cont = self._mretrieve(imdbURL_search % params)
+        ##params = 'q=%s&nm=on&mx=%s' % (urllib.quote_plus(name), str(results))
+        ##cont = self._mretrieve(imdbURL_search % params)
         cont = subXMLRefs(self._get_search_content('nm', name, results))
         name = _findBetween(cont, '<title>', '</title>')
         res = []

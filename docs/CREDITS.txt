@@ -1,5 +1,6 @@
 
-See also CONTRIBUTORS.txt for a list of the most important developers.
+See also CONTRIBUTORS.txt for a list of the most important developers
+who share the copyright on some portions of the code.
 
 
 I'd like to thank the following people for their help:
@@ -8,6 +9,8 @@ I'd like to thank the following people for their help:
   debugging.
 
 * Ana Guerrero, for the official debian package.
+
+* Vincent Crevot, for a bug report about unicode support.
 
 * Jay Klein for a bug report and testing to fix a nasty bug in the
   imdbpy2sql.py script (splitting too large data sets).

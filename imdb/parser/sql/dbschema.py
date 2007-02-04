@@ -142,9 +142,12 @@ DB_TABLES = [Name, KindType, Title, AkaName, AkaTitle, RoleType, CastInfo,
 def setConnection(uri, debug=False):
     """Set connection for every table."""
     kw = {}
-    if uri.lower().startswith('mysql'):
-        kw['use_unicode'] = 1
-        kw['sqlobject_encoding'] = 'utf8'
+    # FIXME: it's absolutely unclear what we should do to correctly
+    #        support unicode in MySQL; with the last versions of SQLObject,
+    #        it seems that setting use_unicode=1 is the _wrong_ thing to do.
+    ##if uri.lower().startswith('mysql'):
+    ##    kw['use_unicode'] = 1
+    ##    kw['sqlobject_encoding'] = 'utf8'
     conn = connectionForURI(uri, **kw)
     conn.debug = debug
     for table in DB_TABLES:

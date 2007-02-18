@@ -10,6 +10,8 @@ I'd like to thank the following people for their help:
 
 * Ana Guerrero, for the official debian package.
 
+* Hadley Rich for a bug parsing tv series' episodes.
+
 * Vincent Crevot, for a bug report about unicode support.
 
 * Jay Klein for a bug report and testing to fix a nasty bug in the

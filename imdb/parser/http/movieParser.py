@@ -2571,7 +2571,7 @@ class HTMLEpisodesParser(ParserBase):
         self._cur_episode = None
         self._in_episodes = 0
         self._in_td_eps = 0
-        self._in_td_title = 1
+        self._in_td_title = 0
         self._in_title = 0
         self._cur_title = u''
         self._curid = ''
@@ -2619,7 +2619,9 @@ class HTMLEpisodesParser(ParserBase):
         self._in_td_eps = 0
 
     def start_a(self, attrs):
-        if self._ignore_this_table: return
+        # Commented to prevent a whole season to be skipped, if the last
+        # episode of the previous season has the "next US airing" info.
+        ##if self._ignore_this_table: return
         href = self.get_attr_value(attrs, 'href')
         if href and href.startswith('/title/tt'):
             curid = self.re_imdbID.findall(href)

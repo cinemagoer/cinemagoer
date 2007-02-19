@@ -193,6 +193,10 @@ class HTMLSearchMovieParser(ParserBase):
         self._current_imdbID = ''
 
     def start_a(self, attrs):
+        # Prevent tv series to get the (wrong) movieID from the
+        # last episode, sometimes listed in the <li>...</li> tag
+        # along with the series' title.
+        if self._current_imdbID: return
         link = self.get_attr_value(attrs, 'href')
         # The next data is a movie title; now store the imdbID.
         if link and link.lower().startswith('/title'):

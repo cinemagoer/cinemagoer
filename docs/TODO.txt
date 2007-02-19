@@ -9,7 +9,8 @@ NOTE: it's always time to clean the code! <g>
 [general]
 * Write better summary() methods for Movie and Person classes.
 * Some portions of code are poorly commented.
-* The documentation is written in my funny English.
+* The documentation is written in my funny Anglo-Bolognese.
+* a better test-suite is really needed.
 * Compatibility with Python 2.2 and previous versions is no more assured
   for every data access system (the imdbpy2sql.py script for sure
   requires at least Python 2.3).
@@ -17,13 +18,14 @@ NOTE: it's always time to clean the code! <g>
   beyond their initial goals.
 * the 'year' keyword can probably be an int, instead of a string;
   the '????' case can be handled directly by the analyze_title/build_title
-  functions.
+  functions.  But how much code will be broken?
 * for local and sql data access systems: some episode titles are
   marked as {{SUSPENDED}}; they should probably be ignored.
 
 
 [searches]
-* Support advanced query for movie titles/person names.
+* Support advanced query for movie titles/person names - if possible
+  this should be available in every data access systems.
 
 
 [Movie objects]
@@ -41,7 +43,8 @@ NOTE: it's always time to clean the code! <g>
   notes ("written by", "as Aka Name", ...)
 * The 'laserdisc' information for 'local' and 'sql' is probabily
   wrong: I think they merge data from different laserdisc titles.
-* there are links to hollywoodreporter.com that are not bathered in
+  Anyway these data are no more updated by IMDb, and so...
+* there are links to hollywoodreporter.com that are not gathered in
   the "external reviews" page.
 
 

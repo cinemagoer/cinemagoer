@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.9.cvs20070218 "Rodan! The Flying Monster" (18 Feb 2007)
+* What's the new in release 2.9.cvs20070219 "Rodan! The Flying Monster" (19 Feb 2007)
   [global]
   - minor clean-ups and functions added to the helpers module.
 
@@ -9,6 +9,7 @@
   - fixed some unicode-related problems searching for movie titles and
     person names; also changed the queries used to search titles/names.
   - fixed a bug parsing episodes for tv series.
+  - fixed a bug retrieving movieID for tv series, searching for titles.
 
   [mobile]
   - fixed a problem searching exact matches (movie titles only).

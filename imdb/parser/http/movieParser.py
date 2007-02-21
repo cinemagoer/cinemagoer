@@ -702,6 +702,7 @@ class HTMLAwardsParser(ParserBase):
         """Reset the parser."""
         self._aw_data = []
         self._is_big = 0
+        self._is_small = 0
         self._is_current_assigner = 0
         self._begin_aw = 0
         self._in_td = 0

@@ -1,8 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.9.cvs20070219 "Rodan! The Flying Monster" (19 Feb 2007)
+* What's the new in release 2.9 "Rodan! The Flying Monster" (21 Feb 2007)
   [global]
+  - on 19 February IMDb has redesigned its site; this is the last
+    IMDbPY's release to parse the "old layout" pages; from now on,
+    the development will be geared to support the new web pages.
+    See the README.redesign file for more information.
   - minor clean-ups and functions added to the helpers module.
 
   [http]

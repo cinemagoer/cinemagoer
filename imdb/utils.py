@@ -313,7 +313,7 @@ def analyze_title(title, canonical=None,
             episode_d['original air date'] = oad[1:-1]
             if ep_year and episode_d.get('year') is None:
                 episode_d['year'] = ep_year
-        if sen:
+        if sen and sen[2:-1].find('.') != -1:
             seas, epn = sen[2:-1].split('.')
             if seas:
                 # Set season and episode.

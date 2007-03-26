@@ -1,6 +1,12 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 2.9-fix1 (26 Mar 2007)
+  [global]
+  - fix in the analyze_title() function to handle malformed episode
+    numbers.
+
+
 * What's the new in release 2.9 "Rodan! The Flying Monster" (21 Feb 2007)
   [global]
   - on 19 February IMDb has redesigned its site; this is the last

@@ -7,7 +7,7 @@ for a given person.
 E.g., when searching for the name "Mel Gibson", the parsed page would be:
     http://akas.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -37,13 +37,10 @@ class BasicPersonParser(ParserBase):
     for a direct match (when a search on IMDb results in a single
     person, the web server sends directly the person page.
     """
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
         self._in_title = 0
-        self._name = ''
+        self._name = u''
         self._result = []
 
     def get_data(self):
@@ -87,22 +84,19 @@ class HTMLSearchPersonParser(ParserBase):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used.
     """
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
         self._begin_list = 0
         self._results = []
         self._in_title = 0
         self._in_list = 0
-        self._current_imdbID = ''
+        self._current_imdbID = u''
         self._is_name = 0
-        self._name = ''
+        self._name = u''
         self._no_more = 0
         self._stop = 0
 
-    def parse(self, cont, results=None):
+    def parse(self, cont, results=None, **kwds):
         self.maxres = results
         return ParserBase.parse(self, cont)
 
@@ -148,8 +142,8 @@ class HTMLSearchPersonParser(ParserBase):
             self._results.append((self._current_imdbID.strip(), d))
             if self.maxres is not None and self.maxres <= len(self._results):
                 self._stop = 1
-            self._name = ''
-            self._current_imdbID = ''
+            self._name = u''
+            self._current_imdbID = u''
             self._is_name = 0
             self._in_name = 0
         self._no_more = 0

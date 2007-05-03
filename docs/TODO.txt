@@ -85,6 +85,9 @@ NOTE: it's always time to clean the code! <g>
 
 
 [local data access system]
+* There's a bug with release dates: it seems that for some (many?)
+  movies, the wrong index to release-dates.data is returned; I'm
+  wondering if this is a bug of IMDbPY or a bug in mkdb.
 * There's probably a bug converting the rating to a float;
   see: ER (1994) (TV), but I suspect this to be a mkdb bug.
 * The 'votes' key is not correctly stored for very high values;

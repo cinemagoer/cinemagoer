@@ -24,15 +24,18 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
+from urllib import unquote
 from types import ListType, TupleType
 
 from imdb.Movie import Movie
 from imdb.Person import Person
-from imdb.utils import analyze_title, analyze_name, canonicalName, re_episodes
+from imdb.utils import analyze_title, analyze_name, canonicalName, \
+                        re_episodes, date_and_notes
 from imdb._exceptions import IMDbDataAccessError
 from imdb.parser.http import IMDbHTTPAccessSystem, \
                                 imdbURL_movie, imdbURL_person
-from imdb.parser.http.utils import subXMLRefs, subSGMLRefs
+from imdb.parser.http.utils import subXMLRefs, subSGMLRefs, build_person, \
+                                    build_movie, re_spaces
 
 # XXX NOTE: the first version of this module was heavily based on
 #           regular expressions.  This new version replace regexps with
@@ -40,9 +43,6 @@ from imdb.parser.http.utils import subXMLRefs, subSGMLRefs
 #           seems to be at least as fast and, hopefully, much more
 #           lightweight.  Yes: the regexp-based version was too heavyweight
 #           for systems with very limited CPU power and memory footprint.
-
-# To strip spaces.
-re_spaces = re.compile(r'\s+')
 re_spacessub = re_spaces.sub
 # Strip html.
 re_unhtml = re.compile(r'<.+?>')
@@ -58,26 +58,42 @@ def _unHtml(s):
 
 _inttype = type(0)
 
-def _getTagWith(s, cont):
+def _getTagsWith(s, cont, toClosure=False, maxRes=None):
     """Return the html tags in the 's' string containing the 'cont'
-    string."""
+    string; if toClosure is True, everything between the opening
+    tag and the closing tag is returned."""
     lres = []
     bi = s.find(cont)
     if bi != -1:
         btag = s[:bi].rfind('<')
         if btag != -1:
-            etag = s[bi+1:].find('>')
-            if etag != -1:
-                lres.append(s[btag:bi+2+etag])
-                lres += _getTagWith(s[btag+1+etag:], cont)
+            if not toClosure:
+                etag = s[bi+1:].find('>')
+                if etag != -1:
+                    endidx = bi+2+etag
+                    lres.append(s[btag:endidx])
+                    if maxRes is not None and len(lres) >= maxRes: return lres
+                    lres += _getTagsWith(s[endidx:], cont,
+                                        toClosure=toClosure)
+            else:
+                spaceidx = s[btag:].find(' ')
+                if spaceidx != -1:
+                    ctag = '</%s>' % s[btag+1:btag+spaceidx]
+                    closeidx = s[bi:].find(ctag)
+                    if closeidx != -1:
+                        endidx = bi+closeidx+len(ctag)
+                        lres.append(s[btag:endidx])
+                        if maxRes is not None and len(lres) >= maxRes:
+                            return lres
+                        lres += _getTagsWith(s[endidx:], cont,
+                                            toClosure=toClosure)
     return lres
 
 
-def _findBetween(s, begins, ends, beginindx=0):
+def _findBetween(s, begins, ends, beginindx=0, maxRes=None):
     """Return the list of strings from the 's' string which are included
     between the 'begins' and 'ends' strings."""
     lres = []
-    #if endindx is None: endindx = len(s)
     bi = s.find(begins, beginindx)
     if bi != -1:
         lbegins = len(begins)
@@ -91,8 +107,8 @@ def _findBetween(s, begins, ends, beginindx=0):
         if ei != -1:
             match = s[bi+lbegins:ei]
             lres.append(match)
+            if maxRes is not None and len(lres) >= maxRes: return lres
             lres += _findBetween(s, begins, ends, ei)
-            ##if maxRes > 0 and len(lres) >= maxRes: return lres
     return lres
 
 
@@ -116,45 +132,25 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         cont = self._retrieve(url, size=size)
         return self._clean_html(cont)
 
-    def _getPersons(self, s, sep='<br>', hasCr=0, aonly=0):
+    def _getPersons(self, s, sep='<br/>'):
         """Return a list of Person objects, from the string s; items
-        are assumed to be separated by the sep string; if hasCr is set,
-        the currentRole of a person is searched."""
+        are assumed to be separated by the sep string."""
         names = s.split(sep)
         pl = []
         plappend = pl.append
         counter = 1
-        currentRole = u''
         for name in names:
-            notes = u''
-            currentRole = u''
-            fpi = name.find(' (')
-            if fpi != -1:
-                fpe = name.rfind(')')
-                if fpe > fpi:
-                    notes = _unHtml(name[fpi:fpe+1])
-                    name = name[:fpi] + name[fpe+1:]
-                    lampi = name.rfind('&')
-                    if lampi != -1 and name[lampi+1:].isspace():
-                        name = name[:lampi].rstrip()
-            if hasCr:
-                name = name.split(' .... ')
-                if len(name) > 1:
-                    currentRole = _unHtml(name[1])
-                name = name[0]
             pid = re_imdbID.findall(name)
-            if aonly:
-                stripped = _findBetween(name, '>', '</a>')
-                if len(stripped) == 1: name = stripped[0]
+            if not pid: continue
             name = _unHtml(name)
+            # Catch unclosed tags.
             gt_indx = name.find('>')
             if gt_indx != -1:
                 name = name[gt_indx+1:].lstrip()
-            if not (pid and name): continue
-            plappend(Person(personID=str(pid[0]), name=name,
-                            currentRole=currentRole, notes=notes,
-                            accessSystem=self.accessSystem,
-                            modFunct=self._defModFunct, billingPos=counter))
+            if not name: continue
+            p = build_person(name, personID=str(pid[0]), billingPos=counter,
+                            accessSystem=self.accessSystem)
+            plappend(p)
             counter += 1
         return pl
 
@@ -163,24 +159,24 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         ##params = 'q=%s&tt=on&mx=%s' % (urllib.quote_plus(title), str(results))
         ##cont = self._mretrieve(imdbURL_search % params)
         cont = subXMLRefs(self._get_search_content('tt', title, results))
-        title = _findBetween(cont, '<title>', '</title>')
+        title = _findBetween(cont, '<title>', '</title>', maxRes=1)
         res = []
         if not title: return res
         tl = title[0].lower()
         if not tl.startswith('imdb title'):
             # XXX: a direct hit!
             title = _unHtml(title[0])
-            midtag = _getTagWith(cont, 'name="arg"')
-            if not midtag: midtag = _getTagWith(cont, 'name="auto"')
+            midtag = _getTagsWith(cont, 'name="arg"', maxRes=1)
+            if not midtag: midtag = _getTagsWith(cont, 'name="auto"', maxRes=1)
             mid = None
             if midtag:
-                mid = _findBetween(midtag[0], 'value="', '"')
+                mid = _findBetween(midtag[0], 'value="', '"', maxRes=1)
                 if mid and not mid[0].isdigit():
                     mid = re_imdbID.findall(mid[0])
             if not (mid and title): return res
             res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
         else:
-            lis = _findBetween(cont, '<li>', ['</li>', '<br>'])
+            lis = _findBetween(cont, '<li>', ['</li>', '<br>', '<br/>'])
             for li in lis:
                 imdbid = re_imdbID.findall(li)
                 mtitle = _unHtml(li)
@@ -190,31 +186,30 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
 
     def get_movie_main(self, movieID):
         cont = self._mretrieve(imdbURL_movie % movieID + 'maindetails')
-        d = {}
-        title = _findBetween(cont, '<title>', '</title>')
+        title = _findBetween(cont, '<title>', '</title>', maxRes=1)
         if not title:
             raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
         title = _unHtml(title[0])
         d = analyze_title(title, canonical=1)
-        tv_series = _findBetween(cont, 'TV Series:</b>', '</a>')
+        kind = d.get('kind')
+        tv_series = _findBetween(cont, 'TV Series:</h5>', '</a>', maxRes=1)
         if tv_series: mid = re_imdbID.findall(tv_series[0])
         else: mid = None
         if tv_series and mid:
             s_title = _unHtml(tv_series[0])
             s_data = analyze_title(s_title, canonical=1)
-            m = Movie(movieID=str(mid), data=s_data, accessSystem='mobile')
-            d['kind'] = 'episode'
+            m = Movie(movieID=str(mid[0]), data=s_data, accessSystem='mobile')
+            d['kind'] = kind = u'episode'
             d['episode of'] = m
-            d['movieID'] = mid[0]
-            ep_title = _findBetween(cont, '<h1><strong class="title">',
-                                            '</strong></h1>')
-            if ep_title:
-                ep_title = _findBetween(ep_title[0], '<small>', '</small>')
-            if ep_title:
-                s_data = analyze_title(ep_title[0], canonical=1)
-                del s_data['kind']
-                d.update(s_data)
-        air_date = _findBetween(cont, 'Original Air Date:</b>', '<br><br>')
+        if kind in ('tv series', 'tv mini series'):
+            years = _findBetween(cont, '<h1>', '</h1>', maxRes=1)
+            if years:
+                years[:] = _findBetween(years[0], 'TV-Series', '</span>',
+                                        maxRes=1)
+                if years:
+                    d['series years'] = years[0].strip()
+        air_date = _findBetween(cont, 'Original Air Date:</h5>', '</div>',
+                                maxRes=1)
         if air_date:
             air_date = air_date[0]
             vi = air_date.find('(')
@@ -223,51 +218,62 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 if date != '????':
                     d['original air date'] = date
                 air_date = air_date[vi:]
-                season = _findBetween(air_date, 'Season', ',')
+                season = _findBetween(air_date, 'Season', ',', maxRes=1)
                 if season:
                     season = season[0].strip()
                     try: season = int(season)
                     except: pass
                     if season or type(season) is _inttype:
                         d['season'] = season
-                episode = _findBetween(air_date, 'Episode', ')')
+                episode = _findBetween(air_date, 'Episode', ')', maxRes=1)
                 if episode:
                     episode = episode[0].strip()
                     try: episode = int(episode)
                     except: pass
                     if episode or type(season) is _inttype:
                         d['episode'] = episode
-        direct = _findBetween(cont, 'Directed by</b><br>', '<br> <br>')
+        direct = _findBetween(cont, '<h5>Director', ('</div>', '<br/> <br/>'),
+                                maxRes=1)
         if direct:
-            dirs = self._getPersons(direct[0], aonly=1)
-            if dirs: d['director'] = dirs
-        writers = _findBetween(cont, 'Writing credits</b>', '<br> <br>')
+            direct = direct[0]
+            h5idx = direct.find('/h5>')
+            if h5idx != -1:
+                direct = direct[h5idx+4:]
+            direct = self._getPersons(direct)
+            if direct: d['director'] = direct
+        if kind in ('tv series', 'tv mini series', 'episode'):
+            if kind != 'episode':
+                seasons = _findBetween(cont, 'Seasons:</h5>', '</div>',
+                                        maxRes=1)
+                if seasons:
+                    d['number of seasons'] = seasons[0].count('|') + 1
+            creator = _findBetween(cont, 'Created by</h5>', ('class="tn15more"',
+                                                            '</div>',
+                                                            '<br/> <br/>'),
+                                                            maxRes=1)
+            if creator:
+                creator = creator[0]
+                if creator.find('tn15more'): creator = '%s>' % creator
+                creator = self._getPersons(creator)
+                if creator: d['creator'] = creator
+        writers = _findBetween(cont, '<h5>Writer', ('</div>', '<br/> <br/>'),
+                                maxRes=1)
         if writers:
-            ws = self._getPersons(writers[0], aonly=1)
-            if ws: d['writer'] = ws
-        cvurl = _getTagWith(cont, 'alt="cover"')
+            writers = writers[0]
+            h5idx = writers.find('/h5>')
+            if h5idx != -1:
+                writers = writers[h5idx+4:]
+            writers = self._getPersons(writers)
+            if writers: d['writer'] = writers
+        cvurl = _getTagsWith(cont, 'name="poster"', toClosure=True, maxRes=1)
         if cvurl:
-            cvurl = _findBetween(cvurl[0], 'src="', '"')
+            cvurl = _findBetween(cvurl[0], 'src="', '"', maxRes=1)
             if cvurl: d['cover url'] = cvurl[0]
-        if not d.has_key('cover url'):
-            # Cover, the new style.
-            short_title = d.get('title', u'')
-            if short_title:
-                if d.get('kind') in ('tv series', 'tv mini series'):
-                    short_title = '&#34;%s&#34;' % short_title
-                cvurl = _getTagWith(cont, 'alt="%s"' % short_title)
-                if not cvurl:
-                    cvurl = _getTagWith(cont, 'alt="%s"' %
-                                        short_title.replace('#34', 'quot'))
-                cvurl[:] = [x for x in cvurl if x[0:4] == '<img']
-                if cvurl:
-                    cvurl = _findBetween(cvurl[0], 'src="', '"')
-                    if cvurl: d['cover url'] = cvurl[0]
         genres = _findBetween(cont, 'href="/Sections/Genres/', '/')
         if genres: d['genres'] = genres
-        ur = _findBetween(cont, 'User Rating:</b>', ' votes)')
+        ur = _findBetween(cont, 'User Rating:</b>', ' votes</a>)', maxRes=1)
         if ur:
-            rat = _findBetween(ur[0], '<b>', '</b>')
+            rat = _findBetween(ur[0], '<b>', '</b>', maxRes=1)
             if rat:
                 teni = rat[0].find('/10')
                 if teni != -1:
@@ -280,11 +286,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             vi = ur[0].rfind('(')
             if vi != -1 and ur[0][vi:].find('await') == -1:
                 try:
-                    votes = int(ur[0][vi+1:].replace(',', '').strip())
+                    votes = int(_unHtml(ur[0][vi+1:]).strip().replace(',', ''))
                     d['votes'] = votes
                 except ValueError:
                     pass
-        top250 = _findBetween(cont, 'href="/top_250_films"', '</a>')
+        top250 = _findBetween(cont, 'href="/chart/top?', '</a>', maxRes=1)
         if top250:
             fn = top250[0].rfind('#')
             if fn != -1:
@@ -293,74 +299,90 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     d['top 250 rank'] = td
                 except ValueError:
                     pass
-        castdata = _findBetween(cont, 'Cast overview', '</table>')
+        castdata = _findBetween(cont, 'Cast overview', '</table>', maxRes=1)
         if not castdata:
-            castdata = _findBetween(cont, 'Credited cast', '</table>')
+            castdata = _findBetween(cont, 'Credited cast', '</table>', maxRes=1)
         if not castdata:
-            castdata = _findBetween(cont, 'Complete credited cast', '</table>')
+            castdata = _findBetween(cont, 'Complete credited cast', '</table>',
+                                    maxRes=1)
         if not castdata:
-            castdata = _findBetween(cont, 'Series Cast Summary', '</table>')
+            castdata = _findBetween(cont, 'Series Cast Summary', '</table>',
+                                    maxRes=1)
+        if not castdata:
+            castdata = _findBetween(cont, 'Episode Credited cast', '</table>',
+                                    maxRes=1)
         if castdata:
             castdata = castdata[0]
+            # Reintegrate the fist tag.
             fl = castdata.find('href=')
             if fl != -1: castdata = '<a ' + castdata[fl:]
-            smib = castdata.find('<tr><td align="center" colspan="3"><small>')
+            # Exclude the 'rest of cast listed alphabetically' row.
+            smib = castdata.find('<tr><td align="center" colspan="4"><small>')
             if smib != -1:
                 smie = castdata.rfind('</small></td></tr>')
                 if smie != -1:
                     castdata = castdata[:smib].strip() + \
                                 castdata[smie+18:].strip()
             castdata = castdata.replace('/tr> <tr', '/tr><tr')
-            cast = self._getPersons(castdata, sep='</tr><tr', hasCr=1)
+            cast = self._getPersons(castdata, sep='</tr><tr')
             if cast: d['cast'] = cast
-        # FIXME: doesn't catch "complete title", which is not
-        #        included in <i> tags.
-        #        See "Gehr Nany Fgbevrf 11", movieID: 0282910
-        akas = _findBetween(cont, '<b class="ch">Also Known As:</b>',
-                                    '<b class="ch">')
+        akas = _findBetween(cont, 'Also Known As:</h5>', '</div>', maxRes=1)
         if akas:
+            # For some reason, here <br> is still used in place of <br/>.
             akas[:] = [x for x in akas[0].split('<br>') if x.strip()]
             akas = [_unHtml(x).replace(' (','::(', 1).replace(' [','::[')
                     for x in akas]
+            if 'more' in akas: akas.remove('more')
             d['akas'] = akas
-        mpaa = _findBetween(cont, 'MPAA</a>:', '<br>')
+        mpaa = _findBetween(cont, 'MPAA</a>:', '</div>', maxRes=1)
         if mpaa: d['mpaa'] = _unHtml(mpaa[0])
-        runtimes = _findBetween(cont, 'Runtime:</b>', '<br>')
+        runtimes = _findBetween(cont, 'Runtime:</h5>', '</div>', maxRes=1)
         if runtimes:
-            # XXX: number of episodes?
             runtimes = runtimes[0]
-            episodes = re_episodes.findall(runtimes)
-            if episodes:
-                runtimes = re_episodes.sub('', runtimes)
-                episodes = episodes[0]
-                try: episodes = int(episodes)
-                except: pass
-                d['number of episodes'] = episodes
-            runtimes = [x.strip().replace(' min', '')
+            runtimes = [x.strip().replace(' min', '').replace(' (', '::(', 1)
                     for x in runtimes.split('/')]
             d['runtimes'] = runtimes
-        country = _findBetween(cont, 'href="/Sections/Countries/', ['"', '/'])
-        if country: d['countries'] = country
-        lang = _findBetween(cont, 'href="/Sections/Languages/', ['"', '/'])
-        if lang: d['languages'] = lang
-        col = _findBetween(cont, '"/List?color-info=', '<br')
+        if kind == 'episode':
+            # number of episodes.
+            epsn = _findBetween(cont, 'title="Full Episode List">', '</a>',
+                                maxRes=1)
+            if epsn:
+                epsn = epsn[0].replace(' Episodes', '').strip()
+                if epsn:
+                    try: epsn = int(epsn)
+                    except: pass
+                    d['number of episodes'] = epsn
+        country = _findBetween(cont, 'Country:</h5>', '</div>', maxRes=1)
+        if country:
+            country[:] = country[0].split(' / ')
+            country[:] = ['<a %s' % x for x in country if x]
+            country[:] = [_unHtml(x.replace(' <i>', '::')) for x in country]
+            if country: d['countries'] = country
+        lang = _findBetween(cont, 'Language:</h5>', '</div>', maxRes=1)
+        if lang:
+            lang[:] = lang[0].split(' / ')
+            lang[:] = ['<a %s' % x for x in lang if x]
+            lang[:] = [_unHtml(x.replace(' <i>', '::')) for x in lang]
+            if lang: d['languages'] = lang
+        col = _findBetween(cont, '"/List?color-info=', '</div>')
         if col:
             col[:] = col[0].split(' / ')
             col[:] = ['<a %s' % x for x in col if x]
             col[:] = [_unHtml(x.replace(' <i>', '::')) for x in col]
             if col: d['color info'] = col
-        sm = _findBetween(cont, '/List?sound-mix=', '<br>')
+        sm = _findBetween(cont, '/List?sound-mix=', '</div>', maxRes=1)
         if sm:
             sm[:] = sm[0].split(' / ')
             sm[:] = ['<a %s' % x for x in sm if x]
             sm[:] = [_unHtml(x.replace(' <i>', '::')) for x in sm]
             if sm: d['sound mix'] = sm
-        cert = _findBetween(cont, 'Certification:</b>', '<br')
+        cert = _findBetween(cont, 'Certification:</h5>', '</div>', maxRes=1)
         if cert:
             cert[:] = cert[0].split(' / ')
             cert[:] = [_unHtml(x.replace(' <i>', '::')) for x in cert]
             if cert: d['certificates'] = cert
-        plotoutline = _findBetween(cont, 'Plot Outline:</b>', ['<a ', '<br'])
+        plotoutline = _findBetween(cont, 'Plot Outline:</h5>', ['<a ','</div>'],
+                                    maxRes=1)
         if plotoutline:
             plotoutline = plotoutline[0].strip()
             if plotoutline: d['plot outline'] = plotoutline
@@ -370,6 +392,12 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         cont = self._mretrieve(imdbURL_movie % movieID + 'plotsummary')
         plot = _findBetween(cont, '<p class="plotpar">', '</p>')
         plot[:] = [_unHtml(x) for x in plot]
+        for i, p in enumerate(plot):
+            wbyidx = p.rfind(' Written by ')
+            if wbyidx != -1:
+                plot[i] = '%s::%s' % \
+                    (p[wbyidx+12:].rstrip().replace('{','<').replace('}','>'),
+                    p[:wbyidx].rstrip())
         if plot: return {'data': {'plot': plot}}
         return {'data': {}}
 
@@ -378,16 +406,16 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         ##params = 'q=%s&nm=on&mx=%s' % (urllib.quote_plus(name), str(results))
         ##cont = self._mretrieve(imdbURL_search % params)
         cont = subXMLRefs(self._get_search_content('nm', name, results))
-        name = _findBetween(cont, '<title>', '</title>')
+        name = _findBetween(cont, '<title>', '</title>', maxRes=1)
         res = []
         if not name: return res
         nl = name[0].lower()
         if not nl.startswith('imdb name'):
             # XXX: a direct hit!
             name = _unHtml(name[0])
-            pidtag = _getTagWith(cont, '/board/threads/')
+            pidtag = _getTagsWith(cont, '/board/nest/', maxRes=1)
             pid = None
-            if pidtag: pid = _findBetween(pidtag[0], '/name/nm', '/')
+            if pidtag: pid = _findBetween(pidtag[0], '/name/nm', '/', maxRes=1)
             if not (pid and name): return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:
@@ -402,158 +430,94 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
     def get_person_main(self, personID):
         s = self._mretrieve(imdbURL_person % personID + 'maindetails')
         r = {}
-        name = _findBetween(s, '<title>', '</title>')
+        name = _findBetween(s, '<title>', '</title>', maxRes=1)
         if not name:
             raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
         name = _unHtml(name[0])
         r = analyze_name(name, canonical=1)
-        bdate = _findBetween(s, '<div class="ch">Date of birth',
-                            ('<br>', '<dt>'))
-        if bdate:
-            bdate = _unHtml('<a %s' % bdate[0])
-            if bdate: r['birth date'] = bdate
-        bnotes = _findBetween(s, 'href="/BornWhere?', '</dd>')
-        if bnotes:
-            bnotes = _unHtml('<a %s' % bnotes[0])
-            if bnotes: r['birth notes'] = bnotes
-        ddate = _findBetween(s, '<div class="ch">Date of death', '</dd>')
-        if ddate:
-            ddates = ddate[0].split('<br>')
-            ddate = ddates[0]
-            ddate = _unHtml('<a %s' % ddate)
-            if ddate: r['death date'] = ddate
-            dnotes = None
-            if len(ddates) > 1:
-                dnotes = _unHtml(ddates[1])
-            if dnotes: r['death notes'] = dnotes
-        akas = _findBetween(s, 'Sometimes Credited As:', '</dl>')
+        for dKind in ('birth', 'death'):
+            date = _findBetween(s, '<h5>Date of %s:</h5>' % dKind.capitalize(),
+                                ('<a class', '</div>', '<br/><br/>'), maxRes=1)
+            if date:
+                date = _unHtml(date[0])
+                if date:
+                    date, notes = date_and_notes(date)
+                    if date:
+                        r['%s date' % dKind] = date
+                    if notes:
+                        r['%s notes' % dKind] = notes
+        akas = _findBetween(s, 'Alternate Names:</h5>', ('</div>',
+                            '<br/><br/>'), maxRes=1)
         if akas:
-            akas[:] = [_unHtml(x) for x in akas[0].split('<br>')]
+            akas = _unHtml(akas[0]).split(' / ')
             if akas: r['akas'] = akas
-        hs = _findBetween(s, 'name="headshot"', '</a>')
+        hs = _findBetween(s, 'name="headshot"', '</a>', maxRes=1)
         if hs:
-            hs[:] = _findBetween(hs[0], 'src="', '"')
+            hs[:] = _findBetween(hs[0], 'src="', '"', maxRes=1)
             if hs: r['headshot'] = hs[0]
-        workkind = _findBetween(s, '<b><a name=', '</a> - filmography')
-
+        # Build a list of tuples such [('hrefLink', 'section name')]
+        workkind = _findBetween(s, '<div class="strip jump">', '</div>',
+                                maxRes=1)
+        if workkind:
+            workkind[:] = _findBetween(workkind[0], 'href="#', '</a>')
         ws = []
-        for w in workkind:
-            if w and w[0] == '"': w = w[1:]
-            se = ''
-            sn = ''
-            eti = w.rfind('>')
-            if eti == -1: continue
-            se = w[:eti]
-            if se and se[-1] == '"': se = se[:-1]
-            se = se.strip()
-            sn = w[eti+1:].strip().lower()
-            if se and sn: ws.append((se, sn))
+        for work in workkind:
+            wsplit = work.split('">', 1)
+            if len(wsplit) == 2:
+                ws.append((wsplit[0], wsplit[1].lower()))
         # XXX: I think "guest appearances" are gone.
         if s.find('<a href="#guest-appearances"') != -1:
             ws.append(('guest-appearances', 'notable tv guest appearances'))
-        if s.find('<a href="#archive">') != -1:
-            ws.append(('archive', 'archive footage'))
         for sect, sectName in ws:
-            raws = ''
+            raws = u''
+            # Everything between the current section link and the end
+            # of the <ol> tag.
             inisect = s.find('<a name="%s' % sect)
             if inisect != -1:
                 endsect = s[inisect:].find('</ol>')
                 if endsect != -1: raws = s[inisect:inisect+endsect]
             if not raws: continue
-            mlist = _findBetween(raws, '<li>', ('</li>', '<br>'))
+            mlist = _findBetween(raws, '<li>', ('</li>', '<br>', '<br/>'))
             for m in mlist:
-                d = {}
-                mid = re_imdbID.findall(m)
-                if not mid: continue
-                d['movieID'] = mid[0]
-                ti = m.find('/">')
-                te = m.find('</a>')
-                if ti != -1 and te > ti:
-                    d['title'] = m[ti+3:te]
-                    m = m[te+4:]
-                else:
-                    continue
-                fi = m.find('<font ')
-                if fi != -1:
-                    fe = m.find('</font>')
-                    if fe > fi:
-                        fif = m[fi+6:].find('>')
-                        if fif != -1:
-                            d['status'] = m[fi+7+fif:fe]
-                            m = m[:fi] + m[fe+7:]
-                fai = m.find('<i>')
-                if fai != -1:
-                    fae = m[fai:].find('</i>')
-                    if fae != -1:
-                        m = m[:fai] + m[fai+fae+4:]
-                tvi = m.find('<small>TV Series</small>')
-                if tvi != -1:
-                    m = m[:tvi] + m[tvi+24:]
-                m = m.strip()
-                for x in xrange(2):
-                    if len(m) > 1 and m[0] == '(':
-                        ey = m.find(')')
-                        if ey != -1:
-                            if m[1].isdigit() or \
-                                    m[1:ey] in ('TV', 'V', 'mini', 'VG'):
-                                d['title'] += ' %s' % m[:ey+1]
-                                m = m[ey+1:].lstrip()
-                istvguest = 0
-                if m.find('<small>playing</small>') != -1:
-                    istvguest = 1
-                    m = m.replace('<small>playing</small>', '').strip()
-                else:
-                    m=m.replace('<small>',' ').replace('</small>',' ').strip()
-                notes = u''
-                role = u''
-                if not istvguest:
-                    ms = m.split('....')
-                    if len(ms) == 2:
-                        notes = ms[0].strip().replace('  ', ' ')
-                        role = ms[1].strip()
-                        fn = role.find('(')
-                        if fn != -1:
-                            en = role.rfind(')')
-                            pnote = role[fn:en+1].strip()
-                            role = '%s %s' % (role[:fn].strip(),
-                                            role[en+1:].strip())
-                            role = role.strip()
-                            if pnote:
-                                if notes: notes += ' '
-                                notes += pnote
-                    else:
-                        notes = ''.join(ms).strip().replace('  ', ' ')
-                        role = u''
-                    #if len(ms) >= 1:
-                    #    first = ms[0]
-                    #    if first and first[0] == '(':
-                    #        notes = first.strip()
-                    #    ms = ms[1:]
-                    #if ms: role = ' '.join(ms).strip()
-                else:
-                    # XXX: strip quotes from strings like "Himself"?
-                    noteidx = m.find('(')
-                    if noteidx == -1:
-                        noteidx = m.find('in episode')
-                    if noteidx != -1:
-                        notes = m[noteidx:]
-                        role = m[:noteidx-1]
-                    else:
-                        role = m
-                m_title = _unHtml(d['title'])
-                movie = Movie(title=m_title, accessSystem=self.accessSystem,
-                                movieID=str(d['movieID']),
-                                modFunct=self._defModFunct)
-                if d.has_key('status'): movie['status'] = _unHtml(d['status'])
-                if role: movie.currentRole = _unHtml(role)
-                if notes: movie.notes = _unHtml(notes)
+                # For every movie in the current section.
+                movieID = re_imdbID.findall(m)
+                if not movieID: continue
+                movieID = movieID[0]
+                # Search the status.
+                stidx = m.find('<i>')
+                status = u''
+                if stidx != -1:
+                    stendidx = m.rfind('</i>')
+                    if stendidx != -1:
+                        status = _unHtml(m[stidx+3:stendidx])
+                        m = m.replace(m[stidx+3:stendidx], '')
+                m = _unHtml(m)
+                if not m: continue
+                movie = build_movie(m, movieID=movieID, status=status,
+                                    accessSystem=self.accessSystem)
                 r.setdefault(sectName, []).append(movie)
+        # If available, take the always correct name from a form.
+        itag = _getTagsWith(s, 'NAME="primary"', maxRes=1)
+        if not itag:
+            itag = _getTagsWith(s, 'name="primary"', maxRes=1)
+        if itag:
+            vtag = _findBetween(itag[0], 'VALUE="', ('"', '>'), maxRes=1)
+            if not vtag:
+                vtag = _findBetween(itag[0], 'value="', ('"', '>'), maxRes=1)
+            if vtag:
+                try:
+                    vtag = unquote(str(vtag[0]))
+                    vtag = unicode(vtag, 'latin_1')
+                    r.update(analyze_name(vtag, canonical=0))
+                except UnicodeEncodeError:
+                    pass
         return {'data': r, 'info sets': ('main', 'filmography')}
 
     def get_person_biography(self, personID):
         cont = self._mretrieve(imdbURL_person % personID + 'bio')
         d = {}
-        spouses = _findBetween(cont, 'Spouse</dt>', ('</table>', '</dd>'))
+        spouses = _findBetween(cont, 'Spouse</h5>', ('</table>', '</dd>'),
+                                maxRes=1)
         if spouses:
             sl = []
             for spouse in spouses[0].split('</tr>'):
@@ -563,24 +527,48 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 spouse = spouse.replace(':: ', '::').strip()
                 if spouse: sl.append(spouse)
             if sl: d['spouse'] = sl
-        misc_sects = _findBetween(cont, '<dt class="ch">', ('<hr', '</dd>'))
-        misc_sects[:] = [x.split('</dt>') for x in misc_sects]
+        misc_sects = _findBetween(cont, '<h5>', '<br/>')
+        misc_sects[:] = [x.split('</h5>') for x in misc_sects]
         misc_sects[:] = [x for x in misc_sects if len(x) == 2]
         for sect, data in misc_sects:
             sect = sect.lower().replace(':', '').strip()
+            if d.has_key(sect): continue
             if sect == 'salary': sect = 'salary history'
-            elif sect in ('imdb mini-biography by', 'spouse'): continue
+            elif sect == 'spouse': continue
             elif sect == 'nickname': sect = 'nick names'
             elif sect == 'where are they now': sect = 'where now'
             elif sect == 'personal quotes': sect = 'quotes'
-            data = data.replace('</p><p class="biopar">', '::')
-            data = data.replace('</td>\n<td valign="top">', '@@@@')
-            data = data.replace('</td>\n</tr>', '::')
+            data = data.replace('</p><p>', '::')
+            data = data.replace('</td> <td valign="top">', '@@@@')
+            data = data.replace('</td> </tr>', '::')
             data = _unHtml(data)
             data = [x.strip() for x in data.split('::')]
             data[:] = [x.replace('@@@@', '::') for x in data if x]
-            if sect in ('birth name', 'height') and data: data = data[0]
-            if sect == 'birth name': data = canonicalName(data)
+            if sect == 'height' and data: data = data[0]
+            elif sect == 'birth name': data = canonicalName(data[0])
+            elif sect == 'date of birth':
+                date, notes = date_and_notes(data[0])
+                if date:
+                    d['birth date'] = date
+                if notes:
+                    d['birth notes'] = notes
+                continue
+            elif sect == 'date of death':
+                date, notes = date_and_notes(data[0])
+                if date:
+                    d['death date'] = date
+                if notes:
+                    d['death notes'] = notes
+                continue
+            elif sect == 'mini biography':
+                ndata = []
+                for bio in data:
+                    byidx = bio.rfind('IMDb Mini Biography By')
+                    if byidx != -1:
+                        bio = u'%s::%s' % (bio[byidx+23:].lstrip(),
+                                            bio[:byidx].rstrip())
+                    ndata.append(bio)
+                data[:] = ndata
             d[sect] = data
         return {'data': d}
 

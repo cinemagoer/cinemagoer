@@ -1,10 +1,53 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 2.9-fix1 (26 Mar 2007)
+* What's the new in release 3.0 "Spider-Man 3" (03 May 2007)
   [global]
+  - IMDbPY now works with the new IMDb's site design; a new account is
+    used to access data; this affect a lot of code, especially in the
+    'http', 'httpThin' and 'mobile' data access systems.
+  - every returned string should now be unicode; dictionary keywords are
+    _not_ guaranteed to be unicode (but they are always 7bit strings).
+  - fixed a bug in the __contains__ method of the Movie class.
   - fix in the analyze_title() function to handle malformed episode
     numbers.
+
+  [http]
+  - introduced the _in_content instance variable for objects instances of
+    ParserBase, True when inside the <div id="tn15content"> tag.
+    Opening and closing this pair of tags two methods, named _begin_content()
+    and _end_content() are called with no parameters (by default, they do
+    nothing).
+  - in the utils module there's the build_person function, useful to create
+    a Person instance from the tipical formats found in the IMDb's web site.
+  - an analogue build_movie function can be used to instance Movie objects.
+  - inverted the getRefs default - now if not otherwise set, it's False.
+  - added a parser for the "merchandising" ("for sale") page for persons.
+  - the 'rating' parser now collects also 'rating' and 'votes' data.
+  - the HTMLMovieParser class (for movies) was rewritten from zero.
+  - the HTMLMaindetailsParser class (for persons) was rewritten from zero.
+  - unified the "episode list" and "episodes cast" parsers.
+  - fixed a bug parsing locations, which resulted in missing information.
+  - locations_parser splitted from "tech" parser.
+  - "connections" parser now handles the recently introduced notes.
+
+  [http parser conversion]
+  - these parsers worked out-of-the-box; airing, eprating, alternateversions,
+    dvd, goofs, keywords, movie_awards, movie_faqs, person_awards, rec,
+    releasedates, search_movie, search_person, soundclips, soundtrack, trivia,
+    videoclips.
+  - these parsers were fixed; amazonrev, connections, episodes, crazycredits,
+    externalrev, misclinks, newsgrouprev, news, officialsites, otherworks,
+    photosites, plot, quotes, ratings, sales, taglines, tech, business,
+    literature, publicity, trivia, videoclips, maindetails, movie.
+
+  [mobile]
+  - fixed to work with the new design.
+  - a lot of code is now shared amongst 'http' and 'mobile'.
+
+  [sql]
+  - fixes for other bugs related to unicode support.
+  - minor changes to slightly improve performances.
 
 
 * What's the new in release 2.9 "Rodan! The Flying Monster" (21 Feb 2007)

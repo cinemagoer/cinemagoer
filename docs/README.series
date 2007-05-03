@@ -108,6 +108,25 @@ data set; e.g.:
   i.update(m, 'full credits')
   print len(m['cast']) # yup!  More than 300 persons!
 
+If you prefer, you can retrieve the complete cast of every episode,
+keeping the lists separated for every episode; instead of retrieving
+the list of episodes with:
+  i.update(m, 'episodes')
+use instead:
+  i.update('episodes cast')
+or the equivalent:
+  i.update(m, 'guests')
+
+Now you end up having the same information as if you have updated
+the 'episodes' info set, but every Movie object inside the dictionary
+of dictionary has the complete cast.
+E.g.:
+  cast = m['episodes'][1][2]['cast']  # cast list for the second episode
+                                      # of the first season.
+
+Beware that both 'episodes cast' and 'guests' will update the
+keyword 'episodes' (and not 'episodes cast' or 'guests').
+
 
   RATINGS
   =======

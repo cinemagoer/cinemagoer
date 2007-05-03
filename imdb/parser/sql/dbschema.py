@@ -6,7 +6,7 @@ the layout of the database used by thr imdb.parser.sql package.
 Every database supported by the SQLObject Object Relational Manager
 is available.
 
-Copyright 2005-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2007 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -133,6 +133,9 @@ class Title(SQLObject):
     episodeOfID = IntCol(default=None)
     seasonNr = IntCol(default=None)
     episodeNr = IntCol(default=None)
+    # Maximum observed length is 44; 49 can store 5 comma-separated
+    # year-year pairs.
+    seriesYears = StringCol(length=49, default=None)
 
 
 DB_TABLES = [Name, KindType, Title, AkaName, AkaTitle, RoleType, CastInfo,
@@ -143,11 +146,12 @@ def setConnection(uri, debug=False):
     """Set connection for every table."""
     kw = {}
     # FIXME: it's absolutely unclear what we should do to correctly
-    #        support unicode in MySQL; with the last versions of SQLObject,
+    #        support unicode in MySQL; with some versions of SQLObject,
     #        it seems that setting use_unicode=1 is the _wrong_ thing to do.
-    ##if uri.lower().startswith('mysql'):
-    ##    kw['use_unicode'] = 1
-    ##    kw['sqlobject_encoding'] = 'utf8'
+    if uri.lower().startswith('mysql'):
+        kw['use_unicode'] = 1
+        kw['sqlobject_encoding'] = 'utf8'
+        kw['charset'] = 'utf8'
     conn = connectionForURI(uri, **kw)
     conn.debug = debug
     for table in DB_TABLES:
@@ -219,6 +223,7 @@ def createTables(connectURI=None, ifNotExists=True):
             'alternate language version of', 'unknown link')
     for link in LINKS:
         LinkType(link=link)
+    # XXX: I'm quite sure that 'guest' is now obsolete.
     ROLES = ('actor', 'actress', 'producer', 'writer', 'cinematographer',
             'composer', 'costume designer', 'director', 'editor',
             'miscellaneous crew', 'production designer', 'guest')

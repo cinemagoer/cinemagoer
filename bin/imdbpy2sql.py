@@ -5,7 +5,7 @@ imdbpy2sql.py script.
 This script puts the data of the plain text data files into a
 SQL database.
 
-Copyright 2005-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2007 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,11 @@ from imdb.utils import analyze_title, analyze_name, \
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError
+
+_articles = list(_articles)
+for i, art in enumerate(_articles):
+    if not isinstance(art, unicode): continue
+    _articles[i] = art.encode('utf_8')
 
 re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
@@ -200,9 +205,9 @@ def title_soundex(title):
     article is pruned.  It assumes to receive a title without year/imdbIndex
     or kind indications, but just the title string, as the one in the
     analyze_title(title)['title'] value."""
-    title = unicode(title, 'utf_8')
+    ##if not isinstance(title, unicode): title = unicode(title, 'utf_8')
     # Prune non-ascii chars from the string.
-    title = title.encode('ascii', 'replace')
+    ##title = title.encode('ascii', 'replace')
     if not title: return None
     ts = title.split(', ')
     # Strip the ending article, if any.
@@ -219,9 +224,9 @@ def name_soundexes(name):
     from the first one.
     The third is the soundex of the surname, if different from the
     other two values."""
-    name = unicode(name, 'utf_8')
+    ##if not isinstance(name, unicode): name = unicode(name, 'utf_8')
     # Prune non-ascii chars from the string.
-    name = name.encode('ascii', 'ignore')
+    ##name = name.encode('ascii', 'ignore')
     if not name: return (None, None, None)
     s1 = soundex(name)
     name_normal = normalizeName(name)
@@ -432,9 +437,9 @@ class _BaseCache(dict):
                 self._tmpDict.clear()
             except OperationalError, e:
                 # Dataset too large; split it in two and retry.
-                ## new code!
-                ## the same class instance (self) is used, instead of
-                ## creating two separated objects.
+                # XXX: new code!
+                # the same class instance (self) is used, instead of
+                # creating two separated objects.
                 _recursionLevel += 1
                 self._flushing = 0
                 firstHalf = {}
@@ -503,11 +508,11 @@ class MoviesCache(_BaseCache):
 
     def __init__(self, *args, **kwds):
         _BaseCache.__init__(self, *args, **kwds)
-        self.episodesYear = {}
+        self.movieYear = {}
         self.sqlstr, self.converter = createSQLstr(Title, ('id', 'title',
                                     'imdbIndex', 'kindID', 'productionYear',
                                     'phoneticCode', 'episodeOfID',
-                                    'seasonNr', 'episodeNr'))
+                                    'seasonNr', 'episodeNr', 'seriesYears'))
 
     def populate(self):
         print ' * POPULATING %s...' % self.className
@@ -520,9 +525,9 @@ class MoviesCache(_BaseCache):
         episodeofidCol = colName(Title, 'episodeOfID')
         seasonNrCol = colName(Title, 'seasonNr')
         episodeNrCol = colName(Title, 'episodeNr')
-        sqlPop = 'SELECT %s, %s, %s, %s, %s, %s, %s, %s FROM %s;' % (movieidCol,
-                    titleCol, kindidCol, yearCol, imdbindexCol,
-                    episodeofidCol, seasonNrCol, episodeNrCol, titleTbl)
+        sqlPop = 'SELECT %s, %s, %s, %s, %s, %s, %s, %s FROM %s;' % \
+                (movieidCol, titleCol, kindidCol, yearCol, imdbindexCol,
+                episodeofidCol, seasonNrCol, episodeNrCol, titleTbl)
         CURS.execute(sqlPop)
         _oldcacheValues = Title.sqlmeta.cacheValues
         Title.sqlmeta.cacheValues = False
@@ -556,7 +561,7 @@ class MoviesCache(_BaseCache):
         tmpDictiter = self._tmpDict.iteritems
         for k, v in tmpDictiter():
             try:
-                t = analyze_title(k)
+                t = analyze_title(k, _emptyString='')
             except IMDbParserError:
                 if k and k.strip():
                     print 'WARNING %s._toDB() invalid title:' % self.className,
@@ -570,15 +575,17 @@ class MoviesCache(_BaseCache):
                 stitle = build_title(tget('episode of'), canonical=1)
                 episodeOf = self.addUnique(stitle)
                 del t['episode of']
-                year = self.episodesYear.get(v)
+                year = self.movieYear.get(v)
                 if year is not None:
                     try: t['year'] = int(year)
                     except ValueError: pass
+            elif kind in ('tv series', 'tv mini series'):
+                t['series years'] = self.movieYear.get(v)
             title = tget('title')
             soundex = title_soundex(title)
             lapp((v, title, tget('imdbIndex'), KIND_IDS[kind],
                     tget('year'), soundex, episodeOf,
-                    tget('season'), tget('episode')))
+                    tget('season'), tget('episode'), tget('series years')))
         self._runCommand(l)
 
     def _runCommand(self, dataList):
@@ -777,16 +784,16 @@ def readMovieList():
         line_d = unpack(line, ('title', 'year'))
         title = line_d['title']
         yearData = None
-        # Collect 'year' column for tv series' episodes.
-        if title[-1:] == '}':
-            yearData = [('episodesYear', line_d['year'])]
+        # Collect 'year' column for tv "series years" and episodes' year.
+        if title[0] == '"':
+            yearData = [('movieYear', line_d['year'])]
         mid = CACHE_MID.addUnique(title, yearData)
         if count % 10000 == 0:
             print 'SCANNING movies:', _(title),
             print '(movieID: %s)' % mid
         count += 1
     CACHE_MID.flush()
-    CACHE_MID.episodesYear.clear()
+    CACHE_MID.movieYear.clear()
     mdbf.close()
 
 
@@ -816,8 +823,17 @@ def doCast(fp, roleid, rolename):
             if not item: continue
             if item[0] == '[':
                 role = item[1:-1]
+                if role[-1:] == ')':
+                    nidx = role.find('(')
+                    if nidx != -1:
+                        note = role[nidx:]
+                        role = role[:nidx].rstrip()
+                        if not role: role = None
             elif item[0] == '(':
-                note = item
+                if note is None:
+                    note = item
+                else:
+                    note = '%s %s' % (note, item)
             elif item[0] == '<':
                 textor = item[1:-1]
                 try:
@@ -923,7 +939,7 @@ class AkasMoviesCache(MoviesCache):
             # id of the referred title.
             original_title_id = self.ids.get(the_id)
             new_item = [the_id, original_title_id]
-            new_item += item[1:]
+            new_item += item[1:-1]
             new_item.append(self.notes.get(the_id))
             new_dataListapp(tuple(new_item))
         new_dataList.reverse()
@@ -1329,7 +1345,7 @@ def getRating():
 
 
 def getTopBottomRating():
-    """Movie's rating, scanning for top 250 and bottom 100."""
+    """Movie's rating, scanning for top 250 and bottom 10."""
     for what in ('top 250 rank', 'bottom 10 rank'):
         if what == 'top 250 rank': st = RAT_TOP250_START
         else: st = RAT_BOT10_START
@@ -1449,43 +1465,60 @@ def run():
     sys.stdout.flush()
     dropTables()
     print 'done!'
+    # Rebuild the database structure.
     print 'CREATING new tables...',
     sys.stdout.flush()
     createTables()
+    # Read the constants.
     readConstants()
     print 'done!'
     t('dropping and recreating the database')
 
     # Populate the CACHE_MID instance.
     readMovieList()
+    # Comment readMovieList() and uncomment the following two lines
+    # to keep the current info in the name and title tables.
     ##CACHE_MID.populate()
     ##CACHE_PID.populate()
     t('readMovieList()')
 
-
-    # actors, actresses, directors, ....
+    # actors, actresses, producers, writers, cinematographers, composers,
+    # costume-designers, directors, editors, miscellaneous,
+    # production-designers.
     castLists()
 
+    # Aka names and titles.
     doAkaNames()
     t('doAkaNames()')
     doAkaTitles()
     t('doAkaTitles()')
 
+    # alternate-versions, goofs, crazy-credits, quotes, soundtracks, trivia.
     doMinusHashFiles()
     t('doMinusHashFiles()')
 
+    # biographies, business, laserdisc, literature, mpaa-ratings-reasons, plot.
     doNMMVFiles()
 
+    # certificates, color-info, countries, distributors, genres, keywords,
+    # language, locations, miscellaneous-companies, production-companies,
+    # running-times, sound-mix, special-effects-companies, technical,
+    # release-dates.
     doMiscMovieInfo()
+    # movie-links.
     doMovieLinks()
     t('doMovieLinks()')
 
+    # ratings.
     getRating()
     t('getRating()')
+    # taglines.
     getTaglines()
     t('getTaglines()')
+    # ratings (top 250 and bottom 10 movies).
     getTopBottomRating()
     t('getTopBottomRating()')
+    # complete-cast, complete-crew.
     completeCast()
     t('completeCast()')
 
@@ -1501,6 +1534,7 @@ def run():
 
     print 'building database indexes (this may take a while)'
     sys.stdout.flush()
+    # Build database indexes.
     createIndexes()
     t('createIndexes()')
 

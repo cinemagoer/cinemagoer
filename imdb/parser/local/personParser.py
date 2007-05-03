@@ -5,7 +5,7 @@ This module provides the functions used to parse the
 information about people in a local installation of the
 IMDb database.
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ from types import UnicodeType
 
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
-from imdb.utils import re_titleRef, analyze_name, build_name, normalizeName
+from imdb.utils import re_titleRef, analyze_name, build_name, normalizeName, \
+                        date_and_notes
 from utils import getRawData, getLabel, getFullIndex, latin2utf
 
 
@@ -78,7 +79,7 @@ def _buildGuests(gl):
             g = unicode(g, 'latin_1', 'replace')
         titl = re_titleRef.findall(g)
         if len(titl) != 1: continue
-        note = ''
+        note = u''
         if g[-1] == ')':
             opi = g.rfind('(episode')
             if opi == -1: opi = g.rfind('(')
@@ -88,7 +89,7 @@ def _buildGuests(gl):
         cr = u''
         cri = g.find('_ (qv), as ')
         if cri != -1:
-            cr = g[cri+11:].replace('[unknown]', '').strip()
+            cr = g[cri+11:].replace('[unknown]', u'').strip()
             if cr and cr[-1] == ')':
                 opi = cr.rfind('(')
                 if opi != -1:
@@ -117,27 +118,6 @@ def _parseBioBy(l):
                 tmpbio[:] = []
     return bios
 
-def _getDateAndNotes(s):
-    """Parse (birth|death) date and notes."""
-    s = s.strip()
-    if not s: return ('', '')
-    notes = ''
-    if s[0].isdigit() or s.split()[0].lower() in ('c.', 'january', 'february',
-                                                'march', 'april', 'may', 'june',
-                                                'july', 'august', 'september',
-                                                'october', 'november',
-                                                'december', 'ca.', 'circa',
-                                                '????,'):
-        i = s.find(',')
-        if i != -1:
-            notes = s[i+1:].strip()
-            s = s[:i]
-    else:
-        notes = s
-        s = ''
-    if s == '????': s = ''
-    return s, notes
-
 
 def _parseBiography(biol):
     """Parse the biographies.data file."""
@@ -150,7 +130,7 @@ def _parseBiography(biol):
         x4 = x[:4]
         x6 = x[:6]
         if x4 == 'DB: ':
-            date, notes = _getDateAndNotes(x[4:])
+            date, notes = date_and_notes(x[4:])
             if date:
                 res['birth date'] = date
             if notes:
@@ -162,7 +142,7 @@ def _parseBiography(biol):
             #    bdate = bdate[:i]
             #res['birth date'] = bdate[4:]
         elif x4 == 'DD: ':
-            date, notes = _getDateAndNotes(x[4:])
+            date, notes = date_and_notes(x[4:])
             if date:
                 res['death date'] = date
             if notes:
@@ -249,7 +229,7 @@ def getFilmography(dataF, indexF, keyF, attrIF, attrKF, offset,
         title = getLabel(movie['movieID'], indexF, keyF)
         if not title: continue
         m = Movie(title=title, movieID=movie['movieID'],
-                    currentRole=movie.get('currentRole', ''),
+                    currentRole=movie.get('currentRole', u''),
                     accessSystem='local')
         if movie.has_key('attributeID'):
             attr = getLabel(movie['attributeID'], attrIF, attrKF)

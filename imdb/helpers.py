@@ -4,7 +4,7 @@ helpers module (imdb package).
 This module provides functions not used directly by the imdb package,
 but useful for IMDbPY-based programs.
 
-Copyright 2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2006-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

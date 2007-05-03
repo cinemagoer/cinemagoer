@@ -4,7 +4,7 @@ Movie module (imdb package).
 This module provides the Movie class, used to store information about
 a given movie.
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from types import UnicodeType, ListType, TupleType
+from types import UnicodeType, ListType, TupleType, DictType
 from copy import deepcopy
 
 from imdb.utils import analyze_title, build_title, normalizeTitle, \
@@ -47,6 +47,7 @@ class Movie(_Container):
                 'plot summary': 'plot',
                 'plot summaries': 'plot',
                 'directed by':  'director',
+                'created by': 'creator',
                 'writing credits': 'writer',
                 'produced by':  'producer',
                 'original music by':    'composer',
@@ -77,6 +78,7 @@ class Movie(_Container):
                                                 'assistant director',
                 'second unit director':   'assistant director',
                 'sound department': 'sound crew',
+                'costume and wardrobe department': 'costume department',
                 'special effects by':   'special effects',
                 'visual effects by':    'visual effects',
                 'stunts':   'stunt performer',
@@ -90,9 +92,12 @@ class Movie(_Container):
                 'aka':  'akas',
                 'also known as':    'akas',
                 'country':  'countries',
+                'genre': 'genres',
                 'runtime':  'runtimes',
                 'lang': 'languages',
+                'color': 'color info',
                 'cover': 'cover url',
+                'seasons': 'number of seasons',
                 'language': 'languages',
                 'certificate':  'certificates',
                 'certifications':   'certificates',
@@ -146,12 +151,12 @@ class Movie(_Container):
         if title and not self.data.has_key('title'):
             self.set_title(title)
         self.movieID = kwds.get('movieID', None)
-        self.myTitle = kwds.get('myTitle', '')
+        self.myTitle = kwds.get('myTitle', u'')
 
     def _reset(self):
         """Reset the Movie object."""
         self.movieID = None
-        self.myTitle = ''
+        self.myTitle = u''
 
     def set_title(self, title):
         """Set the title of the movie."""
@@ -224,13 +229,15 @@ class Movie(_Container):
                 self.movieID is not None and self.movieID == other.movieID:
             return 1
         return 0
+    isSameMovie = isSameTitle # XXX: just for backward compatiblity.
 
     def __contains__(self, item):
         """Return true if the given Person object is listed in this Movie."""
         from Person import Person
         if not isinstance(item, Person):
             return 0
-        for p in flatten(self.data, yieldDictKeys=1, scalar=Person):
+        for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
+                        toDescend=(ListType, DictType, TupleType, Movie)):
             if item.isSame(p):
                 return 1
         return 0

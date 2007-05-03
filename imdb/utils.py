@@ -3,7 +3,7 @@ utils module (imdb package).
 
 This module provides basic utilities for the imdb package.
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -134,7 +134,7 @@ def build_name(name_dict, canonical=0):
     "Name Surname" format.
     """
     name = name_dict.get('canonical name') or name_dict.get('name', '')
-    if not name: return u''
+    if not name: return ''
     if not canonical:
         name = normalizeName(name)
     imdbIndex = name_dict.get('imdbIndex')
@@ -263,7 +263,8 @@ def is_series_episode(title):
 
 
 def analyze_title(title, canonical=None,
-                    canonicalSeries=0, canonicalEpisode=0):
+                    canonicalSeries=0, canonicalEpisode=0,
+                    _emptyString=u''):
     """Analyze the given title and return a dictionary with the
     "stripped" title, the kind of the show ("movie", "tv series", etc.),
     the year of production and the optional imdbIndex (a roman number
@@ -278,14 +279,14 @@ def analyze_title(title, canonical=None,
     original_t = title
     result = {}
     title = title.strip()
-    year = ''
-    kind = ''
-    imdbIndex = ''
+    year = _emptyString
+    kind = _emptyString
+    imdbIndex = _emptyString
     series_title, episode_or_year = _split_series_episode(title)
     if series_title:
         # It's an episode of a series.
-        series_d = analyze_title(series_title, canonical=canonicalEpisode)
-        oad = sen = ep_year = ''
+        series_d = analyze_title(series_title, canonical=canonicalSeries)
+        oad = sen = ep_year = _emptyString
         # Plain text data files format.
         if episode_or_year[0:1] == '{' and episode_or_year[-1:] == '}':
             match = re_episode_info.findall(episode_or_year)
@@ -307,7 +308,7 @@ def analyze_title(title, canonical=None,
             if oad[-4:].isdigit():
                 ep_year = oad[-4:]
         episode_d = analyze_title(episode_or_year, canonical=canonicalEpisode)
-        episode_d['kind'] = 'episode'
+        episode_d['kind'] = u'episode'
         episode_d['episode of'] = series_d
         if oad:
             episode_d['original air date'] = oad[1:-1]
@@ -335,16 +336,16 @@ def analyze_title(title, canonical=None,
     #      video game:     4,472
     #      More up-to-date statistics: http://us.imdb.com/database_statistics
     if title.endswith('(TV)'):
-        kind = 'tv movie'
+        kind = u'tv movie'
         title = title[:-4].rstrip()
     elif title.endswith('(V)'):
-        kind = 'video movie'
+        kind = u'video movie'
         title = title[:-3].rstrip()
     elif title.endswith('(mini)'):
-        kind = 'tv mini series'
+        kind = u'tv mini series'
         title = title[:-6].rstrip()
     elif title.endswith('(VG)'):
-        kind = 'video game'
+        kind = u'video game'
         title = title[:-4].rstrip()
     # Search for the year and the optional imdbIndex (a roman number).
     yi = re_year_index.findall(title)
@@ -361,7 +362,7 @@ def analyze_title(title, canonical=None,
     # XXX: strip('"') is not used for compatibility with Python 2.0.
     if title and title[0] == title[-1] == '"':
         if not kind:
-            kind = 'tv series'
+            kind = u'tv series'
         title = title[1:-1].strip()
     if not title:
         raise IMDbParserError, 'invalid title: "%s"' % original_t
@@ -370,11 +371,14 @@ def analyze_title(title, canonical=None,
     # 'kind' is one in ('movie', 'episode', 'tv series', 'tv mini series',
     #                   'tv movie', 'video movie', 'video game')
     result['title'] = title
-    result['kind'] = kind or 'movie'
+    result['kind'] = kind or u'movie'
     if year and year != '????':
-        result['year'] = str(year)
+        result['year'] = year
     if imdbIndex:
-        result['imdbIndex'] = str(imdbIndex)
+        result['imdbIndex'] = imdbIndex
+    if isinstance(_emptyString, str):
+        result['kind'] = str(kind or 'movie')
+        if year and year != '????': result['year'] = str(year)
     return result
 
 
@@ -389,13 +393,13 @@ def _convertTime(title, fromPTDFtoWEB=1):
             from_format = _ptdf_format
             to_format = _web_format
         else:
-            from_format = 'Episode dated %s' % _web_format
+            from_format = u'Episode dated %s' % _web_format
             to_format = _ptdf_format
         t = strptime(title, from_format)
         title = strftime(to_format, t)
         if fromPTDFtoWEB:
             if title[0] == '0': title = title[1:]
-            title = 'Episode dated %s' % title
+            title = u'Episode dated %s' % title
     except ValueError:
         pass
     return title
@@ -440,7 +444,7 @@ def build_title(title_dict, canonical=None,
                             canonical=canonicalEpisode, ptdf=ptdf,
                             _doYear=doYear)
         if ptdf:
-            oad = title_dict.get('original air date', '')
+            oad = title_dict.get('original air date', u'')
             if len(oad) == 10 and oad[4] == '-' and oad[7] == '-' and \
                         episode_title.find(oad) == -1:
                 episode_title += ' (%s)' % oad
@@ -454,16 +458,16 @@ def build_title(title_dict, canonical=None,
             episode_title = '{%s}' % episode_title
         return '%s %s' % (pre_title, episode_title)
     title = title_dict.get('canonical title') or title_dict.get('title', '')
-    if not title: return u''
+    if not title: return ''
     if not canonical:
         title = normalizeTitle(title)
     if pre_title:
         title = '%s %s' % (pre_title, title)
-    if kind in ('tv series', 'tv mini series'):
+    if kind in (u'tv series', u'tv mini series'):
         title = '"%s"' % title
     if _doYear:
         imdbIndex = title_dict.get('imdbIndex')
-        year = title_dict.get('year') or '????'
+        year = title_dict.get('year') or u'????'
         title += ' (%s' % year
         if imdbIndex:
             title += '/%s' % imdbIndex
@@ -603,32 +607,27 @@ def modifyStrings(o, modFunct, titlesRefs, namesRefs):
     return o
 
 
-def flatten(seq, to_descend=(ListType, DictType, TupleType),
-            yieldDictKeys=0, scalar=None):
-    """Iterate over nested lists and dictionaries; to_descend is a type
-    of a tuple of types to be considered non-scalar; if yieldDictKeys is
-    true, also dictionaries' keys are yielded; if scalar is not None, only
-    items of the given type(s) are yielded."""
-    if not isinstance(seq, to_descend):
-        if scalar is None or isinstance(seq, scalar):
-            yield seq
+def date_and_notes(s):
+    """Parse (birth|death) date and notes; returns a tuple in the
+    form (date, notes)."""
+    s = s.strip()
+    if not s: return (u'', u'')
+    notes = u''
+    if s[0].isdigit() or s.split()[0].lower() in ('c.', 'january', 'february',
+                                                'march', 'april', 'may', 'june',
+                                                'july', 'august', 'september',
+                                                'october', 'november',
+                                                'december', 'ca.', 'circa',
+                                                '????,'):
+        i = s.find(',')
+        if i != -1:
+            notes = s[i+1:].strip()
+            s = s[:i]
     else:
-        if isinstance(seq, DictType):
-            if yieldDictKeys:
-                # Yield also the keys of the dictionary.
-                for key in seq.iterkeys():
-                    for k in flatten(key, to_descend=to_descend,
-                                yieldDictKeys=yieldDictKeys, scalar=scalar):
-                        yield k
-            for value in seq.itervalues():
-                for v in flatten(value, to_descend=to_descend,
-                                yieldDictKeys=yieldDictKeys, scalar=scalar):
-                    yield v
-        else:
-            for item in seq:
-                for i in flatten(item, to_descend=to_descend,
-                                yieldDictKeys=yieldDictKeys, scalar=scalar):
-                    yield i
+        notes = s
+        s = u''
+    if s == '????': s = u''
+    return s, notes
 
 
 class _Container:
@@ -769,7 +768,10 @@ class _Container:
         # XXX: does it always work correctly?
         theID = self.getID()
         if theID is not None and self.accessSystem not in ('UNKNOWN', None):
-            s4h = '%s:%s' % (self.accessSystem, theID)
+            # Handle 'http' and 'mobile' as they are the same access system.
+            acs = self.accessSystem
+            if acs == 'mobile': acs = 'http'
+            s4h = '%s:%s' % (acs, theID)
         else:
             s4h = repr(self)
         return hash(s4h)
@@ -822,10 +824,10 @@ class _Container:
         """Return the items in the dictionary."""
         return [(k, self.get(k)) for k in self.keys()]
 
-    # XXX: implement!
-    ##def iteritems(self): return self.data.iteritems()
-    ##def iterkeys(self): return self.data.iterkeys()
-    ##def itervalues(self): return self.data.itervalues()
+    # XXX: is this enough?
+    def iteritems(self): return self.data.iteritems()
+    def iterkeys(self): return self.data.iterkeys()
+    def itervalues(self): return self.data.itervalues()
 
     def values(self):
         """Return the values in the dictionary."""
@@ -894,4 +896,35 @@ class _Container:
         """Return a deep copy of the object itself."""
         return deepcopy(self)
 
+
+def flatten(seq, toDescend=(ListType, DictType, TupleType),
+            yieldDictKeys=0, onlyKeysType=(_Container,), scalar=None):
+    """Iterate over nested lists and dictionaries; toDescend is a type
+    of a tuple of types to be considered non-scalar; if yieldDictKeys is
+    true, also dictionaries' keys are yielded; if scalar is not None, only
+    items of the given type(s) are yielded."""
+    if not isinstance(seq, toDescend):
+        if scalar is None or isinstance(seq, scalar):
+            yield seq
+    else:
+        if isinstance(seq, (DictType, _Container)):
+            if yieldDictKeys:
+                # Yield also the keys of the dictionary.
+                for key in seq.iterkeys():
+                    for k in flatten(key, toDescend=toDescend,
+                                yieldDictKeys=yieldDictKeys,
+                                onlyKeysType=onlyKeysType, scalar=scalar):
+                        if onlyKeysType and isinstance(k, onlyKeysType):
+                            yield k
+            for value in seq.itervalues():
+                for v in flatten(value, toDescend=toDescend,
+                                yieldDictKeys=yieldDictKeys,
+                                onlyKeysType=onlyKeysType, scalar=scalar):
+                    yield v
+        else:
+            for item in seq:
+                for i in flatten(item, toDescend=toDescend,
+                                yieldDictKeys=yieldDictKeys,
+                                onlyKeysType=onlyKeysType, scalar=scalar):
+                    yield i
 

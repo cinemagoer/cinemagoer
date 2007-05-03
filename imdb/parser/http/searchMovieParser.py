@@ -8,7 +8,7 @@ E.g., for when searching for the title "the passion", the parsed
 page would be:
     http://akas.imdb.com/find?q=the+passion&tt=on&mx=20
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -36,15 +36,12 @@ class BasicMovieParser(ParserBase):
     It's used by the HTMLSearchMovieParser class to return a result
     for a direct match (when a search on IMDb results in a single
     movie, the web server sends directly the movie page."""
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
         self._result = {}
         self._movieID = None
         self._reading_page_title = 0
-        self._page_title = ''
+        self._page_title = u''
         self._inbch = 0
         self._in_series_title = 0
         self._in_series_info = 0
@@ -76,7 +73,7 @@ class BasicMovieParser(ParserBase):
             n = self.get_attr_value(attrs, 'name')
             if n: n = n.strip().lower()
             if n in ('arg', 'auto'):
-                val = self.get_attr_value(attrs, 'value') or ''
+                val = self.get_attr_value(attrs, 'value') or u''
                 # XXX: use re_imdbIDonly because in the input field
                 #      the movieID is not preceded by 'tt'.
                 if n == 'arg': nr = self.re_imdbIDonly.findall(val)
@@ -113,7 +110,7 @@ class BasicMovieParser(ParserBase):
                 d_title = analyze_title(st, canonical=1)
                 m = Movie(movieID=str(self.__seriesID), data=d_title,
                             accessSystem='http')
-                self._result['kind'] = 'episode'
+                self._result['kind'] = u'episode'
                 self._result['episode of'] = m
             self._series_title = u''
         elif self._in_series_info:
@@ -135,7 +132,7 @@ class BasicMovieParser(ParserBase):
                         self._result['season'] = season
                     if episode or type(season) is type(0):
                         self._result['episode'] = episode
-            self._series_info = ''
+            self._series_info = u''
 
     def _handle_data(self, data):
         if self._reading_page_title:
@@ -155,21 +152,18 @@ class BasicMovieParser(ParserBase):
 class HTMLSearchMovieParser(ParserBase):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used."""
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
         self._results = []
         self._begin_list = 0
         self._is_title = 0
         self._reading_page_title = 0
-        self._current_imdbID = ''
-        self._current_title = ''
+        self._current_imdbID = u''
+        self._current_title = u''
         self._no_more = 0
         self._stop = 0
 
-    def parse(self, cont, results=None):
+    def parse(self, cont, results=None, **kwds):
         self.maxres = results
         return ParserBase.parse(self, cont)
 
@@ -189,8 +183,8 @@ class HTMLSearchMovieParser(ParserBase):
     def end_ol(self):
         self._begin_list = 0
         self._is_title = 0
-        self._current_title = ''
-        self._current_imdbID = ''
+        self._current_title = u''
+        self._current_imdbID = u''
 
     def start_a(self, attrs):
         # Prevent tv series to get the (wrong) movieID from the
@@ -212,7 +206,11 @@ class HTMLSearchMovieParser(ParserBase):
 
     def end_small(self): pass
 
-    def start_li(self, attrs): pass
+    def do_br(self, attrs):
+        self._no_more = 1
+
+    def start_li(self, attrs):
+        self._no_more = 0
 
     def end_li(self):
         if self._begin_list and self._is_title and self._current_imdbID:
@@ -222,8 +220,8 @@ class HTMLSearchMovieParser(ParserBase):
             self._results.append(tup)
             if self.maxres is not None and self.maxres <= len(self._results):
                 self._stop = 1
-        self._current_title = ''
-        self._current_imdbID = ''
+        self._current_title = u''
+        self._current_imdbID = u''
         self._is_title = 0
         self._no_more = 0
 

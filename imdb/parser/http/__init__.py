@@ -41,14 +41,15 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         dvd_parser, rec_parser, externalrev_parser, \
                         newsgrouprev_parser, misclinks_parser, \
                         soundclips_parser, videoclips_parser, news_parser, \
-                        photosites_parser, amazonrev_parser, guests_parser, \
-                        business_parser, sales_parser, episodes_parser, \
+                        photosites_parser, amazonrev_parser, business_parser, \
+                        literature_parser, sales_parser, episodes_parser, \
                         eprating_parser, movie_faqs_parser, airing_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
                         person_officialsites_parser, publicity_parser, \
-                        agent_parser, person_series_parser
+                        agent_parser, person_series_parser, \
+                        person_genres_parser, person_keywords_parser
 from searchPersonParser import search_person_parser
 from utils import ParserBase
 
@@ -59,9 +60,13 @@ imdbURL_person = 'http://akas.imdb.com/name/nm%s/'
 imdbURL_search = 'http://akas.imdb.com/find?%s'
 
 # The cookies for the "adult" search.
-# Please don't mess with this account.
-_cookie_id = 'boM2bYxz9MCsOnH9gZ0S9QHs12NWrNdApxsls1Vb5/NGrNdjcHx3dUas10UASoAjVEvhAbGagERgOpNkAPvxdbfKwaV2ikEj9SzXY1WPxABmDKQwdqzwRbM+12NSeJFGUEx3F8as10WwidLzVshDtxaPIbP13NdjVS9UZTYqgTVGrNcT9vyXU1'
-_cookie_uu = '3M3AXsquTU5Gur/Svik+ewflPm5Rk2ieY3BIPlLjyK3C0Dp9F8UoPgbTyKiGtZp4x1X+uAUGKD7BM2g+dVd8eqEzDErCoYvdcvGLvVLAen1y08hNQtALjVKAe+1hM8g9QbNonlG1/t4S82ieUsBbrSIQbq1yhV6tZ6ArvSbA7rgHc8n5AdReyAmDaJ5Wm/ee3VDoCnGj/LlBs2ieUZNorhHDKK5Q=='
+# Please don't mess with these account.
+# Old 'IMDbPY' account.
+_old_cookie_id = 'boM2bYxz9MCsOnH9gZ0S9QHs12NWrNdApxsls1Vb5/NGrNdjcHx3dUas10UASoAjVEvhAbGagERgOpNkAPvxdbfKwaV2ikEj9SzXY1WPxABmDKQwdqzwRbM+12NSeJFGUEx3F8as10WwidLzVshDtxaPIbP13NdjVS9UZTYqgTVGrNcT9vyXU1'
+_old_cookie_uu = '3M3AXsquTU5Gur/Svik+ewflPm5Rk2ieY3BIPlLjyK3C0Dp9F8UoPgbTyKiGtZp4x1X+uAUGKD7BM2g+dVd8eqEzDErCoYvdcvGLvVLAen1y08hNQtALjVKAe+1hM8g9QbNonlG1/t4S82ieUsBbrSIQbq1yhV6tZ6ArvSbA7rgHc8n5AdReyAmDaJ5Wm/ee3VDoCnGj/LlBs2ieUZNorhHDKK5Q=='
+# New 'IMDbPYweb' account.
+_cookie_id = 'rH1jNAkjTlNXvHolvBVBsgaPICNZbNdjVjzFwzas9JRmusdjVoqBs/Hs12NR+1WFxEoR9bGKEDUg6sNlADqXwkas12N131Rwdb+UQNGKN8PWrNdjcdqBQVLq8mbGDHP3hqzxhbD692NQi9D0JjpBtRaPIbP1zNdjUOqENQYv1ADWrNcT9vyXU1'
+_cookie_uu = 'su4/m8cho4c6HP+W1qgq6wchOmhnF0w+lIWvHjRUPJ6nRA9sccEafjGADJ6hQGrMd4GKqLcz2X4z5+w+M4OIKnRn7FpENH7dxDQu3bQEHyx0ZEyeRFTPHfQEX03XF+yeN1dsPpcXaqjUZAw+lGRfXRQEfz3RIX9IgVEffdBAHw2wQXyf9xdMPrQELw0QNB8dsffsqcdQemjPB0w+moLcPh0JrKrHJ9hjBzdMPpcXTH7XRwwOk='
 
 
 class IMDbURLopener(FancyURLopener):
@@ -156,16 +161,15 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # of a movie (instead of the "combined" page) and movie/person
         # references are not collected if no defaultModFunct is provided.
         self.isThin = isThin
+        self._getRefs = True
+        self._mdparse = False
         if isThin:
             self.accessSystem = 'httpThin'
-            movie_parser.mdparse = 1
+            self._mdparse = True
             if self._defModFunct is None:
-                ParserBase.getRefs = 0
+                self._getRefs = False
                 from imdb.utils import modNull
                 self._defModFunct = modNull
-        else:
-            movie_parser.mdparse = 0
-            ParserBase.getRefs = 1
         self.do_adult_search(adultSearch)
         if proxy != -1: self.set_proxy(proxy)
 
@@ -248,10 +252,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # The retrieved page contains no results, because too many
         # titles or names contain the string we're looking for.
         params = 'q=%s;more=%s' % (quote_plus(ton), kind)
-        ##if kind == 'nm':
-        ##    params = 'q=%s;more=nm' % quote_plus(ton)
-        ##else:
-        ##    params = 'q=%s;more=tt' % quote_plus(ton)
         size = 22528 + results * 512
         return self._retrieve(imdbURL_search % params, size=size)
 
@@ -270,7 +270,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
             cont = self._retrieve(imdbURL_movie % movieID + 'combined')
         else:
             cont = self._retrieve(imdbURL_movie % movieID + 'maindetails')
-        return movie_parser.parse(cont)
+        return movie_parser.parse(cont, mdparse=self._mdparse)
 
     def get_movie_full_credits(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'fullcredits')
@@ -278,7 +278,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_plot(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'plotsummary')
-        return plot_parser.parse(cont)
+        return plot_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_awards(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'awards')
@@ -294,19 +294,19 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_alternate_versions(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'alternateversions')
-        return alternateversions_parser.parse(cont)
+        return alternateversions_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_crazy_credits(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'crazycredits')
-        return crazycredits_parser.parse(cont)
+        return crazycredits_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_goofs(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'goofs')
-        return goofs_parser.parse(cont)
+        return goofs_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_quotes(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'quotes')
-        return quotes_parser.parse(cont)
+        return quotes_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_release_dates(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'releaseinfo')
@@ -322,7 +322,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_trivia(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'trivia')
-        return trivia_parser.parse(cont)
+        return trivia_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_connections(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'movieconnections')
@@ -334,11 +334,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_business(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'business')
-        return business_parser.parse(cont)
+        return business_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_literature(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'literature')
-        return tech_parser.parse(cont)
+        return literature_parser.parse(cont)
 
     def get_movie_locations(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'locations')
@@ -350,7 +350,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_dvd(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'dvd')
-        return dvd_parser.parse(cont)
+        return dvd_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_recommendations(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'recommendations')
@@ -382,7 +382,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_news(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'news')
-        return news_parser.parse(cont)
+        return news_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_amazon_reviews(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'amazon')
@@ -390,7 +390,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_guests(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'epcast')
-        return guests_parser.parse(cont)
+        return episodes_parser.parse(cont)
+    get_movie_episodes_cast = get_movie_guests
 
     def get_movie_merchandising_links(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'sales')
@@ -423,7 +424,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_faqs(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'faq')
-        return movie_faqs_parser.parse(cont)
+        return movie_faqs_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_airing(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'tvschedule')
@@ -450,7 +451,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_person_biography(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'bio')
-        return bio_parser.parse(cont)
+        return bio_parser.parse(cont, getRefs=self._getRefs)
 
     def get_person_awards(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'awards')
@@ -458,7 +459,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_person_other_works(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'otherworks')
-        return otherworks_parser.parse(cont)
+        return otherworks_parser.parse(cont, getRefs=self._getRefs)
 
     def get_person_agent(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'agent')
@@ -479,5 +480,17 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_person_episodes(self, personID):
         cont = self._retrieve(imdbURL_person % personID + 'filmoseries')
         return person_series_parser.parse(cont)
+
+    def get_person_merchandising_links(self, personID):
+        cont = self._retrieve(imdbURL_person % personID + 'forsale')
+        return sales_parser.parse(cont)
+
+    def get_person_genres_links(self, personID):
+        cont = self._retrieve(imdbURL_person % personID + 'filmogenre')
+        return person_genres_parser.parse(cont)
+
+    def get_person_keywords_links(self, personID):
+        cont = self._retrieve(imdbURL_person % personID + 'filmokey')
+        return person_keywords_parser.parse(cont)
 
 

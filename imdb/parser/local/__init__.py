@@ -572,7 +572,12 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         except IOError, e:
             raise IMDbDataAccessError, str(e)
         if me:
-            return {'data': {'episodes': self._buildEpisodes(me, movieID)}}
+            episodes = self._buildEpisodes(me, movieID)
+            data = {'episodes': episodes}
+            data['number of episodes'] = sum([len(x) for x
+                                                in episodes.values()])
+            data['number of seasons'] = len(episodes.keys())
+            return {'data': data}
         return {'data': {}}
 
     def _search_person(self, name, results):

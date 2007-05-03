@@ -3,6 +3,9 @@
 
 Starting with release 2.4, IMDbPY internally manages (almost) every string
 using unicode, with UTF-8 encoding.
+Since release 3.0, every string containing some sort of information is
+guarantee to be unicode (notable exceptions are dictionary keywords and
+movieID/personID, where they are stored as strings).
 
 The good: we can correctly manage "foreign" names, titles and other
           information.
@@ -10,8 +13,8 @@ The good: we can correctly manage "foreign" names, titles and other
           about the original charset.
           Without knowing the charset, how can you know that the bytecode
           string 'Lina Wertm\xfcller' is west-European iso-8859-1 (and so
-          it's "Lina Wertmüller") and not Cyrillic KOI-8-R (resulting
-          in "Lina WertmЭller")?
+          it's "Lina Wertmüller" - if you're reading this file as UTF-8)
+          and not Cyrillic KOI-8-R (resulting in "Lina WertmЭller")?
           Using unicode, you can store every human language, and show/print
           every char correctly, provided that your local charset (and font)
           is right.
@@ -26,8 +29,8 @@ The bad:  in primis, performances will suffer: IMDbPY does _a lot_ (and
           before they can be printed on screen or on files.
 
 The ugly: converting to unicode a program so huge, born without unicode
-          support from start, is prone to errors, bugs, self-combustion
-          and eternal damnation!
+          support from start, is prone to errors, bugs, spontaneous
+          combustion and eternal damnation!
           You can't mix bytecode strings (with unknown charset) and unicode
           with impunity: an exception will be raised because python
           doesn't know the encoding of the bytecode string, that must be
@@ -120,9 +123,10 @@ Whenever you're outputting information about movies or persons,
 convert these unicode string to bytecode strings using the encoding
 of your output channel (terminal, net, web pages, ...)
 
-Remember: "u = unicode(inputEncoding)" to convert your input to unicode,
+Remember: "u = unicode(string, inputEncoding)" convert your input
+          string to unicode,
 
-          "s = u.encode(outputEncoding, manageErrors)" to convert unicode
+          "s = u.encode(outputEncoding, manageErrors)" convert unicode
           strings to your local environment.
 
 

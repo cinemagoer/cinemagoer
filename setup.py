@@ -30,11 +30,11 @@ DO_SQL = 1
 DO_SCRIPTS = 1
 
 
-# --- NOTHING TO CONFIGURE BELOW.
+# --- NOTHING TO CONFIGURE BELOW, GO AWAY! ;-)
 
 # version of the software; CVS releases contain a string
 # like ".cvsYearMonthDay(OptionalChar)".
-version = '2.9-fix1'
+version = '3.0'
 
 home_page = 'http://imdbpy.sf.net/'
 

@@ -214,7 +214,7 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None):
         ratios = [ratcliff(name1, nil, sm1) + 0.05]
         nils = nil.split(', ', 1)
         surname = nils[0]
-        namesurname = ''
+        namesurname = u''
         if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
         if surname != nil:
             # Distance with the "Surname" in the database.

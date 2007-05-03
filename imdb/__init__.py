@@ -6,7 +6,7 @@ a person from the IMDb database.
 It can fetch data through different media (e.g.: the IMDb web pages,
 a local installation, a SQL database, etc.)
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -274,9 +274,9 @@ class IMDbBase:
             raise IMDbDataAccessError, \
                     'the supplied object has null movieID or personID'
         if mop.accessSystem == self.accessSystem:
-            as = self
+            aSystem = self
         else:
-            as = IMDb(mop.accessSystem)
+            aSystem = IMDb(mop.accessSystem)
         if info is None:
             info = mop.default_info
         elif info == 'all':
@@ -290,7 +290,7 @@ class IMDbBase:
         for i in info:
             if i in mop.current_info and not override: continue
             try:
-                method = getattr(as, 'get_%s_%s' %
+                method = getattr(aSystem, 'get_%s_%s' %
                                     (prefix, i.replace(' ', '_')))
             except AttributeError:
                 raise IMDbDataAccessError, 'unknown information set "%s"' % i
@@ -310,14 +310,14 @@ class IMDbBase:
 
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID (the ID used by the IMDb
-        web server; must be overridden by the subclass."""
+        web server); must be overridden by the subclass."""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
 
     def get_imdbPersonID(self, personID):
         """Translate a personID in a imdbID (the ID used by the IMDb
-        web server; must be overridden by the subclass."""
+        web server); must be overridden by the subclass."""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
@@ -373,19 +373,20 @@ class IMDbBase:
         """Return the imdbID for the given Movie or Person object."""
         imdbID = None
         if mop.accessSystem == self.accessSystem:
-            as = self
+            aSystem = self
         else:
-            as = IMDb(mop.accessSystem)
+            aSystem = IMDb(mop.accessSystem)
         if isinstance(mop, Movie.Movie):
             if mop.movieID is not None:
-                imdbID = as.get_imdbMovieID(mop.movieID)
+                imdbID = aSystem.get_imdbMovieID(mop.movieID)
             else:
-                imdbID = as.title2imdbID(build_title(mop, canonical=1, ptdf=1))
+                imdbID = aSystem.title2imdbID(build_title(mop, canonical=1,
+                                                ptdf=1))
         elif isinstance(mop, Person.Person):
             if mop.personID is not None:
-                imdbID = as.get_imdbPersonID(mop.personID)
+                imdbID = aSystem.get_imdbPersonID(mop.personID)
             else:
-                imdbID = as.name2imdbID(build_name(mop, canonical=1))
+                imdbID = aSystem.name2imdbID(build_name(mop, canonical=1))
         else:
             raise IMDbError, 'object ' + repr(mop) + \
                         ' is not a Movie or Person instance'

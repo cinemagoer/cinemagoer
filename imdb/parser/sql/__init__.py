@@ -7,7 +7,7 @@ the SQLObject Object Relational Manager is available.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "sql", "database" or "db".
 
-Copyright 2005-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-20067 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -144,7 +144,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         self._kindRev = {}
         try:
             for kt in KindType.select():
-                self._kind[kt.id] = str(kt.kind)
+                self._kind[kt.id] = kt.kind
                 self._kindRev[str(kt.kind)] = kt.id
         except self.Error:
             # NOTE: you can also get the error, but - at least with
@@ -182,7 +182,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if val is None:
             return ISNULL(col)
         else:
-            return col == val
+            return col == val.encode('utf_8')
 
     def _getTitleID(self, title):
         """Given a long imdb canonical title, returns a movieID or
@@ -196,25 +196,28 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                             self._buildNULLCondition(Title.q.imdbIndex,
                                                     epof.get('imdbIndex')),
                            Title.q.kindID == self._kindRev[epof['kind']],
-                           Title.q.productionYear == epof.get('year')))]
+                           self._buildNULLCondition(Title.q.productionYear,
+                                                    epof.get('year'))))]
             if seriesID:
                 condition = AND(IN(Title.q.episodeOfID, seriesID),
                                 Title.q.title == td['title'].encode('utf_8'),
                                 self._buildNULLCondition(Title.q.imdbIndex,
                                                         td.get('imdbIndex')),
                                 Title.q.kindID == self._kindRev[td['kind']],
-                                Title.q.productionYear == td.get('year'))
+                                self._buildNULLCondition(Title.q.productionYear,
+                                                        td.get('year')))
         if condition is None:
             condition = AND(Title.q.title == td['title'].encode('utf_8'),
                             self._buildNULLCondition(Title.q.imdbIndex,
                                                     td.get('imdbIndex')),
                             Title.q.kindID == self._kindRev[td['kind']],
-                            Title.q.productionYear == td.get('year'))
+                            self._buildNULLCondition(Title.q.productionYear,
+                                                    td.get('year')))
         res = Title.select(condition)
         try:
             if res.count() != 1:
                 return None
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, TypeError):
             return None
         return res[0].id
 
@@ -229,7 +232,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             c = res.count()
             if res.count() != 1:
                 return None
-        except UnicodeDecodeError, e:
+        except (UnicodeDecodeError, TypeError):
             return None
         return res[0].id
 
@@ -258,9 +261,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         mdict = {'title': m.title, 'kind': self._kind[m.kindID],
                 'year': m.productionYear, 'imdbIndex': m.imdbIndex,
                 'season': m.seasonNr, 'episode': m.episodeNr}
+        if not fromAka:
+            if m.seriesYears is not None:
+                mdict['series years'] = unicode(m.seriesYears)
         if mdict['imdbIndex'] is None: del mdict['imdbIndex']
         if mdict['year'] is None: del mdict['year']
-        else: mdict['year'] = str(mdict['year'])
         if mdict['season'] is None: del mdict['season']
         else:
             try: mdict['season'] = int(mdict['season'])
@@ -471,8 +476,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             for cc in CompleteCast.select(CompleteCast.q.movieID == movieID)]
         if compcast:
             for entry in compcast:
-                val = entry[1]
-                res['complete %s' % entry[0]] = val
+                val = unicode(entry[1])
+                res[u'complete %s' % entry[0]] = val
         # Movie connections.
         mlinks = [[ml.linkedMovieID, self._link[ml.linkTypeID]]
                     for ml in MovieLink.select(MovieLink.q.movieID == movieID)]
@@ -510,6 +515,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 episodes[season][ep_number] = m
             res['episodes'] = episodes
             res['number of episodes'] = sum([len(x) for x in episodes.values()])
+            res['number of seasons'] = len(episodes.keys())
         # Regroup laserdisc information.
         res = _reGroupDict(res, self._moviesubs)
         # Do some transformation to preserve consistency with other
@@ -532,9 +538,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 res['runtimes'][0] = re_episodes.sub('', rt)
                 if res['runtimes'][0][-2:] == '::':
                     res['runtimes'][0] = res['runtimes'][0][:-2]
-                #res['number of episodes'] = episodes[0]
         if res.has_key('year'):
-            res['year'] = str(res['year'])
+            res['year'] = res['year']
         if res.has_key('votes'):
             res['votes'] = int(res['votes'][0])
         if res.has_key('rating'):

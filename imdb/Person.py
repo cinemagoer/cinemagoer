@@ -4,7 +4,7 @@ Person module (imdb package).
 This module provides the Person class, used to store information about
 a given person.
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -68,7 +68,10 @@ class Person(_Container):
                   'where are they now': 'where now',
                   'personal quotes': 'quotes',
                   'mini-biography author': 'imdb mini-biography by',
-                  'biography author': 'imdb mini-biography by'}
+                  'biography author': 'imdb mini-biography by',
+                  'genre': 'genres',
+                  'keys': 'keywords',
+                  'keyword': 'keywords'}
 
     # 'nick names'???
     keys_tomodify_list = ('mini biography', 'spouse', 'quotes', 'other works',
@@ -101,13 +104,13 @@ class Person(_Container):
         if name and not self.data.has_key('name'):
             self.set_name(name)
         self.personID = kwds.get('personID', None)
-        self.myName = kwds.get('myName', '')
+        self.myName = kwds.get('myName', u'')
         self.billingPos = kwds.get('billingPos', None)
 
     def _reset(self):
         """Reset the Person object."""
         self.personID = None
-        self.myName = ''
+        self.myName = u''
         self.billingPos = None
 
     def _clear(self):
@@ -175,7 +178,7 @@ class Person(_Container):
                 self.personID and self.personID == other.personID:
             return 1
         return 0
-    isSamePerson = isSameName # XXX: just for compatibility.
+    isSamePerson = isSameName # XXX: just for backward compatiblity.
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Person instance."""

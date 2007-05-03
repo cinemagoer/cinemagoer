@@ -4,7 +4,7 @@ parser.http.utils module (imdb package).
 This module provides miscellaneous utilities used by
 the imdb.parser.http classes.
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import re
 from types import UnicodeType, StringType, ListType, TupleType, DictType
 from sgmllib import SGMLParser
+from urllib import unquote
 
 from imdb._exceptions import IMDbParserError
 
@@ -96,8 +97,8 @@ sgmlentity.update(dict([('#34', u'"'), ('#38', u'&'),
 re_sgmlref = re.compile('&(%s);' % '|'.join(map(re.escape, sgmlentity)))
 re_sgmlrefsub = re_sgmlref.sub
 
-# Matches XML-only single tags, like <br/> ; they are unvalid in HTML,
-# but sometimes they can be found.
+# Matches XML-only single tags, like <br/> ; they are invalid in HTML,
+# but widely used by IMDb web site. :-/
 re_xmltags = re.compile('<([a-zA-Z]+)/>')
 
 
@@ -131,18 +132,117 @@ def subSGMLRefs(s):
     return re_sgmlrefsub(_replSGMLRefs, s)
 
 
+def build_person(txt, personID=None, billingPos=None, accessSystem='http'):
+    """Return a Person instance from the tipical <tr>...</tr> strings
+    found in the IMDb's web site."""
+    notes = u''
+    role = u''
+    # Search the (optional) separator between name and role/notes.
+    if txt.find('....') != -1:
+        sep = '....'
+    elif txt.find('...') != -1:
+        sep = '...'
+    else:
+        sep = '...'
+        # Replace the first parenthesis, assuming there are only
+        # notes, after.
+        # Rationale: no imdbIndex is (ever?) showed on the web site.
+        txt = txt.replace('(', '...(', 1)
+    txt_split = txt.split(sep, 1)
+    name = txt_split[0].strip()
+    if len(txt_split) == 2:
+        role_comment = txt_split[1].strip()
+        # Strip common endings.
+        if role_comment[-4:] == ' and':
+            role_comment = role_comment[:-4].rstrip()
+        elif role_comment[-2:] == ' &':
+            role_comment = role_comment[:-2].rstrip()
+        # Get the notes.
+        cmt_idx = role_comment.find('(')
+        if cmt_idx != -1:
+            role = role_comment[:cmt_idx].rstrip()
+            notes = role_comment[cmt_idx:]
+        else:
+            # Just a role, without notes.
+            role = role_comment
+    # XXX: return None if something strange is detected?
+    return Person(name=name, personID=personID, currentRole=role, notes=notes,
+                    billingPos=billingPos, accessSystem=accessSystem)
+
+
+# To shrink spaces.
+re_spaces = re.compile(r'\s+')
+def build_movie(txt, movieID=None, status=None, accessSystem='http'):
+    """Given a string as normally seen on the "categorized" page of
+    a person on the IMDb's web site, returns a Movie instance."""
+    title = re_spaces.sub(' ', txt).strip()
+    # Split the role/notes from the movie title.
+    tsplit = title.split('....', 1)
+    role = u''
+    notes = u''
+    if len(tsplit) == 2:
+        title = tsplit[0].rstrip()
+        role = tsplit[1].lstrip()
+        # Find notes in the role.
+        if role[-1:] == ')':
+            nidx = role.find('(')
+            # XXX: check balanced parentheses?
+            if nidx != -1:
+                notes = role[nidx:]
+                role = role[:nidx].rstrip()
+    if title[-9:] == 'TV Series':
+        title = title[:-9].rstrip()
+    # Try to understand where the movie title ends.
+    while True:
+        if title[-1:] != ')':
+            # Ignore the silly "TV Series" notice.
+            if title[-9:] == 'TV Series':
+                title = title[:-9].rstrip()
+                continue
+            else:
+                # Just a title: stop here.
+                break
+        # Try to match paired parentheses; yes: sometimes there are
+        # parentheses inside comments...
+        nidx = title.rfind('(')
+        while (nidx != -1 and \
+                    title[nidx:].count('(') != title[nidx:].count(')')):
+            nidx = title[:nidx].rfind('(')
+        # Unbalanced parentheses: stop here.
+        if nidx == -1: break
+        # The last item in parentheses seems to be a year: stop here.
+        first4 = title[nidx+1:nidx+5]
+        if (first4.isdigit() or first4 == '????') and \
+                title[nidx+5:nidx+6] in (')', '/'): break
+        # The last item in parentheses is a known kind: stop here.
+        if title[nidx+1:-1] in ('TV', 'V', 'mini', 'VG'): break
+        # Else, in parentheses there are some notes.
+        # XXX: should the notes in the role half be kept separated
+        #      from the notes in the movie title half?
+        if notes: notes = '%s %s' % (title[nidx:], notes)
+        else: notes = title[nidx:]
+        title = title[:nidx].rstrip()
+    m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
+                accessSystem=accessSystem)
+    # Status can't be checked here, and must be detected by the parser.
+    if status:
+        m['status'] = status
+    return m
+
+
 # XXX: this class inherits from SGMLParser; see the documentation for
 #      the "sgmllib" modules.
 class ParserBase(SGMLParser):
+    """Base parser to handle HTML data from the IMDb's web server."""
     # The imdbID is a 7-ciphers number.
     re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
     re_imdbIDonly = re.compile(r'\b([0-9]{7})\b')
-    re_airdate = re.compile(r'(.*)\(season (\d+), episode (\d+)\)', re.I)
+    re_airdate = re.compile(r'(.*)\s*\(season (\d+), episode (\d+)\)', re.I)
     _re_imdbIDmatch = re.compile(r'(nm|tt)[0-9]{7}\b')
 
     # It's set when names and titles references must be collected.
     # It can be set to 0 for search parsers.
-    getRefs = 1
+    _defGetRefs = False
     entitydefs = sgmlentity
 
     def __init__(self, verbose=0):
@@ -172,13 +272,15 @@ class ParserBase(SGMLParser):
         # Names and titles references.
         self._namesRefs = {}
         self._titlesRefs = {}
-        self._titleRefCID = ''
-        self._nameRefCID = ''
+        self._titleRefCID = u''
+        self._nameRefCID = u''
         self._titleCN = u''
         self._nameCN = u''
         self._inTTRef = 0
         self._inLinkTTRef = 0
         self._inNMRef = 0
+        self._in_content = 0
+        self._div_count = 0
         self._reset()
 
     def get_attr_value(self, attrs_list, searched_attr):
@@ -187,7 +289,13 @@ class ParserBase(SGMLParser):
         not found."""
         for attr in attrs_list:
             if attr[0] == searched_attr:
-                return subSGMLRefs(attr[1])
+                attr = attr[1]
+                try:
+                    attr = unquote(str(attr))
+                    attr = unicode(attr, 'latin_1')
+                except UnicodeEncodeError:
+                    pass
+                return subSGMLRefs(attr)
         return None
 
     def _init(self): pass
@@ -226,7 +334,7 @@ class ParserBase(SGMLParser):
                         self._titlesRefs[self._titleCN] = movie
                     except IMDbParserError:
                         pass
-                self._titleRefCID = ''
+                self._titleRefCID = u''
                 self._titleCN = u''
                 self._inTTRef = 0
                 self._inLinkTTRef = 0
@@ -242,7 +350,7 @@ class ParserBase(SGMLParser):
                     self._namesRefs[self._nameCN] = person
                 except IMDbParserError:
                     pass
-            self._nameRefCID = ''
+            self._nameRefCID = u''
             self._nameCN = u''
             self._inNMRef = 0
 
@@ -281,16 +389,41 @@ class ParserBase(SGMLParser):
 
     def handle_starttag(self, tag, method, attrs):
         if self.getRefs:
+            # XXX: restrict collection to links in self._in_content ?
             if tag == 'a': self._refs_anchor_bgn(attrs)
+        if tag == 'div':
+            if not self._in_content:
+                # In the new IMDb's layout the content is nicely tagged. :-)
+                if self.get_attr_value(attrs, 'id') == 'tn15content':
+                    self._in_content = 1
+                    self._div_count = 1
+                    self._begin_content()
+            else:
+                # Another div tag inside the content.
+                self._div_count += 1
         method(attrs)
 
     def handle_endtag(self, tag, method):
         if self.getRefs:
             if tag == 'a': self._refs_anchor_end()
+        # Count div tags inside the 'tn15content' one, and set
+        # self._in_content to False only when the count drops to zero.
+        if tag == 'div':
+            if self._in_content:
+                self._div_count -= 1
+                if self._div_count <= 0:
+                    self._end_content()
+                    self._in_content = 0
         method()
+
+    def _begin_content(self): pass
+    def _end_content(self): pass
 
     def start_a(self, attrs): pass
     def end_a(self): pass
+
+    def start_div(self, attrs): pass
+    def end_div(self): pass
 
     def anchor_bgn(self, href, name, type): pass
 
@@ -301,9 +434,15 @@ class ParserBase(SGMLParser):
     def error(self, message):
         raise IMDbParserError, 'HTML parser error: "%s"' % str(message)
 
-    def parse(self, html_string):
+    def parse(self, html_string, getRefs=None, **kwds):
         """Return the dictionary generated from the given html string."""
         self.reset()
+        if getRefs is not None:
+            self.getRefs = getRefs
+        else:
+            self.getRefs = self._defGetRefs
+        for key, value in kwds.items():
+            setattr(self, key, value)
         # XXX: useful only for the testsuite.
         if not isinstance(html_string, UnicodeType):
             html_string = unicode(html_string, 'latin_1', 'replace')
@@ -311,6 +450,11 @@ class ParserBase(SGMLParser):
         # Fix invalid HTML single tags like <br/>
         html_string = re_xmltags.sub('<\\1 />', html_string)
         self.feed(html_string)
+        # Fallback measure for wrong HTML - not sure why, but here
+        # self._in_content seems to be always False.
+        if self._div_count > 0:
+            self._end_content()
+            self._in_content = 0
         if self.getRefs and self._inTTRef: self._add_ref('tt')
         data = self.get_data()
         if self.getRefs:

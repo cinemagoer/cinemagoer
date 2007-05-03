@@ -5,10 +5,15 @@ who share the copyright on some portions of the code.
 
 I'd like to thank the following people for their help:
 
+* Ana Guerrero, for maintaining the official debian package.
+
 * Tero Saarni, for the series 60 GUI and a lot of testing and
   debugging.
 
-* Ana Guerrero, for the official debian package.
+* H. Turgut Uyar for a number of bug reports and a lot of work on
+  the test-suite.
+
+* Jesper Nøhr for a lot of testing, especially on the 'sql'.
 
 * Ivan Kedrin for a bug report about the analyze_title function.
 
@@ -37,7 +42,7 @@ I'd like to thank the following people for their help:
 * none none (dclist at gmail.com) for a useful hint and code to
   retrieve a movie/person object, given an URL.
 
-* Sebastian P�lsterl, for a bug report about the cover url for
+* Sebastian Pölsterl, for a bug report about the cover url for
   tv (mini) series, and another one about search_* methods.
 
 * Martin Kirst for many hints and the work on the imdbpyweb program.

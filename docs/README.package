@@ -230,6 +230,9 @@ certificates; string list; ['UK:15', 'USA:R']
 mpaa; string; the mpaa rating
 episodes (series only); dictionary of dictionary; one key for every season,
                         one key for every episode in the season.
+number of episodes (series only); int; total number of episodes.
+number of seasons (series only); int; total number of seasons.
+series years (series only); string; range of years when the series was produced.
 episode of (episode only); Movie object; the parent series for an episode.
 season (episode only); int; the season number.
 episode (episode only); int; the number of the episode in the season.

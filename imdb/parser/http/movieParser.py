@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,40 +28,55 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from types import UnicodeType, StringType
-from urllib import unquote
 
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb.utils import analyze_title, re_episodes
 from imdb._exceptions import IMDbParserError
-from utils import ParserBase
+from utils import ParserBase, build_person
 
 
-def strip_amps(theString):
-    """Remove '&\S*' AT the end of a string.
-    It's used to remove '& ' from strings like '(written by) & '.
-    """
-    i = theString.rfind('&')
-    if i != -1:
-        if not theString[i+1:] or theString[i+1:].isspace():
-            # There's nothing except spaces after the '&'.
-            theString = theString[:i].rstrip()
-    return theString
-
-
-def clear_text(theString):
-    """Remove separators and spaces in excess."""
-    # Squeeze multiple spaces into one.
-    theString = ' '.join(theString.split())
-    # Remove spaces around the '::' separator.
-    theString = theString.replace(':: ', '::').replace(' ::', '::')
-    # Remove exceeding '::' separators.  I love list comprehension! <g>
-    theString = '::'.join([piece for piece in theString.split('::') if piece])
-    return theString
-
+# Dictionary used to convert some section's names.
+_SECT_CONV = {
+        'directed': 'director',
+        'directed by': 'director',
+        'directors': 'director',
+        'writing credits': 'writer',
+        'writers': 'writer',
+        'produced': 'producer',
+        'cinematography': 'cinematographer',
+        'film editing': 'editor',
+        'casting': 'casting director',
+        'costume design': 'costume designer',
+        'makeup department': 'make up',
+        'production management': 'production manager',
+        'second unit director or assistant director': 'assistant director',
+        'costume and wardrobe department': 'costume department',
+        'sound department': 'sound crew',
+        'stunts':   'stunt performer',
+        'other crew': 'miscellaneous crew',
+        'also known as': 'akas',
+        'country':  'countries',
+        'runtime':  'runtimes',
+        'language': 'languages',
+        'certification':    'certificates',
+        'genre': 'genres',
+        'created': 'creator',
+        'color': 'color info',
+        'seasons': 'number of seasons'}
+# List of allowed sections.
+_SECT_KEEP = _SECT_CONV.values() + ['cast', 'original music', 'tv series',
+            'mpaa', 'non-original music', 'art direction', 'set decoration',
+            'art department', 'special effects', 'visual effects', 'sound mix',
+            'camera and electrical department', 'plot outline',
+            'production notes/status', 'production design',
+            'transportation department', 'editorial department',
+            'casting department', 'animation department',
+            'original air date', 'status', 'comments', 'status updated', 'note']
 
 class HTMLMovieParser(ParserBase):
-    """Parser for the "combined details" page of a given movie.
+    """Parser for the "combined details" (and if instance.mdparse is
+    True also for the "main details") page of a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -70,545 +85,414 @@ class HTMLMovieParser(ParserBase):
         mparser = HTMLMovieParser()
         result = mparser.parse(combined_details_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
-    def _init(self):
-        self._movie_data = {}
+    def _reset(self):
         # If true, we're parsing the "maindetails" page; if false,
         # the "combined" page is expected.
-        self.mdparse = 0
-
-    def _reset(self):
-        self._movie_data.clear()
-        # XXX: this is quite a mess; the boolean variables below are
-        #      used to identify what section of the HTML we're parsing,
-        #      and the string variables are used to store temporary values.
-        # The name of the section we're parsing.
-        self._current_section = ''
-        # We're in a cast/crew section.
-        self._is_cast_crew = 0
-        # We're managing the name of a person.
-        self._is_name = 0
-        # The name and his role, (temporary) sperated by '::'.
-        self._name = u''
-        self._cur_nameID = ''
-        # We're in a company credit section.
-        self._is_company_cred = 0
-        # The name of the company.
-        self._company_data = ''
-        self._countries = 0
-        self._is_genres = 0
-        self._is_title = 0
+        self.mdparse = False
+        self._data = {}
+        # The current section.
+        self._section = u''
+        # Most of the data are collected in self._cur_txt; some boolean
+        # variable are set to True when we're parsing a significant section.
+        self._cur_txt = u''
+        self._in_tr = False
+        self._in_info_div = False
+        self._in_li = False
+        # Some variable used to know when to collect data and when to stop.
+        # XXX: things can be made much simpler.
+        self._keep = False
+        self._stop_here = False
+        self._exclude_series = False
         self._title = u''
-        self._title_short = u'' # used to retrieve the cover URL.
-        self._is_rating = 0
-        self._rating = ''
-        self._is_languages = 0
-        self._is_akas = 0
-        self._aka_title = u''
-        self._is_movie_status = 0
-        self._movie_status_sect = ''
-        self._movie_status = ''
-        self._is_runtimes = 0
-        self._runtimes = ''
-        self._is_mpaa = 0
-        self._mpaa = ''
-        self._inbch = 0
-        self._in_blackcatheader = 0
-        self._cur_blackcatheader = ''
-        self._isplotoutline = 0
-        self._plotoutline = u''
-        # If true, the next data should be merged with the previous one,
-        # without the '::' separator.
-        self._merge_next = 0
-        # Counter for the billing position in credits.
-        self._counter = 1
-        # For tv series.
-        self._in_h1 = 0
-        self._in_strong_title = 0
-        self._seen_title_br = 0
-        self._in_episode_title = 0
-        self._episode_title = u''
-        self._in_series_title = 0
-        self._series_title = u''
-        self._in_series_info = 0
-        self._series_info = ''
-        self._cur_id = ''
-
-    def append_item(self, sect, data):
-        """Append a new value in the given section of the dictionary."""
-        # Do some cleaning work on the strings.
-        sect = clear_text(sect)
-        data = clear_text(data)
-        self._movie_data.setdefault(sect, []).append(data)
-
-    def set_item(self, sect, data):
-        """Put a single value (a string, normally) in the dictionary."""
-        if isinstance(data, (UnicodeType, StringType)):
-            data = clear_text(data)
-        self._movie_data[clear_text(sect)] = data
+        # Movie status.
+        self._in_production_notes = False
+        self._status_sect = u''
+        # Last movieID/personID seen.
+        self._last_movie_id = None
+        self._last_person_id = None
+        # Counter for the billing position.
+        self._billingPos = 1
+        # Various information.
+        self._in_h1 = False
+        self._in_h5 = False
+        self._in_b = False
+        self._in_total_episodes = False
+        self._total_episodes = u''
+        self._in_rating = False
+        self._rating = u''
+        self._in_top250 = False
+        self._top250 = u''
+        self._in_poster = False
+        # Companies information are stored slightly differently.
+        self._in_blackcatheader = False
+        self._in_post_blackcatheader = False
 
     def get_data(self):
-        """Return the dictionary."""
-        return self._movie_data
-
-    def start_title(self, attrs):
-        self._is_title = 1
-
-    def end_title(self):
-        if self._title:
-            self._is_title = 0
-            d_title = analyze_title(self._title)
-            for key, item in d_title.items():
-                self.set_item(key, item)
-            # XXX: what about _title_short for tv series' episodes?
-            self._title_short = d_title.get('title', u'').lower()
-            if d_title.get('kind') in ('tv series', 'tv mini series'):
-                self._title_short = '"%s"' % self._title_short
+        return self._data
 
     def start_h1(self, attrs):
-        self._in_h1 = 1
+        self._in_h1 = True
 
     def end_h1(self):
-        self._in_h1 = 0
+        self._in_h1 = False
+        self._title = self._title.strip()
+        seridx = self._title.find(')TV-Series')
+        if seridx != -1:
+            self._data['series years'] = self._title[seridx+10:].lstrip()
+            self._title = self._title[:seridx+1].rstrip()
+        if not self._title: return
+        # The movie's title.
+        self._data.update(analyze_title(self._title, canonical=1))
 
-    def start_strong(self, attrs):
-        cls = self.get_attr_value(attrs, 'class')
-        if cls and cls.strip().lower() == 'title':
-            self._in_strong_title = 1
-
-    def end_strong(self):
-        self._in_strong_title = 0
-
-    def start_table(self, attrs): pass
-
-    def end_table(self):
-        self._is_cast_crew = 0
-        self._is_company_cred = 0
-        self._current_section = ''
-        self._is_movie_status = 0
-        self._is_runtimes = 0
-        self._runtimes = ''
-
-    def start_a(self, attrs):
-        # XXX: the current section ('director', 'cast', 'production company',
-        #      etc.) name is taken from two different sources: for sections
-        #      that contains actors/crew member names, the section name in
-        #      the HTML is in the form
-        #      <a href="/Glossary/S#SectName/">Description</a>, so we use
-        #      the lowecase "sectname" as the name of the current section.
-        #      For sections with company credits, the HTML is in the form
-        #      <a href="/List?SectName=...">CompanyName</a> so we cut the
-        #      href attribute of the <a> tag to get the "sectname".
-        #      Underscores and minus signs in section names are replaced
-        #      with spaces.
-        link = self.get_attr_value(attrs, 'href')
-        if not link: return
-        olink = link
-        link = link.lower()
-        if link.startswith('/name'):
-            # The following data will be someone's name.
-            self._is_name = 1
-            ids = self.re_imdbID.findall(link)
-            if ids:
-                self._cur_nameID = ids[-1]
-        elif link.startswith('/list'):
-            self._is_company_cred = 1
-            # Sections like 'company credits' all begin
-            # with a link to "/List" page.
-            sect = link[6:].replace('_', ' ').replace('-', ' ')
-            # The section name ends at the first '='.
-            ind = sect.find('=')
-            if ind != -1:
-                sect = sect[:ind]
-            self._current_section = sect
-        elif link.startswith('/company') and self._cur_blackcatheader:
-            self._is_company_cred = 1
-            self._current_section = self._cur_blackcatheader.lower()
-            # To not override the other section with the same name.
-            if self._current_section == 'special effects':
-                self._current_section = 'special effects companies'
-            elif self._current_section == 'other companies':
-                self._current_section = 'miscellaneous companies'
-        # Sections like 'cast', 'director', 'writer', etc. all
-        # begin with a link to a "/Glossary" page.
-        elif link.startswith('/glossary'):
-            self._is_cast_crew = 1
-            # Get the section name from the link.
-            link = link[12:].replace('_', ' ').replace('-', ' ')
-            self._current_section = link
-        elif link.startswith('/sections/countries'):
-            self._countries = 1
-        elif link.startswith('/sections/genres'):
-            self._is_genres = 1
-        elif link.startswith('/sections/languages'):
-            self._is_languages = 1
-        elif link.startswith('/mpaa'):
-            self._is_mpaa = 1
-        elif self._isplotoutline:
-            self._isplotoutline = 0
-            if self._plotoutline:
-                self.set_item('plot outline', self._plotoutline)
-        elif self._in_series_title:
-            ids = self.re_imdbID.findall(link)
-            if ids:
-                self._cur_id = ids[-1]
-        elif link.startswith('http://pro.imdb.com'):
-            self._is_movie_status = 0
-        elif link.startswith('/titlebrowse?') and \
-                    not self._movie_data.has_key('title'):
-            try:
-                d_title = analyze_title(unquote(olink[13:]))
-                for key, item in d_title.items():
-                    self.set_item(key, item)
-                self._title_short = d_title.get('title', u'').lower()
-            except IMDbParserError:
-                pass
-
-    def end_a(self): pass
-
-    def start_tr(self, attrs): pass
-
-    def end_tr(self):
-        if self._is_name and self._current_section:
-            # Every cast/crew information are separated by <tr> tags.
-            if self._is_cast_crew:
-                # Remember to Strip final '&' (and spaces),
-                # to get rid of things like the "& " in "(novel) & ".
-                n_split = self._name.split('::')
-                n = n_split[0].strip()
-                del n_split[0]
-                role = ' '.join(n_split).strip()
-                notes = u''
-                ii = role.find('(')
-                if ii != -1:
-                    ei = role.rfind(')')
-                    if ei != -1:
-                        notes = strip_amps(role[ii:ei+1].strip())
-                        role = strip_amps('%s%s' % (role[:ii], role[ei+1:]))
-                        role = role.replace('  ', ' ').strip()
-                sect = clear_text(self._current_section)
-                if sect != 'cast':
-                    if notes: notes = ' %s' % notes
-                    notes = strip_amps(role + notes).strip()
-                    role = u''
-                if sect == 'crewmembers': sect = 'miscellaneous crew'
-                # Create a Person object.
-                # XXX: check for self._cur_nameID?
-                #      maybe it's not a good idea; is it possible for
-                #      a person to be listed without a link?
-                p = Person(name=strip_amps(n), currentRole=role,
-                        personID=str(self._cur_nameID), accessSystem='http')
-                if notes: p.notes = notes
-                if self._movie_data.setdefault(sect, []) == []:
-                    self._counter = 1
-                p.billingPos = self._counter
-                self._movie_data[sect].append(p)
-                self._counter += 1
-            self._name = u''
-            self._cur_nameID = ''
-        self._movie_status_data = ''
-        self._movie_status_sect = ''
-        self._is_name = 0
-
-    def start_td(self, attrs): pass
-
-    def end_td(self):
-        if self._is_movie_status:
-            if self._movie_status_sect and self._movie_status_data:
-                sect_name = self._movie_status_sect
-                if not sect_name.startswith('status'):
-                    sect_name = 'status %s' % sect_name
-                self.set_item(sect_name, self._movie_status_data)
-        elif self._is_cast_crew and self._current_section:
-            if self._is_name:
-                self._name += '::'
-
-    def do_br(self, attrs):
-        if self._is_company_cred:
-            # Sometimes companies are separated by <br> tags.
-            self._company_data = strip_amps(self._company_data)
-            self.append_item(self._current_section, self._company_data)
-            self._company_data = ''
-            self._is_company_cred = 0
-        elif self._is_akas and self._aka_title:
-            # XXX: when managing an 'aka title', some transformation
-            #      are required; a complete aka title is in the form
-            #      of "Aka Title (year) (country1) (country2) [cc]"
-            #      The movie's year of release; the "Aka Title", the
-            #      countries list and the country code (cc) will be
-            #      separated by '::'.
-            #      In the example: "Aka Title::(country1) (country2)::[cc]"
-            aka = self._aka_title
-            year = None
-            title = self._movie_data.get('title')
-            if title:
-                year = self._movie_data.get('year')
-            if year:
-                syear = ' (%s) ' % year
-                if aka.find(syear) != -1:
-                    aka = aka.replace(syear, '(%s)::' % year)
-                else:
-                    fsti = aka.find(' (')
-                    if fsti != -1:
-                        aka = aka[:fsti] + '::' + aka[fsti+1:]
-                    aka = aka.replace(')', ')::')
-            ind = aka.rfind(' [')
-            if ind != -1:
-                aka = aka[:ind] + '::' + aka[ind+1:]
-            aka = aka.replace('][', '] [')
-            aka = aka.replace(')(', ') (')
-            self.append_item('akas', aka)
-            self._aka_title = ''
-        elif self._is_mpaa and self._mpaa:
-            self._is_mpaa = 0
-            mpaa = self._mpaa.replace('MPAA:', '')
-            self.set_item('mpaa', mpaa)
-        elif self._isplotoutline:
-            self._isplotoutline = 0
-            if self._plotoutline:
-                self.set_item('plot outline', self._plotoutline)
-        elif self._in_series_title:
-            self._in_series_title = 0
-            st = self._series_title.strip()
-            if st and self._cur_id:
-                d_title = analyze_title(st, canonical=1)
-                m = Movie(movieID=str(self._cur_id), data=d_title,
-                            accessSystem='http')
-                self._movie_data['kind'] = 'episode'
-                self._movie_data['episode of'] = m
-            self._series_title = u''
-        elif self._in_series_info:
-            self._in_series_info = 0
-            si = ' '.join([x for x in self._series_info.split() if x])
-            if si:
-                aid = self.re_airdate.findall(si)
-                if aid and len(aid[0]) == 3:
-                    date, season, episode = aid[0]
-                    date = date.strip()
-                    try: season = int(season)
-                    except: pass
-                    try: episode = int(episode)
-                    except: pass
-                    if date and date != '????':
-                        self.set_item('original air date', date)
-                    # Handle also "episode 0".
-                    if season or type(season) is type(0):
-                        self.set_item('season', season)
-                    if episode or type(season) is type(0):
-                        self.set_item('episode', episode)
-            self._series_info = ''
-        elif self._is_runtimes and self._runtimes:
-            self._is_runtimes = 0
-            rt = self._runtimes.replace(' min', '')
-            # The "(xy episodes)" note.
-            episodes = re_episodes.findall(rt)
-            if episodes:
-                rt = re_episodes.sub('', rt)
-                episodes = episodes[0]
-                try: episodes = int(episodes)
-                except: pass
-                self.set_item('number of episodes', episodes)
-            rl = [x.strip() for x in rt.split('/')]
-            if rl: self.set_item('runtimes', rl)
-        if self.mdparse:
-            self.end_tr()
-        if self._in_h1 and self._in_strong_title:
-            self._seen_title_br = 1
+    def _manage_section(self):
+        # Do some transformation on the section name.
+        cs = self._section.strip().lower()
+        # Strip commas and parentheses.
+        if cs[-1:] == ':':
+            cs = cs[:-1].rstrip()
+        if not cs:
+            self._section = u''
+            return
+        paridx = cs.find('(')
+        if paridx != -1:
+            cs = cs[:paridx].rstrip()
+        cssplit = cs.split()
+        # In tv series, the section name is preceded by 'Series'.
+        if cssplit[0] in ('series', 'episode'):
+            cssplit[:] = cssplit[1:]
+        if cssplit:
+            if cssplit[0] == 'cast':
+                cssplit[:] = ['cast']
+            elif cssplit[-1] == 'by':
+                cssplit[:] = cssplit[:-1]
+        cs = ' '.join(cssplit)
+        # Convert the section name, if present in _SECT_CONV.
+        cs = _SECT_CONV.get(cs, cs)
+        # Check if this is a section to keep.
+        if cs not in _SECT_KEEP:
+            if cs.endswith('department'):
+                # The IMDb site seems prone to adding 'department'
+                # categories at will.
+                self._section = str(cs)
+                self._keep = True
+            elif not self._in_post_blackcatheader:
+                # This is not a companies information, so it's ok to
+                # discard it.
+                cs = u''
+                self._keep = False
+            else:
+                # Companies information; do some transformation.
+                if cs == 'special effects':
+                    cs = 'special effects companies'
+                elif cs == 'other companies':
+                    cs = 'miscellaneous companies'
+            self._section = str(cs)
+        elif cs == 'production notes/status':
+            self._in_production_notes = True
+            self._keep = False
         else:
-            self._seen_title_br = 0
+            self._section = str(cs)
+            self._keep = True
 
-    def start_small(self, attrs):
-        if self._in_h1 and self._in_strong_title and self._seen_title_br:
-            self._in_episode_title = 1
+    def start_h5(self, attrs):
+        # Normally section names are enclosed in h5 tags.
+        if self._exclude_series: return
+        self._in_h5 = True
+        self._keep = False
+        self._stop_here = False
+        self._section = u''
+        self._billingPos = 1
+        self._last_person_id = None
 
-    def end_small(self):
-        if self._in_episode_title:
-            self._in_episode_title = 0
-            self._episode_title = self._episode_title.strip()
-            if self._episode_title:
-                d_title = analyze_title(self._episode_title, canonical=1)
-                for key, item in d_title.items():
-                    if key == 'kind': continue
-                    self.set_item(key, item)
-                self._episode_title = u''
+    def end_h5(self):
+        # If self._exclude_series, we're already looking at series-specific
+        # information, while parsing an episode.
+        if self._exclude_series: return
+        self._in_h5 = False
+        self._manage_section()
+        if self.mdparse and self._section in _SECT_KEEP:
+            # Parse also the upper "Directed by" and "Created by", while
+            # httpThin is used (they are the only place these info are).
+            self._in_tr = True
 
-    def start_li(self, attrs): pass
+    def start_h6(self, attrs):
+        # Production status is in h6 tags.
+        if self._in_production_notes:
+            self._in_h5 = True
+            self.start_h5(attrs)
 
-    def end_li(self):
-        if self._is_company_cred:
-            # Sometimes companies are listed inside an <ul> tag.
-            self._company_data = strip_amps(self._company_data)
-            self.append_item(self._current_section, self._company_data)
-            self._company_data = ''
-            #self._is_company_cred = 0
+    def end_h6(self):
+        if self._in_production_notes:
+            self._in_h5 = False
+            self.end_h5()
 
-    def start_ul(self, attrs): pass
+    def do_p(self, attrs):
+        if self._in_production_notes:
+            self._in_production_notes = False
 
-    def end_ul(self):
-        self._is_company_cred = 0
-        self._cur_blackcatheader = ''
+    def start_div(self, attrs):
+        # Major information sets are enclosed in div tags with class=info.
+        if self._exclude_series: return
+        if self.get_attr_value(attrs, 'class') == 'info':
+            self._in_info_div = True
+            self._cur_txt = u''
+
+    def end_div(self):
+        if self._exclude_series: return
+        if not self._keep: return
+        if self._in_info_div:
+            self._add_info()
+            self._in_info_div = False
+        elif self._in_production_notes:
+            # End of 'status note'.
+            self._add_info()
+            self._in_production_notes = False
 
     def start_b(self, attrs):
-        self._is_akas = 0
-        cls = self.get_attr_value(attrs, 'class')
-        if cls:
-            cls = cls.lower()
-            if cls == 'ch':
-                self._inbch = 1
-            elif cls == 'blackcatheader':
-                self._in_blackcatheader = 1
-                self._cur_blackcatheader = ''
-                if self.mdparse:
-                    self.end_table()
+        # Companies information are stored in section enclosed in b tags
+        # with class=blackcatheader.
+        self._in_b = True
+        self._in_post_blackcatheader = False
+        if self.get_attr_value(attrs, 'class') == 'blackcatheader':
+            self._in_blackcatheader = True
+            self._keep = False
+            self._section = u''
 
     def end_b(self):
-        if self._inbch: self._inbch = 0
-        if self._in_blackcatheader: self._in_blackcatheader = 0
+        self._in_b = False
+        if self._in_blackcatheader:
+            self._in_blackcatheader = False
+            self._keep = True
+            self._in_post_blackcatheader = True
+            self._manage_section()
+
+    def start_li(self, attrs):
+        # Most of companies info are in li tags.
+        self._in_li = True
+
+    def end_li(self):
+        self._in_li = False
+        if self._in_post_blackcatheader and self._section:
+            self._add_info()
+
+    def start_small(self, attrs): pass
+
+    def end_small(self):
+        # Rating and votes.
+        if not self._in_rating: return
+        self._in_rating = False
+        rav = self._rating.strip()
+        if not rav: return
+        i = rav.find('/10')
+        if i != -1:
+            rating = rav[:i]
+            try:
+                rating = float(rating)
+                self._data['rating'] = rating
+            except ValueError:
+                pass
+        i = rav.find('(')
+        if i != -1:
+            votes = rav[i+1:]
+            j = votes.find(' ')
+            votes = votes[:j].replace(',', u'')
+            try:
+                votes = int(votes)
+                self._data['votes'] = votes
+            except ValueError:
+                pass
+
+    def _add_info(self):
+        # Used to add information about h5, h6 and b sections.
+        ct = self._cur_txt.strip()
+        if not ct:
+            self._cur_txt = u''
+            return
+        if self._section in ('director', 'writer'):
+            self._cur_txt = u''
+            return
+        if self._section in ('status', 'comments', 'status updated', 'note'):
+            if not self._section.startswith('status'):
+                self._section = 'status %s' % self._section
+            self._data[self._section] = ct
+        elif self._section == 'plot outline':
+            self._data[self._section] = ct
+        elif self._section == 'mpaa':
+            self._data[self._section] = ct
+        elif self._section == 'number of seasons':
+            self._data[self._section] = ct.count('|') + 1
+        elif self._section == 'tv series':
+            if self._data.get('kind') == 'episode' and \
+                        self._last_movie_id is not None:
+                m = Movie(title=ct, movieID=self._last_movie_id,
+                            accessSystem='http')
+                self._data['episode of'] = m
+            self._cur_txt = u''
+            return
+        elif self._section == 'original air date':
+            aid = self.re_airdate.findall(ct)
+            if aid and len(aid[0]) == 3:
+                date, season, episode = aid[0]
+                date = date.strip()
+                try: season = int(season)
+                except: pass
+                try: episode = int(episode)
+                except: pass
+                if date and date != '????':
+                    self._data['original air date'] = date
+                # Handle also "episode 0".
+                if season or type(season) is type(0):
+                    self._data['season'] = season
+                if episode or type(season) is type(0):
+                    self._data['episode'] = episode
+        elif self._section in ('countries', 'genres', 'languages', 'runtimes',
+                                'color info', 'sound mix', 'certificates'):
+            if self._section == 'runtimes':
+                ct = ct.replace(' min', u'')##.replace(' (', '::(')
+            ##elif self._section == 'certificates':
+            ##    ct = ct.replace(' (', '::(')
+            splitted_info = ct.split(' / ')
+            splitted_info[:] = [x.strip() for x in splitted_info]
+            splitted_info[:] = filter(None, splitted_info)
+            splitted_info[:] = [x.replace(' (', '::(', 1)
+                                for x in splitted_info]
+            if not self._data.has_key(self._section):
+                self._data[self._section] = splitted_info
+        elif self._section == 'miscellaneous companies':
+            self._data.setdefault(self._section,
+                                    []).append(ct.replace('  ', '::', 1))
+        else:
+            self._data.setdefault(self._section, []).append(ct)
+        self._cur_txt = u''
+
+    def do_br(self, attrs):
+        # Do some transformation on akas.
+        if not self._keep: return
+        if self._section == 'akas':
+            self._cur_txt = self._cur_txt.replace('   ', ' ')
+            self._cur_txt = self._cur_txt.replace('  ', ' ')
+            self._cur_txt = self._cur_txt.replace(' (', '::(', 1)
+            self._cur_txt = self._cur_txt.replace(' [', '::[', 1)
+            self._add_info()
+        elif self._in_production_notes:
+            self._add_info()
+            self._keep = False
+        if self.mdparse and self._section in _SECT_KEEP:
+            self.end_tr()
+            self._in_tr = True
+
+    def start_tr(self, attrs):
+        self._in_tr = True
+
+    def end_tr(self):
+        # Add cast/roles information.
+        self._in_tr = False
+        ct = self._cur_txt = self._cur_txt.strip()
+        if not self._keep:
+            self._cur_txt = u''
+            return
+        if self._last_person_id is None:
+            self._cur_txt = u''
+            return
+        if not ct: return
+        if ct[0] == '(' and ct[-1] == ')':
+            self._cur_txt = u''
+            return
+        if self._section == 'cast' and ct.startswith('rest of cast listed'):
+            self._cur_txt = u''
+            return
+        p = build_person(ct, personID=self._last_person_id,
+                        billingPos=self._billingPos)
+        self._data.setdefault(self._section, []).append(p)
+        self._billingPos += 1
+        self._cur_txt = u''
+        self._last_person_id = None
+
+    def start_a(self, attrs):
+        href = self.get_attr_value(attrs, 'href')
+        if self.get_attr_value(attrs, 'title') == 'Full Episode List':
+            self._in_total_episodes = True
+        elif href and href.startswith('/chart/top?tt'):
+            self._in_top250 = True
+        elif href and href.endswith('photogallery') and \
+                    self.get_attr_value(attrs, 'name') == 'poster':
+            self._in_poster = True
+        # From here on, we're inside some kind of information and a href.
+        if not (self._keep and href): return
+        # Collect personID and movieID.
+        if href.startswith('/name/nm'):
+            cur_id = self.re_imdbID.findall(href)
+            if cur_id:
+                self._last_person_id = cur_id[-1]
+            return
+        elif self._data.get('kind') == 'episode' and \
+                    href.startswith('/title/tt'):
+            cur_id = self.re_imdbID.findall(href)
+            if cur_id:
+                self._last_movie_id = cur_id[-1]
+        elif self.mdparse and href.startswith('fullcredits#'):
+            # The "more" link at the end of the cast.
+            self._in_tr = False
+        if self._in_info_div:
+            # The various "more" links.
+            cls = self.get_attr_value(attrs, 'class')
+            if cls and cls.startswith('tn15more'):
+                self._stop_here = True
+
+    def end_a(self):
+        if self._in_total_episodes:
+            self._in_total_episodes = False
+            try:
+                te = int(self._total_episodes.strip().split()[0])
+                self._data['number of episodes'] = te
+            except:
+                pass
+            self._total_episodes = u''
+        elif self._in_top250:
+            self._in_top250 = False
+            self._top250 = self._top250.strip()
+            posidx = self._top250.find('#')
+            if posidx != -1:
+                top250 = self._top250[posidx+1:]
+                try: self._data['top 250 rank'] = int(top250)
+                except: pass
+        elif self._in_poster:
+            self._in_poster = False
 
     def do_img(self, attrs):
-        alttex = self.get_attr_value(attrs, 'alt')
-        if not alttex: return
-        alttex = alttex.strip().lower()
-        if alttex in ('*', '_'):
-            # The gold and grey stars; we're near the rating and number
-            # of votes.
-            self._is_rating = 1
-        elif alttex == 'cover' or alttex == self._title_short:
-            # Get the URL of the cover image.
+        if self._in_poster:
             src = self.get_attr_value(attrs, 'src')
-            if src: self.set_item('cover url', src)
-        elif alttex == 'vote here':
-            # Parse the rating and the number of votes.
-            self._is_rating = 0
-            rav = self._rating.strip()
-            if rav:
-                i = rav.find('/10')
-                if i != -1:
-                    rating = rav[:i]
-                    try:
-                        rating = float(rating)
-                        self.set_item('rating', rating)
-                    except ValueError:
-                        pass
-                i = rav.find('(')
-                if i != -1:
-                    votes = rav[i+1:]
-                    j = votes.find(' ')
-                    votes = votes[:j].replace(',', '')
-                    try:
-                        votes = int(votes)
-                        self.set_item('votes', votes)
-                    except ValueError:
-                        pass
+            if src:
+                self._data['cover url'] = src
+        # For some funny reason the cast section is tagged by an image.
+        alt = self.get_attr_value(attrs, 'alt')
+        if alt and alt.lower() == 'cast':
+            self._section = 'cast'
+            self._manage_section()
 
     def _handle_data(self, data):
-        # Manage the plain text part of an HTML document.
-        sdata = data.strip()
-        sldata = sdata.lower()
-        if self._is_cast_crew and self._current_section and self._is_name:
-            # Modify the separator for "name .... role"
-            data = data.replace(' .... ', '::')
-            # Separate the last (...) string; it's here to handle strings
-            # like 'screenplay' in "name (screenplay)" in the writing credits.
-            if sdata and sdata[0] == '(':
-                data = data.lstrip()
-                self._name = self._name.strip() + '::'
-            self._name += data
-        elif self._is_company_cred and self._current_section:
-            # Sometimes company credits are separated by a slash;
-            # 'certification' is an example.
-            if sdata == '/':
-                cd = self._company_data
-                cd = strip_amps(cd)
-                self.append_item(self._current_section, cd)
-                self._company_data = ''
-                self._is_company_cred = 0
-            else:
-                # Merge the next data without a separator.
-                if self._merge_next:
-                    self._company_data += data
-                    self._merge_next = 0
-                else:
-                    if self._company_data:
-                        if len(data) > 1:
-                            self._company_data += '::'
-                        elif data != ' ':
-                            self._merge_next = 1
-                    self._company_data += data
-        elif self._is_akas and sdata != ':':
-            self._aka_title += data
-        elif self._is_runtimes:
-            self._runtimes += data
-        elif self._is_mpaa:
-            self._mpaa += data
-        elif self._is_movie_status:
-            if not self._movie_status_sect:
-                self._movie_status_sect = sldata.replace(':', '')
-            else:
-                self._movie_status_data += data.lower()
-        elif self._countries:
-            self.append_item('countries', data)
-            self._countries = 0
-        elif self._is_title:
-            # Store the title and the year, as taken from the <title> tag.
+        if self._in_h5 or self._in_blackcatheader:
+            # Section's name.
+            self._section += data
+        elif self._in_h1:
             self._title += data
-        elif self._is_genres:
-            self.append_item('genres', data)
-            self._is_genres = 0
-        elif self._is_rating:
+        elif self._in_rating:
             self._rating += data
-        elif self._is_languages:
-            self.append_item('languages', data)
-            self._is_languages = 0
-        elif self._isplotoutline:
-            self._plotoutline += data
-        elif self._in_series_title:
-            self._series_title += data
-        elif self._in_series_info:
-            self._series_info += data
-        elif self._in_episode_title:
-            self._episode_title += data
-        elif sldata.startswith('also known as'):
-            self._is_akas = 1
-        elif sldata.startswith('runtime:'):
-            self._is_runtimes = 1
-        elif sldata.startswith('production notes/status'):
-            self._is_movie_status = 1
-        # XXX: the following branches are here to manage the "maindetails"
-        #      page of a movie, instead of the "combined" page.
-        elif self._inbch:
-            if sldata.startswith('plot outline:'):
-                self._isplotoutline = 1
-            elif sldata.startswith('tv series:'):
-                self._in_series_title = 1
-            elif sldata.startswith('original air date'):
-                self._in_series_info = 1
-        elif self._in_blackcatheader:
-            # An hack to support also the tv series' pages.
-            if sldata in ('series cast summary:', 'series cast',
-                            'cast:', 'cast'):
-                self._is_cast_crew = 1
-                self._current_section = 'cast'
-            else:
-                self._cur_blackcatheader += data
-        if self.mdparse:
-            if sldata[:7] == 'series ':
-                sldata = sldata[7:]
-            if sldata.startswith('cast overview'):
-                self._is_cast_crew = 1
-                self._current_section = 'cast'
-            elif sldata.startswith('cast summary'):
-                self._is_cast_crew = 1
-                self._current_section = 'cast'
-            elif sldata.startswith('directed by'):
-                self._is_cast_crew = 1
-                self._current_section = 'director'
-            elif sldata.startswith('writing credits'):
-                self._is_cast_crew = 1
-                self._current_section = 'writer'
+        if self._in_b:
+            sldata = data.strip().lower()
+            if sldata == 'user rating:':
+                self._in_rating = True
+            elif sldata == 'series crew':
+                self._exclude_series = True
+        elif self._in_total_episodes:
+            self._total_episodes += data
+        elif self._in_top250:
+            self._top250 += data
+        if self._stop_here or self._exclude_series or not self._keep: return
+        # Collect the data.
+        if self._in_tr or self._in_info_div or self._in_li or \
+                    self._in_production_notes:
+            self._cur_txt += data
 
 
 class HTMLPlotParser(ParserBase):
@@ -622,6 +506,8 @@ class HTMLPlotParser(ParserBase):
         pparser = HTMLPlotParser()
         result = pparser.parse(plot_summary_html_string)
     """
+    _defGetRefs = True
+
     def _init(self):
         self._plot_data = {}
 
@@ -629,8 +515,8 @@ class HTMLPlotParser(ParserBase):
         """Reset the parser."""
         self._plot_data.clear()
         self._is_plot = 0
+        self._stop_plot = 0
         self._plot = u''
-        self._last_plot = u''
         self._is_plot_writer = 0
         self._plot_writer = u''
 
@@ -642,38 +528,44 @@ class HTMLPlotParser(ParserBase):
         pclass = self.get_attr_value(attrs, 'class')
         if pclass and pclass.lower() == 'plotpar':
             self._is_plot = 1
+            self._stop_plot = 0
 
     def end_p(self):
-        if self._is_plot:
-            # Store the plot in the self._last_plot variable until
-            # the parser will read the name of the author.
-            self._last_plot = self._plot
+        if not self._is_plot: return
+        plot = self._plot.strip()
+        writer = self._plot_writer.strip()
+        if plot:
+            # Replace funny email separators.
+            writer = writer.replace('{', '<').replace('}', '>')
+            txt = plot
+            if writer:
+                txt = writer + '::' + plot
+            self._plot_data.setdefault('plot', []).append(txt)
             self._is_plot = 0
+            self._plot_writer = u''
             self._plot = u''
 
     def start_a(self, attrs):
+        if not self._is_plot: return
         link = self.get_attr_value(attrs, 'href')
         # The next data is the name of the author.
         if link and link.lower().startswith('/searchplotwriters'):
             self._is_plot_writer = 1
+            self._stop_plot = 1
 
     def end_a(self):
-        # We've read the name of an author and the summary he wrote;
-        # store everything in _plot_data.
-        if self._is_plot_writer and self._last_plot:
-            writer = self._plot_writer.strip()
-            # Replace funny email separators.
-            writer = writer.replace('{', '<').replace('}', '>')
-            plot = self._last_plot.strip()
-            self._plot_data.setdefault('plot', []).append('%s::%s' %
-                                                            (writer, plot))
+        if self._is_plot_writer:
             self._is_plot_writer = 0
-            self._plot_writer = u''
-            self._last_plot = u''
+
+    def start_i(self, attrs):
+        if self._is_plot:
+            self._stop_plot = 1
+
+    def end_i(self): pass
 
     def _handle_data(self, data):
         # Store text for plots and authors.
-        if self._is_plot:
+        if self._is_plot and not self._stop_plot:
             self._plot += data
         if self._is_plot_writer:
             self._plot_writer += data
@@ -689,13 +581,9 @@ class HTMLAwardsParser(ParserBase):
         awparser = HTMLAwardsParser()
         result = awparser.parse(awards_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _init(self):
         self._aw_data = []
-        # We're managing awards for a person or a movie?
+        # Are we managing awards for a person or a movie?
         self.subject = 'title'
 
     def _reset(self):
@@ -706,20 +594,20 @@ class HTMLAwardsParser(ParserBase):
         self._is_current_assigner = 0
         self._begin_aw = 0
         self._in_td = 0
-        self._cur_year = ''
-        self._cur_result = ''
-        self._cur_notes = ''
-        self._cur_category = ''
+        self._cur_year = u''
+        self._cur_result = u''
+        self._cur_notes = u''
+        self._cur_category = u''
         self._cur_forto = u''
         self._cur_assigner = u''
         self._cur_award = u''
-        self._cur_sect = ''
+        self._cur_sect = u''
         self._no = 0
         self._rowspan = 0
         self._counter = 1
         self._limit = 1
         self._is_tn = 0
-        self._cur_id = ''
+        self._cur_id = u''
         self._t_o_n = u''
         self._to = []
         self._for = []
@@ -776,7 +664,7 @@ class HTMLAwardsParser(ParserBase):
            # XXX: if present, the next "Category/Recipient(s)"
            #      has a different "Result", so go back and read it.
            if self._counter == self._limit+1:
-                self._cur_result = ''
+                self._cur_result = u''
                 self._cur_award = u''
                 self._cur_sect = 'res'
                 self._counter = 1
@@ -796,7 +684,7 @@ class HTMLAwardsParser(ParserBase):
             if not d[key]: del d[key]
         self._aw_data.append(d)
         self._cur_notes = u''
-        self._cur_category = ''
+        self._cur_category = u''
         self._cur_forto = u''
         self._with = []
         self._to = []
@@ -825,7 +713,7 @@ class HTMLAwardsParser(ParserBase):
         if not href: return
         if href.startswith('/Sections/Awards'):
             if self._in_td:
-                try: year = str(int(href[-4:]))
+                try: year = unicode(int(href[-4:]))
                 except (ValueError, TypeError): year = None
                 if year:
                     self._cur_sect = 'year'
@@ -834,17 +722,17 @@ class HTMLAwardsParser(ParserBase):
                     self._counter = 1
                     self._limit = 1
                     self._no = 0
-                    self._cur_result = ''
+                    self._cur_result = u''
                     self._cur_notes = u''
-                    self._cur_category = ''
+                    self._cur_category = u''
                     self._cur_forto = u''
-                    self._cur_award = ''
+                    self._cur_award = u''
                     self._with = []
                     self._to = []
                     self._for = []
             if self._is_big:
                 self._is_current_assigner = 1
-                self._cur_assigner = ''
+                self._cur_assigner = u''
         elif href.startswith('/name') or href.startswith('/title'):
             if self._is_small: return
             tn = self.re_imdbID.findall(href)
@@ -943,49 +831,43 @@ class HTMLTaglinesParser(ParserBase):
         tparser = HTMLTaglinesParser()
         result = tparser.parse(taglines_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
         self._in_tl = 0
-        self._in_tlu = 0
+        self._in_h1 = 0
         self._in_tlu2 = 0
         self._tl = []
-        self._ctl = ''
+        self._ctl = u''
 
     def get_data(self):
         """Return the dictionary."""
+        self._tl[:] = [x.strip() for x in self._tl]
+        self._tl[:] = filter(None, self._tl)
         if not self._tl: return {}
         return {'taglines': self._tl}
 
-    def start_td(self, attrs):
-        # XXX: not good!
-        self._in_tlu = 1
-
-    def end_td(self):
-        self._in_tl = 0
-        self._in_tlu = 0
-        self._in_tlu2 = 0
-
-    def start_h1(self, attrs): pass
+    def start_h1(self, attrs):
+        self._in_h1 = 1
 
     def end_h1(self):
+        self._in_h1 = 0
         if self._in_tlu2:
             self._in_tl = 1
+
+    def _end_content(self):
+        self._in_tl = 1
 
     def start_p(self, attrs): pass
 
     def end_p(self):
         if self._in_tl and self._ctl:
             self._tl.append(self._ctl.strip())
-            self._ctl = ''
+            self._ctl = u''
 
     def _handle_data(self, data):
-        if self._in_tl:
+        if self._in_tl and self._in_content:
             self._ctl += data
-        elif self._in_tlu and data.lower().find('taglines for') != -1:
+        elif self._in_h1 and data.lower().find('taglines for') != -1:
             self._in_tlu2 = 1
 
 
@@ -999,15 +881,11 @@ class HTMLKeywordsParser(ParserBase):
         kwparser = HTMLKeywordsParser()
         result = kwparser.parse(keywords_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
         self._in_kw = 0
         self._kw = []
-        self._ckw = ''
+        self._ckw = u''
 
     def get_data(self):
         """Return the dictionary."""
@@ -1021,7 +899,7 @@ class HTMLKeywordsParser(ParserBase):
     def end_b(self):
         if self._in_kw:
             self._kw.append(self._ckw.strip())
-            self._ckw = ''
+            self._ckw = u''
             self._in_kw = 0
 
     def start_a(self, attrs):
@@ -1049,6 +927,8 @@ class HTMLAlternateVersionsParser(ParserBase):
         avparser = HTMLAlternateVersionsParser()
         result = avparser.parse(alternateversions_html_string)
     """
+    _defGetRefs = True
+
     def _init(self):
         self.kind = 'alternate versions'
 
@@ -1057,11 +937,11 @@ class HTMLAlternateVersionsParser(ParserBase):
         self._in_av = 0
         self._in_avd = 0
         self._av = []
-        self._cav = ''
+        self._cav = u''
         self._stlist = []
         self._curst = {}
-        self._cur_title = ''
-        self._curinfo = ''
+        self._cur_title = u''
+        self._curinfo = u''
 
     def get_data(self):
         """Return the dictionary."""
@@ -1089,12 +969,12 @@ class HTMLAlternateVersionsParser(ParserBase):
             if self.kind == 'soundtrack':
                 self._stlist.append(self._curst.copy())
                 self._curst.clear()
-                self._cur_title = ''
-                self._curinfo = ''
+                self._cur_title = u''
+                self._curinfo = u''
             else:
                 self._av.append(self._cav.strip())
             self._in_avd = 0
-            self._cav = ''
+            self._cav = u''
 
     def do_br(self, attrs):
         if self._in_avd and self.kind == 'soundtrack':
@@ -1106,7 +986,7 @@ class HTMLAlternateVersionsParser(ParserBase):
                     self._cav = self._cav[1:]
                 self._cur_title = self._cav
                 self._curst[self._cur_title] = {}
-                self._cav = ''
+                self._cav = u''
             else:
                 lcw = self._cav.lower()
                 for i in ('with', 'by', 'from', 'of'):
@@ -1122,12 +1002,12 @@ class HTMLAlternateVersionsParser(ParserBase):
                 else:
                     if not lcw.strip(): return
                     if not self._curst[self._cur_title].has_key('misc'):
-                        self._curst[self._cur_title]['misc'] = ''
+                        self._curst[self._cur_title]['misc'] = u''
                     if self._curst[self._cur_title]['misc'] and \
                             self._curst[self._cur_title]['misc'][-1] != ' ':
                         self._curst[self._cur_title]['misc'] += ' '
                     self._curst[self._cur_title]['misc'] += self._cav
-                self._cav = ''
+                self._cav = u''
 
     def _handle_data(self, data):
         if self._in_avd:
@@ -1144,13 +1024,13 @@ class HTMLCrazyCreditsParser(ParserBase):
         ccparser = HTMLCrazyCreditsParser()
         result = ccparser.parse(crazycredits_html_string)
     """
+    _defGetRefs = True
 
     def _reset(self):
         """Reset the parser."""
-        self._in_cc = 0
         self._in_cc2 = 0
         self._cc = []
-        self._ccc = ''
+        self._ccc = u''
         self._nrbr = 0
 
     def get_data(self):
@@ -1158,15 +1038,8 @@ class HTMLCrazyCreditsParser(ParserBase):
         if not self._cc: return {}
         return {'crazy credits': self._cc}
 
-    def start_td(self, attrs):
-        # XXX: not good!
-        self._in_cc = 1
-
-    def end_td(self):
-        self._in_cc = 0
-
     def start_pre(self, attrs):
-        if self._in_cc:
+        if self._in_content:
             self._in_cc2 = 1
 
     def end_pre(self):
@@ -1184,7 +1057,7 @@ class HTMLCrazyCreditsParser(ParserBase):
         self._ccc = self._ccc.strip()
         if self._in_cc2 and self._ccc:
             self._cc.append(self._ccc.replace('\n', ' '))
-            self._ccc = ''
+            self._ccc = u''
             self._nrbr = 0
 
     def _handle_data(self, data):
@@ -1202,14 +1075,16 @@ class HTMLGoofsParser(ParserBase):
         gparser = HTMLGoofsParser()
         result = gparser.parse(goofs_html_string)
     """
+    _defGetRefs = True
+
     def _reset(self):
         """Reset the parser."""
         self._in_go = 0
         self._in_go2 = 0
         self._go = []
-        self._cgo = ''
+        self._cgo = u''
         self._in_gok = 0
-        self._cgok = ''
+        self._cgok = u''
 
     def get_data(self):
         """Return the dictionary."""
@@ -1239,8 +1114,8 @@ class HTMLGoofsParser(ParserBase):
             self._in_go2 = 0
             self._go.append('%s:%s' % (self._cgok.strip().lower(),
                                         self._cgo.strip()))
-            self._cgo = ''
-            self._cgok = ''
+            self._cgo = u''
+            self._cgok = u''
 
     def _handle_data(self, data):
         if self._in_gok:
@@ -1259,12 +1134,13 @@ class HTMLQuotesParser(ParserBase):
         qparser = HTMLQuotesParser()
         result = qparser.parse(quotes_html_string)
     """
+    _defGetRefs = True
+
     def _reset(self):
         """Reset the parser."""
-        self._in_quo = 0
         self._in_quo2 = 0
         self._quo = []
-        self._cquo = ''
+        self._cquo = u''
 
     def get_data(self):
         """Return the dictionary."""
@@ -1275,15 +1151,8 @@ class HTMLQuotesParser(ParserBase):
             quo.append(q)
         return {'quotes': quo}
 
-    def start_td(self, attrs):
-        # XXX: not good!
-        self._in_quo = 1
-
-    def end_td(self):
-        self._in_quo = 0
-        self._in_quo2 = 0
-
     def start_a(self, attrs):
+        if not self._in_content: return
         name = self.get_attr_value(attrs, 'name')
         if name and name.startswith('qt'):
             self._in_quo2 = 1
@@ -1291,24 +1160,26 @@ class HTMLQuotesParser(ParserBase):
     def end_a(self): pass
 
     def do_hr(self, attrs):
-        if self._in_quo and self._in_quo2 and self._cquo:
+        if self._in_content and self._in_quo2 and self._cquo:
             self._cquo = self._cquo.strip()
             if self._cquo.endswith('::'):
                 self._cquo = self._cquo[:-2]
             self._quo.append(self._cquo.strip())
-            self._cquo = ''
+            self._cquo = u''
 
-    def do_p(self, attrs):
-        if self._in_quo and self._in_quo2:
+    def start_div(self, attrs):
+        if self._in_content and self._in_quo2:
             self.do_hr([])
-            self._in_quo = 0
+            self._in_content = 0
+
+    def end_div(self): pass
 
     def do_br(self, attrs):
-        if self._in_quo and self._in_quo2 and self._cquo:
+        if self._in_content and self._in_quo2 and self._cquo:
             self._cquo = '%s::' % self._cquo.strip()
 
     def _handle_data(self, data):
-        if self._in_quo and self._in_quo2:
+        if self._in_content and self._in_quo2:
             data = data.replace('\n', ' ')
             if self._cquo.endswith('::'):
                 data = data.lstrip()
@@ -1325,16 +1196,12 @@ class HTMLReleaseinfoParser(ParserBase):
         rdparser = HTMLReleaseinfoParser()
         result = rdparser.parse(releaseinfo_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
         self._in_rl = 0
         self._in_rl2 = 0
         self._rl = []
-        self._crl = ''
+        self._crl = u''
         self._is_country = 0
 
     def get_data(self):
@@ -1367,7 +1234,7 @@ class HTMLReleaseinfoParser(ParserBase):
         if self._in_rl2:
             self._in_rl2 = 0
             self._rl.append(self._crl)
-            self._crl = ''
+            self._crl = u''
 
     def _handle_data(self, data):
         if self._in_rl2:
@@ -1387,18 +1254,19 @@ class HTMLRatingsParser(ParserBase):
         rparser = HTMLRatingsParser()
         result = rparser.parse(userratings_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
+    re_means = re.compile('mean\s*=\s*([0-9]\.[0-9])\.\s*median\s*=\s*([0-9])',
+                        re.I)
 
     def _reset(self):
         """Reset the parser."""
         self._in_t = 0
         self._in_total = 0
         self._in_b = 0
-        self._cur_nr = ''
+        self._cur_nr = u''
         self._in_cur_vote = 0
-        self._cur_vote = ''
+        self._cur_vote = u''
+        self._in_weighted = 0
+        self._weighted = None
         self._first = 0
         self._votes = {}
         self._rank = {}
@@ -1406,10 +1274,10 @@ class HTMLRatingsParser(ParserBase):
         self._in_p = 0
         self._in_demo = 0
         self._in_demo_t = 0
-        self._cur_demo_t = ''
-        self._cur_demo_av = ''
+        self._cur_demo_t = u''
+        self._cur_demo_av = u''
         self._next_is_demo_vote = 0
-        self._next_demo_vote = ''
+        self._next_demo_vote = u''
         self._in_td = 0
 
     def get_data(self):
@@ -1419,6 +1287,11 @@ class HTMLRatingsParser(ParserBase):
             data['number of votes'] = self._votes
         if self._demo:
             data['demographic'] = self._demo
+            tot_votes = self._demo.get('all votes')
+            if tot_votes:
+                data['votes'] = tot_votes[0]
+        if self._weighted is not None:
+            data['rating'] = self._weighted
         data.update(self._rank)
         return data
 
@@ -1456,8 +1329,8 @@ class HTMLRatingsParser(ParserBase):
                     n = int(self._cur_nr)
                     self._votes[c] = n
                 except (ValueError, OverflowError): pass
-                self._cur_nr = ''
-                self._cur_vote = ''
+                self._cur_nr = u''
+                self._cur_vote = u''
         if self._in_demo:
             self._in_demo = 0
             try:
@@ -1465,9 +1338,9 @@ class HTMLRatingsParser(ParserBase):
                 dv = int(self._next_demo_vote)
                 self._demo[self._cur_demo_t] = (dv, av)
             except (ValueError, OverflowError): pass
-            self._cur_demo_av = ''
-            self._next_demo_vote = ''
-            self._cur_demo_t = ''
+            self._cur_demo_av = u''
+            self._next_demo_vote = u''
+            self._cur_demo_t = u''
 
     def start_p(self, attrs):
         self._in_p = 1
@@ -1477,12 +1350,16 @@ class HTMLRatingsParser(ParserBase):
 
     def start_a(self, attrs):
         href = self.get_attr_value(attrs, 'href')
-        if href and href.startswith('ratings-'):
-            self._in_demo = 1
-            self._in_demo_t = 1
+        if href:
+            if href.startswith('ratings-'):
+                self._in_demo = 1
+                self._in_demo_t = 1
+            elif href.startswith('/List?ratings='):
+                self._in_weighted = 1
 
     def end_a(self):
         self._in_demo_t = 0
+        self._in_weighted = 0
 
     def _handle_data(self, data):
         if self._in_b and data == 'Rating':
@@ -1494,7 +1371,13 @@ class HTMLRatingsParser(ParserBase):
         else:
             self._cur_vote = sdata
         if self._in_p:
-            if sdata.startswith('Ranked #'):
+            if self._in_weighted:
+                try:
+                    # The 'weighted average' is the usual rating.
+                    self._weighted = float(data.strip())
+                except (ValueError, OverflowError):
+                    pass
+            elif sdata.startswith('Ranked #'):
                 sd = sdata[8:]
                 i = sd.find(' ')
                 if i != -1:
@@ -1504,18 +1387,17 @@ class HTMLRatingsParser(ParserBase):
                     if type(sd) is type(0):
                         self._rank['top 250 rank'] = sd
             elif sdata.startswith('Arithmetic mean = '):
-                if sdata[-1] == '.': sdata = sdata[:-1]
-                am = sdata[18:]
-                try: am = float(am)
-                except (ValueError, OverflowError): pass
-                if type(am) is type(1.0):
-                    self._rank['arithmetic mean'] = am
-            elif sdata.startswith('Median = '):
-                med = sdata[9:]
-                try: med = int(med)
-                except (ValueError, OverflowError): pass
-                if type(med) is type(0):
-                    self._rank['median'] = med
+                means = self.re_means.findall(sdata)
+                if means and len(means[0]) == 2:
+                    am, med = means[0]
+                    try: am = float(am)
+                    except (ValueError, OverflowError): pass
+                    if type(am) is type(1.0):
+                        self._rank['arithmetic mean'] = am
+                    try: med = int(med)
+                    except (ValueError, OverflowError): pass
+                    if type(med) is type(0):
+                        self._rank['median'] = med
         if self._in_demo:
             if self._next_is_demo_vote:
                 self._next_demo_vote = sdata
@@ -1541,10 +1423,6 @@ class HTMLEpisodesRatings(ParserBase):
         erparser = HTMLEpisodesRatings()
         result = erparser.parse(eprating_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
         self._res = []
@@ -1553,7 +1431,7 @@ class HTMLEpisodesRatings(ParserBase):
         self._in_rating = 0
         self._cur_info = 'season.episode'
         self._cur_info_txt = u''
-        self._cur_id = ''
+        self._cur_id = u''
         self._in_title = 0
         self._series_title = u''
         self._series_obj = None
@@ -1596,9 +1474,9 @@ class HTMLEpisodesRatings(ParserBase):
             ep_title = self._series_title
             ep_title += 'u {%s' % self._cur_data['episode']
             if self._cur_data.has_key('season.episode'):
-                ep_title += u' (#%s)' % self._cur_data['season.episode']
+                ep_title += ' (#%s)' % self._cur_data['season.episode']
                 del self._cur_data['season.episode']
-            ep_title += u'}'
+            ep_title += '}'
             m = Movie(title=ep_title, movieID=self._cur_id, accessSystem='http')
             m['episode of'] = self._series_obj
             self._cur_data['episode'] = m
@@ -1614,7 +1492,7 @@ class HTMLEpisodesRatings(ParserBase):
                     pass
             self._res.append(self._cur_data)
         self._cur_data = {}
-        self._cur_id = ''
+        self._cur_id = u''
 
     def start_td(self, attrs):
         self._in_td = 1
@@ -1667,36 +1545,24 @@ class HTMLOfficialsitesParser(ParserBase):
         osparser = HTMLOfficialsitesParser()
         result = osparser.parse(officialsites_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _init(self):
         self.kind = 'official sites'
 
     def _reset(self):
         """Reset the parser."""
-        self._in_os = 0
         self._in_os2 = 0
         self._in_os3 = 0
         self._os = []
-        self._cos = ''
-        self._cosl = ''
+        self._cos = u''
+        self._cosl = u''
 
     def get_data(self):
         """Return the dictionary."""
         if not self._os: return {}
         return {self.kind: self._os}
 
-    def start_td(self, attrs):
-        # XXX: not good at all!
-        self._in_os = 1
-
-    def end_td(self):
-        self._in_os = 0
-
     def start_ol(self, attrs):
-        if self._in_os:
+        if self._in_content:
             self._in_os2 = 1
 
     def end_ol(self):
@@ -1712,8 +1578,8 @@ class HTMLOfficialsitesParser(ParserBase):
             self._in_os3 = 0
             if self._cosl and self._cos:
                 self._os.append((self._cos.strip(), self._cosl.strip()))
-            self._cosl = ''
-            self._cos = ''
+            self._cosl = u''
+            self._cos = u''
 
     def start_a(self, attrs):
         if self._in_os3:
@@ -1741,67 +1607,147 @@ class HTMLConnectionParser(ParserBase):
         connparser = HTMLConnectionParser()
         result = connparser.parse(connections_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
-        self._in_cn = 0
         self._in_cnt = 0
         self._cn = {}
-        self._cnt = ''
-        self._cur_id = ''
-        self._mtitle = ''
+        self._cnt = u''
+        self._cur_id = u''
+        self._mtitle = u''
+        self._in_ref = 0
 
     def get_data(self):
         """Return the dictionary."""
         if not self._cn: return {}
         return {'connections': self._cn}
 
-    def start_dt(self, attrs):
+    def start_h5(self, attrs):
+        if not self._in_content: return
         self._in_cnt = 1
-        self._cnt = ''
+        self._cnt = u''
 
-    def end_dt(self):
+    def end_h5(self):
+        if not self._in_content: return
         self._in_cnt = 0
 
-    def start_dd(self, attrs):
-        self._in_cn = 1
-
-    def end_dd(self):
-        self._in_cn = 0
-        self._cur_id = ''
-
     def start_a(self, attrs):
+        if not self._in_content: return
         href = self.get_attr_value(attrs, 'href')
-        if not (self._in_cn and href and href.startswith('/title')): return
+        if not (href and href.startswith('/title')): return
         tn = self.re_imdbID.findall(href)
         if tn:
+            self._in_ref = 1
             self._cur_id = tn[-1]
 
     def end_a(self): pass
 
     def do_br(self, attrs):
+        if not self._in_content: return
+        self._in_ref = 0
         sectit = self._cnt.strip()
-        if self._in_cn and self._mtitle and self._cur_id and sectit:
+        if self._in_content and self._mtitle and self._cur_id and sectit:
+            note = u''
+            noteidx = self._mtitle.rfind('(')
+            if noteidx != -1:
+                noteidxend = self._mtitle.rfind(')')
+                isdigit = self._mtitle[noteidx+1:noteidx+5].isdigit()
+                isspec = self._mtitle[noteidx:noteidxend+1] in ('(TV)',
+                                                    '(V)', '(mini)', '(VG)')
+                isunk = self._mtitle[noteidx+1:noteidx+5] == '????'
+                if not (isdigit or isspec or isunk):
+                    note = self._mtitle[noteidx:].strip()
+                    self._mtitle = self._mtitle[:noteidx].strip()
+                    if self._mtitle[-1] == '(':
+                        note = '(' + note
+                        self._mtitle = self._mtitle[:-1].rstrip()
             m = Movie(title=self._mtitle,
                         movieID=str(self._cur_id),
-                        accessSystem='http')
+                        accessSystem='http', notes=note)
             self._cn.setdefault(sectit, []).append(m)
-            self._mtitle = ''
-            self._cur_id = ''
+            self._mtitle = u''
+            self._cur_id = u''
 
     def _handle_data(self, data):
-        if self._in_cn:
+        if not self._in_content: return
+        if self._in_ref:
             self._mtitle += data
         elif self._in_cnt:
             self._cnt += data.lower()
 
+class HTMLLocationsParser(ParserBase):
+    """Parser for the "locations" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        lparser = HTMLLocationsParser()
+        result = lparser.parse(locations_html_string)
+    """
+    def _reset(self):
+        """Reset the parser."""
+        self._tc = {}
+        self._dotc = 0
+        self._indt = 0
+        self._indd = 0
+        self._cur_sect = u''
+        self._curdata = [u'']
+        self._cur_data = u''
+        self._locations = []
+
+    def get_data(self):
+        """Return the dictionary."""
+        rl = self._locations
+        rl[:] = [x.replace(':: ', '::').replace(' ::', '::') for x in rl]
+        if rl:
+            return {'locations': rl}
+        return {}
+
+    def start_dl(self, attrs):
+        self._dotc = 1
+
+    def end_dl(self):
+        self._dotc = 0
+        self._cur_data = self._cur_data.strip().strip(':').strip()
+        if self._cur_data:
+            self._locations.append(self._cur_data)
+
+    def start_dt(self, attrs):
+        self._cur_data = self._cur_data.strip().strip(':').strip()
+        if self._cur_data:
+            self._locations.append(self._cur_data)
+        self._cur_data = u''
+        if self._dotc:
+            self._indt = 1
+
+    def end_dt(self):
+        self._indt = 0
+
+    def start_dd(self, attrs):
+        if self._dotc: self._indd = 1
+        self._cur_data = self._cur_data.strip()
+        if self._cur_data:
+            if self._cur_data[-2:] != '::':
+                self._cur_data += '::'
+
+    def end_dd(self): pass
+
+    def do_br(self, attrs):
+        if self._indd:
+            self._cur_data = self._cur_data.strip()
+            ##if self._cur_data and 0:
+            ##    if self._cur_data[-2:] != '::':
+            ##        self._cur_data += '::'
+            self._curdata += [u'']
+
+    def _handle_data(self, data):
+        if self._indd or self._indt:
+            self._cur_data += data
+
 
 class HTMLTechParser(ParserBase):
     """Parser for the "technical", "business", "literature",
-    "publicity" (for people) and "locations" pages of a given movie.
+    "publicity" (for people) pages of a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -1810,93 +1756,87 @@ class HTMLTechParser(ParserBase):
         tparser = HTMLTechParser()
         result = tparser.parse(technical_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _init(self):
-        self.kind = 'something else'
+        self.kind = 'tech'
 
     def _reset(self):
         """Reset the parser."""
         self._tc = {}
-        self._dotc = 0
-        self._indt = 0
-        self._indd = 0
-        self._cur_sect = ''
-        self._curdata = ['']
+        self._in_sect_title = 0
+        self._in_data = 0
+        self._cur_sect = u''
+        self._curdata = [u'']
+        self._stop_collecting = False
 
     def get_data(self):
         """Return the dictionary."""
-        if self.kind == 'locations':
-            rl = []
-            for item in self._tc.items():
-                tmps = item[0].strip() + ' ' + \
-                        ' '.join([x.strip() for x in item[1]])
-                rl.append(tmps)
-            if rl: return {'locations': rl}
-        if self.kind in ('literature', 'business') and self._tc:
+        if self.kind in ('literature', 'business', 'contacts') and self._tc:
             return {self.kind: self._tc}
         return self._tc
 
-    def start_dl(self, attrs):
-        self._dotc = 1
+    def _end_content(self):
+        self._add_entry()
 
-    def end_dl(self):
-        self._dotc = 0
+    def start_h5(self, attrs):
+        if self._in_content:
+            self._add_entry()
+            self._in_sect_title = 1
 
-    def start_dt(self, attrs):
-        if self._dotc: self._indt = 1
-
-    def end_dt(self):
-        self._indt = 0
+    def end_h5(self):
+        self._in_sect_title = 0
+        self._in_data = 1
 
     def start_tr(self, attrs): pass
 
     def end_tr(self):
-        if self._indd and self.kind == 'publicity':
+        if self._in_data and self.kind == 'publicity':
             if self._curdata:
                 self.do_br([])
 
     def start_td(self, attrs): pass
 
     def end_td(self):
-        if self._indd and self._curdata and self.kind == 'publicity':
+        if self._in_data and self._curdata and self.kind == 'publicity':
             if self._curdata[-1].find('::') == -1:
                 self._curdata[-1] += '::'
 
     def start_p(self, attrs): pass
 
     def end_p(self):
-        if self._indd and self.kind == 'publicity':
+        if self._in_data and self.kind == 'publicity':
             if self._curdata:
                 self._curdata[-1] += '::'
                 self.do_br([])
 
-    def start_dd(self, attrs):
-        if self._dotc: self._indd = 1
+    def do_hr(self, attrs):
+        self._stop_collecting = True
 
-    def end_dd(self):
-        self._indd = 0
-        self._curdata[:] = [x.strip() for x in self._curdata]
-        self._curdata[:] = [x for x in self._curdata if x]
-        for i in xrange(len(self._curdata)):
-            if self._curdata[i][-2:] == '::':
-                self._curdata[i] = self._curdata[i][:-2]
+    def start_form(self, attrs):
+        if self._in_data and self.kind == 'contacts':
+            self._stop_collecting = True
+            self._add_entry()
+
+    def end_form(self): pass
+
+    def _add_entry(self):
+        self._curdata = [x.strip(':').strip() for x in self._curdata]
+        self._curdata = filter(None, self._curdata)
         if self._cur_sect and self._curdata:
             self._tc[self._cur_sect] = self._curdata[:]
-        self._curdata[:] = ['']
-        self._cur_sect = ''
+        self._curdata[:] = [u'']
+        self._cur_sect = u''
+        self._in_data = 0
 
     def do_br(self, attrs):
-        if self._indd:
-            self._curdata += ['']
+        if self._in_data:
+            self._curdata += [u'']
 
     def _handle_data(self, data):
-        if self._indd:
+        if self._stop_collecting: return
+        if self._in_data:
             self._curdata[-1] += data
-        elif self._indt:
-            if self.kind != 'locations': data = data.lower()
+        elif self._in_sect_title:
+            data = data.lower()
             self._cur_sect += data
 
 
@@ -1910,6 +1850,8 @@ class HTMLDvdParser(ParserBase):
         dparser = HTMLDvdParser()
         result = dparser.parse(dvd_html_string)
     """
+    _defGetRefs = True
+
     def _init(self):
         self._dvd = []
 
@@ -1956,7 +1898,7 @@ class HTMLDvdParser(ParserBase):
             self._cur_title = u''
 
     def _processInfo(self):
-        self._cur_sect = self._cur_sect.replace(':', '').strip().lower()
+        self._cur_sect = self._cur_sect.replace(':', u'').strip().lower()
         self._cur_data = self._cur_data.strip()
         if self._cur_sect and self._cur_data:
             self._cdvd[self._cur_sect] = self._cur_data
@@ -2037,20 +1979,16 @@ class HTMLRecParser(ParserBase):
         rparser = HTMLRecParser()
         result = rparser.parse(recommendations_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
         self._rec = {}
         self._firsttd = 0
-        self._curlist = ''
-        self._curtitle = ''
+        self._curlist = u''
+        self._curtitle = u''
         self._startgath = 0
         self._intable = 0
         self._inb = 0
-        self._cur_id = ''
+        self._cur_id = u''
 
     def get_data(self):
         if not self._rec: return {}
@@ -2085,7 +2023,7 @@ class HTMLRecParser(ParserBase):
 
     def end_td(self):
         if self._firsttd:
-            self._curtitle = clear_text(self._curtitle)
+            self._curtitle = self._curtitle.strip()
             if self._curtitle:
                 if self._curlist:
                     if self._cur_id:
@@ -2093,8 +2031,8 @@ class HTMLRecParser(ParserBase):
                                     title=self._curtitle,
                                     accessSystem='http')
                         self._rec.setdefault(self._curlist, []).append(m)
-                        self._cur_id = ''
-                self._curtitle = ''
+                        self._cur_id = u''
+                self._curtitle = u''
             self._firsttd = 0
 
     def start_b(self, attrs):
@@ -2126,68 +2064,56 @@ class HTMLNewsParser(ParserBase):
         nwparser = HTMLNewsParser()
         result = nwparser.parse(news_html_string)
     """
+    _defGetRefs = True
 
     def _reset(self):
         """Reset the parser."""
-        self._intable = 0
-        self._inh1 = 0
-        self._innews = 0
         self._cur_news = {}
         self._news = []
         self._cur_stage = 'title'
-        self._cur_text = ''
-        self._cur_link = ''
+        self._cur_text = u''
+        self._cur_link = u''
 
     def get_data(self):
         """Return the dictionary."""
         if not self._news: return {}
         return {'news': self._news}
 
-    def start_table(self, attrs):
-        self._intable = 1
-
-    def end_table(self):
-        self._intable = 0
-        self._innews = 0
-
-    def start_h1(self, attrs):
-        self._inh1 = 1
-
-    def end_h1(self):
-        self._inh1 = 0
-
-    def start_p(self, attrs): pass
+    def start_p(self, attrs):
+        if self._in_content:
+            self._cur_stage = 'title'
 
     def end_p(self):
-        if self._innews:
-            if self._cur_news:
-                self._news.append(self._cur_news)
-                self._cur_news = {}
-            self._cur_stage = 'title'
-            self._cur_text = ''
+        if not self._in_content: return
+        self.do_br([])
+        if self._cur_news:
+            self._news.append(self._cur_news)
+            self._cur_news = {}
+        self._cur_stage = 'title'
+        self._cur_text = u''
 
     def do_br(self, attrs):
-        if self._innews and not self._inh1:
-            self._cur_text = self._cur_text.strip()
-            if self._cur_text:
-                if self._cur_stage == 'body':
-                    if self._cur_news.has_key('body'):
-                        bodykey = self._cur_news['body']
-                        if bodykey and not bodykey[0].isspace():
-                            self._cur_news['body'] += ' '
-                        self._cur_news['body'] += self._cur_text
-                    else:
-                        self._cur_news['body'] = self._cur_text
+        if not self._in_content: return
+        self._cur_text = self._cur_text.strip()
+        if self._cur_text:
+            if self._cur_stage == 'body':
+                if self._cur_news.has_key('body'):
+                    bodykey = self._cur_news['body']
+                    if bodykey and not bodykey[0].isspace():
+                        self._cur_news['body'] += ' '
+                    self._cur_news['body'] += self._cur_text
                 else:
-                    self._cur_news[self._cur_stage] = self._cur_text
-                self._cur_text = ''
-                if self._cur_stage == 'title':
-                    self._cur_stage = 'date'
-                elif self._cur_stage == 'date':
-                    self._cur_stage = 'body'
+                    self._cur_news['body'] = self._cur_text
+            else:
+                self._cur_news[self._cur_stage] = self._cur_text
+            self._cur_text = u''
+            if self._cur_stage == 'title':
+                self._cur_stage = 'date'
+            elif self._cur_stage == 'date':
+                self._cur_stage = 'body'
 
     def start_a(self, attrs):
-        if self._innews and self._cur_stage == 'date':
+        if self._in_content and self._cur_stage == 'date':
             href = self.get_attr_value(attrs, 'href')
             if href:
                 if not href.startswith('http://'):
@@ -2196,12 +2122,8 @@ class HTMLNewsParser(ParserBase):
                 self._cur_news['link'] = href
 
     def _handle_data(self, data):
-        if self._innews:
-            if not self._inh1:
-                self._cur_text += data
-        elif self._inh1 and self._intable:
-            if data.strip().lower().startswith('news for'):
-                self._innews = 1
+        if self._in_content:
+            self._cur_text += data
 
 
 class HTMLAmazonReviewsParser(ParserBase):
@@ -2214,21 +2136,17 @@ class HTMLAmazonReviewsParser(ParserBase):
         arparser = HTMLAmazonReviewsParser()
         result = arparser.parse(amazonreviews_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         """Reset the parser."""
-        self._intable = 0
+        self._in_content = 0
         self._inh3 = 0
         self._inreview = 0
         self._in_kind = 0
         self._reviews = []
-        self._cur_title = ''
-        self._cur_text = ''
-        self._cur_link = ''
-        self._cur_revkind = ''
+        self._cur_title = u''
+        self._cur_text = u''
+        self._cur_link = u''
+        self._cur_revkind = u''
 
     def get_data(self):
         """Return the dictionary."""
@@ -2236,20 +2154,28 @@ class HTMLAmazonReviewsParser(ParserBase):
         return {'amazon reviews': self._reviews}
 
     def start_table(self, attrs):
-        self._intable = 1
+        self._in_content = 1
 
     def end_table(self):
         if self._inreview:
             self._add_info()
-            self._cur_title = ''
-            self._cur_link = ''
-        self._intable = 0
+            self._cur_title = u''
+            self._cur_link = u''
+        self._in_content = 0
         self._inreview = 0
+
+    def start_div(self, attrs):
+        theid = self.get_attr_value(attrs, 'id')
+        if theid and theid.find('content') != -1:
+            self._in_content = 1
+
+    def end_div(self):
+        if self._in_content: self._in_content = 0
 
     def start_h3(self, attrs):
         self._inh3 = 1
-        self._cur_link = ''
-        self._cur_title = ''
+        self._cur_link = u''
+        self._cur_title = u''
 
     def end_h3(self):
         self._inh3 = 0
@@ -2278,8 +2204,8 @@ class HTMLAmazonReviewsParser(ParserBase):
 
     def end_p(self):
         self._inreview = 0
-        self._cur_title = ''
-        self._cur_link = ''
+        self._cur_title = u''
+        self._cur_link = u''
 
     def _add_info(self):
         self._cur_title = self._cur_title.replace('\n', ' ').strip()
@@ -2289,7 +2215,7 @@ class HTMLAmazonReviewsParser(ParserBase):
         entry = {}
         if not self._cur_text: return
         ai = self._cur_text.rfind(' --', -30)
-        author = ''
+        author = u''
         if ai != -1:
             author = self._cur_text[ai+3:]
             self._cur_text = self._cur_text[:ai-1]
@@ -2303,8 +2229,8 @@ class HTMLAmazonReviewsParser(ParserBase):
         if self._cur_revkind: entry['review kind'] = self._cur_revkind
         if author: entry['review author'] = author
         if entry: self._reviews.append(entry)
-        self._cur_text = ''
-        self._cur_revkind = ''
+        self._cur_text = u''
+        self._cur_revkind = u''
 
     def _handle_data(self, data):
         if self._inreview:
@@ -2312,120 +2238,9 @@ class HTMLAmazonReviewsParser(ParserBase):
                 self._cur_revkind += data
             else:
                 self._cur_text += data
-        elif self._intable and self._inh3:
+        elif self._in_content and self._inh3:
             self._inreview = 1
             self._cur_title += data
-
-
-class HTMLGuestsParser(ParserBase):
-    """Parser for the "episodes cast" page of a given tv series.
-    The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        gparser = HTMLGuestsParser()
-        result = gparser.parse(guests_html_string)
-    """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
-    def _reset(self):
-        self._guests = {}
-        self._in_guests = 0
-        self._inh1 = 0
-        self._goth1 = 0
-        self._ingtable = 0
-        self._inname = 0
-        self._curname = ''
-        self._curid = ''
-        self._inepisode = 0
-        self._curepisode = ''
-
-    def get_data(self):
-        if not self._guests: return {}
-        return {'guests': self._guests}
-
-    def start_h1(self, attrs):
-        self._inh1 = 1
-
-    def end_h1(self):
-        self._inh1 = 0
-
-    def start_a(self, attrs):
-        if self._inname:
-            href = self.get_attr_value(attrs, 'href')
-            if not href:
-                self._curid = ''
-                return
-            cid = self.re_imdbID.findall(href)
-            if not cid: self._curid = ''
-            else: self._curid = cid[0]
-
-    def end_a(self): pass
-
-    def start_table(self, attrs):
-        if self._goth1: self._in_guests = 1
-
-    def end_table(self):
-        self._goth1 = 0
-
-    def start_div(self, attrs):
-        self._in_guests = 0
-
-    def end_div(self): pass
-
-    def do_br(self, attrs):
-        if self._inepisode and self._curepisode:
-            self._curepisode += '::'
-
-    def start_tr(self, attrs): pass
-
-    def end_tr(self):
-        if self._inname:
-            self._curepisode = self._curepisode.replace('\n',
-                                ' ').replace('  ', ' ').strip(':').strip()
-            if not self._curepisode: self._curepisode = 'UNKNOWN EPISODE'
-            self._curname = self._curname.replace('\n', '').strip()
-            if self._curname and self._curid:
-                name = self._curname.strip()
-                note = ''
-                bni = name.find('(')
-                if bni != -1:
-                    eni = name.rfind(')')
-                    if eni != -1:
-                        note = name[bni:]
-                        name = name[:bni].strip()
-                sn = name.split(' .... ')
-                name = sn[0]
-                role = ' '.join(sn[1:]).strip()
-                p = Person(name=name, personID=str(self._curid),
-                            currentRole=role, accessSystem='http',
-                            notes=note)
-                self._guests.setdefault(self._curepisode, []).append(p)
-        if self._in_guests:
-            self._inname = 0
-            self._curname = ''
-            self._curid = ''
-
-    def start_td(self, attrs):
-        if self._in_guests:
-            colstyle = self.get_attr_value(attrs, 'style')
-            if colstyle and colstyle.startswith('padding-top: 5px'):
-                self._inepisode = 1
-                self._curepisode = ''
-            else:
-                self._inname = 1
-
-    def end_td(self): pass
-
-    def _handle_data(self, data):
-        if self._inh1 and data.lower().find('episodes cast') != -1:
-            self._goth1 = 1
-        elif self._in_guests:
-            if self._inname: self._curname += data
-            elif self._inepisode: self._curepisode += data
 
 
 class HTMLSalesParser(ParserBase):
@@ -2438,35 +2253,56 @@ class HTMLSalesParser(ParserBase):
         sparser = HTMLSalesParser()
         result = sparser.parse(sales_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
+    # XXX: crap!  This parser must be rewritten from scratch.
     def _reset(self):
         self._sales = {}
-        self._cur_type = ''
+        self._cur_type = u''
         self._cur_info = {}
-        self._in_h3 = 0
+        self._in_h5 = 0
         self._in_dt = 0
         self._get_img = 0
         self._get_link = 0
-        self._cur_descr = ''
+        self._cur_descr = u''
         self._get_descr = 0
         self._in_a = 0
         self._in_dd = 0
-        self._cur_link_text = ''
+        self._cur_link_text = u''
+        self._in_table = 0
+        self._seen_br = 0
+        self._in_layer = 0
 
     def get_data(self):
         if not self._sales: return {}
         return {'merchandising links': self._sales}
 
-    def start_h3(self, attrs):
-        self._in_h3 = 1
-        self._cur_type = ''
+    def _add_entry(self):
+        self._cur_type = self._cur_type.strip()
+        ln = self._cur_info.get('link')
+        descr = self._cur_descr.strip()
+        if self._cur_type and ln and descr and ln[0] != '#':
+            self._cur_info['description'] = descr.replace('\n', '::')
+            self._sales.setdefault(self._cur_type,
+                                    []).append(self._cur_info)
+            self._cur_info = {}
+            self._cur_descr = u''
 
-    def end_h3(self):
-        if self._in_h3:
-            self._in_h3 = 0
+    def start_h5(self, attrs):
+        self._in_h5 = 1
+        if not self._in_table: self._get_link = 1
+        self._add_entry()
+        self._get_descr = 1
+        self._cur_type = u''
+        self._seen_br = 0
+
+    def end_h5(self):
+        if self._in_h5:
+            self._in_h5 = 0
+
+    def start_table(self, attrs):
+        self._in_table = 1
+
+    def end_table(self):
+        self._in_table = 0
 
     def start_td(self, attrs):
         cls = self.get_attr_value(attrs, 'class')
@@ -2476,12 +2312,28 @@ class HTMLSalesParser(ParserBase):
                 self._get_img = 1
             elif clsl in ('w_rowtable_colshop', 'w_rowtable_coldetails'):
                 self._get_descr = 1
-                self._cur_descr = ''
+                self._cur_descr = u''
 
     def end_td(self):
         self._get_descr = 0
 
-    def start_img(self, attrs):
+    def start_layer(self, attrs):
+        self._in_layer = 1
+
+    def end_layer(self):
+        self._in_layer = 0
+
+    def do_hr(self, attrs):
+        self._in_layer = 0
+
+    def do_img(self, attrs):
+        if self._get_descr and (self._cur_type and self._in_table == 0
+                                and not self._in_a) and self._cur_descr.strip():
+            self._add_entry()
+            self._cur_descr = u''
+            self._get_link = 1
+            return
+
         if self._get_img:
             self._get_img = 0
             src = self.get_attr_value(attrs, 'src')
@@ -2491,27 +2343,29 @@ class HTMLSalesParser(ParserBase):
             if alttxt:
                 self._cur_link_text = alttxt
 
-    def end_img(self): pass
-
     def start_tr(self, attrs): pass
 
     def end_tr(self):
         self._cur_descr = self._cur_descr.strip()
         if self._cur_descr:
             self._cur_info['description'] = self._cur_descr
-        self._cur_descr = ''
+        self._cur_descr = u''
         self._cur_link_text = self._cur_link_text.strip()
         if self._cur_link_text:
             self._cur_info['link-text'] = self._cur_link_text
-        self._cur_link_text = ''
-        if self._cur_info:
+        self._cur_link_text = u''
+        ln = self._cur_info.get('link', u'')
+        if ln[0:1] == '#':
+            if self._cur_info.has_key('description'):
+                del self._cur_info['description']
+        if self._cur_info and ln[0:1] != '#':
             self._sales.setdefault(self._cur_type,
                                     []).append(self._cur_info)
             self._cur_info = {}
 
     def start_dt(self, attrs):
         self._in_dt = 1
-        self._cur_type = ''
+        self._cur_type = u''
 
     def end_dt(self):
         if self._in_dt:
@@ -2541,14 +2395,17 @@ class HTMLSalesParser(ParserBase):
         self._in_a = 0
 
     def _handle_data(self, data):
-        if self._in_h3 or self._in_dt:
+        if not self._in_layer: return
+        if self._in_h5 or self._in_dt:
             self._cur_type += data.lower()
-        elif self._get_descr or (self._in_dd and not self._in_a):
+        elif self._get_descr or (self._cur_type and self._in_table == 0
+                                and not self._in_a):
             self._cur_descr += data
 
 
 class HTMLEpisodesParser(ParserBase):
-    """Parser for the "episode list" page of a given movie.
+    """Parser for the "episode list" and "episodes cast" pages of
+    a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -2557,31 +2414,33 @@ class HTMLEpisodesParser(ParserBase):
         eparser = HTMLEpisodesParser()
         result = eparser.parse(episodes_html_string)
     """
-
-    # Do not gather names and titles references.
-    getRefs = 0
-
     def _reset(self):
         self._in_html_title = 0
         self._series = None
+        self._series_id = None
         self._html_title = u''
         self._episodes = {}
         self._in_h1 = 0
-        self._in_episodes_h1 = 0
+        self._in_h3 = 0
+        self._in_h4 = 0
         self._cur_season = 0
-        self._cur_episode = None
-        self._in_episodes = 0
-        self._in_td_eps = 0
-        self._in_td_title = 0
-        self._in_title = 0
-        self._cur_title = u''
-        self._curid = ''
-        self._lastid = ''
         self._eps_counter = 1
-        self._cur_info = 'title'
-        self._info = {}
-        self._info_text = u''
-        self._ignore_this_table = 0
+        self._in_episodes = 1
+        self._cur_year = u'????'
+        self._cur_id = u''
+        self._in_eps_title = 1
+        self._eps_number = u''
+        self._eps_title = u''
+        self._next_is_oad = 0
+        self._in_oad = 0
+        self._oad = u''
+        self._in_plot = 0
+        self._never_again_in_plot = 0
+        self._plot = u''
+        self._in_cast = 0
+        self._cast = []
+        self._cur_person = u''
+        self._cur_person_id = None
 
     def get_data(self):
         if self._episodes: return {'episodes': self._episodes}
@@ -2592,13 +2451,12 @@ class HTMLEpisodesParser(ParserBase):
 
     def end_title(self):
         self._in_html_title = 0
-        title = self._html_title
-        if title.lower().startswith('episodes for'):
-            title = title[12:].strip()
+        title = self._html_title.replace('- Episode list', u'').strip()
+        title = title.replace('- Episodes cast', u'').strip()
         if title:
-            self._series = Movie(data=analyze_title(title, canonical=1),
+            self._series = Movie(title=title,
                                 accessSystem='http')
-        self._html_title = ''
+        self._html_title = u''
 
     def start_h1(self, attrs):
         self._in_h1 = 1
@@ -2606,130 +2464,171 @@ class HTMLEpisodesParser(ParserBase):
     def end_h1(self):
         self._in_h1 = 0
 
-    def start_table(self, attrs):
-        if self._in_td_eps: self._ignore_this_table = 1
-        if self._in_episodes_h1:
-            self._in_episodes = 1
+    def start_h3(self, attrs):
+        self._in_h3 = 1
 
-    def end_table(self):
-        if self._ignore_this_table:
-            self._ignore_this_table = 0
-            return
+    def end_h3(self):
+        self._in_h3 = 0
 
-    def do_hr(self, attrs):
-        self._in_td_eps = 0
+    def start_h4(self, attrs):
+        self._in_h4 = 1
+
+    def end_h4(self):
+        if self._in_h4:
+            self._in_h4 = 0
+            self._next_is_oad = 1
+
+    def _add_episode(self):
+        self._eps_title = self._eps_title.strip()
+        if not (self._eps_title and self._cur_id): return
+        epnidx = self._eps_number.find('Episode ')
+        if epnidx != -1:
+            self._eps_number = self._eps_number[epnidx+8:]
+            self._eps_number = self._eps_number.strip().strip(':').strip()
+            try: self._eps_number = int(self._eps_number)
+            except: pass
+        else:
+            self._eps_number = max(self._episodes.get(self._cur_season,
+                                    {-1: None}).keys()) + 1
+        eps = Movie(movieID=self._cur_id, title=self._eps_title,
+                    accessSystem='http')
+        eps['year'] = self._cur_year
+        eps['kind'] = u'episode'
+        eps['season'] = self._cur_season
+        eps['episode'] = self._eps_number
+        eps['episode of'] = self._series
+        self._oad = self._oad.strip()
+        if self._oad.lower().startswith('original air date:'):
+            self._oad = self._oad[18:].lstrip()
+        if self._oad and self._oad != '????':
+            eps['original air date'] = self._oad
+        self._plot = self._plot.strip()
+        if self._plot:
+            eps['plot'] = self._plot
+        if not self._episodes.has_key(self._cur_season):
+            self._episodes[self._cur_season] = {}
+        if self._cast:
+            eps['cast'] = self._cast
+            self._cast = []
+        self._episodes[self._cur_season][self._eps_number] = eps
+        self._eps_title = u''
+        self._eps_number = u''
+        self._cur_id = u''
+        self._cur_year = u'????'
+        self._oad = u''
+        self._in_plot = 0
+        self._never_again_in_plot = 0
+        self._plot = u''
 
     def start_a(self, attrs):
-        # Commented to prevent a whole season to be skipped, if the last
-        # episode of the previous season has the "next US airing" info.
-        ##if self._ignore_this_table: return
-        href = self.get_attr_value(attrs, 'href')
-        if href and href.startswith('/title/tt'):
-            curid = self.re_imdbID.findall(href)
-            if curid:
-                if self._in_td_title:
-                    self._in_title = 1
-                    self._cur_title = u''
-                    self._curid = curid[-1]
-                    return
-                else:
-                    self._lastid = curid
-        name = self.get_attr_value(attrs, 'name')
-        if name and name.lower().startswith('season-'):
-            cs = name[7:]
-            try: cs = int(cs)
-            except: pass
-            self._cur_season = cs
-            self._eps_counter = 1
+        if self._in_h1:
+            href = self.get_attr_value(attrs, 'href')
+            if href and href.startswith('/title/tt'):
+                curid = self.re_imdbID.findall(href)
+                if curid:
+                    self._series_id = curid[0]
+                    if self._series:
+                        self._series.movieID = str(self._series_id)
+        elif self._in_h3:
+            self._add_episode()
+            name = self.get_attr_value(attrs, 'name')
+            if name and name.lower().startswith('season-'):
+                cs = name[7:]
+                try: cs = int(cs)
+                except: pass
+                self._cur_season = cs
+                self._eps_counter = 1
+                self._in_episodes = 1
+        elif self._in_episodes:
+            name = self.get_attr_value(attrs, 'name')
+            if name and name.lower().startswith('year-'):
+                self._add_episode()
+                year = name[5:]
+                if year == 'unknown': year = u'????'
+                self._cur_year = year
+            href = self.get_attr_value(attrs, 'href')
+            if href and href.lower().startswith('/title/tt'):
+                curid = self.re_imdbID.findall(href)
+                if curid:
+                    self._cur_id = curid[0]
+                    self._in_eps_title = 1
+            elif href and href.lower().startswith('/name/nm'):
+                curid = self.re_imdbID.findall(href)
+                if curid:
+                    self._cur_person_id = curid[0]
 
     def end_a(self):
-        if self._ignore_this_table: return
-        if self._in_title: self._in_title = 0
+        if self._in_eps_title: self._in_eps_title = 0
 
-    def start_td(self, attrs):
-        if self._ignore_this_table: return
-        if self._in_episodes:
-            self._in_td_eps = 1
+    def start_b(self, attrs):
+        if self._next_is_oad:
+            self._in_oad = 1
 
-    def end_td(self):
-        if self._ignore_this_table: return
-        if self._in_td_title:
-            self._in_td_eps = 0
-            self._in_td_title = 0
-            self._info_text = self._info_text.strip()
-            if self._info_text and self._cur_info != 'title':
-                self._info[self._cur_info] = self._info_text
-                self._info_text = ''
-            if self._cur_title and self._curid:
-                m = Movie(title=self._cur_title,
-                            movieID=str(self._curid),
-                            accessSystem='http')
-                m['kind'] = 'episode'
-                if self._cur_season not in self._episodes:
-                    self._episodes[self._cur_season] = {}
-                ce = self._cur_episode
-                if ce is None:
-                    ce = self._eps_counter
-                if self._series is not None:
-                    m['episode of'] = self._series
-                m['season'] = self._cur_season
-                m['episode'] = ce
-                self._episodes[self._cur_season][ce] = m
-                self._eps_counter += 1
-                self._cur_title = u''
-                self._curid = ''
-                self._cur_episode = None
-                for key, value in self._info.items():
-                    if key == 'original air date':
-                        value = value[18:].strip()
-                        if value[-4:].isdigit() and \
-                                    m.get('year', '????') == '????':
-                            m['year'] = value[-4:]
-                    m[key] = value
-            self._cur_info = 'title'
-            self._info_text = ''
-            self._info = {}
+    def end_b(self):
+        if self._in_oad:
+            self._next_is_oad = 0
+            self._in_oad = 0
+
+    def start_div(self, attrs):
+        if self._in_episodes: self._add_episode()
+        self._in_episodes = 0
+
+    def end_div(self): pass
 
     def do_br(self, attrs):
-        if self._ignore_this_table: return
-        if self._in_td_title:
-            self._info_text = self._info_text.strip()
-            if self._info_text and self._cur_info != 'title':
-                self._info[self._cur_info] = self._info_text
-                self._info_text = ''
-            if self._cur_info == 'title':
-                self._cur_info = 'original air date'
-            elif self._cur_info == 'original air date':
-                self._cur_info = 'plot'
+        if not self._in_episodes: return
+        if not self._never_again_in_plot:
+            self._in_plot = 1
+            self._never_again_in_plot = 1
+
+    def start_table(self, attrs):
+        if not self._in_episodes: return
+        if self._in_plot: self._in_plot = 0
+
+    def end_table(self): pass
+
+    def start_tr(self, attrs):
+        self._in_cast = 1
+
+    def end_tr(self):
+        if not self._in_cast: return
+        self._in_cast = 0
+        name = self._cur_person.strip()
+        if name and self._cur_person_id:
+            note = u''
+            bni = name.find('(')
+            if bni != -1:
+                eni = name.rfind(')')
+                if eni != -1:
+                    note = name[bni:]
+                    name = name[:bni].strip()
+            sn = name.split(' ... ')
+            name = sn[0]
+            role = ' '.join(sn[1:]).strip()
+            p = Person(name=name, personID=str(self._cur_person_id),
+                        currentRole=role, accessSystem='http',
+                        notes=note, billingPos=len(self._cast)+1)
+            self._cast.append(p)
+        self._cur_person = u''
+        self._cur_person_id = None
 
     def _handle_data(self, data):
-        if self._ignore_this_table: return
-        if self._in_h1 and data.strip().lower().startswith('episodes'):
-            self._in_episodes_h1 = 1
-        elif self._in_td_eps:
-            ldata = data.lower()
-            if ldata.find('season') != -1:
-                fe = ldata.find('episode')
-                if fe != -1:
-                    self._in_td_title = 1
-                    ce = ''
-                    for char in ldata[fe+8:].strip():
-                        if char.isdigit(): ce += char
-                        else: break
-                    try: ce = int(ce)
-                    except: ce = None
-                    self._cur_episode = ce
-            elif ldata.find('episode dated') != -1:
-                self._in_td_title = 1
-                self._cur_title = data.strip()
-                self._curid = self._lastid
-                self._cur_episode = self._eps_counter
+        if self._in_h1:
+            sldata = data.strip().lower()
+            if sldata .startswith('episodes'):
+                self._in_episodes_h1 = 1
         elif self._in_html_title:
             self._html_title += data
-        if self._in_title:
-            self._cur_title += data
-        elif self._cur_info != 'title' and self._in_td_title:
-            self._info_text += data
+        elif self._in_eps_title:
+            self._eps_title += data
+        elif self._in_h4:
+            self._eps_number += data
+        elif self._in_oad:
+            self._oad += data
+        elif self._in_plot:
+            self._plot += data
+        elif self._in_cast:
+            self._cur_person += data
 
 
 class HTMLFaqsParser(ParserBase):
@@ -2742,12 +2641,11 @@ class HTMLFaqsParser(ParserBase):
         fparser = HTMLFaqsParser()
         result = fparser.parse(faqs_html_string)
     """
-
-    getRefs = 1
+    _defGetRefs = True
 
     def _reset(self):
         self._faqs = []
-        self._in_content = 0
+        self._in_wiki_cont = 0
         self._in_question = 0
         self._in_answer = 0
         self._question = u''
@@ -2764,7 +2662,7 @@ class HTMLFaqsParser(ParserBase):
     def end_pre(self): self._in_pre = 0
 
     def start_ul(self, attrs):
-        self._in_content = 0
+        self._in_wiki_cont = 0
         self._question = u''
         self._answer = u''
         self._in_question = 0
@@ -2775,28 +2673,28 @@ class HTMLFaqsParser(ParserBase):
     def start_div(self, attrs):
         cls = self.get_attr_value(attrs, 'class')
         if cls and cls.strip().lower() == 'swiki_content':
-            self._in_content = 1
+            self._in_wiki_cont = 1
             self._in_question = 1
             self._in_answer = 0
 
     def end_div(self):
-        if not self._in_content: return
+        if not self._in_wiki_cont: return
         self._question = self._question.strip()
         self._answer = self._answer.strip()
         if self._question and self._answer:
-            self._faqs.append(u'%s::%s' % (self._question, self._answer))
-            self._in_content = 0
+            self._faqs.append('%s::%s' % (self._question, self._answer))
+            self._in_wiki_cont = 0
             self._in_question = 0
             self._in_answer = 0
             self._question = u''
             self._answer = u''
 
     def start_h3(self, attrs):
-        if not self._in_content: return
+        if not self._in_wiki_cont: return
         self._in_question = 1
 
     def end_h3(self):
-        if not self._in_content: return
+        if not self._in_wiki_cont: return
         self._in_question = 0
         self._in_answer = 1
 
@@ -2805,27 +2703,27 @@ class HTMLFaqsParser(ParserBase):
             self._answer += '\n'
 
     def start_span(self, attrs):
-        if not self._in_content: return
+        if not self._in_wiki_cont: return
         cls = self.get_attr_value(attrs, 'class')
         if cls and cls.strip().lower():
             self._in_spoiler = 1
         else:
             return
         if self._in_answer:
-            self._answer += u'[spoiler]'
+            self._answer += '[spoiler]'
         elif self._in_question:
-            self._question += u'[spoiler]'
+            self._question += '[spoiler]'
 
     def end_span(self):
         if not self._in_spoiler: return
         self._in_spoiler = 0
         if self._in_answer:
-            self._answer += u'[/spoiler]'
+            self._answer += '[/spoiler]'
         elif self._in_question:
-            self._question += u'[/spoiler]'
+            self._question += '[/spoiler]'
 
     def _handle_data(self, data):
-        if not self._in_content: return
+        if not self._in_wiki_cont: return
         if self._in_answer:
             if not self._in_pre: data = data.replace('\n', ' ')
             self._answer += data
@@ -2843,9 +2741,6 @@ class HTMLAiringParser(ParserBase):
         aparser = HTMLAiringParser()
         result = aparser.parse(airing_html_string)
     """
-
-    getRefs = 0
-
     def _reset(self):
         self._air = []
         self._in_air_info = 0
@@ -2855,8 +2750,8 @@ class HTMLAiringParser(ParserBase):
         self._cur_txt = u''
         self._in_html_title = 0
         self._title = u''
-        self._title_kind = ''
-        self._cur_id = ''
+        self._title_kind = u''
+        self._cur_id = u''
 
     def get_data(self):
         if not self._air: return {}
@@ -2972,14 +2867,14 @@ connections_parser = HTMLConnectionParser()
 tech_parser = HTMLTechParser()
 business_parser = HTMLTechParser()
 business_parser.kind = 'business'
-business_parser.getRefs = 1
-locations_parser = HTMLTechParser()
-locations_parser.kind = 'locations'
+business_parser._defGetRefs = 1
+literature_parser = HTMLTechParser()
+literature_parser.kind = 'literature'
+locations_parser = HTMLLocationsParser()
 dvd_parser = HTMLDvdParser()
 rec_parser = HTMLRecParser()
 news_parser = HTMLNewsParser()
 amazonrev_parser = HTMLAmazonReviewsParser()
-guests_parser = HTMLGuestsParser()
 sales_parser = HTMLSalesParser()
 episodes_parser = HTMLEpisodesParser()
 eprating_parser = HTMLEpisodesRatings()

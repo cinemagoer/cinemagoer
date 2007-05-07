@@ -24,7 +24,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from urllib import FancyURLopener, quote_plus
+from urllib2 import ProxyHandler, Request, URLError, HTTPError, build_opener
+from urllib import quote_plus
 from codecs import lookup
 
 from imdb import IMDbBase
@@ -69,18 +70,42 @@ _cookie_id = 'rH1jNAkjTlNXvHolvBVBsgaPICNZbNdjVjzFwzas9JRmusdjVoqBs/Hs12NR+1WFxE
 _cookie_uu = 'su4/m8cho4c6HP+W1qgq6wchOmhnF0w+lIWvHjRUPJ6nRA9sccEafjGADJ6hQGrMd4GKqLcz2X4z5+w+M4OIKnRn7FpENH7dxDQu3bQEHyx0ZEyeRFTPHfQEX03XF+yeN1dsPpcXaqjUZAw+lGRfXRQEfz3RIX9IgVEffdBAHw2wQXyf9xdMPrQELw0QNB8dsffsqcdQemjPB0w+moLcPh0JrKrHJ9hjBzdMPpcXTH7XRwwOk='
 
 
-class IMDbURLopener(FancyURLopener):
+class IMDbURLopener:
     """Fetch web pages and handle errors."""
     def __init__(self, *args, **kwargs):
-        FancyURLopener.__init__(self, *args, **kwargs)
+        # The OpenerDirector object used to handle http requests.
+        self.proxy = ProxyHandler()
+        self.urlOpener = build_opener(self.proxy)
+        # Headers to add to every request.
         # XXX: IMDb's web server doesn't like urllib-based programs,
         #      so lets fake to be Mozilla.
         #      Wow!  I'm shocked by my total lack of ethic! <g>
-        self.addheaders = [('User-agent', 'Mozilla/5.0')]
-        # This class is used also to perform "Exact Primary [Title|Name]"
-        # searches, and so by default the cookie is set.
+        # XXX: This class is used also to perform "Exact Primary
+        #      [Title|Name]" searches, and so by default the cookie is set.
         c_header = 'id=%s; uu=%s' % (_cookie_id, _cookie_uu)
-        self.addheaders.append(('Cookie', c_header))
+        self.headers = {'User-agent': 'Mozilla/5.0', 'Cookie': c_header}
+
+    def get_proxy(self):
+        """Return the used proxy, or an empty string."""
+        return self.proxy.proxies.get('http', '')
+
+    def set_proxy(self, proxy):
+        """Set the proxy."""
+        self.proxy = ProxyHandler({'http': proxy})
+        # XXX: what a shameful hack!  I'm not even sure this is the
+        #      correct way to change the proxy on-the-fly.
+        if self.urlOpener.handle_open.get('proxy'):
+            del self.urlOpener.handle_open['proxy'][0]
+        self.urlOpener.add_handler(self.proxy)
+
+    def set_header(self, header, value):
+        """Set a default header."""
+        self.headers[header] = value
+
+    def del_header(self, header):
+        """Remove a default header."""
+        if self.headers.has_key(header):
+            del self.headers[header]
 
     def retrieve_unicode(self, url, size=-1):
         """Retrieves the given URL, and returns a unicode string,
@@ -88,12 +113,16 @@ class IMDbURLopener(FancyURLopener):
         by default)"""
         encode = None
         try:
+            # Forge headers for the Request object.
+            headers = self.headers.copy()
             if size != -1:
-                self.addheader('Range', 'bytes=0-%d' % size)
-            uopener = self.open(url)
+                headers['Range'] = 'bytes=0-%d' % size
+            request = Request(url, headers=headers)
+            uopener = self.urlOpener.open(request)
             content = uopener.read(size=size)
+            # Maybe the server is so nice to tell us the charset...
             server_encode = uopener.info().getparam('charset')
-            # look at the content-type HTML meta tag.
+            # Otherwise, look at the content-type HTML meta tag.
             if server_encode is None and content:
                 first_bytes = content[:512]
                 begin_h = first_bytes.find('text/html; charset=')
@@ -108,20 +137,26 @@ class IMDbURLopener(FancyURLopener):
                 except (LookupError, ValueError, TypeError):
                     pass
             uopener.close()
-            if size != -1:
-                for index in xrange(len(self.addheaders)):
-                    if self.addheaders[index][0] == 'Range':
-                        del self.addheaders[index]
-            self.close()
-        except IOError, e:
-            if size != -1:
-                for index in xrange(len(self.addheaders)):
-                    if self.addheaders[index][0] == 'Range':
-                        del self.addheaders[index]
-            raise IMDbDataAccessError, {'errcode': e.errno,
-                                        'errmsg': str(e.strerror),
-                                        'url': url,
-                                        'proxy': self.proxies.get('http', '')}
+            self.urlOpener.close()
+        except HTTPError, e:
+            raise IMDbDataAccessError, {'errcode': e.code,
+                                'errmsg': e.msg, 'url': url,
+                                'proxy': self.get_proxy()}
+        except (URLError, IOError), e:
+            errdata = {'url': url}
+            errdata['proxy'] = self.get_proxy()
+            if len(getattr(getattr(e, 'reason', None), 'args', [])) == 2:
+                # An URLError instance.
+                errdata['errcode'] = e.reason.args[0]
+                errdata['errmsg'] = e.reason.args[1]
+            elif len(getattr(e, 'args', [])) == 2:
+                # An IOError instance.
+                errdata['errcode'] = e.args[0]
+                errdata['errmsg'] = e.args[1]
+            else:
+                # Something strange.
+                errdata['errmsg'] = str(e)
+            raise IMDbDataAccessError, errdata
         if encode is None:
             encode = 'latin_1'
             # The detection of the encoding is error prone...
@@ -130,27 +165,13 @@ class IMDbURLopener(FancyURLopener):
                         'page [%s]; falling back to default latin1.' % encode)
         return unicode(content, encode, 'replace')
 
-    def http_error_default(self, url, fp, errcode, errmsg, headers):
-        raise IMDbDataAccessError, {'url': 'http:%s' % url,
-                                    'errcode': errcode,
-                                    'errmsg': errmsg,
-                                    'headers': headers,
-                                    'proxy': self.proxies.get('http', '')}
-    def open_unknown(self, fullurl, data=None):
-        raise IMDbDataAccessError, {'fullurl': fullurl,
-                                    'data': str(data),
-                                    'proxy': self.proxies.get('http', '')}
-    def open_unknown_proxy(self, proxy, fullurl, data=None):
-        raise IMDbDataAccessError, {'proxy': str(proxy),
-                                    'fullurl': fullurl,
-                                    'data': str(data)}
-
 
 class IMDbHTTPAccessSystem(IMDbBase):
     """The class used to access IMDb's data through the web."""
 
     accessSystem = 'http'
 
+    # XXX: move in __init__?
     urlOpener = IMDbURLopener()
 
     def __init__(self, isThin=0, adultSearch=1, proxy=-1,
@@ -171,7 +192,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 from imdb.utils import modNull
                 self._defModFunct = modNull
         self.do_adult_search(adultSearch)
-        if proxy != -1: self.set_proxy(proxy)
+        if proxy != -1:
+            self.set_proxy(proxy)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -199,6 +221,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
         """
         return personID
 
+    def get_proxy(self):
+        """Return the used proxy or an empty string."""
+        return self.urlOpener.get_proxy()
+
     def set_proxy(self, proxy):
         """Set the web proxy to use.
 
@@ -207,17 +233,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         If set, the value of the environment variable HTTP_PROXY is
         automatically used.
         """
-        if not proxy:
-            if self.urlOpener.proxies.has_key('http'):
-                del self.urlOpener.proxies['http']
-        else:
-            if not proxy.lower().startswith('http://'):
-                proxy = 'http://%s' % proxy
-            self.urlOpener.proxies['http'] = proxy
-
-    def get_proxy(self):
-        """Return the used proxy or an empty string."""
-        return self.urlOpener.proxies.get('http', '')
+        self.urlOpener.set_proxy(proxy)
 
     def do_adult_search(self, doAdult,
                         cookie_id=_cookie_id, cookie_uu=_cookie_uu):
@@ -225,13 +241,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
         search results; cookie_id and cookie_uu are optional
         parameters to select a specific account (see your cookie
         or cookies.txt file."""
-        for index in xrange(len(self.urlOpener.addheaders)):
-            if self.urlOpener.addheaders[index][0] == 'Cookie':
-                del self.urlOpener.addheaders[index]
-                break
         if doAdult:
             c_header = 'id=%s; uu=%s' % (cookie_id, cookie_uu)
-            self.urlOpener.addheaders += [('Cookie', c_header)]
+            self.urlOpener.set_header('Cookie', c_header)
+        else:
+            self.urlOpener.del_header('Cookie')
 
     def _retrieve(self, url, size=-1):
         """Retrieve the given URL."""

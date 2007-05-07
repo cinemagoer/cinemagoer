@@ -1,6 +1,12 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 3.1.cvs20070507 "Clerks II" (07 May 2007)
+  [http]
+  - first changes to switch from urllib to urllib2, to work around
+    a bug with titles containing a "+" char.
+
+
 * What's the new in release 3.0 "Spider-Man 3" (03 May 2007)
   [global]
   - IMDbPY now works with the new IMDb's site design; a new account is

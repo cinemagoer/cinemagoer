@@ -345,6 +345,13 @@ class IMDbBase:
             title = title.encode('utf-8')
         params = 'q=%s;s=pt' % str(urllib.quote_plus(title))
         content = self._searchIMDb(params)
+        if content and content[:512].find('<title>IMDb Title') != -1:
+            # Sometimes (e.g.: for titles with a "+" in it) a list
+            # of results is returned even for Exact Primary searches;
+            # this try to deal with it, hoping that a "normal" query
+            # will result in just on title.
+            params = 's=tt&q=%s' % str(urllib.quote_plus(title))
+            content = self._searchIMDb(params)
         if not content: return None
         from imdb.parser.http.searchMovieParser import BasicMovieParser
         mparser = BasicMovieParser()
@@ -362,6 +369,9 @@ class IMDbBase:
             name = name.encode('utf-8')
         params = 'q=%s;s=pn' % str(urllib.quote_plus(name))
         content = self._searchIMDb(params)
+        if content and content[:512].find('<title>IMDb Name') != -1:
+            params = 's=nm&q=%s' % str(urllib.quote_plus(name))
+            content = self._searchIMDb(params)
         if not content: return None
         from imdb.parser.http.searchPersonParser import BasicPersonParser
         pparser = BasicPersonParser()

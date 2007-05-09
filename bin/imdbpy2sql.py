@@ -547,7 +547,8 @@ class MoviesCache(_BaseCache):
                 if series_d['year'] is None: del series_d['year']
                 else: series_d['year'] = str(series_d['year'])
                 mdict['episode of'] = series_d
-            title = build_title(mdict, canonical=1, ptdf=1)
+            title = build_title(mdict, canonical=1, ptdf=1,
+                                _emptyString='')
             dict.__setitem__(self, title, x[0])
         self.counter = counter(Title.select().count() + 1)
         Title.sqlmeta.cacheValues = _oldcacheValues
@@ -572,7 +573,8 @@ class MoviesCache(_BaseCache):
             kind = tget('kind')
             if kind == 'episode':
                 #series title
-                stitle = build_title(tget('episode of'), canonical=1)
+                stitle = build_title(tget('episode of'), canonical=1,
+                                    _emptyString='')
                 episodeOf = self.addUnique(stitle)
                 del t['episode of']
                 year = self.movieYear.get(v)

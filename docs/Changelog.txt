@@ -1,10 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs20070508 "Clerks II" (08 May 2007)
+* What's the new in release 3.1.cvs20070509 "Clerks II" (09 May 2007)
   [http]
   - first changes to switch from urllib to urllib2, to work around
     a bug with titles containing a "+" char.
+
+  [sql]
+  - hypothetical fix for a unicode problem in the imdbpy2sql.py script.
 
 
 * What's the new in release 3.0 "Spider-Man 3" (03 May 2007)

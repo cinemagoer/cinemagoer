@@ -384,7 +384,7 @@ def analyze_title(title, canonical=None,
 
 _web_format = '%d %B %Y'
 _ptdf_format = '(%Y-%m-%d)'
-def _convertTime(title, fromPTDFtoWEB=1):
+def _convertTime(title, fromPTDFtoWEB=1, _emptyString=u''):
     """Convert a time expressed in the pain text data files, to
     the 'Episode dated ...' format used on the web site; if
     fromPTDFtoWEB is false, the inverted conversion is applied."""
@@ -402,11 +402,16 @@ def _convertTime(title, fromPTDFtoWEB=1):
             title = u'Episode dated %s' % title
     except ValueError:
         pass
+    if isinstance(_emptyString, str):
+        try:
+            title = str(title)
+        except UnicodeDecodeError:
+            pass
     return title
 
 
-def build_title(title_dict, canonical=None,
-                canonicalSeries=0, canonicalEpisode=0, ptdf=0, _doYear=1):
+def build_title(title_dict, canonical=None, canonicalSeries=0,
+                canonicalEpisode=0, ptdf=0, _doYear=1, _emptyString=u''):
     """Given a dictionary that represents a "long" IMDb title,
     return a string.
 
@@ -417,7 +422,7 @@ def build_title(title_dict, canonical=None,
     """
     if canonical is not None:
         canonicalSeries = canonical
-    pre_title = ''
+    pre_title = _emptyString
     kind = title_dict.get('kind')
     episode_of = title_dict.get('episode of')
     if kind == 'episode' and episode_of is not None:
@@ -426,7 +431,8 @@ def build_title(title_dict, canonical=None,
         if ptdf:
             doYear = 1
         pre_title = build_title(episode_of, canonical=canonicalSeries,
-                                ptdf=0, _doYear=doYear)
+                                ptdf=0, _doYear=doYear,
+                                _emptyString=_emptyString)
         ep_dict = {'title': title_dict.get('title', ''),
                     'imdbIndex': title_dict.get('imdbIndex')}
         ep_title = ep_dict['title']
@@ -435,16 +441,18 @@ def build_title(title_dict, canonical=None,
             ep_dict['year'] = title_dict.get('year') or '????'
             if ep_title[0:1] == '(' and ep_title[-1:] == ')' and \
                     ep_title[1:5].isdigit():
-                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=1)
+                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=1,
+                                                _emptyString=_emptyString)
         else:
             doYear = 0
             if ep_title.startswith('Episode dated'):
-                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=0)
+                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=0,
+                                                _emptyString=_emptyString)
         episode_title = build_title(ep_dict,
                             canonical=canonicalEpisode, ptdf=ptdf,
-                            _doYear=doYear)
+                            _doYear=doYear, _emptyString=_emptyString)
         if ptdf:
-            oad = title_dict.get('original air date', u'')
+            oad = title_dict.get('original air date', _emptyString)
             if len(oad) == 10 and oad[4] == '-' and oad[7] == '-' and \
                         episode_title.find(oad) == -1:
                 episode_title += ' (%s)' % oad
@@ -458,7 +466,7 @@ def build_title(title_dict, canonical=None,
             episode_title = '{%s}' % episode_title
         return '%s %s' % (pre_title, episode_title)
     title = title_dict.get('canonical title') or title_dict.get('title', '')
-    if not title: return ''
+    if not title: return _emptyString
     if not canonical:
         title = normalizeTitle(title)
     if pre_title:
@@ -468,6 +476,8 @@ def build_title(title_dict, canonical=None,
     if _doYear:
         imdbIndex = title_dict.get('imdbIndex')
         year = title_dict.get('year') or u'????'
+        if isinstance(_emptyString, str):
+            year = str(year)
         title += ' (%s' % year
         if imdbIndex:
             title += '/%s' % imdbIndex

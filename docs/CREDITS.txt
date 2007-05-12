@@ -15,6 +15,9 @@ I'd like to thank the following people for their help:
 
 * Jesper Nøhr for a lot of testing, especially on the 'sql'.
 
+* Jon Sabo for a bug report about unicode and the imdbpy2sql.py script
+  and some feedback.
+
 * Ivan Kedrin for a bug report about the analyze_title function.
 
 * Hadley Rich for reporting bugs and providing patches for troubles

@@ -1,7 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs20070509 "Clerks II" (09 May 2007)
+* What's the new in release 3.1.cvs20070512 "Clerks II" (12 May 2007)
+  [global]
+  - updated list of contributors and developers.
+  - the IMDbPYweb account now returns a single item, when a search
+    returns only one "good enough" match (this is the IMDb's default).
+
   [http]
   - first changes to switch from urllib to urllib2, to work around
     a bug with titles containing a "+" char.

@@ -1609,70 +1609,77 @@ class HTMLConnectionParser(ParserBase):
     """
     def _reset(self):
         """Reset the parser."""
-        self._in_cnt = 0
-        self._cn = {}
-        self._cnt = u''
+        self._connections = {}
+        self._in_conn_type = False
+        self._conn_type = u''
+        self._in_cur_title = False
+        self._cur_title = u''
         self._cur_id = u''
-        self._mtitle = u''
-        self._in_ref = 0
+        self._cur_note = u''
+        self._seen_br = False
 
     def get_data(self):
         """Return the dictionary."""
-        if not self._cn: return {}
-        return {'connections': self._cn}
+        if not self._connections: return {}
+        return {'connections': self._connections}
 
     def start_h5(self, attrs):
         if not self._in_content: return
-        self._in_cnt = 1
-        self._cnt = u''
+        self._add_info()
+        self._in_conn_type = True
+        self._conn_type = u''
 
     def end_h5(self):
-        if not self._in_content: return
-        self._in_cnt = 0
+        self._conn_type = self._conn_type.strip().lower()
+        self._in_conn_type = False
+
+    def start_div(self, attrs): pass
+
+    def end_div(self):
+        self._add_info()
 
     def start_a(self, attrs):
         if not self._in_content: return
         href = self.get_attr_value(attrs, 'href')
-        if not (href and href.startswith('/title')): return
-        tn = self.re_imdbID.findall(href)
-        if tn:
-            self._in_ref = 1
-            self._cur_id = tn[-1]
+        self._add_info()
+        if not href: return
+        imdbID = self.re_imdbID.findall(href)
+        if imdbID:
+            self._cur_id = str(imdbID[0])
+            self._in_cur_title = True
 
     def end_a(self): pass
 
     def do_br(self, attrs):
         if not self._in_content: return
-        self._in_ref = 0
-        sectit = self._cnt.strip()
-        if self._in_content and self._mtitle and self._cur_id and sectit:
-            note = u''
-            noteidx = self._mtitle.rfind('(')
-            if noteidx != -1:
-                noteidxend = self._mtitle.rfind(')')
-                isdigit = self._mtitle[noteidx+1:noteidx+5].isdigit()
-                isspec = self._mtitle[noteidx:noteidxend+1] in ('(TV)',
-                                                    '(V)', '(mini)', '(VG)')
-                isunk = self._mtitle[noteidx+1:noteidx+5] == '????'
-                if not (isdigit or isspec or isunk):
-                    note = self._mtitle[noteidx:].strip()
-                    self._mtitle = self._mtitle[:noteidx].strip()
-                    if self._mtitle[-1] == '(':
-                        note = '(' + note
-                        self._mtitle = self._mtitle[:-1].rstrip()
-            m = Movie(title=self._mtitle,
-                        movieID=str(self._cur_id),
-                        accessSystem='http', notes=note)
-            self._cn.setdefault(sectit, []).append(m)
-            self._mtitle = u''
-            self._cur_id = u''
+        self._seen_br = True
+
+    def _add_info(self):
+        self._cur_title = self._cur_title.strip()
+        self._cur_note = self._cur_note.strip()
+        if self._cur_title and self._cur_id and self._conn_type:
+            if self._cur_note and self._cur_note[0] == '-':
+                self._cur_note = self._cur_note[1:].lstrip()
+            m = Movie(movieID=str(self._cur_id), title=self._cur_title,
+                                accessSystem='http', notes=self._cur_note)
+            self._connections.setdefault(self._conn_type, []).append(m)
+            self._in_cur_title = False
+        self._cur_title = u''
+        self._cur_id = u''
+        self._cur_note = u''
+        self._seen_br = False
+        self._in_cur_title = False
 
     def _handle_data(self, data):
         if not self._in_content: return
-        if self._in_ref:
-            self._mtitle += data
-        elif self._in_cnt:
-            self._cnt += data.lower()
+        if self._in_conn_type:
+            self._conn_type += data
+        elif self._in_cur_title:
+            if self._seen_br:
+                self._cur_note += data
+            else:
+                self._cur_title += data
+
 
 class HTMLLocationsParser(ParserBase):
     """Parser for the "locations" page of a given movie.

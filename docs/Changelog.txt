@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs20070515 "Equilibrium" (15 May 2007)
+* What's the new in release 3.1.cvs20070516 "The Bourne Supremacy" (15 May 2007)
   [global]
   - updated list of contributors and developers.
   - the IMDbPYweb account now returns a single item, when a search
@@ -10,6 +10,7 @@
   [http]
   - first changes to switch from urllib to urllib2, to work around
     a bug with titles containing a "+" char.
+  - fixed a bug retrieving notes about a movie's connections.
 
   [sql]
   - hypothetical fix for a unicode problem in the imdbpy2sql.py script.

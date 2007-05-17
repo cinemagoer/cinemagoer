@@ -24,6 +24,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import sys
 from urllib import FancyURLopener, quote_plus
 from codecs import lookup
 
@@ -53,6 +54,7 @@ from personParser import maindetails_parser, bio_parser, \
 from searchPersonParser import search_person_parser
 from utils import ParserBase
 
+PY_VERSION = sys.version_info[:2]
 
 # Misc URLs
 imdbURL_movie = 'http://akas.imdb.com/title/tt%s/'
@@ -119,7 +121,10 @@ class IMDbURLopener(FancyURLopener):
             if size != -1:
                 self.set_header('Range', 'bytes=0-%d' % size)
             uopener = self.open(url)
-            content = uopener.read(size=size)
+            kwds = {}
+            if PY_VERSION > (2, 3):
+                kwds['size'] = size
+            content = uopener.read(**kwds)
             # Maybe the server is so nice to tell us the charset...
             server_encode = uopener.info().getparam('charset')
             # Otherwise, look at the content-type HTML meta tag.

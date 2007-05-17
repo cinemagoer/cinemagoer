@@ -97,7 +97,7 @@ complete plain text data files set (as of 12 Nov 2006, with about
       database         |  time in minutes: total (insert data/create indexes)
  ----------------------+-----------------------------------------------------
    MySQL 5.0 MyISAM    |  115 (95/20)
-   MYSQL 5.0 InnoDB    |  ??? (80/???)
+   MySQL 5.0 InnoDB    |  ??? (80/???)
                        |  maybe I've not cofigurated it properly: it
                        |  looks like the creation of the indexes will
                        |  take more than 2 or 3 hours.
@@ -116,6 +116,35 @@ If you have different experiences, please tell me!
 The imdbpy2sql.py will print a lot of debug information on standard output;
 you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
 
+[sqlite failure]
+It seems that, with older versions of the python-sqlite package, the first
+run may fail; if you get a DatabaseError exception saying "no such table",
+try running again the command with the same arguments.
+
+[data truncated]
+If you get an insane amount (hundreds or thousands, on various text
+columns) of warnings like these lines:
+
+  imdbpy2sql.py:727: Warning: Data truncated for column 'person_role' at row 4979
+  CURS.executemany(self.sqlString, self.converter(self.values()))
+
+you probably have a problem with the configuration of your database.
+The error came from strings that get cut at the first non-ASCII char (and
+so you're losing a lot of information).
+To obviate at this problem, you must be sure that your database
+server is set up properly, with the use library/client configured
+to communicate with the server in a consistent way.
+E.g., for MySQL you can set:
+  character-set-server   = utf8
+  default-collation      = utf8_unicode_ci
+  default-character-set  = utf8
+
+of even:
+  character-set-server   = latin1
+  default-collation      = latin1_bin
+  default-character-set  = latin1
+
+
 [adult titles]
 Beware that, while running, the imdbpy2sql.py script will output a lot
 of strings containing both person names and movie titles.  The script
@@ -123,14 +152,6 @@ has absolutely no way to know that the processed title is an adult-only
 movie, so... if you leave it running and your little daughter runs to you
 screaming 'daddy!  daddy!  what kind of animals trains Rocco in the
 documentary "Rocco: Animal Trainer 17"???'... well it's not my fault! ;-)
-
-
-  SQLITE NOTE
-  ===========
-
-It seems that, with older versions of the python-sqlite package, the first
-run may fail; if you get a DatabaseError exception saying "no such table",
-try running again the command with the same arguments.
 
 
   SQL USAGE

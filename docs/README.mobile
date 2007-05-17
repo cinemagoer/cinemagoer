@@ -63,7 +63,8 @@ the movies, only the main information are retrieved (see the 'httpThin'
 notes).  It should be, at usage time, from 2 to 20 times faster than
 the "http"/"httpThin" data access system.
 
-This code is still BETA!  Please report me bugs/ideas/hints...
+This code still needs tests on mobile phones!
+Please report any bugs/ideas/hints...
 
 Usage:
   from imdb import IMDb
@@ -80,6 +81,11 @@ Usage:
 A GUI for Series 60 smart phones, developed by Tero Saarni,
 is available at:
   http://kotisivu.mtv3.fi/terosaarni/python/imdbpygui/
+
+On some mobile phone a pair of modules can be missing, and
+you have to install it manually as libraries; you can find
+these two modules (sgmllib.py and htmlentitydefs.py) here:
+  http://imdbpy.sf.net/mobile-imdbpy-modules-0.1.tar.gz
 
 
   THE "HTTPTHIN" DATA ACCESS SYSTEM

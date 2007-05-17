@@ -392,7 +392,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         cont = self._mretrieve(imdbURL_movie % movieID + 'plotsummary')
         plot = _findBetween(cont, '<p class="plotpar">', '</p>')
         plot[:] = [_unHtml(x) for x in plot]
-        for i, p in enumerate(plot):
+        for i in xrange(len(plot)):
+            p = plot[i]
             wbyidx = p.rfind(' Written by ')
             if wbyidx != -1:
                 plot[i] = '%s::%s' % \

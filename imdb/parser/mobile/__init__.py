@@ -414,9 +414,21 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not nl.startswith('imdb name'):
             # XXX: a direct hit!
             name = _unHtml(name[0])
+            # Easiest way: the board link (for person who already have
+            # messages in the board).
             pidtag = _getTagsWith(cont, '/board/nest/', maxRes=1)
             pid = None
             if pidtag: pid = _findBetween(pidtag[0], '/name/nm', '/', maxRes=1)
+            if not (pid and name):
+                # Otherwise, the 'credited alongside' for the name,
+                # and the biography link for the personID.
+                nametag = _getTagsWith(cont, 'NAME="primary"', maxRes=1)
+                if not nametag: return res
+                nametag = _findBetween(nametag[0], 'VALUE="', '"', maxRes=1)
+                if not nametag: return res
+                name = unquote(nametag[0])
+                pid = _findBetween(cont, '/name/nm', '/bio', maxRes=1)
+                if not pid: return res
             if not (pid and name): return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:

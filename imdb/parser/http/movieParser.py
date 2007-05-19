@@ -302,6 +302,14 @@ class HTMLMovieParser(ParserBase):
             except ValueError:
                 pass
 
+    def start_span(self, attrs): pass
+
+    def end_span(self):
+        # Handle the span for 'status note'.
+        if not self._in_production_notes: return
+        self._add_info()
+        self._in_production_notes = False
+
     def _add_info(self):
         # Used to add information about h5, h6 and b sections.
         ct = self._cur_txt.strip()
@@ -311,7 +319,8 @@ class HTMLMovieParser(ParserBase):
         if self._section in ('director', 'writer'):
             self._cur_txt = u''
             return
-        if self._section in ('status', 'comments', 'status updated', 'note'):
+        if self._section in ('status', 'comments', 'status updated', 'note',
+                            'status note'):
             if not self._section.startswith('status'):
                 self._section = 'status %s' % self._section
             self._data[self._section] = ct

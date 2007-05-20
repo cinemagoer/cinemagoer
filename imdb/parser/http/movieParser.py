@@ -104,6 +104,8 @@ class HTMLMovieParser(ParserBase):
         self._stop_here = False
         self._exclude_series = False
         self._title = u''
+        # Horrible hack to fix some incongruities of the data.
+        self._in_td = False
         # Movie status.
         self._in_production_notes = False
         self._status_sect = u''
@@ -417,6 +419,13 @@ class HTMLMovieParser(ParserBase):
         self._cur_txt = u''
         self._last_person_id = None
 
+    def start_td(self, attrs):
+        if not (self._keep and self._cur_txt and self._last_person_id): return
+        self._in_td = True
+
+    def end_td(self):
+        self._in_td = False
+
     def start_a(self, attrs):
         href = self.get_attr_value(attrs, 'href')
         if self.get_attr_value(attrs, 'title') == 'Full Episode List':
@@ -428,6 +437,11 @@ class HTMLMovieParser(ParserBase):
             self._in_poster = True
         # From here on, we're inside some kind of information and a href.
         if not (self._keep and href): return
+        # Hack!  Keep in mind, if it will ever be needed to know if
+        # we're inside a td tag; that's here to prevent lines like:
+        #  <td><a href="...">Person Name</a>  </td>
+        # to trigger some code in the _handle_data method.
+        self._in_td = False
         # Collect personID and movieID.
         if href.startswith('/name/nm'):
             cur_id = self.re_imdbID.findall(href)
@@ -501,6 +515,9 @@ class HTMLMovieParser(ParserBase):
         # Collect the data.
         if self._in_tr or self._in_info_div or self._in_li or \
                     self._in_production_notes:
+            if self._in_td:
+                if data == ' ':
+                    self._cur_txt += '....'
             self._cur_txt += data
 
 

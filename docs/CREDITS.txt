@@ -18,6 +18,8 @@ I'd like to thank the following people for their help:
 * Jon Sabo for a bug report about unicode and the imdbpy2sql.py script
   and some feedback.
 
+* Ataru Moroboshi ;-) for a bug report about role/duty and notes.
+
 * Ivan Kedrin for a bug report about the analyze_title function.
 
 * Hadley Rich for reporting bugs and providing patches for troubles

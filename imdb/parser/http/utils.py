@@ -165,6 +165,7 @@ def build_person(txt, personID=None, billingPos=None, accessSystem='http'):
         else:
             # Just a role, without notes.
             role = role_comment
+    if role == '....': role = u''
     # XXX: return None if something strange is detected?
     return Person(name=name, personID=personID, currentRole=role, notes=notes,
                     billingPos=billingPos, accessSystem=accessSystem)

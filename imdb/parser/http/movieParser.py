@@ -517,7 +517,7 @@ class HTMLMovieParser(ParserBase):
                     self._in_production_notes:
             if self._in_td:
                 if data == ' ':
-                    self._cur_txt += '....'
+                    self._cur_txt += ' ....'
             self._cur_txt += data
 
 

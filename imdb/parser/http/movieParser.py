@@ -389,6 +389,8 @@ class HTMLMovieParser(ParserBase):
             self._add_info()
             self._keep = False
         if self.mdparse and self._section in _SECT_KEEP:
+            if self._cur_txt.endswith('...'):
+                self._cur_txt = self._cur_txt[:-3]
             self.end_tr()
             self._in_tr = True
 

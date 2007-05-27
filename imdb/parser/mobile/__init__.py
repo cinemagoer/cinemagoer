@@ -148,6 +148,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if gt_indx != -1:
                 name = name[gt_indx+1:].lstrip()
             if not name: continue
+            if name.endswith('...'):
+                name = name[:-3]
             p = build_person(name, personID=str(pid[0]), billingPos=counter,
                             accessSystem=self.accessSystem)
             plappend(p)

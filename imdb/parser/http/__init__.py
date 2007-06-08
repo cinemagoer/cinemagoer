@@ -93,7 +93,7 @@ class IMDbURLopener(FancyURLopener):
         """Set the proxy."""
         if not proxy:
             if self.proxies.has_key('http'):
-                del self.urlOpener.proxies['http']
+                del self.proxies['http']
         else:
             if not proxy.lower().startswith('http://'):
                 proxy = 'http://%s' % proxy

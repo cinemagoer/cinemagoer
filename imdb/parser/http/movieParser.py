@@ -1354,7 +1354,7 @@ class HTMLRatingsParser(ParserBase):
             if self._cur_nr:
                 try:
                     c = int(self._cur_vote)
-                    n = int(self._cur_nr)
+                    n = int(self._cur_nr.replace(',', ''))
                     self._votes[c] = n
                 except (ValueError, OverflowError): pass
                 self._cur_nr = u''
@@ -1363,7 +1363,7 @@ class HTMLRatingsParser(ParserBase):
             self._in_demo = 0
             try:
                 av = float(self._cur_demo_av)
-                dv = int(self._next_demo_vote)
+                dv = int(self._next_demo_vote.replace(',', ''))
                 self._demo[self._cur_demo_t] = (dv, av)
             except (ValueError, OverflowError): pass
             self._cur_demo_av = u''

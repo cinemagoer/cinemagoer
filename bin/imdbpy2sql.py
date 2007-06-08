@@ -497,7 +497,7 @@ class _BaseCache(dict):
 def fetchsome(curs, size=20000):
     """Yes, I've read the Python Cookbook! :-)"""
     while 1:
-        res = CURS.fetchmany(size)
+        res = curs.fetchmany(size)
         if not res: break
         for r in res: yield r
 

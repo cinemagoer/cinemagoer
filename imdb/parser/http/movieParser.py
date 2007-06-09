@@ -2108,6 +2108,7 @@ class HTMLNewsParser(ParserBase):
         self._cur_stage = 'title'
         self._cur_text = u''
         self._cur_link = u''
+        self._in_font = 0
 
     def get_data(self):
         """Return the dictionary."""
@@ -2115,11 +2116,13 @@ class HTMLNewsParser(ParserBase):
         return {'news': self._news}
 
     def start_p(self, attrs):
+        if self._in_font: return
         if self._in_content:
             self._cur_stage = 'title'
 
     def end_p(self):
         if not self._in_content: return
+        if self._in_font: return
         self.do_br([])
         if self._cur_news:
             self._news.append(self._cur_news)
@@ -2127,8 +2130,17 @@ class HTMLNewsParser(ParserBase):
         self._cur_stage = 'title'
         self._cur_text = u''
 
+    def start_font(self, attrs):
+        # An hack to prevent IMDbPro sign-up for a two-week free trial
+        # to appear in the title of the first news.
+        self._in_font = 1
+
+    def end_font(self):
+        self._in_font = 0
+
     def do_br(self, attrs):
         if not self._in_content: return
+        if self._in_font: return
         self._cur_text = self._cur_text.strip()
         if self._cur_text:
             if self._cur_stage == 'body':
@@ -2148,6 +2160,7 @@ class HTMLNewsParser(ParserBase):
                 self._cur_stage = 'body'
 
     def start_a(self, attrs):
+        if self._in_font: return
         if self._in_content and self._cur_stage == 'date':
             href = self.get_attr_value(attrs, 'href')
             if href:
@@ -2157,6 +2170,7 @@ class HTMLNewsParser(ParserBase):
                 self._cur_news['link'] = href
 
     def _handle_data(self, data):
+        if self._in_font: return
         if self._in_content:
             self._cur_text += data
 

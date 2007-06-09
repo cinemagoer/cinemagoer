@@ -427,30 +427,32 @@ class HTMLOtherWorksParser(ParserBase):
         self._ow = []
         self._cow = u''
         self._dostrip = 0
+        self._seen_hr = 0
 
     def get_data(self):
         """Return the dictionary."""
         if not self._ow: return {}
         return {self.kind: self._ow}
 
-    def start_dd(self, attrs):
-        self._in_ow = 1
-
-    def end_dd(self): pass
-
     def start_b(self, attrs): pass
 
     def end_b(self):
+        if self._seen_hr: return
         if self.kind == 'agent' and self._in_content and self._cow:
             self._cow += '::'
             self._dostrip = 1
 
+    def do_hr(self, attrs):
+        self._seen_hr = 1
+
     def do_br(self, attrs):
+        if self._seen_hr: return
         if self._in_content and self._cow:
             self._ow.append(self._cow.strip())
             self._cow = u''
 
     def _handle_data(self, data):
+        if self._seen_hr: return
         if self._in_content:
             if self._dostrip:
                 data = data.lstrip()

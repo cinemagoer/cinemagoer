@@ -1,8 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs20070608 "Perfume: The Story of a Murderer"
-(08 Jun 2007)
+* What's the new in release 3.1.cvs20070609 "Wrestle Maniac" (08 Jun 2007)
   [global]
   - updated list of contributors and developers.
   - the IMDbPYweb account now returns a single item, when a search
@@ -10,14 +9,14 @@
   - updated the documentation.
 
   [http]
-  - first changes to switch from urllib to urllib2, to work around
-    a bug with titles containing a "+" char.
   - fixed a bug retrieving notes about a movie's connections.
   - fixed a bug for python2.2 (s60 mobile phones)
   - fixed a bug with 'Production Notes/Status'.
   - fixed a bug parsing role/duty and notes (also for httpThin).
   - fixed a bug retrieving user ratings.
   - fixed a bug (un)setting the proxy.
+  - fixed a bug in movie/person news.
+  - fixed a bug in persons' other works.
 
   [sql]
   - hypothetical fix for a unicode problem in the imdbpy2sql.py script.

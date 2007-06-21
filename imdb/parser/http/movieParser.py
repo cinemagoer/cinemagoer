@@ -2721,7 +2721,7 @@ class HTMLFaqsParser(ParserBase):
 
     def start_div(self, attrs):
         cls = self.get_attr_value(attrs, 'class')
-        if cls and cls.strip().lower() == 'swiki_content':
+        if cls and cls.strip().lower() == 'section':
             self._in_wiki_cont = 1
             self._in_question = 1
             self._in_answer = 0

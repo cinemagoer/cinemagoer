@@ -7,7 +7,7 @@ the SQLObject Object Relational Manager is available.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "sql", "database" or "db".
 
-Copyright 2005-20067 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -121,6 +121,40 @@ def _groupListBy(l, index):
 def sub_dict(d, keys):
     """Return the subdictionary of 'd', with just the keys listed in 'keys'."""
     return dict([(k, d[k]) for k in keys if k in d])
+
+
+def get_movie_data(movieID, kindDict, fromAka=0):
+    """Return a dictionary containing data about the given movieID;
+    if fromAka is true, the AkaTitle table is searched."""
+    if not fromAka: Table = Title
+    else: Table = AkaTitle
+    m = Table.get(movieID)
+    mdict = {'title': m.title, 'kind': kindDict[m.kindID],
+            'year': m.productionYear, 'imdbIndex': m.imdbIndex,
+            'season': m.seasonNr, 'episode': m.episodeNr}
+    if not fromAka:
+        if m.seriesYears is not None:
+            mdict['series years'] = unicode(m.seriesYears)
+    if mdict['imdbIndex'] is None: del mdict['imdbIndex']
+    if mdict['year'] is None: del mdict['year']
+    if mdict['season'] is None: del mdict['season']
+    else:
+        try: mdict['season'] = int(mdict['season'])
+        except: pass
+    if mdict['episode'] is None: del mdict['episode']
+    else:
+        try: mdict['episode'] = int(mdict['episode'])
+        except: pass
+    episodeOfID = m.episodeOfID
+    if episodeOfID is not None:
+        ser_dict = get_movie_data(episodeOfID, kindDict, fromAka)
+        mdict['episode of'] = Movie(data=ser_dict, movieID=episodeOfID,
+                                    accessSystem='sql')
+        if fromAka:
+            ser_note = AkaTitle.get(episodeOfID).note
+            if ser_note:
+                mdict['episode of'].notes = ser_note
+    return mdict
 
 
 class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
@@ -252,38 +286,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbError, 'personID "%s" can\'t be converted to integer' % \
                             personID
 
-    def _get_movie_data(self, movieID, fromAka=0):
-        """Return a dictionary containing data about the given movieID;
-        if fromAka is true, the AkaTitle table is searched."""
-        if not fromAka: Table = Title
-        else: Table = AkaTitle
-        m = Table.get(movieID)
-        mdict = {'title': m.title, 'kind': self._kind[m.kindID],
-                'year': m.productionYear, 'imdbIndex': m.imdbIndex,
-                'season': m.seasonNr, 'episode': m.episodeNr}
-        if not fromAka:
-            if m.seriesYears is not None:
-                mdict['series years'] = unicode(m.seriesYears)
-        if mdict['imdbIndex'] is None: del mdict['imdbIndex']
-        if mdict['year'] is None: del mdict['year']
-        if mdict['season'] is None: del mdict['season']
-        else:
-            try: mdict['season'] = int(mdict['season'])
-            except: pass
-        if mdict['episode'] is None: del mdict['episode']
-        else:
-            try: mdict['episode'] = int(mdict['episode'])
-            except: pass
-        episodeOfID = m.episodeOfID
-        if episodeOfID is not None:
-            ser_dict = self._get_movie_data(episodeOfID, fromAka)
-            mdict['episode of'] = Movie(data=ser_dict, movieID=episodeOfID,
-                                        accessSystem='sql')
-            if fromAka:
-                ser_note = AkaTitle.get(episodeOfID).note
-                if ser_note:
-                    mdict['episode of'].notes = ser_note
-        return mdict
 
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID.
@@ -294,7 +296,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         except SQLObjectNotFound: return None
         imdbID = movie.imdbID
         if imdbID is not None: return '%07d' % imdbID
-        m_dict = self._get_movie_data(movie.id)
+        m_dict = get_movie_data(movie.id, self._kind)
         titline = build_title(m_dict, canonical=1, ptdf=1)
         imdbID = self.title2imdbID(titline)
         # If the imdbID was retrieved from the web and was not in the
@@ -389,9 +391,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         title1, title2, title3 = titleVariations(title)
 
         try:
-            qr = [(q.id, self._get_movie_data(q.id))
+            qr = [(q.id, get_movie_data(q.id, self._kind))
                     for q in Title.select(condition)]
-            q2 = [(q.movieID, self._get_movie_data(q.id, fromAka=1))
+            q2 = [(q.movieID, get_movie_data(q.id, self._kind, fromAka=1))
                     for q in AkaTitle.select(conditionAka)]
             qr += q2
         except SQLObjectNotFound, e:
@@ -422,7 +424,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # Every movie information is retrieved from here.
         infosets = self.get_movie_infoset()
         try:
-            res = self._get_movie_data(movieID)
+            res = get_movie_data(movieID, self._kind)
         except SQLObjectNotFound, e:
             raise IMDbDataAccessError, \
                     'unable to get movieID "%s": "%s"' % (movieID, str(e))
@@ -460,7 +462,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if mdata[2]: data += '::%s' % mdata[2]
                 res.setdefault(sect, []).append(data)
         # AKA titles.
-        akat = [(self._get_movie_data(at.id, fromAka=1), at.note)
+        akat = [(get_movie_data(at.id, self._kind, fromAka=1), at.note)
                 for at in AkaTitle.select(AkaTitle.q.movieID == movieID)]
         if akat:
             res['akas'] = []
@@ -483,7 +485,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     for ml in MovieLink.select(MovieLink.q.movieID == movieID)]
         if mlinks:
             for ml in mlinks:
-                lmovieData = self._get_movie_data(ml[0])
+                lmovieData = get_movie_data(ml[0], self._kind)
                 m = Movie(movieID=ml[0], data=lmovieData, accessSystem='sql')
                 ml[0] = m
             res['connections'] = {}
@@ -503,7 +505,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                                 accessSystem='sql')
             for episode in eps_list:
                 episodeID = episode.id
-                episode_data = self._get_movie_data(episodeID)
+                episode_data = get_movie_data(episodeID, self._kind)
                 m = Movie(movieID=episodeID, data=episode_data,
                             accessSystem='sql')
                 m['episode of'] = parentSeries
@@ -638,7 +640,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
         # Collect cast information.
         castdata = [(cd.movieID, cd.personRole, cd.note, self._role[cd.roleID],
-                    self._get_movie_data(cd.movieID))
+                    get_movie_data(cd.movieID, self._kind))
                 for cd in CastInfo.select(CastInfo.q.personID == personID)]
         # Regroup by role/duty (cast, writer, director, ...)
         castdata[:] =  _groupListBy(castdata, 3)

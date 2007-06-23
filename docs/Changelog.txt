@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs20070621 "Jin-Roh" (21 Jun 2007)
+* What's the new in release 3.1.cvs20070623 "Jin-Roh" (23 Jun 2007)
   [global]
   - updated list of contributors and developers.
   - the IMDbPYweb account now returns a single item, when a search
@@ -21,6 +21,8 @@
 
   [sql]
   - hypothetical fix for a unicode problem in the imdbpy2sql.py script.
+  - now the 'imdbID' fields in the Title and Name tables are restored,
+    updating from an older version.
 
   [mobile]
   - fixed a bug for python2.2 (s60 mobile phones)

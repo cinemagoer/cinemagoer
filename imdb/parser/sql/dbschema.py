@@ -26,8 +26,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from sqlobject import *
 
-# XXX: there are a lot of commented ForeignKey lines; ForeignKey are
-#      useful, but they create an Index in the database, and this
+# XXX: ForeignKey can be used to create constrains between tables,
+#      but they create an Index in the database, and this
 #      means poor performances at insert-time.
 
 class AkaName(SQLObject):

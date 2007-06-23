@@ -29,8 +29,9 @@ from gzip import GzipFile
 from types import UnicodeType
 
 from sqlobject import *
+from sqlobject.sqlbuilder import ISNOTNULL
 
-from imdb.parser.sql import soundex
+from imdb.parser.sql import soundex, get_movie_data
 from imdb.parser.sql.dbschema import *
 from imdb.utils import analyze_title, analyze_name, \
         build_name, build_title, normalizeName, _articles
@@ -500,6 +501,7 @@ def fetchsome(curs, size=20000):
         res = curs.fetchmany(size)
         if not res: break
         for r in res: yield r
+
 
 class MoviesCache(_BaseCache):
     """Manage the movies list."""
@@ -1459,21 +1461,101 @@ def readConstants():
         CCAST_TYPES[x.kind] = x.id
 
 
+def notNULLimdbID(cls):
+    """Return a list of dictionaries for titles or names for which a
+    imdbID is present in the database."""
+    if cls is Title: cname = 'movies'
+    else: cname = 'people'
+    print 'SAVING imdbID values for %s...' % cname,
+    sys.stdout.flush()
+    try:
+        tons = cls.select(ISNOTNULL(cls.q.imdbID))
+    except:
+        print 'SKIPPING: no data.'
+        return []
+    results = []
+    _kdict = {}
+    try:
+        for x in KindType.select():
+            _kdict[x.id] = x.kind
+    except:
+        print 'SKIPPING: no data.'
+        return []
+    for t in tons:
+        if cls is Title:
+            md = get_movie_data(t.id, _kdict)
+        else:
+            md = {'name': t.name}
+            if t.imdbIndex is not None:
+                md['imdbIndex'] = t.imdbIndex
+        md['imdbID'] = t.imdbID
+        results.append(md)
+    print 'DONE! (%d entries)' % len(results)
+    return results
+
+
+def restoreImdbID(tons, cls):
+    """Restore imdbID for movies or people."""
+    if cls is Title:
+        CACHE = CACHE_MID
+        cname = 'movies'
+    else:
+        CACHE = CACHE_PID
+        cname = 'people'
+    print 'RESTORING imdbID values for %s...' % cname,
+    sys.stdout.flush()
+    count = 0
+    for t in tons:
+        if cls is Title:
+            t_str = build_title(t, canonical=1, ptdf=1)
+        else:
+            t_str = build_name(t, canonical=1)
+        t_str = t_str.encode('utf_8')
+        db_mopID = CACHE.get(t_str)
+        if db_mopID is None:
+            continue
+        try:
+            mop_in_db = cls.get(db_mopID)
+            try:
+                mop_in_db.imdbID = t['imdbID']
+            except:
+                continue
+        except SQLObjectNotFound:
+            continue
+        count += 1
+    print 'DONE! (restored %d entries out of %d)' % (count, len(tons))
+
+
 # begin the iterations...
 def run():
     print 'RUNNING imdbpy2sql.py'
+
+    # Storing imdbIDs for movies and persons.
+    try:
+        movies_imdbIDs = notNULLimdbID(Title)
+    except:
+        movies_imdbIDs = []
+        print 'WARNING: failed to read imdbIDs for movies'
+    try:
+        people_imdbIDs = notNULLimdbID(Name)
+    except:
+        people_imdbIDs = []
+        print 'WARNING: failed to read imdbIDs for people'
+
     # Truncate the current database.
     print 'DROPPING current database...',
     sys.stdout.flush()
     dropTables()
-    print 'done!'
+    print 'DONE!'
+
     # Rebuild the database structure.
     print 'CREATING new tables...',
     sys.stdout.flush()
     createTables()
+
     # Read the constants.
     readConstants()
-    print 'done!'
+    print 'DONE!'
     t('dropping and recreating the database')
 
     # Populate the CACHE_MID instance.
@@ -1523,6 +1605,16 @@ def run():
     # complete-cast, complete-crew.
     completeCast()
     t('completeCast()')
+
+    # Restoring imdbIDs for movies and persons.
+    try:
+        restoreImdbID(movies_imdbIDs, Title)
+    except:
+        print 'WARNING: failed to restore imdbIDs for movies'
+    try:
+        restoreImdbID(people_imdbIDs, Name)
+    except:
+        print 'WARNING: failed to restore imdbIDs for people'
 
     # Flush caches.
     CACHE_MID.flush()

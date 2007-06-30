@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs20070623 "Jin-Roh" (23 Jun 2007)
+* What's the new in release 3.1.cvs20070630 "Transformers" (30 Jun 2007)
   [global]
   - updated list of contributors and developers.
   - the IMDbPYweb account now returns a single item, when a search
@@ -9,6 +9,7 @@
   - updated the documentation.
 
   [http]
+  - supported the new result pages for searches.
   - fixed a bug retrieving notes about a movie's connections.
   - fixed a bug for python2.2 (s60 mobile phones)
   - fixed a bug with 'Production Notes/Status'.

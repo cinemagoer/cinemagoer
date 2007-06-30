@@ -25,7 +25,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.utils import analyze_title
+from imdb.utils import analyze_title, analyze_name
 from utils import ParserBase
 from imdb.Movie import Movie
 
@@ -151,17 +151,36 @@ class BasicMovieParser(ParserBase):
 
 class HTMLSearchMovieParser(ParserBase):
     """Parse the html page that the IMDb web server shows when the
-    "new search system" is used."""
+    "new search system" is used, for both movies and persons."""
+    # Customizations for movie and person parsers.
+    _k = {
+        'movie':
+            {'analyze_f': analyze_title,
+            'link': '/title',
+            'in title': 'imdb title'},
+
+        'person':
+            {'analyze_f': analyze_name,
+            'link': '/name',
+            'in title': 'imdb name'},
+
+        'basic parser': BasicMovieParser
+    }
+
+    def _init(self):
+        self.kind = 'movie'
+
     def _reset(self):
         """Reset the parser."""
         self._results = []
-        self._begin_list = 0
-        self._is_title = 0
-        self._reading_page_title = 0
+        self._is_title = False
+        self._reading_page_title = False
         self._current_imdbID = u''
-        self._current_title = u''
-        self._no_more = 0
-        self._stop = 0
+        self._current_ton = u''
+        self._no_more = False
+        self._stop = False
+        self._in_table = False
+        self._col_nr = 0
 
     def parse(self, cont, results=None, **kwds):
         self.maxres = results
@@ -172,58 +191,68 @@ class HTMLSearchMovieParser(ParserBase):
         return self._results
 
     def start_title(self, attrs):
-        self._reading_page_title = 1
+        self._reading_page_title = True
 
     def end_title(self):
-        self._reading_page_title = 0
+        self._reading_page_title = False
 
-    def start_ol(self, attrs):
-        self._begin_list = 1
+    def start_table(self, attrs):
+        self._in_table = True
 
-    def end_ol(self):
-        self._begin_list = 0
-        self._is_title = 0
-        self._current_title = u''
+    def end_table(self):
+        self._in_table = False
+
+    def start_tr(self, attrs):
+        if not self._in_table: return
+        self._col_nr = 0
+        self._no_more = False
+
+    def end_tr(self): pass
+
+    def start_td(self, attrs):
+        if not self._in_table: return
+        self._col_nr += 1
+        self._is_title = False
+        self._current_imdbID = None
+
+    def end_td(self):
+        if self._in_table and self._is_title and self._current_imdbID and \
+                self._col_nr == 3:
+            # We should have got the title.
+            title = self._current_ton.strip()
+            tup = (self._current_imdbID,
+                    self._k[self.kind]['analyze_f'](title, canonical=1))
+            self._results.append(tup)
+            if self.maxres is not None and self.maxres <= len(self._results):
+                self._stop = True
+        self._current_ton = u''
         self._current_imdbID = u''
+        self._is_title = False
+        self._no_more = 0
 
     def start_a(self, attrs):
         # Prevent tv series to get the (wrong) movieID from the
-        # last episode, sometimes listed in the <li>...</li> tag
+        # last episode, sometimes listed in the <td>...</td> tag
         # along with the series' title.
         if self._current_imdbID: return
+        if not self._in_table and self._col_nr == 3: return
         link = self.get_attr_value(attrs, 'href')
         # The next data is a movie title; now store the imdbID.
-        if link and link.lower().startswith('/title'):
+        if link and link.lower().startswith(self._k[self.kind]['link']):
             nr = self.re_imdbID.findall(link[6:])
             if not nr: return
             self._current_imdbID = str(nr[0])
-            self._is_title = 1
+            self._is_title = True
 
     def end_a(self): pass
 
     def start_small(self, attrs):
-        self._no_more = 1
+        self._no_more = True
 
     def end_small(self): pass
 
     def do_br(self, attrs):
-        self._no_more = 1
-
-    def start_li(self, attrs):
-        self._no_more = 0
-
-    def end_li(self):
-        if self._begin_list and self._is_title and self._current_imdbID:
-            # We should have got the title.
-            title = self._current_title.strip()
-            tup = (self._current_imdbID, analyze_title(title, canonical=1))
-            self._results.append(tup)
-            if self.maxres is not None and self.maxres <= len(self._results):
-                self._stop = 1
-        self._current_title = u''
-        self._current_imdbID = u''
-        self._is_title = 0
-        self._no_more = 0
+        self._no_more = True
 
     def _handle_data(self, data):
         if self._stop:
@@ -231,32 +260,23 @@ class HTMLSearchMovieParser(ParserBase):
             self.reset()
             self._results = res
             return
-        if self._begin_list and self._is_title and not self._no_more:
-            self._current_title += data
+        if self._in_table and self._col_nr == 3 and not self._no_more:
+            self._current_ton += data
         elif self._reading_page_title:
             dls = data.strip().lower()
-            if not dls.startswith('imdb title'):
+            if not dls.startswith(self._k[self.kind]['in title']):
                 # XXX: a direct result!
                 #      Interrupt parsing, and retrieve data using a
-                #      BasicMovieParser object.
+                #      BasicMovieParser/BasicPersonParser object.
                 rawdata = self.rawdata
                 # XXX: it' would be much better to move this code to
                 #      the end_title() method, but it would raise an
                 #       exception...
                 self.reset()
                 # Get imdbID and title directly from the "main details" page.
-                bmp = BasicMovieParser()
+                bmp = self._k['basic parser']()
                 self._results = bmp.parse(rawdata)['data']
-        else:
-            # XXX: we have to check the plain text part of the HTML
-            #      to know when the list of title begins.
-            data = data.strip().lower()
-            if data.find('exact match') != -1 or \
-                    data.find('partial match') != -1 or \
-                    data.find('approx match') != -1 or \
-                    data.find('approximate match') != -1 or \
-                    data.find('popular titles') != -1:
-                self._begin_list = 1
+
 
 
 # The used object.

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.4
 """
 imdbpy2sql.py script.
 
@@ -1427,7 +1427,6 @@ CACHE_MID = MoviesCache()
 CACHE_PID = PersonsCache()
 
 
-
 def _cmpfunc(x, y):
     """Sort a list of tuples, by the length of the first item (in reverse)."""
     lx = len(x[0])
@@ -1552,11 +1551,11 @@ def run():
     print 'CREATING new tables...',
     sys.stdout.flush()
     createTables()
+    print 'DONE!'
+    t('dropping and recreating the database')
 
     # Read the constants.
     readConstants()
-    print 'DONE!'
-    t('dropping and recreating the database')
 
     # Populate the CACHE_MID instance.
     readMovieList()
@@ -1609,10 +1608,12 @@ def run():
     # Restoring imdbIDs for movies and persons.
     try:
         restoreImdbID(movies_imdbIDs, Title)
+        del movies_imdbIDs
     except:
         print 'WARNING: failed to restore imdbIDs for movies'
     try:
         restoreImdbID(people_imdbIDs, Name)
+        del people_imdbIDs
     except:
         print 'WARNING: failed to restore imdbIDs for people'
 

@@ -168,6 +168,7 @@ class HTMLSearchMovieParser(ParserBase):
     }
 
     def _init(self):
+        """Initialize the parser."""
         self.kind = 'movie'
 
     def _reset(self):
@@ -187,7 +188,7 @@ class HTMLSearchMovieParser(ParserBase):
         return ParserBase.parse(self, cont)
 
     def get_data(self):
-        """Return a list of ('imdbID', {title_dict}) tuples."""
+        """Return a list of ('imdbID', {title_dict/name_dict}) tuples."""
         return self._results
 
     def start_title(self, attrs):
@@ -218,7 +219,7 @@ class HTMLSearchMovieParser(ParserBase):
     def end_td(self):
         if self._in_table and self._is_title and self._current_imdbID and \
                 self._col_nr == 3:
-            # We should have got the title.
+            # We should have got the title/name.
             title = self._current_ton.strip()
             tup = (self._current_imdbID,
                     self._k[self.kind]['analyze_f'](title, canonical=1))
@@ -237,7 +238,7 @@ class HTMLSearchMovieParser(ParserBase):
         if self._current_imdbID: return
         if not self._in_table and self._col_nr == 3: return
         link = self.get_attr_value(attrs, 'href')
-        # The next data is a movie title; now store the imdbID.
+        # The next data is a movie title/person name; now store the imdbID.
         if link and link.lower().startswith(self._k[self.kind]['link']):
             nr = self.re_imdbID.findall(link[6:])
             if not nr: return
@@ -276,7 +277,6 @@ class HTMLSearchMovieParser(ParserBase):
                 # Get imdbID and title directly from the "main details" page.
                 bmp = self._k['basic parser']()
                 self._results = bmp.parse(rawdata)['data']
-
 
 
 # The used object.

@@ -178,7 +178,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if not (mid and title): return res
             res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
         else:
-            lis = _findBetween(cont, '<li>', ['</li>', '<br>', '<br/>'])
+            lis = _findBetween(cont, 'td valign="top">',
+                                ['</td>', '<br>', '<br/>'])
             for li in lis:
                 imdbid = re_imdbID.findall(li)
                 mtitle = _unHtml(li)
@@ -434,7 +435,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if not (pid and name): return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:
-            lis = _findBetween(cont, '<li>', ['<small', '</li>', '<br'])
+            lis = _findBetween(cont, 'td valign="top">',
+                                ['<small', '</td>', '<br'])
             for li in lis:
                 pid = re_imdbID.findall(li)
                 pname = _unHtml(li)

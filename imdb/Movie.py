@@ -121,6 +121,7 @@ class Movie(_Container):
                 'merchandise': 'merchandising links',
                 'sales': 'merchandising links',
                 'faq': 'faqs',
+                'parental guide': 'parents guide',
                 'frequently asked questions': 'faqs'}
 
     keys_tomodify_list = ('plot', 'trivia', 'alternate versions', 'goofs',

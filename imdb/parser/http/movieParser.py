@@ -2883,6 +2883,134 @@ class HTMLAiringParser(ParserBase):
         self._cur_txt += data
 
 
+class HTMLSynopsisParser(ParserBase):
+    """Parser for the "synopsis" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        sparser = HTMLSynopsisParser()
+        result = sparser.parse(synopsis_html_string)
+    """
+
+    def _reset(self):
+        self._synops = u''
+        self._in_synops = False
+
+    def get_data(self):
+        self._synops = self._synops.strip()
+        if not self._synops: return {}
+        return {'synopsis': self._synops}
+
+    def start_div(self, attrs):
+        cls = self.get_attr_value(attrs, 'class')
+        if not cls: return
+        style = self.get_attr_value(attrs, 'style')
+        if style: return
+        if cls.strip().lower() != 'display': return
+        # Here we are: a div section with 'class' set to "display" and
+        # no 'style' attribute.
+        self._in_synops = True
+
+    def end_div(self):
+        if self._in_synops:
+            self._in_synops = False
+
+    def do_br(self, attrs):
+        if not self._in_synops: return
+        self._synops += '\n'
+
+    def _handle_data(self, data):
+        if not self._in_synops: return
+        self._synops += data
+
+
+class HTMLParentsGuideParser(ParserBase):
+    """Parser for the "parents guide" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        pgparser = HTMLParentsGuideParser()
+        result = pgparser.parse(parentsguide_html_string)
+    """
+
+    def _reset(self):
+        self._pg = {}
+        self._in_section = False
+        self._in_h3 = False
+        self._in_display = False
+        self._cur_sect = u''
+        self._cur_txt = u''
+        self._seen_br = False
+
+    def get_data(self):
+        if not self._pg: return {}
+        return {'parents guide': self._pg}
+
+    def start_div(self, attrs):
+        cls = self.get_attr_value(attrs, 'class')
+        if not cls: return
+        cls = cls.strip().lower()
+        if cls == 'section':
+            self._in_section = True
+            self._in_display = False
+            self._cur_sect = u''
+            return
+        if cls == 'display':
+            style = self.get_attr_value(attrs, 'style')
+            if not style:
+                self._in_display = True
+
+    def end_div(self):
+        if self._in_section:
+            self._in_section = False
+            self._cur_sect = self._cur_sect.strip().lower()
+            return
+        if self._in_display:
+            self._in_display = False
+
+    def start_h3(self, attrs):
+        self._in_h3 = True
+
+    def end_h3(self):
+        self._in_h3 = False
+
+    def start_p(self, attrs): pass
+
+    def end_p(self):
+        if not self._in_display: return
+        self._add_pg()
+
+    def _add_pg(self):
+        self._cur_txt = self._cur_txt.strip()
+        if not (self._cur_txt and self._cur_sect):
+            self._cur_txt = u''
+            return
+        self._pg.setdefault(self._cur_sect, []).append(self._cur_txt)
+        self._cur_txt = u''
+
+    def do_br(self, attrs):
+        if not self._in_display: return
+        if self._seen_br:
+            self._seen_br = False
+            self._add_pg()
+        if not self._seen_br:
+            self._cur_txt += '\n'
+            self._seen_br = True
+
+    def _handle_data(self, data):
+        if self._in_section and self._in_h3:
+            self._cur_sect += data
+        elif self._in_display:
+            if self._seen_br and data.strip():
+                self._seen_br = False
+            data = data.replace('\n', ' ')
+            self._cur_txt += data
+
+
 # The used instances.
 movie_parser = HTMLMovieParser()
 plot_parser = HTMLPlotParser()
@@ -2929,4 +3057,6 @@ episodes_parser = HTMLEpisodesParser()
 eprating_parser = HTMLEpisodesRatings()
 movie_faqs_parser = HTMLFaqsParser()
 airing_parser = HTMLAiringParser()
+synopsis_parser = HTMLSynopsisParser()
+parentsguide_parser = HTMLParentsGuideParser()
 

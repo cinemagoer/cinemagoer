@@ -44,7 +44,8 @@ from movieParser import movie_parser, plot_parser, movie_awards_parser, \
                         soundclips_parser, videoclips_parser, news_parser, \
                         photosites_parser, amazonrev_parser, business_parser, \
                         literature_parser, sales_parser, episodes_parser, \
-                        eprating_parser, movie_faqs_parser, airing_parser
+                        eprating_parser, movie_faqs_parser, airing_parser, \
+                        synopsis_parser, parentsguide_parser
 from searchMovieParser import search_movie_parser
 from personParser import maindetails_parser, bio_parser, \
                         otherworks_parser, person_awards_parser, \
@@ -459,6 +460,14 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_airing(self, movieID):
         cont = self._retrieve(imdbURL_movie % movieID + 'tvschedule')
         return airing_parser.parse(cont)
+
+    def get_movie_synopsis(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'synopsis')
+        return synopsis_parser.parse(cont)
+
+    def get_movie_parents_guide(self, movieID):
+        cont = self._retrieve(imdbURL_movie % movieID + 'parentalguide')
+        return parentsguide_parser.parse(cont)
 
     def _search_person(self, name, results):
         # The URL of the query.

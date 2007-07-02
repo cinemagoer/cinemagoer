@@ -84,6 +84,6 @@ class BasicPersonParser(ParserBase):
 from searchMovieParser import HTMLSearchMovieParser as HTMLSearchPersonParser
 search_person_parser = HTMLSearchPersonParser()
 search_person_parser.kind = 'person'
-search_person_parser._k['basic parser'] = BasicPersonParser
+search_person_parser._basic_parser = BasicPersonParser
 
 

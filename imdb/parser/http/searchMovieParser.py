@@ -163,13 +163,12 @@ class HTMLSearchMovieParser(ParserBase):
             {'analyze_f': analyze_name,
             'link': '/name',
             'in title': 'imdb name'},
-
-        'basic parser': BasicMovieParser
     }
 
     def _init(self):
         """Initialize the parser."""
         self.kind = 'movie'
+        self._basic_parser = BasicMovieParser
 
     def _reset(self):
         """Reset the parser."""
@@ -275,7 +274,7 @@ class HTMLSearchMovieParser(ParserBase):
                 #       exception...
                 self.reset()
                 # Get imdbID and title directly from the "main details" page.
-                bmp = self._k['basic parser']()
+                bmp = self._basic_parser()
                 self._results = bmp.parse(rawdata)['data']
 
 

@@ -25,6 +25,8 @@ I'd like to thank the following people for their help:
 * Hadley Rich for reporting bugs and providing patches for troubles
   parsing tv series' episodes and searching for tv series' titles.
 
+* Jamie R. Rytlewski for a suggestion about saving imbIDs in 'sql'.
+
 * Vincent Crevot, for a bug report about unicode support.
 
 * Jay Klein for a bug report and testing to fix a nasty bug in the

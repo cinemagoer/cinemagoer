@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs20070702 "Highlander: The Search for Vengeance" (02 Jul 2007)
+* What's the new in release 3.1.cvs20070708 "Infernal Affairs" (08 Jul 2007)
   [global]
   - updated list of contributors and developers.
   - the IMDbPYweb account now returns a single item, when a search

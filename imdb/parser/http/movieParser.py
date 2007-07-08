@@ -2187,7 +2187,7 @@ class HTMLAmazonReviewsParser(ParserBase):
     """
     def _reset(self):
         """Reset the parser."""
-        self._in_content = 0
+        self._in_amazonrev = 0
         self._inh3 = 0
         self._inreview = 0
         self._in_kind = 0
@@ -2203,23 +2203,23 @@ class HTMLAmazonReviewsParser(ParserBase):
         return {'amazon reviews': self._reviews}
 
     def start_table(self, attrs):
-        self._in_content = 1
+        self._in_amazonrev = 1
 
     def end_table(self):
         if self._inreview:
             self._add_info()
             self._cur_title = u''
             self._cur_link = u''
-        self._in_content = 0
+        self._in_amazonrev = 0
         self._inreview = 0
 
     def start_div(self, attrs):
         theid = self.get_attr_value(attrs, 'id')
         if theid and theid.find('content') != -1:
-            self._in_content = 1
+            self._in_amazonrev = 1
 
     def end_div(self):
-        if self._in_content: self._in_content = 0
+        if self._in_amazonrev: self._in_amazonrev = 0
 
     def start_h3(self, attrs):
         self._inh3 = 1

@@ -826,7 +826,7 @@ def doCast(fp, roleid, rolename):
         for item in ll[1:]:
             if not item: continue
             if item[0] == '[':
-                role = item[1:-1]
+                role = item[1:].rstrip(']')
                 if role[-1:] == ')':
                     nidx = role.find('(')
                     if nidx != -1:

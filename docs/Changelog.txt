@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs20070708 "Infernal Affairs" (08 Jul 2007)
+* What's the new in release 3.1.cvs200707089 "Infernal Affairs" (09 Jul 2007)
   [global]
   - updated list of contributors and developers.
   - the IMDbPYweb account now returns a single item, when a search
@@ -26,6 +26,7 @@
   - hypothetical fix for a unicode problem in the imdbpy2sql.py script.
   - now the 'imdbID' fields in the Title and Name tables are restored,
     updating from an older version.
+  - fixed a nasty bug handling utf-8 strings in the imdbpy2sql.py script.
 
   [mobile]
   - supported the new result page for searches.

@@ -428,6 +428,8 @@ class HTMLOtherWorksParser(ParserBase):
         self._cow = u''
         self._dostrip = 0
         self._seen_hr = 0
+        self._seen_h5 = 0
+        self._seen_left_div = 0
 
     def get_data(self):
         """Return the dictionary."""
@@ -442,17 +444,31 @@ class HTMLOtherWorksParser(ParserBase):
             self._cow += '::'
             self._dostrip = 1
 
+    def start_h5(self, attrs): pass
+
+    def end_h5(self):
+        self._seen_h5 = 1
+
+    def start_div(self, attrs):
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls.strip().lower() == 'left':
+            self._seen_left_div = 1
+
+    def end_div(self): pass
+
     def do_hr(self, attrs):
         self._seen_hr = 1
 
     def do_br(self, attrs):
         if self._seen_hr: return
+        self._cow = self._cow.strip()
         if self._in_content and self._cow:
-            self._ow.append(self._cow.strip())
+            self._ow.append(self._cow)
             self._cow = u''
 
     def _handle_data(self, data):
-        if self._seen_hr: return
+        if not self._seen_h5: return
+        if self._seen_hr or self._seen_left_div: return
         if self._in_content:
             if self._dostrip:
                 data = data.lstrip()

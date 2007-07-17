@@ -1,26 +1,29 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs200707089 "Infernal Affairs" (09 Jul 2007)
+* What's the new in release 3.1.cvs20070717 "The Snake King" (17 Jul 2007)
   [global]
-  - updated list of contributors and developers.
   - the IMDbPYweb account now returns a single item, when a search
     returns only one "good enough" match (this is the IMDb's default).
   - updated the documentation.
+  - updated list of contributors and developers.
 
   [http]
   - supported the new result page for searches.
   - supported the 'synopsis' page.
   - supported the 'parents guide' page.
   - fixed a bug retrieving notes about a movie's connections.
-  - fixed a bug for python2.2 (s60 mobile phones)
+  - fixed a bug for python2.2 (s60 mobile phones).
   - fixed a bug with 'Production Notes/Status'.
   - fixed a bug parsing role/duty and notes (also for httpThin).
   - fixed a bug retrieving user ratings.
   - fixed a bug (un)setting the proxy.
-  - fixed a bug in movie/person news.
+  - fixed 2 bugs in movie/person news.
   - fixed a bug in movie faqs.
-  - fixed a bug in persons' other works.
+  - fixed a bug in movie taglines.
+  - fixed a bug in movie quotes.
+  - fixed a bug in movie title, in "full cast and crew" page.
+  - fixed 2 bugs in persons' other works.
 
   [sql]
   - hypothetical fix for a unicode problem in the imdbpy2sql.py script.
@@ -30,7 +33,7 @@
 
   [mobile]
   - supported the new result page for searches.
-  - fixed a bug for python2.2 (s60 mobile phones)
+  - fixed a bug for python2.2 (s60 mobile phones).
   - fixed a bug searching for persons with single match and no
     messages in the board.
   - fixed a bug parsing role/duty and notes.

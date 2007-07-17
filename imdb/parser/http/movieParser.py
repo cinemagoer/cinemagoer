@@ -125,6 +125,7 @@ class HTMLMovieParser(ParserBase):
         self._in_top250 = False
         self._top250 = u''
         self._in_poster = False
+        self._in_small = False
         # Companies information are stored slightly differently.
         self._in_blackcatheader = False
         self._in_post_blackcatheader = False
@@ -277,9 +278,11 @@ class HTMLMovieParser(ParserBase):
         if self._in_post_blackcatheader and self._section:
             self._add_info()
 
-    def start_small(self, attrs): pass
+    def start_small(self, attrs):
+        self._in_small = True
 
     def end_small(self):
+        self._in_small = False
         # Rating and votes.
         if not self._in_rating: return
         self._in_rating = False
@@ -499,7 +502,7 @@ class HTMLMovieParser(ParserBase):
         if self._in_h5 or self._in_blackcatheader:
             # Section's name.
             self._section += data
-        elif self._in_h1:
+        elif self._in_h1 and not self._in_small:
             self._title += data
         elif self._in_rating:
             self._rating += data
@@ -866,6 +869,7 @@ class HTMLTaglinesParser(ParserBase):
         self._in_tlu2 = 0
         self._tl = []
         self._ctl = u''
+        self._seen_left_div = 0
 
     def get_data(self):
         """Return the dictionary."""
@@ -885,10 +889,22 @@ class HTMLTaglinesParser(ParserBase):
     def _end_content(self):
         self._in_tl = 1
 
+    def start_div(self, attrs):
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls.strip().lower() == 'left':
+            self._seen_left_div = 1
+
+    def end_div(self): pass
+
+    def start_table(self, attrs): pass
+
+    def end_table(self):
+        self._ctl = u''
+
     def start_p(self, attrs): pass
 
     def end_p(self):
-        if self._in_tl and self._ctl:
+        if self._in_tl and self._ctl and not self._seen_left_div:
             self._tl.append(self._ctl.strip())
             self._ctl = u''
 
@@ -1201,6 +1217,11 @@ class HTMLQuotesParser(ParserBase):
             self._in_content = 0
 
     def end_div(self): pass
+
+    def start_img(self, attrs):
+        self._in_quo2 = 0
+
+    def end_img(self): pass
 
     def do_br(self, attrs):
         if self._in_content and self._in_quo2 and self._cquo:
@@ -1821,6 +1842,13 @@ class HTMLTechParser(ParserBase):
         self._in_sect_title = 0
         self._in_data = 1
 
+    def start_div(self, attrs):
+        cls = self.get_attr_value(attrs, 'class')
+        if cls and cls == 'left':
+            self._stop_collecting = True
+
+    def end_div(self): pass
+
     def start_tr(self, attrs): pass
 
     def end_tr(self):
@@ -2024,14 +2052,17 @@ class HTMLRecParser(ParserBase):
         self._intable = 0
         self._inb = 0
         self._cur_id = u''
+        self._no_more = 0
 
     def get_data(self):
         if not self._rec: return {}
         return {'recommendations': self._rec}
 
     def start_a(self, attrs):
+        href = self.get_attr_value(attrs, 'href')
+        if href and href.find('RemoveRecommendations') != -1:
+            self._no_more = 1
         if self._firsttd:
-            href = self.get_attr_value(attrs, 'href')
             if href:
                 tn = self.re_imdbID.findall(href)
                 if tn:
@@ -2052,12 +2083,12 @@ class HTMLRecParser(ParserBase):
     def end_tr(self): pass
 
     def start_td(self, attrs):
-        if self._firsttd:
+        if self._firsttd and not self._no_more:
             span = self.get_attr_value(attrs, 'colspan')
             if span: self._firsttd = 0
 
     def end_td(self):
-        if self._firsttd:
+        if self._firsttd and not self._no_more:
             self._curtitle = self._curtitle.strip()
             if self._curtitle:
                 if self._curlist:
@@ -2077,6 +2108,7 @@ class HTMLRecParser(ParserBase):
         self._inb = 0
 
     def _handle_data(self, data):
+        if self._no_more: return
         ldata = data.lower()
         if self._intable and self._inb:
             if ldata.find('suggested by the database') != -1:
@@ -2137,6 +2169,7 @@ class HTMLNewsParser(ParserBase):
 
     def end_font(self):
         self._in_font = 0
+        self._cur_text = u''
 
     def do_br(self, attrs):
         if not self._in_content: return
@@ -2171,7 +2204,7 @@ class HTMLNewsParser(ParserBase):
 
     def _handle_data(self, data):
         if self._in_font: return
-        if self._in_content:
+        if self._in_content and not self._in_font:
             self._cur_text += data
 
 

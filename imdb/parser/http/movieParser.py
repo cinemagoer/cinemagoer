@@ -1666,6 +1666,7 @@ class HTMLConnectionParser(ParserBase):
         self._cur_id = u''
         self._cur_note = u''
         self._seen_br = False
+        self._stop = False
 
     def get_data(self):
         """Return the dictionary."""
@@ -1685,7 +1686,13 @@ class HTMLConnectionParser(ParserBase):
     def start_div(self, attrs): pass
 
     def end_div(self):
+        if self._stop: return
         self._add_info()
+
+    def do_img(self, attrs):
+        src = self.get_attr_value(attrs, 'src')
+        if src and src.find('header_relatedlinks') != -1:
+            self._stop = True
 
     def start_a(self, attrs):
         if not self._in_content: return
@@ -1721,6 +1728,7 @@ class HTMLConnectionParser(ParserBase):
 
     def _handle_data(self, data):
         if not self._in_content: return
+        if self._stop: return
         if self._in_conn_type:
             self._conn_type += data
         elif self._in_cur_title:

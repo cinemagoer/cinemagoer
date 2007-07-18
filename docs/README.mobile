@@ -80,12 +80,12 @@ Usage:
 
 A GUI for Series 60 smart phones, developed by Tero Saarni,
 is available at:
-  http://kotisivu.mtv3.fi/terosaarni/python/imdbpygui/
+  http://imdbpy.sourceforge.net/?page=mobile
 
 On some mobile phone a pair of modules can be missing, and
 you have to install it manually as libraries; you can find
 these two modules (sgmllib.py and htmlentitydefs.py) here:
-  http://imdbpy.sf.net/mobile-imdbpy-modules-0.1.tar.gz
+  http://imdbpy.sourceforge.net/symbiangui/mobile-imdbpy-modules-0.1.tar.gz
 
 
   THE "HTTPTHIN" DATA ACCESS SYSTEM

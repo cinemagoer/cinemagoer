@@ -16,7 +16,7 @@ copyright on some (minor) portions of the code:
 NAME: Martin Kirst
 EMAIL: <martin.kirst --> s1998.tu-chemnitz.de>
 CONTRIBUTION: has done an important refactoring of the imdbpyweb
-program and shares the copyright on the whole program.
+program and shares with me the copyright on the whole program.
 
 
 NAME: H. Turgut Uyar

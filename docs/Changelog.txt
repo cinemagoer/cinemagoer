@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.1.cvs20070717 "The Snake King" (17 Jul 2007)
+* What's the new in release 3.1 "The Snake King" (18 Jul 2007)
   [global]
   - the IMDbPYweb account now returns a single item, when a search
     returns only one "good enough" match (this is the IMDb's default).

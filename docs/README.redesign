@@ -3,19 +3,12 @@
   ========================
 
 On 19 February 2007, IMDb introduced a complete redesign of their
-web site.  This means that the 'http' and 'mobile' parser are no
-more able to parse the new html; as a temporary solution, the account
-used by IMDbPY was set to "use previous layout", meaning that - for
-a certain amount of time - the current IMDbPY version (2.9) will work.
+web site.
 
-This (2.9) will be the last version of IMDbPY to parse the old layout:
-from now on, on the CVS, the development will be geared to use the new
-layout - and a new IMDb's account will be used.
+Since release 3.0, IMDbPY uses a new account to access the IMDb
+web site, parsing the new layout.
 
-Conclusion: if you find a bug in 'http' or 'mobile' in this release,
-please report it anyway (it can also affect the new code), but consider
-that a bit of time will be needed, to fix everything.
-Even better, help the development subscribing to the mailing list:
-  http://imdbpy.sourceforge.net/?page=devel
-
+Older version still access the old layout, so they are still (more
+or less) working; obviously only the new layout is sopport from
+now on.
 

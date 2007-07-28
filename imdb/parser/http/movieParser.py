@@ -1072,40 +1072,39 @@ class HTMLCrazyCreditsParser(ParserBase):
 
     def _reset(self):
         """Reset the parser."""
-        self._in_cc2 = 0
         self._cc = []
+        self._in_cc = False
         self._ccc = u''
-        self._nrbr = 0
 
     def get_data(self):
         """Return the dictionary."""
         if not self._cc: return {}
         return {'crazy credits': self._cc}
 
-    def start_pre(self, attrs):
+    def start_ul(self, attrs):
         if self._in_content:
-            self._in_cc2 = 1
+            self._in_cc = True
 
-    def end_pre(self):
-        if self._in_cc2:
-            self.app()
-            self._in_cc2 = 0
+    def end_ul(self):
+        self._in_cc = False
 
     def do_br(self, attrs):
-        if not self._in_cc2: return
-        self._nrbr += 1
-        if self._nrbr == 2:
-            self.app()
+        if not self._in_cc: return
+        if self._ccc: self._ccc += u' '
 
-    def app(self):
+    def start_li(self, attrs):
+        self._ccc = u''
+
+    def end_li(self):
+        if not self._in_cc: return
         self._ccc = self._ccc.strip()
-        if self._in_cc2 and self._ccc:
-            self._cc.append(self._ccc.replace('\n', ' '))
+        if self._ccc:
+            self._ccc = self._ccc.replace('\n', ' ').replace('  ', ' ')
+            self._cc.append(self._ccc)
             self._ccc = u''
-            self._nrbr = 0
 
     def _handle_data(self, data):
-        if self._in_cc2:
+        if self._in_cc:
             self._ccc += data
 
 

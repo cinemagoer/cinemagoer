@@ -477,6 +477,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                                 maxRes=1)
         if workkind:
             workkind[:] = _findBetween(workkind[0], 'href="#', '</a>')
+        else:
+            # Assume there's only one section and/or there are no
+            # section links, for some reason.
+            workkind[:] = _findBetween(s, '<h5><a name=', '</a></h5>')
+            workkind[:] = [x.lstrip('"').rstrip(':').lower() for x in workkind]
         ws = []
         for work in workkind:
             wsplit = work.split('">', 1)

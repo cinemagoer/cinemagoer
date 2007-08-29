@@ -1,9 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.2.cvs20070728 "Ils" (28 Jul 2007)
+* What's the new in release 3.2.cvs20070828 "Wu Tang vs. Ninja" (28 Aug 2007)
   [http]
   - updated the crazy credits parser.
+
+  [mobile]
+  - fixed a bug parsing people's filmography when only one duty
+    was listed.
 
 
 * What's the new in release 3.1 "The Snake King" (18 Jul 2007)

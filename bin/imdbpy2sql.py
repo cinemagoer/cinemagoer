@@ -65,11 +65,19 @@ HELP = """imdbpy2sql.py usage:
 IMDB_PTDF_DIR = None
 # URI used to connect to the database.
 URI = None
+# Store custom queries specified on the command line.
+CUSTOM_QUERIES = {}
+# Allowed time specification, for custom queries.
+ALLOWED_TIMES = ('BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE', 'AFTER_CREATE',
+                'BEFORE_MOVIES', 'BEFORE_CAST', 'BEFORE_RESTORE',
+                'BEFORE_INDEXES', 'END')
+
 
 # Manage arguments list.
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:h',
-                                                ['uri=', 'data=', 'help'])
+    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:h',
+                                                ['uri=', 'data=', 'execute='
+                                                'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
     print HELP
@@ -80,6 +88,15 @@ for opt in optlist:
         IMDB_PTDF_DIR = opt[1]
     elif opt[0] in ('-u', '--uri'):
         URI = opt[1]
+    elif opt[0] in ('-e', '--execute'):
+        if opt[1].find(':') == -1:
+            print 'WARNING: wrong command syntax: "%s"' % opt[1]
+            continue
+        when, cmd = opt[1].split(':', 1)
+        if when not in ALLOWED_TIMES:
+            print 'WARNING: unknown time: "%s"' % when
+            continue
+        CUSTOM_QUERIES.setdefault(when, []).append(cmd)
     elif opt[0] in ('-h', '--help'):
         print HELP
         sys.exit(0)
@@ -1525,9 +1542,41 @@ def restoreImdbID(tons, cls):
     print 'DONE! (restored %d entries out of %d)' % (count, len(tons))
 
 
+def _executeQuery(query):
+    print 'EXECUTING "%s"...' % (query),
+    sys.stdout.flush()
+    try:
+        CURS.execute(query)
+        print 'DONE!'
+    except Exception, e:
+        print 'FAILED (%s)!' % e
+
+
+def executeCustomQueries(when):
+    """Run custom queries as specified on the command line."""
+    for query in CUSTOM_QUERIES.get(when, []):
+        print 'EXECUTING "%s:%s"...' % (when, query)
+        sys.stdout.flush()
+        if query.startswith('FOR_EVERY_TABLE:'):
+            query = query[16:]
+            CURS.execute('SHOW TABLES;')
+            tables = [x[0] for x in CURS.fetchall()]
+            for table in tables:
+                try:
+                    _executeQuery(query % {'table': table})
+                    t('%s command' % when)
+                except Exception, e:
+                    print 'FAILED (%s)!' % e
+        else:
+            _executeQuery(query)
+            t('%s command' % when)
+
+
 # begin the iterations...
 def run():
     print 'RUNNING imdbpy2sql.py'
+
+    executeCustomQueries('BEGIN')
 
     # Storing imdbIDs for movies and persons.
     try:
@@ -1541,11 +1590,15 @@ def run():
         people_imdbIDs = []
         print 'WARNING: failed to read imdbIDs for people'
 
+    executeCustomQueries('BEFORE_DROP')
+
     # Truncate the current database.
     print 'DROPPING current database...',
     sys.stdout.flush()
     dropTables()
     print 'DONE!'
+
+    executeCustomQueries('BEFORE_CREATE')
 
     # Rebuild the database structure.
     print 'CREATING new tables...',
@@ -1554,8 +1607,12 @@ def run():
     print 'DONE!'
     t('dropping and recreating the database')
 
+    executeCustomQueries('AFTER_CREATE')
+
     # Read the constants.
     readConstants()
+
+    executeCustomQueries('BEFORE_CAST')
 
     # Populate the CACHE_MID instance.
     readMovieList()
@@ -1605,6 +1662,8 @@ def run():
     completeCast()
     t('completeCast()')
 
+    executeCustomQueries('BEFORE_RESTORE')
+
     # Restoring imdbIDs for movies and persons.
     try:
         restoreImdbID(movies_imdbIDs, Title)
@@ -1627,11 +1686,15 @@ def run():
     print 'TOTAL TIME TO INSERT DATA: %d minutes, %d seconds' % \
             divmod(int(time.time())-BEGIN_TIME, 60)
 
+    executeCustomQueries('BEFORE_INDEXES')
+
     print 'building database indexes (this may take a while)'
     sys.stdout.flush()
     # Build database indexes.
     createIndexes()
     t('createIndexes()')
+
+    executeCustomQueries('END')
 
     print 'DONE! (in %d minutes, %d seconds)' % \
             divmod(int(time.time())-BEGIN_TIME, 60)

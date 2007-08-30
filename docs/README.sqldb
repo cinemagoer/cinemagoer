@@ -100,7 +100,7 @@ complete plain text data files set (as of 12 Nov 2006, with about
    MySQL 5.0 InnoDB    |  ??? (80/???)
                        |  maybe I've not cofigurated it properly: it
                        |  looks like the creation of the indexes will
-                       |  take more than 2 or 3 hours.
+                       |  take more than 2 or 3 hours.  But see NOTES below.
    PostgreSQL 8.1      |  190 (177/13)
    SQLite 3.2          | not tested: it seems way too slow: maybe 35 _hours_
                        | to complete; maybe I've misconfigured or I'm
@@ -116,7 +116,19 @@ If you have different experiences, please tell me!
 The imdbpy2sql.py will print a lot of debug information on standard output;
 you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
 
-[sqlite failure]
+[MySQL InnoDB]
+InnoDB is abysmal slow for our purposes: my suggestion is to always
+use MyISAM tables and - if you really want to use InnoDB - convert
+the tables later.
+The imdbpy2sql.py script provides a simple way to manage this case,
+see ADVANCED FEATURES below.
+Anyway, if you really need to use InnoDB, in the server-side settings
+I recommend to set innodb_file_per_table to "true".
+
+Beware that the conversion will be extremely slow (some hours), but
+still faster then using InnoDB from the begin.
+
+[SQLite failure]
 It seems that, with older versions of the python-sqlite package, the first
 run may fail; if you get a DatabaseError exception saying "no such table",
 try running again the command with the same arguments.
@@ -167,5 +179,40 @@ Now you can use IMDbPY with the database:
   print ti['director'][0]
 
 and so on...
+
+
+  ADVANCED FEATURES
+  =================
+
+With the -e (of --execute) command line argument you can specify
+custom queries to be executed at certain times, with the syntax:
+  -e "TIME:[OPTIONAL_MODIFIER:]QUERY"
+
+Where TIME is actually one of these: 'BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE',
+'AFTER_CREATE', 'BEFORE_MOVIES', 'BEFORE_CAST', 'BEFORE_RESTORE',
+'BEFORE_INDEXES' and 'END'.
+
+The only available OPTIONAL_MODIFIER is 'FOR_EVERY_TABLE' and it
+means that the QUERY command will be executed for every table in the
+database (so it doesn't makes much sense to use it with BEGIN, BEFORE_DROP
+or BEFORE_CREATE time...), replacing the "%(table)s" text in the QUERY
+with the appropriate table name.
+
+You can specify so many -e arguments as you need, even if they
+refers to the same TIME: they will be executed from the first to the last.
+Also, always remember to correctly escape queries: after all you're
+passing it on the command line!
+
+E.g. (ok, quite a silly example...):
+  -e "AFTER_CREATE:SELECT * FROM title;"
+
+The most useful case is when you want to convert the tables of a MySQL
+from MyISAM to InnoDB:
+  -e "END:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=InnoDB;"
+
+If your system uses InnoDB by default, you can trick it with:
+  -e "AFTER_CREATE:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=MyISAM;" -e "END:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=InnoDB;"
+
+Cool, uh?
 
 

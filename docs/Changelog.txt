@@ -1,13 +1,17 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.2.cvs20070828 "Wu Tang vs. Ninja" (28 Aug 2007)
+* What's the new in release 3.2.cvs20070830 "Friday the 13th: A New Beginning" (30 Aug 2007)
   [http]
   - updated the crazy credits parser.
 
   [mobile]
   - fixed a bug parsing people's filmography when only one duty
     was listed.
+
+  [sql]
+  - added the ability to perform custom SQL queries at the command
+    line of the imdbpy2sql.py script.
 
 
 * What's the new in release 3.1 "The Snake King" (18 Jul 2007)

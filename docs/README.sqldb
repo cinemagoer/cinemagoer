@@ -126,7 +126,7 @@ Anyway, if you really need to use InnoDB, in the server-side settings
 I recommend to set innodb_file_per_table to "true".
 
 Beware that the conversion will be extremely slow (some hours), but
-still faster then using InnoDB from the begin.
+still faster than using InnoDB from the begin.
 
 [SQLite failure]
 It seems that, with older versions of the python-sqlite package, the first
@@ -184,7 +184,7 @@ and so on...
   ADVANCED FEATURES
   =================
 
-With the -e (of --execute) command line argument you can specify
+With the -e (or --execute) command line argument you can specify
 custom queries to be executed at certain times, with the syntax:
   -e "TIME:[OPTIONAL_MODIFIER:]QUERY"
 
@@ -194,7 +194,7 @@ Where TIME is actually one of these: 'BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE',
 
 The only available OPTIONAL_MODIFIER is 'FOR_EVERY_TABLE' and it
 means that the QUERY command will be executed for every table in the
-database (so it doesn't makes much sense to use it with BEGIN, BEFORE_DROP
+database (so it doesn't make much sense to use it with BEGIN, BEFORE_DROP
 or BEFORE_CREATE time...), replacing the "%(table)s" text in the QUERY
 with the appropriate table name.
 

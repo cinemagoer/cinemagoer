@@ -15,6 +15,8 @@ I'd like to thank the following people for their help:
 
 * Jesper Nøhr for a lot of testing, especially on the 'sql'.
 
+* Ken R. Garland for a bug report about 'cover url'.
+
 * Jon Sabo for a bug report about unicode and the imdbpy2sql.py script
   and some feedback.
 

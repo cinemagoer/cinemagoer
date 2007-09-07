@@ -1,9 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.2.cvs20070830 "Friday the 13th: A New Beginning" (30 Aug 2007)
+* What's the new in release 3.2.cvs20070907 "Ghost in the Shell: Stand Alone Complex Solid State Society" (07 Sep 2007)
   [http]
   - updated the crazy credits parser.
+  - fixed a bug retrieving 'cover url'.
 
   [mobile]
   - fixed a bug parsing people's filmography when only one duty

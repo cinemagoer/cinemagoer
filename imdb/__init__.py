@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person']
+__version__ = VERSION = '3.2.cvs20070920'
 
 import sys
 from types import UnicodeType, TupleType, ListType, MethodType
@@ -33,9 +34,18 @@ from imdb._exceptions import IMDbError, IMDbDataAccessError
 from imdb.utils import build_title, build_name
 
 
-# URLs of the main pages for movies and persons.
-imdbURL_movie_main = 'http://akas.imdb.com/title/tt%s/'
-imdbURL_person_main = 'http://akas.imdb.com/name/nm%s/'
+# URLs of the main pages for movies, persons and queries.
+imdbURL_base = 'http://akas.imdb.com/'
+# http://akas.imdb.com/title/
+imdbURL_movie_base = '%stitle/' % imdbURL_base
+# http://akas.imdb.com/title/tt%s/
+imdbURL_movie_main = imdbURL_base + 'tt%s/'
+# http://akas.imdb.com/name/
+imdbURL_person_base = '%sname/' % imdbURL_base
+# http://akas.imdb.com/name/nm%s/
+imdbURL_person_main = imdbURL_base + 'nm%s/'
+# http://akas.imdb.com/find?%s
+imdbURL_find = imdbURL_base + 'find?%s'
 
 
 def IMDb(accessSystem='http', *arguments, **keywords):
@@ -325,7 +335,7 @@ class IMDbBase:
     def _searchIMDb(self, params):
         """Fetch the given search page from the IMDb akas server."""
         from imdb.parser.http import IMDbURLopener
-        url = 'http://akas.imdb.com/find?%s' % params
+        url = imdbURL_find % params
         content = u''
         try:
             urlOpener = IMDbURLopener()

@@ -29,6 +29,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import re
 from types import UnicodeType, StringType
 
+from imdb import imdbURL_base
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb.utils import analyze_title, re_episodes
@@ -1636,7 +1637,7 @@ class HTMLOfficialsitesParser(ParserBase):
             if href:
                 if not href.lower().startswith('http://'):
                     if href.startswith('/'): href = href[1:]
-                    href = 'http://akas.imdb.com/%s' % href
+                    href = '%s%s' % (imdbURL_base, href)
                 self._cosl = href
 
     def end_a(self): pass
@@ -1987,7 +1988,8 @@ class HTMLDvdParser(ParserBase):
             self._seencover = 1
             src = self.get_attr_value(attrs, 'src')
             if src and src.find('noposter') == -1:
-                if src[0] == '/': src = 'http://akas.imdb.com%s' % src
+                if src[0] == '/':
+                    src = '%s%s' % (imdbURL_base, src[1:])
                 self._cdvd['cover'] = src
 
     def start_p(self, attrs):
@@ -2207,7 +2209,7 @@ class HTMLNewsParser(ParserBase):
             if href:
                 if not href.startswith('http://'):
                     if href[0] == '/': href = href[1:]
-                    href = 'http://akas.imdb.com/%s' % href
+                    href = '%s%s' % (imdbURL_base, href)
                 self._cur_news['link'] = href
 
     def _handle_data(self, data):
@@ -2276,7 +2278,7 @@ class HTMLAmazonReviewsParser(ParserBase):
             if href:
                 if not href.startswith('http://'):
                     if href[0] == '/': href = href[1:]
-                    href = 'http://akas.imdb.com/%s' % href
+                    href = '%s%s' % (imdbURL_base, href)
                 self._cur_link = href.strip()
 
     def end_a(self): pass
@@ -2477,7 +2479,8 @@ class HTMLSalesParser(ParserBase):
         if href:
             if self._get_img or self._get_link:
                 if href[0] == '/':
-                    href = 'http://akas.imdb.com%s' % href
+                    href = href[1:]
+                href = '%s%s' % (imdbURL_base, href)
                 self._cur_info['link'] = href
                 self._get_link = 0
 

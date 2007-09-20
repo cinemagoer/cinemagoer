@@ -27,13 +27,13 @@ import re
 from urllib import unquote
 from types import ListType, TupleType
 
+from imdb import imdbURL_movie_main, imdbURL_person_main
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import analyze_title, analyze_name, canonicalName, \
                         re_episodes, date_and_notes
 from imdb._exceptions import IMDbDataAccessError
-from imdb.parser.http import IMDbHTTPAccessSystem, \
-                                imdbURL_movie, imdbURL_person
+from imdb.parser.http import IMDbHTTPAccessSystem
 from imdb.parser.http.utils import subXMLRefs, subSGMLRefs, build_person, \
                                     build_movie, re_spaces
 
@@ -188,7 +188,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         return res
 
     def get_movie_main(self, movieID):
-        cont = self._mretrieve(imdbURL_movie % movieID + 'maindetails')
+        cont = self._mretrieve(imdbURL_movie_main % movieID + 'maindetails')
         title = _findBetween(cont, '<title>', '</title>', maxRes=1)
         if not title:
             raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
@@ -392,7 +392,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         return {'data': d}
 
     def get_movie_plot(self, movieID):
-        cont = self._mretrieve(imdbURL_movie % movieID + 'plotsummary')
+        cont = self._mretrieve(imdbURL_movie_main % movieID + 'plotsummary')
         plot = _findBetween(cont, '<p class="plotpar">', '</p>')
         plot[:] = [_unHtml(x) for x in plot]
         for i in xrange(len(plot)):
@@ -445,7 +445,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         return res
 
     def get_person_main(self, personID):
-        s = self._mretrieve(imdbURL_person % personID + 'maindetails')
+        s = self._mretrieve(imdbURL_person_main % personID + 'maindetails')
         r = {}
         name = _findBetween(s, '<title>', '</title>', maxRes=1)
         if not name:
@@ -536,7 +536,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         return {'data': r, 'info sets': ('main', 'filmography')}
 
     def get_person_biography(self, personID):
-        cont = self._mretrieve(imdbURL_person % personID + 'bio')
+        cont = self._mretrieve(imdbURL_person_main % personID + 'bio')
         d = {}
         spouses = _findBetween(cont, 'Spouse</h5>', ('</table>', '</dd>'),
                                 maxRes=1)

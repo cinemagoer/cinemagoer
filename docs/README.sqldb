@@ -27,6 +27,11 @@ SQLObject home page: http://sqlobject.org/
 SVN command to download the latest development version:
   svn co http://svn.colorstudy.com/SQLObject/trunk SQLObject
 
+Obviously the SQLObject can access databases only through other
+specific modules/packages, that you need to have installed (e.g.:
+python-mysqldb for MySQL, python-psycopg for PostgreSQL, python-sqlite
+for SQLite and so on).
+
 
   SQL DATABASE INSTALLATION
   =========================

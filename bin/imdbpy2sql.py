@@ -843,7 +843,11 @@ def doCast(fp, roleid, rolename):
         for item in ll[1:]:
             if not item: continue
             if item[0] == '[':
-                role = item[1:].rstrip(']')
+                # Quite inefficient, but there are some very strange
+                # cases of garbage in the plain text data files to handle...
+                role = item[1:]
+                if role[-1:] == ']':
+                    role = role[:-1]
                 if role[-1:] == ')':
                     nidx = role.find('(')
                     if nidx != -1:

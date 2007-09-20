@@ -30,7 +30,7 @@ from types import UnicodeType, TupleType, ListType
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
 from utils import modClearRefs, re_titleRef, re_nameRef
-from imdb import IMDb
+from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
                                     entcharrefsget, subXMLRefs, subSGMLRefs
 
@@ -92,8 +92,8 @@ def makeModCGILinks(movieTxt, personTxt, encoding='latin_1'):
     return modCGILinks
 
 # links to the imdb.com web site.
-_movieTxt = '<a href="http://akas.imdb.com/title/tt%(movieID)s">%(title)s</a>'
-_personTxt = '<a href="http://akas.imdb.com/name/nm%(personID)s">%(name)s</a>'
+_movieTxt = '<a href="' + imdbURL_movie_base + 'tt%(movieID)s">%(title)s</a>'
+_personTxt = '<a href="' + imdbURL_person_base + 'nm%(personID)s">%(name)s</a>'
 modHtmlLinks = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt)
 modHtmlLinksASCII = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt,
                                     encoding='ascii')

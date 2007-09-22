@@ -219,6 +219,9 @@ class HTMLMovieParser(ParserBase):
             # httpThin is used (they are the only place these info are).
             self._in_tr = True
 
+    start_h3 = start_h5
+    end_h3 = end_h5
+
     def start_h6(self, attrs):
         # Production status is in h6 tags.
         if self._in_production_notes:
@@ -376,7 +379,7 @@ class HTMLMovieParser(ParserBase):
         elif self._section == 'miscellaneous companies':
             self._data.setdefault(self._section,
                                     []).append(ct.replace('  ', '::', 1))
-        else:
+        elif self._section != 'cast':
             self._data.setdefault(self._section, []).append(ct)
         self._cur_txt = u''
 
@@ -1203,6 +1206,12 @@ class HTMLQuotesParser(ParserBase):
             self._in_quo2 = 1
 
     def end_a(self): pass
+
+    def start_h3(self, attrs):
+        self._in_quo2 = 0
+        self._cquo = u''
+
+    def end_h3(self): pass
 
     def do_hr(self, attrs):
         if self._in_content and self._in_quo2 and self._cquo:

@@ -39,11 +39,11 @@ imdbURL_base = 'http://akas.imdb.com/'
 # http://akas.imdb.com/title/
 imdbURL_movie_base = '%stitle/' % imdbURL_base
 # http://akas.imdb.com/title/tt%s/
-imdbURL_movie_main = imdbURL_base + 'tt%s/'
+imdbURL_movie_main = imdbURL_movie_base + 'tt%s/'
 # http://akas.imdb.com/name/
 imdbURL_person_base = '%sname/' % imdbURL_base
 # http://akas.imdb.com/name/nm%s/
-imdbURL_person_main = imdbURL_base + 'nm%s/'
+imdbURL_person_main = imdbURL_person_base + 'nm%s/'
 # http://akas.imdb.com/find?%s
 imdbURL_find = imdbURL_base + 'find?%s'
 

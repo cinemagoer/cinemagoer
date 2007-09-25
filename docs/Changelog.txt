@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.2.cvs20070922 "Videodrome" (22 Sep 2007)
+* What's the new in release 3.2 "Videodrome" (25 Sep 2007)
   [global]
   - now there's an unique place where "akas.imdb.com" is set, in the
     main module.
@@ -9,13 +9,15 @@
   - minor improvements to the documentation.
 
   [http]
-  - updated the main movie parser to retrieve the new cast section.
+  - updated the main movie parser to retrieve the recently modified
+    cast section.
   - updated the crazy credits parser.
   - fixed a bug retrieving 'cover url'.
 
   [mobile]
   - fixed a bug parsing people's filmography when only one duty
     was listed.
+  - updated to retrieve series' creator.
 
   [sql]
   - added the ability to perform custom SQL queries at the command

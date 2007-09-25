@@ -254,6 +254,12 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                                                             '</div>',
                                                             '<br/> <br/>'),
                                                             maxRes=1)
+            if not creator:
+                # They change 'Created by' to 'Creator' and viceversa
+                # from time to time...
+                creator = _findBetween(cont, 'Creator:</h5>',
+                                        ('class="tn15more"', '</div>',
+                                        '<br/> <br/>'), maxRes=1)
             if creator:
                 creator = creator[0]
                 if creator.find('tn15more'): creator = '%s>' % creator

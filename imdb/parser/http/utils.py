@@ -157,6 +157,8 @@ def build_person(txt, personID=None, billingPos=None, accessSystem='http'):
             role_comment = role_comment[:-4].rstrip()
         elif role_comment[-2:] == ' &':
             role_comment = role_comment[:-2].rstrip()
+        elif role_comment[-6:] == '& ....':
+            role_comment = role_comment[:-6].rstrip()
         # Get the notes.
         cmt_idx = role_comment.find('(')
         if cmt_idx != -1:

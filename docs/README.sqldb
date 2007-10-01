@@ -133,6 +133,11 @@ I recommend to set innodb_file_per_table to "true".
 Beware that the conversion will be extremely slow (some hours), but
 still faster than using InnoDB from the begin.
 
+[Microsoft SQL Server/SQLExpress and maybe Sybase]
+If you get and error about how wrong and against nature is the
+blasphemous act of inserting indentity key, you can try to fix it
+with the new custom queries support; see ADVANCED FEATURES below.
+
 [SQLite failure]
 It seems that, with older versions of the python-sqlite package, the first
 run may fail; if you get a DatabaseError exception saying "no such table",
@@ -203,6 +208,14 @@ database (so it doesn't make much sense to use it with BEGIN, BEFORE_DROP
 or BEFORE_CREATE time...), replacing the "%(table)s" text in the QUERY
 with the appropriate table name.
 
+Other available TIMEs are: 'BEFORE_MOVIES_TODB', 'AFTER_MOVIES_TODB',
+'BEFORE_PERSONS_TODB', 'AFTER_PERSONS_TODB','BEFORE_SQLDATA_TODB',
+'AFTER_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB' and 'AFTER_AKAMOVIES_TODB';
+they take no modifiers.
+These commands are executed before and after every _toDB() call in
+their respective objects (CACHE_MID, CACHE_PID and SQLData instances);
+the  "%(table)s" text in the QUERY is replaced as above.
+
 You can specify so many -e arguments as you need, even if they
 refers to the same TIME: they will be executed from the first to the last.
 Also, always remember to correctly escape queries: after all you're
@@ -219,5 +232,10 @@ If your system uses InnoDB by default, you can trick it with:
   -e "AFTER_CREATE:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=MyISAM;" -e "END:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=InnoDB;"
 
 Cool, uh?
+
+Another possible use is to fix a problem with Microsoft SQLServer/SQLExpress
+and maybe Sybase: to prevent errors setting IDENTITY fields, you can run
+something like this:
+  -e 'BEFORE_MOVIES_TODB:SET IDENTITY_INSERT %(table)s ON' -e 'AFTER_MOVIES_TODB:SET IDENTITY_INSERT %(table)s OFF' -e 'BEFORE_PERSONS_TODB:SET IDENTITY_INSERT %(table)s ON' -e 'AFTER_PERSONS_TODB:SET IDENTITY_INSERT %(table)s OFF' -e 'BEFORE_AKAMOVIES_TODB:SET IDENTITY_INSERT %(table)s ON' -e 'AFTER_AKAMOVIES_TODB:SET IDENTITY_INSERT %(table)s OFF'
 
 

@@ -70,7 +70,11 @@ CUSTOM_QUERIES = {}
 # Allowed time specification, for custom queries.
 ALLOWED_TIMES = ('BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE', 'AFTER_CREATE',
                 'BEFORE_MOVIES', 'BEFORE_CAST', 'BEFORE_RESTORE',
-                'BEFORE_INDEXES', 'END')
+                'BEFORE_INDEXES', 'END', 'BEFORE_MOVIES_TODB',
+                'AFTER_MOVIES_TODB', 'BEFORE_PERSONS_TODB',
+                'AFTER_PERSONS_TODB','BEFORE_SQLDATA_TODB',
+                'AFTER_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB',
+                'AFTER_AKAMOVIES_TODB')
 
 
 # Manage arguments list.
@@ -425,6 +429,8 @@ class _BaseCache(dict):
         self._flushing = 0
         self._deferredData = {}
         self._recursionLevel = 0
+        self._table_name = ''
+        self._id_for_custom_q = ''
         if d is not None:
             for k, v in d.iteritems(): self[k] = v
 
@@ -450,10 +456,23 @@ class _BaseCache(dict):
             self._tmpDict.clear()
             return
         if self._tmpDict:
+            # Horrible hack to know if AFTER_%s_TODB has run.
+            _after_has_run = False
+            keys = {'table': self._table_name}
             try:
+                executeCustomQueries('BEFORE_%s_TODB' % self._id_for_custom_q,
+                                    _keys=keys, _timeit=False)
                 self._toDB(quiet)
+                executeCustomQueries('AFTER_%s_TODB' % self._id_for_custom_q,
+                                    _keys=keys, _timeit=False)
+                _after_has_run = True
                 self._tmpDict.clear()
             except OperationalError, e:
+                # XXX: I'm not sure this is the right thing (and way)
+                #      to proceed.
+                if not _after_has_run:
+                    executeCustomQueries('AFTER_%s_TODB'%self._id_for_custom_q,
+                                        _keys=keys, _timeit=False)
                 # Dataset too large; split it in two and retry.
                 # XXX: new code!
                 # the same class instance (self) is used, instead of
@@ -528,6 +547,8 @@ class MoviesCache(_BaseCache):
     def __init__(self, *args, **kwds):
         _BaseCache.__init__(self, *args, **kwds)
         self.movieYear = {}
+        self._table_name = tableName(Title)
+        self._id_for_custom_q = 'MOVIES'
         self.sqlstr, self.converter = createSQLstr(Title, ('id', 'title',
                                     'imdbIndex', 'kindID', 'productionYear',
                                     'phoneticCode', 'episodeOfID',
@@ -619,6 +640,8 @@ class PersonsCache(_BaseCache):
 
     def __init__(self, *args, **kwds):
         _BaseCache.__init__(self, *args, **kwds)
+        self._table_name = tableName(Name)
+        self._id_for_custom_q = 'PERSONS'
         self.sqlstr, self.converter = createSQLstr(Name, ['id', 'name',
                                 'imdbIndex', 'namePcodeCf', 'namePcodeNf',
                                 'surnamePcode'])
@@ -681,6 +704,7 @@ class SQLData(dict):
         self.sqlString = sqlString
         self.converter = converter
         self._recursionLevel = 1
+        self._table_name = tableName(table)
         for k, v in d.items(): self[k] = v
 
     def __setitem__(self, key, value):
@@ -709,11 +733,21 @@ class SQLData(dict):
             self.clear()
             self.counter = self.counterInit
             return
+        keys = {'table': self._table_name}
+        _after_has_run = False
         try:
+            executeCustomQueries('BEFORE_SQLDATA_TODB', _keys=keys,
+                                _timeit=False)
             self._toDB()
+            executeCustomQueries('AFTER_SQLDATA_TODB', _keys=keys,
+                                _timeit=False)
+            _after_has_run = True
             self.clear()
             self.counter = self.counterInit
         except OperationalError, e:
+            if not _after_has_run:
+                executeCustomQueries('AFTER_SQLDATA_TODB', _keys=keys,
+                                    _timeit=False)
             print ' * TOO MANY DATA (%s items), SPLITTING (run #%d)...' % \
                     (len(self), self._recursionLevel)
             self._recursionLevel += 1
@@ -944,6 +978,8 @@ class AkasMoviesCache(MoviesCache):
         self.flushEvery = 50000
         self.notes = {}
         self.ids = {}
+        self._table_name = tableName(AkaTitle)
+        self._id_for_custom_q = 'AKAMOVIES'
         self.sqlstr, self.converter = createSQLstr(AkaTitle, ('id', 'movieID',
                             'title', 'imdbIndex', 'kindID', 'productionYear',
                             'phoneticCode', 'episodeOfID', 'seasonNr',
@@ -1556,8 +1592,9 @@ def _executeQuery(query):
         print 'FAILED (%s)!' % e
 
 
-def executeCustomQueries(when):
+def executeCustomQueries(when, _keys=None, _timeit=True):
     """Run custom queries as specified on the command line."""
+    if _keys is None: _keys = {}
     for query in CUSTOM_QUERIES.get(when, []):
         print 'EXECUTING "%s:%s"...' % (when, query)
         sys.stdout.flush()
@@ -1567,13 +1604,17 @@ def executeCustomQueries(when):
             tables = [x[0] for x in CURS.fetchall()]
             for table in tables:
                 try:
-                    _executeQuery(query % {'table': table})
-                    t('%s command' % when)
+                    keys = {'table': table}
+                    keys.update(_keys)
+                    _executeQuery(query % keys)
+                    if _timeit:
+                        t('%s command' % when)
                 except Exception, e:
                     print 'FAILED (%s)!' % e
         else:
-            _executeQuery(query)
-            t('%s command' % when)
+            _executeQuery(query % _keys)
+            if _timeit:
+                t('%s command' % when)
 
 
 # begin the iterations...

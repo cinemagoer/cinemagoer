@@ -33,6 +33,8 @@ NOTE: it's always time to clean the code! <g>
   info stored in a Movie object).
 * Should a movie object automatically build a Movie object, when
   a 'episode of' dictionary is in the data?
+* Should isSameTitle() check first the accessSystem and the movieID,
+  and use 'title' only if movieID is None?
 * For TV series the list of directors/writers returned by 'local'
   and 'sql' is a long list with every single episodes listed in the
   'notes' attribute (i.e.: the same person is listed more than one time,
@@ -51,6 +53,8 @@ NOTE: it's always time to clean the code! <g>
 [Person objects]
 * Define invariable names for the sections (the keys you use to access
   info stored in a Person object).
+* Should isSameName() check first the accessSystem and the personID,
+  and use 'name' only if personID is None?
 * Fetching data from the web ('http' and 'mobile'), the filmography
   for a given person contains a list named "himself" or "herself" for
   movies/shows where they were not acting.

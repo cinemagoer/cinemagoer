@@ -1,6 +1,12 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 3.3.cvs20071001 "300" (01 Oct 2007)
+  [sql]
+  - extended functionality of the custom queries support for the
+    imdbpy2sql.py script to circumvent a problem with MS SQLServer.
+
+
 * What's the new in release 3.2 "Videodrome" (25 Sep 2007)
   [global]
   - now there's an unique place where "akas.imdb.com" is set, in the

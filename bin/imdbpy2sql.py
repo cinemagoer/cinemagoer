@@ -47,7 +47,7 @@ for i, art in enumerate(_articles):
 re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 HELP = """imdbpy2sql.py usage:
-    %s -d /directory/with/PlainTextDataFiles/ -u URI
+    %s -d /directory/with/PlainTextDataFiles/ -u URI [--COMPATIBILITY-OPTIONS]
 
         # NOTE: URI is something along the line:
                 scheme://[user[:password]@]host[:port]/database[?parameters]
@@ -57,6 +57,12 @@ HELP = """imdbpy2sql.py usage:
                 postgres://user:password@host/database
                 sqlite:/tmp/imdb.db
                 sqlite:/C|/full/path/to/database
+
+        # NOTE: --COMPATIBILITY-OPTIONS can be one of:
+            --mysql-innodb      insert data into a MySQL MyISAM db,
+                                and then convert it to InnoDB.
+            --ms-sqlserver      compatibility mode for Microsoft SQL Server,
+                                SQL Express and SyBase.
 
                 See README.sqldb for more information.
 """ % sys.argv[0]
@@ -76,11 +82,27 @@ ALLOWED_TIMES = ('BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE', 'AFTER_CREATE',
                 'AFTER_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB',
                 'AFTER_AKAMOVIES_TODB')
 
+# Shortcuts for some compatibility options.
+MYSQLINNODB_OPTS = ['-e',
+        'AFTER_CREATE:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=MyISAM',
+        '-e', 'END:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=InnoDB']
+SQLSERVER_OPTS = ['-e', 'BEFORE_MOVIES_TODB:SET IDENTITY_INSERT %(table)s ON',
+        '-e', 'AFTER_MOVIES_TODB:SET IDENTITY_INSERT %(table)s OFF',
+        '-e', 'BEFORE_PERSONS_TODB:SET IDENTITY_INSERT %(table)s ON',
+        '-e', 'AFTER_PERSONS_TODB:SET IDENTITY_INSERT %(table)s OFF',
+        '-e', 'BEFORE_AKAMOVIES_TODB:SET IDENTITY_INSERT %(table)s ON',
+        '-e', 'AFTER_AKAMOVIES_TODB:SET IDENTITY_INSERT %(table)s OFF']
+
+if '--mysql-innodb' in sys.argv[1:]:
+    sys.argv += MYSQLINNODB_OPTS
+if '--ms-sqlserver' in sys.argv[1:]:
+    sys.argv += SQLSERVER_OPTS
 
 # Manage arguments list.
 try:
     optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:h',
-                                                ['uri=', 'data=', 'execute='
+                                                ['uri=', 'data=', 'execute=',
+                                                'mysql-innodb', 'ms-sqlserver',
                                                 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'

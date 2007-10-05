@@ -107,9 +107,9 @@ complete plain text data files set (as of 12 Nov 2006, with about
                        |  looks like the creation of the indexes will
                        |  take more than 2 or 3 hours.  But see NOTES below.
    PostgreSQL 8.1      |  190 (177/13)
-   SQLite 3.2          | not tested: it seems way too slow: maybe 35 _hours_
-                       | to complete; maybe I've misconfigured or I'm
-                       | misusing it.
+   SQLite 3.2          |  not tested: it seems way too slow: maybe 35 _hours_
+                       |  to complete; maybe I've misconfigured or I'm
+                       |  misusing it.
 
 If you have different experiences, please tell me!
 
@@ -120,6 +120,7 @@ If you have different experiences, please tell me!
 [save the output]
 The imdbpy2sql.py will print a lot of debug information on standard output;
 you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
+
 
 [MySQL InnoDB]
 InnoDB is abysmal slow for our purposes: my suggestion is to always
@@ -132,16 +133,25 @@ I recommend to set innodb_file_per_table to "true".
 
 Beware that the conversion will be extremely slow (some hours), but
 still faster than using InnoDB from the begin.
+You can use the "--mysql-innodb" command line option to force the
+creation of a datbase with MyISAM tables, converted at the end
+into InnoDB.
+
 
 [Microsoft SQL Server/SQLExpress and maybe Sybase]
 If you get and error about how wrong and against nature is the
-blasphemous act of inserting indentity key, you can try to fix it
+blasphemous act of inserting indentity keys, you can try to fix it
 with the new custom queries support; see ADVANCED FEATURES below.
+
+As a shortcut, you can use the "--ms-sqlserver" command line option
+to set all the needed options.
+
 
 [SQLite failure]
 It seems that, with older versions of the python-sqlite package, the first
 run may fail; if you get a DatabaseError exception saying "no such table",
 try running again the command with the same arguments.
+
 
 [data truncated]
 If you get an insane amount (hundreds or thousands, on various text
@@ -231,6 +241,9 @@ from MyISAM to InnoDB:
 If your system uses InnoDB by default, you can trick it with:
   -e "AFTER_CREATE:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=MyISAM;" -e "END:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=InnoDB;"
 
+You can use the "--mysql-innodb" command line option as a shortcut
+of the above command.
+
 Cool, uh?
 
 Another possible use is to fix a problem with Microsoft SQLServer/SQLExpress
@@ -238,4 +251,6 @@ and maybe Sybase: to prevent errors setting IDENTITY fields, you can run
 something like this:
   -e 'BEFORE_MOVIES_TODB:SET IDENTITY_INSERT %(table)s ON' -e 'AFTER_MOVIES_TODB:SET IDENTITY_INSERT %(table)s OFF' -e 'BEFORE_PERSONS_TODB:SET IDENTITY_INSERT %(table)s ON' -e 'AFTER_PERSONS_TODB:SET IDENTITY_INSERT %(table)s OFF' -e 'BEFORE_AKAMOVIES_TODB:SET IDENTITY_INSERT %(table)s ON' -e 'AFTER_AKAMOVIES_TODB:SET IDENTITY_INSERT %(table)s OFF'
 
+You can use the "--ms-sqlserver" command line option as a shortcut
+of the above command.
 

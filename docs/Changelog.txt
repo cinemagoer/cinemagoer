@@ -1,12 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.3.cvs20071005 "Quatermass and the Pit" (05 Oct 2007)
+* What's the new in release 3.3.cvs20071006 "Infernal Affairs III" (06 Oct 2007)
   [sql]
   - extended functionality of the custom queries support for the
     imdbpy2sql.py script to circumvent a problem with MS SQLServer.
   - introducted the "--mysql-innodb" and "--ms-sqlserver" shortcuts
     for the imdbpy2sql.py script.
+  - fixed a minor bug with top/bottom ratings, in the imdbpy2sql.py script.
 
 
 * What's the new in release 3.2 "Videodrome" (25 Sep 2007)

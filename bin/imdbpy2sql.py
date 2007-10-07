@@ -1447,7 +1447,7 @@ def getTopBottomRating():
             mid = CACHE_MID.addUnique(title)
             if what == 'top 250 rank': rank = count
             else: rank = 11 - count
-            sqldata.add((mid, rank))
+            sqldata.add((mid, str(rank)))
             count += 1
         sqldata.flush()
         fp.close()

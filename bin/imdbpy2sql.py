@@ -59,10 +59,12 @@ HELP = """imdbpy2sql.py usage:
                 sqlite:/C|/full/path/to/database
 
         # NOTE: --COMPATIBILITY-OPTIONS can be one of:
-            --mysql-innodb      insert data into a MySQL MyISAM db,
-                                and then convert it to InnoDB.
-            --ms-sqlserver      compatibility mode for Microsoft SQL Server,
-                                SQL Express and SyBase.
+            --mysql-innodb          insert data into a MySQL MyISAM db,
+                                    and then convert it to InnoDB.
+            --ms-sqlserver          compatibility mode for Microsoft SQL Server
+                                    and SQL Express.
+            --sqlite-transactions   uses transactions, to speed-up SQLite.
+
 
                 See README.sqldb for more information.
 """ % sys.argv[0]
@@ -80,29 +82,31 @@ ALLOWED_TIMES = ('BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE', 'AFTER_CREATE',
                 'AFTER_MOVIES_TODB', 'BEFORE_PERSONS_TODB',
                 'AFTER_PERSONS_TODB','BEFORE_SQLDATA_TODB',
                 'AFTER_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB',
-                'AFTER_AKAMOVIES_TODB')
+                'AFTER_AKAMOVIES_TODB', 'BEFORE_EVERY_TODB',
+                'AFTER_EVERY_TODB')
 
 # Shortcuts for some compatibility options.
 MYSQLINNODB_OPTS = ['-e',
-        'AFTER_CREATE:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=MyISAM',
-        '-e', 'END:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=InnoDB']
-SQLSERVER_OPTS = ['-e', 'BEFORE_MOVIES_TODB:SET IDENTITY_INSERT %(table)s ON',
-        '-e', 'AFTER_MOVIES_TODB:SET IDENTITY_INSERT %(table)s OFF',
-        '-e', 'BEFORE_PERSONS_TODB:SET IDENTITY_INSERT %(table)s ON',
-        '-e', 'AFTER_PERSONS_TODB:SET IDENTITY_INSERT %(table)s OFF',
-        '-e', 'BEFORE_AKAMOVIES_TODB:SET IDENTITY_INSERT %(table)s ON',
-        '-e', 'AFTER_AKAMOVIES_TODB:SET IDENTITY_INSERT %(table)s OFF']
+        'AFTER_CREATE:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=MyISAM;',
+        '-e', 'END:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=InnoDB;']
+SQLSERVER_OPTS = ['-e', 'BEFORE_EVERY_TODB:SET IDENTITY_INSERT %(table)s ON;',
+        '-e', 'AFTER_EVERY_TODB:SET IDENTITY_INSERT %(table)s OFF;']
+SQLITE_OPTS = ['-e', 'BEFORE_EVERY_TODB:BEGIN TRANSACTION;',
+        '-e', 'AFTER_EVERY_TODB:COMMIT;']
 
 if '--mysql-innodb' in sys.argv[1:]:
     sys.argv += MYSQLINNODB_OPTS
 if '--ms-sqlserver' in sys.argv[1:]:
     sys.argv += SQLSERVER_OPTS
+if '--sqlite-transactions':
+    sys.argv += SQLITE_OPTS
 
 # Manage arguments list.
 try:
     optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:h',
                                                 ['uri=', 'data=', 'execute=',
                                                 'mysql-innodb', 'ms-sqlserver',
+                                                'sqlite-transactions',
                                                 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
@@ -122,7 +126,16 @@ for opt in optlist:
         if when not in ALLOWED_TIMES:
             print 'WARNING: unknown time: "%s"' % when
             continue
-        CUSTOM_QUERIES.setdefault(when, []).append(cmd)
+        if when == 'BEFORE_EVERY_TODB':
+            for nw in ('BEFORE_MOVIES_TODB', 'BEFORE_PERSONS_TODB',
+                        'BEFORE_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB'):
+                CUSTOM_QUERIES.setdefault(nw, []).append(cmd)
+        elif when == 'AFTER_EVERY_TODB':
+            for nw in ('AFTER_MOVIES_TODB', 'AFTER_PERSONS_TODB',
+                        'AFTER_SQLDATA_TODB', 'AFTER_AKAMOVIES_TODB'):
+                CUSTOM_QUERIES.setdefault(nw, []).append(cmd)
+        else:
+            CUSTOM_QUERIES.setdefault(when, []).append(cmd)
     elif opt[0] in ('-h', '--help'):
         print HELP
         sys.exit(0)

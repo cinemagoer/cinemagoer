@@ -13,12 +13,16 @@ I'd like to thank the following people for their help:
 * H. Turgut Uyar for a number of bug reports and a lot of work on
   the test-suite.
 
-* Jesper Nøhr for a lot of testing, especially on the 'sql'.
+* Jesper Nøhr for a lot of testing, especially on 'sql'.
 
 * Ken R. Garland for a bug report about 'cover url' and a lot of
   other hints.
 
-* Steven Ovits for hints and tests with Microsoft SQL Server.
+* Steven Ovits for hints and tests with Microsoft SQL Server, SQLExpress
+  and preliminary work on supporting diff files.
+
+* Elefterios Stamatogiannakis for the hint about transactions and SQLite,
+  to obtain an impressive improvement in performances.
 
 * Jon Sabo for a bug report about unicode and the imdbpy2sql.py script
   and some feedback.

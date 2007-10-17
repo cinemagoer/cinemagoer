@@ -1,12 +1,15 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.3.cvs20071006 "Infernal Affairs III" (06 Oct 2007)
+* What's the new in release 3.3.cvs20071017 "Planet Terror" (17 Oct 2007)
   [sql]
   - extended functionality of the custom queries support for the
     imdbpy2sql.py script to circumvent a problem with MS SQLServer.
   - introducted the "--mysql-innodb" and "--ms-sqlserver" shortcuts
     for the imdbpy2sql.py script.
+  - introduced the "--sqlite-transactions" shortcut to activate
+    transaction using SQLite which, otherwise, would have horrible
+    performances.
   - fixed a minor bug with top/bottom ratings, in the imdbpy2sql.py script.
 
 

@@ -567,6 +567,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             elif sect == 'where are they now': sect = 'where now'
             elif sect == 'personal quotes': sect = 'quotes'
             data = data.replace('</p><p>', '::')
+            data = data.replace('<br><br>', ' ') # for multi-paragraphs 'bio'
             data = data.replace('</td> <td valign="top">', '@@@@')
             data = data.replace('</td> </tr>', '::')
             data = _unHtml(data)

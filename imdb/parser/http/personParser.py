@@ -289,8 +289,10 @@ class HTMLBioParser(ParserBase):
             self._bio_data['mini biography'][:] = nl
 
     def do_br(self, attrs):
-        self._add_items()
-        if self._sect_name.lower() == 'mini biography' and self._sect_data \
+        snl = self._sect_name.lower()
+        if snl != 'mini biography':
+            self._add_items()
+        if snl == 'mini biography' and self._sect_data \
                 and  not self._sect_data[-1].isspace():
             self._sect_data += ' '
 

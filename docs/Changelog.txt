@@ -1,7 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.3.cvs20071017 "Planet Terror" (17 Oct 2007)
+* What's the new in release 3.3.cvs20071022 "Expect No Mercy" (22 Oct 2007)
+  [http]
+  - fixed a bug retrieving some 'cover url'.
+  - fixed a bug with multi-paragraphs biographies.
+
   [sql]
   - extended functionality of the custom queries support for the
     imdbpy2sql.py script to circumvent a problem with MS SQLServer.
@@ -11,6 +15,10 @@
     transaction using SQLite which, otherwise, would have horrible
     performances.
   - fixed a minor bug with top/bottom ratings, in the imdbpy2sql.py script.
+
+  [local]
+  - filtered out some crap in the "quotes" plain text data files, which
+    also affected sql, importing the data.
 
 
 * What's the new in release 3.2 "Videodrome" (25 Sep 2007)

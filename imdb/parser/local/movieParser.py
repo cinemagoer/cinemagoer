@@ -311,7 +311,8 @@ def getQuotes(movieID, dataF, indexF):
                 qttl[:] = []
             elif qtf.tell() > fsize: break
         qtf.close()
-    return qtL
+    # Filter out some crap in the plain text data files.
+    return [x for x in qtL if x != ':']
 
 
 def getAkaTitles(movieID, akaDF, titlesIF, titlesKF, attrIF , attrKF):

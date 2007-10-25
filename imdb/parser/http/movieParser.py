@@ -441,7 +441,7 @@ class HTMLMovieParser(ParserBase):
             self._in_total_episodes = True
         elif href and href.startswith('/chart/top?tt'):
             self._in_top250 = True
-        elif href and self.get_attr_value(attrs, 'name') == 'poster':
+        elif self.get_attr_value(attrs, 'name') == 'poster':
             self._in_poster = True
         # From here on, we're inside some kind of information and a href.
         if not (self._keep and href): return

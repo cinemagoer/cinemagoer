@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.3.cvs20071022 "Expect No Mercy" (22 Oct 2007)
+* What's the new in release 3.3.cvs20071025 "Serenity" (25 Oct 2007)
   [http]
   - fixed a bug retrieving some 'cover url'.
   - fixed a bug with multi-paragraphs biographies.

@@ -98,7 +98,7 @@ if '--mysql-innodb' in sys.argv[1:]:
     sys.argv += MYSQLINNODB_OPTS
 if '--ms-sqlserver' in sys.argv[1:]:
     sys.argv += SQLSERVER_OPTS
-if '--sqlite-transactions':
+if '--sqlite-transactions' in sys.argv[1:]:
     sys.argv += SQLITE_OPTS
 
 # Manage arguments list.

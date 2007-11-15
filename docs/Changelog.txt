@@ -1,10 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.3.cvs20071025 "Serenity" (25 Oct 2007)
+* What's the new in release 3.3.cvs20071115 "Quatermass and the Pit (1967)" (15 Nov 2007)
   [http]
   - fixed a bug retrieving some 'cover url'.
   - fixed a bug with multi-paragraphs biographies.
+  - fixed key aliases for movies.
 
   [sql]
   - extended functionality of the custom queries support for the

@@ -29,8 +29,12 @@ from types import UnicodeType, TupleType, ListType
 
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
-from utils import modClearRefs, re_titleRef, re_nameRef
-from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base
+from imdb.utils import modClearRefs, re_titleRef, re_nameRef, re_characterRef
+from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base, \
+                    imdbURL_character_base
+from imdb.Movie import Movie
+from imdb.Person import Person
+from imdb.Character import Character
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
                                     entcharrefsget, subXMLRefs, subSGMLRefs
 
@@ -54,15 +58,95 @@ def makeCgiPrintEncoding(encoding):
 # cgiPrint uses the latin_1 encoding.
 cgiPrint = makeCgiPrintEncoding('latin_1')
 
+# Regular expression for %(varname)s substitutions.
+re_subst = re.compile(r'%\((.+?)\)s')
+# Regular expression for <if condition>....</if condition> clauses.
+re_conditional = re.compile(r'<if\s+(.+?)\s*>(.+?)</if\s+\1\s*>')
 
-def makeModCGILinks(movieTxt, personTxt, encoding='latin_1'):
+def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
+            joiner=' / ', applyToValues=lambda x: x, _recurse=True):
+    """"Return a function useful to pretty-print Movie, Person and
+    Character instances.
+
+    *movieTxt* -- how to format a Movie object.
+    *personTxt* -- how to format a Person object.
+    *characterTxt* -- how to format a Character object.
+    *joiner* -- string used to join a list of objects.
+    *applyToValues* -- function to apply to values.
+    *_recurse* -- if True (default) manage only the given object.
+    """
+    # Some useful defaults.
+    if movieTxt is None:
+        movieTxt = '%(long imdb title)s'
+    if personTxt is None:
+        personTxt = '%(long imdb name)s'
+    if characterTxt is None:
+        characterTxt = '%(long imdb name)s'
+    def object2txt(obj, _limitRecursion=None):
+        """Pretty-print objects."""
+        # Prevent unlimited recursion.
+        if _limitRecursion is None:
+            _limitRecursion = 0
+        elif _limitRecursion > 5:
+            return ''
+        _limitRecursion += 1
+        # XXX: recur also on dictionaries' keys and values?
+        if isinstance(obj, (list, tuple)):
+            return joiner.join([object2txt(o, _limitRecursion=_limitRecursion)
+                                for o in obj])
+        objData = {}
+        if isinstance(obj, Movie):
+            objData['movieID'] = obj.movieID
+            outs = movieTxt
+        elif isinstance(obj, Person):
+            objData['personID'] = obj.personID
+            outs = personTxt
+        elif isinstance(obj, Character):
+            objData['characterID'] = obj.characterID
+            outs = characterTxt
+        else:
+            return obj
+        def _excludeFalseConditionals(matchobj):
+            # Return an empty string if the conditional is false/empty.
+            condition = matchobj.group(1)
+            proceed = obj.get(condition) or getattr(obj, condition, None)
+            if proceed:
+                return matchobj.group(2)
+            else:
+                return ''
+            return matchobj.group(2)
+        while re_conditional.search(outs):
+            outs = re_conditional.sub(_excludeFalseConditionals, outs)
+        for key in re_subst.findall(outs):
+            value = obj.get(key) or getattr(obj, key, None)
+            if not isinstance(value, (unicode, str)):
+                if not _recurse:
+                    if value:
+                        value =  unicode(value)
+                if value:
+                    value = object2txt(value, _limitRecursion=_limitRecursion)
+            elif value:
+                value = applyToValues(unicode(value))
+            if not value:
+                value = u''
+            elif not isinstance(value, (unicode, str)):
+                value = unicode(value)
+            outs = outs.replace('%(' + key + ')s', value)
+        return outs
+    return object2txt
+
+
+def makeModCGILinks(movieTxt, personTxt, characterTxt=None,
+                    encoding='latin_1'):
     """Make a function used to pretty-print movies and persons refereces;
     movieTxt and personTxt are the strings used for the substitutions.
     movieTxt must contains %(movieID)s and %(title)s, while personTxt
-    must contains %(personID)s and %(name)s."""
+    must contains %(personID)s and %(name)s and characterTxt %(characterID)s
+    and %(name)s; characterTxt is optional, for backward compatibility."""
     _cgiPrint = makeCgiPrintEncoding(encoding)
-    def modCGILinks(s, titlesRefs, namesRefs):
+    def modCGILinks(s, titlesRefs, namesRefs, characterRefs=None):
         """Substitute movies and persons references."""
+        if characterRefs is None: characterRefs = {}
         # XXX: look ma'... more nested scopes! <g>
         def _replaceMovie(match):
             to_replace = match.group(1)
@@ -84,18 +168,40 @@ def makeModCGILinks(movieTxt, personTxt, encoding='latin_1'):
                                                         encoding,
                                                         'xmlcharrefreplace')}
             return to_replace
+        def _replaceCharacter(match):
+            to_replace = match.group(1)
+            if characterTxt is None:
+                return to_replace
+            item = characterRefs.get(to_replace)
+            if item:
+                characterID = item.characterID
+                if characterID is None:
+                    return to_replace
+                to_replace = characterTxt % {'characterID': characterID,
+                                        'name': unicode(_cgiPrint(to_replace),
+                                                        encoding,
+                                                        'xmlcharrefreplace')}
+            return to_replace
         s = s.replace('<', '&lt;').replace('>', '&gt;')
         s = _re_hrefsub(r'<a href="\1">\1</a>', s)
         s = re_titleRef.sub(_replaceMovie, s)
         s = re_nameRef.sub(_replacePerson, s)
+        s = re_characterRef.sub(_replaceCharacter, s)
         return s
+    modCGILinks.movieTxt = movieTxt
+    modCGILinks.personTxt = personTxt
+    modCGILinks.characterTxt = characterTxt
     return modCGILinks
 
 # links to the imdb.com web site.
 _movieTxt = '<a href="' + imdbURL_movie_base + 'tt%(movieID)s">%(title)s</a>'
 _personTxt = '<a href="' + imdbURL_person_base + 'nm%(personID)s">%(name)s</a>'
-modHtmlLinks = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt)
+_characterTxt = '<a href="' + imdbURL_character_base + \
+                'ch%(characterID)s">%(name)s</a>'
+modHtmlLinks = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt,
+                                characterTxt=_characterTxt)
 modHtmlLinksASCII = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt,
+                                    characterTxt=_characterTxt,
                                     encoding='ascii')
 
 
@@ -151,11 +257,11 @@ def sortedEpisodes(m, season=None):
 
 
 # Idea and portions of the code courtesy of none none (dclist at gmail.com)
-_re_imdbIDurl = re.compile(r'\b(nm|tt)([0-9]{7})\b')
+_re_imdbIDurl = re.compile(r'\b(nm|tt|ch)([0-9]{7})\b')
 def get_byURL(url, info=None, args=None, kwds=None):
-    """Return a Movie or Person object for the given URL; info is the
-    info set to retrieve, args and kwds are respectively a list and a
-    dictionary or arguments to initialize the data access system.
+    """Return a Movie, Person or Character object for the given URL; info
+    is the info set to retrieve, args and kwds are respectively a list and
+    a dictionary or arguments to initialize the data access system.
     Returns None if unable to correctly parse the url; can raise
     exceptions if unable to retrieve the data."""
     if args is None: args = []
@@ -170,6 +276,8 @@ def get_byURL(url, info=None, args=None, kwds=None):
         return ia.get_movie(imdbID, info=info)
     elif imdbtype == 'nm':
         return ia.get_person(imdbID, info=info)
+    elif imdbtype == 'ch':
+        return ia.get_character(imdbID, info=info)
     return None
 
 

@@ -27,13 +27,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from types import UnicodeType, StringType
 
 from imdb import imdbURL_base
 from imdb.Person import Person
 from imdb.Movie import Movie
-from imdb.utils import analyze_title, re_episodes
-from imdb._exceptions import IMDbParserError
+from imdb.utils import analyze_title
 from utils import ParserBase, build_person
 
 
@@ -75,6 +73,7 @@ _SECT_KEEP = _SECT_CONV.values() + ['cast', 'original music', 'tv series',
             'casting department', 'animation department',
             'original air date', 'status', 'comments', 'status updated', 'note']
 
+
 class HTMLMovieParser(ParserBase):
     """Parser for the "combined details" (and if instance.mdparse is
     True also for the "main details") page of a given movie.
@@ -110,9 +109,10 @@ class HTMLMovieParser(ParserBase):
         # Movie status.
         self._in_production_notes = False
         self._status_sect = u''
-        # Last movieID/personID seen.
+        # Last movieID/personID/characterID seen.
         self._last_movie_id = None
         self._last_person_id = None
+        self._cids = []
         # Counter for the billing position.
         self._billingPos = 1
         # Various information.
@@ -207,6 +207,7 @@ class HTMLMovieParser(ParserBase):
         self._section = u''
         self._billingPos = 1
         self._last_person_id = None
+        self._cids = []
 
     def end_h5(self):
         # If self._exclude_series, we're already looking at series-specific
@@ -343,7 +344,7 @@ class HTMLMovieParser(ParserBase):
             if self._data.get('kind') == 'episode' and \
                         self._last_movie_id is not None:
                 m = Movie(title=ct, movieID=self._last_movie_id,
-                            accessSystem='http')
+                            accessSystem=self._as, modFunct=self._modFunct)
                 self._data['episode of'] = m
             self._cur_txt = u''
             return
@@ -421,12 +422,20 @@ class HTMLMovieParser(ParserBase):
         if self._section == 'cast' and ct.startswith('rest of cast listed'):
             self._cur_txt = u''
             return
+        cids = self._cids
+        if not cids:
+            cids = None
+        elif len(cids) == 1:
+            cids = cids[0]
         p = build_person(ct, personID=self._last_person_id,
-                        billingPos=self._billingPos)
+                        billingPos=self._billingPos,
+                        roleID=cids, accessSystem=self._as,
+                        modFunct=self._modFunct)
         self._data.setdefault(self._section, []).append(p)
         self._billingPos += 1
         self._cur_txt = u''
         self._last_person_id = None
+        self._cids = []
 
     def start_td(self, attrs):
         if not (self._keep and self._cur_txt and self._last_person_id): return
@@ -450,7 +459,7 @@ class HTMLMovieParser(ParserBase):
         #  <td><a href="...">Person Name</a>  </td>
         # to trigger some code in the _handle_data method.
         self._in_td = False
-        # Collect personID and movieID.
+        # Collect personID, movieID and characterID.
         if href.startswith('/name/nm'):
             cur_id = self.re_imdbID.findall(href)
             if cur_id:
@@ -461,6 +470,11 @@ class HTMLMovieParser(ParserBase):
             cur_id = self.re_imdbID.findall(href)
             if cur_id:
                 self._last_movie_id = cur_id[-1]
+        elif href.startswith('/character/ch'):
+            cur_id = self.re_imdbID.findall(href)
+            if cur_id:
+                lid = cur_id[-1]
+                self._cids.append(lid)
         elif self.mdparse and href.startswith('fullcredits#'):
             # The "more" link at the end of the cast.
             self._in_tr = False
@@ -526,6 +540,14 @@ class HTMLMovieParser(ParserBase):
             if self._in_td:
                 if data == ' ':
                     self._cur_txt += ' ....'
+            if self._section == 'cast':
+                nrSep = data.count(' / ')
+                if nrSep > 0:
+                    sdata = data.strip()
+                    if sdata == '/' or (sdata.endswith(' /') and
+                                        sdata.startswith('/ ')):
+                        nrSep -= 1
+                    self._cids += [None]*nrSep
             self._cur_txt += data
 
 
@@ -788,7 +810,8 @@ class HTMLAwardsParser(ParserBase):
                     self._begin_to_for = 1
                     m = Movie(title=self._cur_tn,
                                 movieID=str(self._cur_id),
-                                accessSystem='http')
+                                accessSystem=self._as,
+                                modFunct=self._modFunct)
                     if m in self._movie_obj_list:
                         ind = self._movie_obj_list.index(m)
                         m = self._movie_obj_list[ind]
@@ -799,7 +822,8 @@ class HTMLAwardsParser(ParserBase):
                     p = Person(name=self._cur_tn,
                                 personID=str(self._cur_id),
                                 currentRole=self._cur_role,
-                                accessSystem='http')
+                                accessSystem=self._as,
+                                modFunct=self._modFunct)
                     if p in self._person_obj_list:
                         ind = self._person_obj_list.index(p)
                         p = self._person_obj_list[ind]
@@ -810,7 +834,8 @@ class HTMLAwardsParser(ParserBase):
                 if self._t_o_n == 't':
                     m = Movie(title=self._cur_tn,
                                 movieID=str(self._cur_id),
-                                accessSystem='http')
+                                accessSystem=self._as,
+                                modFunct=self._modFunct)
                     if m in self._movie_obj_list:
                         ind = self._movie_obj_list.index(m)
                         m = self._movie_obj_list[ind]
@@ -822,7 +847,8 @@ class HTMLAwardsParser(ParserBase):
                     p = Person(name=self._cur_tn,
                                 personID=str(self._cur_id),
                                 currentRole=self._cur_role,
-                                accessSystem='http')
+                                accessSystem=self._as,
+                                modFunct=self._modFunct)
                     if p in self._person_obj_list:
                         ind = self._person_obj_list.index(p)
                         p = self._person_obj_list[ind]
@@ -1507,7 +1533,8 @@ class HTMLEpisodesRatings(ParserBase):
         self._series_title = self._series_title.strip()
         if self._series_title:
             self._series_obj = Movie(title=self._series_title,
-                                    accessSystem='http')
+                                    accessSystem=self._as,
+                                    modFunct=self._modFunct)
 
     def start_h4(self, attrs):
         self._in_h4 = 1
@@ -1534,7 +1561,8 @@ class HTMLEpisodesRatings(ParserBase):
                 ep_title += ' (#%s)' % self._cur_data['season.episode']
                 del self._cur_data['season.episode']
             ep_title += '}'
-            m = Movie(title=ep_title, movieID=self._cur_id, accessSystem='http')
+            m = Movie(title=ep_title, movieID=self._cur_id,
+                        accessSystem=self._as, modFunct=self._modFunct)
             m['episode of'] = self._series_obj
             self._cur_data['episode'] = m
             if self._cur_data.has_key('rating'):
@@ -1725,7 +1753,8 @@ class HTMLConnectionParser(ParserBase):
             if self._cur_note and self._cur_note[0] == '-':
                 self._cur_note = self._cur_note[1:].lstrip()
             m = Movie(movieID=str(self._cur_id), title=self._cur_title,
-                                accessSystem='http', notes=self._cur_note)
+                                accessSystem=self._as, notes=self._cur_note,
+                                modFunct=self._modFunct)
             self._connections.setdefault(self._conn_type, []).append(m)
             self._in_cur_title = False
         self._cur_title = u''
@@ -2112,7 +2141,8 @@ class HTMLRecParser(ParserBase):
                     if self._cur_id:
                         m = Movie(movieID=str(self._cur_id),
                                     title=self._curtitle,
-                                    accessSystem='http')
+                                    accessSystem=self._as,
+                                    modFunct=self._modFunct)
                         self._rec.setdefault(self._curlist, []).append(m)
                         self._cur_id = u''
                 self._curtitle = u''
@@ -2555,7 +2585,8 @@ class HTMLEpisodesParser(ParserBase):
         title = title.replace('- Episodes cast', u'').strip()
         if title:
             self._series = Movie(title=title,
-                                accessSystem='http')
+                                accessSystem=self._as,
+                                modFunct=self._modFunct)
         self._html_title = u''
 
     def start_h1(self, attrs):
@@ -2591,7 +2622,7 @@ class HTMLEpisodesParser(ParserBase):
             self._eps_number = max(self._episodes.get(self._cur_season,
                                     {-1: None}).keys()) + 1
         eps = Movie(movieID=self._cur_id, title=self._eps_title,
-                    accessSystem='http')
+                    accessSystem=self._as, modFunct=self._modFunct)
         eps['year'] = self._cur_year
         eps['kind'] = u'episode'
         eps['season'] = self._cur_season
@@ -2706,8 +2737,9 @@ class HTMLEpisodesParser(ParserBase):
             name = sn[0]
             role = ' '.join(sn[1:]).strip()
             p = Person(name=name, personID=str(self._cur_person_id),
-                        currentRole=role, accessSystem='http',
-                        notes=note, billingPos=len(self._cast)+1)
+                        currentRole=role, accessSystem=self._as,
+                        notes=note, billingPos=len(self._cast)+1,
+                        modFunct=self._modFunct)
             self._cast.append(p)
         self._cur_person = u''
         self._cur_person_id = None
@@ -2907,7 +2939,8 @@ class HTMLAiringParser(ParserBase):
                 self._cur_info = 'season'
             if self._cur_txt and self._title:
                 m = Movie(title='%s {%s}' % (self._title, self._cur_txt),
-                            movieID=str(self._cur_id), accessSystem='http')
+                            movieID=str(self._cur_id), accessSystem=self._as,
+                            modFunct=self._modFunct)
                 self._cur_data['episode'] = m
         elif self._cur_info == 'season':
             self._cur_info = 'episode'
@@ -3062,52 +3095,45 @@ class HTMLParentsGuideParser(ParserBase):
             self._cur_txt += data
 
 
-# The used instances.
-movie_parser = HTMLMovieParser()
-plot_parser = HTMLPlotParser()
-movie_awards_parser = HTMLAwardsParser()
-taglines_parser = HTMLTaglinesParser()
-keywords_parser = HTMLKeywordsParser()
-crazycredits_parser = HTMLCrazyCreditsParser()
-goofs_parser = HTMLGoofsParser()
-alternateversions_parser = HTMLAlternateVersionsParser()
-trivia_parser = HTMLAlternateVersionsParser()
-soundtrack_parser = HTMLAlternateVersionsParser()
-trivia_parser.kind = 'trivia'
-soundtrack_parser.kind = 'soundtrack'
-quotes_parser = HTMLQuotesParser()
-releasedates_parser = HTMLReleaseinfoParser()
-ratings_parser = HTMLRatingsParser()
-officialsites_parser = HTMLOfficialsitesParser()
-externalrev_parser = HTMLOfficialsitesParser()
-externalrev_parser.kind = 'external reviews'
-newsgrouprev_parser = HTMLOfficialsitesParser()
-newsgrouprev_parser.kind = 'newsgroup reviews'
-misclinks_parser = HTMLOfficialsitesParser()
-misclinks_parser.kind = 'misc links'
-soundclips_parser = HTMLOfficialsitesParser()
-soundclips_parser.kind = 'sound clips'
-videoclips_parser = HTMLOfficialsitesParser()
-videoclips_parser.kind = 'video clips'
-photosites_parser = HTMLOfficialsitesParser()
-photosites_parser.kind = 'photo sites'
-connections_parser = HTMLConnectionParser()
-tech_parser = HTMLTechParser()
-business_parser = HTMLTechParser()
-business_parser.kind = 'business'
-business_parser._defGetRefs = 1
-literature_parser = HTMLTechParser()
-literature_parser.kind = 'literature'
-locations_parser = HTMLLocationsParser()
-dvd_parser = HTMLDvdParser()
-rec_parser = HTMLRecParser()
-news_parser = HTMLNewsParser()
-amazonrev_parser = HTMLAmazonReviewsParser()
-sales_parser = HTMLSalesParser()
-episodes_parser = HTMLEpisodesParser()
-eprating_parser = HTMLEpisodesRatings()
-movie_faqs_parser = HTMLFaqsParser()
-airing_parser = HTMLAiringParser()
-synopsis_parser = HTMLSynopsisParser()
-parentsguide_parser = HTMLParentsGuideParser()
+_OBJECTS = {
+    'movie_parser':  (HTMLMovieParser, None),
+    'plot_parser':  (HTMLPlotParser, None),
+    'movie_awards_parser':  (HTMLAwardsParser, None),
+    'taglines_parser':  (HTMLTaglinesParser, None),
+    'keywords_parser':  (HTMLKeywordsParser, None),
+    'crazycredits_parser':  (HTMLCrazyCreditsParser, None),
+    'goofs_parser':  (HTMLGoofsParser, None),
+    'alternateversions_parser':  (HTMLAlternateVersionsParser, None),
+    'trivia_parser':  (HTMLAlternateVersionsParser, {'kind': 'trivia'}),
+    'soundtrack_parser':  (HTMLAlternateVersionsParser, {'kind': 'soundtrack'}),
+    'quotes_parser':  (HTMLQuotesParser, None),
+    'releasedates_parser':  (HTMLReleaseinfoParser, None),
+    'ratings_parser':  (HTMLRatingsParser, None),
+    'officialsites_parser':  (HTMLOfficialsitesParser, None),
+    'externalrev_parser':  (HTMLOfficialsitesParser,
+                            {'kind': 'external reviews'}),
+    'newsgrouprev_parser':  (HTMLOfficialsitesParser,
+                            {'kind': 'newsgroup reviews'}),
+    'misclinks_parser':  (HTMLOfficialsitesParser, {'kind': 'misc links'}),
+    'soundclips_parser':  (HTMLOfficialsitesParser, {'kind': 'sound clips'}),
+    'videoclips_parser':  (HTMLOfficialsitesParser, {'kind': 'video clips'}),
+    'photosites_parser':  (HTMLOfficialsitesParser, {'kind': 'photo sites'}),
+    'connections_parser':  (HTMLConnectionParser, None),
+    'tech_parser':  (HTMLTechParser, None),
+    'business_parser':  (HTMLTechParser, {'kind': 'business',
+                                            '_defGetRefs': 1}),
+    'literature_parser':  (HTMLTechParser, {'kind': 'literature'}),
+    'locations_parser':  (HTMLLocationsParser, None),
+    'dvd_parser':  (HTMLDvdParser, None),
+    'rec_parser':  (HTMLRecParser, None),
+    'news_parser':  (HTMLNewsParser, None),
+    'amazonrev_parser':  (HTMLAmazonReviewsParser, None),
+    'sales_parser':  (HTMLSalesParser, None),
+    'episodes_parser':  (HTMLEpisodesParser, None),
+    'eprating_parser':  (HTMLEpisodesRatings, None),
+    'movie_faqs_parser':  (HTMLFaqsParser, None),
+    'airing_parser':  (HTMLAiringParser, None),
+    'synopsis_parser':  (HTMLSynopsisParser, None),
+    'parentsguide_parser':  (HTMLParentsGuideParser, None)
+}
 

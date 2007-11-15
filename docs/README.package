@@ -10,10 +10,11 @@ Sections in this file:
 * GENERAL USAGE
 * THE Movie CLASS
 * THE Person CLASS
+* THE Character CLASS
 * INFORMATION SETS
 * Person OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Person OBJECT
 * THE (NOT-SO-)"UNIVERSAL" '::' SEPARATOR
-* MOVIE TITLES AND PERSON NAMES REFERENCES
+* MOVIE TITLES AND PERSON/CHARACTER NAMES REFERENCES
 * EXCEPTIONS
 * OTHER SOURCES OF INFO
 
@@ -42,7 +43,8 @@ where '/dir/with/files' is the directory which contains the *.data,
 
 Now you've the "imdb_access" object, instance of a subclass
 of the imdb.IMDbBase class, which can be used to search for a given
-title/name and to retrieve information about the referred movie/person.
+title/name and to retrieve information about the referred movie,
+person or character.
 
 The IMDb function can be called with a 'accessSystem' keyword argument,
 that must be a string representing the type of data access you want
@@ -74,8 +76,9 @@ you can access movie data through the e-mail interface, etc. etc.
                             | 'htmlThin'| information are gathered; useful
                             |           | for systems with limited bandwidth.
 
-The imdb_access object has five main methods: search_movie(title),
-get_movie(movieID), search_person(name), get_person(personID)
+The imdb_access object has seven main methods: search_movie(title),
+get_movie(movieID), search_person(name), get_person(personID),
+search_character(name), get_character(characterID)
 and update(MovieOrPersonObject)
 
   Methods description:
@@ -107,35 +110,38 @@ found in the Movie module; a Movie object presents basically the same
 interface of a Python's dictionary, so you can access, for example, the
 list of actors and actress using the syntax: movieObject['cast']
 
-The search_person(name) and get_person(personID) methods work the same
-way as search_movie(title) and get_movie(movieID).
+The search_person(name), get_person(personID) search_character(name)
+and get_character(characterID) methods work the same way as
+search_movie(title) and get_movie(movieID).
 
-The get_imdbMovieID(movieID) and get_imdbPersonID(personID) take,
-respectively, a movieID and a personID and return the relative imdbID;
-it's safer to use the get_imdbID(MovieOrPersonObject) method.
+The get_imdbMovieID(movieID), get_imdbPersonID(personID) and
+get_imdbCharacterID(characterID) take, respectively, a movieID, a personID
+and a movieID and return the relative imdbID; it's safer to use the
+get_imdbID(MovieOrPersonOrCharacterObject) method.
 
-The title2imdbID(title) and name2imdbID(name) take, respectively,
-a movie title (in the plain text data files format) and a person name,
-and return the relative imdbID; when possibile it's safer to use
-the get_imdbID(MovieOrPersonObject) method.
+The title2imdbID(title), name2imdbID(name) and character2imdbID(name)take,
+respectively, a movie title (in the plain text data files format), a person
+name and a character name, and return the relative imdbID; when possibile
+it's safer to use the get_imdbID(MovieOrPersonOrCharacterObject) method.
 These functions _always_ need to connect to the IMDb's web site.
 
-The get_imdbID(MovieOrPersonObject) method returns the imdbID for
-the given Movie or Person object.
+The get_imdbID(MovieOrPersonOrCharacterObject) method returns the imdbID
+for the given Movie, Person or Character object.
 
-The get_imdbURL(MovieOrPersonObject) method returns a string with the main
-IMDb URL for the given Movie or Person object; it tries to do its best
-to retrieve the URL.
+The get_imdbURL(MovieOrPersonOrCharacterObject) method returns a string
+with the main IMDb URL for the given Movie, Person or Character object; it
+tries to do its best to retrieve the URL.
 
-The update(MovieOrPersonObject) method takes an instance of a Movie
-or Person class and retrieve every available information.
-Remember that the search_movie(title) and search_person(name) methods
-will return a list Movie or Person objects with only basic information,
-like the movie title or the person name, so update() can be used to
-retrieve every other information.
+The update(MovieOrPersonOrCharacterObject) method takes an instance of
+a Movie, Person or Character class and retrieve every available information.
+Remember that the search_movie(title),  search_person(name) and
+search_character(name) methods will return a list of Movie, Person or
+Character objects with only basic information, like the movie title or
+the person/character name, so update() can be used to retrieve every other
+information.
 By default a "reasonable" set of information are retrieved ('main',
-'filmography' and 'biography' for a Person object, and 'main' and 'plot'
-for a Movie object).
+'filmography' and 'biography' for a Person/Character objects, and 'main'
+and 'plot' for a Movie object).
 
 Example:
   i = IMDb()
@@ -209,7 +215,8 @@ kind; string; one in ('movie', 'tv series', 'tv mini series', 'video game',
 imdbIndex; string; the roman number for movies with the same title/year.
 director; Person list; a list of director's name (e.g.: ['Brian De Palma'])
 cast; Person list; list of actor/actress, with the currentRole instance
-                   variable set to a string which describe his role/duty.
+                   variable set to a Character object which describe his
+                   role/duty.
 cover url; string; the link to the image of the poster.
 writer; Person list; list of writers ['Oscar Fraley (novel)']
 plot; list; list of plots and authors of the plot.
@@ -272,6 +279,13 @@ th syntax is:
 An analogous method is defined for the Movie class, and it's
 called isSameTitle(otherMovieObject)
 
+  THE Person CLASS
+  ================
+
+It works mostly like the Person class. :-)
+For more information about the "currentRole" attribute, see the
+README.currentRole file.
+
 
   INFORMATION SETS
   ================
@@ -295,7 +309,7 @@ this person an so on.
 
 By default only important information are retrieved/updated (i.e.:
 for a Movie object, only the 'main' and 'plot' information sets;
-for a Person object only 'main', 'filmography', 'biography'.
+for a Person/Character object only 'main', 'filmography', 'biography'.
 
 Example:
   i = imdb.IMDb(accessSystem='http')
@@ -313,9 +327,9 @@ Another example:
   print p['other works']
 
 To see which information sets are available and what are the defaults,
-see the all_info and default_info instance variable of Movie and Person
-classes.  Each object instance of Movie or Person, also have a
-current_info instance variable, to remember the information sets
+see the all_info and default_info instance variable of Movie, Person
+and Character classes.  Each object instance of Movie, Person or Character,
+also have a current_info instance variable, to remember the information sets
 already retrieved.
 
 
@@ -328,6 +342,7 @@ and so on.
 For people in the cast (actors/actresses), the "currentRole" instance
 variable is set to the name of the character they played (e.g.: "Roy Neary"
 for the role played by Richard Dreyfuss in Close Encounters of the Third Kind).
+In fact, in this case currentRole will be a Character instance.
 
 Another instance variable of a Person object is "notes", used to store
 miscellaneous information (like an aka name for the actor, an "uncredited"
@@ -335,6 +350,18 @@ notice and so on).
 It's also used, for non-cast people, to describe the specific task of
 the person (e.g.: "assistant dialogue staff" for a person of the sound
 departement).
+
+It's possible to test, with the Python "in" statement, if a person worked
+in a given movie, or vice-versa; the following are all valid tests:
+  movie in person
+  movie in character
+  person in movie
+  person in character
+  character in movie
+  character in person
+
+Considerations similar to the above ones, can be done for Character
+instances: please read the README.currentRole file for more information.
 
 E.g.:
     # retrieve data for Steven Spielberg's "Close Encounters of the Third Kind"
@@ -406,26 +433,26 @@ It's easier to understand if you look at it; look at the output of:
   print m['akas']
 
 
-  MOVIE TITLES AND PERSON NAMES REFERENCES
-  ========================================
+  MOVIE TITLES AND PERSON/CHARACTER NAMES REFERENCES
+  ==================================================
 
-Sometimes in Movie and Person attributes, there're strings with
-references to other movies or persons (e.g.: in the plot, in
+Sometimes in Movie, Person and Character attributes, there're strings
+with references to other movies or persons (e.g.: in the plot, in
 the biography, etc.).
-These references are stored in the Movie or Person instances;
-in the strings you'll find values like _A Movie (2003)_ (qv)
-or 'A Person' (qv); accessing these string (like movie['plot']
-or person['biography']), these strings are modified using
-a provided function, which must take, as arguments, the
+These references are stored in the Movie, Person and Character
+instances; in the strings you'll find values like _A Movie (2003)_ (qv)
+or 'A Person' (qv) or '#A Character# (qv)'; accessing these
+string (like movie['plot'] or person['biography']), these strings are
+modified using a provided function, which must take, as arguments, the
 string and two dictionary with titles and names references;
 by default the (qv) strings are converted in the "normal"
-format ("A Movie (2003)" and "A Person").
+format ("A Movie (2003)", "A Person" and "A Character").
 You can find some examples of these functions in the
 imdb.utils module.
 The function used to modify the strings can be set with
 the defaultModFunct parameter of the IMDb class or
-with the modFunct parameter of the get_movie and get_person
-methods.
+with the modFunct parameter of the get_movie, get_person
+and get_character methods.
 E.g.:
   import imdb
   i = imdb.IMDb(defaultModFunct=imdb.utils.modHtmlLinks)

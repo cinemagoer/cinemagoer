@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from types import UnicodeType, ListType, TupleType
+from types import UnicodeType
 from copy import deepcopy
 
 from imdb.utils import analyze_name, build_name, normalizeName, \
@@ -90,8 +90,15 @@ class Person(_Container):
         *myName* -- the nickname you use for this person.
         *myID* -- your personal id for this person.
         *data* -- a dictionary used to initialize the object.
-        *currentRole* -- a string representing the current role or duty
-                        of the person in a movie.
+        *currentRole* -- a Character instance representing the current role
+                         or duty of a person in this movie, or a Person
+                         object representing the actor/actress who played
+                         a given character in a Movie.  If a string is
+                         passed, an object is automatically build.
+        *roleID* -- if available, the characterID/personID of the currentRole
+                    object.
+        *roleIsPerson* -- when False (default) the currentRole is assumed
+                          to be a Character object, otherwise a Person.
         *notes* -- notes about the given person for a specific movie
                     or role (e.g.: the alias used in the movie credits).
         *accessSystem* -- a string representing the data access system used.
@@ -154,13 +161,18 @@ class Person(_Container):
         return 0
 
     def __contains__(self, item):
-        """Return true if this Person has worked in the given Movie."""
+        """Return true if this Person has worked in the given Movie,
+        or if the fiven Character was played by this Person."""
         from Movie import Movie
-        if not isinstance(item, Movie):
-            return 0
-        for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
-            if item.isSame(m):
-                return 1
+        from Character import Character
+        if isinstance(item, Movie):
+            for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
+                if item.isSame(m):
+                    return 1
+        elif isinstance(item, Character):
+            for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
+                if item.isSame(m.currentRole):
+                    return 1
         return 0
 
     def isSameName(self, other):
@@ -184,10 +196,12 @@ class Person(_Container):
         """Return a deep copy of a Person instance."""
         p = Person(name=u'', personID=self.personID, myName=self.myName,
                     myID=self.myID, data=deepcopy(self.data, memo),
-                    currentRole=self.currentRole, notes=self.notes,
-                    accessSystem=self.accessSystem,
+                    currentRole=deepcopy(self.currentRole, memo),
+                    roleIsPerson=self._roleIsPerson,
+                    notes=self.notes, accessSystem=self.accessSystem,
                     titlesRefs=deepcopy(self.titlesRefs, memo),
-                    namesRefs=deepcopy(self.namesRefs, memo))
+                    namesRefs=deepcopy(self.namesRefs, memo),
+                    charactersRefs=deepcopy(self.charactersRefs, memo))
         p.current_info = list(self.current_info)
         p.set_mod_funct(self.modFunct)
         p.billingPos = self.billingPos

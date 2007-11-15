@@ -28,32 +28,45 @@ import sys
 from urllib import FancyURLopener, quote_plus
 from codecs import lookup
 
-from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, imdbURL_find
-from imdb.Movie import Movie
-from imdb.utils import analyze_title
+from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, \
+        imdbURL_character_main, imdbURL_find
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
-from movieParser import movie_parser, plot_parser, movie_awards_parser, \
-                        taglines_parser, keywords_parser, \
-                        alternateversions_parser, crazycredits_parser, \
-                        goofs_parser, trivia_parser, quotes_parser, \
-                        releasedates_parser, ratings_parser, \
-                        officialsites_parser, connections_parser, \
-                        tech_parser, locations_parser, soundtrack_parser, \
-                        dvd_parser, rec_parser, externalrev_parser, \
-                        newsgrouprev_parser, misclinks_parser, \
-                        soundclips_parser, videoclips_parser, news_parser, \
-                        photosites_parser, amazonrev_parser, business_parser, \
-                        literature_parser, sales_parser, episodes_parser, \
-                        eprating_parser, movie_faqs_parser, airing_parser, \
-                        synopsis_parser, parentsguide_parser
-from searchMovieParser import search_movie_parser
-from personParser import maindetails_parser, bio_parser, \
-                        otherworks_parser, person_awards_parser, \
-                        person_officialsites_parser, publicity_parser, \
-                        agent_parser, person_series_parser, \
-                        person_genres_parser, person_keywords_parser
-from searchPersonParser import search_person_parser
-from utils import ParserBase
+
+import searchMovieParser
+import searchPersonParser
+import searchCharacterParser
+import movieParser
+import personParser
+import characterParser
+
+
+class _ModuleProxy:
+    """A proxy to instantiate and access parsers."""
+    def __init__(self, module, defaultKeys=None):
+        """Initialize a proxy for the given module; defaultKeys, if set,
+        muste be a dictionary of values to set for instanced objects."""
+        if defaultKeys is None:
+            defaultKeys = {}
+        self._defaultKeys = defaultKeys
+        self._module = module
+
+    def __getattr__(self, name):
+        """Called only when no look-up is found."""
+        _sm = self._module
+        # Read the _OBJECTS dictionary to build the asked parser.
+        if name in _sm._OBJECTS:
+            _entry = _sm._OBJECTS[name]
+            # Initialize the parser.
+            obj = _entry[0]()
+            attrsToSet = self._defaultKeys.copy()
+            attrsToSet.update(_entry[1] or {})
+            # Set attribute to the object.
+            for key in attrsToSet:
+                setattr(obj, key, attrsToSet[key])
+            setattr(self, name, obj)
+            return obj
+        return getattr(_sm, name)
+
 
 PY_VERSION = sys.version_info[:2]
 
@@ -198,7 +211,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self._getRefs = True
         self._mdparse = False
         if isThin:
-            self.accessSystem = 'httpThin'
+            if self.accessSystem == 'http':
+                self.accessSystem = 'httpThin'
             self._mdparse = True
             if self._defModFunct is None:
                 self._getRefs = False
@@ -207,6 +221,14 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self.do_adult_search(adultSearch)
         if proxy != -1:
             self.set_proxy(proxy)
+        _def = {'_modFunct': self._defModFunct, '_as': self.accessSystem}
+        # Proxy objects.
+        self.smProxy = _ModuleProxy(searchMovieParser, defaultKeys=_def)
+        self.spProxy = _ModuleProxy(searchPersonParser, defaultKeys=_def)
+        self.scProxy = _ModuleProxy(searchCharacterParser, defaultKeys=_def)
+        self.mProxy = _ModuleProxy(movieParser, defaultKeys=_def)
+        self.pProxy = _ModuleProxy(personParser, defaultKeys=_def)
+        self.cProxy = _ModuleProxy(characterParser, defaultKeys=_def)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -222,6 +244,14 @@ class IMDbHTTPAccessSystem(IMDbBase):
         except ValueError, e:
             raise IMDbParserError, 'invalid personID "%s": %s' % (personID, e)
 
+    def _normalize_characterID(self, characterID):
+        """Normalize the given characterID."""
+        try:
+            return '%07d' % int(characterID)
+        except ValueError, e:
+            raise IMDbParserError, 'invalid characterID "%s": %s' % \
+                    (characterID, e)
+
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID; in this implementation
         the movieID _is_ the imdbID.
@@ -233,6 +263,12 @@ class IMDbHTTPAccessSystem(IMDbBase):
         the personID _is_ the imdbID.
         """
         return personID
+
+    def get_imdbCharacterID(self, characterID):
+        """Translate a characterID in an imdbID; in this implementation
+        the characterID _is_ the imdbID.
+        """
+        return characterID
 
     def get_proxy(self):
         """Return the used proxy or an empty string."""
@@ -266,13 +302,15 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def _get_search_content(self, kind, ton, results):
         """Retrieve the web page for a given search.
-        kind can be tt (for titles) or nm (for names)
+        kind can be 'tt' (for titles), 'nm' (for names)
+        or 'char' (for characters).
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
         if isinstance(ton, unicode):
             ton = ton.encode('utf-8')
         ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
         params = 's=%s;mx=%s;q=%s' % (kind, str(results), quote_plus(ton))
+        print imdbURL_find % params
         cont = self._retrieve(imdbURL_find % params)
         if cont.find('more than 500 partial matches') == -1:
             return cont
@@ -290,143 +328,146 @@ class IMDbHTTPAccessSystem(IMDbBase):
         ##params = 'q=%s&tt=on&mx=%s' % (quote_plus(title), str(results))
         ##cont = self._retrieve(imdbURL_find % params)
         cont = self._get_search_content('tt', title, results)
-        return search_movie_parser.parse(cont, results=results)['data']
+        return self.smProxy.search_movie_parser.parse(cont,
+                                                    results=results)['data']
 
     def get_movie_main(self, movieID):
         if not self.isThin:
             cont = self._retrieve(imdbURL_movie_main % movieID + 'combined')
         else:
             cont = self._retrieve(imdbURL_movie_main % movieID + 'maindetails')
-        return movie_parser.parse(cont, mdparse=self._mdparse)
+        return self.mProxy.movie_parser.parse(cont, mdparse=self._mdparse)
 
     def get_movie_full_credits(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'fullcredits')
-        return movie_parser.parse(cont)
+        return self.mProxy.movie_parser.parse(cont)
 
     def get_movie_plot(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'plotsummary')
-        return plot_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.plot_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_awards(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'awards')
-        return movie_awards_parser.parse(cont)
+        return self.mProxy.movie_awards_parser.parse(cont)
 
     def get_movie_taglines(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'taglines')
-        return taglines_parser.parse(cont)
+        return self.mProxy.taglines_parser.parse(cont)
 
     def get_movie_keywords(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'keywords')
-        return keywords_parser.parse(cont)
+        return self.mProxy.keywords_parser.parse(cont)
 
     def get_movie_alternate_versions(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'alternateversions')
-        return alternateversions_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.alternateversions_parser.parse(cont,
+                                                        getRefs=self._getRefs)
 
     def get_movie_crazy_credits(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'crazycredits')
-        return crazycredits_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.crazycredits_parser.parse(cont,
+                                                    getRefs=self._getRefs)
 
     def get_movie_goofs(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'goofs')
-        return goofs_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.goofs_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_quotes(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'quotes')
-        return quotes_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.quotes_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_release_dates(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'releaseinfo')
-        return releasedates_parser.parse(cont)
+        return self.mProxy.releasedates_parser.parse(cont)
 
     def get_movie_vote_details(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'ratings')
-        return ratings_parser.parse(cont)
+        return self.mProxy.ratings_parser.parse(cont)
 
     def get_movie_official_sites(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'officialsites')
-        return officialsites_parser.parse(cont)
+        return self.mProxy.officialsites_parser.parse(cont)
 
     def get_movie_trivia(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'trivia')
-        return trivia_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.trivia_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_connections(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'movieconnections')
-        return connections_parser.parse(cont)
+        return self.mProxy.connections_parser.parse(cont)
 
     def get_movie_technical(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'technical')
-        return tech_parser.parse(cont)
+        return self.mProxy.tech_parser.parse(cont)
 
     def get_movie_business(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'business')
-        return business_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.business_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_literature(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'literature')
-        return literature_parser.parse(cont)
+        return self.mProxy.literature_parser.parse(cont)
 
     def get_movie_locations(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'locations')
-        return locations_parser.parse(cont)
+        return self.mProxy.locations_parser.parse(cont)
 
     def get_movie_soundtrack(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'soundtrack')
-        return soundtrack_parser.parse(cont)
+        return self.mProxy.soundtrack_parser.parse(cont)
 
     def get_movie_dvd(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'dvd')
-        return dvd_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.dvd_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_recommendations(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'recommendations')
-        return rec_parser.parse(cont)
+        return self.mProxy.rec_parser.parse(cont)
 
     def get_movie_external_reviews(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'externalreviews')
-        return externalrev_parser.parse(cont)
+        return self.mProxy.externalrev_parser.parse(cont)
 
     def get_movie_newsgroup_reviews(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'newsgroupreviews')
-        return newsgrouprev_parser.parse(cont)
+        return self.mProxy.newsgrouprev_parser.parse(cont)
 
     def get_movie_misc_sites(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'miscsites')
-        return misclinks_parser.parse(cont)
+        return self.mProxy.misclinks_parser.parse(cont)
 
     def get_movie_sound_clips(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'soundsites')
-        return soundclips_parser.parse(cont)
+        return self.mProxy.soundclips_parser.parse(cont)
 
     def get_movie_video_clips(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'videosites')
-        return videoclips_parser.parse(cont)
+        return self.mProxy.videoclips_parser.parse(cont)
 
     def get_movie_photo_sites(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'photosites')
-        return photosites_parser.parse(cont)
+        return self.mProxy.photosites_parser.parse(cont)
 
     def get_movie_news(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'news')
-        return news_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.news_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_amazon_reviews(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'amazon')
-        return amazonrev_parser.parse(cont)
+        return self.mProxy.amazonrev_parser.parse(cont)
 
     def get_movie_guests(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'epcast')
-        return episodes_parser.parse(cont)
+        return self.mProxy.episodes_parser.parse(cont)
     get_movie_episodes_cast = get_movie_guests
 
     def get_movie_merchandising_links(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'sales')
-        return sales_parser.parse(cont)
+        return self.mProxy.sales_parser.parse(cont)
 
     def get_movie_episodes(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'episodes')
-        data_d = episodes_parser.parse(cont)
+        data_d = self.mProxy.episodes_parser.parse(cont)
         # set movie['episode of'].movieID for every episode of the series.
         if data_d.get('data', {}).has_key('episodes'):
             nr_eps = 0
@@ -441,7 +482,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_episodes_rating(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'epdate')
-        data_d = eprating_parser.parse(cont)
+        data_d = self.mProxy.eprating_parser.parse(cont)
         # set movie['episode of'].movieID for every episode.
         if data_d.get('data', {}).has_key('episodes rating'):
             for item in data_d['data']['episodes rating']:
@@ -451,19 +492,19 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_faqs(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'faq')
-        return movie_faqs_parser.parse(cont, getRefs=self._getRefs)
+        return self.mProxy.movie_faqs_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_airing(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'tvschedule')
-        return airing_parser.parse(cont)
+        return self.mProxy.airing_parser.parse(cont)
 
     def get_movie_synopsis(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'synopsis')
-        return synopsis_parser.parse(cont)
+        return self.mProxy.synopsis_parser.parse(cont)
 
     def get_movie_parents_guide(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'parentalguide')
-        return parentsguide_parser.parse(cont)
+        return self.mProxy.parentsguide_parser.parse(cont)
 
     def _search_person(self, name, results):
         # The URL of the query.
@@ -473,11 +514,12 @@ class IMDbHTTPAccessSystem(IMDbBase):
         #params = 'q=%s&nm=on&mx=%s' % (quote_plus(name), str(results))
         #cont = self._retrieve(imdbURL_find % params)
         cont = self._get_search_content('nm', name, results)
-        return search_person_parser.parse(cont, results=results)['data']
+        return self.spProxy.search_person_parser.parse(cont,
+                                                    results=results)['data']
 
     def get_person_main(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'maindetails')
-        ret = maindetails_parser.parse(cont)
+        ret = self.pProxy.maindetails_parser.parse(cont)
         ret['info sets'] = ('main', 'filmography')
         return ret
 
@@ -486,46 +528,74 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_person_biography(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'bio')
-        return bio_parser.parse(cont, getRefs=self._getRefs)
+        return self.pProxy.bio_parser.parse(cont, getRefs=self._getRefs)
 
     def get_person_awards(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'awards')
-        return person_awards_parser.parse(cont)
+        return self.pProxy.person_awards_parser.parse(cont)
 
     def get_person_other_works(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'otherworks')
-        return otherworks_parser.parse(cont, getRefs=self._getRefs)
+        return self.pProxy.otherworks_parser.parse(cont, getRefs=self._getRefs)
 
     def get_person_agent(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'agent')
-        return agent_parser.parse(cont)
+        return self.pProxy.agent_parser.parse(cont)
 
     def get_person_publicity(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'publicity')
-        return publicity_parser.parse(cont)
+        return self.pProxy.publicity_parser.parse(cont)
 
     def get_person_official_sites(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'officialsites')
-        return person_officialsites_parser.parse(cont)
+        return self.pProxy.person_officialsites_parser.parse(cont)
 
     def get_person_news(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'news')
-        return news_parser.parse(cont)
+        return self.pProxy.news_parser.parse(cont)
 
     def get_person_episodes(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'filmoseries')
-        return person_series_parser.parse(cont)
+        return self.pProxy.person_series_parser.parse(cont)
 
     def get_person_merchandising_links(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'forsale')
-        return sales_parser.parse(cont)
+        return self.pProxy.sales_parser.parse(cont)
 
     def get_person_genres_links(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'filmogenre')
-        return person_genres_parser.parse(cont)
+        return self.pProxy.person_genres_parser.parse(cont)
 
     def get_person_keywords_links(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'filmokey')
-        return person_keywords_parser.parse(cont)
+        return self.pProxy.person_keywords_parser.parse(cont)
+
+    def _search_character(self, name, results):
+        cont = self._get_search_content('char', name, results)
+        return self.scProxy.search_character_parser.parse(cont,
+                                                    results=results)['data']
+
+    def get_character_main(self, personID):
+        cont = self._retrieve(imdbURL_character_main % personID)
+        ret = self.cProxy.character_main_parser.parse(cont)
+        ret['info sets'] = ('main', 'filmography')
+        return ret
+
+    get_character_filmography = get_character_main
+
+    def get_character_biography(self, characterID):
+        cont = self._retrieve(imdbURL_character_main % characterID + 'bio')
+        return self.cProxy.character_bio_parser.parse(cont,
+                                                    getRefs=self._getRefs)
+
+    def get_character_episodes(self, characterID):
+        cont = self._retrieve(imdbURL_character_main % characterID +
+                                'filmoseries')
+        return self.cProxy.character_series_parser.parse(cont)
+
+    def get_character_quotes(self, characterID):
+        cont = self._retrieve(imdbURL_character_main % characterID + 'quotes')
+        return self.cProxy.character_quotes_parser.parse(cont,
+                                                    getRefs=self._getRefs)
 
 

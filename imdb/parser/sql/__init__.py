@@ -732,6 +732,18 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     get_person_other_works = get_person_main
     get_person_episodes = get_person_main
 
+    def _search_character(self, name, results):
+        import warnings
+        warnings.warn('Character objects still unsupported for "sql"')
+        return []
+
+    def get_character_main(self, characterID):
+        import warnings
+        warnings.warn('Character objects still unsupported for "sql"')
+        return {}
+    get_character_filmography = get_character_main
+    get_character_biography = get_character_main
+
     def __del__(self):
         """Ensure that the connection is closed."""
         if not hasattr(self, '_connection'): return

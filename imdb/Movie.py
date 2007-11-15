@@ -138,13 +138,21 @@ class Movie(_Container):
         *myTitle* -- your personal title for the movie.
         *myID* -- your personal identifier for the movie.
         *data* -- a dictionary used to initialize the object.
-        *currentRole* -- a string representing the current role or duty
-                        of a person in this movie.
+        *currentRole* -- a Character instance representing the current role
+                         or duty of a person in this movie, or a Person
+                         object representing the actor/actress who played
+                         a given character in a Movie.  If a string is
+                         passed, an object is automatically build.
+        *roleID* -- if available, the characterID/personID of the currentRole
+                    object.
+        *roleIsPerson* -- when False (default) the currentRole is assumed
+                          to be a Character object, otherwise a Person.
         *notes* -- notes for the person referred in the currentRole
                     attribute; e.g.: '(voice)'.
         *accessSystem* -- a string representing the data access system used.
         *titlesRefs* -- a dictionary with references to movies.
         *namesRefs* -- a dictionary with references to persons.
+        *charactersRefs* -- a dictionary with references to characters.
         *modFunct* -- function called returning text fields.
         """
         title = kwds.get('title')
@@ -232,24 +240,32 @@ class Movie(_Container):
     isSameMovie = isSameTitle # XXX: just for backward compatiblity.
 
     def __contains__(self, item):
-        """Return true if the given Person object is listed in this Movie."""
+        """Return true if the given Person object is listed in this Movie,
+        or if the the given Character is represented in this Movie."""
         from Person import Person
-        if not isinstance(item, Person):
-            return 0
-        for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
-                        toDescend=(ListType, DictType, TupleType, Movie)):
-            if item.isSame(p):
-                return 1
+        from Character import Character
+        if isinstance(item, Person):
+            for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
+                            toDescend=(ListType, DictType, TupleType, Movie)):
+                if item.isSame(p):
+                    return 1
+        elif isinstance(item, Character):
+            for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
+                            toDescend=(ListType, DictType, TupleType, Movie)):
+                if item.isSame(p.currentRole):
+                    return 1
         return 0
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Movie instance."""
         m = Movie(title=u'', movieID=self.movieID, myTitle=self.myTitle,
                     myID=self.myID, data=deepcopy(self.data, memo),
-                    currentRole=self.currentRole, notes=self.notes,
-                    accessSystem=self.accessSystem,
+                    currentRole=deepcopy(self.currentRole, memo),
+                    roleIsPerson=self._roleIsPerson,
+                    notes=self.notes, accessSystem=self.accessSystem,
                     titlesRefs=deepcopy(self.titlesRefs, memo),
-                    namesRefs=deepcopy(self.namesRefs, memo))
+                    namesRefs=deepcopy(self.namesRefs, memo),
+                    charactersRefs=deepcopy(self.charactersRefs, memo))
         m.current_info = list(self.current_info)
         m.set_mod_funct(self.modFunct)
         return m

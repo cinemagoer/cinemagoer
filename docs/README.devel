@@ -18,6 +18,7 @@ imdb (package)
  +-> _exceptions
  +-> Movie
  +-> Person
+ +-> Character
  +-> utils
  +-> helpers
  +-> parser (package)
@@ -26,8 +27,10 @@ imdb (package)
        |    |
        |    +-> movieParser
        |    +-> personParser
+       |    +-> characterParser
        |    +-> searchMovieParser
        |    +-> searchPersonParser
+       |    +-> searchCharacterParser
        |    +-> utils
        |
        +-> local (package)
@@ -54,6 +57,8 @@ imdb (package): contains the IMDb function, the IMDbBase class and imports
 _exceptions: defines the exceptions internally used.
 Movie: contains the Movie class, used to describe and manage a movie.
 Person: contains the Person class, used to describe and manage a person.
+Character: contains the Character class, used to describe and manage
+           a character.
 utils: miscellaneous utilities used by many IMDbPY modules.
 parser (package): a package containing a package for every data access system
                   implemented.
@@ -66,10 +71,14 @@ http.movieParser: parse html strings from the pages on the IMDb web server about
                   a movie; returns dictionaries of {key: value}
 http.personParser: parse html strings from the pages on the IMDb web server
                    about a person; returns dictionaries.
+http.characterParser: parse html strings from the pages on the IMDb web server
+                   about a character; returns dictionaries.
 http.searchMovieParser: parse an html string, result of a query for a movie
                         title.
 http.searchPersonParser: parse an html string, result of a query for a person
                          name.
+http.searchCharacterParser: parse an html string, result of a query for a
+                            character name.
 http.utils: miscellaneous utilities used only by the http package.
 
 The modules under the parser.local package are the same of the
@@ -109,15 +118,16 @@ IMDbPY-based programs.
   ===================
 
 I wanted to stay independent from the source of the data for a given
-movie/person, and so the imdb.IMDb function returns an instance of a class
-that provides specific methods to access a given data source (web server,
-local installation, SQL database, etc.)
+movie/person/character, and so the imdb.IMDb function returns an instance
+of a class that provides specific methods to access a given data
+source (web server, local installation, SQL database, etc.)
 
-Unfortunately that means that the movieID in the Movie class and the
-personID in the Person class are dependent on the data access system
-used.  So, when a Movie or Person object is instantiated, the accessSystem
-instance variable is set to a string used to identify the used data access
-system.
+Unfortunately that means that the movieID in the Movie class, the
+personID in the Person class and the characterID in the Character class
+are dependent on the data access system used.
+So, when a Movie, a Person or a Character object is instantiated, the
+accessSystem instance variable is set to a string used to identify the
+used data access system.
 
 
   HOW TO EXTEND
@@ -130,6 +140,9 @@ of the imdb.IMDb class which must define at least the following methods:
                          list of (movieID, {movieData}) tuples.
  _search_person(name)  - to search for a given name; must return a
                          list of (movieID, {personData}) tuples.
+ _search_character(name)  - to search for a given character's name; must
+                            return a list of (characterID, {characterData})
+                            tuples.
  get_movie_*(movieID)  - a set of methods, one for every set of information
                          defined for a Movie object; should return
                          a dictionary with the relative information.
@@ -142,13 +155,21 @@ of the imdb.IMDb class which must define at least the following methods:
  get_person_*(personID) - a set of methods, one for every set of information
                           defined for a Person object; should return
                           a dictionary with the relative information.
+ get_character_*(characterID) - a set of methods, one for every set of
+                                information defined for a Character object;
+                                should return a dictionary with the relative
+                                information.
  get_imdbMovieID(movieID) - must convert the given movieID to a string
                             representing the imdbID, as used by the IMDb web
                             server (e.g.: '0094226' for Brian De Palma's
                             "The Untouchables").
- get_imdbPersonID(personID) - must convert the given personID a string
+ get_imdbPersonID(personID) - must convert the given personID to a string
                               representing the imdbID, as used by the IMDb web
                               server (e.g.: '0000154' for "Mel Gibson").
+ get_imdbCharacterID(characterID) - must convert the given characterID to a
+                              string representing the imdbID, as used by
+                              the IMDb web server (e.g.: '0000001' for
+                              "Jesse James").
  _normalize_movieID(movieID) - must convert the provided movieID in a
                                format suitable for internal use (e.g.:
                                convert a string to a long int).
@@ -161,9 +182,11 @@ of the imdb.IMDb class which must define at least the following methods:
                                Rationale: a movieID can be passed from the
                                command line, or from a web browser.
  _normalize_personID(personID) - idem.
+ _normalize_characterID(characterID) - idem.
  _get_real_movieID(movieID) - return the true movieID; useful to handle
                               title aliases.
  _get_real_personID(personID) - idem.
+ _get_real_characterID(characterID) - idem.
 
 The class should raise the appropriate exceptions, when needed;
 IMDbDataAccessError must be raised when you cannot access the resource

@@ -109,7 +109,7 @@ class BasicMovieParser(ParserBase):
             if st and self.__seriesID:
                 d_title = analyze_title(st, canonical=1)
                 m = Movie(movieID=str(self.__seriesID), data=d_title,
-                            accessSystem='http')
+                            accessSystem=self._as, modFunct=self._modFunct)
                 self._result['kind'] = u'episode'
                 self._result['episode of'] = m
             self._series_title = u''
@@ -149,10 +149,14 @@ class BasicMovieParser(ParserBase):
                 self._in_series_info = 1
 
 
+def _dontChange(s, *args, **kwds):
+    """Return the name (useful for characters objects)."""
+    return {'name': s}
+
 class HTMLSearchMovieParser(ParserBase):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, for both movies and persons."""
-    # Customizations for movie and person parsers.
+    # Customizations for movie, person and character parsers.
     _k = {
         'movie':
             {'analyze_f': analyze_title,
@@ -163,6 +167,11 @@ class HTMLSearchMovieParser(ParserBase):
             {'analyze_f': analyze_name,
             'link': '/name',
             'in title': 'imdb name'},
+
+        'character':
+            {'analyze_f': _dontChange,
+            'link': '/character',
+            'in title': 'imdb search'}
     }
 
     def _init(self):
@@ -263,7 +272,7 @@ class HTMLSearchMovieParser(ParserBase):
         if self._in_table and self._col_nr == 3 and not self._no_more:
             self._current_ton += data
         elif self._reading_page_title:
-            dls = data.strip().lower()
+            dls = data.strip().lower().replace('  ', ' ')
             if not dls.startswith(self._k[self.kind]['in title']):
                 # XXX: a direct result!
                 #      Interrupt parsing, and retrieve data using a
@@ -278,7 +287,7 @@ class HTMLSearchMovieParser(ParserBase):
                 self._results = bmp.parse(rawdata)['data']
 
 
-# The used object.
-search_movie_parser = HTMLSearchMovieParser()
-
+_OBJECTS = {
+        'search_movie_parser': (HTMLSearchMovieParser, None)
+}
 

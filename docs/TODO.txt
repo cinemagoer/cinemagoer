@@ -7,7 +7,7 @@ NOTE: it's always time to clean the code! <g>
 
 
 [general]
-* Write better summary() methods for Movie and Person classes.
+* Write better summary() methods for Movie, Person and Character classes.
 * Some portions of code are poorly commented.
 * The documentation is written in my funny Anglo-Bolognese.
 * a better test-suite is really needed.
@@ -24,8 +24,8 @@ NOTE: it's always time to clean the code! <g>
 
 
 [searches]
-* Support advanced query for movie titles/person names - if possible
-  this should be available in every data access systems.
+* Support advanced query for movie titles and person/character names - if
+  possible this should be available in every data access systems.
 
 
 [Movie objects]
@@ -61,6 +61,10 @@ NOTE: it's always time to clean the code! <g>
   In 'local' and 'sql', these movies/shows are listed in the
   "actor" or "actress" list.
   Check if this is still true, with the new IMDb's schema.
+
+[Character objects]
+* Define invariable names for the sections (the keys you use to access
+  info stored in a Character object).
 
 
 [http data access system]

@@ -1,11 +1,25 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.3.cvs20071115 "Quatermass and the Pit (1967)" (15 Nov 2007)
+* What's the new in release 3.3.CHARACTER.cvs20071115 "The Quatermass Xperiment" (15 Nov 2007)
+  [general]
+  - first support for character pages; only for "http" and "mobile", so far.
+  - support for multiple characters.
+  - introduced an helper function to pretty-print objects.
+  - added README.currentRole.
+  - fixed minor bug in the __hash__ method of the _Container class.
+  - fixed changes to some key names for movies.
+ 
   [http]
+  - full support for character pages.
   - fixed a bug retrieving some 'cover url'.
   - fixed a bug with multi-paragraphs biographies.
-  - fixed key aliases for movies.
+  - parsers are now instanced on demand.
+  - accessSystem and modFunct are correctly set for every Movie, Person
+    and Character object instanced.
+
+  [mobile]
+  - full support for character pages.
 
   [sql]
   - extended functionality of the custom queries support for the

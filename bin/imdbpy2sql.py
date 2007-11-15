@@ -1305,7 +1305,15 @@ def nmmvFiles(fp, funct, fname):
                         title = i.get('long imdb canonical title')
                         if not title: continue
                         movieid = CACHE_MID.addUnique(title)
-                        guestdata.add((mopid, movieid, i.currentRole or None,
+                        crole = i.currentRole
+                        if isinstance(crole, list):
+                            crole = ' / '.join([x.get('long imdb name', u'')
+                                                for x in crole])
+                        if not crole:
+                            crole = None
+                        else:
+                            crole = unicode(crole).encode('utf_8')
+                        guestdata.add((mopid, movieid, crole,
                                         i.notes or None))
                         continue
                     if k in ('plot', 'mini biography'):

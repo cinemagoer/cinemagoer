@@ -66,22 +66,26 @@ Refer to the web site http://imdbpy.sf.net/ and subscribe to the
 mailing list:  http://imdbpy.sf.net/?page=help#ml
 
 
-  UNICODE NOTICE
-  ==============
+  UNICODE AND CHARACTER PAGES NOTICE
+  ==================================
 
 Since release 2.4, IMDbPY internally manages every information about
 movies and people using unicode strings.  Please read the README.utf8 file.
+
+Since release 3.3, IMDbPY supports IMDb's character pages; see the
+README.currentRole file for more information.
 
 
   FEATURES
   ========
 
-So far you can search for a movie with a given title or a person
-with a given name, and retrieve information for a given movie or person;
-the supported data access systems are 'http' (i.e.: the data are fetched
-through the IMDb's web server http://akas.imdb.com) and 'local',
-meaning that the data are taken from the plain text data files;
-see http://www.imdb.com/interfaces.html for more information.
+So far you can search for a movie with a given title, a person
+with a given name or a character you've seen in a movie, and retrieve
+information for a given movie, person or character; the supported data
+access systems are 'http' (i.e.: the data are fetched through the IMDb's
+web server http://akas.imdb.com) and 'local', meaning that the data are
+taken from the plain text data files; see http://www.imdb.com/interfaces.html
+for more information.
 The same plain text data files used with the 'local' data access
 system can be converted to a SQL database, using the "imdbpy2sql.py"
 script, and then accessed using the 'sql' data access system.
@@ -95,12 +99,13 @@ suitable for systems with limited bandwidth but normal CPU power.
   FEATURES OF THE HTTP DATA ACCESS SYSTEM
   =======================================
 
-* Returns almost every available information about a movie or person.
+* Returns almost every available information about a movie, person or
+  character.
 * The use of the "akas" server will provide access to a lot of
   AKA titles in many languages, so it's really useful if English is
   not your native language.
 * By default includes adult titles (and people who have worked
-  only in adult movies) in the results of a title/name search; this
+  only/mostly in adult movies) in the results of a title/name search; this
   behavior can be changed with the do_adult_search() method; please
   read the "README.adult" file.
 * You can set/use a proxy to access the web; if set, the HTTP_PROXY

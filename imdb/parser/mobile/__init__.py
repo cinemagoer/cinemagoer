@@ -27,11 +27,10 @@ import re
 from urllib import unquote
 from types import ListType, TupleType
 
-from imdb import imdbURL_movie_main, imdbURL_person_main
+from imdb import imdbURL_movie_main, imdbURL_person_main, imdbURL_character_main
 from imdb.Movie import Movie
-from imdb.Person import Person
 from imdb.utils import analyze_title, analyze_name, canonicalName, \
-                        re_episodes, date_and_notes
+                        date_and_notes
 from imdb._exceptions import IMDbDataAccessError
 from imdb.parser.http import IMDbHTTPAccessSystem
 from imdb.parser.http.utils import subXMLRefs, subSGMLRefs, build_person, \
@@ -48,7 +47,7 @@ re_spacessub = re_spaces.sub
 re_unhtml = re.compile(r'<.+?>')
 re_unhtmlsub = re_unhtml.sub
 # imdb person or movie ids.
-re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
+re_imdbID = re.compile(r'(?<=nm|tt|ch)([0-9]{7})\b')
 
 
 def _unHtml(s):
@@ -119,8 +118,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
     accessSystem = 'mobile'
 
     def __init__(self, isThin=1, *arguments, **keywords):
-        IMDbHTTPAccessSystem.__init__(self, isThin, *arguments, **keywords)
         self.accessSystem = 'mobile'
+        IMDbHTTPAccessSystem.__init__(self, isThin, *arguments, **keywords)
 
     def _clean_html(self, html):
         """Normalize the retrieve html."""
@@ -142,6 +141,20 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         for name in names:
             pid = re_imdbID.findall(name)
             if not pid: continue
+            characters = _getTagsWith(name, 'class="char"',
+                                        toClosure=True, maxRes=1)
+            chpids = []
+            if characters:
+                for ch in characters[0].split(' / '):
+                    chid = re_imdbID.findall(ch)
+                    if not chid:
+                        chpids.append(None)
+                    else:
+                        chpids.append(chid[-1])
+            if not chpids:
+                chpids = None
+            elif len(chpids) == 1:
+                chpids = chpids[0]
             name = _unHtml(name)
             # Catch unclosed tags.
             gt_indx = name.find('>')
@@ -151,6 +164,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if name.endswith('...'):
                 name = name[:-3]
             p = build_person(name, personID=str(pid[0]), billingPos=counter,
+                            modFunct=self._defModFunct, roleID=chpids,
                             accessSystem=self.accessSystem)
             plappend(p)
             counter += 1
@@ -201,7 +215,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if tv_series and mid:
             s_title = _unHtml(tv_series[0])
             s_data = analyze_title(s_title, canonical=1)
-            m = Movie(movieID=str(mid[0]), data=s_data, accessSystem='mobile')
+            m = Movie(movieID=str(mid[0]), data=s_data,
+                        accessSystem=self.accessSystem,
+                        modFunct=self._defModFunct)
             d['kind'] = kind = u'episode'
             d['episode of'] = m
         if kind in ('tv series', 'tv mini series'):
@@ -450,14 +466,22 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 res.append((str(pid[0]), analyze_name(pname, canonical=1)))
         return res
 
-    def get_person_main(self, personID):
-        s = self._mretrieve(imdbURL_person_main % personID + 'maindetails')
+    def get_person_main(self, personID, _parseChr=False):
+        if not _parseChr:
+            url = imdbURL_person_main % personID + 'maindetails'
+        else:
+            url = imdbURL_character_main % personID
+        s = self._mretrieve(url)
         r = {}
         name = _findBetween(s, '<title>', '</title>', maxRes=1)
         if not name:
-            raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
+            if _parseChr: w = 'characterID'
+            else: w = 'personID'
+            raise IMDbDataAccessError, 'unable to get %s "%s"' % (w, personID)
         name = _unHtml(name[0])
-        r = analyze_name(name, canonical=1)
+        if _parseChr:
+            name = name.replace('(Character)', '').strip()
+        r = analyze_name(name, canonical=not _parseChr)
         for dKind in ('birth', 'death'):
             date = _findBetween(s, '<h5>Date of %s:</h5>' % dKind.capitalize(),
                                 ('<a class', '</div>', '<br/><br/>'), maxRes=1)
@@ -496,11 +520,16 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         # XXX: I think "guest appearances" are gone.
         if s.find('<a href="#guest-appearances"') != -1:
             ws.append(('guest-appearances', 'notable tv guest appearances'))
+        if _parseChr:
+            ws.append(('filmography', 'filmography'))
         for sect, sectName in ws:
             raws = u''
             # Everything between the current section link and the end
             # of the <ol> tag.
-            inisect = s.find('<a name="%s' % sect)
+            if _parseChr and sect == 'filmography':
+                inisect = s.find('<ul class="label">')
+            else:
+                inisect = s.find('<a name="%s' % sect)
             if inisect != -1:
                 endsect = s[inisect:].find('</ol>')
                 if endsect != -1: raws = s[inisect:inisect+endsect]
@@ -510,7 +539,26 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 # For every movie in the current section.
                 movieID = re_imdbID.findall(m)
                 if not movieID: continue
-                movieID = movieID[0]
+                if not _parseChr:
+                    chrIndx = m.find(' .... ')
+                else:
+                    chrIndx = m.find(' Played by ')
+                chids = []
+                if chrIndx != -1:
+                    chrtxt = m[chrIndx+6:]
+                    if _parseChr:
+                        chrtxt = chrtxt[5:]
+                    for ch in chrtxt.split(' / '):
+                        chid = re_imdbID.findall(ch)
+                        if not chid:
+                            chids.append(None)
+                        else:
+                            chids.append(chid[-1])
+                if not chids:
+                    chids = None
+                elif len(chids) == 1:
+                    chids = chids[0]
+                movieID = str(movieID[0])
                 # Search the status.
                 stidx = m.find('<i>')
                 status = u''
@@ -522,7 +570,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 m = _unHtml(m)
                 if not m: continue
                 movie = build_movie(m, movieID=movieID, status=status,
-                                    accessSystem=self.accessSystem)
+                                    roleID=chids, modFunct=self._defModFunct,
+                                    accessSystem=self.accessSystem,
+                                    _parsingCharacter=_parseChr)
                 r.setdefault(sectName, []).append(movie)
         # If available, take the always correct name from a form.
         itag = _getTagsWith(s, 'NAME="primary"', maxRes=1)
@@ -600,4 +650,61 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 data[:] = ndata
             d[sect] = data
         return {'data': d}
+
+    def _search_character(self, name, results):
+        cont = subXMLRefs(self._get_search_content('char', name, results))
+        name = _findBetween(cont, '<title>', '</title>', maxRes=1)
+        res = []
+        if not name: return res
+        nl = name[0].lower()
+        if not (nl.startswith('imdb search') or nl.startswith('imdb  search') \
+                or nl.startswith('imdb character')):
+            # XXX: a direct hit!
+            name = _unHtml(name[0]).replace('(Character)', '').strip()
+            pidtag = _getTagsWith(cont, '/character/ch', maxRes=1)
+            pid = None
+            if pidtag:
+                pid = re_imdbID.findall(pidtag[0])
+            if not (pid and name): return res
+            res[:] = [(str(pid[0]), analyze_name(name, canonical=0))]
+        else:
+            sects = _findBetween(cont, '<b>Popular Characters</b>', '</table>')
+            sects += _findBetween(cont, '<b>Characters', '</table>')
+            for sect in sects:
+                lis = _findBetween(sect, 'td valign="top">',
+                                    ['<small', '</td>', '<br'])
+                for li in lis:
+                    pid = re_imdbID.findall(li)
+                    pname = _unHtml(li)
+                    if not (pid and pname): continue
+                    res.append((str(pid[0]), analyze_name(pname, canonical=0)))
+        return res
+
+    def get_character_main(self, characterID):
+        return self.get_person_main(characterID, _parseChr=True)
+
+    def get_character_biography(self, characterID):
+        cont = self._mretrieve(imdbURL_character_main % characterID + 'bio')
+        d = {}
+        intro = _findBetween(cont, '<div class="display">',
+                            ('<span>', '<h4>'), maxRes=1)
+        if intro:
+            intro = _unHtml(intro[0]).strip()
+            if intro:
+                d['introduction'] = intro
+        bios = _findBetween(cont, '<div class="display">',
+                            '<div class="history">', maxRes=1)
+        if bios:
+            bios = _findBetween(bios[0], '<h4>', ('<h4>', '</div>'))
+        if bios:
+            for bio in bios:
+                bio = bio.replace('</h4>', '::')
+                bio = bio.replace('\n', ' ')
+                bio = bio.replace('<br>', '\n')
+                bio = subSGMLRefs(re_unhtmlsub('', bio).strip())
+                bio = bio.replace(' ::', '::').replace(':: ', '::')
+                if bio:
+                    d.setdefault('biography', []).append(bio)
+        return {'data': d}
+
 

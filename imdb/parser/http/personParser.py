@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.Movie import Movie
-from imdb.utils import analyze_name, build_name, canonicalName, \
+from imdb.utils import analyze_name, canonicalName, \
                         normalizeName, analyze_title, date_and_notes
 from utils import ParserBase, build_movie
 
@@ -41,6 +41,9 @@ class HTMLMaindetailsParser(ParserBase):
         cparser = HTMLMaindetailsParser()
         result = cparser.parse(categorized_html_string)
     """
+
+    def _init(self):
+        self.kind = 'person'
 
     def _reset(self):
         self._data = {}
@@ -68,7 +71,10 @@ class HTMLMaindetailsParser(ParserBase):
         self._cur_status = u''
         # Get a movieID.
         self._last_imdbID = None
+        self._last_nameIDs = []
         self._get_imdbID = False
+        self._cids = []
+        self._seen_movie_sep = False
 
     def get_data(self):
         return self._data
@@ -80,7 +86,11 @@ class HTMLMaindetailsParser(ParserBase):
         self._in_title = False
         self._title = self._title.strip()
         if self._title:
-            self._data.update(analyze_name(self._title, canonical=1))
+            if self.kind != 'character':
+                self._data.update(analyze_name(self._title, canonical=1))
+            else:
+                self._title = self._title.replace('(Character)', '').strip()
+                self._data['name'] = self._title
 
     def start_h5(self, attrs):
         if self._stop_here or not self._in_content: return
@@ -166,6 +176,9 @@ class HTMLMaindetailsParser(ParserBase):
         # XXX: not providing an 'else', we're deliberately ignoring
         #      other sections.
         self._in_post_section = False
+        if self.kind == 'character':
+            # XXX: I'm not confident this is the best place for this...
+            self._section = 'filmography'
         self._cur_txt = u''
 
     def start_a(self, attrs):
@@ -177,8 +190,16 @@ class HTMLMaindetailsParser(ParserBase):
         # Detect "more" links.
         if cls and cls.startswith('tn15more'):
             self._in_tn15more = True
-        if not (self._in_movie and self._get_imdbID): return
         href = self.get_attr_value(attrs, 'href')
+        if href and href.find('/character/ch') != -1:
+            imdbID = self.re_imdbID.findall(href)
+            if imdbID:
+                self._cids.append(imdbID[-1])
+        elif href and href.find('/name/nm') != -1:
+            imdbID = self.re_imdbID.findall(href)
+            if imdbID:
+                self._last_nameIDs.append(imdbID[-1])
+        if not (self._in_movie and self._get_imdbID): return
         # A movie title.
         if href and href.find('/title/tt') != -1:
             imdbID = self.re_imdbID.findall(href)
@@ -210,8 +231,11 @@ class HTMLMaindetailsParser(ParserBase):
             self._get_imdbID = True
             self._in_movie = True
         self._last_imdbID = None
+        self._last_nameIDs = []
+        self._cids = []
         self._cur_status = u''
         self._movie = u''
+        self._seen_movie_sep = False
         self._seen_br = False
 
     def end_li(self):
@@ -221,9 +245,23 @@ class HTMLMaindetailsParser(ParserBase):
         self._movie = self._movie.strip()
         self._cur_status = self._cur_status.strip()
         if not (self._movie and self._last_imdbID and self._section): return
+        if not self._cids:
+            self._cids = None
+        elif len(self._cids) == 1:
+            self._cids = self._cids[0]
         # Add this movie to the list.
-        movie = build_movie(self._movie, movieID=self._last_imdbID,
-                status=self._cur_status)
+        kwds = {'movieID': self._last_imdbID, 'status': self._cur_status,
+                'roleID': self._cids, 'modFunct': self._modFunct,
+                'accessSystem': self._as}
+        if self.kind == 'character':
+            kwds['_parsingCharacter'] = True
+            lnids = self._last_nameIDs
+            if not lnids:
+                lnids = None
+            elif len(lnids) == 1:
+                lnids = lnids[0]
+            kwds['roleID'] = lnids
+        movie = build_movie(self._movie, **kwds)
         self._data.setdefault(self._section, []).append(movie)
 
     def start_i(self, attrs):
@@ -244,6 +282,22 @@ class HTMLMaindetailsParser(ParserBase):
             if self._in_i:
                 self._cur_status += data
             else:
+                # XXX: keeps multiple characterIDs separated; quite a mess.
+                if self._section in ('actor', 'actress', 'self'):
+                    ldata = data
+                    if not self._seen_movie_sep:
+                        # Consider only ' / ' after the separator.
+                        sepIdx = ldata.find(' ....')
+                        if sepIdx != -1:
+                            ldata = ldata[sepIdx+5:]
+                    nrSep = ldata.count(' / ')
+                    if nrSep > 0:
+                        sdata = data.strip()
+                        if sdata.endswith(' /') and sdata.startswith('/ '):
+                            nrSep -= 1
+                        self._cids += [None]*nrSep
+                if not self._seen_movie_sep and data.find(' ....') != -1:
+                    self._seen_movie_sep = True
                 self._movie += data
 
 
@@ -550,7 +604,7 @@ class HTMLSeriesParser(ParserBase):
                 eps_data = analyze_title(et, canonical=1)
                 eps_data['kind'] = u'episode'
                 e = Movie(movieID=str(self._episode_id), data=eps_data,
-                            accessSystem='http')
+                            accessSystem=self._as, modFunct=self._modFunct)
                 e['episode of'] = self._cur_series
                 if minfo.startswith('('):
                     pe = minfo.find(')')
@@ -597,6 +651,7 @@ class HTMLSeriesParser(ParserBase):
             if not self._in_li: return
             href = self.get_attr_value(attrs, 'href')
             if not href: return
+            if 'character/ch' in href: return
             mid = self.re_imdbID.findall(href)
             if not mid: return
             self._in_episode_title = 1
@@ -620,7 +675,7 @@ class HTMLSeriesParser(ParserBase):
             if st and self._series_id is not None:
                 series_data = analyze_title(st, canonical=1)
                 s = Movie(movieID=str(self._series_id), data=series_data,
-                                accessSystem='http')
+                            accessSystem=self._as, modFunct=self._modFunct)
                 self._cur_series = s
 
     def _handle_data(self, data):
@@ -657,6 +712,7 @@ class HTMLPersonGenresParser(ParserBase):
         self._in_table = False
         self._in_li = False
         self._cur_movieID = None
+        self._cur_characterID = None
 
     def get_data(self):
         """Return the dictionary."""
@@ -677,7 +733,10 @@ class HTMLPersonGenresParser(ParserBase):
             if href:
                 imdbID = self.re_imdbID.findall(href)
                 if imdbID:
-                    self._cur_movieID = imdbID[-1]
+                    if 'title/tt' in href:
+                        self._cur_movieID = imdbID[-1]
+                    elif 'character/ch' in href:
+                        self._cur_characterID = imdbID[-1]
                     return
         if not self._in_table: return
         name = self.get_attr_value(attrs, 'name')
@@ -705,45 +764,47 @@ class HTMLPersonGenresParser(ParserBase):
         if not (self._cur_key and self._cur_title and self._cur_movieID):
             self._cur_title = u''
             self._cur_movieID = None
+            self._cur_characterID = None
             return
         ridx = self._cur_title.find('[')
         notes = u''
         if ridx != -1:
             notes = self._cur_title[ridx:].lstrip()
             self._cur_title = self._cur_title[:ridx].rstrip()
-        m = build_movie(self._cur_title, movieID=self._cur_movieID)
+        m = build_movie(self._cur_title, movieID=self._cur_movieID,
+                        roleID=self._cur_characterID, modFunct=self._modFunct,
+                        accessSystem=self._as)
         m.notes = notes
         self._info.setdefault(self._cur_key.replace('X2D', '-'), []).append(m)
         self._cur_title = u''
         self._cur_movieID = None
+        self._cur_characterID = None
 
     def _handle_data(self, data):
         if not self._in_li: return
         self._cur_title += data
 
 
-
-# The used instances.
-maindetails_parser = HTMLMaindetailsParser()
-bio_parser = HTMLBioParser()
-otherworks_parser = HTMLOtherWorksParser()
-agent_parser = HTMLOtherWorksParser()
-agent_parser.kind = 'agent'
 from movieParser import HTMLOfficialsitesParser
-person_officialsites_parser = HTMLOfficialsitesParser()
 from movieParser import HTMLAwardsParser
-person_awards_parser = HTMLAwardsParser()
-person_awards_parser.subject = 'name'
 from movieParser import HTMLTechParser
-publicity_parser = HTMLTechParser()
-publicity_parser.kind = 'publicity'
-from movieParser import news_parser
-person_series_parser = HTMLSeriesParser()
+from movieParser import HTMLNewsParser
 from movieParser import HTMLLocationsParser
-person_contacts_parser = HTMLTechParser()
-person_contacts_parser.kind = 'contacts'
-from movieParser import sales_parser
-person_genres_parser = HTMLPersonGenresParser()
-person_keywords_parser = HTMLPersonGenresParser()
-person_keywords_parser.kind = 'keywords'
+from movieParser import HTMLSalesParser
+
+_OBJECTS = {
+    'maindetails_parser': (HTMLMaindetailsParser, None),
+    'bio_parser': (HTMLBioParser, None),
+    'otherworks_parser': (HTMLOtherWorksParser, None),
+    'agent_parser': (HTMLOtherWorksParser, {'kind': 'agent'}),
+    'person_officialsites_parser': (HTMLOfficialsitesParser, None),
+    'person_awards_parser': (HTMLAwardsParser, {'subject': 'name'}),
+    'publicity_parser': (HTMLTechParser, {'kind': 'publicity'}),
+    'person_series_parser': (HTMLSeriesParser, None),
+    'person_contacts_parser': (HTMLTechParser, {'kind': 'contacts'}),
+    'person_genres_parser': (HTMLPersonGenresParser, None),
+    'person_keywords_parser': (HTMLPersonGenresParser, {'kind': 'keywords'}),
+    'news_parser':  (HTMLNewsParser, None),
+    'sales_parser':  (HTMLSalesParser, None)
+}
 

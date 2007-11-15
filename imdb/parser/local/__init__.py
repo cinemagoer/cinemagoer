@@ -6,7 +6,7 @@ IMDb's data through a local installation.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "local" or "files".
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -693,4 +693,17 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
     get_person_biography = get_person_main
     get_person_other_works = get_person_main
     get_person_episodes = get_person_filmography
+
+    def _search_character(self, name, results):
+        import warnings
+        warnings.warn('Character objects still unsupported for "local"')
+        return []
+
+    def get_character_main(self, characterID):
+        import warnings
+        warnings.warn('Character objects still unsupported for "local"')
+        return {}
+    get_character_filmography = get_character_main
+    get_character_biography = get_character_main
+
 

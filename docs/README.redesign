@@ -9,6 +9,6 @@ Since release 3.0, IMDbPY uses a new account to access the IMDb
 web site, parsing the new layout.
 
 Older version still access the old layout, so they are still (more
-or less) working; obviously only the new layout is sopport from
+or less) working; obviously only the new layout is supported by
 now on.
 

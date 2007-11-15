@@ -26,7 +26,7 @@ from types import UnicodeType, StringType, ListType, TupleType, DictType
 from copy import copy, deepcopy
 from time import strptime, strftime
 
-from imdb._exceptions import IMDbParserError
+from imdb._exceptions import IMDbParserError, IMDbError
 
 # The regular expression for the "long" year format of IMDb, like
 # "(1998)" and "(1986/II)", where the optional roman number (that I call
@@ -40,7 +40,6 @@ re_index = re.compile(r'^\(([IVXLCDM]+)\)$')
 
 # Match the number of episodes.
 re_episodes = re.compile('\s?\((\d+) episodes\)', re.I)
-
 re_episode_info = re.compile(r'{(.+?)?\s?(\([0-9\?]{4}-[0-9\?]{1,2}-[0-9\?]{1,2}\))?\s?(\(#[0-9]+\.[0-9]+\))?}')
 
 # Common suffixes in surnames.
@@ -550,10 +549,8 @@ def cmpMovies(m1, m2):
 
 def cmpPeople(p1, p2):
     """Compare two people by billingPos, name and imdbIndex."""
-    p1b = p1.billingPos
-    if p1b is None: p1b = _last
-    p2b = p2.billingPos
-    if p2b is None: p2b = _last
+    p1b = getattr(p1, 'billingPos', None) or _last
+    p2b = getattr(p2, 'billingPos', None) or _last
     if p1b > p2b: return 1
     if p1b < p2b: return -1
     p1n = p1.get('canonical name', _last)
@@ -570,37 +567,44 @@ def cmpPeople(p1, p2):
     return 0
 
 
-# References to titles and names.
+# References to titles, names and characters.
 # XXX: find better regexp!
 re_titleRef = re.compile(r'_(.+?(?: \([0-9\?]{4}(?:/[IVXLCDM]+)?\))?(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)_ \(qv\)')
 # FIXME: doesn't match persons with ' in the name.
 re_nameRef = re.compile(r"'([^']+?)' \(qv\)")
+# XXX: good choice?  Are there characters with # in the name?
+re_characterRef = re.compile(r"#([^']+?)# \(qv\)")
 
 # Functions used to filter the text strings.
-def modNull(s, titlesRefs, namesRefs):
+def modNull(s, titlesRefs, namesRefs, charactersRefs):
     """Do nothing."""
     return s
 
-def modClearTitleRefs(s, titlesRefs, namesRefs):
+def modClearTitleRefs(s, titlesRefs, namesRefs, charactersRefs):
     """Remove titles references."""
     return re_titleRef.sub(r'\1', s)
 
-def modClearNameRefs(s, titlesRefs, namesRefs):
+def modClearNameRefs(s, titlesRefs, namesRefs, charactersRefs):
     """Remove names references."""
     return re_nameRef.sub(r'\1', s)
 
-def modClearRefs(s, titlesRefs, namesRefs):
-    """Remove both titles and names references."""
-    s = modClearTitleRefs(s, {}, {})
-    return modClearNameRefs(s, {}, {})
+def modClearCharacterRefs(s, titlesRefs, namesRefs, charactersRefs):
+    """Remove characters references"""
+    return re_characterRef.sub(r'\1', s)
+
+def modClearRefs(s, titlesRefs, namesRefs, charactersRefs):
+    """Remove titles, names and characters references."""
+    s = modClearTitleRefs(s, {}, {}, {})
+    s = modClearCharacterRefs(s, {}, {}, {})
+    return modClearNameRefs(s, {}, {}, {})
 
 
-def modifyStrings(o, modFunct, titlesRefs, namesRefs):
+def modifyStrings(o, modFunct, titlesRefs, namesRefs, charactersRefs):
     """Modify a string (or string values in a dictionary or strings
     in a list), using the provided modFunct function and titlesRefs
-    and namesRefs references dictionaries."""
+    namesRefs and charactersRefs references dictionaries."""
     if isinstance(o, (UnicodeType, StringType)):
-        return modFunct(o, titlesRefs, namesRefs)
+        return modFunct(o, titlesRefs, namesRefs, charactersRefs)
     elif isinstance(o, (ListType, TupleType)):
         _stillorig = 1
         if isinstance(o, ListType): keys = xrange(len(o))
@@ -611,9 +615,10 @@ def modifyStrings(o, modFunct, titlesRefs, namesRefs):
                 if _stillorig:
                     o = copy(o)
                     _stillorig = 0
-                o[i] = modFunct(v, titlesRefs, namesRefs)
+                o[i] = modFunct(v, titlesRefs, namesRefs, charactersRefs)
             elif isinstance(v, (ListType, TupleType)):
-                modifyStrings(o[i], modFunct, titlesRefs, namesRefs)
+                modifyStrings(o[i], modFunct, titlesRefs, namesRefs,
+                            charactersRefs)
     return o
 
 
@@ -640,8 +645,20 @@ def date_and_notes(s):
     return s, notes
 
 
-class _Container:
-    """Base class for Movie and Person classes."""
+class RolesList(list):
+    """A list of Person or Character instances, used for the currentRole
+    property."""
+    def __unicode__(self):
+        return u' / '.join([unicode(x) for x in self])
+
+    def __str__(self):
+        # FIXME: does it make sense at all?  Return a unicode doesn't
+        #        seem right, in __str__.
+        return u' / '.join([unicode(x).encode('utf8') for x in self])
+
+
+class _Container(object):
+    """Base class for Movie, Person and Character classes."""
      # The default sets of information retrieved.
     default_info = ()
 
@@ -653,38 +670,121 @@ class _Container:
 
     cmpFunct = None
 
-    def __init__(self, myID=None, data=None, currentRole=u'', notes=u'',
+    def __init__(self, myID=None, data=None, notes=u'',
+                currentRole=u'', roleID=None, roleIsPerson=False,
                 accessSystem=None, titlesRefs=None, namesRefs=None,
-                modFunct=None, *args, **kwds):
-        """Initialize a Movie or a Person object.
+                charactersRefs=None, modFunct=None, *args, **kwds):
+        """Initialize a Movie, Person or Character object.
         *myID* -- your personal identifier for this object.
         *data* -- a dictionary used to initialize the object.
-        *currentRole* -- a string representing the current role or duty
-                        of a person in this/a movie.
         *notes* -- notes for the person referred in the currentRole
                     attribute; e.g.: '(voice)' or the alias used in the
                     movie credits.
         *accessSystem* -- a string representing the data access system used.
+        *currentRole* -- a Character instance representing the current role
+                         or duty of a person in this movie, or a Person
+                         object representing the actor/actress who played
+                         a given character in a Movie.  If a string is
+                         passed, an object is automatically build.
+        *roleID* -- if available, the characterID/personID of the currentRole
+                    object.
+        *roleIsPerson* -- when False (default) the currentRole is assumed
+                          to be a Character object, otherwise a Person.
         *titlesRefs* -- a dictionary with references to movies.
         *namesRefs* -- a dictionary with references to persons.
+        *charactersRefs* -- a dictionary with references to characters.
         *modFunct* -- function called returning text fields.
         """
         self.reset()
+        self.accessSystem = accessSystem
         self.myID = myID
         if data is None: data = {}
         self.set_data(data, override=1)
-        self.currentRole = currentRole
         self.notes = notes
-        self.accessSystem = accessSystem
         if titlesRefs is None: titlesRefs = {}
         self.update_titlesRefs(titlesRefs)
         if namesRefs is None: namesRefs = {}
         self.update_namesRefs(namesRefs)
+        if charactersRefs is None: charactersRefs = {}
+        self.update_charactersRefs(charactersRefs)
         self.set_mod_funct(modFunct)
         self.keys_tomodify = {}
         for item in self.keys_tomodify_list:
             self.keys_tomodify[item] = None
+        self._roleIsPerson = roleIsPerson
+        if not roleIsPerson:
+            from imdb.Character import Character
+            self._roleClass = Character
+        else:
+            from imdb.Person import Person
+            self._roleClass = Person
+        self.currentRole = currentRole
+        if roleID:
+            self.roleID = roleID
         self._init(*args, **kwds)
+
+    def _get_roleID(self):
+        """Return the characterID or personID of the currentRole object."""
+        if not self.__role:
+            return None
+        if isinstance(self.__role, list):
+            return [x.getID() for x in self.__role]
+        return self.currentRole.getID()
+
+    def _set_roleID(self, roleID):
+        """Set the characterID or personID of the currentRole object."""
+        if not self.__role:
+            # XXX: needed?  Just ignore it?  It's probably safer to
+            #      ignore it, to prevent some bugs in the parsers.
+            raise IMDbError, "Can't set ID of an empty Character/Person object."
+        if not self._roleIsPerson:
+            if not isinstance(roleID, (list, tuple)):
+                self.currentRole.characterID = roleID
+            else:
+                for index, item in enumerate(roleID):
+                    self.__role[index].characterID = item
+        else:
+            if not isinstance(roleID, (list, tuple)):
+                self.currentRole.personID = roleID
+            else:
+                for index, item in enumerate(roleID):
+                    self.__role[index].personID = item
+
+    roleID = property(_get_roleID, _set_roleID,
+                doc="the characterID or personID of the currentRole object.")
+
+    def _get_currentRole(self):
+        """Return a Character or Person instance."""
+        if self.__role:
+            return self.__role
+        return self._roleClass(name=u'', accessSystem=self.accessSystem,
+                                modFunct=self.modFunct)
+
+    def _set_currentRole(self, role):
+        """Set self.currentRole to a Character or Person instance."""
+        if isinstance(role, (UnicodeType, StringType)):
+            if not role:
+                self.__role = None
+            else:
+                self.__role = self._roleClass(name=role, modFunct=self.modFunct,
+                                        accessSystem=self.accessSystem)
+        elif isinstance(role, (list, tuple)):
+            self.__role = RolesList()
+            for item in role:
+                if isinstance(item, (UnicodeType, StringType)):
+                    self.__role.append(self._roleClass(name=item,
+                                        accessSystem=self.accessSystem,
+                                        modFunct=self.modFunct))
+                else:
+                    self.__role.append(item)
+            if not self.__role:
+                self.__role = None
+        else:
+            self.__role = role
+
+    currentRole = property(_get_currentRole, _set_currentRole,
+                            doc="The role of a Person in a Movie" + \
+                            " or the interpreter of a Character in a Movie.")
 
     def _init(self, **kwds): pass
 
@@ -692,12 +792,13 @@ class _Container:
         """Reset the object."""
         self.data = {}
         self.myID = None
-        self.currentRole = u''
         self.notes = u''
         self.titlesRefs = {}
         self.namesRefs = {}
+        self.charactersRefs = {}
         self.modFunct = modClearRefs
         self.current_info = []
+        self.__role = None
         self._reset()
 
     def _reset(self): pass
@@ -705,11 +806,12 @@ class _Container:
     def clear(self):
         """Reset the dictionary."""
         self.data.clear()
-        self.currentRole = u''
         self.notes = u''
         self.titlesRefs = {}
         self.namesRefs = {}
+        self.charactersRefs = {}
         self.current_info = []
+        self.__role = None
         self._clear()
 
     def _clear(self): pass
@@ -752,6 +854,14 @@ class _Container:
         """Return the dictionary with the references to names."""
         return self.namesRefs
 
+    def update_charactersRefs(self, charactersRefs):
+        """Update the dictionary with the references to characters."""
+        self.charactersRefs.update(charactersRefs)
+
+    def get_charactersRefs(self):
+        """Return the dictionary with the references to characters."""
+        return self.charactersRefs
+
     def set_data(self, data, override=0):
         """Set the movie data to the given dictionary; if 'override' is
         set, the previous data is removed, otherwise the two dictionary
@@ -763,11 +873,11 @@ class _Container:
             self.data = data
 
     def getID(self):
-        """Return movie or person ID."""
+        """Return movieID, personID or characterID."""
         raise NotImplementedError, 'override this method'
 
     def __cmp__(self, other):
-        """Compare two Movie or Person objects."""
+        """Compare two Movie, Person or Character objects."""
         # XXX: raise an exception?
         if self.cmpFunct is None: return -1
         if not isinstance(other, self.__class__): return -1
@@ -780,18 +890,21 @@ class _Container:
         if theID is not None and self.accessSystem not in ('UNKNOWN', None):
             # Handle 'http' and 'mobile' as they are the same access system.
             acs = self.accessSystem
-            if acs == 'mobile': acs = 'http'
+            if acs in ('mobile', 'httpThin'):
+                acs = 'http'
             s4h = '%s:%s' % (acs, theID)
         else:
             s4h = repr(self)
         return hash(s4h)
 
     def isSame(self, other):
+        """Return True if the two represent the same object."""
         if not isinstance(other, self.__class__): return 0
         if hash(self) == hash(other): return 1
         return 0
 
     def __len__(self):
+        """Number of items in the data dictionary."""
         return len(self.data)
 
     def _getitem(self, key):
@@ -810,7 +923,7 @@ class _Container:
         if self.keys_tomodify.has_key(key) and \
                 self.modFunct not in (None, modNull):
             return modifyStrings(rawData, self.modFunct, self.titlesRefs,
-                                self.namesRefs)
+                                self.namesRefs, self.charactersRefs)
         return rawData
 
     def __setitem__(self, key, item):
@@ -909,8 +1022,8 @@ class _Container:
 
 def flatten(seq, toDescend=(ListType, DictType, TupleType),
             yieldDictKeys=0, onlyKeysType=(_Container,), scalar=None):
-    """Iterate over nested lists and dictionaries; toDescend is a type
-    of a tuple of types to be considered non-scalar; if yieldDictKeys is
+    """Iterate over nested lists and dictionaries; toDescend is a list
+    or a tuple of types to be considered non-scalar; if yieldDictKeys is
     true, also dictionaries' keys are yielded; if scalar is not None, only
     items of the given type(s) are yielded."""
     if not isinstance(seq, toDescend):
@@ -937,4 +1050,5 @@ def flatten(seq, toDescend=(ListType, DictType, TupleType),
                                 yieldDictKeys=yieldDictKeys,
                                 onlyKeysType=onlyKeysType, scalar=scalar):
                     yield i
+
 

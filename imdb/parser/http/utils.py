@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from types import UnicodeType, StringType, ListType, TupleType, DictType
+from types import UnicodeType, StringType, ListType, DictType
 from sgmllib import SGMLParser
 from urllib import unquote
 
@@ -30,13 +30,14 @@ from imdb._exceptions import IMDbParserError
 
 from imdb.Movie import Movie
 from imdb.Person import Person
+from imdb.Character import Character
 
 # Year, imdbIndex and kind.
 re_yearKind_index = re.compile(r'(\([0-9\?]{4}(?:/[IVXLCDM]+)?\)(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)')
 
 
 _modify_keys = list(Movie.keys_tomodify_list) + list(Person.keys_tomodify_list)
-def _putRefs(d, re_titles, re_names, lastKey=None):
+def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
     """Iterate over the strings inside list items or dictionary values,
     substitutes movie titles and person names with the (qv) references."""
     if isinstance(d, ListType):
@@ -47,8 +48,11 @@ def _putRefs(d, re_titles, re_names, lastKey=None):
                         d[i] = re_names.sub(ur"'\1' (qv)", d[i])
                     if re_titles:
                         d[i] = re_titles.sub(ur'_\1_ (qv)', d[i])
+                    if re_characters:
+                        d[i] = re_characters.sub(ur'#\1# (qv)', d[i])
             elif isinstance(d[i], (ListType, DictType)):
-                _putRefs(d[i], re_titles, re_names, lastKey=lastKey)
+                _putRefs(d[i], re_titles, re_names, re_characters,
+                        lastKey=lastKey)
     elif isinstance(d, DictType):
         for k, v in d.items():
             lastKey = k
@@ -58,8 +62,11 @@ def _putRefs(d, re_titles, re_names, lastKey=None):
                         d[k] = re_names.sub(ur"'\1' (qv)", v)
                     if re_titles:
                         d[k] = re_titles.sub(ur'_\1_ (qv)', v)
+                    if re_characters:
+                        d[k] = re_characters.sub(ur'#\1# (qv)', v)
             elif isinstance(v, (ListType, DictType)):
-                _putRefs(d[k], re_titles, re_names, lastKey=lastKey)
+                _putRefs(d[k], re_titles, re_names, re_characters,
+                        lastKey=lastKey)
 
 
 # Handle HTML/XML/SGML entities.
@@ -132,7 +139,8 @@ def subSGMLRefs(s):
     return re_sgmlrefsub(_replSGMLRefs, s)
 
 
-def build_person(txt, personID=None, billingPos=None, accessSystem='http'):
+def build_person(txt, personID=None, billingPos=None,
+                roleID=None, accessSystem='http', modFunct=None):
     """Return a Person instance from the tipical <tr>...</tr> strings
     found in the IMDb's web site."""
     notes = u''
@@ -168,19 +176,37 @@ def build_person(txt, personID=None, billingPos=None, accessSystem='http'):
             # Just a role, without notes.
             role = role_comment
     if role == '....': role = u''
+    # Manages multiple roleIDs.
+    if isinstance(roleID, list):
+        role = role.split(' / ')
+        lr = len(role)
+        lrid = len(roleID)
+        if lr > lrid:
+            roleID += [None] * (lrid - lr)
+        elif lr < lrid:
+            roleID = roleID[:lr]
+        if lr == 1:
+            role = role[0]
+            roleID = roleID[0]
     # XXX: return None if something strange is detected?
-    return Person(name=name, personID=personID, currentRole=role, notes=notes,
-                    billingPos=billingPos, accessSystem=accessSystem)
+    return Person(name=name, personID=personID, currentRole=role,
+                    roleID=roleID, notes=notes, billingPos=billingPos,
+                    modFunct=modFunct, accessSystem=accessSystem)
 
 
 # To shrink spaces.
 re_spaces = re.compile(r'\s+')
-def build_movie(txt, movieID=None, status=None, accessSystem='http'):
+def build_movie(txt, movieID=None, roleID=None, status=None,
+                accessSystem='http', modFunct=None, _parsingCharacter=False):
     """Given a string as normally seen on the "categorized" page of
     a person on the IMDb's web site, returns a Movie instance."""
+    if not _parsingCharacter:
+        _defSep = '....'
+    else:
+        _defSep = ' Played by '
     title = re_spaces.sub(' ', txt).strip()
     # Split the role/notes from the movie title.
-    tsplit = title.split('....', 1)
+    tsplit = title.split(_defSep, 1)
     role = u''
     notes = u''
     if len(tsplit) == 2:
@@ -225,8 +251,27 @@ def build_movie(txt, movieID=None, status=None, accessSystem='http'):
         if notes: notes = '%s %s' % (title[nidx:], notes)
         else: notes = title[nidx:]
         title = title[:nidx].rstrip()
+    if _parsingCharacter and roleID and not role:
+        roleID = None
+    if not roleID:
+        roleID = None
+    elif len(roleID) == 1:
+        roleID = roleID[0]
+    # Manages multiple roleIDs.
+    if isinstance(roleID, list):
+        role = role.split(' / ')
+        lr = len(role)
+        lrid = len(roleID)
+        if lr > lrid:
+            roleID += [None] * (lrid - lr)
+        elif lr < lrid:
+            roleID = roleID[:lr]
+        if lr == 1:
+            role = role[0]
+            roleID = roleID[0]
     m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
-                accessSystem=accessSystem)
+                roleID=roleID, roleIsPerson=_parsingCharacter,
+                modFunct=modFunct, accessSystem=accessSystem)
     # Status can't be checked here, and must be detected by the parser.
     if status:
         m['status'] = status
@@ -238,10 +283,10 @@ def build_movie(txt, movieID=None, status=None, accessSystem='http'):
 class ParserBase(SGMLParser):
     """Base parser to handle HTML data from the IMDb's web server."""
     # The imdbID is a 7-ciphers number.
-    re_imdbID = re.compile(r'(?<=nm|tt)([0-9]{7})\b')
+    re_imdbID = re.compile(r'(?<=nm|tt|ch)([0-9]{7})\b')
     re_imdbIDonly = re.compile(r'\b([0-9]{7})\b')
     re_airdate = re.compile(r'(.*)\s*\(season (\d+), episode (\d+)\)', re.I)
-    _re_imdbIDmatch = re.compile(r'(nm|tt)[0-9]{7}\b')
+    _re_imdbIDmatch = re.compile(r'(nm|tt|ch)[0-9]{7}\b')
 
     # It's set when names and titles references must be collected.
     # It can be set to 0 for search parsers.
@@ -250,6 +295,9 @@ class ParserBase(SGMLParser):
 
     def __init__(self, verbose=0):
         self._init()
+        # Fall-back defaults.
+        self._modFunct = None
+        self._as = 'http'
         SGMLParser.__init__(self, verbose)
 
     def handle_charref(self, name):
@@ -275,13 +323,17 @@ class ParserBase(SGMLParser):
         # Names and titles references.
         self._namesRefs = {}
         self._titlesRefs = {}
+        self._charactersRefs = {}
         self._titleRefCID = u''
         self._nameRefCID = u''
+        self._characterRefCID = u''
         self._titleCN = u''
         self._nameCN = u''
+        self._characterCN = u''
         self._inTTRef = 0
         self._inLinkTTRef = 0
         self._inNMRef = 0
+        self._inCHRef = 0
         self._in_content = 0
         self._div_count = 0
         self._reset()
@@ -322,6 +374,8 @@ class ParserBase(SGMLParser):
                     if yearK and yearK.start() == 0:
                         self._titleCN += ' %s' % sdata[:yearK.end()]
                         self._add_ref('tt')
+            elif self._inCHRef:
+                self._characterCN += data
         self._handle_data(data)
 
     def _handle_data(self, data): pass
@@ -333,7 +387,8 @@ class ParserBase(SGMLParser):
                 if not self._titlesRefs.has_key(self._titleCN):
                     try:
                         movie = Movie(movieID=str(self._titleRefCID),
-                                    title=self._titleCN, accessSystem='http')
+                                    title=self._titleCN, accessSystem=self._as,
+                                    modFunct=self._modFunct)
                         self._titlesRefs[self._titleCN] = movie
                     except IMDbParserError:
                         pass
@@ -341,7 +396,7 @@ class ParserBase(SGMLParser):
                 self._titleCN = u''
                 self._inTTRef = 0
                 self._inLinkTTRef = 0
-        elif self._nameRefCID and self._nameCN:
+        elif kind == 'nm' and self._nameRefCID and self._nameCN:
             # XXX: 'Neo' and 'Keanu Reeves' are two separated
             #      entry in the dictionary.  Check the ID value instead
             #      of the key?
@@ -349,19 +404,33 @@ class ParserBase(SGMLParser):
                 try:
                     person = Person(name=self._nameCN,
                                     personID=str(self._nameRefCID),
-                                    accessSystem='http')
+                                    accessSystem=self._as,
+                                    modFunct=self._modFunct)
                     self._namesRefs[self._nameCN] = person
                 except IMDbParserError:
                     pass
             self._nameRefCID = u''
             self._nameCN = u''
             self._inNMRef = 0
+        elif kind == 'ch' and self._characterRefCID and self._characterCN:
+            if not self._charactersRefs.has_key(self._characterCN):
+                try:
+                    character = Character(name=self._characterCN,
+                                    characterID=str(self._characterRefCID),
+                                    accessSystem='http')
+                    self._charactersRefs[self._characterCN] = character
+                except IMDbParserError:
+                    pass
+            self._characterRefCID = u''
+            self._characterCN = u''
+            self._inCHRef = 0
 
     def _refs_anchor_bgn(self, attrs):
         """At the start of an 'a' tag, gather info for the
         references dictionaries."""
         if self._inTTRef: self._add_ref('tt')
         if self._inNMRef: self._add_ref('nm')
+        if self._inCHRef: self._add_ref('ch')
         href = self.get_attr_value(attrs, 'href')
         if not href: return
         if href.startswith('/title/tt'):
@@ -383,11 +452,21 @@ class ParserBase(SGMLParser):
             if href[-1] == '/': href = href[:-1]
             self._nameRefCID = href
             self._inNMRef = 1
+        elif href.startswith('/character/ch'):
+            href = href[11:]
+            if not self._re_imdbIDmatch.match(href):
+                return
+            href = href[2:]
+            if href[-1] == '/': href = href[:-1]
+            self._characterRefCID = href
+            self._inCHRef = 1
 
     def _refs_anchor_end(self):
         """At the end of an 'a' tag, gather info for the
         references dictionaries."""
+        # XXX: check if self.getRefs is True?
         self._add_ref('nm')
+        self._add_ref('ch')
         self._inLinkTTRef = 0
 
     def handle_starttag(self, tag, method, attrs):
@@ -471,9 +550,14 @@ class ParserBase(SGMLParser):
                                             in self._namesRefs.keys()])
             if nam_re != ur'()': re_names = re.compile(nam_re, re.U)
             else: re_names = None
-            _putRefs(data, re_titles, re_names)
+            chr_re = ur'(%s)' % '|'.join([re.escape(x) for x
+                                            in self._charactersRefs.keys()])
+            if chr_re != ur'()': re_characters = re.compile(chr_re, re.U)
+            else: re_characters = None
+            _putRefs(data, re_titles, re_names, re_characters)
         # XXX: should I return a copy of data?  Answer: NO!
         return {'data': data, 'titlesRefs': self._titlesRefs,
-                'namesRefs': self._namesRefs}
+                'namesRefs': self._namesRefs,
+                'charactersRefs': self._charactersRefs}
 
 

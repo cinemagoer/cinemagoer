@@ -1,13 +1,13 @@
 """
-parser.http.searchPersonParser module (imdb package).
+parser.http.searchCharacterParser module (imdb package).
 
-This module provides the HTMLSearchPersonParser class (and the
-search_person_parser instance), used to parse the results of a search
-for a given person.
-E.g., when searching for the name "Mel Gibson", the parsed page would be:
-    http://akas.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
+This module provides the HTMLSearchCharacterParser class (and the
+search_character_parser instance), used to parse the results of a search
+for a given character.
+E.g., when searching for the name "Jesse James", the parsed page would be:
+    http://akas.imdb.com/find?s=Characters;mx=20;q=Jesse+James
 
-Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2007 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,12 +30,12 @@ from utils import ParserBase
 
 # XXX: not sure it's still useful, with the new search system.
 #      Anyway, it's used by the local access system, to get the imdbID.
-class BasicPersonParser(ParserBase):
-    """Simply get the name of a person and the imdbID.
+class BasicCharacterParser(ParserBase):
+    """Simply get the name of a character and the imdbID.
 
-    It's used by the HTMLSearchPersonParser class to return a result
+    It's used by the HTMLSearchCharacterParser class to return a result
     for a direct match (when a search on IMDb results in a single
-    person, the web server sends directly the person page.
+    character, the web server sends directly the character page.
     """
     def _reset(self):
         """Reset the parser."""
@@ -57,18 +57,12 @@ class BasicPersonParser(ParserBase):
         href = self.get_attr_value(attrs, 'href')
         if not href: return
         href = href.lower()
-        # XXX: Since July 2004, IMDb has removed the "pageflicker",
-        #      so we've to gather the imdbID from the "IMDb message board"
-        #      link.
-        if href.startswith('/name/nm') and \
-                href.find('/board') != -1:
+        if '/character/ch' in href and href.endswith('bio'):
             rpid = self.re_imdbID.findall(href)
             if rpid and self._name:
-                n = self._name.strip()
-                if n.find('IMDb Name') != -1 and n.find('Search') != -1:
-                    return
+                n = self._name.replace('(Character)', '').strip()
                 pid = str(rpid[-1])
-                d = analyze_name(n, canonical=1)
+                d = analyze_name(n, canonical=0)
                 res = [(pid, d)]
                 self.reset()
                 self._result = res
@@ -80,10 +74,10 @@ class BasicPersonParser(ParserBase):
             self._name += data
 
 
-from searchMovieParser import HTMLSearchMovieParser as HTMLSearchPersonParser
+from searchMovieParser import HTMLSearchMovieParser as HTMLSearchCharacterParser
 
 _OBJECTS = {
-        'search_person_parser': (HTMLSearchPersonParser,
-                    {'kind': 'person', '_basic_parser': BasicPersonParser})
+        'search_character_parser': (HTMLSearchCharacterParser,
+                {'kind': 'character', '_basic_parser': BasicCharacterParser})
 }
 

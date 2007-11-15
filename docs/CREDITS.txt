@@ -21,6 +21,8 @@ I'd like to thank the following people for their help:
 * Steven Ovits for hints and tests with Microsoft SQL Server, SQLExpress
   and preliminary work on supporting diff files.
 
+* Arnab for a bug report in the imdbpy2sql.py script.
+
 * Elefterios Stamatogiannakis for the hint about transactions and SQLite,
   to obtain an impressive improvement in performances.
 

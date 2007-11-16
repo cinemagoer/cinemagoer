@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.3.CHARACTER.cvs20071115 "The Quatermass Xperiment" (15 Nov 2007)
+* What's the new in release 3.3.CHARACTER.cvs20071116 "Quatermass and the Pit" (16 Nov 2007)
   [general]
   - first support for character pages; only for "http" and "mobile", so far.
   - support for multiple characters.
@@ -9,6 +9,8 @@
   - added README.currentRole.
   - fixed minor bug in the __hash__ method of the _Container class.
   - fixed changes to some key names for movies.
+  - introduced the search_character.py, get_character.py and
+    get_first_character.py example scripts.
  
   [http]
   - full support for character pages.

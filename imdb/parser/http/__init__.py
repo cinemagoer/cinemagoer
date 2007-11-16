@@ -310,7 +310,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
             ton = ton.encode('utf-8')
         ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
         params = 's=%s;mx=%s;q=%s' % (kind, str(results), quote_plus(ton))
-        print imdbURL_find % params
         cont = self._retrieve(imdbURL_find % params)
         if cont.find('more than 500 partial matches') == -1:
             return cont

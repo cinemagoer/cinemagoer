@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.3.CHARACTER.cvs20071116 "Quatermass and the Pit" (16 Nov 2007)
+* What's the new in release 3.3 "Heroes" (18 Nov 2007)
   [general]
   - first support for character pages; only for "http" and "mobile", so far.
   - support for multiple characters.

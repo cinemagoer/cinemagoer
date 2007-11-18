@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character']
-__version__ = VERSION = '3.3.CHARACTER.cvs20071116'
+__version__ = VERSION = '3.3'
 
 import sys
 from types import UnicodeType, TupleType, ListType, MethodType

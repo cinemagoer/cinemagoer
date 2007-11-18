@@ -93,6 +93,7 @@ NOTE: it's always time to clean the code! <g>
 
 
 [local data access system]
+* support for characters.
 * There's a bug with release dates: it seems that for some (many?)
   movies, the wrong index to release-dates.data is returned; I'm
   wondering if this is a bug of IMDbPY or a bug in mkdb.
@@ -137,6 +138,7 @@ Again: if there's something that bother you, write some code.
 It's free software, after all.
 
 Things to do:
+* support for characters.
 * The imdbpy2sql.py script MUST be run on a database with empty tables;
   unfortunately so far a SQL installation can't be "updated" without
   recreating the database from scratch.

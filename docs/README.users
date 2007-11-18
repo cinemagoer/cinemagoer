@@ -20,7 +20,8 @@ print some information about the movie.
 The 'get_first_movie.py' works like 'search_movie.py', but it will only print
 information about the first matching title.
 
-Now guess what 'get_person.py', 'search_person.py' and 'get_first_person.py'
+Now guess what 'get_person.py', 'search_person.py','get_first_person.py',
+'get_character.py', 'search_character.py' and 'get_first_character.py'
 scripts do... :-)
 
 Remember that you've to be connected to the net, if you want to
@@ -34,7 +35,7 @@ you can customize it...
 
 Examples:
 
-$ ./search_movie.py 'the passion'
+$ search_movie.py 'the passion'
     20 results for "the passion":
 Passion of the Christ, The (2004)
 Passion, The (2003/I)
@@ -58,7 +59,7 @@ Making of 'The Passion of the Christ', The (2004) (TV)
 Scream of the Butterfly (1965)
 
 
-$ ./get_movie.py 0133093
+$ get_movie.py 0133093
 Movie
 =====
 Title: Matrix, The
@@ -73,5 +74,16 @@ Rating: 8.5
 Votes: 114,264
 Plot: In the near future, a computer hacker named Neo (Keanu Reeves) discovers that all life on Earth may be nothing more than an elaborate facade created by a malevolent cyber-intelligence, for the purpose of placating us while our life essence is "farmed" to fuel the Matrix's campaign of domination in the "real" world. He joins like-minded Rebel warriors Morpheus (Laurence Fishburne) and Trinity (Carrie Ann Moss) in their struggle to overthrow the Matrix.
 
+
+$ get_first_character.py 'Jesse James'
+    Best match for "Jesse James"
+Character
+=====
+Name: Jesse James
+Biography: History::Born: September 5, 1847 in Clay County, Missouri, USA
+
+Died: April 3, 1882 in St. Joseph, Missouri, USA
+
+ [...]
 
 

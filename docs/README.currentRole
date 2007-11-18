@@ -6,7 +6,7 @@ Since version 3.3, IMDbPY supports the character pages of the IMDb
 database; this required some substantial changes to how actors'
 and acresses' roles were handled.
 So far, only the "http", "httpThin" and "mobile" data access systems
-can handle the character pages.
+can manage the character pages.
 
 The currentRole instance attribute can be found in every instance
 of Person, Movie and Character classes, even if actually the Character
@@ -77,4 +77,8 @@ the specified condition is false, they will be cancelled.
 E.g.:
   myPrint = imdb.helpers.makeObject2Txt(personTxt='<if personID><a href=/person/%(personID)s></if personID>%(long imdb name)s<if personID></a></if personID><if currentRole> ... %(currentRole)s<if notes> %(notes)s</if notes></if currentRole>'
 
+
+Another useful argumento is 'applyToValues': if set to a function,
+it will be applied to every value before the substitution; it can
+be useful to format strings for html output.
 

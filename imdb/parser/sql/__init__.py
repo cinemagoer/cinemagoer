@@ -35,9 +35,9 @@ from dbschema import *
 
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                     scan_names, scan_titles, titleVariations, nameVariations
-from imdb.utils import canonicalTitle, canonicalName, normalizeTitle, \
-                        normalizeName, build_title, build_name, \
-                        analyze_name, analyze_title, re_episodes, _articles
+from imdb.utils import normalizeTitle, normalizeName, build_title, \
+                        build_name, analyze_name, analyze_title, \
+                        re_episodes, _articles
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError, IMDbError
@@ -155,6 +155,20 @@ def get_movie_data(movieID, kindDict, fromAka=0):
             if ser_note:
                 mdict['episode of'].notes = ser_note
     return mdict
+
+
+def merge_roles(mop):
+    """Merge multiple roles."""
+    new_list = []
+    for m in mop:
+        if m in new_list:
+            keep_this = new_list[new_list.index(m)]
+            if not isinstance(keep_this.currentRole, list):
+                keep_this.currentRole = [keep_this.currentRole]
+            keep_this.currentRole.append(m.currentRole)
+        else:
+            new_list.append(m)
+    return new_list
 
 
 class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
@@ -286,6 +300,13 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbError, 'personID "%s" can\'t be converted to integer' % \
                             personID
 
+    def _normalize_characterID(self, characterID):
+        """Normalize the given characterID."""
+        try:
+            return int(characterID)
+        except (ValueError, OverflowError):
+            raise IMDbError, 'characterID "%s" can\'t be converted to integer' \
+                            % characterID
 
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID.
@@ -323,6 +344,23 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         imdbID = self.name2imdbID(namline)
         if imdbID is not None:
             try: person.imdbID = int(imdbID)
+            except: pass
+        return imdbID
+
+    def get_imdbCharacterID(self, characterID):
+        """Translate a characterID in an imdbID.
+        If not in the database, try an Exact Primary Name search on IMDb;
+        return None if it's unable to get the imdbID.
+        """
+        try: character = CharName.get(characterID)
+        except SQLObjectNotFound: return None
+        imdbID = character.imdbID
+        if imdbID is not None: return '%07d' % imdbID
+        n_dict = {'name': character.name, 'imdbIndex': character.imdbIndex}
+        namline = build_name(n_dict, canonical=1)
+        imdbID = self.character2imdbID(namline)
+        if imdbID is not None:
+            try: character.imdbID = int(imdbID)
             except: pass
         return imdbID
 
@@ -431,7 +469,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not res:
             raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
         # Collect cast information.
-        castdata = [[cd.personID, cd.personRole, cd.note, cd.nrOrder,
+        castdata = [[cd.personID, cd.personRoleID, cd.note, cd.nrOrder,
                     self._role[cd.roleID]]
                     for cd in CastInfo.select(CastInfo.q.movieID == movieID)]
         for p in castdata:
@@ -444,12 +482,22 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         for group in castdata:
             duty = group[0][4]
             for pdata in group:
+                curRole = pdata[1]
+                curRoleID = None
+                if curRole is not None:
+                    robj = CharName.get(curRole)
+                    curRole = robj.name
+                    curRoleID = robj.id
                 p = Person(personID=pdata[0], name=pdata[5],
-                            currentRole=pdata[1] or u'', notes=pdata[2] or u'',
+                            currentRole=curRole or u'',
+                            roleID=curRoleID,
+                            notes=pdata[2] or u'',
                             accessSystem='sql')
                 if pdata[6]: p['imdbIndex'] = pdata[6]
                 p.billingPos = pdata[3]
                 res.setdefault(duty, []).append(p)
+            if duty == 'cast':
+                res[duty] = merge_roles(res[duty])
             res[duty].sort()
         # Info about the movie.
         minfo = [(self._info[m.infoTypeID], m.info, m.note)
@@ -612,10 +660,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
 
-        resultsST = results
-        if not self.doAdult: resultsST = 0
-        res = scan_names(qr, name1, name2, name3, resultsST)
-        if results > 0: res[:] = res[:results]
+        res = scan_names(qr, name1, name2, name3, results)
         res[:] = [x[1] for x in res]
         # Purge empty imdbIndex.
         returnl = []
@@ -639,7 +684,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not res:
             raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
         # Collect cast information.
-        castdata = [(cd.movieID, cd.personRole, cd.note, self._role[cd.roleID],
+        castdata = [(cd.movieID, cd.personRoleID, cd.note,
+                    self._role[cd.roleID],
                     get_movie_data(cd.movieID, self._kind))
                 for cd in CastInfo.select(CastInfo.q.personID == personID)]
         # Regroup by role/duty (cast, writer, director, ...)
@@ -656,8 +702,15 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     if orig_duty not in ('actor', 'actress'):
                         if note: note = ' %s' % note
                         note = '[%s]%s' % (orig_duty, note)
+                curRole = mdata[1]
+                curRoleID = None
+                if curRole is not None:
+                    robj = CharName.get(curRole)
+                    curRole = robj.name
+                    curRoleID = robj.id
                 m = Movie(movieID=mdata[0], data=mdata[4],
-                            currentRole=mdata[1] or u'',
+                            currentRole=curRole or u'',
+                            roleID=curRoleID,
                             notes=note, accessSystem='sql')
                 if duty != 'episodes':
                     res.setdefault(duty, []).append(m)
@@ -670,6 +723,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             res['episodes'] = episodes
         for duty in seenDuties:
             if res.has_key(duty):
+                if duty in ('actor', 'actress', 'himself', 'herself',
+                            'themselves'):
+                    res[duty] = merge_roles(res[duty])
                 res[duty].sort()
         # XXX: is 'guest' still needed?  I think every GA reference in
         #      the biographies.list file was removed.
@@ -733,14 +789,79 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     get_person_episodes = get_person_main
 
     def _search_character(self, name, results):
-        import warnings
-        warnings.warn('Character objects still unsupported for "sql"')
-        return []
+        name = name.strip()
+        if not name: return []
+        s_name = analyze_name(name)['name']
+        if not s_name: return []
+        if isinstance(s_name, UnicodeType):
+            s_name = s_name.encode('ascii', 'ignore')
+        s_name = normalizeName(s_name)
+        soundexCode = soundex(s_name)
+        surname = s_name.split(' ')[-1]
+        # If the soundex is None, compare only with the first
+        # phoneticCode column.
+        if soundexCode is not None:
+            condition = IN(soundexCode, [CharName.q.namePcodeNf,
+                                        CharName.q.surnamePcode])
+        else:
+            condition = ISNULL(Name.q.namePcodeNf)
+        try:
+            qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
+                    for q in CharName.select(condition)]
+        except SQLObjectNotFound, e:
+            raise IMDbDataAccessError, \
+                    'unable to search the database: "%s"' % str(e)
+        res = scan_names(qr, s_name, None, surname, results,
+                        _scan_character=True)
+        res[:] = [x[1] for x in res]
+        # Purge empty imdbIndex.
+        returnl = []
+        for x in res:
+            tmpd = x[1]
+            if tmpd['imdbIndex'] is None:
+                del tmpd['imdbIndex']
+            returnl.append((x[0], tmpd))
+        return returnl
 
-    def get_character_main(self, characterID):
-        import warnings
-        warnings.warn('Character objects still unsupported for "sql"')
-        return {}
+    def get_character_main(self, characterID, results=1000):
+        # Every person information is retrieved from here.
+        infosets = self.get_character_infoset()
+        try:
+            c = CharName.get(characterID)
+        except SQLObjectNotFound, e:
+            raise IMDbDataAccessError, \
+                    'unable to get characterID "%s": "%s"' % (characterID, e)
+        res = {'name': c.name, 'imdbIndex': c.imdbIndex}
+        if res['imdbIndex'] is None: del res['imdbIndex']
+        if not res:
+            raise IMDbDataAccessError, 'unable to get characterID "%s"' % \
+                                        characterID
+        # Collect filmography information.
+        items = CastInfo.select(CastInfo.q.personRoleID == characterID)
+        if results > 0:
+            items = items[:results]
+        filmodata = [(cd.movieID, cd.personID, cd.note,
+                    get_movie_data(cd.movieID, self._kind)) for cd in items
+                    if self._role[cd.roleID] in ('actor', 'actress')]
+        fdata = []
+        for f in filmodata:
+            curRole = None
+            curRoleID = f[1]
+            note = f[2] or u''
+            if curRoleID is not None:
+                robj = Name.get(curRoleID)
+                curRole = robj.name
+            m = Movie(movieID=f[0], data=f[3],
+                        currentRole=curRole or u'',
+                        roleID=curRoleID, roleIsPerson=True,
+                        notes=note, accessSystem='sql')
+            fdata.append(m)
+        fdata = merge_roles(fdata)
+        fdata.sort()
+        if fdata:
+            res['filmography'] = fdata
+        return {'data': res, 'info sets': infosets}
+
     get_character_filmography = get_character_main
     get_character_biography = get_character_main
 

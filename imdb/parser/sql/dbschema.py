@@ -69,7 +69,7 @@ class AkaTitle(SQLObject):
 class CastInfo(SQLObject):
     personID = IntCol(notNone=True)
     movieID = IntCol(notNone=True)
-    personRole = UnicodeCol(default=None)
+    personRoleID = IntCol(default=None)
     note = UnicodeCol(default=None)
     nrOrder = IntCol(default=None)
     roleID = IntCol(notNone=True)
@@ -114,6 +114,17 @@ class Name(SQLObject):
     namePcodeNf = StringCol(length=5, default=None)
     surnamePcode = StringCol(length=5, default=None)
 
+class CharName(SQLObject):
+    """
+    namePcodeNf is the soundex of the name in the normal format.
+    surnamePcode is the soundex of the surname, if different from namePcodeNf.
+    """
+    name = UnicodeCol(notNone=True)
+    imdbIndex = UnicodeCol(length=12, default=None)
+    imdbID = IntCol(default=None)
+    namePcodeNf = StringCol(length=5, default=None)
+    surnamePcode = StringCol(length=5, default=None)
+
 class PersonInfo(SQLObject):
     personID = IntCol(notNone=True)
     infoTypeID = IntCol(notNone=True)
@@ -138,9 +149,9 @@ class Title(SQLObject):
     seriesYears = StringCol(length=49, default=None)
 
 
-DB_TABLES = [Name, KindType, Title, AkaName, AkaTitle, RoleType, CastInfo,
-        CompCastType, CompleteCast, InfoType, LinkType, MovieLink, MovieInfo,
-        PersonInfo]
+DB_TABLES = [Name, CharName, KindType, Title, AkaName, AkaTitle, RoleType,
+        CastInfo, CompCastType, CompleteCast, InfoType, LinkType, MovieLink,
+        MovieInfo, PersonInfo]
 
 def setConnection(uri, debug=False):
     """Set connection for every table."""
@@ -251,7 +262,8 @@ def createIndexes(ifNotExists=True, connectURI=None):
                     DatabaseIndex('phoneticCode', name='idx_pcode'),
                     DatabaseIndex('episodeOfID', name='idx_epof')]),
         (CastInfo, [DatabaseIndex('personID', name='idx_pid'),
-                    DatabaseIndex('movieID', name='idx_mid')]),
+                    DatabaseIndex('movieID', name='idx_mid'),
+                    DatabaseIndex('personRoleID', name='idx_cid')]),
         (CompleteCast, [DatabaseIndex('movieID', name='idx_mid')]),
         (MovieLink, [DatabaseIndex('movieID', name='idx_mid')]),
         (MovieInfo, [DatabaseIndex('movieID', name='idx_mid')]),
@@ -260,6 +272,11 @@ def createIndexes(ifNotExists=True, connectURI=None):
                 DatabaseIndex('namePcodeCf', name='idx_pcodecf'),
                 DatabaseIndex('namePcodeNf', name='idx_pcodenf'),
                 DatabaseIndex('surnamePcode', name='idx_pcode')]),
+        (CharName, [DatabaseIndex({'column': 'name', 'length': 6},
+                                name='idx_name'),
+                DatabaseIndex('namePcodeNf', name='idx_pcodenf'),
+                DatabaseIndex('surnamePcode', name='idx_pcode')]),
+
         (PersonInfo, [DatabaseIndex('personID', name='idx_pid')]),
         (Title, [DatabaseIndex({'column': 'title', 'length': 10},
                                 name='idx_title'),

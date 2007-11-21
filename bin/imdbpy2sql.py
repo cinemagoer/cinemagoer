@@ -272,7 +272,7 @@ def title_soundex(title):
         title = ', '.join(ts[:-1])
     return soundex(title)
 
-def name_soundexes(name):
+def name_soundexes(name, character=False):
     """Return three soundex codes for the given name; the name is assumed
     to be in the 'surname, name' format, without the imdbIndex indication,
     as the one in the analyze_name(name)['name'] value.
@@ -289,8 +289,11 @@ def name_soundexes(name):
     name_normal = normalizeName(name)
     s2 = soundex(name_normal)
     if s1 == s2: s2 = None
-    namesplit = name.split(', ')
-    s3 = soundex(namesplit[0])
+    if not character:
+        namesplit = name.split(', ')
+        s3 = soundex(namesplit[0])
+    else:
+        s3 = soundex(name.split(' ')[-1])
     if s3 and s3 in (s1, s2): s3 = None
     return (s1, s2, s3)
 
@@ -721,6 +724,58 @@ class PersonsCache(_BaseCache):
         CURS.executemany(self.sqlstr, self.converter(l))
 
 
+class CharactersCache(_BaseCache):
+    """Manage the characters list."""
+    counter = counter()
+
+    def __init__(self, *args, **kwds):
+        _BaseCache.__init__(self, *args, **kwds)
+        self._table_name = tableName(CharName)
+        self._id_for_custom_q = 'CHARACTERS'
+        self.sqlstr, self.converter = createSQLstr(CharName, ['id', 'name',
+                                'imdbIndex', 'namePcodeNf', 'surnamePcode'])
+
+    def populate(self):
+        print ' * POPULATING CharactersCache...'
+        nameTbl = tableName(CharName)
+        personidCol = colName(CharName, 'id')
+        nameCol = colName(CharName, 'name')
+        imdbindexCol = colName(CharName, 'imdbIndex')
+        CURS.execute('SELECT %s, %s, %s FROM %s;' % (personidCol, nameCol,
+                                                    imdbindexCol, nameTbl))
+        _oldcacheValues = CharName.sqlmeta.cacheValues
+        CharName.sqlmeta.cacheValues = False
+        for x in fetchsome(CURS, self.flushEvery):
+            nd = {'name': unicode(x[1], 'utf_8')}
+            if x[2]: nd['imdbIndex'] = x[2]
+            name = build_name(nd, canonical=1)
+            dict.__setitem__(self, name, x[0])
+        self.counter = counter(CharName.select().count() + 1)
+        CharName.sqlmeta.cacheValues = _oldcacheValues
+
+    def _toDB(self, quiet=0):
+        if not quiet:
+            print ' * FLUSHING CharactersCache...'
+            sys.stdout.flush()
+        l = []
+        lapp = l.append
+        tmpDictiter = self._tmpDict.iteritems
+        for k, v in tmpDictiter():
+            try:
+                t = analyze_name(k)
+            except IMDbParserError:
+                if k and k.strip():
+                    print 'WARNING CharactersCache._toDB() invalid name:', _(k)
+                continue
+            tget = t.get
+            name = tget('name')
+            namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name,
+                                                                character=True)
+            lapp((v, name, tget('imdbIndex'),
+                namePcodeCf, surnamePcode))
+        CURS.executemany(self.sqlstr, self.converter(l))
+
+
 class SQLData(dict):
     """Variable set of information, to be stored from time to time
     to the SQL database."""
@@ -894,7 +949,7 @@ def doCast(fp, roleid, rolename):
     name = ''
     roleidVal = RawValue('roleID', roleid)
     sqldata = SQLData(table=CastInfo, cols=['personID', 'movieID',
-                        'personRole', 'note', 'nrOrder', roleidVal])
+                        'personRoleID', 'note', 'nrOrder', roleidVal])
     if rolename == 'miscellaneous crew': sqldata.flushEvery = 10000
     for line in fp:
         if line and line[0] != '\t':
@@ -941,7 +996,13 @@ def doCast(fp, roleid, rolename):
                         except ValueError:
                             pass
         movieid = CACHE_MID.addUnique(title)
-        sqldata.add((pid, movieid, role, note, order))
+        if role is not None:
+            roles = role.split('/')
+            for role in roles:
+                cid = CACHE_CID.addUnique(role)
+                sqldata.add((pid, movieid, cid, note, order))
+        else:
+            sqldata.add((pid, movieid, None, note, order))
         if count % 10000 == 0:
             print 'SCANNING %s:' % rolename,
             print _(name)
@@ -965,9 +1026,15 @@ def castLists():
         try:
             f = SourceFile(fname, start=CAST_START, stop=CAST_STOP)
         except IOError:
+            if rolename == 'actress':
+                CACHE_CID.flush()
+                CACHE_CID.clear()
             continue
         doCast(f, roleid, rolename)
         f.close()
+        if rolename == 'actress':
+            CACHE_CID.flush()
+            CACHE_CID.clear()
         t('castLists(%s)' % rolename)
 
 
@@ -1262,7 +1329,7 @@ def nmmvFiles(fp, funct, fname):
         guestid = RoleType.select(RoleType.q.role == 'guest')[0].id
         roleid = str(guestid)
         guestdata = SQLData(table=CastInfo,
-                cols=['personID', 'movieID', 'personRole', 'note',
+                cols=['personID', 'movieID', 'personRoleID', 'note',
                 RawValue('roleID', roleid)], flushEvery=10000)
         akanamesdata = SQLData(table=AkaName, cols=['personID', 'name',
                 'imdbIndex', 'namePcodeCf', 'namePcodeNf', 'surnamePcode'])
@@ -1525,6 +1592,7 @@ def completeCast():
 # global instances
 CACHE_MID = MoviesCache()
 CACHE_PID = PersonsCache()
+CACHE_CID = CharactersCache()
 
 
 def _cmpfunc(x, y):
@@ -1769,6 +1837,8 @@ def run():
     CACHE_MID.clear()
     CACHE_PID.flush()
     CACHE_PID.clear()
+    CACHE_CID.flush()
+    CACHE_CID.clear()
     t('fushing caches...')
 
     print 'TOTAL TIME TO INSERT DATA: %d minutes, %d seconds' % \
@@ -1801,6 +1871,8 @@ def _kdb_handler(signum, frame):
     try: CACHE_MID.flush()
     except IntegrityError: pass
     try: CACHE_PID.flush()
+    except IntegrityError: pass
+    try: CACHE_CID.flush()
     except IntegrityError: pass
     print 'DONE! (in %d minutes, %d seconds)' % \
             divmod(int(time.time())-BEGIN_TIME, 60)

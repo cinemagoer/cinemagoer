@@ -24,9 +24,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character']
-__version__ = VERSION = '3.3'
+__version__ = VERSION = '3.4.cvs20071121'
 
-import sys
+import sys, os, ConfigParser
 from types import UnicodeType, TupleType, ListType, MethodType
 
 from imdb import Movie, Person, Character
@@ -51,11 +51,101 @@ imdbURL_character_main = imdbURL_character_base + 'ch%s/'
 # http://akas.imdb.com/find?%s
 imdbURL_find = imdbURL_base + 'find?%s'
 
+# Name of the configuration file.
+confFileName = 'imdbpy.cfg'
 
-def IMDb(accessSystem='http', *arguments, **keywords):
+class ConfigParserWithCase(ConfigParser.ConfigParser):
+    """A case-sensitive parser for configuration files."""
+    def __init__(self, defaults=None, confFile=None, *args, **kwds):
+        """Initialize the parser.
+
+        *defaults* -- defaults values.
+        *confFile* -- the file (or list of files) to parse."""
+        ConfigParser.ConfigParser.__init__(self, defaults=defaults)
+        if confFile is None:
+            dotFileName = '.' + confFileName
+            # Current and home directory.
+            confFile = [os.path.join(os.getcwd(), confFileName),
+                        os.path.join(os.getcwd(), dotFileName),
+                        os.path.join(os.path.expanduser('~'), confFileName),
+                        os.path.join(os.path.expanduser('~'), dotFileName)]
+            if os.name == 'posix':
+                sep = getattr(os.path, 'sep', '/')
+                # /etc/ and /etc/conf.d/
+                confFile.append(os.path.join(sep, 'etc', confFileName))
+                confFile.append(os.path.join(sep, 'etc', 'conf.d',
+                                            confFileName))
+            else:
+                # etc subdirectory of sys.prefix, for non-unix systems.
+                confFile.append(os.path.join(sys.prefix, 'etc', confFileName))
+        for fname in confFile:
+            try:
+                self.read(fname)
+            except (ConfigParser.MissingSectionHeaderError,
+                    ConfigParser.ParsingError), e:
+                import warnings
+                warnings.warn('Troubles reading config file: %s' % e)
+            # Stop at the first valid file.
+            if self.has_section('imdbpy'):
+                break
+
+    def optionxform(self, optionstr):
+        """Option names are case sensitive."""
+        return optionstr
+
+    def _manageValue(self, value):
+        """Custom substitutions for values."""
+        vlower = value.lower()
+        if vlower in self._boolean_states:
+            return self._boolean_states[vlower]
+        elif vlower == 'none':
+            return None
+        return value
+
+    def get(self, section, option, *args, **kwds):
+        """Return the value of an option from a given section."""
+        value = ConfigParser.ConfigParser.get(self, section, option,
+                                            *args, **kwds)
+        return self._manageValue(value)
+
+    def items(self, section, *args, **kwds):
+        """Return a list of (key, value) tuples of items of the
+        given section."""
+        if not self.has_section(section):
+            return []
+        items = ConfigParser.ConfigParser.items(self, section, *args, **kwds)
+        return [(key, self._manageValue(value)) for key, value in items]
+
+    def getDict(self, section):
+        """Return a dictionary of items of the specified section."""
+        return dict(self.items(section))
+
+
+def IMDb(accessSystem=None, *arguments, **keywords):
     """Return an instance of the appropriate class.
     The accessSystem parameter is used to specify the kind of
     the preferred access system."""
+    if accessSystem is None or accessSystem in ('auto', 'config'):
+        try:
+            cfg_file = ConfigParserWithCase(*arguments, **keywords)
+            # Parameters set by the code take precedence.
+            kwds = cfg_file.getDict('imdbpy')
+            if 'accessSystem' in kwds:
+                accessSystem = kwds['accessSystem']
+                del kwds['accessSystem']
+            else:
+                accessSystem = 'http'
+            kwds.update(keywords)
+            keywords = kwds
+        except Exception, e:
+            import warnings
+            warnings.warn('Unable to read configuration file; ' + \
+                            'complete error: %s' % e)
+            # It just LOOKS LIKE a bad habit: we tried to read config
+            # options from some files, but something is gone horribly
+            # wrong: ignore everything and pretend we were called with
+            # the 'http' accessSystem.
+            accessSystem = 'http'
     if accessSystem in ('http', 'web', 'html'):
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
@@ -497,7 +587,10 @@ class IMDbBase:
         if not content: return None
         if content[:512].find('<title>IMDb  Search') != -1:
             from imdb.parser.http.searchCharacterParser \
-                        import search_character_parser
+                        import HTMLSearchCharacterParser, BasicCharacterParser
+            search_character_parser = HTMLSearchCharacterParser()
+            search_character_parser.kind = 'character'
+            search_character_parser._basic_parser = BasicCharacterParser
             result = search_character_parser.parse(content)
             if not result: return None
             if not result.has_key('data'): return None

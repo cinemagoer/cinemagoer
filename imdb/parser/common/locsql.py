@@ -196,7 +196,8 @@ except ImportError:
         return sm.ratio()
 
 
-def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None):
+def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
+                _scan_character=False):
     """Scan a list of names, searching for best matches against
     the given variations."""
     if ro_thresold is not None: RO_THRESHOLD = ro_thresold
@@ -212,8 +213,12 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None):
         nil = n_data['name']
         # Distance with the canonical name.
         ratios = [ratcliff(name1, nil, sm1) + 0.05]
-        nils = nil.split(', ', 1)
-        surname = nils[0]
+        if not _scan_character:
+            nils = nil.split(', ', 1)
+            surname = nils[0]
+        else:
+            nils = nil.split(' ')
+            surname = nils[-1]
         namesurname = u''
         if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
         if surname != nil:

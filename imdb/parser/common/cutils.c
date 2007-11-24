@@ -20,7 +20,7 @@
  * - pysoundex():
  *   Return a soundex code string, for the given string.
  *
- * Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+ * Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
  * Released under the GPL license.
  * 
  * NOTE: The Ratcliff-Obershelp part was heavily based on code from the
@@ -247,12 +247,19 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     short hasNS = 0;
     unsigned int nrResults = 0;
     static char *argnames[] = {"keyFile", "name1", "name2", "name3",
-                                "results", NULL};
+                                "results", "_scan_character", NULL};
+    PyObject *scanChar = NULL;
+    int isChar = 0;
     PyObject *result = PyList_New(0);
 
-    if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|ssi",
-                argnames, &keyFileName, &name1, &name2, &name3, &nrResults))
+    if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|ssiO",
+                argnames, &keyFileName, &name1, &name2, &name3, &nrResults,
+		&scanChar))
         return NULL;
+
+    if (scanChar != NULL && PyObject_IsTrue(scanChar)) {
+	    isChar = 1;
+    }
 
     if (strlen(name1) > MXLINELEN - 1)
         return Py_BuildValue("O", result);
@@ -290,14 +297,22 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         strtolower(line);
         strcpy(surname, line);
         hasNS = 0;
-        if ((cp = strrchr(surname, ',')) != NULL && (cp+1)[0] == ' ') {
-            *cp = '\0';
-            hasNS = 1;
-            strcpy(namesurname, cp+2);
-            strcat(namesurname, " ");
-            strcat(namesurname, surname);
-        }
-    
+	if (!isChar) {
+	        if ((cp = strrchr(surname, ',')) != NULL && (cp+1)[0] == ' ') {
+        	    *cp = '\0';
+	            hasNS = 1;
+        	    strcpy(namesurname, cp+2);
+	            strcat(namesurname, " ");
+        	    strcat(namesurname, surname);
+		}
+	} else {
+		if ((cp = strrchr(surname, ' ')) != NULL) {
+			hasNS = 1;
+			strcpy(surname, cp+1);
+			strcat(surname, "\0");
+		}
+	}
+
         ratio = ratcliff(name1, line) + 0.05;
 
         if (hasNS) {

@@ -28,6 +28,7 @@ from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
 from imdb.utils import re_titleRef, analyze_name, build_name, normalizeName, \
                         date_and_notes
+from characterParser import getCharactersIDs
 from utils import getRawData, getLabel, getFullIndex, latin2utf
 
 
@@ -219,7 +220,7 @@ def getBio(personID, indexF, dataF):
 
 
 def getFilmography(dataF, indexF, keyF, attrIF, attrKF, offset,
-                    doCast=0, doWriters=0):
+                    charNF=None, doCast=0, doWriters=0):
     """Gather information from the given files about the
     person entry found at offset; return a list of Movie objects,
     with the relevant attributes."""
@@ -228,8 +229,12 @@ def getFilmography(dataF, indexF, keyF, attrIF, attrKF, offset,
     for movie in res:
         title = getLabel(movie['movieID'], indexF, keyF)
         if not title: continue
+        curRole =  movie.get('currentRole', u'')
+        roleID = None
+        if curRole and charNF:
+            curRole, roleID = getCharactersIDs(curRole, charNF)
         m = Movie(title=title, movieID=movie['movieID'],
-                    currentRole=movie.get('currentRole', u''),
+                    currentRole=curRole, roleID=roleID,
                     accessSystem='local')
         if movie.has_key('attributeID'):
             attr = getLabel(movie['attributeID'], attrIF, attrKF)

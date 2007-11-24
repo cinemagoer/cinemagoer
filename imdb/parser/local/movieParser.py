@@ -28,6 +28,7 @@ from os import stat
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
+from characterParser import getCharactersIDs
 from utils import convBin, getRawData, getFullIndex, getLabel, latin2utf
 
 
@@ -65,7 +66,7 @@ def parseMinusList(movieID, dataF, indexF):
 
 
 def getMovieCast(dataF, movieID, indexF, keyF, attrIF, attrKF, offsList=[],
-                doCast=0, doWriters=0):
+                charNF=None, doCast=0, doWriters=0):
     """Read the specified files and return a list of Person objects,
     one for every people in offsList."""
     resList = []
@@ -84,8 +85,12 @@ def getMovieCast(dataF, movieID, indexF, keyF, attrIF, attrKF, offsList=[],
         for movie in movielist:
             name = getLabel(personID, indexF, keyF)
             if not name: continue
+            curRole = movie.get('currentRole', u'')
+            roleID = None
+            if curRole and charNF:
+                curRole, roleID = getCharactersIDs(curRole, charNF)
             p = Person(name=name, personID=personID,
-                        currentRole=movie.get('currentRole', u''),
+                        currentRole=curRole, roleID=roleID,
                         accessSystem='local')
             if movie.has_key('attributeID'):
                 attr = getLabel(movie['attributeID'], attrIF, attrKF)

@@ -41,10 +41,13 @@ OFFSET = 6
 FULL_OFFSET = 7
 NAME_ID = 8
 COUNT = 9
+CHARACTER_ID = 10
+NR_CHARACTER_ITEMS = 11
 
 # The size of these binary types, in bytes.
 _data_size = {POSITION: 1, BYTE: 1, INT: 2, TITLE_ID: 3, ATTR: 3,
-            OFFSET: 3, NAME_ID: 3, FULL_OFFSET: 4, COUNT: 3}
+            OFFSET: 3, NAME_ID: 3, FULL_OFFSET: 4, COUNT: 3,
+            CHARACTER_ID: 3, NR_CHARACTER_ITEMS: 3}
 
 # Groups of one or more contiguous binary types, with specific meanings.
 _dataset_list = (('plot', (TITLE_ID, FULL_OFFSET)),
@@ -57,11 +60,14 @@ _dataset_list = (('plot', (TITLE_ID, FULL_OFFSET)),
                 ('akanidx', (NAME_ID, NAME_ID)),
                 ('personID', (NAME_ID,)),
                 ('movieID', (TITLE_ID,)),
+                ('characterID', (CHARACTER_ID,)),
                 ('attrID', (ATTR,)),
                 ('position', (POSITION,)),
                 ('fulloffset', (FULL_OFFSET,)),
                 ('filmcount', (COUNT,)),
                 ('length', (BYTE,)),
+                ('longlength', (INT,)),
+                ('nrCharacterItems', (NR_CHARACTER_ITEMS,)),
                 ('orderset', (BYTE, BYTE, BYTE)),
                 ('mlinks', (TITLE_ID, BYTE, TITLE_ID)),
                 ('moviedata', (TITLE_ID, INT, INT, ATTR)))

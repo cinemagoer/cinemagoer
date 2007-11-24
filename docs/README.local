@@ -8,6 +8,8 @@ file.
 Obviously you can still prefer to use the 'local' data access
 system if you're already using the moviedb program.
 
+NOTE: see README.currentRole for information about character support.
+
 
 Select a mirror of the "The Plain Text Data Files" from
 the http://www.imdb.com/interfaces.html page and download

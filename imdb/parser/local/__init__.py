@@ -29,7 +29,7 @@ import os
 from stat import ST_SIZE
 
 from imdb._exceptions import IMDbDataAccessError, IMDbError
-from imdb.utils import analyze_title, analyze_name, re_episodes
+from imdb.utils import analyze_title, analyze_name, re_episodes, normalizeName
 
 from imdb.Person import Person
 from imdb.Movie import Movie
@@ -38,9 +38,10 @@ from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
                         getPlot, getRatingData, getMovieMisc, getTaglines, \
                         getQuotes, getMovieLinks, getBusiness, getLiterature, \
                         getLaserdisc
+from characterParser import getCharacterName, getCharacterFilmography
 from utils import getFullIndex, KeyFScan, latin2utf
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
-                                        titleVariations, nameVariations
+                                merge_roles, titleVariations, nameVariations
 
 try:
     from imdb.parser.common.cutils import get_episodes
@@ -89,14 +90,23 @@ except ImportError:
 try:
     from imdb.parser.common.cutils import search_name
 
-    def _scan_names(keyFile, name1, name2, name3, results=0):
+    def _scan_names(keyFile, name1, name2, name3, results=0, _scan_character=0):
         """Scan the given file, using the cutils.search_name
         C function, for name variations."""
         # the search_name function in the cutils C module manages
         # latin_1 encoded strings.
         name1, name2, name3 = [x.encode('latin_1', 'replace')
                                 for x in name1, name2, name3]
-        sn = search_name(keyFile, name1, name2, name3, results)
+        try:
+            sn = search_name(keyFile, name1, name2, name3, results,
+                    _scan_character)
+        except IOError, e:
+            if _scan_character:
+                import warnings
+                warnings.warn('Unable to access characters information: %s' % e)
+                return []
+            else:
+                raise
         res = []
         for x in sn:
             tmpd = analyze_name(latin2utf(x[2]))
@@ -122,11 +132,11 @@ except ImportError:
             yield (long(ls[1], 16), named)
         kf.close()
 
-    def _scan_names(keyFile, name1, name2, name3, results=0):
+    def _scan_names(keyFile, name1, name2, name3, results=0, _scan_character=0):
         """Scan the given file, using the common.locsql.scan_names
         pure-Python function, for name variations."""
         return scan_names(_readNamesKeyFile(keyFile),
-                            name1, name2, name3, results)
+                            name1, name2, name3, results, _scan_character)
 
 try:
     from imdb.parser.common.cutils import search_title
@@ -242,6 +252,15 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbError, 'personID "%s" can\'t be converted to integer' % \
                             personID
 
+    def _normalize_characterID(self, characterID):
+        """Normalize the given characterID."""
+        try:
+            return int(characterID)
+        except (ValueError, OverflowError):
+            raise IMDbError, 'characterID "%s" can\'t be converted to integer' \
+                            % characterID
+
+
     def _get_real_movieID(self, movieID):
         """Handle title aliases."""
         rid = getFullIndex('%saka-titles.index' % self.__db, movieID,
@@ -275,6 +294,18 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                         '%snames.key' % self.__db)
         if name is None: return None
         return self.name2imdbID(name)
+
+    def get_imdbCharacterID(self, characterID):
+        """Translate a characterID in an imdbID.
+        Try an Exact Primary Name search on IMDb;
+        return None if it's unable to get the imdbID.
+        """
+        name = getCharacterName(characterID,
+                                '%scharacters.index' % self.__db,
+                                '%scharacters.data' % self.__db)
+        if not name:
+            return None
+        return self.character2imdbID(name)
 
     def do_adult_search(self, doAdult):
         """If set to 0 or False, movies in the Adult category are not
@@ -327,6 +358,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                             'keyF': '%snames.key' % self.__db,
                             'attrIF': '%sattributes.index' % self.__db,
                             'attrKF': '%sattributes.key' % self.__db,
+                            'charNF': '%scharacter2id.index' % self.__db,
                             'offsList': midx, 'doCast': 1}
                 actl += getMovieCast(**params)
         if actl:
@@ -584,11 +616,9 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         name = name.strip()
         if not name: return []
         name1, name2, name3 = nameVariations(name)
-        resultsST = results
-        if not self.doAdult: resultsST = 0
         res =  _scan_names('%snames.key' % self.__db,
-                            name1, name2, name3, resultsST)
-        if results > 0: res[:] = res[:results]
+                            name1, name2, name3, results)
+        ##if results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
         return res
 
@@ -642,7 +672,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                             'indexF': '%stitles.index' % self.__db,
                             'keyF': '%stitles.key' % self.__db,
                             'attrIF': '%sattributes.index' % self.__db,
-                            'attrKF': '%sattributes.key' % self.__db}
+                            'attrKF': '%sattributes.key' % self.__db,
+                            'charNF': '%scharacter2id.index' % self.__db}
                 name = key = i
                 if '-' in name:
                     name = name.replace('-', ' ')
@@ -695,14 +726,37 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
     get_person_episodes = get_person_filmography
 
     def _search_character(self, name, results):
-        import warnings
-        warnings.warn('Character objects still unsupported for "local"')
-        return []
+        name = name.strip()
+        if not name: return []
+        s_name = normalizeName(analyze_name(name)['name'])
+        res =  _scan_names('%scharacters.key' % self.__db,
+                            s_name, u'', u'', results, _scan_character=1)
+        res[:] = [x[1] for x in res]
+        return res
 
-    def get_character_main(self, characterID):
-        import warnings
-        warnings.warn('Character objects still unsupported for "local"')
-        return {}
+    def get_character_main(self, characterID, results=1000):
+        infosets = self.get_character_infoset()
+        name = getCharacterName(characterID,
+                                '%scharacters.index' % self.__db,
+                                '%scharacters.data' % self.__db)
+        if not name:
+            raise IMDbDataAccessError, \
+                            'unable to get characterID "%s"' % characterID
+        res = analyze_name(name, canonical=1)
+        filmography = getCharacterFilmography(characterID,
+                                            '%scharacters.index' % self.__db,
+                                            '%scharacters.data' % self.__db,
+                                            '%stitles.index' % self.__db,
+                                            '%stitles.key' % self.__db,
+                                            '%snames.index' % self.__db,
+                                            '%snames.key' % self.__db,
+                                            limit=results)
+        if filmography:
+            filmography = merge_roles(filmography)
+            filmography.sort()
+            res['filmography'] = filmography
+        return {'data': res, 'info sets': infosets}
+
     get_character_filmography = get_character_main
     get_character_biography = get_character_main
 

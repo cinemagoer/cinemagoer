@@ -196,6 +196,20 @@ except ImportError:
         return sm.ratio()
 
 
+def merge_roles(mop):
+    """Merge multiple roles."""
+    new_list = []
+    for m in mop:
+        if m in new_list:
+            keep_this = new_list[new_list.index(m)]
+            if not isinstance(keep_this.currentRole, list):
+                keep_this.currentRole = [keep_this.currentRole]
+            keep_this.currentRole.append(m.currentRole)
+        else:
+            new_list.append(m)
+    return new_list
+
+
 def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
                 _scan_character=False):
     """Scan a list of names, searching for best matches against

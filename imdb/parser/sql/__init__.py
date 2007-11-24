@@ -34,7 +34,8 @@ from sqlobject.sqlbuilder import *
 from dbschema import *
 
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
-                    scan_names, scan_titles, titleVariations, nameVariations
+                    scan_names, scan_titles, titleVariations, \
+                    nameVariations, merge_roles
 from imdb.utils import normalizeTitle, normalizeName, build_title, \
                         build_name, analyze_name, analyze_title, \
                         re_episodes, _articles
@@ -155,20 +156,6 @@ def get_movie_data(movieID, kindDict, fromAka=0):
             if ser_note:
                 mdict['episode of'].notes = ser_note
     return mdict
-
-
-def merge_roles(mop):
-    """Merge multiple roles."""
-    new_list = []
-    for m in mop:
-        if m in new_list:
-            keep_this = new_list[new_list.index(m)]
-            if not isinstance(keep_this.currentRole, list):
-                keep_this.currentRole = [keep_this.currentRole]
-            keep_this.currentRole.append(m.currentRole)
-        else:
-            new_list.append(m)
-    return new_list
 
 
 class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
@@ -798,11 +785,13 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         s_name = normalizeName(s_name)
         soundexCode = soundex(s_name)
         surname = s_name.split(' ')[-1]
+        surnameSoundex = soundex(surname)
         # If the soundex is None, compare only with the first
         # phoneticCode column.
         if soundexCode is not None:
-            condition = IN(soundexCode, [CharName.q.namePcodeNf,
-                                        CharName.q.surnamePcode])
+            condition = OR(surnameSoundex == CharName.q.surnamePcode,
+                        IN(soundexCode, [CharName.q.namePcodeNf,
+                                        CharName.q.surnamePcode]))
         else:
             condition = ISNULL(Name.q.namePcodeNf)
         try:
@@ -811,7 +800,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         except SQLObjectNotFound, e:
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
-        res = scan_names(qr, s_name, None, surname, results,
+        res = scan_names(qr, s_name, '', '', results,
                         _scan_character=True)
         res[:] = [x[1] for x in res]
         # Purge empty imdbIndex.

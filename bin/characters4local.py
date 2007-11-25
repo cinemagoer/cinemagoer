@@ -97,7 +97,10 @@ def doCast(dataF, roleCount=0):
                 curRole = fread(length)
                 noterixd = curRole.rfind('(')
                 if noterixd != -1:
-                    curRole = curRole[:noterixd]
+                    # Don't strip notes, if they are not associated to
+                    # the last character.
+                    if curRole.rfind('/') < noterixd:
+                        curRole = curRole[:noterixd]
                 for role in curRole.split('/'):
                     role = role.strip()
                     if not role:

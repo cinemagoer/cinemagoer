@@ -1,8 +1,8 @@
 /*
  * cutils.c module.
- * 
+ *
  * Miscellaneous functions to speed up the IMDbPY package.
- * 
+ *
  * Contents:
  * - pyratcliff():
  *   Function that implements the Ratcliff-Obershelp comparison
@@ -22,21 +22,21 @@
  *
  * Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
  * Released under the GPL license.
- * 
+ *
  * NOTE: The Ratcliff-Obershelp part was heavily based on code from the
  * "simil" Python module.
  * The "simil" module is copyright of Luca Montecchiani <cbm64 _at_ inwind.it>
  * and can be found here: http://spazioinwind.libero.it/montecchiani/
  * It was released under the GPL license; original comments are leaved
  * below.
- * 
+ *
  */
 
 
 /*========== Ratcliff-Obershelp ==========*/
 /*****************************************************************************
  *
- * Stolen code from : 
+ * Stolen code from :
  *
  * [Python-Dev] Why is soundex marked obsolete?
  * by Eric S. Raymond [4]esr@thyrsus.com
@@ -100,7 +100,7 @@ char *articlesNoSP[ART_COUNT] = {"the", "la", "a", "die", "der", "le", "el",
 static float
 strings_check(char const *s, char const *t)
 {
-    float threshold;    // lenght difference 
+    float threshold;    // lenght difference
     int s_len = strlen(s);    // length of s
     int t_len = strlen(t);    // length of t
 
@@ -254,11 +254,11 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 
     if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|ssiO",
                 argnames, &keyFileName, &name1, &name2, &name3, &nrResults,
-		&scanChar))
+                &scanChar))
         return NULL;
 
     if (scanChar != NULL && PyObject_IsTrue(scanChar)) {
-	    isChar = 1;
+        isChar = 1;
     }
 
     if (strlen(name1) > MXLINELEN - 1)
@@ -297,30 +297,35 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         strtolower(line);
         strcpy(surname, line);
         hasNS = 0;
-	if (!isChar) {
-	        if ((cp = strrchr(surname, ',')) != NULL && (cp+1)[0] == ' ') {
-        	    *cp = '\0';
-	            hasNS = 1;
-        	    strcpy(namesurname, cp+2);
-	            strcat(namesurname, " ");
-        	    strcat(namesurname, surname);
-		}
-	} else {
-		if ((cp = strrchr(surname, ' ')) != NULL) {
-			hasNS = 1;
-			strcpy(surname, cp+1);
-			strcat(surname, "\0");
-		}
-	}
+        if (!isChar) {
+            if ((cp = strrchr(surname, ',')) != NULL && (cp+1)[0] == ' ') {
+                *cp = '\0';
+                hasNS = 1;
+                strcpy(namesurname, cp+2);
+                strcat(namesurname, " ");
+                strcat(namesurname, surname);
+            }
+        } else {
+            if ((cp = strrchr(surname, ' ')) != NULL) {
+                    hasNS = 1;
+                    strcpy(namesurname, surname);
+                    strcpy(surname, cp+1);
+                    strcat(surname, "\0");
+            }
+        }
 
         ratio = ratcliff(name1, line) + 0.05;
 
         if (hasNS) {
             ratio = MAX(ratio, ratcliff(name1, surname));
-            ratio = MAX(ratio, ratcliff(name1, namesurname));
+            if (!isChar) {
+                ratio = MAX(ratio, ratcliff(name1, namesurname));
+            }
             if (name2 != NULL) {
                 ratio = MAX(ratio, ratcliff(name2, surname));
-                ratio = MAX(ratio, ratcliff(name2, namesurname));
+                if (strcmp(namesurname, "")) {
+                    ratio = MAX(ratio, ratcliff(name2, namesurname));
+                }
             }
         }
 
@@ -329,8 +334,8 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             strcpy(origLineLower, origLine);
             strtolower(origLineLower);
             ratio = MAX(ratio, ratcliff(name3, origLineLower) + 0.1);
-       }
-    
+        }
+
         if (ratio >= RO_THRESHOLD)
             PyList_Append(result, Py_BuildValue("(dis)",
                             ratio, strtol(key, NULL, 16), origLine));
@@ -414,7 +419,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
                 !strncmp(articlesNoSP[count],
                 &(title1[linelen-artlen]), artlen) &&
                 !strncmp(&(title1[linelen-artlen-2]), ", ", 2)) {
-            /* name1 contains an article. */
+            /* title1 contains an article. */
             hasArt = 1;
             break;
         }
@@ -532,7 +537,7 @@ get_episodes(PyObject *self, PyObject *pArgs)
 
     if (!PyArg_ParseTuple(pArgs, "lss", &movieID, &indexFileName, &keyFileName))
         return NULL;
-    
+
     if (movieID < 0) {
         PyErr_SetString(PyExc_ValueError, "movieID must be positive.");
         return NULL;
@@ -570,7 +575,7 @@ get_episodes(PyObject *self, PyObject *pArgs)
         return Py_BuildValue("O", result);
 
     while (fgets(line, MXLINELEN, keyFile) != NULL) {
-        if (strncmp(line, series, seriesLen)) 
+        if (strncmp(line, series, seriesLen))
             break;
 
         if ((cp = strrchr(line, FSEP)) != NULL) {

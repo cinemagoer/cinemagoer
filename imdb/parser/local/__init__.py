@@ -729,8 +729,14 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         name = name.strip()
         if not name: return []
         s_name = normalizeName(analyze_name(name)['name'])
+        nsplit = s_name.split()
+        name2 = u''
+        if len(nsplit) > 1:
+            name2 = '%s %s' % (nsplit[-1], ' '.join(nsplit[:-1]))
+            if s_name == name2:
+                name2 = u''
         res =  _scan_names('%scharacters.key' % self.__db,
-                            s_name, u'', u'', results, _scan_character=1)
+                            s_name, name2, u'', results, _scan_character=1)
         res[:] = [x[1] for x in res]
         return res
 

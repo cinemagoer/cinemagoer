@@ -34,7 +34,7 @@ HELP = """characters4local.py usage:
 """ % sys.argv[0]
 
 if len(sys.argv) != 2:
-    print 'Specify the target directory'
+    print 'Specify the target directory!'
     print HELP
     sys.exit(1)
 
@@ -146,7 +146,8 @@ def writeData(d, directory):
     print 'Converting received dictionary...',
     sys.stdout.flush()
     # Convert the received dictionary in another format, simpler/faster
-    # to process.
+    # to process.  It's faster and requires less memory than a
+    # sorted(d.iteritems(), key=operator.itemgetter(1)) call.
     d2 = {}
     while True:
         try:
@@ -154,18 +155,21 @@ def writeData(d, directory):
         except KeyError:
             break
         d2[charID] = (name, items)
+    # Probably this won't free-up any memory space, but...
+    d = {}
     print 'DONE!'
     count = 1
+    d2pop = d2.pop
     print 'Start writing data (this may take a while).'
     for charID in sorted(d2):
-        name, items = d2.pop(charID)
+        name, items = d2pop(charID)
         offsetListappend(fdatatell())
         charIDBin = toBin3(charID)
         # Map character names to characterIDs.
         char2id[name] = charIDBin
         fdatawritelines((charIDBin, # characterID: superfluous,
                                     # but useful for run-time checks.
-                        pack('<H', len(name)), # Length of the name (1-byte).
+                        pack('<H', len(name)), # Length of the name (2-bytes).
                         name, # Name of the character.
                         toBin3(len(items)))) # Number of 3-bytes-long items to
                                              # read; 24-bits, because some

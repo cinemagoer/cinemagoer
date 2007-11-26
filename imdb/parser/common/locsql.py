@@ -227,22 +227,25 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
         nil = n_data['name']
         # Distance with the canonical name.
         ratios = [ratcliff(name1, nil, sm1) + 0.05]
+        namesurname = u''
         if not _scan_character:
             nils = nil.split(', ', 1)
             surname = nils[0]
+            if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
         else:
-            nils = nil.split(' ')
+            nils = nil.split(' ', 1)
             surname = nils[-1]
-        namesurname = u''
-        if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
+            namesurname = nil
         if surname != nil:
             # Distance with the "Surname" in the database.
             ratios.append(ratcliff(name1, surname, sm1))
-            ratios.append(ratcliff(name1, namesurname, sm1))
+            if not _scan_character:
+                ratios.append(ratcliff(name1, namesurname, sm1))
             if name2:
                 ratios.append(ratcliff(name2, surname, sm2))
                 # Distance with the "Name Surname" in the database.
-                ratios.append(ratcliff(name2, namesurname, sm2))
+                if namesurname:
+                    ratios.append(ratcliff(name2, namesurname, sm2))
         if name3:
             # Distance with the long imdb canonical name.
             ratios.append(ratcliff(name3,

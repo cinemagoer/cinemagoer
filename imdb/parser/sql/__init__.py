@@ -786,12 +786,28 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         soundexCode = soundex(s_name)
         surname = s_name.split(' ')[-1]
         surnameSoundex = soundex(surname)
+        name2 = ''
+        soundexName2 = None
+        nsplit = s_name.split()
+        if len(nsplit) > 1:
+            name2 = '%s %s' % (nsplit[-1], ' '.join(nsplit[:-1]))
+            if s_name == name2:
+                name2 = ''
+            else:
+                soundexName2 = soundex(name2)
         # If the soundex is None, compare only with the first
         # phoneticCode column.
         if soundexCode is not None:
-            condition = OR(surnameSoundex == CharName.q.surnamePcode,
-                        IN(soundexCode, [CharName.q.namePcodeNf,
-                                        CharName.q.surnamePcode]))
+            if soundexName2 is not None:
+                condition = OR(surnameSoundex == CharName.q.surnamePcode,
+                            IN(CharName.q.namePcodeNf, [soundexCode,
+                                                        soundexName2]),
+                            IN(CharName.q.surnamePcode, [soundexCode,
+                                                        soundexName2]))
+            else:
+                condition = OR(surnameSoundex == CharName.q.surnamePcode,
+                            IN(soundexCode, [CharName.q.namePcodeNf,
+                                            CharName.q.surnamePcode]))
         else:
             condition = ISNULL(Name.q.namePcodeNf)
         try:
@@ -800,7 +816,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         except SQLObjectNotFound, e:
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
-        res = scan_names(qr, s_name, '', '', results,
+        res = scan_names(qr, s_name, name2, '', results,
                         _scan_character=True)
         res[:] = [x[1] for x in res]
         # Purge empty imdbIndex.

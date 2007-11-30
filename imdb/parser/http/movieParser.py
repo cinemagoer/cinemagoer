@@ -1298,6 +1298,12 @@ class HTMLReleaseinfoParser(ParserBase):
 
     def end_th(self): pass
 
+    def start_table(self, attrs): pass
+
+    def end_table(self):
+        self._in_rl = 0
+        self._in_rl2 = 0
+
     def start_a(self, attrs):
         if self._in_rl:
             href = self.get_attr_value(attrs, 'href')
@@ -2555,10 +2561,10 @@ class HTMLEpisodesParser(ParserBase):
         self._in_h4 = 0
         self._cur_season = 0
         self._eps_counter = 1
-        self._in_episodes = 1
+        self._in_episodes = 0
         self._cur_year = u'????'
         self._cur_id = u''
-        self._in_eps_title = 1
+        self._in_eps_title = 0
         self._eps_number = u''
         self._eps_title = u''
         self._next_is_oad = 0
@@ -2744,10 +2750,16 @@ class HTMLEpisodesParser(ParserBase):
         self._cur_person = u''
         self._cur_person_id = None
 
+    def start_td(self, attrs):
+        if not self._in_episodes: return
+        if self.get_attr_value(attrs, 'width'):
+            self._add_episode()
+            self._in_episodes = 0
+
     def _handle_data(self, data):
         if self._in_h1:
             sldata = data.strip().lower()
-            if sldata .startswith('episodes'):
+            if sldata.startswith('episodes'):
                 self._in_episodes_h1 = 1
         elif self._in_html_title:
             self._html_title += data

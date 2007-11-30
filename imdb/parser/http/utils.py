@@ -286,7 +286,7 @@ class ParserBase(SGMLParser):
     re_imdbID = re.compile(r'(?<=nm|tt|ch)([0-9]{7})\b')
     re_imdbIDonly = re.compile(r'\b([0-9]{7})\b')
     re_airdate = re.compile(r'(.*)\s*\(season (\d+), episode (\d+)\)', re.I)
-    _re_imdbIDmatch = re.compile(r'(nm|tt|ch)[0-9]{7}\b')
+    _re_imdbIDmatch = re.compile(r'(nm|tt|ch)[0-9]{7}/?$')
 
     # It's set when names and titles references must be collected.
     # It can be set to 0 for search parsers.

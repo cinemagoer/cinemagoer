@@ -34,7 +34,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like ".cvsYearMonthDay(OptionalChar)".
-version = '3.4.cvs20071129'
+version = '3.4.cvs20071206'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -72,12 +72,6 @@ Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries
 Topic :: Software Development :: Libraries :: Python Modules
 """
 
-conf_target = '/etc'
-# So that etc and conf files are relative to sys.prefix, for non-unix
-# platforms.
-if sys.platform == 'win32':
-    conf_target = conf_target[1:]
-
 params = {'name': 'IMDbPY',
       'version': version,
       'description': 'Python package to access the IMDb\'s database',
@@ -90,7 +84,6 @@ params = {'name': 'IMDbPY',
       'maintainer_email': 'da@erlug.linux.it',
       'url': home_page,
       'license': 'GPL',
-      'data_files': [(conf_target, ['./etc/imdbpy.cfg'])],
       'packages': ['imdb', 'imdb.parser', 'imdb.parser.http',
                     'imdb.parser.mobile']}
 

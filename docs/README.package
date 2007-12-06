@@ -76,6 +76,14 @@ you can access movie data through the e-mail interface, etc. etc.
                             | 'htmlThin'| information are gathered; useful
                             |           | for systems with limited bandwidth.
 
+NOTE ON THE 'DEFAULT' ACCESS SYSTEM: since release 3.4, the 'imdbpy.cfg'
+configuration file is available, so that you can set a system-wide (or
+user-wide) default.  The file is commented with indication of the location
+where it can be put, and how to modify it.
+Obviously, if no imdbpy.cfg file is found (or is not readable or it can't
+be parsed), 'http' is still considered the default.
+
+
 The imdb_access object has seven main methods: search_movie(title),
 get_movie(movieID), search_person(name), get_person(personID),
 search_character(name), get_character(characterID)

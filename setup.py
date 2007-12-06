@@ -34,7 +34,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like ".cvsYearMonthDay(OptionalChar)".
-version = '3.4.cvs20071206'
+version = '3.4.cvs20071206b'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -93,14 +93,15 @@ if DO_LOCAL or DO_SQL:
     cutils = Extension('imdb.parser.common.cutils',
                         ['imdb/parser/common/cutils.c'])
     params['ext_modules'] = [cutils]
+    params['scripts'] = []
 
 if DO_LOCAL:
     params['packages'] = params['packages'] + ['imdb.parser.local']
-    params['scripts'] = ['./bin/characters4local.py']
+    params['scripts'] = params['scripts'] + ['./bin/characters4local.py']
 
 if DO_SQL:
     params['packages'] = params['packages'] + ['imdb.parser.sql']
-    params['scripts'] = ['./bin/imdbpy2sql.py']
+    params['scripts'] = params['scripts'] + ['./bin/imdbpy2sql.py']
 
 if DO_SCRIPTS:
     if not params.has_key('scripts'): params['scripts'] = []

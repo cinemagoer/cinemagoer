@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.4.cvs20071206 "The Da Vinci Code" (06 Dec 2007)
+* What's the new in release 3.4.cvs20071206b "The Da Vinci Code" (06b Dec 2007)
   [general]
   - introduced a global configuration file to set IMDbPY's parameters.
   - fixed a bug retrieving characterID from a character's name.

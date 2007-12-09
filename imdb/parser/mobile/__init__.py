@@ -223,7 +223,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if kind in ('tv series', 'tv mini series'):
             years = _findBetween(cont, '<h1>', '</h1>', maxRes=1)
             if years:
-                years[:] = _findBetween(years[0], 'TV-Series', '</span>',
+                years[:] = _findBetween(years[0], 'TV series', '</span>',
                                         maxRes=1)
                 if years:
                     d['series years'] = years[0].strip()

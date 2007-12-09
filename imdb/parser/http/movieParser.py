@@ -140,7 +140,7 @@ class HTMLMovieParser(ParserBase):
     def end_h1(self):
         self._in_h1 = False
         self._title = self._title.strip()
-        seridx = self._title.find(')TV-Series')
+        seridx = self._title.find(')TV series')
         if seridx != -1:
             self._data['series years'] = self._title[seridx+10:].lstrip()
             self._title = self._title[:seridx+1].rstrip()

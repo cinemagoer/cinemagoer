@@ -1,9 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.4.cvs20071208 "Hitman" (08 Dec 2007)
+* What's the new in release 3.4 "Flatliners" (16 Dec 2007)
   [general]
+  - *** NOTE FOR PACKAGERS *** in the docs directory there is the
+    "imdbpy.cfg" configuration file, which should be installed in /etc
+    or equivalent directory; the setup.py script _doesn't_ manage its
+    installation.
   - introduced a global configuration file to set IMDbPY's parameters.
+  - supported characters using "sql" and "local" data access systems.
   - fixed a bug retrieving characterID from a character's name.
 
   [http]
@@ -14,6 +19,7 @@
 
   [mobile]
   - fixed bugs reading "series years".
+  - fixed bugs reading characters' filmography.
 
   [sql]
   - support for characters.

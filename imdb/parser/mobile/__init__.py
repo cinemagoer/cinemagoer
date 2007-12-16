@@ -527,7 +527,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             # Everything between the current section link and the end
             # of the <ol> tag.
             if _parseChr and sect == 'filmography':
-                inisect = s.find('<ul class="label">')
+                inisect = s.find('<div class="filmo">')
             else:
                 inisect = s.find('<a name="%s' % sect)
             if inisect != -1:

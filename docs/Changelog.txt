@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 3.5.cvs20071225 "Enchanted" (24 Dec 2007)
+  [sql]
+  - fixed a bug in imdbpy2sql.py.
+
+
 * What's the new in release 3.4 "Flatliners" (16 Dec 2007)
   [general]
   - *** NOTE FOR PACKAGERS *** in the docs directory there is the

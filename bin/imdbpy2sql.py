@@ -674,6 +674,7 @@ class MoviesCache(_BaseCache):
 
 class PersonsCache(_BaseCache):
     """Manage the persons list."""
+    className = 'PersonsCache'
     counter = counter()
 
     def __init__(self, *args, **kwds):
@@ -1593,6 +1594,7 @@ def completeCast():
 CACHE_MID = MoviesCache()
 CACHE_PID = PersonsCache()
 CACHE_CID = CharactersCache()
+CACHE_CID.className = 'CharactersCache'
 
 
 def _cmpfunc(x, y):

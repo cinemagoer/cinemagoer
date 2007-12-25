@@ -34,12 +34,13 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like ".cvsYearMonthDay(OptionalChar)".
-version = '3.4'
+version = '3.5.cvs20071225'
 
 home_page = 'http://imdbpy.sf.net/'
 
 long_desc = """IMDbPY is a Python package useful to retrieve and
-manage the data of the IMDb movie database about both movies and people.
+manage the data of the IMDb movie database about movies, people
+and characters.
 
 Platform-independent and written in pure Python (and few C lines),
 it can retrieve data from both the IMDb's web server and a local copy

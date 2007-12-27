@@ -21,7 +21,7 @@ I'd like to thank the following people for their help:
 * Steven Ovits for hints and tests with Microsoft SQL Server, SQLExpress
   and preliminary work on supporting diff files.
 
-* Fredrik Arnell for a bug report about the imdbpy2sql.py script.
+* Fredrik Arnell for tests and bug reports about the imdbpy2sql.py script.
 
 * Arnab for a bug report in the imdbpy2sql.py script.
 

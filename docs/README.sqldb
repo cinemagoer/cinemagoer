@@ -127,6 +127,14 @@ The imdbpy2sql.py will print a lot of debug information on standard output;
 you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
 
 
+[MySQL]
+In general, if you get an embarrassingly high numbero of "TOO MANY DATA
+... SPLITTING" lines, consider increasing max_allowed_packet (in the
+configuration of your MySQL server) to at least 8M or 16M.
+Otherwise, inserting the data will be very slow, and some data may
+be lost.
+
+
 [MySQL InnoDB]
 InnoDB is abysmal slow for our purposes: my suggestion is to always
 use MyISAM tables and - if you really want to use InnoDB - convert

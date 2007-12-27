@@ -73,6 +73,8 @@ HELP = """imdbpy2sql.py usage:
 IMDB_PTDF_DIR = None
 # URI used to connect to the database.
 URI = None
+# Max allowed recursion, inserting data.
+MAX_RECURSION = 10
 # Store custom queries specified on the command line.
 CUSTOM_QUERIES = {}
 # Allowed time specification, for custom queries.
@@ -488,7 +490,7 @@ class _BaseCache(dict):
         """Flush to the database."""
         if self._flushing: return
         self._flushing = 1
-        if _recursionLevel >= 5:
+        if _recursionLevel >= MAX_RECURSION:
             print 'WARNING recursion level exceded trying to flush data'
             print 'WARNING this batch of data is lost (%s).' % self.className
             self._tmpDict.clear()
@@ -795,6 +797,7 @@ class SQLData(dict):
         self.sqlString = sqlString
         self.converter = converter
         self._recursionLevel = 1
+        self._table = table
         self._table_name = tableName(table)
         for k, v in d.items(): self[k] = v
 
@@ -818,7 +821,7 @@ class SQLData(dict):
         CACHE_MID.flush(quiet=1)
         CACHE_PID.flush(quiet=1)
         if _resetRecursion: self._recursionLevel = 1
-        if self._recursionLevel >= 5:
+        if self._recursionLevel >= MAX_RECURSION:
             print 'WARNING recursion level exceded trying to flush data'
             print 'WARNING this batch of data is lost.'
             self.clear()
@@ -842,7 +845,8 @@ class SQLData(dict):
             print ' * TOO MANY DATA (%s items), SPLITTING (run #%d)...' % \
                     (len(self), self._recursionLevel)
             self._recursionLevel += 1
-            newdata = self.__class__(sqlString=self.sqlString,
+            newdata = self.__class__(table=self._table,
+                                    sqlString=self.sqlString,
                                     converter=self.converter)
             newdata._recursionLevel = self._recursionLevel
             newflushEvery = self.flushEvery / 2

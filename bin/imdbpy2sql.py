@@ -1016,8 +1016,13 @@ def doCast(fp, roleid, rolename):
     print 'CLOSING %s...' % rolename
 
 
-def castLists():
+def castLists(_charIDsList=None):
     """Read files listed in the 'role' column of the 'roletypes' table."""
+    # _charIDsList is a dirty hack to allow us to get rid of
+    # CACHE_CID as soon as possible (right after that actresses.list.gz
+    # is processed).
+    if _charIDsList is None:
+        _charIDsList = []
     for rt in RoleType.select():
         roleid = rt.id
         rolename = fname = rt.role
@@ -1032,12 +1037,22 @@ def castLists():
             f = SourceFile(fname, start=CAST_START, stop=CAST_STOP)
         except IOError:
             if rolename == 'actress':
+                try:
+                    restoreImdbID(_charIDsList, CharName)
+                    del _charIDsList
+                except Exception, e:
+                    print 'WARNING: failed to restore imdbIDs for characters:',e
                 CACHE_CID.flush()
                 CACHE_CID.clear()
             continue
         doCast(f, roleid, rolename)
         f.close()
         if rolename == 'actress':
+            try:
+                restoreImdbID(_charIDsList, CharName)
+                del _charIDsList
+            except Exception, e:
+                print 'WARNING: failed to restore imdbIDs for characters:', e
             CACHE_CID.flush()
             CACHE_CID.clear()
         t('castLists(%s)' % rolename)
@@ -1638,7 +1653,8 @@ def notNULLimdbID(cls):
     """Return a list of dictionaries for titles or names for which a
     imdbID is present in the database."""
     if cls is Title: cname = 'movies'
-    else: cname = 'people'
+    elif cls is Name: cname = 'people'
+    else: cname = 'characters'
     print 'SAVING imdbID values for %s...' % cname,
     sys.stdout.flush()
     try:
@@ -1672,9 +1688,12 @@ def restoreImdbID(tons, cls):
     if cls is Title:
         CACHE = CACHE_MID
         cname = 'movies'
-    else:
+    elif cls is Name:
         CACHE = CACHE_PID
         cname = 'people'
+    else:
+        CACHE = CACHE_CID
+        cname = 'characters'
     print 'RESTORING imdbID values for %s...' % cname,
     sys.stdout.flush()
     count = 0
@@ -1743,14 +1762,19 @@ def run():
     # Storing imdbIDs for movies and persons.
     try:
         movies_imdbIDs = notNULLimdbID(Title)
-    except:
+    except Exception, e:
         movies_imdbIDs = []
-        print 'WARNING: failed to read imdbIDs for movies'
+        print 'WARNING: failed to read imdbIDs for movies: %s' % e
     try:
         people_imdbIDs = notNULLimdbID(Name)
-    except:
+    except Exception, e:
         people_imdbIDs = []
-        print 'WARNING: failed to read imdbIDs for people'
+        print 'WARNING: failed to read imdbIDs for people: %s' % e
+    try:
+        characters_imdbIDs = notNULLimdbID(CharName)
+    except Exception, e:
+        characters_imdbIDs = []
+        print 'WARNING: failed to read imdbIDs for characters: %s' % e
 
     executeCustomQueries('BEFORE_DROP')
 
@@ -1781,13 +1805,15 @@ def run():
     # Comment readMovieList() and uncomment the following two lines
     # to keep the current info in the name and title tables.
     ##CACHE_MID.populate()
-    ##CACHE_PID.populate()
     t('readMovieList()')
 
     # actors, actresses, producers, writers, cinematographers, composers,
     # costume-designers, directors, editors, miscellaneous,
     # production-designers.
-    castLists()
+    castLists(_charIDsList=characters_imdbIDs)
+    ##CACHE_PID.populate()
+    ##CACHE_CID.populate()
+    del characters_imdbIDs
 
     # Aka names and titles.
     doAkaNames()
@@ -1830,13 +1856,13 @@ def run():
     try:
         restoreImdbID(movies_imdbIDs, Title)
         del movies_imdbIDs
-    except:
-        print 'WARNING: failed to restore imdbIDs for movies'
+    except Exception, e:
+        print 'WARNING: failed to restore imdbIDs for movies: %s' % e
     try:
         restoreImdbID(people_imdbIDs, Name)
         del people_imdbIDs
-    except:
-        print 'WARNING: failed to restore imdbIDs for people'
+    except Exception, e:
+        print 'WARNING: failed to restore imdbIDs for people: %s' % e
 
     # Flush caches.
     CACHE_MID.flush()

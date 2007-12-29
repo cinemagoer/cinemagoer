@@ -1,9 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.5.cvs20071227 "Tokyo Godfathers" (27 Dec 2007)
+* What's the new in release 3.5.cvs20071229 "Eastern Promises" (29 Dec 2007)
   [sql]
   - fixed minor bugs in imdbpy2sql.py.
+  - restores imdbIDs for characters.
 
 
 * What's the new in release 3.4 "Flatliners" (16 Dec 2007)

@@ -362,3 +362,13 @@ def latin2utf(s):
     """Convert a latin_1 string to unicode."""
     return unicode(s, 'latin_1', 'replace')
 
+
+# FIXME: this should be in imdb._compat, but raises some strange
+#        import error.
+import os
+if os.name == 'e32':
+    def latin2utf(s):
+        """Convert a latin_1 string to unicode, Symbian edition ;-)"""
+        return s
+
+

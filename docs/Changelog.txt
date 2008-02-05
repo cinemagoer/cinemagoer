@@ -1,7 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.5.cvs20071229 "Eastern Promises" (29 Dec 2007)
+* What's the new in release 3.5.cvs20080205 "Cloverfiled" (05 Feb 2008)
+  [general]
+  - first changes to work on Symbian mobile phones.
+
   [sql]
   - fixed minor bugs in imdbpy2sql.py.
   - restores imdbIDs for characters.

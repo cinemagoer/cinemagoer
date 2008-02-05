@@ -225,6 +225,10 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
     resd = {}
     for i, n_data in name_list:
         nil = n_data['name']
+        # XXX: on Symbian, here we get a str; not sure this is the
+        #      right place to fix it.
+        if isinstance(nil, str):
+            nil = unicode(nil, 'latin1', 'ignore')
         # Distance with the canonical name.
         ratios = [ratcliff(name1, nil, sm1) + 0.05]
         namesurname = u''
@@ -285,6 +289,10 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
             if t_data.get('kind') != 'episode': continue
         elif t_data.get('kind') == 'episode': continue
         til = t_data['title']
+        # XXX: on Symbian, here we get a str; not sure this is the
+        #      right place to fix it.
+        if isinstance(til, str):
+            til = unicode(til, 'latin1', 'ignore')
         # Distance with the canonical title (with or without article).
         #   titleS      -> titleR
         #   titleS, the -> titleR, the

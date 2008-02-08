@@ -1,13 +1,19 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.5.cvs20080205 "Cloverfiled" (05 Feb 2008)
+* What's the new in release 3.5.cvs20080208 "Letters From Iwo Jima" (08 Feb 2008)
   [general]
   - first changes to work on Symbian mobile phones.
+  - now there is a imdb.available_access_systems() function, that can
+    be used to get a list of available data access systems.
 
   [sql]
   - fixed minor bugs in imdbpy2sql.py.
   - restores imdbIDs for characters.
+
+  [local]
+  - fixed a bug in the fall-back function used to scan movie titles,
+    when the cutils module is not available.
 
 
 * What's the new in release 3.4 "Flatliners" (16 Dec 2007)

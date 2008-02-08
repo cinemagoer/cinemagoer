@@ -191,6 +191,15 @@ except ImportError:
                     ' data access systems will be slower.')
 
     def ratcliff(s1, s2, sm):
+        STRING_MAXLENDIFFER = 0.7
+        s1len = len(s1)
+        s2len = len(s2)
+        if s1len < s2len:
+            threshold = float(s1len) / s2len
+        else:
+            threshold = float(s2len) / s1len
+        if threshold < STRING_MAXLENDIFFER:
+            return 0.0
         """Ratcliff-Obershelp similarity."""
         sm.set_seq2(s2.lower())
         return sm.ratio()

@@ -160,22 +160,15 @@ except ImportError:
 
     from imdb.parser.common.locsql import scan_titles
 
-    def _readTitlesKeyFile(keyFile, searchingEpisode=0, lenTitle=1):
+    def _readTitlesKeyFile(keyFile, searchingEpisode=0):
         """Iterate over the given file, returning tuples suited for
         the common.locsql.scan_titles function."""
-        STRING_MAXLENDIFFER = 0.7
-        lenTitle = float(lenTitle)
         try: kf = open(keyFile, 'r')
         except IOError, e: raise IMDbDataAccessError, str(e)
         for line in kf:
             ls = line.split('|')
             t = ls[0]
             if not t: continue
-            l_t = len(t)
-            if (lenTitle > l_t): threshold = l_t / lenTitle
-            else: threshold = lenTitle / l_t
-            # don't compare too different lenght strings.
-            if threshold < STRING_MAXLENDIFFER: continue
             if searchingEpisode:
                 if t[-1] != '}': continue
             elif t[-1] == '}': continue
@@ -188,8 +181,7 @@ except ImportError:
         pure-Python function, for title variations."""
         se = 0
         if title3 and title3[-1] == '}': se = 1
-        return scan_titles(_readTitlesKeyFile(keyFile, searchingEpisode=se,
-                            lenTitle=len(title3 or title1)),
+        return scan_titles(_readTitlesKeyFile(keyFile, searchingEpisode=se),
                             title1, title2, title3, results)
 
 

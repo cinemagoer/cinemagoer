@@ -84,8 +84,8 @@ is available at:
 
 On some mobile phone a pair of modules can be missing, and
 you have to install it manually as libraries; you can find
-these two modules (sgmllib.py and htmlentitydefs.py) here:
-  http://imdbpy.sourceforge.net/symbiangui/mobile-imdbpy-modules-0.1.tar.gz
+these modules (sgmllib.py, htmlentitydefs.py and ConfigParser.py) here:
+  http://imdbpy.sourceforge.net/?page=mobile
 
 
   THE "HTTPTHIN" DATA ACCESS SYSTEM

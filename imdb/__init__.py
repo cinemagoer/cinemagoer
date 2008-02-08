@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character']
-__version__ = VERSION = '3.5.cvs20080205'
+__version__ = VERSION = '3.5.cvs20080208'
 
 # Import compatibility module.
 import _compat
@@ -173,6 +173,33 @@ def IMDb(accessSystem=None, *arguments, **keywords):
     else:
         raise IMDbError, 'unknown kind of data access system: "%s"' \
                             % accessSystem
+
+
+def available_access_systems():
+    """Return the list of available data access systems."""
+    asList = []
+    # XXX: trying to import modules is a good thing?
+    try:
+        from parser.http import IMDbHTTPAccessSystem
+        asList += ['http', 'httpThin']
+    except ImportError:
+        pass
+    try:
+        from parser.mobile import IMDbMobileAccessSystem
+        asList.append('mobile')
+    except ImportError:
+        pass
+    try:
+        from parser.local import IMDbLocalAccessSystem
+        asList.append('local')
+    except ImportError:
+        pass
+    try:
+        from parser.sql import IMDbSqlAccessSystem
+        asList.append('sql')
+    except ImportError:
+        pass
+    return asList
 
 
 # XXX: I'm not sure this is a good guess.

@@ -178,16 +178,16 @@ class Character(_Container):
     def summary(self):
         """Return a string with a pretty-printed summary for the character."""
         if not self: return u''
-        s = 'Character\n=====\nName: %s\n' % \
+        s = u'Character\n=====\nName: %s\n' % \
                                 self.get('name', u'')
         bio = self.get('biography')
         if bio:
-            s += 'Biography: %s\n' % bio[0]
+            s += u'Biography: %s\n' % bio[0]
         filmo = self.get('filmography')
         if filmo:
             a_list = [x.get('long imdb canonical title', u'')
                         for x in filmo[:5]]
-            s += 'Last movies with this character: %s.\n' % '; '.join(a_list)
+            s += u'Last movies with this character: %s.\n' % u'; '.join(a_list)
         return s
 
 

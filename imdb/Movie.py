@@ -293,51 +293,51 @@ class Movie(_Container):
     def summary(self):
         """Return a string with a pretty-printed summary for the movie."""
         if not self: return u''
-        def _nameAndRole(personList, joiner=', '):
+        def _nameAndRole(personList, joiner=u', '):
             """Build a pretty string with name and role."""
             nl = []
             for person in personList:
                 n = person.get('name', u'')
-                if person.currentRole: n += ' (%s)' % person.currentRole
+                if person.currentRole: n += u' (%s)' % person.currentRole
                 nl.append(n)
             return joiner.join(nl)
-        s = 'Movie\n=====\nTitle: %s\n' % \
+        s = u'Movie\n=====\nTitle: %s\n' % \
                     self.get('long imdb canonical title', u'')
         genres = self.get('genres')
-        if genres: s += 'Genres: %s.' % ', '.join(genres)
+        if genres: s += u'Genres: %s.' % u', '.join(genres)
         director = self.get('director')
         if director:
-            s += 'Director: %s.\n' % _nameAndRole(director)
+            s += u'Director: %s.\n' % _nameAndRole(director)
         writer = self.get('writer')
         if writer:
-            s += 'Writer: %s.\n' % _nameAndRole(writer)
+            s += u'Writer: %s.\n' % _nameAndRole(writer)
         cast = self.get('cast')
         if cast:
             cast = cast[:5]
-            s += 'Cast: %s.\n' % _nameAndRole(cast)
+            s += u'Cast: %s.\n' % _nameAndRole(cast)
         runtime = self.get('runtimes')
         if runtime:
-            s += 'Runtime: %s.\n' % ', '.join(runtime)
+            s += u'Runtime: %s.\n' % u', '.join(runtime)
         countries = self.get('countries')
         if countries:
-            s += 'Country: %s.\n' % ', '.join(countries)
+            s += u'Country: %s.\n' % u', '.join(countries)
         lang = self.get('languages')
         if lang:
-            s += 'Language: %s.\n' % ', '.join(lang)
+            s += u'Language: %s.\n' % u', '.join(lang)
         rating = self.get('rating')
         if rating:
-            s += 'Rating: %s' % rating
+            s += u'Rating: %s' % rating
             nr_votes = self.get('votes')
             if nr_votes:
-                s += '(%s votes)' % nr_votes
-            s += '.\n'
+                s += u'(%s votes)' % nr_votes
+            s += u'.\n'
         plot = self.get('plot')
         if plot:
             plot = plot[0]
             i = plot.find('::')
             if i != -1:
                 plot = plot[i+2:]
-            s += 'Plot: %s' % plot
+            s += u'Plot: %s' % plot
         return s
 
 

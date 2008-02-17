@@ -226,35 +226,35 @@ class Person(_Container):
     def summary(self):
         """Return a string with a pretty-printed summary for the person."""
         if not self: return u''
-        s = 'Person\n=====\nName: %s\n' % \
+        s = u'Person\n=====\nName: %s\n' % \
                                 self.get('long imdb canonical name', u'')
         bdate = self.get('birth date')
         if bdate:
-            s += 'Birth date: %s' % bdate
+            s += u'Birth date: %s' % bdate
             bnotes = self.get('birth notes')
             if bnotes:
-                s += ' (%s)' % bnotes
-            s += '.\n'
+                s += u' (%s)' % bnotes
+            s += u'.\n'
         ddate = self.get('death date')
         if ddate:
-            s += 'Death date: %s' % ddate
+            s += u'Death date: %s' % ddate
             dnotes = self.get('death notes')
             if dnotes:
-                s += ' (%s)' % dnotes
-            s += '.\n'
+                s += u' (%s)' % dnotes
+            s += u'.\n'
         bio = self.get('mini biography')
         if bio:
-            s += 'Biography: %s\n' % bio[0]
+            s += u'Biography: %s\n' % bio[0]
         director = self.get('director')
         if director:
             d_list = [x.get('long imdb canonical title', u'')
                         for x in director[:3]]
-            s += 'Last movies directed: %s.\n' % '; '.join(d_list)
+            s += u'Last movies directed: %s.\n' % u'; '.join(d_list)
         act = self.get('actor') or self.get('actress')
         if act:
             a_list = [x.get('long imdb canonical title', u'')
                         for x in act[:5]]
-            s += 'Last movies acted: %s.\n' % '; '.join(a_list)
+            s += u'Last movies acted: %s.\n' % u'; '.join(a_list)
         return s
 
 

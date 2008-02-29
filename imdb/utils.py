@@ -3,7 +3,7 @@ utils module (imdb package).
 
 This module provides basic utilities for the imdb package.
 
-Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -922,8 +922,16 @@ class _Container(object):
         rawData = self.data[key]
         if self.keys_tomodify.has_key(key) and \
                 self.modFunct not in (None, modNull):
-            return modifyStrings(rawData, self.modFunct, self.titlesRefs,
-                                self.namesRefs, self.charactersRefs)
+            try:
+                return modifyStrings(rawData, self.modFunct, self.titlesRefs,
+                                    self.namesRefs, self.charactersRefs)
+            except RuntimeError, e:
+                # Symbian/python 2.2 has a poor regexp implementation.
+                import warnings
+                warnings.warn('RuntimeError in '
+                        "imdb.utils._Container.__getitem__; if it's not "
+                        "a recursion limit exceeded or we're not running "
+                        "in a Symbian environment, it's a bug:\n%s" % e)
         return rawData
 
     def __setitem__(self, key, item):

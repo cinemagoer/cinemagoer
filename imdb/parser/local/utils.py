@@ -4,7 +4,7 @@ parser.local.utils module (imdb package).
 This module provides miscellaneous utilities used by
 the imdb.parser.local classes.
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -361,14 +361,5 @@ class KeyFScan:
 def latin2utf(s):
     """Convert a latin_1 string to unicode."""
     return unicode(s, 'latin_1', 'replace')
-
-
-# FIXME: this should be in imdb._compat, but raises some strange
-#        import error.
-import os
-if os.name == 'e32':
-    def latin2utf(s):
-        """Convert a latin_1 string to unicode, Symbian edition ;-)"""
-        return s
 
 

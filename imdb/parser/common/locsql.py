@@ -4,7 +4,7 @@ locsql module (imdb.parser.common package).
 This module provides some functions and classes shared amongst
 "local" and "sql" parsers.
 
-Copyright 2005-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -96,7 +96,16 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         """Scan for titles or names references in strings."""
         trefs = {}
         nrefs = {}
-        return self._findRefs(o, trefs, nrefs)
+        try:
+            return self._findRefs(o, trefs, nrefs)
+        except RuntimeError, e:
+            # Symbian/python 2.2 has a poor regexp implementation.
+            import warnings
+            warnings.warn('RuntimeError in '
+                    "imdb.parser.common.locsql.IMDbLocalAndSqlAccessSystem; "
+                    "if it's not a recursion limit exceeded or we're not "
+                    "running in a Symbian environment, it's a bug:\n%s" % e)
+            return (trefs, nrefs)
 
     def _changeAKAencoding(self, akanotes, akatitle):
         """Return akatitle in the correct charset, as specified in

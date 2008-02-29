@@ -6,7 +6,7 @@ the layout of the database used by thr imdb.parser.sql package.
 Every database supported by the SQLObject Object Relational Manager
 is available.
 
-Copyright 2005-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2008 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify

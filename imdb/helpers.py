@@ -88,12 +88,17 @@ def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
         if _limitRecursion is None:
             _limitRecursion = 0
         elif _limitRecursion > 5:
-            return ''
+            return u''
         _limitRecursion += 1
-        # XXX: recur also on dictionaries' keys and values?
         if isinstance(obj, (list, tuple)):
             return joiner.join([object2txt(o, _limitRecursion=_limitRecursion)
                                 for o in obj])
+        elif isinstance(obj, dict):
+            # XXX: not exactly nice, neither useful, I fear.
+            return joiner.join([u'%s::%s' %
+                            (object2txt(k, _limitRecursion=_limitRecursion),
+                            object2txt(v, _limitRecursion=_limitRecursion))
+                            for k, v in obj.items()])
         objData = {}
         if isinstance(obj, Movie):
             objData['movieID'] = obj.movieID
@@ -113,7 +118,7 @@ def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
             if proceed:
                 return matchobj.group(2)
             else:
-                return ''
+                return u''
             return matchobj.group(2)
         while re_conditional.search(outs):
             outs = re_conditional.sub(_excludeFalseConditionals, outs)
@@ -131,7 +136,7 @@ def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
                 value = u''
             elif not isinstance(value, (unicode, str)):
                 value = unicode(value)
-            outs = outs.replace('%(' + key + ')s', value)
+            outs = outs.replace(u'%(' + key + u')s', value)
         return outs
     return object2txt
 

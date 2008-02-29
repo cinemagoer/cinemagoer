@@ -4,7 +4,7 @@ _compat module (imdb package).
 This module provides compatibility functions used by the imdb package
 to deal with unusual environments.
 
-Copyright 2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -63,16 +63,4 @@ if os.name == 'e32':
             except:
                 raise ValueError, u'error in IMDbPY\'s ad-hoc strptime!'
         time.strptime = strptime
-
-    # FIXME: an horrible import problem prevents this to work: it's
-    #        temporary fixed in imdb.parser.local.utils.
-    #try:
-    #    from imdb.parser.local import utils
-    #    def latin2utf(s):
-    #        """Convert a latin_1 string to unicode, Symbian edition ;-)"""
-    #        return s
-    #    utils.latin2utf = latin2utf
-    #except ImportError:
-    #    pass
-
 

@@ -1,13 +1,15 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.5.cvs20080216 "30 days of night" (16 Feb 2008)
+* What's the new in release 3.5.cvs20080228 "Breaking News" (28 Feb 2008)
   [general]
   - first changes to work on Symbian mobile phones.
   - now there is a imdb.available_access_systems() function, that can
     be used to get a list of available data access systems.
   - fixed summary() method in Movie and Person, to correctly handle
     unicode chars.
+  - the helpers.makeObject2Txt function now supports recursion over
+    dictionaries.
 
   [sql]
   - fixed minor bugs in imdbpy2sql.py.

@@ -6,7 +6,7 @@ IMDb's data through a local installation.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "local" or "files".
 
-Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

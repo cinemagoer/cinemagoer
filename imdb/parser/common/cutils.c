@@ -20,7 +20,7 @@
  * - pysoundex():
  *   Return a soundex code string, for the given string.
  *
- * Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+ * Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
  * Released under the GPL license.
  *
  * NOTE: The Ratcliff-Obershelp part was heavily based on code from the
@@ -67,8 +67,8 @@
 #define COMPARE             2.0
 #define STRING_MAXLENDIFFER 0.7
 
-/* As of 26 Mar 2006, the longest title is 280 chars. */
-#define MXLINELEN   512
+/* As of 05 Mar 2008, the longest title is ~600 chars. */
+#define MXLINELEN   1023
 #define FSEP        '|'
 
 #define RO_THRESHOLD 0.6
@@ -202,8 +202,8 @@ pyratcliff(PyObject *self, PyObject *pArgs)
     char *s1 = NULL;
     char *s2 = NULL;
     PyObject *discard = NULL;
-    char s1copy[MXLINELEN];
-    char s2copy[MXLINELEN];
+    char s1copy[MXLINELEN+1];
+    char s2copy[MXLINELEN+1];
 
     /* The optional PyObject parameter is here to be compatible
      * with the pure python implementation, which uses a
@@ -211,8 +211,8 @@ pyratcliff(PyObject *self, PyObject *pArgs)
     if (!PyArg_ParseTuple(pArgs, "ss|O", &s1, &s2, &discard))
         return NULL;
 
-    strcpy(s1copy, s1);
-    strcpy(s2copy, s2);
+    strncpy(s1copy, s1, MXLINELEN);
+    strncpy(s2copy, s2, MXLINELEN);
     /* Work on copies. */
     strtolower(s1copy);
     strtolower(s2copy);
@@ -238,10 +238,10 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     char *name3 = NULL;
     float ratio;
     FILE *keyFile;
-    char line[MXLINELEN];
-    char origLine[MXLINELEN];
-    char surname[MXLINELEN] = "";
-    char namesurname[MXLINELEN] = "";
+    char line[MXLINELEN+1];
+    char origLine[MXLINELEN+1];
+    char surname[MXLINELEN+1] = "";
+    char namesurname[MXLINELEN+1] = "";
     char *cp;
     char *key;
     short hasNS = 0;
@@ -261,7 +261,7 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         isChar = 1;
     }
 
-    if (strlen(name1) > MXLINELEN - 1)
+    if (strlen(name1) > MXLINELEN)
         return Py_BuildValue("O", result);
     strtolower(name1);
 
@@ -280,7 +280,7 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         return NULL;
     }
 
-    while (fgets(line, MXLINELEN, keyFile) != NULL) {
+    while (fgets(line, MXLINELEN+1, keyFile) != NULL) {
         /* Split a "origLine|key" line. */
         if ((cp = strrchr(line, FSEP)) != NULL) {
             *cp = '\0';
@@ -330,7 +330,7 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         }
 
         if (name3 != NULL && strrchr(origLine, ')') != NULL) {
-            char origLineLower[MXLINELEN];
+            char origLineLower[MXLINELEN+1];
             strcpy(origLineLower, origLine);
             strtolower(origLineLower);
             ratio = MAX(ratio, ratcliff(name3, origLineLower) + 0.1);
@@ -369,8 +369,8 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     char *title3 = NULL;
     float ratio;
     FILE *keyFile;
-    char line[MXLINELEN];
-    char origLine[MXLINELEN];
+    char line[MXLINELEN+1];
+    char origLine[MXLINELEN+1];
     char *cp;
     char *key;
     unsigned short hasArt = 0;
@@ -380,7 +380,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     unsigned short linelen = 0;
     unsigned short searchingEpisode = 0;
     unsigned int count = 0;
-    char noArt[MXLINELEN] = "";
+    char noArt[MXLINELEN+1] = "";
     static char *argnames[] = {"keyFile", "title1", "title2", "title3",
                                 "results", NULL};
     PyObject *result = PyList_New(0);
@@ -389,7 +389,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             argnames, &keyFileName, &title1, &title2, &title3, &nrResults))
         return NULL;
 
-    if (strlen(title1) > MXLINELEN - 1)
+    if (strlen(title1) > MXLINELEN)
         return Py_BuildValue("O", result);
 
     strtolower(title1);
@@ -425,7 +425,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         }
     }
 
-    while (fgets(line, MXLINELEN, keyFile) != NULL) {
+    while (fgets(line, MXLINELEN+1, keyFile) != NULL) {
         /* Split a "origLine|key" line */
         if ((cp = strrchr(line, FSEP)) != NULL) {
             *cp = '\0';
@@ -491,7 +491,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         }
 
         if (title3 != NULL) {
-            char origLineLower[MXLINELEN];
+            char origLineLower[MXLINELEN+1];
             strcpy(origLineLower, origLine);
             strtolower(origLineLower);
             ratio = MAX(ratio, ratcliff(title3, origLineLower) + 0.1);
@@ -527,8 +527,8 @@ get_episodes(PyObject *self, PyObject *pArgs)
     long kfIndex = 0L;
     int i = 0;
     int read_char;
-    char line[MXLINELEN];
-    char series[MXLINELEN];
+    char line[MXLINELEN+1];
+    char series[MXLINELEN+1];
     int seriesLen = 0;
     char *cp;
     char *key;
@@ -565,7 +565,7 @@ get_episodes(PyObject *self, PyObject *pArgs)
     }
 
     fseek(keyFile, kfIndex, 0);
-    fgets(series, MXLINELEN, keyFile);
+    fgets(series, MXLINELEN+1, keyFile);
     if ((cp = strrchr(series, FSEP)) != NULL) {
         *cp = '\0';
     }
@@ -574,7 +574,7 @@ get_episodes(PyObject *self, PyObject *pArgs)
     if (series[0] != '"' || series[seriesLen-1] != ')')
         return Py_BuildValue("O", result);
 
-    while (fgets(line, MXLINELEN, keyFile) != NULL) {
+    while (fgets(line, MXLINELEN+1, keyFile) != NULL) {
         if (strncmp(line, series, seriesLen))
             break;
 
@@ -615,7 +615,7 @@ pysoundex(PyObject *self, PyObject *pArgs)
 {
     int i, j, n;
     char *s = NULL;
-    char word[MXLINELEN];
+    char word[MXLINELEN+1];
     char soundCode[SOUNDEX_LEN+1];
     char c;
 

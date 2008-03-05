@@ -84,7 +84,8 @@ ALLOWED_TIMES = ('BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE', 'AFTER_CREATE',
                 'AFTER_MOVIES_TODB', 'BEFORE_PERSONS_TODB',
                 'AFTER_PERSONS_TODB','BEFORE_SQLDATA_TODB',
                 'AFTER_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB',
-                'AFTER_AKAMOVIES_TODB', 'BEFORE_EVERY_TODB',
+                'AFTER_AKAMOVIES_TODB', 'BEFORE_CHARACTERS_TODB',
+                'AFTER_CHARACTERS_TODB', 'BEFORE_EVERY_TODB',
                 'AFTER_EVERY_TODB')
 
 # Shortcuts for some compatibility options.
@@ -130,11 +131,13 @@ for opt in optlist:
             continue
         if when == 'BEFORE_EVERY_TODB':
             for nw in ('BEFORE_MOVIES_TODB', 'BEFORE_PERSONS_TODB',
-                        'BEFORE_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB'):
+                        'BEFORE_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB',
+                        'BEFORE_CHARACTERS_TODB'):
                 CUSTOM_QUERIES.setdefault(nw, []).append(cmd)
         elif when == 'AFTER_EVERY_TODB':
             for nw in ('AFTER_MOVIES_TODB', 'AFTER_PERSONS_TODB',
-                        'AFTER_SQLDATA_TODB', 'AFTER_AKAMOVIES_TODB'):
+                        'AFTER_SQLDATA_TODB', 'AFTER_AKAMOVIES_TODB',
+                        'AFTER_CHARACTERS_TODB'):
                 CUSTOM_QUERIES.setdefault(nw, []).append(cmd)
         else:
             CUSTOM_QUERIES.setdefault(when, []).append(cmd)

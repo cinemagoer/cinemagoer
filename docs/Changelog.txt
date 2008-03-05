@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.5.cvs20080228 "Breaking News" (28 Feb 2008)
+* What's the new in release 3.5.cvs20080305 "Severance" (05 Mar 2008)
   [general]
   - first changes to work on Symbian mobile phones.
   - now there is a imdb.available_access_systems() function, that can
@@ -10,10 +10,13 @@
     unicode chars.
   - the helpers.makeObject2Txt function now supports recursion over
     dictionaries.
+  - cutils.c MXLINELEN increased from 512 to 1024; some critical
+    strcpy replaced with strncpy.
 
   [sql]
   - fixed minor bugs in imdbpy2sql.py.
   - restores imdbIDs for characters.
+  - now CharactersCache honors custom queries.
 
   [local]
   - fixed a bug in the fall-back function used to scan movie titles,

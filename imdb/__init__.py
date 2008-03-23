@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character']
-__version__ = VERSION = '3.5.cvs20080305'
+__version__ = VERSION = '3.5.cvs20080323'
 
 # Import compatibility module.
 import _compat
@@ -98,6 +98,8 @@ class ConfigParserWithCase(ConfigParser.ConfigParser):
 
     def _manageValue(self, value):
         """Custom substitutions for values."""
+        if not isinstance(value, (str, unicode)):
+            return value
         vlower = value.lower()
         if vlower in self._boolean_states:
             return self._boolean_states[vlower]
@@ -114,10 +116,10 @@ class ConfigParserWithCase(ConfigParser.ConfigParser):
     def items(self, section, *args, **kwds):
         """Return a list of (key, value) tuples of items of the
         given section."""
-        if not self.has_section(section):
+        if section != 'DEFAULT' and not self.has_section(section):
             return []
-        items = ConfigParser.ConfigParser.items(self, section, *args, **kwds)
-        return [(key, self._manageValue(value)) for key, value in items]
+        keys = ConfigParser.ConfigParser.options(self, section)
+        return [(k, self.get(section, k, *args, **kwds)) for k in keys]
 
     def getDict(self, section):
         """Return a dictionary of items of the specified section."""

@@ -1005,7 +1005,7 @@ def doCast(fp, roleid, rolename):
                             pass
         movieid = CACHE_MID.addUnique(title)
         if role is not None:
-            roles = role.split('/')
+            roles = filter(None, [x.strip() for x in role.split('/')])
             for role in roles:
                 cid = CACHE_CID.addUnique(role)
                 sqldata.add((pid, movieid, cid, note, order))

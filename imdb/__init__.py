@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character']
-__version__ = VERSION = '3.5.cvs20080323'
+__version__ = VERSION = '3.5.cvs20080403'
 
 # Import compatibility module.
 import _compat
@@ -223,7 +223,8 @@ class IMDbBase:
     # in the subclasses).
     accessSystem = 'UNKNOWN'
 
-    def __init__(self, defaultModFunct=None, *arguments, **keywords):
+    def __init__(self, defaultModFunct=None, results=20,
+                *arguments, **keywords):
         """Initialize the access system.
         If specified, defaultModFunct is the function used by
         default by the Person, Movie and Character objects, when
@@ -232,6 +233,14 @@ class IMDbBase:
         # The function used to output the strings that need modification (the
         # ones containing references to movie titles and person names).
         self._defModFunct = defaultModFunct
+        # Number of results to get.
+        try:
+            results = int(results)
+        except (TypeError, ValueError):
+            results = 20
+        if results < 1:
+            results = 20
+        self._results = results
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -313,9 +322,11 @@ class IMDbBase:
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
 
-    def search_movie(self, title, results=20):
+    def search_movie(self, title, results=None):
         """Return a list of Movie objects for a query for the given title.
         The results argument is the maximum number of results to return."""
+        if results is None:
+            results = self._results
         try:
             results = int(results)
         except (ValueError, OverflowError):
@@ -357,10 +368,12 @@ class IMDbBase:
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
 
-    def search_person(self, name, results=20):
+    def search_person(self, name, results=None):
         """Return a list of Person objects for a query for the given name.
 
         The results argument is the maximum number of results to return."""
+        if results is None:
+            results = self._results
         try:
             results = int(results)
         except (ValueError, OverflowError):
@@ -400,10 +413,12 @@ class IMDbBase:
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
 
-    def search_character(self, name, results=20):
+    def search_character(self, name, results=None):
         """Return a list of Character objects for a query for the given name.
 
         The results argument is the maximum number of results to return."""
+        if results is None:
+            results = self._results
         try:
             results = int(results)
         except (ValueError, OverflowError):

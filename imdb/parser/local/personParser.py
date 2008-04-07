@@ -5,7 +5,7 @@ This module provides the functions used to parse the
 information about people in a local installation of the
 IMDb database.
 
-Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -117,6 +117,9 @@ def _parseBioBy(l):
             if tmpbio:
                 biosappend(line[4:].strip() + '::' + joiner(tmpbio))
                 tmpbio[:] = []
+    # Cut mini biographies up to 2**16-1 chars, to prevent errors with
+    # some MySQL versions - when used by the imdbpy2sql.py script.
+    bios[:] = [bio[:65535] for bio in bios]
     return bios
 
 

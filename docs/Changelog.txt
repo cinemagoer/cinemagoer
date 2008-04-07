@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.5.cvs20080403 "Open Water 2: Adrift" (03 Apr 2008)
+* What's the new in release 3.5.cvs20080407 "Resident Evil: Extinction" (07 Apr 2008)
   [general]
   - first changes to work on Symbian mobile phones.
   - now there is a imdb.available_access_systems() function, that can
@@ -24,6 +24,8 @@
   [local]
   - fixed a bug in the fall-back function used to scan movie titles,
     when the cutils module is not available.
+  - mini biographies are cut up to 2**16-1 chars, to prevent troubles
+    with some MySQL servers.
 
 
 * What's the new in release 3.4 "Flatliners" (16 Dec 2007)

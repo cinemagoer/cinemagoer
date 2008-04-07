@@ -15,6 +15,9 @@ I'd like to thank the following people for their help:
 
 * Jesper Nøhr for a lot of testing, especially on 'sql'.
 
+* Mark Armendariz for a bug report about too long field in MySQL db
+  and some tests/analyses.
+
 * Alexy Khrabrov, for a report about a subtle bug in imdbpy2sql.py.
 
 * Clark Bassett for bug reports and fixes about the imdbpy2sql.py

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.5.cvs20080407 "Resident Evil: Extinction" (07 Apr 2008)
+* What's the new in release 3.5.cvs20080411 "Revenge of the Drunken Master" (11 Apr 2008)
   [general]
   - first changes to work on Symbian mobile phones.
   - now there is a imdb.available_access_systems() function, that can

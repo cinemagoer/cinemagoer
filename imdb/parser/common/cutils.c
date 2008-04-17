@@ -78,20 +78,20 @@
 
 /* List of articles.
    XXX: see comments about articles in the imdb.utils module. */
-#define ART_COUNT    45
+#define ART_COUNT    46
 char *articles[ART_COUNT] = {"the ", "la ", "a ", "die ", "der ", "le ", "el ",
-        "l'", "il ", "das ", "les ", "o ", "ein ", "i ", "un ", "los ", "de ",
-        "an ", "una ", "las ", "eine ", "den ", "gli ", "het ","os ", "lo ",
-        "az ", "det ","ha-", "een ", "ang ", "oi ", "ta ", "al-", "dem ",
-        "mga ", "uno ", "un'", "ett ", "Ο ", "eines ", "Η ","els ", "Το ",
-        "Οι "};
+        "l'", "il ", "das ", "les ", "i ", "o ", "ein ", "un ", "de ", "los ",
+        "an ", "una ", "las ", "eine ", "den ", "het ", "gli ", "lo ", "os ",
+        "ang ", "oi ", "az ", "een ", "ha-", "det ", "ta ", "al-",
+	"mga ", "un'", "uno ", "ett ", "dem ", "egy ", "els ", "eines ", "Ο ",
+	"Η ", "Το ", "Οι "};
 
 char *articlesNoSP[ART_COUNT] = {"the", "la", "a", "die", "der", "le", "el",
-        "l'", "il", "das", "les", "o", "ein", "i", "un", "los", "de",
-        "an", "una", "las", "eine", "den", "gli", "het", "os", "lo",
-        "az", "det","ha-", "een", "ang", "oi", "ta", "al-", "dem",
-        "mga", "uno", "un'", "ett", "Ο", "eines", "Η", "els", "Το",
-        "Οι"};
+        "l'", "il", "das", "les", "i", "o", "ein", "un", "de", "los",
+        "an", "una", "las", "eine", "den", "het", "gli", "lo", "os",
+        "ang", "oi", "az", "een", "ha-", "det", "ta", "al-",
+	"mga", "un'", "uno", "ett", "dem", "egy", "els", "eines", "Ο",
+	"Η", "Το", "Οι"};
 
 
 //*****************************************

@@ -5,7 +5,7 @@ characters4local.py script.
 This script creates some files to manage characters' information
 for the 'local' data access system.
 
-Copyright 2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2007-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -92,7 +92,13 @@ def doCast(dataF, roleCount=0):
             if i < noWith:
                 # Eat 'attributeID'.
                 fread(3)
-            length = ord(fread(1))
+            try:
+                length = ord(fread(1))
+            except TypeError:
+                # Prevent the strange case where fread(1) returns '';
+                # it should not happen; maybe there's some garbage in
+                # the files...
+                length = 0
             if length > 0:
                 curRole = fread(length)
                 noterixd = curRole.rfind('(')
@@ -123,7 +129,7 @@ def doCast(dataF, roleCount=0):
 
 
 def writeData(d, directory):
-    """Write d data into file in the specified directory."""
+    """Write d data into files in the specified directory."""
     # Open files.
     print 'Start writing data to directory %s.' % directory
     char2id = anydbm.open(os.path.join(directory, 'character2id.index'), 'n')

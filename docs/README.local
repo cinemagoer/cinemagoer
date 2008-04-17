@@ -8,8 +8,10 @@ file.
 Obviously you can still prefer to use the 'local' data access
 system if you're already using the moviedb program.
 
-NOTE: see README.currentRole for information about character support.
-
+NOTE: see README.currentRole for information about character support;
+to put it simple, after you've installed everything you can use the
+characters4local.py script to generate files for characters (it will
+required some time).
 
 Select a mirror of the "The Plain Text Data Files" from
 the http://www.imdb.com/interfaces.html page and download
@@ -25,8 +27,9 @@ NOTE: the current (3.24) moviedb version is old an it was not
 thought with tv series episodes support in mind.
 It can still work very well, but you've to modify some constants
 in the code: edit the "moviedb.h" file in the "src" directory,
-and change MAXTITLES to _at least_ 1400000, MAXNAKAENTRIES
-to 700000 and LINKSTART to 1000000.
+and change MAXTITLES to _at least_ 1600000, MAXNAKAENTRIES
+to 700000 and LINKSTART to 1000000.  Also, setting MXLINELEN
+to 1023 is a good idea.
 See http://us.imdb.com/database_statistics for more up-to-date
 statistics.
 

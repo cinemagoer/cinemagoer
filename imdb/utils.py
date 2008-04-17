@@ -49,14 +49,15 @@ _sname_suffixes = ('de', 'la', 'der', 'den', 'del', 'y', 'da', 'van',
 def canonicalName(name):
     """Return the given name in canonical "Surname, Name" format.
     It assumes that name is in the 'Name Surname' format."""
-    # XXX: some statistics (over 1852406 names):
-    #      - just a surname:                 51921
-    #      - single surname, single name:  1792759
-    #      - composed surname, composed name: 7726
-    #      - composed surname, single name:  55623
-    #        (2: 49259, 3: 5502, 4: 551)
-    #      - single surname, composed name: 186604
-    #        (2: 178315, 3: 6573, 4: 1219, 5: 352)
+    # XXX: some statistics (as of 17 Apr 2008, over 2288622 names):
+    #      - just a surname:                 69476
+    #      - single surname, single name:  2209656
+    #      - composed surname, composed name: 9490
+    #      - composed surname, single name:  67606
+    #        (2: 59764, 3: 6862, 4: 728)
+    #      - single surname, composed name: 242310
+    #        (2: 229467, 3: 9901, 4: 2041, 5: 630)
+    #      - Jr.: 8025
     # Don't convert names already in the canonical format.
     if name.find(', ') != -1: return name
     sname = name.split(' ')
@@ -153,25 +154,25 @@ def build_name(name_dict, canonical=0):
 # even in some American slangs.  Unfortunately it's also a preposition in
 # Italian, and it's widely used in Mandarin (for whatever it means!).
 # Running a script over the whole list of titles (and aliases), I've found
-# that 'da' is used as an article only 20 times, and as another thing 255
+# that 'da' is used as an article only 23 times, and as another thing 298
 # times, so I've decided to _always_ consider 'da' as a non article.
 #
 # Here is a list of words that are _never_ considered as articles, complete
 # with the cound of times they are used in a way or another:
-# 'en' (314 vs 507), 'to' (236 vs 589), 'as' (183 vs 231), 'et' (67 vs 79),
-# 'des' (69 vs 123), 'al' (57 vs 247), 'egy' (28 vs 32), 'ye' (14 vs 55),
-# 'da' (20 vs 255), "'n" (7 vs 12)
+# 'en' (376 vs 594), 'to' (399 vs 727), 'as' (198 vs 276), 'et' (79 vs 99),
+# 'des' (75 vs 150), 'al' (78 vs 304), 'ye' (14 vs 70),
+# 'da' (23 vs 298), "'n" (8 vs 12)
 #
-# I've left in the list 'i' (1614 vs 1707) and 'uno' (49 vs 51)
+# I've left in the list 'i' (1939 vs 2151) and 'uno' (52 vs 56)
 # I'm not sure what '-al' is, and so I've left it out...
 #
 # List of articles:
 _articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el',
-            "l'", 'il', 'das', 'les', 'o', 'ein', 'i', 'un', 'los', 'de',
-            'an', 'una', 'las', 'eine', 'den', 'gli', 'het', 'os', 'lo',
-            'az', 'det', 'ha-', 'een', 'ang', 'oi', 'ta', 'al-', 'dem',
-            'mga', 'uno', "un'", 'ett', u'\xcf', 'eines', u'\xc7', 'els',
-            u'\xd4\xef', u'\xcf\xe9')
+            "l'", 'il', 'das', 'les', 'i', 'o', 'ein', 'un', 'de', 'los',
+            'an', 'una', 'las', 'eine', 'den', 'het', 'gli', 'lo', 'os',
+            'ang', 'oi', 'az', 'een', 'ha-', 'det', 'ta', 'al-',
+            'mga', "un'", 'uno', 'ett', 'dem', 'egy', 'els', 'eines', u'\xcf',
+            u'\xc7', u'\xd4\xef', u'\xcf\xe9')
 
 # Articles in a dictionary.
 _articlesDict = dict([(x, x) for x in _articles])
@@ -325,14 +326,14 @@ def analyze_title(title, canonical=None,
                 episode_d['episode'] = epn
         return episode_d
     # First of all, search for the kind of show.
-    # XXX: Number of entries at 18 Mar 2006:
-    #      movie:        344,892
-    #      episode:      272,862
-    #      tv movie:      53,269
-    #      tv series:     37,065
-    #      video movie:   44,062
-    #      tv mini series: 4,757
-    #      video game:     4,472
+    # XXX: Number of entries at 17 Apr 2008:
+    #      movie:        379,871
+    #      episode:      483,832
+    #      tv movie:      61,119
+    #      tv series:     44,795
+    #      video movie:   57,915
+    #      tv mini series: 5,497
+    #      video game:     5,490
     #      More up-to-date statistics: http://us.imdb.com/database_statistics
     if title.endswith('(TV)'):
         kind = u'tv movie'

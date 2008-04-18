@@ -89,7 +89,7 @@ The fastest database appears to be MySQL, with about 95 minutes to
 complete on my test system (read below).
 A lot of memory (RAM or swap space) is required, in the range of
 at least 150/200 megabytes (plus more for the database server).
-In the end, the database will require between 1.5GB and 3GB of disc space.
+In the end, the database will require between 2.5GB and 5GB of disc space.
 
 As said, the performances varies greatly using a database server or another:
 MySQL, for instance, has an executemany() method of the cursor object
@@ -98,21 +98,18 @@ database requires a call to the execute() method for every single row
 of data, and they will be much slower - from 2 to 7 times slower than
 MySQL.
 
-I've done some tests, using an AMD Athlon 1800+, 512MB of RAM, over a
-complete plain text data files set (as of 12 Nov 2006, with about
-890.000 titles and over 2.000.000 names):
+I've done some tests, using an AMD Athlon 1800+, 1GB of RAM, over a
+complete plain text data files set (as of 11 Apr 2008, with more than
+1.200.000 titles and over 2.200.000 names):
 
       database         |  time in minutes: total (insert data/create indexes)
  ----------------------+-----------------------------------------------------
-   MySQL 5.0 MyISAM    |  115 (95/20)
-   MySQL 5.0 InnoDB    |  ??? (80/???)
-                       |  maybe I've not cofigurated it properly: it
-                       |  looks like the creation of the indexes will
-                       |  take more than 2 or 3 hours.  But see NOTES below.
-   PostgreSQL 8.1      |  190 (177/13)
-   SQLite 3.2          |  ??? (80/???)
-                       |  with the "--sqlite-transactions" command line
-                       |  option; otherwise it's _really_ slow: even
+   MySQL 5.0 MyISAM    |  205 (160/45)
+   MySQL 5.0 InnoDB    |  _untested_, see NOTES below.
+   PostgreSQL 8.1      |  560 (530/30)
+   SQLite 3.3          |  ??? (150/???) - very slow building indexes.
+                       |  Timed with the "--sqlite-transactions" command
+                       |  line option; otherwise it's _really_ slow: even
                        |  35 hours or more.
    SQL Server          |  about 3 or 4 hours.
 
@@ -135,12 +132,16 @@ Otherwise, inserting the data will be very slow, and some data may
 be lost.
 
 
-[MySQL InnoDB]
+[MySQL InnoDB and MyISAM]
 InnoDB is abysmal slow for our purposes: my suggestion is to always
 use MyISAM tables and - if you really want to use InnoDB - convert
 the tables later.
-The imdbpy2sql.py script provides a simple way to manage this case,
+The imdbpy2sql.py script provides a simple way to manage these cases,
 see ADVANCED FEATURES below.
+
+In my opinion, the cleaner thing to do is to set the server to use
+MyISAM tables or - you you can't modifiy the server - use the
+--mysql-force-myisam command line option of imdbpy2sql.py.
 Anyway, if you really need to use InnoDB, in the server-side settings
 I recommend to set innodb_file_per_table to "true".
 
@@ -240,9 +241,9 @@ or BEFORE_CREATE time...), replacing the "%(table)s" text in the QUERY
 with the appropriate table name.
 
 Other available TIMEs are: 'BEFORE_MOVIES_TODB', 'AFTER_MOVIES_TODB',
-'BEFORE_PERSONS_TODB', 'AFTER_PERSONS_TODB', 'BEFORE_SQLDATA_TODB',
-'AFTER_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB' and 'AFTER_AKAMOVIES_TODB';
-they take no modifiers.
+'BEFORE_PERSONS_TODB', 'AFTER_PERSONS_TODB', 'BEFORE_CHARACTERS_TODB',
+'AFTER_CHARACTERS_TODB', 'BEFORE_SQLDATA_TODB', 'AFTER_SQLDATA_TODB',
+'BEFORE_AKAMOVIES_TODB' and 'AFTER_AKAMOVIES_TODB'; they take no modifiers.
 Special TIMEs 'BEFORE_EVERY_TODB' and 'AFTER_EVERY_TODB' apply to
 every BEFORE_* and AFTER_* TIME above mentioned.
 These commands are executed before and after every _toDB() call in

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.5.cvs200804117 "Constantine" (17 Apr 2008)
+* What's the new in release 3.5.cvs200804118 "Constantine" (18 Apr 2008)
   [general]
   - first changes to work on Symbian mobile phones.
   - now there is a imdb.available_access_systems() function, that can
@@ -22,6 +22,9 @@
   - fixed minor bugs in imdbpy2sql.py.
   - restores imdbIDs for characters.
   - now CharactersCache honors custom queries.
+  - the imdbpy2sql.py's --mysql-force-myisam command line option can be
+    used to force usage of MyISAM tables on InnoDB databases.
+  - added some warnings to the imdbpy2sql.py script.
 
   [local]
   - fixed a bug in the fall-back function used to scan movie titles,

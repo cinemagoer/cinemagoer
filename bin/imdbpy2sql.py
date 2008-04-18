@@ -61,6 +61,7 @@ HELP = """imdbpy2sql.py usage:
         # NOTE: --COMPATIBILITY-OPTIONS can be one of:
             --mysql-innodb          insert data into a MySQL MyISAM db,
                                     and then convert it to InnoDB.
+            --mysql-force-myisam    force the creation of MyISAM tables.
             --ms-sqlserver          compatibility mode for Microsoft SQL Server
                                     and SQL Express.
             --sqlite-transactions   uses transactions, to speed-up SQLite.
@@ -89,16 +90,22 @@ ALLOWED_TIMES = ('BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE', 'AFTER_CREATE',
                 'AFTER_EVERY_TODB')
 
 # Shortcuts for some compatibility options.
+MYSQLFORCEMYISAM_OPTS = ['-e',
+        'AFTER_CREATE:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=MyISAM;']
 MYSQLINNODB_OPTS = ['-e',
         'AFTER_CREATE:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=MyISAM;',
         '-e', 'END:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=InnoDB;']
 SQLSERVER_OPTS = ['-e', 'BEFORE_EVERY_TODB:SET IDENTITY_INSERT %(table)s ON;',
         '-e', 'AFTER_EVERY_TODB:SET IDENTITY_INSERT %(table)s OFF;']
 SQLITE_OPTS = ['-e', 'BEFORE_EVERY_TODB:BEGIN TRANSACTION;',
-        '-e', 'AFTER_EVERY_TODB:COMMIT;']
+        '-e', 'AFTER_EVERY_TODB:COMMIT;',
+        '-e', 'BEFORE_INDEXES:BEGIN TRANSACTION;',
+        'e', 'END:COMMIT;']
 
 if '--mysql-innodb' in sys.argv[1:]:
     sys.argv += MYSQLINNODB_OPTS
+if '--mysql-force-myisam' in sys.argv[1:]:
+    sys.argv += MYSQLFORCEMYISAM_OPTS
 if '--ms-sqlserver' in sys.argv[1:]:
     sys.argv += SQLSERVER_OPTS
 if '--sqlite-transactions' in sys.argv[1:]:
@@ -110,6 +117,7 @@ try:
                                                 ['uri=', 'data=', 'execute=',
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
+                                                'mysql-force-myisam',
                                                 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
@@ -154,6 +162,51 @@ if URI is None:
     print 'You must supply the URI for the database connection'
     print HELP
     sys.exit(2)
+
+# Some warnings and notices.
+URIlower = URI.lower()
+
+if URIlower.startswith('mysql'):
+    if '--mysql-force-myisam' in sys.argv[1:] and \
+            '--mysql-innodb' in sys.argv[1:]:
+        print '\nWARNING: there is no sense in mixing the --mysql-innodb and\n'\
+                '--mysql-force-myisam command line options!\n'
+    elif '--mysql-innodb' in sys.argv[1:]:
+        print "\nNOTICE: you've specified the --mysql-innodb command line\n"\
+                "option; you should do this ONLY IF your system uses InnoDB\n"\
+                "tables or you really want to use InnoDB; if you're running\n"\
+                "a MyISAM-based database, please omit any option; if you\n"\
+                "want to force MyISAM usage on a InnoDB-based database,\n"\
+                "try the --mysql-force-myisam command line option, instead.\n"
+    elif '--mysql-force-myisam' in sys.argv[1:]:
+        print "\nNOTICE: you've specified the --mysql-force-myisam command\n"\
+                "line option; you should do this ONLY IF your system uses\n"\
+                "InnoDB tables and you want to use MyISAM tables, instead.\n"
+    else:
+        print "\nNOTICE: IF you're using InnoDB tables, data insertion can\n"\
+                "be very slow; you can switch to MyISAM tables - forcing it\n"\
+                "with the --mysql-force-myisam option - OR use the\n"\
+                "--mysql-innodb command line option, but DON'T USE these if\n"\
+                "you're already working on MyISAM tables, because it will\n"\
+                "force MySQL to use InnoDB, and performances will be poor.\n"
+elif URIlower.startswith('mssql') and \
+        '--ms-sqlserver' not in sys.argv[1:]:
+    print "\nWARNING: you're using MS SQLServer without the --ms-sqlserver\n"\
+            "command line option: if something goes wrong, try using it.\n"
+elif URIlower.startswith('sqlite') and \
+        '--sqlite-transactions' not in sys.argv[1:]:
+    print "\nWARNING: you're using SQLite without the --sqlite-transactions\n"\
+            "command line option: you'll have very poor performances!  Try\n"\
+            "using it.\n"
+if ('--mysql-force-myisam' in sys.argv[1:] and
+        not URIlower.startswith('mysql')) or ('--mysql-innodb' in
+        sys.argv[1:] and not URIlower.startswith('mysql')) or ('--ms-sqlserver'
+        in sys.argv[1:] and not URIlower.startswith('mssql')) or \
+        ('--sqlite-transactions' in sys.argv[1:] and
+        not URIlower.startswith('sqlite')):
+    print "\nWARNING: you've specified command line options that don't\n"\
+            "belong to the database server you're using: proceed at your\n"\
+            "own risk!\n"
 
 # Connect to the database.
 conn = setConnection(URI)

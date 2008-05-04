@@ -6,7 +6,7 @@ IMDb's data for mobile systems.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "mobile".
 
-Copyright 2005-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -365,7 +365,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if runtimes:
             runtimes = runtimes[0]
             runtimes = [x.strip().replace(' min', '').replace(' (', '::(', 1)
-                    for x in runtimes.split('/')]
+                    for x in runtimes.split('|')]
             d['runtimes'] = runtimes
         if kind == 'episode':
             # number of episodes.
@@ -379,37 +379,38 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     d['number of episodes'] = epsn
         country = _findBetween(cont, 'Country:</h5>', '</div>', maxRes=1)
         if country:
-            country[:] = country[0].split(' / ')
+            country[:] = country[0].split(' | ')
             country[:] = ['<a %s' % x for x in country if x]
             country[:] = [_unHtml(x.replace(' <i>', '::')) for x in country]
             if country: d['countries'] = country
         lang = _findBetween(cont, 'Language:</h5>', '</div>', maxRes=1)
         if lang:
-            lang[:] = lang[0].split(' / ')
+            lang[:] = lang[0].split(' | ')
             lang[:] = ['<a %s' % x for x in lang if x]
             lang[:] = [_unHtml(x.replace(' <i>', '::')) for x in lang]
             if lang: d['languages'] = lang
         col = _findBetween(cont, '"/List?color-info=', '</div>')
         if col:
-            col[:] = col[0].split(' / ')
+            col[:] = col[0].split(' | ')
             col[:] = ['<a %s' % x for x in col if x]
             col[:] = [_unHtml(x.replace(' <i>', '::')) for x in col]
             if col: d['color info'] = col
         sm = _findBetween(cont, '/List?sound-mix=', '</div>', maxRes=1)
         if sm:
-            sm[:] = sm[0].split(' / ')
+            sm[:] = sm[0].split(' | ')
             sm[:] = ['<a %s' % x for x in sm if x]
             sm[:] = [_unHtml(x.replace(' <i>', '::')) for x in sm]
             if sm: d['sound mix'] = sm
         cert = _findBetween(cont, 'Certification:</h5>', '</div>', maxRes=1)
         if cert:
-            cert[:] = cert[0].split(' / ')
+            cert[:] = cert[0].split(' | ')
             cert[:] = [_unHtml(x.replace(' <i>', '::')) for x in cert]
             if cert: d['certificates'] = cert
-        plotoutline = _findBetween(cont, 'Plot Outline:</h5>', ['<a ','</div>'],
+        plotoutline = _findBetween(cont, 'Plot:</h5>', ['<a ','</div>'],
                                     maxRes=1)
         if plotoutline:
             plotoutline = plotoutline[0].strip()
+            plotoutline = plotoutline.rstrip('|').rstrip()
             if plotoutline: d['plot outline'] = plotoutline
         return {'data': d}
 
@@ -496,7 +497,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         akas = _findBetween(s, 'Alternate Names:</h5>', ('</div>',
                             '<br/><br/>'), maxRes=1)
         if akas:
-            akas = _unHtml(akas[0]).split(' / ')
+            akas = akas[0]
+            if akas.find(' | ') != -1:
+                akas = _unHtml(akas).split(' | ')
+            else:
+                akas = _unHtml(akas).split(' / ')
             if akas: r['akas'] = akas
         hs = _findBetween(s, 'name="headshot"', '</a>', maxRes=1)
         if hs:
@@ -701,6 +706,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 bio = bio.replace('</h4>', '::')
                 bio = bio.replace('\n', ' ')
                 bio = bio.replace('<br>', '\n')
+                bio = bio.replace('<br/>', '\n')
                 bio = subSGMLRefs(re_unhtmlsub('', bio).strip())
                 bio = bio.replace(' ::', '::').replace(':: ', '::')
                 if bio:

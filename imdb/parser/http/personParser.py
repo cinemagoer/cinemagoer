@@ -8,7 +8,7 @@ E.g., for "Mel Gibson" the referred pages would be:
     biography:      http://akas.imdb.com/name/nm0000154/bio
     ...and so on...
 
-Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -171,7 +171,10 @@ class HTMLMaindetailsParser(ParserBase):
             if notes:
                 self._data['death notes'] = notes
         elif self._section == 'akas':
-            akas = self._cur_txt.split(' / ')
+            sep = ' | '
+            if self.kind == 'character':
+                sep = ' / '
+            akas = self._cur_txt.split(sep)
             if akas: self._data['akas'] = akas
         # XXX: not providing an 'else', we're deliberately ignoring
         #      other sections.

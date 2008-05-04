@@ -15,6 +15,10 @@ I'd like to thank the following people for their help:
 
 * Jesper Nøhr for a lot of testing, especially on 'sql'.
 
+* Amit Belani for bug reports about plot outline and other changes.
+
+* Matt Warnock for some tests with MySQL.
+
 * Mark Armendariz for a bug report about too long field in MySQL db
   and some tests/analyses.
 

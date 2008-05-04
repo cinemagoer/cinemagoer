@@ -85,10 +85,10 @@ For other information you can read the SQLObject documentation.
 
 The performances are hugely dependant upon the underlying Python
 module/package used to access the database.
-The fastest database appears to be MySQL, with about 95 minutes to
+The fastest database appears to be MySQL, with about 200 minutes to
 complete on my test system (read below).
 A lot of memory (RAM or swap space) is required, in the range of
-at least 150/200 megabytes (plus more for the database server).
+at least 250/500 megabytes (plus more for the database server).
 In the end, the database will require between 2.5GB and 5GB of disc space.
 
 As said, the performances varies greatly using a database server or another:

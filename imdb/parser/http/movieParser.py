@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -62,12 +62,13 @@ _SECT_CONV = {
         'genre': 'genres',
         'created': 'creator',
         'color': 'color info',
+        'plot': 'plot outline',
         'seasons': 'number of seasons'}
 # List of allowed sections.
 _SECT_KEEP = _SECT_CONV.values() + ['cast', 'original music', 'tv series',
             'mpaa', 'non-original music', 'art direction', 'set decoration',
             'art department', 'special effects', 'visual effects', 'sound mix',
-            'camera and electrical department', 'plot outline',
+            'camera and electrical department',
             'production notes/status', 'production design',
             'transportation department', 'editorial department',
             'casting department', 'animation department',
@@ -323,6 +324,8 @@ class HTMLMovieParser(ParserBase):
     def _add_info(self):
         # Used to add information about h5, h6 and b sections.
         ct = self._cur_txt.strip()
+        if ct.endswith('|'):
+            ct = ct.rstrip('|').rstrip()
         if not ct:
             self._cur_txt = u''
             return
@@ -370,7 +373,7 @@ class HTMLMovieParser(ParserBase):
                 ct = ct.replace(' min', u'')##.replace(' (', '::(')
             ##elif self._section == 'certificates':
             ##    ct = ct.replace(' (', '::(')
-            splitted_info = ct.split(' / ')
+            splitted_info = ct.split(' | ')
             splitted_info[:] = [x.strip() for x in splitted_info]
             splitted_info[:] = filter(None, splitted_info)
             splitted_info[:] = [x.replace(' (', '::(', 1)
@@ -1496,7 +1499,7 @@ class HTMLRatingsParser(ParserBase):
                 self._next_is_demo_vote = 1
             else:
                 self._cur_demo_av = sdata
-        elif self._in_td and sdata.startswith('All votes'):
+        elif self._in_td and sdata.startswith('IMDb users'):
             self._in_demo = 1
             self._next_is_demo_vote = 1
             self._cur_demo_t = 'all votes'

@@ -8,7 +8,7 @@ E.g., for "Jesse James" the referred pages would be:
     biography:      http://www.imdb.com/character/ch0000001/bio
     ...and so on...
 
-Copyright 2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2007-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

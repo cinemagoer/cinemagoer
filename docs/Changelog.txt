@@ -1,6 +1,12 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 3.6.cvs20080504 "Iron Man" (04 May 2008)
+  [http and mobile data access systems]
+  - changes to support the new HTML for "plot outile" and
+    some lists of values (languages, genres, ...)
+
+
 * What's the new in release 3.5 "Blade Runner" (19 Apr 2008)
   [general]
   - first changes to work on Symbian mobile phones.

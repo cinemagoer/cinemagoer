@@ -540,7 +540,8 @@ class _BaseCache(dict):
         if not self._flushing:
             self._tmpDict[key] = counter
         else:
-            self._deferredData[key] = self.counter.next()
+            self._deferredData[key] = counter
+            #self._deferredData[key] = self.counter.next()
 
     def flush(self, quiet=0, _recursionLevel=0):
         """Flush to the database."""

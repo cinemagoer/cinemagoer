@@ -494,6 +494,57 @@ def build_title(title_dict, canonical=None, canonicalSeries=0,
     return title
 
 
+def split_company_name_notes(name):
+    """Return two strings, the first representing the company name,
+    and the other representing the (optional) notes."""
+    name = name.strip()
+    notes = u''
+    if name.endswith(')'):
+        fpidx = name.find('(')
+        if fpidx != -1:
+            notes = name[fpidx:]
+            name = name[:fpidx].rstrip()
+    return name, notes
+
+
+def analyze_company_name(name, stripNotes=False):
+    """Return a dictionary with the name and the optional 'country'
+    keys, from the given string.
+    If stripNotes is true, tries to not consider optional notes.
+
+    raise an IMDbParserError exception if the name is not valid.
+    """
+    if stripNotes:
+        name = split_company_name_notes(name)[0]
+    o_name = name
+    name = name.strip()
+    country = None
+    if name.endswith(']'):
+        idx = name.rfind('[')
+        if idx != -1:
+            country = name[idx:]
+            name = name[:idx-1].rstrip()
+    if not name:
+        raise IMDbParserError, 'invalid name: "%s"' % o_name
+    result = {'name': name}
+    if country:
+        result['country'] = country
+    return result
+
+
+def build_company_name(name_dict, _emptyString=u''):
+    """Given a dictionary that represents a "long" IMDb company name,
+    return a string.
+    """
+    name = name_dict.get('name')
+    if not name:
+        return _emptyString
+    country = name_dict.get('country')
+    if country is not None:
+        name += ' %s' % country
+    return name
+
+
 class _LastC:
     """Size matters."""
     def __cmp__(self, other):
@@ -563,6 +614,22 @@ def cmpPeople(p1, p2):
     if p1n < p2n: return -1
     p1i = p1.get('imdbIndex', _last)
     p2i = p2.get('imdbIndex', _last)
+    if p1i > p2i: return 1
+    if p1i < p2i: return -1
+    return 0
+
+
+def cmpCompanies(p1, p2):
+    """Compare two companies."""
+    p1n = p1.get('long imdb name', _last)
+    p2n = p2.get('long imdb name', _last)
+    if p1n is _last and p2n is _last:
+        p1n = p1.get('name', _last)
+        p2n = p2.get('name', _last)
+    if p1n > p2n: return 1
+    if p1n < p2n: return -1
+    p1i = p1.get('country', _last)
+    p2i = p2.get('country', _last)
     if p1i > p2i: return 1
     if p1i < p2i: return -1
     return 0
@@ -874,11 +941,11 @@ class _Container(object):
             self.data = data
 
     def getID(self):
-        """Return movieID, personID or characterID."""
+        """Return movieID, personID, characterID or companyID."""
         raise NotImplementedError, 'override this method'
 
     def __cmp__(self, other):
-        """Compare two Movie, Person or Character objects."""
+        """Compare two Movie, Person, Character or Company objects."""
         # XXX: raise an exception?
         if self.cmpFunct is None: return -1
         if not isinstance(other, self.__class__): return -1

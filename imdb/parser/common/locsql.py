@@ -33,7 +33,8 @@ from imdb._exceptions import IMDbDataAccessError
 from imdb.utils import analyze_title, build_title, analyze_name, \
                         build_name, canonicalTitle, canonicalName, \
                         normalizeName, normalizeTitle, re_titleRef, \
-                        re_nameRef, re_year_index, _articles
+                        re_nameRef, re_year_index, _articles, \
+                        analyze_company_name
 
 re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
@@ -341,6 +342,43 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
                 if ratio > resd[i][0]:
                     resd[i] = (ratio, (i, t_data))
             else: resd[i] = (ratio, (i, t_data))
+    res = resd.values()
+    res.sort()
+    res.reverse()
+    if results > 0: res[:] = res[:results]
+    return res
+
+
+def scan_company_names(name_list, name1, results=0, ro_thresold=None):
+    """Scan a list of company names, searching for best matches against
+    the given name.  Notice that this function takes a list of
+    strings, and not a list of dictionaries."""
+    if ro_thresold is not None: RO_THRESHOLD = ro_thresold
+    else: RO_THRESHOLD = 0.6
+    sm1 = SequenceMatcher()
+    sm1.set_seq1(name1.lower())
+    resd = {}
+    withoutCountry = not name1.endswith(']')
+    for i, n in name_list:
+        # XXX: on Symbian, here we get a str; not sure this is the
+        #      right place to fix it.
+        if isinstance(n, str):
+            n = unicode(n, 'latin1', 'ignore')
+        o_name = n
+        var = 0.0
+        if withoutCountry and n.endswith(']'):
+            cidx = n.rfind('[')
+            if cidx != -1:
+                n = n[:cidx].rstrip()
+                var = -0.05
+        # Distance with the company name.
+        ratio = ratcliff(name1, n, sm1) + var
+        if ratio >= RO_THRESHOLD:
+            if resd.has_key(i):
+                if ratio > resd[i][0]: resd[i] = (ratio,
+                                            (i, analyze_company_name(o_name)))
+            else:
+                resd[i] = (ratio, (i, analyze_company_name(o_name)))
     res = resd.values()
     res.sort()
     res.reverse()

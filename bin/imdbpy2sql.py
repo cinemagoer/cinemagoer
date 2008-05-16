@@ -34,7 +34,8 @@ from sqlobject.sqlbuilder import ISNOTNULL
 from imdb.parser.sql import soundex, get_movie_data
 from imdb.parser.sql.dbschema import *
 from imdb.utils import analyze_title, analyze_name, \
-        build_name, build_title, normalizeName, _articles
+        build_name, build_title, normalizeName, _articles, \
+        build_company_name, analyze_company_name
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError
@@ -80,13 +81,14 @@ MAX_RECURSION = 10
 CUSTOM_QUERIES = {}
 # Allowed time specification, for custom queries.
 ALLOWED_TIMES = ('BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE', 'AFTER_CREATE',
-                'BEFORE_MOVIES', 'BEFORE_CAST', 'BEFORE_RESTORE',
-                'BEFORE_INDEXES', 'END', 'BEFORE_MOVIES_TODB',
+                'BEFORE_MOVIES', 'BEFORE_COMPANIES', 'BEFORE_CAST',
+                'BEFORE_RESTORE', 'BEFORE_INDEXES', 'END', 'BEFORE_MOVIES_TODB',
                 'AFTER_MOVIES_TODB', 'BEFORE_PERSONS_TODB',
                 'AFTER_PERSONS_TODB','BEFORE_SQLDATA_TODB',
                 'AFTER_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB',
                 'AFTER_AKAMOVIES_TODB', 'BEFORE_CHARACTERS_TODB',
-                'AFTER_CHARACTERS_TODB', 'BEFORE_EVERY_TODB',
+                'AFTER_CHARACTERS_TODB', 'BEFORE_COMPANIES_TODB',
+                'AFTER_COMPANIES_TODB', 'BEFORE_EVERY_TODB',
                 'AFTER_EVERY_TODB')
 
 # Shortcuts for some compatibility options.
@@ -140,12 +142,12 @@ for opt in optlist:
         if when == 'BEFORE_EVERY_TODB':
             for nw in ('BEFORE_MOVIES_TODB', 'BEFORE_PERSONS_TODB',
                         'BEFORE_SQLDATA_TODB', 'BEFORE_AKAMOVIES_TODB',
-                        'BEFORE_CHARACTERS_TODB'):
+                        'BEFORE_CHARACTERS_TODB', 'BEFORE_COMPANIES_TODB'):
                 CUSTOM_QUERIES.setdefault(nw, []).append(cmd)
         elif when == 'AFTER_EVERY_TODB':
             for nw in ('AFTER_MOVIES_TODB', 'AFTER_PERSONS_TODB',
                         'AFTER_SQLDATA_TODB', 'AFTER_AKAMOVIES_TODB',
-                        'AFTER_CHARACTERS_TODB'):
+                        'AFTER_CHARACTERS_TODB', 'AFTER_COMPANIES_TODB'):
                 CUSTOM_QUERIES.setdefault(nw, []).append(cmd)
         else:
             CUSTOM_QUERIES.setdefault(when, []).append(cmd)
@@ -467,7 +469,7 @@ class SourceFile(GzipFile):
 
 
 def getSectionHash(fp):
-    """Return sections separated by lines starting with #"""
+    """Return sections separated by lines starting with #."""
     curSectList = []
     curSectListApp = curSectList.append
     curTitle = ''
@@ -669,7 +671,7 @@ class MoviesCache(_BaseCache):
         _oldcacheValues = Title.sqlmeta.cacheValues
         Title.sqlmeta.cacheValues = False
         for x in fetchsome(CURS, self.flushEvery):
-            mdict = {'title': unicode(x[1], 'utf_8'), 'kind': KIND_STRS[x[2]],
+            mdict = {'title': x[1], 'kind': KIND_STRS[x[2]],
                     'year': x[3], 'imdbIndex': x[4]}
             if mdict['imdbIndex'] is None: del mdict['imdbIndex']
             if mdict['year'] is None: del mdict['year']
@@ -678,7 +680,7 @@ class MoviesCache(_BaseCache):
             if episodeOfID is not None:
                 s = Title.get(episodeOfID)
                 series_d = {'title': s.title,
-                            'kind': str(s.kind.kind),
+                            'kind': str(KIND_STRS[s.kindID]),
                             'year': s.productionYear, 'imdbIndex': s.imdbIndex}
                 if series_d['imdbIndex'] is None: del series_d['imdbIndex']
                 if series_d['year'] is None: del series_d['year']
@@ -755,7 +757,7 @@ class PersonsCache(_BaseCache):
         _oldcacheValues = Name.sqlmeta.cacheValues
         Name.sqlmeta.cacheValues = False
         for x in fetchsome(CURS, self.flushEvery):
-            nd = {'name': unicode(x[1], 'utf_8')}
+            nd = {'name': x[1]}
             if x[2]: nd['imdbIndex'] = x[2]
             name = build_name(nd, canonical=1)
             dict.__setitem__(self, name, x[0])
@@ -787,6 +789,7 @@ class PersonsCache(_BaseCache):
 class CharactersCache(_BaseCache):
     """Manage the characters list."""
     counter = counter()
+    className = 'CharactersCache'
 
     def __init__(self, *args, **kwds):
         _BaseCache.__init__(self, *args, **kwds)
@@ -806,7 +809,7 @@ class CharactersCache(_BaseCache):
         _oldcacheValues = CharName.sqlmeta.cacheValues
         CharName.sqlmeta.cacheValues = False
         for x in fetchsome(CURS, self.flushEvery):
-            nd = {'name': unicode(x[1], 'utf_8')}
+            nd = {'name': x[1]}
             if x[2]: nd['imdbIndex'] = x[2]
             name = build_name(nd, canonical=1)
             dict.__setitem__(self, name, x[0])
@@ -833,6 +836,61 @@ class CharactersCache(_BaseCache):
                                                                 character=True)
             lapp((v, name, tget('imdbIndex'),
                 namePcodeCf, surnamePcode))
+        CURS.executemany(self.sqlstr, self.converter(l))
+
+
+class CompaniesCache(_BaseCache):
+    """Manage the companies list."""
+    counter = counter()
+    className = 'CompaniesCache'
+
+    def __init__(self, *args, **kwds):
+        _BaseCache.__init__(self, *args, **kwds)
+        self._table_name = tableName(CompanyName)
+        self._id_for_custom_q = 'COMPANIES'
+        self.sqlstr, self.converter = createSQLstr(CompanyName, ['id', 'name',
+                                'countryCode', 'namePcodeNf', 'namePcodeSf'])
+
+    def populate(self):
+        print ' * POPULATING CharactersCache...'
+        nameTbl = tableName(CompanyName)
+        companyidCol = colName(CompanyName, 'id')
+        nameCol = colName(CompanyName, 'name')
+        countryCodeCol = colName(CompanyName, 'countryCode')
+        CURS.execute('SELECT %s, %s, %s FROM %s;' % (companyidCol, nameCol,
+                                                    countryCodeCol, nameTbl))
+        _oldcacheValues = CompanyName.sqlmeta.cacheValues
+        CompanyName.sqlmeta.cacheValues = False
+        for x in fetchsome(CURS, self.flushEvery):
+            nd = {'name': x[1]}
+            if x[2]: nd['country'] = x[2]
+            name = build_company_name(nd)
+            dict.__setitem__(self, name, x[0])
+        self.counter = counter(CompanyName.select().count() + 1)
+        CompanyName.sqlmeta.cacheValues = _oldcacheValues
+
+    def _toDB(self, quiet=0):
+        if not quiet:
+            print ' * FLUSHING CompaniesCache...'
+            sys.stdout.flush()
+        l = []
+        lapp = l.append
+        tmpDictiter = self._tmpDict.iteritems
+        for k, v in tmpDictiter():
+            try:
+                t = analyze_company_name(k)
+            except IMDbParserError:
+                if k and k.strip():
+                    print 'WARNING CompaniesCache._toDB() invalid name:', _(k)
+                continue
+            tget = t.get
+            name = tget('name')
+            namePcodeNf = soundex(name)
+            namePcodeSf = None
+            country = tget('country')
+            if k != name:
+                namePcodeSf = soundex(k)
+            lapp((v, name, country, namePcodeNf, namePcodeSf))
         CURS.executemany(self.sqlstr, self.converter(l))
 
 
@@ -1416,7 +1474,7 @@ def nmmvFiles(fp, funct, fname):
         guestdata = None
         akanamesdata = None
     sqldata = SQLData(table=sqls[0], cols=sqls[1])
-    if fname == 'plot.list.gz': sqldata.flushEvery = 1000
+    if fname == 'plot.list.gz': sqldata.flushEvery = 1100
     elif fname == 'literature.list.gz': sqldata.flushEvery = 5000
     elif fname == 'business.list.gz': sqldata.flushEvery = 10000
     elif fname == 'biographies.list.gz': sqldata.flushEvery = 5000
@@ -1498,7 +1556,8 @@ def nmmvFiles(fp, funct, fname):
 
 def doNMMVFiles():
     """Files with large sections, about movies and persons."""
-    for fname, start, funct in [('biographies.list.gz',BIO_START,_parseBiography),
+    for fname, start, funct in [
+            ('biographies.list.gz',BIO_START,_parseBiography),
             ('business.list.gz',BUS_START,getBusiness),
             ('laserdisc.list.gz',LSD_START,getLaserDisc),
             ('literature.list.gz',LIT_START,getLiterature),
@@ -1516,6 +1575,44 @@ def doNMMVFiles():
         t('doNMMVFiles(%s)' % fname[:-8].replace('-', ' '))
 
 
+def doMovieCompaniesInfo():
+    """Files with information on a single line about movies,
+    concerning companies."""
+    sqldata = SQLData(table=MovieCompanies,
+                cols=['movieID', 'companyID', 'companyTypeID', 'note'])
+    for dataf in (('distributors.list.gz', DIS_START),
+                    ('miscellaneous-companies.list.gz', MIS_START),
+                    ('production-companies.list.gz', PRO_START),
+                    ('special-effects-companies.list.gz', SFX_START)):
+        try:
+            fp = SourceFile(dataf[0], start=dataf[1])
+        except IOError:
+            continue
+        typeindex = dataf[0][:-8].replace('-', ' ')
+        infoid =  COMP_TYPES[typeindex]
+        count = 0
+        for line in fp:
+            data = unpack(line.strip(), ('title', 'company', 'note'))
+            if not data.has_key('title'): continue
+            if not data.has_key('company'): continue
+            title = data['title']
+            company = data['company']
+            mid = CACHE_MID.addUnique(title)
+            cid = CACHE_COMPID.addUnique(company)
+            note = None
+            if data.has_key('note'):
+                note = data['note']
+            if count % 10000 == 0:
+                print 'SCANNING %s:' % dataf[0][:-8].replace('-', ' '),
+                print _(data['title'])
+            sqldata.add((mid, cid, infoid, note))
+            count += 1
+        sqldata.flush()
+        CACHE_COMPID.flush()
+        fp.close()
+        t('doMovieCompaniesInfo(%s)' % dataf[0][:-8].replace('-', ' '))
+
+
 def doMiscMovieInfo():
     """Files with information on a single line about movies."""
     sqldata = SQLData(table=MovieInfo,
@@ -1523,16 +1620,12 @@ def doMiscMovieInfo():
     for dataf in (('certificates.list.gz',CER_START),
                     ('color-info.list.gz',COL_START),
                     ('countries.list.gz',COU_START),
-                    ('distributors.list.gz',DIS_START),
                     ('genres.list.gz',GEN_START),
                     ('keywords.list.gz',KEY_START),
                     ('language.list.gz',LAN_START),
                     ('locations.list.gz',LOC_START),
-                    ('miscellaneous-companies.list.gz',MIS_START),
-                    ('production-companies.list.gz',PRO_START),
                     ('running-times.list.gz',RUN_START),
                     ('sound-mix.list.gz',SOU_START),
-                    ('special-effects-companies.list.gz',SFX_START),
                     ('technical.list.gz',TCN_START),
                     ('release-dates.list.gz',RELDATE_START)):
         try:
@@ -1545,8 +1638,7 @@ def doMiscMovieInfo():
         elif typeindex == 'language': typeindex = 'languages'
         infoid =  INFO_TYPES[typeindex]
         count = 0
-        if dataf[0] in ('distributors.list.gz', 'locations.list.gz',
-                        'miscellaneous-companies.list.gz'):
+        if dataf[0] == 'locations.list.gz':
             sqldata.flushEvery = 10000
         else:
             sqldata.flushEvery = 20000
@@ -1671,7 +1763,7 @@ CACHE_MID = MoviesCache()
 CACHE_PID = PersonsCache()
 CACHE_CID = CharactersCache()
 CACHE_CID.className = 'CharactersCache'
-
+CACHE_COMPID = CompaniesCache()
 
 def _cmpfunc(x, y):
     """Sort a list of tuples, by the length of the first item (in reverse)."""
@@ -1686,10 +1778,12 @@ MOVIELINK_IDS = []
 KIND_IDS = {}
 KIND_STRS = {}
 CCAST_TYPES = {}
+COMP_TYPES = {}
 
 def readConstants():
     """Read constants from the database."""
-    global INFO_TYPES, MOVIELINK_IDS, KIND_IDS, KIND_STRS, CCAST_TYPES
+    global INFO_TYPES, MOVIELINK_IDS, KIND_IDS, KIND_STRS, \
+            CCAST_TYPES, COMP_TYPES
 
     for x in InfoType.select():
         INFO_TYPES[x.info] = x.id
@@ -1705,12 +1799,16 @@ def readConstants():
     for x in CompCastType.select():
         CCAST_TYPES[x.kind] = x.id
 
+    for x in CompanyType.select():
+        COMP_TYPES[x.kind] = x.id
+
 
 def notNULLimdbID(cls):
     """Return a list of dictionaries for titles or names for which a
     imdbID is present in the database."""
     if cls is Title: cname = 'movies'
     elif cls is Name: cname = 'people'
+    elif cls is CompanyName: cname = 'companies'
     else: cname = 'characters'
     print 'SAVING imdbID values for %s...' % cname,
     sys.stdout.flush()
@@ -1730,6 +1828,10 @@ def notNULLimdbID(cls):
     for t in tons:
         if cls is Title:
             md = get_movie_data(t.id, _kdict)
+        elif cls is CompanyName:
+            md = {'name': t.name}
+            if t.countryCode is not None:
+                md['country'] = t.countryCode
         else:
             md = {'name': t.name}
             if t.imdbIndex is not None:
@@ -1748,6 +1850,9 @@ def restoreImdbID(tons, cls):
     elif cls is Name:
         CACHE = CACHE_PID
         cname = 'people'
+    elif cls is CompanyName:
+        CACHE = CACHE_COMPID
+        cname = 'companies'
     else:
         CACHE = CACHE_CID
         cname = 'characters'
@@ -1757,6 +1862,8 @@ def restoreImdbID(tons, cls):
     for t in tons:
         if cls is Title:
             t_str = build_title(t, canonical=1, ptdf=1)
+        elif cls is CompanyName:
+            t_str = build_company_name(t)
         else:
             t_str = build_name(t, canonical=1)
         t_str = t_str.encode('utf_8')
@@ -1832,8 +1939,11 @@ def run():
     except Exception, e:
         characters_imdbIDs = []
         print 'WARNING: failed to read imdbIDs for characters: %s' % e
-
-    executeCustomQueries('BEFORE_DROP')
+    try:
+        companies_imdbIDs = notNULLimdbID(CompanyName)
+    except Exception, e:
+        companies_imdbIDs = []
+        print 'WARNING: failed to read imdbIDs for companies: %s' % e
 
     # Truncate the current database.
     print 'DROPPING current database...',
@@ -1855,14 +1965,26 @@ def run():
     # Read the constants.
     readConstants()
 
-    executeCustomQueries('BEFORE_CAST')
-
     # Populate the CACHE_MID instance.
     readMovieList()
     # Comment readMovieList() and uncomment the following two lines
     # to keep the current info in the name and title tables.
     ##CACHE_MID.populate()
     t('readMovieList()')
+
+    executeCustomQueries('BEFORE_COMPANIES')
+
+    # distributors, miscellaneous-companies, production-companies,
+    # special-effects-companies.
+    ##CACHE_COMPID.populate()
+    doMovieCompaniesInfo()
+    # Do this now, and free some memory.
+    CACHE_COMPID.flush()
+    restoreImdbID(companies_imdbIDs, CompanyName)
+    del companies_imdbIDs
+    CACHE_COMPID.clear()
+
+    executeCustomQueries('BEFORE_CAST')
 
     # actors, actresses, producers, writers, cinematographers, composers,
     # costume-designers, directors, editors, miscellaneous,
@@ -1885,10 +2007,8 @@ def run():
     # biographies, business, laserdisc, literature, mpaa-ratings-reasons, plot.
     doNMMVFiles()
 
-    # certificates, color-info, countries, distributors, genres, keywords,
-    # language, locations, miscellaneous-companies, production-companies,
-    # running-times, sound-mix, special-effects-companies, technical,
-    # release-dates.
+    # certificates, color-info, countries, genres, keywords,
+    # language, locations, running-times, sound-mix, technical, release-dates.
     doMiscMovieInfo()
     # movie-links.
     doMovieLinks()
@@ -1962,6 +2082,8 @@ def _kdb_handler(signum, frame):
     try: CACHE_PID.flush()
     except IntegrityError: pass
     try: CACHE_CID.flush()
+    except IntegrityError: pass
+    try: CACHE_COMPID.flush()
     except IntegrityError: pass
     print 'DONE! (in %d minutes, %d seconds)' % \
             divmod(int(time.time())-BEGIN_TIME, 60)

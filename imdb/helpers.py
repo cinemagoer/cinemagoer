@@ -4,7 +4,7 @@ helpers module (imdb package).
 This module provides functions not used directly by the imdb package,
 but useful for IMDbPY-based programs.
 
-Copyright 2006-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2006-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base, \
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.Character import Character
+from imdb.Company import Company
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
                                     entcharrefsget, subXMLRefs, subSGMLRefs
 
@@ -64,13 +65,15 @@ re_subst = re.compile(r'%\((.+?)\)s')
 re_conditional = re.compile(r'<if\s+(.+?)\s*>(.+?)</if\s+\1\s*>')
 
 def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
-            joiner=' / ', applyToValues=lambda x: x, _recurse=True):
+               companyTxt=None, joiner=' / ',
+               applyToValues=lambda x: x, _recurse=True):
     """"Return a function useful to pretty-print Movie, Person and
     Character instances.
 
     *movieTxt* -- how to format a Movie object.
     *personTxt* -- how to format a Person object.
     *characterTxt* -- how to format a Character object.
+    *companyTxt* -- how to format a Company object.
     *joiner* -- string used to join a list of objects.
     *applyToValues* -- function to apply to values.
     *_recurse* -- if True (default) manage only the given object.
@@ -82,6 +85,8 @@ def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
         personTxt = '%(long imdb name)s'
     if characterTxt is None:
         characterTxt = '%(long imdb name)s'
+    if companyTxt is None:
+        companyTxt = '%(long imdb name)s'
     def object2txt(obj, _limitRecursion=None):
         """Pretty-print objects."""
         # Prevent unlimited recursion.
@@ -109,6 +114,9 @@ def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
         elif isinstance(obj, Character):
             objData['characterID'] = obj.characterID
             outs = characterTxt
+        elif isinstance(obj, Company):
+            objData['companyID'] = obj.companyID
+            outs = companyTxt
         else:
             return obj
         def _excludeFalseConditionals(matchobj):
@@ -262,11 +270,11 @@ def sortedEpisodes(m, season=None):
 
 
 # Idea and portions of the code courtesy of none none (dclist at gmail.com)
-_re_imdbIDurl = re.compile(r'\b(nm|tt|ch)([0-9]{7})\b')
+_re_imdbIDurl = re.compile(r'\b(nm|tt|ch|co)([0-9]{7})\b')
 def get_byURL(url, info=None, args=None, kwds=None):
-    """Return a Movie, Person or Character object for the given URL; info
-    is the info set to retrieve, args and kwds are respectively a list and
-    a dictionary or arguments to initialize the data access system.
+    """Return a Movie, Person, Character or Company object for the given URL;
+    info is the info set to retrieve, args and kwds are respectively a list
+    and a dictionary or arguments to initialize the data access system.
     Returns None if unable to correctly parse the url; can raise
     exceptions if unable to retrieve the data."""
     if args is None: args = []
@@ -283,6 +291,8 @@ def get_byURL(url, info=None, args=None, kwds=None):
         return ia.get_person(imdbID, info=info)
     elif imdbtype == 'ch':
         return ia.get_character(imdbID, info=info)
+    elif imdbtype == 'co':
+        return ia.get_company(imdbID, info=info)
     return None
 
 

@@ -7,7 +7,7 @@ the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "http" or "web"
 or "html" (this is the default).
 
-Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,15 +29,17 @@ from urllib import FancyURLopener, quote_plus
 from codecs import lookup
 
 from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, \
-        imdbURL_character_main, imdbURL_find
+                imdbURL_character_main, imdbURL_company_main, imdbURL_find
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 
 import searchMovieParser
 import searchPersonParser
 import searchCharacterParser
+import searchCompanyParser
 import movieParser
 import personParser
 import characterParser
+import companyParser
 
 
 class _ModuleProxy:
@@ -226,9 +228,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self.smProxy = _ModuleProxy(searchMovieParser, defaultKeys=_def)
         self.spProxy = _ModuleProxy(searchPersonParser, defaultKeys=_def)
         self.scProxy = _ModuleProxy(searchCharacterParser, defaultKeys=_def)
+        self.scompProxy = _ModuleProxy(searchCompanyParser, defaultKeys=_def)
         self.mProxy = _ModuleProxy(movieParser, defaultKeys=_def)
         self.pProxy = _ModuleProxy(personParser, defaultKeys=_def)
         self.cProxy = _ModuleProxy(characterParser, defaultKeys=_def)
+        self.compProxy = _ModuleProxy(companyParser, defaultKeys=_def)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -252,6 +256,14 @@ class IMDbHTTPAccessSystem(IMDbBase):
             raise IMDbParserError, 'invalid characterID "%s": %s' % \
                     (characterID, e)
 
+    def _normalize_companyID(self, companyID):
+        """Normalize the given companyID."""
+        try:
+            return '%07d' % int(companyID)
+        except ValueError, e:
+            raise IMDbParserError, 'invalid companyID "%s": %s' % \
+                    (companyID, e)
+
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID; in this implementation
         the movieID _is_ the imdbID.
@@ -269,6 +281,12 @@ class IMDbHTTPAccessSystem(IMDbBase):
         the characterID _is_ the imdbID.
         """
         return characterID
+
+    def get_imdbCompanyID(self, companyID):
+        """Translate a companyID in an imdbID; in this implementation
+        the companyID _is_ the imdbID.
+        """
+        return companyID
 
     def get_proxy(self):
         """Return the used proxy or an empty string."""
@@ -302,8 +320,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def _get_search_content(self, kind, ton, results):
         """Retrieve the web page for a given search.
-        kind can be 'tt' (for titles), 'nm' (for names)
-        or 'char' (for characters).
+        kind can be 'tt' (for titles), 'nm' (for names),
+        'char' (for characters) or 'co' (for companies).
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
         if isinstance(ton, unicode):
@@ -574,8 +592,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.scProxy.search_character_parser.parse(cont,
                                                     results=results)['data']
 
-    def get_character_main(self, personID):
-        cont = self._retrieve(imdbURL_character_main % personID)
+    def get_character_main(self, characterID):
+        cont = self._retrieve(imdbURL_character_main % characterID)
         ret = self.cProxy.character_main_parser.parse(cont)
         ret['info sets'] = ('main', 'filmography')
         return ret
@@ -596,5 +614,15 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(imdbURL_character_main % characterID + 'quotes')
         return self.cProxy.character_quotes_parser.parse(cont,
                                                     getRefs=self._getRefs)
+
+    def _search_company(self, name, results):
+        cont = self._get_search_content('co', name, results)
+        return self.scompProxy.search_company_parser.parse(cont,
+                                                    results=results)['data']
+
+    def get_company_main(self, companyID):
+        cont = self._retrieve(imdbURL_company_main % companyID)
+        ret = self.compProxy.company_main_parser.parse(cont)
+        return ret
 
 

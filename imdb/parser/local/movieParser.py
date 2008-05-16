@@ -5,7 +5,7 @@ This module provides the functions used to parse the
 information about movies in a local installation of the
 IMDb database.
 
-Copyright 2004-2006 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -199,6 +199,17 @@ _lit = {'SCRP': 'screenplay/teleplay',
 def getLiterature(movieID, indexF, dataF):
     """Return literature information for a movie."""
     return _parseColonList(movieID, indexF, dataF, 'MOVI: ', _lit)
+
+
+def getMPAA(movieID, indexF, dataF):
+    """Return MPAA reason information for a movie."""
+    try:
+        return _parseColonList(movieID, indexF, dataF, 'MV: ', {'RE': 'mpaa'})
+    except IMDbDataAccessError:
+        import warnings
+        warnings.warn('MPAA info not accessible; please run the '
+                    'mpaa4local.py script.')
+        return {}
 
 
 _bus = {'BT': 'budget',

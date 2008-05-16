@@ -50,7 +50,6 @@ class Movie(_Container):
                 'created by': 'creator',
                 'writing credits': 'writer',
                 'produced by':  'producer',
-                #'composer': 'original music',
                 'original music by':    'original music',
                 'non-original music by':    'non-original music',
                 'music':    'original music',
@@ -64,15 +63,14 @@ class Movie(_Container):
                 'casting by':   'casting director',
                 'casting':  'casting director',
                 'art direction by': 'art direction',
-                #'art director': 'art direction',
                 'set decoration by':    'set decoration',
-                #'set decorator': 'set decoration',
                 'costume design by':    'costume designer',
                 'costume design':    'costume designer',
                 'makeup department':    'make up',
                 'makeup':    'make up',
                 'make-up':    'make up',
                 'production management':    'production manager',
+                'production company':    'production companies',
                 'second unit director or assistant director':
                                                 'assistant director',
                 'second unit director':   'assistant director',
@@ -80,6 +78,7 @@ class Movie(_Container):
                 'costume and wardrobe department': 'costume department',
                 'special effects by':   'special effects',
                 'visual effects by':    'visual effects',
+                'special effects company':   'special effects companies',
                 'stunts':   'stunt performer',
                 'other crew':   'miscellaneous crew',
                 'misc crew':   'miscellaneous crew',
@@ -88,6 +87,9 @@ class Movie(_Container):
                 'crew members': 'miscellaneous crew',
                 'other companies': 'miscellaneous companies',
                 'misc companies': 'miscellaneous companies',
+                'miscellaneous company': 'miscellaneous companies',
+                'misc company': 'miscellaneous companies',
+                'other company': 'miscellaneous companies',
                 'aka':  'akas',
                 'also known as':    'akas',
                 'country':  'countries',
@@ -109,6 +111,7 @@ class Movie(_Container):
                 'distributor': 'distributors',
                 'distribution': 'distributors',
                 'distribution companies': 'distributors',
+                'distribution company': 'distributors',
                 'guest': 'guests',
                 'guest appearances': 'guests',
                 'tv guests': 'guests',
@@ -244,6 +247,7 @@ class Movie(_Container):
         or if the the given Character is represented in this Movie."""
         from Person import Person
         from Character import Character
+        from Company import Company
         if isinstance(item, Person):
             for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
                             toDescend=(ListType, DictType, TupleType, Movie)):
@@ -253,6 +257,11 @@ class Movie(_Container):
             for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
                             toDescend=(ListType, DictType, TupleType, Movie)):
                 if item.isSame(p.currentRole):
+                    return 1
+        elif isinstance(item, Company):
+            for c in flatten(self.data, yieldDictKeys=1, scalar=Company,
+                            toDescend=(ListType, DictType, TupleType, Movie)):
+                if item.isSame(c):
                     return 1
         return 0
 

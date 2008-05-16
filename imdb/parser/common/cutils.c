@@ -513,6 +513,77 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 }
 
 
+/* Search for the 'name1' in the key file keyFileName, returning at
+ * most nrResults results.
+ */
+static PyObject*
+search_company_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
+{
+    char *keyFileName = NULL;
+    char *name1 = NULL;
+    float ratio;
+    FILE *keyFile;
+    char line[MXLINELEN+1];
+    char origLine[MXLINELEN+1];
+    char *cp;
+    char *key;
+    short withoutCountry = 1;
+    unsigned int nrResults = 0;
+    static char *argnames[] = {"keyFile", "name1", "results", NULL};
+    float var = 0.0;
+    PyObject *result = PyList_New(0);
+
+    if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|i",
+                argnames, &keyFileName, &name1, &nrResults))
+        return NULL;
+
+    if (strlen(name1) > MXLINELEN)
+        return Py_BuildValue("O", result);
+    strtolower(name1);
+
+    if ((keyFile = fopen(keyFileName, "r")) == NULL) {
+        PyErr_SetFromErrno(PyExc_IOError);
+        return NULL;
+    }
+
+    if (line[strlen(line)-1] == ']')
+	    withoutCountry = 0;
+
+    while (fgets(line, MXLINELEN+1, keyFile) != NULL) {
+        /* Split a "origLine|key" line. */
+        if ((cp = strrchr(line, FSEP)) != NULL) {
+            *cp = '\0';
+            key = cp+1;
+            strcpy(origLine, line);
+        } else { continue; }
+	var = 0.0;
+        /* Strip the optional countryCode, if required. */
+        if (withoutCountry && (cp = strrchr(line, '[')) != NULL) {
+            *(cp-1) = '\0';
+	    var = -0.05;
+	}
+
+	strtolower(line);
+
+        ratio = ratcliff(name1, line) + var;
+
+        if (ratio >= RO_THRESHOLD)
+            PyList_Append(result, Py_BuildValue("(dis)",
+                            ratio, strtol(key, NULL, 16), origLine));
+    }
+
+    fclose(keyFile);
+
+    PyObject_CallMethod(result, "sort", NULL);
+    PyObject_CallMethod(result, "reverse", NULL);
+
+    if (nrResults > 0)
+        PySequence_DelSlice(result, nrResults, PySequence_Size(result));
+
+    return Py_BuildValue("O", result);
+}
+
+
 /*========== tv series episodes ==========*/
 /* Return a list of pairs (movieID, "long imdb episode title") with
  * every episode of the given series. */
@@ -664,6 +735,8 @@ static PyMethodDef cutils_methods[] = {
         METH_KEYWORDS, "Search for a person name."},
     {"search_title", (PyCFunction) search_title,
         METH_KEYWORDS, "Search for a movie title."},
+    {"search_company_name", (PyCFunction) search_company_name,
+        METH_KEYWORDS, "Search for a company name."},
     {"get_episodes", get_episodes,
         METH_VARARGS, "Return a list of episodes of the given series."},
     {"soundex", pysoundex,

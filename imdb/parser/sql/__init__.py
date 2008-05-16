@@ -35,12 +35,13 @@ from dbschema import *
 
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                     scan_names, scan_titles, titleVariations, \
-                    nameVariations, merge_roles
+                    nameVariations, merge_roles, scan_company_names
 from imdb.utils import normalizeTitle, normalizeName, build_title, \
                         build_name, analyze_name, analyze_title, \
-                        re_episodes, _articles
+                        build_company_name, re_episodes, _articles
 from imdb.Person import Person
 from imdb.Movie import Movie
+from imdb.Company import Company
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 
 try:
@@ -195,6 +196,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         for inf in InfoType.select():
             self._info[inf.id] = str(inf.info)
             self._infoRev[str(inf.info)] = inf.id
+        self._compType = {}
+        for cType in CompanyType.select():
+            self._compType[cType.id] = cType.kind
         info = [(it.id, it.info) for it in InfoType.select()]
         self._compcast = {}
         for cc in CompCastType.select():
@@ -295,6 +299,14 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbError, 'characterID "%s" can\'t be converted to integer' \
                             % characterID
 
+    def _normalize_companyID(self, companyID):
+        """Normalize the given companyID."""
+        try:
+            return int(companyID)
+        except (ValueError, OverflowError):
+            raise IMDbError, 'companyID "%s" can\'t be converted to integer' \
+                            % companyID
+
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID.
         If not in the database, try an Exact Primary Title search on IMDb;
@@ -348,6 +360,23 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         imdbID = self.character2imdbID(namline)
         if imdbID is not None:
             try: character.imdbID = int(imdbID)
+            except: pass
+        return imdbID
+
+    def get_imdbCompanyID(self, companyID):
+        """Translate a companyID in an imdbID.
+        If not in the database, try an Exact Primary Name search on IMDb;
+        return None if it's unable to get the imdbID.
+        """
+        try: company = CompanyName.get(companyID)
+        except SQLObjectNotFound: return None
+        imdbID = company.imdbID
+        if imdbID is not None: return '%07d' % imdbID
+        n_dict = {'name': company.name, 'country': company.countryCode}
+        namline = build_company_name(n_dict)
+        imdbID = self.company2imdbID(namline)
+        if imdbID is not None:
+            try: company.imdbID = int(imdbID)
             except: pass
         return imdbID
 
@@ -496,6 +525,22 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 data = mdata[1]
                 if mdata[2]: data += '::%s' % mdata[2]
                 res.setdefault(sect, []).append(data)
+        # Companies info about a movie.
+        cinfo = [(self._compType[m.companyTypeID], m.companyID, m.note) for m
+                in MovieCompanies.select(MovieCompanies.q.movieID == movieID)]
+        cinfo = _groupListBy(cinfo, 0)
+        for group in cinfo:
+            sect = group[0][0]
+            for mdata in group:
+                cDb = CompanyName.get(mdata[1])
+                cDbTxt = cDb.name
+                if cDb.countryCode:
+                    cDbTxt += ' %s' % cDb.countryCode
+                company = Company(name=cDbTxt,
+                                companyID=mdata[1],
+                                notes=mdata[2] or u'',
+                                accessSystem=self.accessSystem)
+                res.setdefault(sect, []).append(company)
         # AKA titles.
         akat = [(get_movie_data(at.id, self._kind, fromAka=1), at.note)
                 for at in AkaTitle.select(AkaTitle.q.movieID == movieID)]
@@ -869,6 +914,70 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
 
     get_character_filmography = get_character_main
     get_character_biography = get_character_main
+
+    def _search_company(self, name, results):
+        name = name.strip()
+        if not name: return []
+        if isinstance(name, UnicodeType):
+            name = name.encode('ascii', 'ignore')
+        soundexCode = soundex(name)
+        # If the soundex is None, compare only with the first
+        # phoneticCode column.
+        if soundexCode is None:
+            condition = ISNULL(CompanyName.q.namePcodeNf)
+        else:
+            if name.endswith(']'):
+                condition = CompanyName.q.namePcodeSf == soundexCode
+            else:
+                condition = CompanyName.q.namePcodeNf == soundexCode
+        try:
+            qr = [(q.id, {'name': q.name, 'country': q.countryCode})
+                    for q in CompanyName.select(condition)]
+        except SQLObjectNotFound, e:
+            raise IMDbDataAccessError, \
+                    'unable to search the database: "%s"' % str(e)
+        qr[:] = [(x[0], build_company_name(x[1])) for x in qr]
+        res = scan_company_names(qr, name, results)
+        res[:] = [x[1] for x in res]
+        # Purge empty country keys.
+        returnl = []
+        for x in res:
+            tmpd = x[1]
+            country = tmpd.get('country')
+            if country is None and tmpd.has_key('country'):
+                del tmpd['country']
+            returnl.append((x[0], tmpd))
+        return returnl
+
+    def get_company_main(self, companyID, results=0):
+        # Every company information is retrieved from here.
+        infosets = self.get_company_infoset()
+        try:
+            c = CompanyName.get(companyID)
+        except SQLObjectNotFound, e:
+            raise IMDbDataAccessError, \
+                    'unable to get companyID "%s": "%s"' % (companyID, e)
+        res = {'name': c.name, 'country': c.countryCode}
+        if res['country'] is None: del res['country']
+        if not res:
+            raise IMDbDataAccessError, 'unable to get companyID "%s"' % \
+                                        companyID
+        # Collect filmography information.
+        items = MovieCompanies.select(MovieCompanies.q.companyID == companyID)
+        if results > 0:
+            items = items[:results]
+        filmodata = [(cd.movieID, cd.companyID,
+                    self._compType[cd.companyTypeID], cd.note,
+                    get_movie_data(cd.movieID, self._kind)) for cd in items]
+        filmodata = _groupListBy(filmodata, 2)
+        for group in filmodata:
+            ctype = group[0][2]
+            for movieID, companyID, ctype, note, movieData in group:
+                movie = Movie(data=movieData, movieID=movieID,
+                            notes=note or u'', accessSystem=self.accessSystem)
+                res.setdefault(ctype, []).append(movie)
+            res.get(ctype, []).sort()
+        return {'data': res, 'info sets': infosets}
 
     def __del__(self):
         """Ensure that the connection is closed."""

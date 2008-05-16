@@ -197,13 +197,16 @@ def build_person(txt, personID=None, billingPos=None,
 # To shrink spaces.
 re_spaces = re.compile(r'\s+')
 def build_movie(txt, movieID=None, roleID=None, status=None,
-                accessSystem='http', modFunct=None, _parsingCharacter=False):
+                accessSystem='http', modFunct=None, _parsingCharacter=False,
+                _parsingCompany=False):
     """Given a string as normally seen on the "categorized" page of
     a person on the IMDb's web site, returns a Movie instance."""
-    if not _parsingCharacter:
-        _defSep = '....'
-    else:
+    if _parsingCharacter:
         _defSep = ' Played by '
+    elif _parsingCompany:
+        _defSep = ' ... '
+    else:
+        _defSep = '....'
     title = re_spaces.sub(' ', txt).strip()
     # Split the role/notes from the movie title.
     tsplit = title.split(_defSep, 1)
@@ -283,10 +286,10 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
 class ParserBase(SGMLParser):
     """Base parser to handle HTML data from the IMDb's web server."""
     # The imdbID is a 7-ciphers number.
-    re_imdbID = re.compile(r'(?<=nm|tt|ch)([0-9]{7})\b')
+    re_imdbID = re.compile(r'(?<=nm|tt|ch|co)([0-9]{7})\b')
     re_imdbIDonly = re.compile(r'\b([0-9]{7})\b')
     re_airdate = re.compile(r'(.*)\s*\(season (\d+), episode (\d+)\)', re.I)
-    _re_imdbIDmatch = re.compile(r'(nm|tt|ch)[0-9]{7}/?$')
+    _re_imdbIDmatch = re.compile(r'(nm|tt|ch|co)[0-9]{7}/?$')
 
     # It's set when names and titles references must be collected.
     # It can be set to 0 for search parsers.

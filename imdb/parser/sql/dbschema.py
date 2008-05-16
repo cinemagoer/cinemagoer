@@ -42,6 +42,10 @@ class KindType(SQLObject):
     """this table is for values like 'movie', 'tv series', 'video games'..."""
     kind = UnicodeCol(length=15, default=None, alternateID=True)
 
+class CompanyType(SQLObject):
+    """this table is for values like 'production companies'."""
+    kind = UnicodeCol(length=32, default=None, alternateID=True)
+
 class AkaTitle(SQLObject):
     # XXX: It's safer to set notNone to False, here.
     #      alias for akas are stored completely in the AkaTitle table;
@@ -99,6 +103,12 @@ class MovieInfo(SQLObject):
     info = UnicodeCol(notNone=True)
     note = UnicodeCol(default=None)
 
+class MovieCompanies(SQLObject):
+    movieID = IntCol(notNone=True)
+    companyID = IntCol(notNone=True)
+    companyTypeID = IntCol(notNone=True)
+    note = UnicodeCol(default=None)
+
 class Name(SQLObject):
     """
     namePcodeCf is the soundex of the name in the canonical format.
@@ -125,6 +135,18 @@ class CharName(SQLObject):
     namePcodeNf = StringCol(length=5, default=None)
     surnamePcode = StringCol(length=5, default=None)
 
+class CompanyName(SQLObject):
+    """
+    namePcodeNf is the soundex of the name in the normal format.
+    namePcodeSf is the soundex of the name plus the country code.
+    """
+    name = UnicodeCol(notNone=True)
+    # Maybe a little too long.
+    countryCode = UnicodeCol(length=255, default=None)
+    imdbID = IntCol(default=None)
+    namePcodeNf = StringCol(length=5, default=None)
+    namePcodeSf = StringCol(length=5, default=None)
+
 class PersonInfo(SQLObject):
     personID = IntCol(notNone=True)
     infoTypeID = IntCol(notNone=True)
@@ -149,9 +171,9 @@ class Title(SQLObject):
     seriesYears = StringCol(length=49, default=None)
 
 
-DB_TABLES = [Name, CharName, KindType, Title, AkaName, AkaTitle, RoleType,
-        CastInfo, CompCastType, CompleteCast, InfoType, LinkType, MovieLink,
-        MovieInfo, PersonInfo]
+DB_TABLES = [Name, CharName, CompanyName, KindType, Title, CompanyType,
+        AkaName, AkaTitle, RoleType, CastInfo, CompCastType, CompleteCast,
+        InfoType, LinkType, MovieLink, MovieInfo, MovieCompanies, PersonInfo]
 
 def setConnection(uri, debug=False):
     """Set connection for every table."""
@@ -189,18 +211,19 @@ def createTables(connectURI=None, ifNotExists=True):
     for kind in ('movie', 'tv series', 'tv movie', 'video movie',
                 'tv mini series', 'video game', 'episode'):
         KindType(kind=kind)
-    INFOS = ('runtimes', 'color info', 'genres', 'distributors', 'languages',
-            'certificates', 'special effects companies', 'sound mix',
-            'tech info', 'production companies', 'countries', 'taglines',
-            'keywords', 'alternate versions', 'crazy credits', 'goofs',
-            'soundtrack', 'quotes', 'release dates', 'trivia', 'locations',
-            'miscellaneous companies', 'mini biography', 'birth notes',
-            'birth date', 'height', 'death date', 'spouse', 'other works',
-            'birth name', 'salary history', 'nick names', 'books',
-            'agent address', 'biographical movies', 'portrayed', 'where now',
-            'trademarks', 'interviews', 'articles', 'magazine covers',
-            'pictorials', 'death notes', 'LD disc format', 'LD year',
-            'LD digital sound', 'LD official retail price',
+    for ckind in ('distributors', 'production companies',
+                'special effects companies', 'miscellaneous companies'):
+        CompanyType(kind=ckind)
+    INFOS = ('runtimes', 'color info', 'genres', 'languages', 'certificates',
+            'sound mix', 'tech info', 'countries', 'taglines', 'keywords',
+            'alternate versions', 'crazy credits', 'goofs', 'soundtrack',
+            'quotes', 'release dates', 'trivia', 'locations', 'mini biography',
+            'birth notes', 'birth date', 'height', 'death date', 'spouse',
+            'other works', 'birth name', 'salary history', 'nick names',
+            'books', 'agent address', 'biographical movies', 'portrayed',
+            'where now', 'trademarks', 'interviews', 'articles',
+            'magazine covers', 'pictorials', 'death notes', 'LD disc format',
+            'LD year', 'LD digital sound', 'LD official retail price',
             'LD frequency response', 'LD pressing plant', 'LD length',
             'LD language', 'LD review', 'LD spaciality', 'LD release date',
             'LD production country', 'LD contrast', 'LD color rendition',
@@ -267,6 +290,9 @@ def createIndexes(ifNotExists=True, connectURI=None):
         (CompleteCast, [DatabaseIndex('movieID', name='idx_mid')]),
         (MovieLink, [DatabaseIndex('movieID', name='idx_mid')]),
         (MovieInfo, [DatabaseIndex('movieID', name='idx_mid')]),
+        (MovieCompanies, [
+                    DatabaseIndex('movieID', name='idx_mid'),
+                    DatabaseIndex('companyID', name='idx_cid')]),
         (Name, [DatabaseIndex({'column': 'name', 'length': 6},
                                 name='idx_name'),
                 DatabaseIndex('namePcodeCf', name='idx_pcodecf'),
@@ -278,6 +304,11 @@ def createIndexes(ifNotExists=True, connectURI=None):
                 DatabaseIndex('surnamePcode', name='idx_pcode')]),
 
         (PersonInfo, [DatabaseIndex('personID', name='idx_pid')]),
+        (CompanyName, [
+                    DatabaseIndex({'column': 'name', 'length': 6},
+                                name='idx_name'),
+                    DatabaseIndex('namePcodeNf', name='idx_pcodenf'),
+                    DatabaseIndex('namePcodeSf', name='idx_pcodesf')]),
         (Title, [DatabaseIndex({'column': 'title', 'length': 10},
                                 name='idx_title'),
                 DatabaseIndex('phoneticCode', name='idx_pcode'),

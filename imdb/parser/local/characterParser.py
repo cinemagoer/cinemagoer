@@ -5,7 +5,7 @@ This module provides the functions used to parse the
 information about characters in a local installation of the
 IMDb database.
 
-Copyright 2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2007-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,7 +34,8 @@ def getCharacterName(characterID, charIF, charDF):
         ifptr = open(charIF, 'rb')
     except (anydbm.error, IOError), e:
         import warnings
-        warnings.warn('Unable to access characters information: %s' % e)
+        warnings.warn('Unable to access characters information, '
+                        'please run the characters4local.py script: %s' % e)
         return None
     ifptr.seek(4L*characterID)
     piddata = ifptr.read(4)
@@ -46,7 +47,8 @@ def getCharacterName(characterID, charIF, charDF):
         dfptr = open(charDF, 'rb')
     except (anydbm.error, IOError), e:
         import warnings
-        warnings.warn('Unable to access characters information: %s' % e)
+        warnings.warn('Unable to access characters information, '
+                        'please run the characters4local.py script: %s' % e)
         return None
     dfptr.seek(idx)
     # Check characterID.
@@ -66,7 +68,8 @@ def getCharacterFilmography(characterID, charIF, charDF, movieIF, movieKF,
         ifptr = open(charIF, 'rb')
     except (anydbm.error, IOError), e:
         import warnings
-        warnings.warn('Unable to access characters information: %s' % e)
+        warnings.warn('Unable to access characters information, '
+                    'please run the characters4local.py script: %s' % e)
         return None
     ifptr.seek(4L*characterID)
     piddata = ifptr.read(4)
@@ -78,7 +81,8 @@ def getCharacterFilmography(characterID, charIF, charDF, movieIF, movieKF,
         dfptr = open(charDF, 'rb')
     except (anydbm.error, IOError), e:
         import warnings
-        warnings.warn('Unable to access characters information: %s' % e)
+        warnings.warn('Unable to access characters information, '
+                        'please run the characters4local.py script: %s' % e)
         return None
     dfptr.seek(idx)
     # Check characterID.
@@ -121,7 +125,8 @@ def getCharacterID(name, charNF):
         dbfile = anydbm.open(charNF, 'r')
     except (anydbm.error, IOError), e:
         import warnings
-        warnings.warn('Unable to access characters information: %s' % e)
+        warnings.warn('Unable to access characters information, '
+                    'please run the characters4local.py script: %s' % e)
         return None
     chID = dbfile.get(name.encode('latin_1', 'ignore'), None)
     dbfile.close()
@@ -136,7 +141,8 @@ def getCharactersIDs(names_string, charNF):
         dbfile = anydbm.open(charNF, 'r')
     except (anydbm.error, IOError), e:
         import warnings
-        warnings.warn('Unable to access characters information: %s' % e)
+        warnings.warn('Unable to access characters information, '
+                'please run the characters4local.py script: %s' % e)
         return [names_string, None]
     names = [nm.strip() for nm in names_string.split('/')]
     chids = [_convChID(dbfile.get(nm.encode('latin_1', 'ignore'), None))

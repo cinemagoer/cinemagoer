@@ -8,7 +8,7 @@ E.g., for when searching for the title "the passion", the parsed
 page would be:
     http://akas.imdb.com/find?q=the+passion&tt=on&mx=20
 
-Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.utils import analyze_title, analyze_name
+from imdb.utils import analyze_title, analyze_name, analyze_company_name
 from utils import ParserBase
 from imdb.Movie import Movie
 
@@ -153,6 +153,11 @@ def _dontChange(s, *args, **kwds):
     """Return the name (useful for characters objects)."""
     return {'name': s}
 
+def _analyze_company_name(n, *args, **kwds):
+    """analyze_company_name doesn't accept the 'canonical' paramter."""
+    return analyze_company_name(n, stripNotes=True)
+
+
 class HTMLSearchMovieParser(ParserBase):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, for both movies and persons."""
@@ -171,7 +176,12 @@ class HTMLSearchMovieParser(ParserBase):
         'character':
             {'analyze_f': _dontChange,
             'link': '/character',
-            'in title': 'imdb search'}
+            'in title': 'imdb search'},
+
+        'company':
+            {'analyze_f': _analyze_company_name,
+            'link': '/company',
+            'in title': 'imdb company search'}
     }
 
     def _init(self):

@@ -31,7 +31,8 @@ import re
 from imdb import imdbURL_base
 from imdb.Person import Person
 from imdb.Movie import Movie
-from imdb.utils import analyze_title
+from imdb.Company import Company
+from imdb.utils import analyze_title, split_company_name_notes
 from utils import ParserBase, build_person
 
 
@@ -68,11 +69,11 @@ _SECT_CONV = {
 _SECT_KEEP = _SECT_CONV.values() + ['cast', 'original music', 'tv series',
             'mpaa', 'non-original music', 'art direction', 'set decoration',
             'art department', 'special effects', 'visual effects', 'sound mix',
-            'camera and electrical department',
-            'production notes/status', 'production design',
-            'transportation department', 'editorial department',
-            'casting department', 'animation department',
-            'original air date', 'status', 'comments', 'status updated', 'note']
+            'camera and electrical department', 'production notes/status',
+            'production design', 'transportation department',
+            'editorial department', 'casting department',
+            'animation department', 'original air date', 'status', 'comments',
+            'status updated', 'note']
 
 
 class HTMLMovieParser(ParserBase):
@@ -110,9 +111,10 @@ class HTMLMovieParser(ParserBase):
         # Movie status.
         self._in_production_notes = False
         self._status_sect = u''
-        # Last movieID/personID/characterID seen.
+        # Last movieID/personID/characterID/companyID seen.
         self._last_movie_id = None
         self._last_person_id = None
+        self._last_company_id = None
         self._cids = []
         # Counter for the billing position.
         self._billingPos = 1
@@ -130,7 +132,7 @@ class HTMLMovieParser(ParserBase):
         self._in_small = False
         # Companies information are stored slightly differently.
         self._in_blackcatheader = False
-        self._in_post_blackcatheader = False
+        self._in_company_info = False
 
     def get_data(self):
         return self._data
@@ -180,7 +182,7 @@ class HTMLMovieParser(ParserBase):
                 # categories at will.
                 self._section = str(cs)
                 self._keep = True
-            elif not self._in_post_blackcatheader:
+            elif not self._in_company_info:
                 # This is not a companies information, so it's ok to
                 # discard it.
                 cs = u''
@@ -208,6 +210,7 @@ class HTMLMovieParser(ParserBase):
         self._section = u''
         self._billingPos = 1
         self._last_person_id = None
+        self._last_company_id = None
         self._cids = []
 
     def end_h5(self):
@@ -261,9 +264,10 @@ class HTMLMovieParser(ParserBase):
         # Companies information are stored in section enclosed in b tags
         # with class=blackcatheader.
         self._in_b = True
-        self._in_post_blackcatheader = False
+        self._in_company_info = False
         if self.get_attr_value(attrs, 'class') == 'blackcatheader':
             self._in_blackcatheader = True
+            self._last_company_id = None
             self._keep = False
             self._section = u''
 
@@ -272,8 +276,15 @@ class HTMLMovieParser(ParserBase):
         if self._in_blackcatheader:
             self._in_blackcatheader = False
             self._keep = True
-            self._in_post_blackcatheader = True
+            self._in_company_info = True
             self._manage_section()
+
+    def start_ul(self, attrs): pass
+
+    def end_ul(self):
+        if self._in_company_info:
+            self._in_company_info = False
+            self._last_company_id = None
 
     def start_li(self, attrs):
         # Most of companies info are in li tags.
@@ -281,7 +292,7 @@ class HTMLMovieParser(ParserBase):
 
     def end_li(self):
         self._in_li = False
-        if self._in_post_blackcatheader and self._section:
+        if self._in_company_info and self._section:
             self._add_info()
 
     def start_small(self, attrs):
@@ -370,9 +381,7 @@ class HTMLMovieParser(ParserBase):
         elif self._section in ('countries', 'genres', 'languages', 'runtimes',
                                 'color info', 'sound mix', 'certificates'):
             if self._section == 'runtimes':
-                ct = ct.replace(' min', u'')##.replace(' (', '::(')
-            ##elif self._section == 'certificates':
-            ##    ct = ct.replace(' (', '::(')
+                ct = ct.replace(' min', u'')
             splitted_info = ct.split(' | ')
             splitted_info[:] = [x.strip() for x in splitted_info]
             splitted_info[:] = filter(None, splitted_info)
@@ -380,9 +389,12 @@ class HTMLMovieParser(ParserBase):
                                 for x in splitted_info]
             if not self._data.has_key(self._section):
                 self._data[self._section] = splitted_info
-        elif self._section == 'miscellaneous companies':
-            self._data.setdefault(self._section,
-                                    []).append(ct.replace('  ', '::', 1))
+        elif self._in_company_info and self._last_company_id:
+            name, notes = split_company_name_notes(ct)
+            company = Company(name=name, notes=notes,
+                            accessSystem=self._as,
+                            companyID=self._last_company_id)
+            self._data.setdefault(self._section, []).append(company)
         elif self._section != 'cast':
             self._data.setdefault(self._section, []).append(ct)
         self._cur_txt = u''
@@ -478,6 +490,10 @@ class HTMLMovieParser(ParserBase):
             if cur_id:
                 lid = cur_id[-1]
                 self._cids.append(lid)
+        elif self._in_company_info and href.startswith('/company/co'):
+            cur_id = self.re_imdbID.findall(href)
+            if cur_id:
+                self._last_company_id = cur_id[-1]
         elif self.mdparse and href.startswith('fullcredits#'):
             # The "more" link at the end of the cast.
             self._in_tr = False

@@ -1,7 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.6.cvs20080505 "Iron Man" (05 May 2008)
+* What's the new in release 3.6.cvs20080516 "Saw IV" (16 May 2008)
+  [general]
+  - support for company objects for every data access systems!
+
   [http and mobile]
   - changes to support the new HTML for "plot outile" and
     some lists of values (languages, genres, ...)

@@ -29,16 +29,19 @@ import os
 from stat import ST_SIZE
 
 from imdb._exceptions import IMDbDataAccessError, IMDbError
-from imdb.utils import analyze_title, analyze_name, re_episodes, normalizeName
+from imdb.utils import analyze_title, analyze_name, re_episodes, \
+                        normalizeName, analyze_company_name, \
+                        split_company_name_notes
 
-from imdb.Person import Person
 from imdb.Movie import Movie
+from imdb.Company import Company
 from personParser import getFilmography, getBio, getAkaNames
 from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
                         getPlot, getRatingData, getMovieMisc, getTaglines, \
                         getQuotes, getMovieLinks, getBusiness, getLiterature, \
-                        getLaserdisc
+                        getLaserdisc, getMPAA
 from characterParser import getCharacterName, getCharacterFilmography
+from companyParser import getCompanyName, getCompanyFilmography, getCompanyID
 from utils import getFullIndex, KeyFScan, latin2utf
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                                 merge_roles, titleVariations, nameVariations
@@ -184,6 +187,45 @@ except ImportError:
         return scan_titles(_readTitlesKeyFile(keyFile, searchingEpisode=se),
                             title1, title2, title3, results)
 
+try:
+    from imdb.parser.common.cutils import search_company_name
+
+    def _scan_company_names(keyFile, name1, results=0):
+        """Scan the given file, using the cutils.search_company_name
+        C function, for a given name."""
+        name1 = name1.encode('latin_1', 'replace')
+        st = search_company_name(keyFile, name1, results)
+        res = []
+        for x in st:
+            tmpd = analyze_company_name(latin2utf(x[2]))
+            res.append((x[0], (x[1], tmpd)))
+        return res
+except ImportError:
+    import warnings
+    warnings.warn('Unable to import the cutils.search_company_name function.'
+                    '  Searching company names using the "local" data access'
+                    ' system will be a bit slower.')
+
+    from imdb.parser.common.locsql import scan_company_names
+
+    def _readCompanyNamsKeyFile(keyFile):
+        """Iterate over the given file, returning tuples suited for
+        the common.locsql.scan_company_names function."""
+        try: kf = open(keyFile, 'r')
+        except IOError, e: raise IMDbDataAccessError, str(e)
+        for line in kf:
+            ls = line.split('|')
+            n = ls[0]
+            if not n: continue
+            yield (long(ls[1], 16), latin2utf(n))
+        kf.close()
+
+    def _scan_company_names(keyFile, name, results=0):
+        """Scan the given file, using the common.locsql.scan_company_names
+        pure-Python function, for the given company name."""
+        return scan_company_names(_readCompanyNamsKeyFile(keyFile),
+                                name, results)
+
 
 class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
     """The class used to access IMDb's data through a local installation."""
@@ -252,6 +294,13 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbError, 'characterID "%s" can\'t be converted to integer' \
                             % characterID
 
+    def _normalize_companyID(self, companyID):
+        """Normalize the given companyID."""
+        try:
+            return int(companyID)
+        except (ValueError, OverflowError):
+            raise IMDbError, 'companyID "%s" can\'t be converted to integer' \
+                            % companyID
 
     def _get_real_movieID(self, movieID):
         """Handle title aliases."""
@@ -298,6 +347,18 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not name:
             return None
         return self.character2imdbID(name)
+
+    def get_imdbCompanyID(self, companyID):
+        """Translate a companyID in an imdbID.
+        Try an Exact Primary Name search on IMDb;
+        return None if it's unable to get the imdbID.
+        """
+        name = getCompanyName(companyID,
+                                '%scompanies.index' % self.__db,
+                                '%scompanies.data' % self.__db)
+        if not name:
+            return None
+        return self.company2imdbID(name)
 
     def do_adult_search(self, doAdult):
         """If set to 0 or False, movies in the Adult category are not
@@ -401,6 +462,15 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 'attrIF': '%sattributes.index' % self.__db,
                 'attrKF': '%sattributes.key' % self.__db}
             data = getMovieMisc(**params)
+            if name in ('distributors', 'special effects companies',
+                        'production companies'):
+                for nitem in xrange(len(data)):
+                    n, notes = split_company_name_notes(data[nitem])
+                    company = Company(name=n, companyID=getCompanyID(n,
+                                        '%scompany2id.index' % self.__db),
+                                        notes=notes,
+                                        accessSystem=self.accessSystem)
+                    data[nitem] = company
             if data: res[name] = data
         if res.has_key('runtimes') and len(res['runtimes']) > 0:
             rt = res['runtimes'][0]
@@ -439,6 +509,10 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 year = getFullIndex('%smovies.data' % self.__db,
                                     movieID, kind='moviedata', rindex=1)
                 if year: res['year'] = year
+        # MPAA info.
+        mpaa = getMPAA(movieID, '%smpaa-ratings-reasons.index' % self.__db,
+                        '%smpaa-ratings-reasons.data' % self.__db)
+        if mpaa: res.update(mpaa)
         return {'data': res, 'info sets': infosets}
 
     def get_movie_plot(self, movieID):
@@ -513,6 +587,29 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
             'attrKF': '%sattributes.key' % self.__db}
         data = getMovieMisc(**params)
         if data: return {'data': {'release dates': data}}
+        return {'data': {}}
+
+    def get_movie_miscellaneous_companies(self, movieID):
+        params = {'movieID': movieID,
+            'dataF': '%smiscellaneous-companies.data' % self.__db,
+            'indexF': '%smiscellaneous-companies.index' % self.__db,
+            'attrIF': '%sattributes.index' % self.__db,
+            'attrKF': '%sattributes.key' % self.__db}
+        try:
+            data = getMovieMisc(**params)
+        except IMDbDataAccessError:
+            import warnings
+            warnings.warn('miscellaneous-companies files not found; '
+                            'run the companies4local.py script.')
+            return {'data': {}}
+        for nitem in xrange(len(data)):
+            n, notes = split_company_name_notes(data[nitem])
+            company = Company(name=n, companyID=getCompanyID(n,
+                                '%scompany2id.index' % self.__db),
+                                notes=notes,
+                                accessSystem=self.accessSystem)
+            data[nitem] = company
+        if data: return {'data': {'miscellaneous companies': data}}
         return {'data': {}}
 
     def get_movie_vote_details(self, movieID):
@@ -757,5 +854,32 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
 
     get_character_filmography = get_character_main
     get_character_biography = get_character_main
+
+    def _search_company(self, name, results):
+        name = name.strip()
+        if not name: return []
+        res =  _scan_company_names('%scompanies.key' % self.__db,
+                                    name, results)
+        res[:] = [x[1] for x in res]
+        return res
+
+    def get_company_main(self, companyID):
+        name = getCompanyName(companyID,
+                                '%scompanies.index' % self.__db,
+                                '%scompanies.data' % self.__db)
+        if not name:
+            raise IMDbDataAccessError, \
+                            'unable to get companyID "%s"' % companyID
+        res = analyze_company_name(name)
+        filmography = getCompanyFilmography(companyID,
+                                            '%scompanies.index' % self.__db,
+                                            '%scompanies.data' % self.__db,
+                                            '%stitles.index' % self.__db,
+                                            '%stitles.key' % self.__db,
+                                            '%snames.index' % self.__db,
+                                            '%snames.key' % self.__db)
+        if filmography:
+            res.update(filmography)
+        return {'data': res}
 
 

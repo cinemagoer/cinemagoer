@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.Movie import Movie
-from imdb.Person import Person
 from utils import convBin, latin2utf, getLabel
 import anydbm
 
@@ -32,7 +31,7 @@ def getCharacterName(characterID, charIF, charDF):
     """Return the character name for the specified characterID or None."""
     try:
         ifptr = open(charIF, 'rb')
-    except (anydbm.error, IOError), e:
+    except IOError, e:
         import warnings
         warnings.warn('Unable to access characters information, '
                         'please run the characters4local.py script: %s' % e)
@@ -45,7 +44,7 @@ def getCharacterName(characterID, charIF, charDF):
     idx = convBin(piddata, 'fulloffset')
     try:
         dfptr = open(charDF, 'rb')
-    except (anydbm.error, IOError), e:
+    except IOError, e:
         import warnings
         warnings.warn('Unable to access characters information, '
                         'please run the characters4local.py script: %s' % e)
@@ -66,7 +65,7 @@ def getCharacterFilmography(characterID, charIF, charDF, movieIF, movieKF,
     """Build a filmography list for the specified characterID."""
     try:
         ifptr = open(charIF, 'rb')
-    except (anydbm.error, IOError), e:
+    except IOError, e:
         import warnings
         warnings.warn('Unable to access characters information, '
                     'please run the characters4local.py script: %s' % e)
@@ -79,7 +78,7 @@ def getCharacterFilmography(characterID, charIF, charDF, movieIF, movieKF,
     idx = convBin(piddata, 'fulloffset')
     try:
         dfptr = open(charDF, 'rb')
-    except (anydbm.error, IOError), e:
+    except IOError, e:
         import warnings
         warnings.warn('Unable to access characters information, '
                         'please run the characters4local.py script: %s' % e)
@@ -116,21 +115,6 @@ def _convChID(characterID):
     if characterID is None:
         return None
     return convBin(characterID, 'characterID')
-
-
-def getCharacterID(name, charNF):
-    """Return a characterID for a name."""
-    # XXX: never used!
-    try:
-        dbfile = anydbm.open(charNF, 'r')
-    except (anydbm.error, IOError), e:
-        import warnings
-        warnings.warn('Unable to access characters information, '
-                    'please run the characters4local.py script: %s' % e)
-        return None
-    chID = dbfile.get(name.encode('latin_1', 'ignore'), None)
-    dbfile.close()
-    return _convChID(chID)
 
 
 def getCharactersIDs(names_string, charNF):

@@ -58,8 +58,8 @@ def _parseList(l, prefix, mline=1):
             data = line[firstlen:].strip()
             if data: ltmpapp(data)
         elif mline and line[:otherlen] == otherl:
-                data = line[otherlen:].strip()
-                if data: ltmpapp(data)
+            data = line[otherlen:].strip()
+            if data: ltmpapp(data)
         else:
             if ltmp:
                 reslapp(joiner(ltmp))

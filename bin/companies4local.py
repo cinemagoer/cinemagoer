@@ -30,7 +30,7 @@ HELP = """companies4local.py usage:
     %s /directory/with/local/files/
 
         # NOTE: you need read and write access to the specified directory.
-                See README.currentRole for more information.
+                See README.companies for more information.
 """ % sys.argv[0]
 
 if len(sys.argv) != 2:
@@ -75,7 +75,11 @@ CACHE_CID = {}
 def doCompanies(dataF, code, compCount=0):
     """Read the dataF file and populate the CACHE_CID dictionary."""
     print 'Start reading file %s.' % dataF
-    fptr = open(dataF, 'rb')
+    try:
+        fptr = open(dataF, 'rb')
+    except IOError, e:
+        print 'ERROR: unable to read file "%s"; skipping it: %s' % (dataF, e)
+        return compCount
     fread = fptr.read
     while True:
         piddata = fread(3)
@@ -173,7 +177,6 @@ for fname, code in (('distributors.data', 0),
                     ('miscellaneous-companies.data', 3)):
     lastCC = doCompanies(os.path.join(DATA_DIR, fname), code, compCount=lastCC)
 
-print len(CACHE_CID)
 # Write output files.
 writeData(CACHE_CID, DATA_DIR)
 

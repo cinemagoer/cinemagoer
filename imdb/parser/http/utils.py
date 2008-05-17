@@ -4,7 +4,7 @@ parser.http.utils module (imdb package).
 This module provides miscellaneous utilities used by
 the imdb.parser.http classes.
 
-Copyright 2004-2007 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

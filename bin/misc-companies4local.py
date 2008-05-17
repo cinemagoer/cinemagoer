@@ -7,14 +7,14 @@ from gzip import GzipFile
 from struct import pack
 from itertools import izip, chain
 
-HELP = """companies4local.py usage:
+HELP = """misc-companies4local.py usage:
     %s /directory/with/plain/text/data/files/ /directory/with/local/files/
 
         # NOTE: you need read and write access to the second directory.
 """ % sys.argv[0]
 
 if len(sys.argv) != 3:
-    print 'Specify the target directory!'
+    print 'Specify both source and target directories!'
     print HELP
     sys.exit(1)
 

@@ -194,7 +194,13 @@ try:
         """Scan the given file, using the cutils.search_company_name
         C function, for a given name."""
         name1 = name1.encode('latin_1', 'replace')
-        st = search_company_name(keyFile, name1, results)
+        try:
+            st = search_company_name(keyFile, name1, results)
+        except IOError, e:
+            import warnings
+            warnings.warn('unable to access companies information; '
+                    'please run the companies4local.py script: %s.' % e)
+            return []
         res = []
         for x in st:
             tmpd = analyze_company_name(latin2utf(x[2]))
@@ -600,7 +606,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         except IMDbDataAccessError:
             import warnings
             warnings.warn('miscellaneous-companies files not found; '
-                            'run the companies4local.py script.')
+                            'run the misc-companies4local.py script.')
             return {'data': {}}
         for nitem in xrange(len(data)):
             n, notes = split_company_name_notes(data[nitem])
@@ -875,11 +881,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                                             '%scompanies.index' % self.__db,
                                             '%scompanies.data' % self.__db,
                                             '%stitles.index' % self.__db,
-                                            '%stitles.key' % self.__db,
-                                            '%snames.index' % self.__db,
-                                            '%snames.key' % self.__db)
+                                            '%stitles.key' % self.__db)
         if filmography:
             res.update(filmography)
         return {'data': res}
-
 

@@ -8,10 +8,28 @@ file.
 Obviously you can still prefer to use the 'local' data access
 system if you're already using the moviedb program.
 
-NOTE: see README.currentRole for information about character support;
+
+  NOTES
+  =====
+
+CHARACTERS SUPPORT:
+See README.currentRole for information about character support;
 to put it simple, after you've installed everything you can use the
 characters4local.py script to generate files for characters (it will
 required some time).
+
+COMPANIES SUPPORT AND MISSING INFORMATION:
+Some information distributed through the plain text data files are
+not used by the moviedb program; after you've run it, you can add
+these missing information calling the 'misc-companies4local.py'
+and 'mpaa4local.py' scripts.
+
+After that, you can also add support for companies information:
+just run the companies4local.py script!
+
+
+  INSTRUCTIONS
+  ============
 
 Select a mirror of the "The Plain Text Data Files" from
 the http://www.imdb.com/interfaces.html page and download

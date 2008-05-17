@@ -29,7 +29,6 @@ from codecs import lookup
 from imdb import IMDbBase
 from imdb.Person import Person
 from imdb.Movie import Movie
-from imdb._exceptions import IMDbDataAccessError
 from imdb.utils import analyze_title, build_title, analyze_name, \
                         build_name, canonicalTitle, canonicalName, \
                         normalizeName, normalizeTitle, re_titleRef, \
@@ -192,6 +191,8 @@ def nameVariations(name, fromPtdf=0):
 try:
     from cutils import ratcliff as _ratcliff
     def ratcliff(s1, s2, sm):
+        """Return the Ratcliff-Obershelp value between the two strings,
+        using the C implementation."""
         return _ratcliff(s1.encode('latin_1', 'replace'),
                         s2.encode('latin_1', 'replace'))
 except ImportError:
@@ -201,6 +202,7 @@ except ImportError:
                     ' data access systems will be slower.')
 
     def ratcliff(s1, s2, sm):
+        """Ratcliff-Obershelp similarity."""
         STRING_MAXLENDIFFER = 0.7
         s1len = len(s1)
         s2len = len(s2)
@@ -210,7 +212,6 @@ except ImportError:
             threshold = float(s2len) / s1len
         if threshold < STRING_MAXLENDIFFER:
             return 0.0
-        """Ratcliff-Obershelp similarity."""
         sm.set_seq2(s2.lower())
         return sm.ratio()
 

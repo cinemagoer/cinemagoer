@@ -204,7 +204,13 @@ def getLiterature(movieID, indexF, dataF):
 def getMPAA(movieID, indexF, dataF):
     """Return MPAA reason information for a movie."""
     try:
-        return _parseColonList(movieID, indexF, dataF, 'MV: ', {'RE': 'mpaa'})
+        mpaa = _parseColonList(movieID, indexF, dataF, 'MV: ', {'RE': 'mpaa'})
+        if mpaa:
+            mpaa = mpaa.get('mpaa', u'')
+            mpaa = {'mpaa': u' '.join(mpaa)}
+        else:
+            mpaa = None
+        return mpaa
     except IMDbDataAccessError:
         import warnings
         warnings.warn('MPAA info not accessible; please run the '

@@ -87,7 +87,7 @@ class CompleteCast(SQLObject):
     statusID = IntCol(notNone=True)
 
 class InfoType(SQLObject):
-    info = UnicodeCol(length=32,notNone=True, alternateID=True)
+    info = UnicodeCol(length=32, notNone=True, alternateID=True)
 
 class LinkType(SQLObject):
     link = UnicodeCol(length=32, notNone=True, alternateID=True)

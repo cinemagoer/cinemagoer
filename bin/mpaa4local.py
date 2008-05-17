@@ -2,11 +2,7 @@
 
 import os
 import sys
-from array import array
-from gzip import GzipFile
 import gzip
-from struct import pack
-from itertools import izip, chain
 
 HELP = """companies4local.py usage:
     %s /directory/with/plain/text/data/files/ /directory/with/local/files/
@@ -15,67 +11,13 @@ HELP = """companies4local.py usage:
 """ % sys.argv[0]
 
 if len(sys.argv) != 3:
-    print 'Specify the target directory!'
+    print 'Specify both source and target directories!'
     print HELP
     sys.exit(1)
 
 # Directory containing the IMDb's Plain Text Data Files.
 IMDB_PTDF_DIR = sys.argv[1]
 LOCAL_DATA_DIR = sys.argv[2]
-
-
-MISC_START = ('MISCELLANEOUS COMPANY LIST', '==========================')
-MISC_COMP_FILE = 'miscellaneous-companies.list.gz'
-MISC_COMP_IDX = 'miscellaneous-companies.index'
-MISC_COMP_KEY = 'miscellaneous-companies.key'
-MISC_COMP_DATA = 'miscellaneous-companies.data'
-MISC_STOP = '---------------'
-TITLES_KEY_FILE = 'titles.key'
-ATTRS_KEY_FILE = 'attributes.key'
-ATTRS_IDX_FILE = 'attributes.index'
-
-GzipFileRL = GzipFile.readline
-class SourceFile(GzipFile):
-    """Instances of this class are used to read gzipped files,
-    starting from a defined line to a (optionally) given end."""
-    def __init__(self, filename=None, mode=None, start=(), stop=None,
-                    pwarning=1, *args, **kwds):
-        filename = os.path.join(IMDB_PTDF_DIR, filename)
-        try:
-            GzipFile.__init__(self, filename, mode, *args, **kwds)
-        except IOError, e:
-            if not pwarning: raise
-            print 'WARNING WARNING WARNING'
-            print 'WARNING unable to read the "%s" file.' % filename
-            print 'WARNING The file will be skipped, and the contained'
-            print 'WARNING information will NOT be stored in the database.'
-            print 'WARNING Complete error: ', e
-            # re-raise the exception.
-            raise
-        self.start = start
-        for item in start:
-            itemlen = len(item)
-            for line in self:
-                if line[:itemlen] == item: break
-        self.set_stop(stop)
-
-    def set_stop(self, stop):
-        if stop is not None:
-            self.stop = stop
-            self.stoplen = len(self.stop)
-            self.readline = self.readline_checkEnd
-        else:
-            self.readline = self.readline_NOcheckEnd
-
-    def readline_NOcheckEnd(self, size=-1):
-        line = GzipFile.readline(self, size)
-        return unicode(line, 'latin_1').encode('utf_8')
-
-    def readline_checkEnd(self, size=-1):
-        line = GzipFile.readline(self, size)
-        if self.stop is not None and line[:self.stoplen] == self.stop: return ''
-        return line
-        ##return unicode(line, 'latin_1').encode('utf_8')
 
 
 def getIDs(keyFile):
@@ -127,8 +69,10 @@ def doMPAA():
     idxF.close()
 
 
-mpaaFileGZ = gzip.open(os.path.join(IMDB_PTDF_DIR, 'mpaa-ratings-reasons.list.gz'))
-mpaaFileOut = open(os.path.join(LOCAL_DATA_DIR, 'mpaa-ratings-reasons.data'), 'w')
+mpaaFileGZ = gzip.open(os.path.join(IMDB_PTDF_DIR,
+                                    'mpaa-ratings-reasons.list.gz'))
+mpaaFileOut = open(os.path.join(LOCAL_DATA_DIR,
+                                'mpaa-ratings-reasons.data'), 'w')
 
 for line in mpaaFileGZ:
     mpaaFileOut.write(line)

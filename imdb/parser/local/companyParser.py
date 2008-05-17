@@ -60,8 +60,7 @@ def getCompanyName(companyID, compIF, compDF):
     return name
 
 
-def getCompanyFilmography(companyID, compIF, compDF, movieIF, movieKF,
-                            personIF, personKF):
+def getCompanyFilmography(companyID, compIF, compDF, movieIF, movieKF):
     """Build a filmography list for the specified companyID."""
     try:
         ifptr = open(compIF, 'rb')

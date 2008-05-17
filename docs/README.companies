@@ -1,0 +1,22 @@
+
+  COMPANIES DATA
+  ==============
+
+Since IMDbPY 3.6, companies have their own class and every reference
+to a company is now an instance of the Company class.
+
+  NOTES
+  =====
+
+- no references (inside text field) about companies are retrieved,
+  so far; I don't even think there are any, in the IMDb web site, but
+  I may be wrong.
+
+- 'mobile' data access system collect companies informations through
+  thr 'httpThin' method; it shoud be fast enough.
+
+- for 'local', you need to run the misc-companies4local.py BEFORE
+  you run the companies4local.py script.
+  See README.local for more information.
+
+

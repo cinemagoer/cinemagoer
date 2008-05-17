@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.6.cvs20080516 "Saw IV" (16 May 2008)
+* What's the new in release 3.6.cvs20080517 "Lady in the Water" (17 May 2008)
   [general]
   - support for company objects for every data access systems!
 
@@ -12,6 +12,9 @@
   [sql]
   - fixed a bug handling movieIDs, when there are some
     inconsistencies in the plain text data files.
+
+  [local]
+  - access to 'mpaa' and 'miscellaneous companies' information.
 
 
 * What's the new in release 3.5 "Blade Runner" (19 Apr 2008)

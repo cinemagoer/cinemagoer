@@ -234,11 +234,26 @@ class HTMLSearchMovieParser(ParserBase):
         self._is_title = False
         self._current_imdbID = None
 
+    def do_img(self, attrs):
+        # Skips mini-posters in the results (they are there, if
+        # we don't use the IMDbPYweb's account, performing the search).
+        if not self._in_table: return
+        src = self.get_attr_value(attrs, 'src')
+        if src and src.startswith('/images/'): return
+        if self._col_nr > 0:
+            self._col_nr -= 1
+
     def end_td(self):
         if self._in_table and self._is_title and self._current_imdbID and \
                 self._col_nr == 3:
             # We should have got the title/name.
             title = self._current_ton.strip()
+            if not title:
+                self._current_ton = u''
+                self._current_imdbID = u''
+                self._is_title = False
+                self._no_more = 0
+                return
             tup = (self._current_imdbID,
                     self._k[self.kind]['analyze_f'](title, canonical=1))
             self._results.append(tup)

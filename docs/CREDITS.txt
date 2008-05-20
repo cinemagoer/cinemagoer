@@ -15,6 +15,8 @@ I'd like to thank the following people for their help:
 
 * Jesper Nøhr for a lot of testing, especially on 'sql'.
 
+* Michael Charclo for some bug reports performing 'http' queries.
+
 * Amit Belani for bug reports about plot outline and other changes.
 
 * Matt Warnock for some tests with MySQL.

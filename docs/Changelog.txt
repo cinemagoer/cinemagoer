@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.6.cvs20080519 "Gunbuster 2" (19 May 2008)
+* What's the new in release 3.6.cvs20080520 "Gunbuster 2" (20 May 2008)
   [general]
   - support for company objects for every data access systems!
 
@@ -11,6 +11,7 @@
 
   [http]
   - fixed a search problem, while not using the IMDbPYweb's account.
+  - fixed bugs searching for characters.
 
   [sql]
   - fixed a bug handling movieIDs, when there are some

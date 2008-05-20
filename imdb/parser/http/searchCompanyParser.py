@@ -59,7 +59,7 @@ class BasicCompanyParser(ParserBase):
         href = href.lower()
         # FIXME: not every company page has a link to IMDbPro, so
         #        _many_ companyIDs can't be retrieved at all. :-/
-        if '/company/co' in href and href.startswith('pro.'):
+        if '/company/co' in href and href.startswith('http://pro.'):
             rpid = self.re_imdbID.findall(href)
             if rpid and self._name:
                 n = self._name.strip()

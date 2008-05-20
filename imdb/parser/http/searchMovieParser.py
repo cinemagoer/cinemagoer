@@ -239,7 +239,8 @@ class HTMLSearchMovieParser(ParserBase):
         # we don't use the IMDbPYweb's account, performing the search).
         if not self._in_table: return
         src = self.get_attr_value(attrs, 'src')
-        if src and src.startswith('/images/'): return
+        if src and src.lower().endswith('/b.gif'): return
+        if self.kind == 'character': return
         if self._col_nr > 0:
             self._col_nr -= 1
 
@@ -286,7 +287,8 @@ class HTMLSearchMovieParser(ParserBase):
     def end_small(self): pass
 
     def do_br(self, attrs):
-        self._no_more = True
+        if not self.kind == 'character':
+            self._no_more = True
 
     def _handle_data(self, data):
         if self._stop:

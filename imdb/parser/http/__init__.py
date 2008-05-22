@@ -302,6 +302,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
         """
         self.urlOpener.set_proxy(proxy)
 
+    def set_cookies(self, cookie_id, cookie_uu):
+        """Set a cookie to access an IMDb's account."""
+        c_header = 'id=%s; uu=%s' % (cookie_id, cookie_uu)
+        self.urlOpener.set_header('Cookie', c_header)
+
     def do_adult_search(self, doAdult,
                         cookie_id=_cookie_id, cookie_uu=_cookie_uu):
         """If doAdult is true, 'adult' movies are included in the
@@ -309,8 +314,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
         parameters to select a specific account (see your cookie
         or cookies.txt file."""
         if doAdult:
-            c_header = 'id=%s; uu=%s' % (cookie_id, cookie_uu)
-            self.urlOpener.set_header('Cookie', c_header)
+            self.set_cookies(cookie_id, cookie_uu)
+            #c_header = 'id=%s; uu=%s' % (cookie_id, cookie_uu)
+            #self.urlOpener.set_header('Cookie', c_header)
         else:
             self.urlOpener.del_header('Cookie')
 

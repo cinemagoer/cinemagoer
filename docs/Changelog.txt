@@ -1,17 +1,21 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.6.cvs20080522 "Gunbuster 2" (22 May 2008)
+* What's the new in release 3.6.cvs20080522b "Premonition" (22 May 2008)
   [general]
   - support for company objects for every data access systems!
 
   [http and mobile]
   - changes to support the new HTML for "plot outile" and
     some lists of values (languages, genres, ...)
+  - introduced the set_cookies method to set cookies for IMDb's account.
 
   [http]
   - fixed a search problem, while not using the IMDbPYweb's account.
   - fixed bugs searching for characters.
+
+  [mobile]
+  - fixed minor bugs parsing search results.
 
   [sql]
   - fixed a bug handling movieIDs, when there are some

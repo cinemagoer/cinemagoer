@@ -238,11 +238,11 @@ class HTMLSearchMovieParser(ParserBase):
         # Skips mini-posters in the results (they are there, if
         # we don't use the IMDbPYweb's account, performing the search).
         if not self._in_table: return
-        src = self.get_attr_value(attrs, 'src')
-        if src and src.lower().endswith('/b.gif'): return
-        if self.kind == 'character': return
-        if self._col_nr > 0:
-            self._col_nr -= 1
+        #if self.kind == 'character': return
+        #src = self.get_attr_value(attrs, 'src')
+        #if src and not src.lower().endswith('/b.gif'):
+        #    if self._col_nr == 1:
+        #        self._col_nr = 0
 
     def end_td(self):
         if self._in_table and self._is_title and self._current_imdbID and \
@@ -288,7 +288,8 @@ class HTMLSearchMovieParser(ParserBase):
 
     def do_br(self, attrs):
         if not self.kind == 'character':
-            self._no_more = True
+            if self._col_nr > 3:
+                self._no_more = True
 
     def _handle_data(self, data):
         if self._stop:

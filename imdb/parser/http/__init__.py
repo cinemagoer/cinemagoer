@@ -329,6 +329,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
         params = 's=%s;mx=%s;q=%s' % (kind, str(results), quote_plus(ton))
         cont = self._retrieve(imdbURL_find % params)
+        #print 'URL:', imdbURL_find % params
         if cont.find('more than 500 partial matches') == -1:
             return cont
         # The retrieved page contains no results, because too many

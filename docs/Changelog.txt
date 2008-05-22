@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.6.cvs20080520 "Gunbuster 2" (20 May 2008)
+* What's the new in release 3.6.cvs20080522 "Gunbuster 2" (22 May 2008)
   [general]
   - support for company objects for every data access systems!
 

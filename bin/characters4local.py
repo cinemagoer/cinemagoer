@@ -2,8 +2,8 @@
 """
 characters4local.py script.
 
-This script creates some files to manage characters' information
-for the 'local' data access system.
+This script creates some files to access characters' information
+from the 'local' data access system.
 
 Copyright 2007-2008 Davide Alberani <da@erlug.linux.it>
 
@@ -135,7 +135,6 @@ def writeData(d, directory):
     char2id = anydbm.open(os.path.join(directory, 'character2id.index'), 'n')
     findex = open(os.path.join(directory, 'characters.index'), 'wb')
     fdata = open(os.path.join(directory, 'characters.data'), 'wb')
-    fdatawrite = fdata.write
     fdatawritelines = fdata.writelines
     fdatatell = fdata.tell
     fkey = open(os.path.join(directory, 'characters.key'), 'wb')
@@ -143,7 +142,6 @@ def writeData(d, directory):
     offsetList = []
     offsetListappend = offsetList.append
     dpopitem = d.popitem
-    dpop = d.pop
     print 'Writing characters.key file...',
     sys.stdout.flush()
     fkey.writelines('%s|%x\n' % (name, d[name][0]) for name in sorted(d))

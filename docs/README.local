@@ -15,8 +15,8 @@ system if you're already using the moviedb program.
 CHARACTERS SUPPORT:
 See README.currentRole for information about character support;
 to put it simple, after you've installed everything you can use the
-characters4local.py script to generate files for characters (it will
-required some time).
+'characters4local.py' script to generate files for characters (it will
+require some time).
 
 COMPANIES SUPPORT AND MISSING INFORMATION:
 Some information distributed through the plain text data files are
@@ -24,8 +24,8 @@ not used by the moviedb program; after you've run it, you can add
 these missing information calling the 'misc-companies4local.py'
 and 'mpaa4local.py' scripts.
 
-After that, you can also add support for companies information:
-just run the companies4local.py script!
+After that, you can also add support for companies' information:
+just run the 'companies4local.py' script!
 
 
   INSTRUCTIONS

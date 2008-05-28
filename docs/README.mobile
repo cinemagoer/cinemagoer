@@ -78,13 +78,7 @@ Usage:
   ...and so on...
 
 
-A GUI for Series 60 smart phones, developed by Tero Saarni,
-is available at:
-  http://imdbpy.sourceforge.net/?page=mobile
-
-On some mobile phone a pair of modules can be missing, and
-you have to install it manually as libraries; you can find
-these modules (sgmllib.py, htmlentitydefs.py and ConfigParser.py) here:
+A GUI for Series 60 smart phones, is available at:
   http://imdbpy.sourceforge.net/?page=mobile
 
 

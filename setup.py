@@ -34,7 +34,7 @@ DO_SCRIPTS = 1
 
 # version of the software; CVS releases contain a string
 # like ".cvsYearMonthDay(OptionalChar)".
-version = '3.6.cvs20080522b'
+version = '3.6.cvs20080528'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -98,7 +98,10 @@ if DO_LOCAL or DO_SQL:
 
 if DO_LOCAL:
     params['packages'] = params['packages'] + ['imdb.parser.local']
-    params['scripts'] = params['scripts'] + ['./bin/characters4local.py']
+    params['scripts'] = params['scripts'] + ['./bin/characters4local.py',
+                                            './bin/companies4local.py',
+                                            './bin/mpaa4local.py',
+                                            './bin/misc-companies4local.py']
 
 if DO_SQL:
     params['packages'] = params['packages'] + ['imdb.parser.sql']
@@ -109,13 +112,16 @@ if DO_SCRIPTS:
     params['scripts'] = params['scripts'] + ['./bin/get_first_movie.py',
                         './bin/get_movie.py', './bin/search_movie.py',
                         './bin/get_first_person.py', './bin/get_person.py',
-                        './bin/search_person.py']
+                        './bin/search_person.py', './bin/get_character.py',
+                        './bin/get_first_character.py', './bin/get_company.py',
+                        './bin/search_character.py', './bin/search_company.py',
+                        './bin/get_first_company.py']
 
 
 if sys.version_info >= (2, 1):
     params['keywords'] = ['imdb', 'movie', 'people', 'database', 'cinema',
                             'film', 'person', 'cast', 'actor', 'actress',
-                            'director', 'sql']
+                            'director', 'sql', 'character', 'company']
     params['platforms'] = 'any'
 
 if sys.version_info >= (2, 3):

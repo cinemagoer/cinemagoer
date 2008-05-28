@@ -156,7 +156,7 @@ class Company(_Container):
                     notes=self.notes, accessSystem=self.accessSystem,
                     titlesRefs=deepcopy(self.titlesRefs, memo),
                     namesRefs=deepcopy(self.namesRefs, memo),
-                    companiesRefs=deepcopy(self.companiesRefs, memo))
+                    charactersRefs=deepcopy(self.charactersRefs, memo))
         c.current_info = list(self.current_info)
         c.set_mod_funct(self.modFunct)
         return c

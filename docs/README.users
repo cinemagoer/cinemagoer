@@ -21,7 +21,8 @@ The 'get_first_movie.py' works like 'search_movie.py', but it will only print
 information about the first matching title.
 
 Now guess what 'get_person.py', 'search_person.py','get_first_person.py',
-'get_character.py', 'search_character.py' and 'get_first_character.py'
+'get_character.py', 'search_character.py','get_first_character.py',
+'get_company.py', 'search_company.py' and 'get_first_company.py'
 scripts do... :-)
 
 Remember that you've to be connected to the net, if you want to

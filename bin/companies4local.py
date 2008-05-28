@@ -2,8 +2,8 @@
 """
 companies4local.py script.
 
-This script creates some files to manage companies' information
-for the 'local' data access system.
+This script creates some files to access companies' information
+from the 'local' data access system.
 
 Copyright 2008 Davide Alberani <da@erlug.linux.it>
 
@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import sys, os, anydbm
-from array import array
 from struct import pack
 
 HELP = """companies4local.py usage:
@@ -111,7 +110,6 @@ def writeData(d, directory):
     comp2id = anydbm.open(os.path.join(directory, 'company2id.index'), 'n')
     findex = open(os.path.join(directory, 'companies.index'), 'wb')
     fdata = open(os.path.join(directory, 'companies.data'), 'wb')
-    fdatawrite = fdata.write
     fdatawritelines = fdata.writelines
     fdatatell = fdata.tell
     fkey = open(os.path.join(directory, 'companies.key'), 'wb')
@@ -119,7 +117,6 @@ def writeData(d, directory):
     offsetList = []
     offsetListappend = offsetList.append
     dpopitem = d.popitem
-    dpop = d.pop
     print 'Writing companies.key file...',
     sys.stdout.flush()
     fkey.writelines('%s|%x\n' % (name, d[name][0]) for name in sorted(d))

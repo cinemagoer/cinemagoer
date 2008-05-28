@@ -11,8 +11,10 @@ Sections in this file:
 * THE Movie CLASS
 * THE Person CLASS
 * THE Character CLASS
+* THE Company CLASS
 * INFORMATION SETS
 * Person OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Person OBJECT
+* Company OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Company OBJECT
 * THE (NOT-SO-)"UNIVERSAL" '::' SEPARATOR
 * MOVIE TITLES AND PERSON/CHARACTER NAMES REFERENCES
 * EXCEPTIONS
@@ -84,10 +86,10 @@ Obviously, if no imdbpy.cfg file is found (or is not readable or it can't
 be parsed), 'http' is still considered the default.
 
 
-The imdb_access object has seven main methods: search_movie(title),
+The imdb_access object has nine main methods: search_movie(title),
 get_movie(movieID), search_person(name), get_person(personID),
-search_character(name), get_character(characterID)
-and update(MovieOrPersonObject)
+search_character(name), get_character(characterID), search_company(name),
+get_company(companyID) and update(MovieOrPersonObject)
 
   Methods description:
 
@@ -119,37 +121,40 @@ interface of a Python's dictionary, so you can access, for example, the
 list of actors and actress using the syntax: movieObject['cast']
 
 The search_person(name), get_person(personID) search_character(name)
-and get_character(characterID) methods work the same way as
-search_movie(title) and get_movie(movieID).
+get_character(characterID), search_company(name) and get_company(companyID)
+methods work the same way as search_movie(title) and get_movie(movieID).
 
-The get_imdbMovieID(movieID), get_imdbPersonID(personID) and
-get_imdbCharacterID(characterID) take, respectively, a movieID, a personID
-and a movieID and return the relative imdbID; it's safer to use the
-get_imdbID(MovieOrPersonOrCharacterObject) method.
+The get_imdbMovieID(movieID), get_imdbPersonID(personID),
+get_imdbCharacterID(characterID) and get_imdbCompanyID(companyID) take,
+respectively, a movieID, a personID, a movieID and a companyID and return
+the relative imdbID; it's safer to use the
+get_imdbID(MovieOrPersonOrCharacterOrCompanyObject) method.
 
-The title2imdbID(title), name2imdbID(name) and character2imdbID(name)take,
-respectively, a movie title (in the plain text data files format), a person
-name and a character name, and return the relative imdbID; when possibile
-it's safer to use the get_imdbID(MovieOrPersonOrCharacterObject) method.
-These functions _always_ need to connect to the IMDb's web site.
+The title2imdbID(title), name2imdbID(name), character2imdbID(name) and
+company2imdbID(name) take, respectively, a movie title (in the plain text
+data files format), a person name, a character name and a company name, and
+return the relative imdbID; when possibile it's safer to use the
+get_imdbID(MovieOrPersonOrCharacterOrCompanyObject) method.
+These functions _always_ need to connect to the IMDb's web site, if
+you're not using 'http', 'httpThin' or 'mobile' data acess systems.
 
-The get_imdbID(MovieOrPersonOrCharacterObject) method returns the imdbID
-for the given Movie, Person or Character object.
+The get_imdbID(MovieOrPersonOrCharacterOrCompanyObject) method returns the
+imdbID for the given Movie, Person, Character or Company object.
 
-The get_imdbURL(MovieOrPersonOrCharacterObject) method returns a string
-with the main IMDb URL for the given Movie, Person or Character object; it
-tries to do its best to retrieve the URL.
+The get_imdbURL(MovieOrPersonOrCharacterOrCompanyObject) method returns a
+string with the main IMDb URL for the given Movie, Person, Character or
+Company object; it tries to do its best to retrieve the URL.
 
-The update(MovieOrPersonOrCharacterObject) method takes an instance of
-a Movie, Person or Character class and retrieve every available information.
-Remember that the search_movie(title),  search_person(name) and
-search_character(name) methods will return a list of Movie, Person or
-Character objects with only basic information, like the movie title or
-the person/character name, so update() can be used to retrieve every other
-information.
+The update(MovieOrPersonOrCharacterOrCompanyObject) method takes an
+instance of a Movie, Person, Character or Company class and retrieve
+other available information.
+Remember that the search_*(txt)  methods will return a list of Movie, Person,
+Character or Company objects with only basic information, like the movie
+title or the person/character name, so update() can be used to retrieve
+every other information.
 By default a "reasonable" set of information are retrieved ('main',
-'filmography' and 'biography' for a Person/Character objects, and 'main'
-and 'plot' for a Movie object).
+'filmography' and 'biography' for a Person/Character objects, 'main'
+and 'plot' for a Movie object and 'main' for Company objects).
 
 Example:
   i = IMDb()
@@ -287,12 +292,20 @@ th syntax is:
 An analogous method is defined for the Movie class, and it's
 called isSameTitle(otherMovieObject)
 
-  THE Person CLASS
-  ================
+
+  THE Character CLASS
+  ===================
 
 It works mostly like the Person class. :-)
 For more information about the "currentRole" attribute, see the
 README.currentRole file.
+
+
+  THE Company CLASS
+  ================
+
+It works mostly like the Person class. :-)
+The "currentRole" attribute is always None.
 
 
   INFORMATION SETS
@@ -304,10 +317,10 @@ information about a given movie or person; this can be a problem, because
 web pages must be fetched and parsed, and this can be time consuming,
 especially if you're interested only in a small set of information.
 
-Now the get_person, get_movie and update methods have an optional 'info'
-argument, which can be set to a list of strings, each one representing
-an "information set".
-Movie and Person objects have, respectively, their own list of
+Now the get_person, get_movie, get_character, get_company and update
+methods have an optional 'info' argument, which can be set to a list
+of strings, each one representing an "information set".
+Movie/Person/Character/Company objects have, respectively, their own list of
 available "information sets".
 E.g.: the Movie class have a set called 'taglines' for the taglines
 of the movie, a set called 'vote details' for the number of votes for
@@ -426,6 +439,13 @@ the title and the year; the latest movie with Julia Roberts:
     i.update(last)
     # Print the name of the first director
     print last['director'][0]['name']
+
+
+  Company OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Company OBJECT
+  ==============================================================================
+
+As for Person/Character and Movie objects, you can test - using the "in"
+operator - if a Company has worked on a given Movie.
 
 
   THE (NOT-SO-)"UNIVERSAL" '::' SEPARATOR

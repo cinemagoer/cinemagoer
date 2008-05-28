@@ -16,9 +16,11 @@ Sections in this file:
 imdb (package)
  |
  +-> _exceptions
+ +-> _compat
  +-> Movie
  +-> Person
  +-> Character
+ +-> Company
  +-> utils
  +-> helpers
  +-> parser (package)
@@ -28,15 +30,19 @@ imdb (package)
        |    +-> movieParser
        |    +-> personParser
        |    +-> characterParser
+       |    +-> companyParser
        |    +-> searchMovieParser
        |    +-> searchPersonParser
        |    +-> searchCharacterParser
+       |    +-> searchCompanyParser
        |    +-> utils
        |
        +-> local (package)
        |    |
        |    +-> movieParser
        |    +-> personParser
+       |    +-> characterParser
+       |    +-> companyParser
        |    +-> utils
        |
        +-> mobile (package)
@@ -55,10 +61,12 @@ Description:
 imdb (package): contains the IMDb function, the IMDbBase class and imports
                 the IMDbError exception class.
 _exceptions: defines the exceptions internally used.
+_compat: compatibility functions and class for some strange environments.
 Movie: contains the Movie class, used to describe and manage a movie.
 Person: contains the Person class, used to describe and manage a person.
 Character: contains the Character class, used to describe and manage
            a character.
+Company: contains the Company, used to describe and manage a company.
 utils: miscellaneous utilities used by many IMDbPY modules.
 parser (package): a package containing a package for every data access system
                   implemented.
@@ -72,13 +80,17 @@ http.movieParser: parse html strings from the pages on the IMDb web server about
 http.personParser: parse html strings from the pages on the IMDb web server
                    about a person; returns dictionaries.
 http.characterParser: parse html strings from the pages on the IMDb web server
-                   about a character; returns dictionaries.
+                      about a character; returns dictionaries.
+http.companyParser: parse html strings from the pages on the IMDb web server
+                    about a company; returns dictionaries.
 http.searchMovieParser: parse an html string, result of a query for a movie
                         title.
 http.searchPersonParser: parse an html string, result of a query for a person
                          name.
 http.searchCharacterParser: parse an html string, result of a query for a
                             character name.
+http.searchCompanyParser: parse an html string, result of a query for a
+                          company name.
 http.utils: miscellaneous utilities used only by the http package.
 
 The modules under the parser.local package are the same of the
@@ -143,6 +155,9 @@ of the imdb.IMDb class which must define at least the following methods:
  _search_character(name)  - to search for a given character's name; must
                             return a list of (characterID, {characterData})
                             tuples.
+ _search_company(name)  - to search for a given company's name; must
+                            return a list of (companyID, {companyData})
+                            tuples.
  get_movie_*(movieID)  - a set of methods, one for every set of information
                          defined for a Movie object; should return
                          a dictionary with the relative information.
@@ -156,9 +171,13 @@ of the imdb.IMDb class which must define at least the following methods:
                           defined for a Person object; should return
                           a dictionary with the relative information.
  get_character_*(characterID) - a set of methods, one for every set of
-                                information defined for a Character object;
+                                information defined for a character object;
                                 should return a dictionary with the relative
                                 information.
+ get_company_*(companyID) - a set of methods, one for every set of
+                            information defined for a company object;
+                            should return a dictionary with the relative
+                            information.
  get_imdbMovieID(movieID) - must convert the given movieID to a string
                             representing the imdbID, as used by the IMDb web
                             server (e.g.: '0094226' for Brian De Palma's
@@ -167,9 +186,13 @@ of the imdb.IMDb class which must define at least the following methods:
                               representing the imdbID, as used by the IMDb web
                               server (e.g.: '0000154' for "Mel Gibson").
  get_imdbCharacterID(characterID) - must convert the given characterID to a
-                              string representing the imdbID, as used by
-                              the IMDb web server (e.g.: '0000001' for
-                              "Jesse James").
+                                    string representing the imdbID, as used by
+                                    the IMDb web server (e.g.: '0000001' for
+                                    "Jesse James").
+ get_imdbCompanyID(companyID) - must convert the given companyID to a
+                                string representing the imdbID, as used by
+                                the IMDb web server (e.g.: '0071509' for
+                                "Columbia Pictures [us]").
  _normalize_movieID(movieID) - must convert the provided movieID in a
                                format suitable for internal use (e.g.:
                                convert a string to a long int).
@@ -183,10 +206,12 @@ of the imdb.IMDb class which must define at least the following methods:
                                command line, or from a web browser.
  _normalize_personID(personID) - idem.
  _normalize_characterID(characterID) - idem.
+ _normalize_companyID(companyID) - idem.
  _get_real_movieID(movieID) - return the true movieID; useful to handle
                               title aliases.
  _get_real_personID(personID) - idem.
  _get_real_characterID(characterID) - idem.
+ _get_real_companyID(companyID) - idem.
 
 The class should raise the appropriate exceptions, when needed;
 IMDbDataAccessError must be raised when you cannot access the resource

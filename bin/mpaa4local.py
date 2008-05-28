@@ -1,4 +1,27 @@
 #!/usr/bin/env python
+"""
+mpaa4local.py script.
+
+This script creates some files to access mpaa's information
+from the 'local' data access system.
+
+Copyright 2008 Davide Alberani <da@erlug.linux.it>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+"""
+
 
 import os
 import sys
@@ -41,6 +64,7 @@ def toBin3(v):
 
 
 def doMPAA():
+    """Process mpaa information."""
     MOVIE_IDS = getIDs(os.path.join(LOCAL_DATA_DIR, 'titles.key'))
     mpaaF = open(os.path.join(LOCAL_DATA_DIR, 'mpaa-ratings-reasons.data'), 'r')
     offsetList = []
@@ -74,8 +98,8 @@ mpaaFileGZ = gzip.open(os.path.join(IMDB_PTDF_DIR,
 mpaaFileOut = open(os.path.join(LOCAL_DATA_DIR,
                                 'mpaa-ratings-reasons.data'), 'w')
 
-for line in mpaaFileGZ:
-    mpaaFileOut.write(line)
+for aLine in mpaaFileGZ:
+    mpaaFileOut.write(aLine)
 
 mpaaFileOut.close()
 mpaaFileGZ.close()

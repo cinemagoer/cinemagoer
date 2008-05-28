@@ -7,13 +7,15 @@ NOTE: it's always time to clean the code! <g>
 
 
 [general]
-* Write better summary() methods for Movie, Person and Character classes.
+* Write better summary() methods for Movie, Person, Character
+  and Company classes.
 * Some portions of code are poorly commented.
 * The documentation is written in my funny Anglo-Bolognese.
 * a better test-suite is really needed.
 * Compatibility with Python 2.2 and previous versions is no more assured
   for every data access system (the imdbpy2sql.py script for sure
-  requires at least Python 2.3).
+  requires at least Python 2.3).  Be sure to keep 2.2 compatibility
+  at least for 'http' and 'mobile', since they are used by mobile devices.
 * The analyze_title/build_title functions are grown too complex and
   beyond their initial goals.
 * the 'year' keyword can probably be an int, instead of a string;
@@ -24,8 +26,8 @@ NOTE: it's always time to clean the code! <g>
 
 
 [searches]
-* Support advanced query for movie titles and person/character names - if
-  possible this should be available in every data access systems.
+* Support advanced query for movie titles and person/character/company names -
+  if possible this should be available in every data access systems.
 
 
 [Movie objects]
@@ -62,9 +64,15 @@ NOTE: it's always time to clean the code! <g>
   "actor" or "actress" list.
   Check if this is still true, with the new IMDb's schema.
 
+
 [Character objects]
 * Define invariable names for the sections (the keys you use to access
   info stored in a Character object).
+
+
+[Company objects]
+* Define invariable names for the sections (the keys you use to access
+  info stored in a Company object).
 
 
 [http data access system]
@@ -106,11 +114,6 @@ NOTE: it's always time to clean the code! <g>
   with 'Surname, Name' (qv).
   Names and titles with "'" are not handled properly and so on...
   This is a problem of the Plain Text Data Files, and can't be fixed.
-* The convBin() and getFullIndex() functions in the utils
-  modules _must_ be rewritten (they're crap!).
-* Some files are not considered: mpaa-ratings-reasons.list,
-  miscellaneous-companies.list (but they're used by the 'sql' data
-  access system).
 * You need the mkdb executable from the moviedb program to generate the
   database/index files; moviedb is not open source software (although
   it can be downloaded and used without paying money).
@@ -144,4 +147,5 @@ Things to do:
   IMDb releases also "diff" files to keep the plain text files updated;
   it would be wonderful to directly use these diff files to upgrade the
   SQL database, but I think this is a nearly impossible task.
+* replace SQLObject with SQLAlchemy?
 

@@ -75,13 +75,16 @@ movies and people using unicode strings.  Please read the README.utf8 file.
 Since release 3.3, IMDbPY supports IMDb's character pages; see the
 README.currentRole file for more information.
 
+Since release 3.6, IMDbPY supports IMDb's company pages; see the
+README.companies file for more information.
+
 
   FEATURES
   ========
 
 So far you can search for a movie with a given title, a person
-with a given name or a character you've seen in a movie, and retrieve
-information for a given movie, person or character; the supported data
+with a given name, a character you've seen in a movie or a company, and retrieve
+information for a given movie, person, character or company; the supported data
 access systems are 'http' (i.e.: the data are fetched through the IMDb's
 web server http://akas.imdb.com) and 'local', meaning that the data are
 taken from the plain text data files; see http://www.imdb.com/interfaces.html
@@ -142,6 +145,6 @@ suitable for systems with limited bandwidth but normal CPU power.
   FEATURES OF THE LOCAL DATA ACCESS SYSTEM
   ========================================
 
-* Retrieve almost every available information, in a decently short time.
+* Retrieve every available information, in a decently short time.
 
 

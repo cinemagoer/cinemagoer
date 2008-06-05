@@ -2208,76 +2208,83 @@ class HTMLNewsParser(ParserBase):
     def _reset(self):
         """Reset the parser."""
         self._cur_news = {}
-        self._news = []
-        self._cur_stage = 'title'
         self._cur_text = u''
+        self._cur_title = u''
         self._cur_link = u''
-        self._in_font = 0
+        self._cur_full_link = u''
+        self._news = []
+        self._in_h2 = False
+        self._no_more = False
 
     def get_data(self):
         """Return the dictionary."""
         if not self._news: return {}
         return {'news': self._news}
 
-    def start_p(self, attrs):
-        if self._in_font: return
-        if self._in_content:
-            self._cur_stage = 'title'
-
-    def end_p(self):
+    def start_a(self, attrs):
         if not self._in_content: return
-        if self._in_font: return
-        self.do_br([])
-        if self._cur_news:
-            self._news.append(self._cur_news)
-            self._cur_news = {}
-        self._cur_stage = 'title'
-        self._cur_text = u''
 
-    def start_font(self, attrs):
-        # An hack to prevent IMDbPro sign-up for a two-week free trial
-        # to appear in the title of the first news.
-        self._in_font = 1
+    def end_a(self): pass
 
-    def end_font(self):
-        self._in_font = 0
-        self._cur_text = u''
-
-    def do_br(self, attrs):
+    def start_h2(self, attrs):
         if not self._in_content: return
-        if self._in_font: return
+        self._in_h2 = True
+
+    def end_h2(self):
+        self._in_h2 = False
+
+    def do_hr(self, attrs):
+        if not self._in_content: return
         self._cur_text = self._cur_text.strip()
-        if self._cur_text:
-            if self._cur_stage == 'body':
-                if self._cur_news.has_key('body'):
-                    bodykey = self._cur_news['body']
-                    if bodykey and not bodykey[0].isspace():
-                        self._cur_news['body'] += ' '
-                    self._cur_news['body'] += self._cur_text
-                else:
-                    self._cur_news['body'] = self._cur_text
-            else:
-                self._cur_news[self._cur_stage] = self._cur_text
-            self._cur_text = u''
-            if self._cur_stage == 'title':
-                self._cur_stage = 'date'
-            elif self._cur_stage == 'date':
-                self._cur_stage = 'body'
+        self._cur_title = self._cur_title.strip()
+        if self._cur_title and self._cur_text:
+            sepidx = self._cur_text.find('\n\n\n')
+            if sepidx != -1:
+                info = self._cur_text[:sepidx].rstrip().split('\n')
+                if len(info) == 3:
+                    self._cur_news['from'] = info[0].replace('From ', '')
+                    self._cur_news['date'] = info[2]
+                self._cur_text = self._cur_text[sepidx:].lstrip()
+                if self._cur_text.endswith('(more)'):
+                    self._cur_text = self._cur_text[:-6].rstrip()
+            self._cur_news['title'] = self._cur_title
+            self._cur_news['body'] = self._cur_text
+            self._news.append(self._cur_news)
+            if self._cur_link:
+                self._cur_news['link'] = self._cur_link
+        self._cur_title = u''
+        self._cur_text = u''
+        self._cur_link = u''
+        self._cur_full_link = u''
+        self._cur_news = {}
+        self._no_more = False
+
+    def do_p(self, attr):
+        self._no_more = True
 
     def start_a(self, attrs):
-        if self._in_font: return
-        if self._in_content and self._cur_stage == 'date':
-            href = self.get_attr_value(attrs, 'href')
-            if href:
-                if not href.startswith('http://'):
-                    if href[0] == '/': href = href[1:]
-                    href = '%s%s' % (imdbURL_base, href)
-                self._cur_news['link'] = href
+        if not self._in_content: return
+        href = self.get_attr_value(attrs, 'href')
+        if href:
+            if href.startswith('/news/ni'):
+                self._cur_link = '%s%s' % (imdbURL_base, href[1:])
+            elif href.startswith('http://') and self._no_more:
+                self._cur_full_link = href
+
+    def _add_full_link(self):
+        if self._cur_full_link and self._news:
+            self._news[-1]['full article link'] = self._cur_full_link
+            self._cur_full_link = u''
 
     def _handle_data(self, data):
-        if self._in_font: return
-        if self._in_content and not self._in_font:
+        if not self._in_content: return
+        if self._in_h2:
+            self._cur_title += data
+        elif not self._no_more:
             self._cur_text += data
+        else:
+            if data.strip().lower().startswith('see full article at'):
+                self._add_full_link()
 
 
 class HTMLAmazonReviewsParser(ParserBase):

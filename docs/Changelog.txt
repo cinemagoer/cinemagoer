@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.6.cvs20080528 "Indiana Jones and the Kingdom of the Crystal Skull" (28 May 2008)
+* What's the new in release 3.6.cvs20080605 "The Marine" (05 Jun 2008)
   [general]
   - support for company objects for every data access systems!
   - introduced example scripts for companies.
@@ -11,6 +11,7 @@
   - changes to support the new HTML for "plot outile" and
     some lists of values (languages, genres, ...)
   - introduced the set_cookies method to set cookies for IMDb's account.
+  - fixed parser for 'news' pages.
 
   [http]
   - fixed a search problem, while not using the IMDbPYweb's account.

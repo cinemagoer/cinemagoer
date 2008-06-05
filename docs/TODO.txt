@@ -107,6 +107,8 @@ NOTE: it's always time to clean the code! <g>
   wondering if this is a bug of IMDbPY or a bug in mkdb.
 * There's probably a bug converting the rating to a float;
   see: ER (1994) (TV), but I suspect this to be a mkdb bug.
+* In some rare circumstances, names/titles AKAs points to other existing
+  names/titles, in fact obscuring the good ones.
 * The 'votes' key is not correctly stored for very high values;
   this is for sure a mkdb bug.
 * Files like biographies.data are plainly wrong: sometimes

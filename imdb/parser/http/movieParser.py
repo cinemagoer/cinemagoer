@@ -2233,21 +2233,29 @@ class HTMLNewsParser(ParserBase):
     def end_h2(self):
         self._in_h2 = False
 
+    def do_br(self, attrs):
+        if not self._in_content: return
+        if self._no_more: return
+        self._cur_text += '\n'
+
     def do_hr(self, attrs):
         if not self._in_content: return
         self._cur_text = self._cur_text.strip()
         self._cur_title = self._cur_title.strip()
         if self._cur_title and self._cur_text:
-            sepidx = self._cur_text.find('\n\n\n')
+            sepidx = self._cur_text.find('\n\n\n\n\n\n')
             if sepidx != -1:
                 info = self._cur_text[:sepidx].rstrip().split('\n')
                 if len(info) == 3:
                     self._cur_news['from'] = info[0].replace('From ', '')
                     self._cur_news['date'] = info[2]
-                self._cur_text = self._cur_text[sepidx:].lstrip()
+                self._cur_text = self._cur_text[sepidx:].strip()
                 if self._cur_text.endswith('(more)'):
                     self._cur_text = self._cur_text[:-6].rstrip()
             self._cur_news['title'] = self._cur_title
+            self._cur_text = self._cur_text.replace('\n\n', '::::')
+            self._cur_text = self._cur_text.replace('\n', ' ')
+            self._cur_text = self._cur_text.replace('::::', '\n\n')
             self._cur_news['body'] = self._cur_text
             self._news.append(self._cur_news)
             if self._cur_link:

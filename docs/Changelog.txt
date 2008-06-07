@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.6.cvs20080605 "The Marine" (05 Jun 2008)
+* What's the new in release 3.6.cvs20080607 "The Marine" (07 Jun 2008)
   [general]
   - support for company objects for every data access systems!
   - introduced example scripts for companies.
@@ -12,6 +12,7 @@
     some lists of values (languages, genres, ...)
   - introduced the set_cookies method to set cookies for IMDb's account.
   - fixed parser for 'news' pages.
+  - fixed minor bug fetching movie/person/character references.
 
   [http]
   - fixed a search problem, while not using the IMDbPYweb's account.

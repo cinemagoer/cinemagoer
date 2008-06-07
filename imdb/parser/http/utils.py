@@ -367,18 +367,18 @@ class ParserBase(SGMLParser):
         and call the _handle_data method."""
         if self.getRefs:
             if self._inNMRef:
-                self._nameCN += data
+                self._nameCN += data.replace('\n', ' ')
             elif self._inTTRef:
                 if self._inLinkTTRef:
-                    self._titleCN += data
+                    self._titleCN += data.replace('\n', ' ')
                 else:
-                    sdata = data.strip()
+                    sdata = data.strip().replace('\n', ' ')
                     yearK = re_yearKind_index.match(sdata)
                     if yearK and yearK.start() == 0:
                         self._titleCN += ' %s' % sdata[:yearK.end()]
                         self._add_ref('tt')
             elif self._inCHRef:
-                self._characterCN += data
+                self._characterCN += data.replace('\n', ' ')
         self._handle_data(data)
 
     def _handle_data(self, data): pass

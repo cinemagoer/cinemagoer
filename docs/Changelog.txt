@@ -1,16 +1,19 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.6.cvs20080607 "The Marine" (07 Jun 2008)
+* What's the new in release 3.6 "RahXephon" (08 Jun 2008)
   [general]
-  - support for company objects for every data access systems!
+  - support for company objects for every data access systems.
   - introduced example scripts for companies.
   - updated the documentation.
 
   [http and mobile]
-  - changes to support the new HTML for "plot outile" and
-    some lists of values (languages, genres, ...)
-  - introduced the set_cookies method to set cookies for IMDb's account.
+  - changes to support the new HTML for "plot outline" and some lists
+    of values (languages, genres, ...)
+  - introduced the set_cookies method to set cookies for IMDb's account and
+    the del_cookies method to remove the use of cookies; in the imdbpy.cfg
+    configuration file, options "cookie_id" and "cookie_uu" can be set to
+    the appropriate values; if "cookie_id" is None, no cookies are sent.
   - fixed parser for 'news' pages.
   - fixed minor bug fetching movie/person/character references.
 

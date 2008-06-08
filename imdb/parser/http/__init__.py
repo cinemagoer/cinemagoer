@@ -202,7 +202,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     accessSystem = 'http'
 
     def __init__(self, isThin=0, adultSearch=1, proxy=-1,
-                *arguments, **keywords):
+                cookie_id=-1, cookie_uu=None, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         self.urlOpener =  IMDbURLopener()
@@ -221,6 +221,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 from imdb.utils import modNull
                 self._defModFunct = modNull
         self.do_adult_search(adultSearch)
+        if cookie_id != -1:
+            if cookie_id is None:
+                self.del_cookies()
+            elif cookie_uu is not None:
+                self.set_cookies(cookie_id, cookie_uu)
         if proxy != -1:
             self.set_proxy(proxy)
         _def = {'_modFunct': self._defModFunct, '_as': self.accessSystem}
@@ -306,6 +311,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
         """Set a cookie to access an IMDb's account."""
         c_header = 'id=%s; uu=%s' % (cookie_id, cookie_uu)
         self.urlOpener.set_header('Cookie', c_header)
+
+    def del_cookies(self):
+        """Remove the used cookie."""
+        self.urlOpener.del_header('Cookie')
 
     def do_adult_search(self, doAdult,
                         cookie_id=_cookie_id, cookie_uu=_cookie_uu):

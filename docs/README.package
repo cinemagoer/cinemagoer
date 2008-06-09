@@ -500,7 +500,7 @@ available from the imdb package.
 
 You can catch any type of errors raised by the IMDbPY package with
 something like:
-  from imdb impotr IMDb, IMDbError
+  from imdb import IMDb, IMDbError
 
   try:
       i = IMDb()

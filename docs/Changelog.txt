@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 3.7.cvs20080609 "RahXephon" (09 Jun 2008)
+  [general]
+  - minor updates to the documentation.
+
+
 * What's the new in release 3.6 "RahXephon" (08 Jun 2008)
   [general]
   - support for company objects for every data access systems.

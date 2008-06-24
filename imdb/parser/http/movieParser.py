@@ -2215,6 +2215,7 @@ class HTMLNewsParser(ParserBase):
         self._news = []
         self._in_h2 = False
         self._no_more = False
+        self._p_seen = 0
 
     def get_data(self):
         """Return the dictionary."""
@@ -2243,7 +2244,7 @@ class HTMLNewsParser(ParserBase):
         self._cur_text = self._cur_text.strip()
         self._cur_title = self._cur_title.strip()
         if self._cur_title and self._cur_text:
-            sepidx = self._cur_text.find('\n\n\n\n\n\n')
+            sepidx = self._cur_text.find('\n\n')
             if sepidx != -1:
                 info = self._cur_text[:sepidx].rstrip().split('\n')
                 if len(info) == 3:
@@ -2266,9 +2267,13 @@ class HTMLNewsParser(ParserBase):
         self._cur_full_link = u''
         self._cur_news = {}
         self._no_more = False
+        self._p_seen = 0
 
-    def do_p(self, attr):
-        self._no_more = True
+    def do_p(self, attrs):
+        if self._p_seen >= 2:
+            self._no_more = True
+        else:
+            self._p_seen += 1
 
     def start_a(self, attrs):
         if not self._in_content: return
@@ -2276,8 +2281,10 @@ class HTMLNewsParser(ParserBase):
         if href:
             if href.startswith('/news/ni'):
                 self._cur_link = '%s%s' % (imdbURL_base, href[1:])
+                self._no_more = True
             elif href.startswith('http://') and self._no_more:
                 self._cur_full_link = href
+                self._no_more = True
 
     def _add_full_link(self):
         if self._cur_full_link and self._news:

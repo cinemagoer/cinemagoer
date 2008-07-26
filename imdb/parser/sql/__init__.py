@@ -51,32 +51,24 @@ except ImportError:
     warnings.warn('Unable to import the cutils.soundex function.'
                     '  Searches of movie titles and person names will be'
                     ' a bit slower.')
-    import string
 
-    _all_chars = string.maketrans('', '')
-    _keep_chars = 'bcdfgjklmnpqrstvxzBCDFGJKLMNPQRSTVXZ'
-    _del_nonascii = _all_chars.translate(_all_chars, _keep_chars)
-    _soundTable = string.maketrans(_keep_chars, 2*'123122245512623122')
+    _translate = dict(B='1', C='2', D='3', F='1', G='2', J='2', K='2', L='4',
+                      M='5', N='5', P='1', Q='2', R='6', S='2', T='3', V='1',
+                      X='2', Z='2')
+    _translateget = _translate.get
 
     def soundex(s):
         """Return the soundex code for the given string."""
         # Maximum length of the soundex code.
         SOUNDEX_LEN = 5
-        # Remove everything but the meaningful ascii chars.
-        s = s.translate(_all_chars, _del_nonascii)
         if not s: return None
         s = s.upper()
-        first_char = s[0]
-        # Use the _soundTable to translate the string in the soundexCode.
-        s = s.translate(_soundTable)
-        # Remove duplicated consecutive digits.
-        sl = [s[0]]
-        sl_append = sl.append
-        for i in xrange(1, len(s)):
-            if s[i] != s[i-1]:
-                sl_append(s[i])
-        s = ''.join(sl)
-        return first_char + s[1:SOUNDEX_LEN]
+        soundCode =  s[0]
+        for c in s[1:]:
+            cw = _translateget(c, '0')
+            if cw != '0' and soundCode[-1] != cw:
+                soundCode += cw
+        return soundCode[:SOUNDEX_LEN]
 
 
 _litlist = ['screenplay/teleplay', 'novel', 'adaption', 'book',

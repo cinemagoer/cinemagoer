@@ -712,7 +712,6 @@ class HTMLPersonGenresParser(ParserBase):
         self._info = {}
         self._cur_key = ''
         self._cur_title = u''
-        self._in_table = False
         self._in_li = False
         self._cur_movieID = None
         self._cur_characterID = None
@@ -723,11 +722,10 @@ class HTMLPersonGenresParser(ParserBase):
         return {self.kind: self._info}
 
     def start_table(self, attrs):
-        if not self._in_content: return
-        self._in_table = True
+        pass
 
     def end_table(self):
-        self._in_table = False
+        self._cur_key = ''
 
     def start_a(self, attrs):
         if not self._in_content: return
@@ -741,7 +739,6 @@ class HTMLPersonGenresParser(ParserBase):
                     elif 'character/ch' in href:
                         self._cur_characterID = imdbID[-1]
                     return
-        if not self._in_table: return
         name = self.get_attr_value(attrs, 'name')
         if name:
             self._cur_key = name

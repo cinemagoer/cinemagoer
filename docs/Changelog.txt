@@ -1,12 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.7.cvs20080726 "The Dark Knight" (26 Jul 2008)
+* What's the new in release 3.7.cvs20080813 "Blackwoods" (13 Aug 2008)
   [general]
   - minor updates to the documentation.
 
   [http]
   - fixed 'news' parser.
+  - fixed 'genres' and 'keywords' parser for people.
 
   [sql]
   - the pure python soundex function now behaves correctly.

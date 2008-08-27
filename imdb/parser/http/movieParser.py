@@ -1767,6 +1767,10 @@ class HTMLConnectionParser(ParserBase):
 
     def end_a(self): pass
 
+    def do_hr(self, attrs):
+        if self._connections:
+            self._stop = True
+
     def do_br(self, attrs):
         if not self._in_content: return
         self._seen_br = True
@@ -2449,6 +2453,7 @@ class HTMLSalesParser(ParserBase):
         self._in_table = 0
         self._seen_br = 0
         self._in_layer = 0
+        self._ignore_tr = 0
 
     def get_data(self):
         if not self._sales: return {}
@@ -2522,9 +2527,14 @@ class HTMLSalesParser(ParserBase):
             if alttxt:
                 self._cur_link_text = alttxt
 
-    def start_tr(self, attrs): pass
+    def start_tr(self, attrs):
+        if self.get_attr_value(attrs, 'class') == 'w_rowtable_head':
+            self._ignore_tr = 1
 
     def end_tr(self):
+        if self._ignore_tr:
+            self._ignore_tr = 0
+            return
         self._cur_descr = self._cur_descr.strip()
         if self._cur_descr:
             self._cur_info['description'] = self._cur_descr

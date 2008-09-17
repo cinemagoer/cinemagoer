@@ -87,6 +87,8 @@ class HTMLMovieParser(ParserBase):
         mparser = HTMLMovieParser()
         result = mparser.parse(combined_details_html_string)
     """
+    re_votes = re.compile(r'([0-9][0-9]?\.[0-9])/10(\s+([0-9,]+)\s+votes)?',
+                            re.I|re.M|re.S)
     def _reset(self):
         # If true, we're parsing the "maindetails" page; if false,
         # the "combined" page is expected.
@@ -143,10 +145,11 @@ class HTMLMovieParser(ParserBase):
     def end_h1(self):
         self._in_h1 = False
         self._title = self._title.strip()
-        seridx = self._title.find(')TV series')
+        seridx = self._title.find(u'\xbbTV series')
         if seridx != -1:
             self._data['series years'] = self._title[seridx+10:].lstrip()
-            self._title = self._title[:seridx+1].rstrip()
+            self._title = self._title[:seridx].rstrip()
+        self._title = self._title.replace('More at IMDb Pro', '').rstrip()
         if not self._title: return
         # The movie's title.
         self._data.update(analyze_title(self._title, canonical=1))
@@ -170,7 +173,8 @@ class HTMLMovieParser(ParserBase):
         if cssplit:
             if cssplit[0] == 'cast':
                 cssplit[:] = ['cast']
-            elif cssplit[-1] == 'by':
+            elif cssplit[-1] == 'by' and cs not in ('special effects by',
+                    'series special effects by', 'episode special effects by'):
                 cssplit[:] = cssplit[:-1]
         cs = ' '.join(cssplit)
         # Convert the section name, if present in _SECT_CONV.
@@ -245,12 +249,18 @@ class HTMLMovieParser(ParserBase):
     def start_div(self, attrs):
         # Major information sets are enclosed in div tags with class=info.
         if self._exclude_series: return
-        if self.get_attr_value(attrs, 'class') == 'info':
+        cls = self.get_attr_value(attrs, 'class')
+        if cls == 'info':
             self._in_info_div = True
             self._cur_txt = u''
+        elif cls == 'meta':
+            self._in_rating = True
 
     def end_div(self):
         if self._exclude_series: return
+        if self._in_rating:
+            self.end_small()
+            self._in_rating = False
         if not self._keep: return
         if self._in_info_div:
             self._add_info()
@@ -305,24 +315,23 @@ class HTMLMovieParser(ParserBase):
         self._in_rating = False
         rav = self._rating.strip()
         if not rav: return
-        i = rav.find('/10')
-        if i != -1:
-            rating = rav[:i]
-            try:
-                rating = float(rating)
-                self._data['rating'] = rating
-            except ValueError:
-                pass
-        i = rav.find('(')
-        if i != -1:
-            votes = rav[i+1:]
-            j = votes.find(' ')
-            votes = votes[:j].replace(',', u'')
-            try:
-                votes = int(votes)
-                self._data['votes'] = votes
-            except ValueError:
-                pass
+        rg = self.re_votes.search(rav)
+        if not rg: return
+        try: rating = rg.group(1)
+        except IndexError: return
+        try:
+            rating = float(rating)
+            self._data['rating'] = rating
+        except ValueError:
+            pass
+        try: votes = rg.group(3)
+        except IndexError: return
+        votes = votes.replace(',', '')
+        try:
+            votes = int(votes)
+            self._data['votes'] = votes
+        except ValueError:
+            pass
 
     def start_span(self, attrs): pass
 
@@ -411,7 +420,8 @@ class HTMLMovieParser(ParserBase):
         elif self._in_production_notes:
             self._add_info()
             self._keep = False
-        if self.mdparse and self._section in _SECT_KEEP:
+        if (self.mdparse or self._section == 'creator') and \
+                self._section in _SECT_KEEP:
             if self._cur_txt.endswith('...'):
                 self._cur_txt = self._cur_txt[:-3]
             self.end_tr()
@@ -553,6 +563,9 @@ class HTMLMovieParser(ParserBase):
         elif self._in_top250:
             self._top250 += data
         if self._stop_here or self._exclude_series or not self._keep: return
+        if data == '(more)':
+            self._stop_here = True
+            return
         # Collect the data.
         if self._in_tr or self._in_info_div or self._in_li or \
                     self._in_production_notes:
@@ -918,6 +931,7 @@ class HTMLTaglinesParser(ParserBase):
         self._tl = []
         self._ctl = u''
         self._seen_left_div = 0
+        self._in_adv = False
 
     def get_data(self):
         """Return the dictionary."""
@@ -941,8 +955,12 @@ class HTMLTaglinesParser(ParserBase):
         cls = self.get_attr_value(attrs, 'class')
         if cls and cls.strip().lower() == 'left':
             self._seen_left_div = 1
+        elif self.get_attr_value(attrs, 'id') == 'tn15adrhs':
+            self._in_adv = True
 
-    def end_div(self): pass
+    def end_div(self):
+        if self._in_adv:
+            self._in_adv = False
 
     def start_table(self, attrs): pass
 
@@ -957,8 +975,9 @@ class HTMLTaglinesParser(ParserBase):
             self._ctl = u''
 
     def _handle_data(self, data):
-        if self._in_tl and self._in_content:
-            self._ctl += data
+        if self._in_tl and self._in_content and not self._in_adv:
+            if data.strip().lower() != 'advertisement':
+                self._ctl += data
         elif self._in_h1 and data.lower().find('taglines for') != -1:
             self._in_tlu2 = 1
 
@@ -1877,7 +1896,8 @@ class HTMLLocationsParser(ParserBase):
 
 class HTMLTechParser(ParserBase):
     """Parser for the "technical", "business", "literature",
-    "publicity" (for people) pages of a given movie.
+    "publicity" (for people) and "contacts (for people) pages of
+    a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -1907,6 +1927,11 @@ class HTMLTechParser(ParserBase):
     def _end_content(self):
         self._add_entry()
 
+    def start_h3(self, attrs):
+        self._stop_collecting = True
+
+    def end_h3(self): pass
+
     def start_h5(self, attrs):
         if self._in_content:
             self._add_entry()
@@ -1919,6 +1944,8 @@ class HTMLTechParser(ParserBase):
     def start_div(self, attrs):
         cls = self.get_attr_value(attrs, 'class')
         if cls and cls == 'left':
+            self._stop_collecting = True
+        elif self.get_attr_value(attrs, 'id') == 'bottom_center_wrapper':
             self._stop_collecting = True
 
     def end_div(self): pass
@@ -1944,9 +1971,6 @@ class HTMLTechParser(ParserBase):
             if self._curdata:
                 self._curdata[-1] += '::'
                 self.do_br([])
-
-    def do_hr(self, attrs):
-        self._stop_collecting = True
 
     def start_form(self, attrs):
         if self._in_data and self.kind == 'contacts':

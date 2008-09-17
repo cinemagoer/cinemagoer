@@ -654,7 +654,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     ndata.append(bio)
                 data[:] = ndata
                 if 'mini biography' in d:
-                    d['mini biography'].append(ndata)
+                    d['mini biography'].append(ndata[0])
                     continue
             d[sect] = data
         return {'data': d}

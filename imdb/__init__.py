@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '3.7.cvs20080813'
+__version__ = VERSION = '3.7.cvs20080917'
 
 # Import compatibility module (importing it is enough).
 import _compat

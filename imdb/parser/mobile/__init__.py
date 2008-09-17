@@ -295,7 +295,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if cvurl: d['cover url'] = cvurl[0]
         genres = _findBetween(cont, 'href="/Sections/Genres/', '/')
         if genres: d['genres'] = genres
-        ur = _findBetween(cont, 'User Rating:</b>', ' votes</a>)', maxRes=1)
+        ur = _findBetween(cont, '<div class="meta">', '</div>', maxRes=1)
         if ur:
             rat = _findBetween(ur[0], '<b>', '</b>', maxRes=1)
             if rat:
@@ -307,10 +307,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                         d['rating'] = rat
                     except ValueError:
                         pass
-            vi = ur[0].rfind('(')
-            if vi != -1 and ur[0][vi:].find('await') == -1:
+            vi = ur[0].rfind('tn15more">')
+            if vi != -1 and ur[0][vi+10:].find('await') == -1:
                 try:
-                    votes = int(_unHtml(ur[0][vi+1:]).strip().replace(',', ''))
+                    votes = _unHtml(ur[0][vi+10:]).replace('votes', '').strip()
+                    votes = int(votes.replace(',', ''))
                     d['votes'] = votes
                 except ValueError:
                     pass
@@ -458,7 +459,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:
             lis = _findBetween(cont, 'td valign="top">',
-                                ['<small', '</td>', '<br'])
+                                ['<small', '</td>', '<br> aka'])
             for li in lis:
                 pid = re_imdbID.findall(li)
                 pname = _unHtml(li)
@@ -614,7 +615,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         misc_sects[:] = [x for x in misc_sects if len(x) == 2]
         for sect, data in misc_sects:
             sect = sect.lower().replace(':', '').strip()
-            if d.has_key(sect): continue
+            if d.has_key(sect) and sect != 'mini biography': continue
             if sect == 'salary': sect = 'salary history'
             elif sect == 'spouse': continue
             elif sect == 'nickname': sect = 'nick names'
@@ -652,6 +653,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                                             bio[:byidx].rstrip())
                     ndata.append(bio)
                 data[:] = ndata
+                if 'mini biography' in d:
+                    d['mini biography'].append(ndata)
+                    continue
             d[sect] = data
         return {'data': d}
 

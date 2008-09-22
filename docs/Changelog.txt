@@ -1,17 +1,18 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.7.cvs20080917 "Hancock" (17 Sept 2008)
-  [general]
-  - minor updates to the documentation.
-
+* What's the new in release 3.7 "Burn After Reading" (22 Sep 2008)
   [http]
-  - fixed 'news' parser.
-  - fixed 'genres' and 'keywords' parser for people.
-  - fixed 'ratings', 'votes', 'tech' and 'taglines'.
+  - introduced a new set of parsers, active by default, based on DOM/XPath.
+  - old parsers fixed; 'news', 'genres', 'keywords', 'ratings', 'votes',
+    'tech', 'taglines' and 'episodes'.
 
   [sql]
   - the pure python soundex function now behaves correctly.
+
+  [general]
+  - minor updates to the documentation, with an introduction to the
+    new set of parsers and notes for packagers.
 
 
 * What's the new in release 3.6 "RahXephon" (08 Jun 2008)

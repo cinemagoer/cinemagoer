@@ -36,6 +36,10 @@ imdb (package)
        |    +-> searchCharacterParser
        |    +-> searchCompanyParser
        |    +-> utils
+       |    +-> bsoupadapter.py
+       |    +-> _bsoup.py
+       |    +-> bsoupxpath.py
+       |    +-> lxmladapter.py
        |
        +-> local (package)
        |    |
@@ -92,6 +96,10 @@ http.searchCharacterParser: parse an html string, result of a query for a
 http.searchCompanyParser: parse an html string, result of a query for a
                           company name.
 http.utils: miscellaneous utilities used only by the http package.
+http._bsoup: just a copy of the BeautifulSoup module, so that it's not
+             an external dependency.
+http.bsoupadapter, http.bsoupxpath and http.lxmladapter: adapters for
+BeautifulSoup and lxml.
 
 The modules under the parser.local package are the same of the
 parser.http package (the search functions are placed directly in the
@@ -130,9 +138,9 @@ IMDbPY-based programs.
   ===================
 
 I wanted to stay independent from the source of the data for a given
-movie/person/character, and so the imdb.IMDb function returns an instance
-of a class that provides specific methods to access a given data
-source (web server, local installation, SQL database, etc.)
+movie/person/character/company, and so the imdb.IMDb function returns
+an instance of a class that provides specific methods to access a given
+data source (web server, local installation, SQL database, etc.)
 
 Unfortunately that means that the movieID in the Movie class, the
 personID in the Person class and the characterID in the Character class

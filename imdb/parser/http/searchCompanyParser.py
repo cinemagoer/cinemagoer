@@ -8,6 +8,7 @@ E.g., when searching for the name "Columbia Pictures", the parsed page would be:
     http://akas.imdb.com/find?s=co;mx=20;q=Columbia+Pictures
 
 Copyright 2008 Davide Alberani <da@erlug.linux.it>
+          2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,7 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.utils import analyze_company_name
-from utils import ParserBase
+from utils import ParserBase, Extractor, Attribute, analyze_imdbid
 
 
 # XXX: not sure it's still useful, with the new search system.
@@ -76,10 +77,45 @@ class BasicCompanyParser(ParserBase):
             self._name += data
 
 
-from searchMovieParser import HTMLSearchMovieParser as HTMLSearchCompanyParser
+from searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
 
+class DOMBasicCompanyParser(DOMBasicMovieParser):
+    """Simply get the name of a company and the imdbID.
+
+    It's used by the DOMHTMLSearchCompanyParser class to return a result
+    for a direct match (when a search on IMDb results in a single
+    company, the web server sends directly the company page.
+    """
+    _titleAttrPath = ".//text()"
+    _linkPath = "//a[starts-with(@href, 'http://pro.imdb.com/company/')]"
+
+
+class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
+    _BaseParser = DOMBasicCompanyParser
+    _notDirectHitTitle = '<title>imdb company'
+
+    _attrs = [Attribute(key='data',
+                        multi=True,
+                        path={
+                            'link': "./a[1]/@href",
+                            'name': "./a[1]/text()",
+                            'notes': "./text()[1]"
+                            },
+                        postprocess=lambda x: (
+                            analyze_imdbid(x.get('link')),
+                            analyze_company_name(x.get('name')+(x.get('notes')
+                                                or u''), stripNotes=True)
+                        ))]
+    extractors = [Extractor(label='search',
+                            path="//td[3]/a[starts-with(@href, " \
+                                    "'/company/co')]/..",
+                            attrs=_attrs)]
+
+
+from searchMovieParser import HTMLSearchMovieParser as HTMLSearchCompanyParser
 _OBJECTS = {
-        'search_company_parser': (HTMLSearchCompanyParser,
+        'search_company_parser': ((DOMHTMLSearchCompanyParser,
+                                    HTMLSearchCompanyParser),
                 {'kind': 'company', '_basic_parser': BasicCompanyParser})
 }
 

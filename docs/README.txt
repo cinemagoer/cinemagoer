@@ -66,8 +66,22 @@ Refer to the web site http://imdbpy.sf.net/ and subscribe to the
 mailing list:  http://imdbpy.sf.net/?page=help#ml
 
 
-  UNICODE AND CHARACTER PAGES NOTICE
-  ==================================
+  NOTES FOR PACKAGERS
+  ===================
+
+If you plan to package IMDbPY for your distribution/operating system,
+keep in mind that, while IMDbPY can works out-of-the-box, some external
+package may be required for certain functionality:
+  - SQLObject: it's REQUIRED if you want to use the 'sql' data access
+               system.
+  - python-lxml: the 'http' data access system will be much faster, if
+                 it's installed.
+
+Both should probably be "suggested" dependencies.
+
+
+  RECENT IMPORTANT CHANGES
+  ========================
 
 Since release 2.4, IMDbPY internally manages every information about
 movies and people using unicode strings.  Please read the README.utf8 file.
@@ -77,6 +91,10 @@ README.currentRole file for more information.
 
 Since release 3.6, IMDbPY supports IMDb's company pages; see the
 README.companies file for more information.
+
+Since release 3.7, IMDbPY has moved its main parsers from a SAX-based
+approach to a DOM/XPath-based one; see the README.newparsers file
+for more information.
 
 
   FEATURES

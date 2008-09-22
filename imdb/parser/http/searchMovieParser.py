@@ -9,6 +9,7 @@ page would be:
     http://akas.imdb.com/find?q=the+passion&tt=on&mx=20
 
 Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
+               2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,8 +26,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import re
+from imdb import imdbURL_base
 from imdb.utils import analyze_title, analyze_name, analyze_company_name
-from utils import ParserBase
+from utils import ParserBase, DOMParserBase, Attribute, Extractor, \
+        analyze_imdbid
 from imdb.Movie import Movie
 
 
@@ -162,6 +166,7 @@ class HTMLSearchMovieParser(ParserBase):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, for both movies and persons."""
     # Customizations for movie, person and character parsers.
+
     _k = {
         'movie':
             {'analyze_f': analyze_title,
@@ -315,7 +320,91 @@ class HTMLSearchMovieParser(ParserBase):
                 self._results = bmp.parse(rawdata)['data']
 
 
+class DOMBasicMovieParser(DOMParserBase):
+    """Simply get the title of a movie and the imdbID.
+
+    It's used by the DOMHTMLSearchMovieParser class to return a result
+    for a direct match (when a search on IMDb results in a single
+    movie, the web server sends directly the movie page."""
+    # Stay generic enough to be used also for other DOMBasic*Parser classes.
+    _titleAttrPath = ".//text()"
+    _linkPath = "//a[starts-with(@href, '/title/tt')]"
+    def _init(self):
+        self.extractors = [Extractor(label='title',
+                                path="//h1",
+                                attrs=Attribute(key='title',
+                                                path=self._titleAttrPath)),
+                            Extractor(label='link',
+                                path=self._linkPath,
+                                attrs=Attribute(key='link', path="./@href"))]
+
+    # Remove 'More at IMDb Pro' links.
+    preprocessors = [(re.compile(r'<span class="pro-link".*?</span>'), '')]
+
+
+class DOMHTMLSearchMovieParser(DOMParserBase):
+    """Parse the html page that the IMDb web server shows when the
+    "new search system" is used, for movies."""
+
+    _BaseParser = DOMBasicMovieParser
+    _notDirectHitTitle = '<title>imdb title'
+
+    _attrs = [Attribute(key='data',
+                        multi=True,
+                        path={
+                            'link': "./a[1]/@href",
+                            'info': ".//text()"
+                            },
+                        postprocess=lambda x: (
+                            analyze_imdbid(x.get('link') or u''),
+                            analyze_title(x.get('info') or u'', canonical=1)
+                        ))]
+    extractors = [Extractor(label='search',
+                        path="//td[3]/a[starts-with(@href, '/title/tt')]/..",
+                        attrs=_attrs)]
+    def _init(self):
+        self.url = u''
+
+    def _reset(self):
+        self.url = u''
+
+    def preprocess_string(self, html_string):
+        if self._notDirectHitTitle in html_string[:1024].lower():
+            return html_string
+        dbme = self._BaseParser(useModule=self._useModule)
+        res = dbme.parse(html_string, url=self.url)
+        if not res: return u''
+        res = res['data']
+        if not res: return u''
+        if not 'title' in res: return u''
+        if 'link' in res:
+            link = res['link']
+        else:
+            # Tries to cope with companies for which links to pro.imdb.com
+            # are missing.
+            link = self.url.replace(imdbURL_base[:-1], '')
+        title = res['title']
+        if not (link and title): return u''
+        link = link.replace('http://pro.imdb.com', '')
+        new_html = '<td></td><td></td><td><a href="%s">%s</a></td>' % (link,
+                                                                    title)
+        return new_html
+
+    def postprocess_data(self, data):
+        if not data.has_key('data'):
+            data['data'] = []
+        results = getattr(self, 'results', None)
+        if results is not None:
+            data['data'][:] = data['data'][:results]
+        return data
+
+    def add_refs(self, data):
+        return data
+
+
+
 _OBJECTS = {
-        'search_movie_parser': (HTMLSearchMovieParser, None)
+        'search_movie_parser': ((DOMHTMLSearchMovieParser,
+                                HTMLSearchMovieParser), None)
 }
 

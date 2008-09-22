@@ -576,10 +576,16 @@ def cmpMovies(m1, m2):
                 return 1
             elif m1p > m2p:
                 return -1
-    if m1e is None: m1y = int(m1.get('year', 0))
-    else: m1y = int(m1e.get('year', 0))
-    if m2e is None: m2y = int(m2.get('year', 0))
-    else: m2y = int(m2e.get('year', 0))
+    try:
+        if m1e is None: m1y = int(m1.get('year', 0))
+        else: m1y = int(m1e.get('year', 0))
+    except ValueError:
+        m1y = 0
+    try:
+        if m2e is None: m2y = int(m2.get('year', 0))
+        else: m2y = int(m2e.get('year', 0))
+    except ValueError:
+        m2y = 0
     if m1y > m2y: return -1
     if m1y < m2y: return 1
     # Ok, these movies have the same production year...
@@ -960,7 +966,8 @@ class _Container(object):
             acs = self.accessSystem
             if acs in ('mobile', 'httpThin'):
                 acs = 'http'
-            s4h = '%s:%s' % (acs, theID)
+            # There must be some indication of the kind of the object, too.
+            s4h = '%s:%s[%s]' % (self.__class__.__name__, theID, acs)
         else:
             s4h = repr(self)
         return hash(s4h)

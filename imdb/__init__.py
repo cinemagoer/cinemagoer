@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '3.7.cvs20080917'
+__version__ = VERSION = '3.7'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -681,8 +681,8 @@ class IMDbBase:
             params = 's=tt&q=%s' % str(urllib.quote_plus(title))
             content = self._searchIMDb(params)
         if not content: return None
-        from imdb.parser.http.searchMovieParser import BasicMovieParser
-        mparser = BasicMovieParser()
+        from imdb.parser.http.searchMovieParser import DOMBasicMovieParser
+        mparser = DOMBasicMovieParser()
         result = mparser.parse(content)
         if not (result and result.get('data')): return None
         return result['data'][0][0]
@@ -701,8 +701,8 @@ class IMDbBase:
             params = 's=nm&q=%s' % str(urllib.quote_plus(name))
             content = self._searchIMDb(params)
         if not content: return None
-        from imdb.parser.http.searchPersonParser import BasicPersonParser
-        pparser = BasicPersonParser()
+        from imdb.parser.http.searchPersonParser import DOMBasicPersonParser
+        pparser = DOMBasicPersonParser()
         result = pparser.parse(content)
         if not (result and result.get('data')): return None
         return result['data'][0][0]
@@ -721,11 +721,9 @@ class IMDbBase:
         content = self._searchIMDb(params)
         if not content: return None
         if content[:512].find('<title>IMDb  Search') != -1:
-            from imdb.parser.http.searchCharacterParser \
-                        import HTMLSearchCharacterParser, BasicCharacterParser
-            search_character_parser = HTMLSearchCharacterParser()
-            search_character_parser.kind = 'character'
-            search_character_parser._basic_parser = BasicCharacterParser
+            from imdb.parser.http.searchCharacterParser import \
+                        DOMHTMLSearchCharacterParser
+            search_character_parser = DOMHTMLSearchCharacterParser()
             result = search_character_parser.parse(content)
             if not result: return None
             if not result.has_key('data'): return None
@@ -737,8 +735,10 @@ class IMDbBase:
             if name == rname:
                 return chID
             return None
-        from imdb.parser.http.searchCharacterParser import BasicCharacterParser
-        cparser = BasicCharacterParser()
+        # XXX: still needed?
+        from imdb.parser.http.searchCharacterParser import \
+                    DOMBasicCharacterParser
+        cparser = DOMBasicCharacterParser()
         result = cparser.parse(content)
         if not (result and result.get('data')): return None
         return result['data'][0][0]
@@ -757,11 +757,9 @@ class IMDbBase:
         content = self._searchIMDb(params)
         if not content: return None
         if content[:512].find('<title>IMDb  Search') != -1:
-            from imdb.parser.http.searchCompanyParser \
-                        import HTMLSearchCompanyParser, BasicCompanyParser
-            search_company_parser = HTMLSearchCompanyParser()
-            search_company_parser.kind = 'company'
-            search_company_parser._basic_parser = BasicCompanyParser
+            from imdb.parser.http.searchCompanyParser import \
+                        DOMHTMLSearchCompanyParser
+            search_company_parser = DOMHTMLSearchCompanyParser()
             result = search_company_parser.parse(content)
             if not result: return None
             if not result.has_key('data'): return None
@@ -773,8 +771,9 @@ class IMDbBase:
             if name == rname:
                 return chID
             return None
-        from imdb.parser.http.searchCompanyParser import BasicCompanyParser
-        cparser = BasicCompanyParser()
+        # Still needed?
+        from imdb.parser.http.searchCompanyParser import DOMBasicCompanyParser
+        cparser = DOMBasicCompanyParser()
         result = cparser.parse(content)
         if not (result and result.get('data')): return None
         return result['data'][0][0]

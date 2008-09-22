@@ -23,6 +23,9 @@ NOTE: it's always time to clean the code! <g>
   functions.  But how much code will be broken?
 * for local and sql data access systems: some episode titles are
   marked as {{SUSPENDED}}; they should probably be ignored.
+* the text data can be store as instances of an hypothetical TextInfo
+  class, so that values and notes can be easily retrieved separately:
+  tinfo.txt and tinfo.notes (must provide __str__ and __unicode__).
 
 
 [searches]

@@ -1,0 +1,13 @@
+  IMDbPY FAQS
+  ===========
+
+Q1: Since version 3.7, parsing the data from the IMDb web site is slow,
+    sloow, slooow!  Why?
+
+A1: if python-lxml is not installed in your system, IMDbPY uses the
+    pure-python BeautifulSoup module as a fall-back; BeautifulSoup does
+    an impressive job, but it can't be as fast as a parser written in C.
+    You can install python-lxml following the instructions in the
+    README.newparsers file.
+
+

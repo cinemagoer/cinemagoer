@@ -28,7 +28,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from imdb import imdbURL_base
-from imdb.utils import analyze_title, analyze_name, analyze_company_name
+from imdb.utils import analyze_title, analyze_name, analyze_company_name, \
+        build_title
 from utils import ParserBase, DOMParserBase, Attribute, Extractor, \
         analyze_imdbid
 from imdb.Movie import Movie
@@ -329,17 +330,36 @@ class DOMBasicMovieParser(DOMParserBase):
     # Stay generic enough to be used also for other DOMBasic*Parser classes.
     _titleAttrPath = ".//text()"
     _linkPath = "//a[starts-with(@href, '/title/tt')]"
+    # TODO: for other searches!
+    _titleFunct = lambda self, x: analyze_title(x or u'', canonical=1)
+
     def _init(self):
         self.extractors = [Extractor(label='title',
                                 path="//h1",
                                 attrs=Attribute(key='title',
-                                                path=self._titleAttrPath)),
+                                                path=self._titleAttrPath,
+                                                postprocess=self._titleFunct)),
                             Extractor(label='link',
                                 path=self._linkPath,
-                                attrs=Attribute(key='link', path="./@href"))]
+                                attrs=Attribute(key='link', path="./@href",
+                                postprocess=lambda x: \
+                                        analyze_imdbid((x or u'').replace(
+                                            'http://pro.imdb.com', ''))
+                                    ))]
 
     # Remove 'More at IMDb Pro' links.
     preprocessors = [(re.compile(r'<span class="pro-link".*?</span>'), '')]
+
+    def postprocess_data(self, data):
+        if not 'link' in data:
+            data = []
+        else:
+            link = data.pop('link')
+            if (link and data):
+                data = [(link, data)]
+            else:
+                data = []
+        return data
 
 
 class DOMHTMLSearchMovieParser(DOMParserBase):
@@ -348,6 +368,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
 
     _BaseParser = DOMBasicMovieParser
     _notDirectHitTitle = '<title>imdb title'
+    _titleBuilder = lambda self, x: build_title(x, canonical=True)
+    _linkPrefix = '/title/tt'
 
     _attrs = [Attribute(key='data',
                         multi=True,
@@ -371,19 +393,18 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
     def preprocess_string(self, html_string):
         if self._notDirectHitTitle in html_string[:1024].lower():
             return html_string
+        # Direct hit!
         dbme = self._BaseParser(useModule=self._useModule)
         res = dbme.parse(html_string, url=self.url)
         if not res: return u''
         res = res['data']
-        if not res: return u''
-        if not 'title' in res: return u''
-        if 'link' in res:
-            link = res['link']
-        else:
-            # Tries to cope with companies for which links to pro.imdb.com
-            # are missing.
-            link = self.url.replace(imdbURL_base[:-1], '')
-        title = res['title']
+        if not (res and res[0]): return u''
+        link = '%s%s' % (self._linkPrefix, res[0][0])
+        #    # Tries to cope with companies for which links to pro.imdb.com
+        #    # are missing.
+        #    link = self.url.replace(imdbURL_base[:-1], '')
+        title = self._titleBuilder(res[0][1])
+        print 'Y', res, title, link
         if not (link and title): return u''
         link = link.replace('http://pro.imdb.com', '')
         new_html = '<td></td><td></td><td><a href="%s">%s</a></td>' % (link,

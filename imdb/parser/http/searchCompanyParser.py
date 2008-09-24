@@ -25,7 +25,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.utils import analyze_company_name
+from imdb.utils import analyze_company_name, build_company_name
 from utils import ParserBase, Extractor, Attribute, analyze_imdbid
 
 
@@ -88,11 +88,14 @@ class DOMBasicCompanyParser(DOMBasicMovieParser):
     """
     _titleAttrPath = ".//text()"
     _linkPath = "//a[starts-with(@href, 'http://pro.imdb.com/company/')]"
+    _titleFunct = lambda self, x: analyze_company_name(x or u'')
 
 
 class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
     _BaseParser = DOMBasicCompanyParser
     _notDirectHitTitle = '<title>imdb company'
+    _titleBuilder = lambda self, x: build_company_name(x)
+    _linkPrefix = '/company/co'
 
     _attrs = [Attribute(key='data',
                         multi=True,

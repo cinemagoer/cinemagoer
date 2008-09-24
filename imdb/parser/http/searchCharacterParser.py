@@ -25,7 +25,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.utils import analyze_name
+from imdb.utils import analyze_name, build_name
 from utils import ParserBase, Extractor, Attribute, analyze_imdbid
 
 
@@ -86,11 +86,15 @@ class DOMBasicCharacterParser(DOMBasicMovieParser):
     character, the web server sends directly the movie page."""
     _titleAttrPath = "./text()"
     _linkPath = "//a[starts-with(@href, '/character/ch')]"
+    _titleFunct = lambda self, x: analyze_name(x or u'', canonical=False)
 
 
 class DOMHTMLSearchCharacterParser(DOMHTMLSearchMovieParser):
     _BaseParser = DOMBasicCharacterParser
     _notDirectHitTitle = '<title>imdb search'
+    _titleBuilder = lambda self, x: build_name(x, canonical=False)
+    _linkPrefix = '/character/ch'
+
     _attrs = [Attribute(key='data',
                         multi=True,
                         path={
@@ -102,7 +106,8 @@ class DOMHTMLSearchCharacterParser(DOMHTMLSearchMovieParser):
                             {'name': x.get('name')}
                         ))]
     extractors = [Extractor(label='search',
-                            path="//td[3]/a[starts-with(@href, '/character/ch')]/..",
+                            path="//td[3]/a[starts-with(@href, " \
+                                    "'/character/ch')]/..",
                             attrs=_attrs)]
 
 

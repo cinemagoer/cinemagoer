@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 3.8.cvs20080924 "100 Girls" (24 Sep 2008)
+  [http]
+  - fixed search system for direct hits.
+
+
 * What's the new in release 3.7 "Burn After Reading" (22 Sep 2008)
   [http]
   - introduced a new set of parsers, active by default, based on DOM/XPath.

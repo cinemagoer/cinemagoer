@@ -2537,6 +2537,8 @@ class DOMHTMLEpisodesRatings(DOMParserBase):
             if nr:
                 ept += u' (#%s)' % nr.strip()
             ept += '}'
+            if movieID is not None:
+                movieID = str(movieID)
             m = Movie(title=ept, movieID=movieID, accessSystem=self._as,
                         modFunct=self._modFunct)
             nd.append({'episode': m, 'votes': votes, 'rating': rating})
@@ -4627,7 +4629,7 @@ class DOMHTMLAiringParser(DOMParserBase):
         if data.has_key('airing'):
             for airing in data['airing']:
                 e = Movie(title='%s {%s}' % (data['series title'],
-                    airing['title']),movieID=analyze_imdbid(airing['link']))
+                    airing['title']), movieID=analyze_imdbid(airing['link']))
                 airing['episode'] = e
                 del airing['link']
                 del airing['title']

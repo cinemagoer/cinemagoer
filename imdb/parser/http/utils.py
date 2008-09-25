@@ -49,7 +49,7 @@ def analyze_imdbid(href):
     match = re_imdbid.search(href)
     if not match:
         return None
-    return match.group(2)
+    return str(match.group(2))
 
 
 _modify_keys = list(Movie.keys_tomodify_list) + list(Person.keys_tomodify_list)
@@ -201,9 +201,16 @@ def build_person(txt, personID=None, billingPos=None,
             roleID += [None] * (lrid - lr)
         elif lr < lrid:
             roleID = roleID[:lr]
+        for i, rid in enumerate(roleID):
+            if rid is not None:
+                roleID[i] = str(rid)
         if lr == 1:
             role = role[0]
             roleID = roleID[0]
+    elif roleID is not None:
+        roleID = str(roleID)
+    if personID is not None:
+        personID = str(personID)
     # XXX: return None if something strange is detected?
     return Person(name=name, personID=personID, currentRole=role,
                     roleID=roleID, notes=notes, billingPos=billingPos,
@@ -285,9 +292,16 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
             roleID += [None] * (lrid - lr)
         elif lr < lrid:
             roleID = roleID[:lr]
+        for i, rid in enumerate(roleID):
+            if rid is not None:
+                roleID[i] = str(rid)
         if lr == 1:
             role = role[0]
             roleID = roleID[0]
+    elif roleID is not None:
+        roleID = str(roleID)
+    if movieID is not None:
+        movieID = str(movieID)
     m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
                 roleID=roleID, roleIsPerson=_parsingCharacter,
                 modFunct=modFunct, accessSystem=accessSystem)
@@ -918,7 +932,7 @@ class GatherRefs(DOMParserBase):
             result[item] = {}
             for k, v in data.get(item, []):
                 if not v.endswith('/'): continue
-                imdbID = str(analyze_imdbid(v))
+                imdbID = analyze_imdbid(v)
                 if item == 'names refs':
                     obj = Person(personID=imdbID, name=k,
                                 accessSystem=self._as, modFunct=self._modFunct)

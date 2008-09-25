@@ -404,7 +404,6 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         #    # are missing.
         #    link = self.url.replace(imdbURL_base[:-1], '')
         title = self._titleBuilder(res[0][1])
-        print 'Y', res, title, link
         if not (link and title): return u''
         link = link.replace('http://pro.imdb.com', '')
         new_html = '<td></td><td></td><td><a href="%s">%s</a></td>' % (link,

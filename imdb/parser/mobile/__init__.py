@@ -272,6 +272,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if not creator:
                 # They change 'Created by' to 'Creator' and viceversa
                 # from time to time...
+                # XXX: is 'Creators' also used?
                 creator = _findBetween(cont, 'Creator:</h5>',
                                         ('class="tn15more"', '</div>',
                                         '<br/> <br/>'), maxRes=1)
@@ -405,12 +406,18 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             cert[:] = cert[0].split(' | ')
             cert[:] = [_unHtml(x.replace(' <i>', '::')) for x in cert]
             if cert: d['certificates'] = cert
-        plotoutline = _findBetween(cont, 'Plot:</h5>', ['<a ','</div>'],
+        plotoutline = _findBetween(cont, 'Plot:</h5>', ['<a ', '</div>'],
                                     maxRes=1)
         if plotoutline:
             plotoutline = plotoutline[0].strip()
             plotoutline = plotoutline.rstrip('|').rstrip()
             if plotoutline: d['plot outline'] = plotoutline
+        aratio = _findBetween(cont, 'Aspect Ratio:</h5>', ['<a ', '</div>'],
+                            maxRes=1)
+        if aratio:
+            aratio = aratio[0].strip().replace(' (', '::(', 1)
+            if aratio:
+                d['aspect ratio'] = aratio
         return {'data': d}
 
     def get_movie_plot(self, movieID):
@@ -609,15 +616,23 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 spouse = spouse.replace(':: ', '::').strip()
                 if spouse: sl.append(spouse)
             if sl: d['spouse'] = sl
+        nnames = _findBetween(cont, '<h5>Nickname</h5>', ('<br/> <br/>','<h5>'),
+                                maxRes=1)
+        if nnames:
+            nnames = nnames[0]
+            if nnames:
+                nnames = [x.strip().replace(' (', '::(', 1)
+                            for x in nnames.split('<br/>')]
+                if nnames:
+                    d['nick names'] = nnames
         misc_sects = _findBetween(cont, '<h5>', '<br/>')
         misc_sects[:] = [x.split('</h5>') for x in misc_sects]
         misc_sects[:] = [x for x in misc_sects if len(x) == 2]
         for sect, data in misc_sects:
             sect = sect.lower().replace(':', '').strip()
             if d.has_key(sect) and sect != 'mini biography': continue
+            elif sect in ('spouse', 'nickname'): continue
             if sect == 'salary': sect = 'salary history'
-            elif sect == 'spouse': continue
-            elif sect == 'nickname': sect = 'nick names'
             elif sect == 'where are they now': sect = 'where now'
             elif sect == 'personal quotes': sect = 'quotes'
             data = data.replace('</p><p>', '::')

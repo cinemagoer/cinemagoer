@@ -1,10 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.8.cvs20080925 "100 Girls" (25 Sep 2008)
+* What's the new in release 3.8.cvs20080925b "100 Girls" (25 Sep 2008)
   [http]
   - fixed search system for direct hits.
   - fixed IDs so that they always are str and not unicode.
+
+  [mobile]
+  - fixed multiple 'nick names'.
+  - added 'aspect ratio'.
 
 
 * What's the new in release 3.7 "Burn After Reading" (22 Sep 2008)

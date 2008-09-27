@@ -47,8 +47,8 @@ print 'personID\t: imdbID : name'
 
 # Print the long imdb name for every person.
 for person in results:
-    print '%s\t: %s : %s' % (person.personID,
-                    i.get_imdbID(person),
-                    person['long imdb name'].encode(out_encoding, 'replace'))
+    outp = u'%s\t: %s : %s' % (person.personID, i.get_imdbID(person),
+                                person['long imdb name'])
+    print outp.encode(out_encoding, 'replace'))
 
 

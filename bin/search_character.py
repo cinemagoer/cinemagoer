@@ -47,8 +47,8 @@ print 'characterID\t: imdbID : name'
 
 # Print the long imdb name for every character.
 for character in results:
-    print '%s\t\t: %s : %s' % (character.characterID,
-                    i.get_imdbID(character),
-                    character['long imdb name'].encode(out_encoding, 'replace'))
+    outp = u'%s\t\t: %s : %s' % (character.characterID, i.get_imdbID(character),
+                                character['long imdb name'])
+    print outp.encode(out_encoding, 'replace'))
 
 

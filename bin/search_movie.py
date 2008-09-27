@@ -49,6 +49,6 @@ print 'movieID\t: imdbID : title'
 for movie in results:
     outp = u'%s\t: %s : %s' % (movie.movieID, i.get_imdbID(movie),
                                 movie['long imdb title'])
-    print outp.encode(out_encoding, 'replace'))
+    print outp.encode(out_encoding, 'replace')
 
 

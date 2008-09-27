@@ -49,6 +49,6 @@ print 'companyID\t: imdbID : name'
 for company in results:
     outp = u'%s\t\t: %s : %s' % (company.companyID, i.get_imdbID(company),
                                 company['long imdb name'])
-    print outp.encode(out_encoding, 'replace'))
+    print outp.encode(out_encoding, 'replace')
 
 

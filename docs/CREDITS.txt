@@ -15,6 +15,10 @@ I'd like to thank the following people for their help:
 
 * Jesper Nøhr for a lot of testing, especially on 'sql'.
 
+* James Rubino for many bug reports.
+
+* Alen Ribic for some bug reports and hints.
+
 * Michael Charclo for some bug reports performing 'http' queries.
 
 * Amit Belani for bug reports about plot outline and other changes.

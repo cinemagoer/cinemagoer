@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.8.cvs20080927 "Righteous Kill" (27 Sep 2008)
+* What's the new in release 3.8.cvs20080928 "Kung Fu Panda" (28 Sep 2008)
   [http]
   - fixed search system for direct hits.
   - fixed IDs so that they always are str and not unicode.
@@ -9,6 +9,7 @@
   [mobile]
   - fixed multiple 'nick names'.
   - added 'aspect ratio'.
+  - fixed a "direct hit" bug searching for people.
 
   [global]
   - fixed search_* example scripts.

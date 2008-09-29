@@ -459,7 +459,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 nametag = _findBetween(nametag[0], 'VALUE="', '"', maxRes=1)
                 if not nametag: return res
                 name = unquote(nametag[0])
-                pid = _findBetween(cont, '/name/nm', '/bio', maxRes=1)
+                pid = _findBetween(cont, '/name/nm', ('/', '"', '>'), maxRes=1)
                 if not pid: return res
             if not (pid and name): return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]

@@ -87,7 +87,9 @@ def doMPAA():
         line = mpaaF.readline()
     mpaaF.close()
     offsetList.sort()
+    print 'Creating the mpaa-ratings-reasons.index file...',
     idxF = open(os.path.join(LOCAL_DATA_DIR, 'mpaa-ratings-reasons.index'),'wb')
+    print 'DONE!'
     idxF.writelines('%s%s' % (toBin3(movieID), toBin3(ftell))
                     for movieID, ftell in offsetList)
     idxF.close()
@@ -99,7 +101,9 @@ mpaaFileOut = open(os.path.join(LOCAL_DATA_DIR,
                                 'mpaa-ratings-reasons.data'), 'w')
 
 for aLine in mpaaFileGZ:
+    print 'Creating the mpaa-ratings-reasons.data file...',
     mpaaFileOut.write(aLine)
+    print 'DONE!'
 
 mpaaFileOut.close()
 mpaaFileGZ.close()

@@ -28,10 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #        The code should be commented, rewritten and cleaned. :-)
 
 from types import UnicodeType
-
-from sqlobject.sqlbuilder import *
-
-from dbschema import *
+import warnings
 
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                     scan_names, scan_titles, titleVariations, \
@@ -47,7 +44,6 @@ from imdb._exceptions import IMDbDataAccessError, IMDbError
 try:
     from imdb.parser.common.cutils import soundex
 except ImportError:
-    import warnings
     warnings.warn('Unable to import the cutils.soundex function.'
                     '  Searches of movie titles and person names will be'
                     ' a bit slower.')
@@ -156,12 +152,61 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
 
     accessSystem = 'sql'
 
-    def __init__(self, uri, adultSearch=1, *arguments, **keywords):
+    def __init__(self, uri, adultSearch=1, useORM=None, *arguments, **keywords):
         """Initialize the access system."""
         IMDbLocalAndSqlAccessSystem.__init__(self, *arguments, **keywords)
+        if useORM is None:
+            useORM = ('sqlobject', 'sqlalchemy')
+        if not isinstance(useORM, (tuple, list)):
+            if ',' in useORM:
+                useORM = useORM.split(',')
+            else:
+                useORM = [useORM]
+        self.useORM = useORM
+        nrMods = len(useORM)
+        _gotError = False
+        DB_TABLES = []
+        for idx, mod in enumerate(useORM):
+            mod = mod.lower()
+            try:
+                if mod == 'sqlalchemy':
+                    from alchemyadapter import getDBTables, NotFoundError, \
+                                                setConnection, AND, OR, IN, \
+                                                ISNULL, toUTF8
+                elif mod == 'sqlobject':
+                    from objectadapter import getDBTables, NotFoundError, \
+                                                setConnection, AND, OR, IN, \
+                                                ISNULL, toUTF8
+                else:
+                    warnings.warn('unknown module "%s".' % mod)
+                    continue
+                # XXX: look ma'... black magic!  It's used to make
+                #      TableClasses and some functions accessible
+                #      through the whole module.
+                for k, v in [('NotFoundError', NotFoundError),
+                            ('AND', AND), ('OR', OR), ('IN', IN),
+                            ('ISNULL', ISNULL)]:
+                    globals()[k] = v
+                self.toUTF8 = toUTF8
+                DB_TABLES = getDBTables()
+                for t in DB_TABLES:
+                    globals()[t._imdbpyName] = t
+                if _gotError:
+                    warnings.warn('falling back to "%s".' % mod)
+                break
+            except ImportError, e:
+                if idx+1 >= nrMods:
+                    raise IMDbError, 'unable to use any ORM in %s: %s' % (
+                                                    str(useORM), str(e))
+                else:
+                    warnings.warn('unable to use "%s": %s' % (mod, str(e)))
+                    _gotError = True
+                continue
+        else:
+            raise IMDbError, 'unable to use any ORM in %s' % str(useORM)
         # Set the connection to the database.
         try:
-            self._connection = setConnection(uri)
+            self._connection = setConnection(uri, DB_TABLES)
         except AssertionError, e:
             raise IMDbDataAccessError, \
                     'unable to connect to the database server; ' + \
@@ -213,7 +258,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if val is None:
             return ISNULL(col)
         else:
-            return col == val.encode('utf_8')
+            return col == self.toUTF8(val)
 
     def _getTitleID(self, title):
         """Given a long imdb canonical title, returns a movieID or
@@ -223,7 +268,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if td['kind'] == 'episode':
             epof = td['episode of']
             seriesID = [s.id for s in Title.select(
-                        AND(Title.q.title == epof['title'].encode('utf_8'),
+                        AND(Title.q.title == self.toUTF8(epof['title']),
                             self._buildNULLCondition(Title.q.imdbIndex,
                                                     epof.get('imdbIndex')),
                            Title.q.kindID == self._kindRev[epof['kind']],
@@ -231,14 +276,14 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                                                     epof.get('year'))))]
             if seriesID:
                 condition = AND(IN(Title.q.episodeOfID, seriesID),
-                                Title.q.title == td['title'].encode('utf_8'),
+                                Title.q.title == self.toUTF8(td['title']),
                                 self._buildNULLCondition(Title.q.imdbIndex,
                                                         td.get('imdbIndex')),
                                 Title.q.kindID == self._kindRev[td['kind']],
                                 self._buildNULLCondition(Title.q.productionYear,
                                                         td.get('year')))
         if condition is None:
-            condition = AND(Title.q.title == td['title'].encode('utf_8'),
+            condition = AND(Title.q.title == self.toUTF8(td['title']),
                             self._buildNULLCondition(Title.q.imdbIndex,
                                                     td.get('imdbIndex')),
                             Title.q.kindID == self._kindRev[td['kind']],
@@ -256,7 +301,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         """Given a long imdb canonical name, returns a personID or
         None if not found."""
         nd = analyze_name(name)
-        res = Name.select(AND(Name.q.name == nd['name'].encode('utf_8'),
+        res = Name.select(AND(Name.q.name == self.toUTF8(nd['name']),
                                 self._buildNULLCondition(Name.q.imdbIndex,
                                                         nd.get('imdbIndex'))))
         try:
@@ -305,7 +350,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         return None if it's unable to get the imdbID.
         """
         try: movie = Title.get(movieID)
-        except SQLObjectNotFound: return None
+        except NotFoundError: return None
         imdbID = movie.imdbID
         if imdbID is not None: return '%07d' % imdbID
         m_dict = get_movie_data(movie.id, self._kind)
@@ -327,7 +372,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         return None if it's unable to get the imdbID.
         """
         try: person = Name.get(personID)
-        except SQLObjectNotFound: return None
+        except NotFoundError: return None
         imdbID = person.imdbID
         if imdbID is not None: return '%07d' % imdbID
         n_dict = {'name': person.name, 'imdbIndex': person.imdbIndex}
@@ -344,7 +389,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         return None if it's unable to get the imdbID.
         """
         try: character = CharName.get(characterID)
-        except SQLObjectNotFound: return None
+        except NotFoundError: return None
         imdbID = character.imdbID
         if imdbID is not None: return '%07d' % imdbID
         n_dict = {'name': character.name, 'imdbIndex': character.imdbIndex}
@@ -361,7 +406,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         return None if it's unable to get the imdbID.
         """
         try: company = CompanyName.get(companyID)
-        except SQLObjectNotFound: return None
+        except NotFoundError: return None
         imdbID = company.imdbID
         if imdbID is not None: return '%07d' % imdbID
         n_dict = {'name': company.name, 'country': company.countryCode}
@@ -442,7 +487,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             q2 = [(q.movieID, get_movie_data(q.id, self._kind, fromAka=1))
                     for q in AkaTitle.select(conditionAka)]
             qr += q2
-        except SQLObjectNotFound, e:
+        except NotFoundError, e:
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
 
@@ -471,7 +516,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         infosets = self.get_movie_infoset()
         try:
             res = get_movie_data(movieID, self._kind)
-        except SQLObjectNotFound, e:
+        except NotFoundError, e:
             raise IMDbDataAccessError, \
                     'unable to get movieID "%s": "%s"' % (movieID, str(e))
         if not res:
@@ -680,7 +725,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                     for q in Name.select(condition)]
             qr += [(q.personID, {'name': q.name, 'imdbIndex': q.imdbIndex})
                     for q in AkaName.select(conditionAka)]
-        except SQLObjectNotFound, e:
+        except NotFoundError, e:
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
 
@@ -700,7 +745,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         infosets = self.get_person_infoset()
         try:
             p = Name.get(personID)
-        except SQLObjectNotFound, e:
+        except NotFoundError, e:
             raise IMDbDataAccessError, \
                     'unable to get personID "%s": "%s"' % (personID, str(e))
         res = {'name': p.name, 'imdbIndex': p.imdbIndex}
@@ -850,7 +895,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         try:
             qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
                     for q in CharName.select(condition)]
-        except SQLObjectNotFound, e:
+        except NotFoundError, e:
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
         res = scan_names(qr, s_name, name2, '', results,
@@ -870,7 +915,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         infosets = self.get_character_infoset()
         try:
             c = CharName.get(characterID)
-        except SQLObjectNotFound, e:
+        except NotFoundError, e:
             raise IMDbDataAccessError, \
                     'unable to get characterID "%s": "%s"' % (characterID, e)
         res = {'name': c.name, 'imdbIndex': c.imdbIndex}
@@ -925,7 +970,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         try:
             qr = [(q.id, {'name': q.name, 'country': q.countryCode})
                     for q in CompanyName.select(condition)]
-        except SQLObjectNotFound, e:
+        except NotFoundError, e:
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
         qr[:] = [(x[0], build_company_name(x[1])) for x in qr]
@@ -946,7 +991,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         infosets = self.get_company_infoset()
         try:
             c = CompanyName.get(companyID)
-        except SQLObjectNotFound, e:
+        except NotFoundError, e:
             raise IMDbDataAccessError, \
                     'unable to get companyID "%s": "%s"' % (companyID, e)
         res = {'name': c.name, 'country': c.countryCode}

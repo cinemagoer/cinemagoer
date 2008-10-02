@@ -24,21 +24,18 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from __future__ import generators
-import os, sys, getopt, time, re
+import os, sys, getopt, time, re, warnings
 from gzip import GzipFile
 from types import UnicodeType
-
-from sqlobject import *
-from sqlobject.sqlbuilder import ISNOTNULL
+from imdb.parser.sql.dbschema import *
 
 from imdb.parser.sql import soundex, get_movie_data
-from imdb.parser.sql.dbschema import *
 from imdb.utils import analyze_title, analyze_name, \
         build_name, build_title, normalizeName, _articles, \
         build_company_name, analyze_company_name
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
-from imdb._exceptions import IMDbParserError
+from imdb._exceptions import IMDbParserError, IMDbError
 
 _articles = list(_articles)
 for i, art in enumerate(_articles):
@@ -48,7 +45,7 @@ for i, art in enumerate(_articles):
 re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 HELP = """imdbpy2sql.py usage:
-    %s -d /directory/with/PlainTextDataFiles/ -u URI [--COMPATIBILITY-OPTIONS]
+    %s -d /directory/with/PlainTextDataFiles/ -u URI [-o sqlobject,sqlalchemy] [--COMPATIBILITY-OPTIONS]
 
         # NOTE: URI is something along the line:
                 scheme://[user[:password]@]host[:port]/database[?parameters]
@@ -75,6 +72,10 @@ HELP = """imdbpy2sql.py usage:
 IMDB_PTDF_DIR = None
 # URI used to connect to the database.
 URI = None
+# ORM to use.
+USE_ORM = None
+#
+DB_TABLES = []
 # Max allowed recursion, inserting data.
 MAX_RECURSION = 10
 # Store custom queries specified on the command line.
@@ -115,11 +116,11 @@ if '--sqlite-transactions' in sys.argv[1:]:
 
 # Manage arguments list.
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:h',
+    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:o:h',
                                                 ['uri=', 'data=', 'execute=',
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
-                                                'mysql-force-myisam',
+                                                'mysql-force-myisam', 'orm',
                                                 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
@@ -151,6 +152,8 @@ for opt in optlist:
                 CUSTOM_QUERIES.setdefault(nw, []).append(cmd)
         else:
             CUSTOM_QUERIES.setdefault(when, []).append(cmd)
+    elif opt[0] in ('-o', '--orm'):
+        USE_ORM = opt[1].split(',')
     elif opt[0] in ('-h', '--help'):
         print HELP
         sys.exit(0)
@@ -210,8 +213,45 @@ if ('--mysql-force-myisam' in sys.argv[1:] and
             "belong to the database server you're using: proceed at your\n"\
             "own risk!\n"
 
+if USE_ORM is None:
+    USE_ORM = ('sqlobject', 'sqlalchemy')
+if not isinstance(USE_ORM, (tuple, list)):
+        USE_ORM = [USE_ORM]
+nrMods = len(USE_ORM)
+_gotError = False
+for idx, mod in enumerate(USE_ORM):
+    mod = mod.lower()
+    try:
+        if mod == 'sqlalchemy':
+            from imdb.parser.sql.alchemyadapter import getDBTables, \
+                    NotFoundError, setConnection, AND, OR, IN, ISNULL, \
+                    ISNOTNULL, toUTF8
+        elif mod == 'sqlobject':
+            from imdb.parser.sql.objectadapter import getDBTables, \
+                    NotFoundError, setConnection, AND, OR, IN, ISNULL, \
+                    ISNOTNULL, toUTF8
+        else:
+            warnings.warn('unknown module "%s".' % mod)
+            continue
+        DB_TABLES = getDBTables()
+        for t in DB_TABLES:
+            globals()[t._imdbpyName] = t
+        if _gotError:
+            warnings.warn('falling back to "%s".' % mod)
+        break
+    except ImportError, e:
+        if idx+1 >= nrMods:
+            raise IMDbError, 'unable to use any ORM in %s: %s' % (
+                                            str(USE_ORM), str(e))
+        else:
+            warnings.warn('unable to use "%s": %s' % (mod, str(e)))
+            _gotError = True
+        continue
+else:
+    raise IMDbError, 'unable to use any ORM in %s' % str(USE_ORM)
+
 # Connect to the database.
-conn = setConnection(URI)
+conn = setConnection(URI, DB_TABLES)
 # Extract exceptions to trap.
 OperationalError = conn.module.OperationalError
 IntegrityError = conn.module.IntegrityError
@@ -222,7 +262,7 @@ CURS = connectObject.cursor()
 
 # Name of the database and style of the parameters.
 DB_NAME = conn.dbName
-PARAM_STYLE = conn.module.paramstyle
+PARAM_STYLE = conn.paramstyle
 
 
 def tableName(table):
@@ -1876,7 +1916,7 @@ def restoreImdbID(tons, cls):
                 mop_in_db.imdbID = t['imdbID']
             except:
                 continue
-        except SQLObjectNotFound:
+        except NotFoundError:
             continue
         count += 1
     print 'DONE! (restored %d entries out of %d)' % (count, len(tons))
@@ -1948,7 +1988,7 @@ def run():
     # Truncate the current database.
     print 'DROPPING current database...',
     sys.stdout.flush()
-    dropTables()
+    dropTables(DB_TABLES)
     print 'DONE!'
 
     executeCustomQueries('BEFORE_CREATE')
@@ -1956,7 +1996,7 @@ def run():
     # Rebuild the database structure.
     print 'CREATING new tables...',
     sys.stdout.flush()
-    createTables()
+    createTables(DB_TABLES)
     print 'DONE!'
     t('dropping and recreating the database')
 
@@ -2058,7 +2098,7 @@ def run():
     print 'building database indexes (this may take a while)'
     sys.stdout.flush()
     # Build database indexes.
-    createIndexes()
+    createIndexes(DB_TABLES)
     t('createIndexes()')
 
     executeCustomQueries('END')

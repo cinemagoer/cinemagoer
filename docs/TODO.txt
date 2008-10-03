@@ -152,5 +152,4 @@ Things to do:
   IMDb releases also "diff" files to keep the plain text files updated;
   it would be wonderful to directly use these diff files to upgrade the
   SQL database, but I think this is a nearly impossible task.
-* replace SQLObject with SQLAlchemy?
 

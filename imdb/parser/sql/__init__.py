@@ -167,7 +167,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         _gotError = False
         DB_TABLES = []
         for idx, mod in enumerate(useORM):
-            mod = mod.lower()
+            mod = mod.strip().lower()
             try:
                 if mod == 'sqlalchemy':
                     from alchemyadapter import getDBTables, NotFoundError, \

@@ -1,8 +1,8 @@
 
 NOTE: the imdbpy2sql.py script, used to populate a database using
 the data in the IMDb's plain text data files, is a critical piece
-of IMDbPY: it's based on the SQLObject ORM to be database-independent
-and contains a lot of tricks to be as fast as possible; however there
+of IMDbPY: it's based on an ORM to be database-independent and
+contains a lot of tricks to be as fast as possible; however there
 are huge margins for improvements; if you want to help, please read the
 TODO.txt file and subscribe the imdbpy-devel mailing list at:
   http://imdbpy.sf.net/?page=help#ml
@@ -22,7 +22,18 @@ movies and persons information.
 This means that MySQL, PostgreSQL, SQLite, Firebird, MAX DB,
 Sybase and MSSQL are supported and, as your read this text,
 maybe other database backends were added.
+Since release 3.8, SQLAlchemy (version 0.4 and 0.5) is also supported
+(this adds at least DB2/Informix IDS to the list of supported databases).
 
+
+  REQUIREMENTS
+  ============
+
+You need one of SQLObject or SQLAlchemy (both can be installed
+safely: by default IMDbPY first tries SQLObject; if not present
+it fall-backs to SQLAlchemy).
+
+[SQLObject]
 You need the SQLObject package, at least version 0.8; even better
 if you can download the latest SVN snapshot.
 
@@ -30,10 +41,21 @@ SQLObject home page: http://sqlobject.org/
 SVN command to download the latest development version:
   svn co http://svn.colorstudy.com/SQLObject/trunk SQLObject
 
-Obviously the SQLObject can access databases only through other
+[SQLAlchemy]
+Support for SQLAlchemy is still in beta (please report any error!)
+and a bit slower than SQLObject; anyway, you need version 0.4 or 0.5.
+
+SQLAlchemy home page: http://www.sqlalchemy.org/
+SVN command to download the latest development version:
+  svn checkout http://svn.sqlalchemy.org/sqlalchemy/trunk sqlalchemy
+
+
+[OTHER REQUIRED MODULES]
+Obviously SQLObject and SQLAlchemy can access databases only through other
 specific modules/packages, that you need to have installed (e.g.:
 python-mysqldb for MySQL, python-psycopg for PostgreSQL, python-sqlite
 for SQLite and so on).
+
 
 
   SQL DATABASE INSTALLATION
@@ -221,6 +243,16 @@ Now you can use IMDbPY with the database:
   print ti['director'][0]
 
 and so on...
+
+The 'sql' data access system takes an optional argument, named "useORM",
+which can be set to a string or a list of values (the string can be
+a comma-separated list of items, to denote an order of preference).
+Valid values are "sqlobject" and "sqlalchemy".
+The default is ('sqlobject', 'sqlalchemy').
+E.g.:
+  i = IMDb('sql', uri='YOUR_URI_STRING', useORM='sqlalchemy,sqlobject')
+  i = IMDb('sql', uri='YOUR_URI_STRING', useORM=['sqlalchemy', 'sqlobject'])
+  i = IMDb('sql', uri='YOUR_URI_STRING', useORM='sqlalchemy'])
 
 
   ADVANCED FEATURES

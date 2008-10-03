@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.8.cvs20081002 "Vlad" (02 Oct 2008)
+* What's the new in release 3.8.cvs20081003 "Vlad" (03 Oct 2008)
   [http]
   - fixed search system for direct hits.
   - fixed IDs so that they always are str and not unicode.
@@ -16,6 +16,7 @@
 
   [global]
   - fixed search_* example scripts.
+  - updated the documentation.
 
 
 * What's the new in release 3.7 "Burn After Reading" (22 Sep 2008)

@@ -63,7 +63,8 @@ you can access movie data through the e-mail interface, etc. etc.
  ---------------------------+-----------+------------------------------------
              'sql'          |   'db',   | information are fetched through
                             | 'database'| a SQL database (every database
-                            |           | supported by SQLObject is available).
+                            |           | supported by SQLObject and SQLAlchemy
+                            |           | is available).
  ---------------------------+-----------+------------------------------------
            'mobile'         |           | same as 'httpThin', but string
                             |           | methods are used for parsing.

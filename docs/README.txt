@@ -72,12 +72,12 @@ mailing list:  http://imdbpy.sf.net/?page=help#ml
 If you plan to package IMDbPY for your distribution/operating system,
 keep in mind that, while IMDbPY can works out-of-the-box, some external
 package may be required for certain functionality:
-  - SQLObject: it's REQUIRED if you want to use the 'sql' data access
-               system.
+  - SQLObject or SQLAlchemy: one of these is REQUIRED if you want to use
+    the 'sql' data access system.
   - python-lxml: the 'http' data access system will be much faster, if
-                 it's installed.
+    it's installed.
 
-Both should probably be "suggested" dependencies.
+All of them should probably be "suggested" dependencies.
 
 
   RECENT IMPORTANT CHANGES
@@ -95,6 +95,9 @@ README.companies file for more information.
 Since release 3.7, IMDbPY has moved its main parsers from a SAX-based
 approach to a DOM/XPath-based one; see the README.newparsers file
 for more information.
+
+Since release 3.8, IMDbPY supports both SQLObject and SQLAlchemy; see
+README.sqldb for more information.
 
 
   FEATURES
@@ -149,7 +152,7 @@ suitable for systems with limited bandwidth but normal CPU power.
   ======================================
 
 * Returns every information available in the plain text data files.
-* Every database supported by SQLObject is available.
+* Every database supported by SQLObject and SQLAlchemy is available.
 
 
   FEATURES OF THE MOBILE DATA ACCESS SYSTEM

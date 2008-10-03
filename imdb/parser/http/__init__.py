@@ -238,6 +238,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 self.set_cookies(cookie_id, cookie_uu)
         if proxy != -1:
             self.set_proxy(proxy)
+        if useModule is not None:
+            if not isinstance(useModule, (list, tuple)) and ',' in useModule:
+                useModule = useModule.split(',')
         _def = {'_modFunct': self._defModFunct, '_as': self.accessSystem}
         # Proxy objects.
         self.smProxy = _ModuleProxy(searchMovieParser, defaultKeys=_def,

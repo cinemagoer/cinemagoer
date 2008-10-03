@@ -19,6 +19,8 @@ I'd like to thank the following people for their help:
 
 * Alen Ribic for some bug reports and hints.
 
+* Helio MC Pereira for a bug report about unicode.
+
 * Michael Charclo for some bug reports performing 'http' queries.
 
 * Amit Belani for bug reports about plot outline and other changes.

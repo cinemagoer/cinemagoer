@@ -29,7 +29,7 @@ except ImportError: from sqlalchemy import exceptions as exc # 0.4
 from imdb._exceptions import IMDbDataAccessError
 from dbschema import *
 
-# Used to convert table and comlumn names.
+# Used to convert table and column names.
 re_upper = re.compile(r'([A-Z])')
 
 # XXX: I'm not sure at all that this is the best method to connect
@@ -268,7 +268,10 @@ class TableAdapter(object):
         # FIXME: isn't this a bit risky?  We can't check len(result),
         #        because sqlite returns -1...
         #        What about converting it to a list and getting the first item?
-        return result[0]
+        try:
+            return result[0]
+        except KeyError:
+            raise NotFoundError, 'no data for ID %s' % theID
 
     def dropTable(self, checkfirst=True):
         """Drop the table."""
@@ -291,13 +294,12 @@ class TableAdapter(object):
         # FIXME: indexLen is ignored in SQLAlchemy, and that means that
         #        indexes will be over the whole 255 chars strings...
         # TODO: how can we check that a given index is not already present?
-        c = getattr(self.table.c, self.colMap[col.name])
         idx = Index('%s.%s' % (self.table.name, col.index or col.name),
                     getattr(self.table.c, self.colMap[col.name]))
         # XXX: beware that exc.OperationalError can be raised, is some
         #      strange circumstances; that's why the index name doesn't
         #      follow the SQLObject convention, but includes the table name:
-        #      sqlite, for example, expect index names to be unique at
+        #      sqlite, for example, expects index names to be unique at
         #      db-level.
         idx.create()
 

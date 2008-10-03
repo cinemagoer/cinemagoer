@@ -613,7 +613,7 @@ class DOMParserBase(object):
         nrMods = len(useModule)
         _gotError = False
         for idx, mod in enumerate(useModule):
-            mod = mod.lower()
+            mod = mod.strip().lower()
             try:
                 if mod == 'lxml':
                     from lxmladapter import fromstring

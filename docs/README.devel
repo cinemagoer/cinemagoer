@@ -54,6 +54,8 @@ imdb (package)
        +-> sql (package)
        |    |
        |    +-> dbschema
+       |    +-> alchemyadapter
+       |    +-> objectadapter
        |
        +-> common (package)
             |
@@ -108,7 +110,9 @@ of the database.
 
 The parser.sql package manages the access to the data in the SQL
 database, created with the imdbpy2sql.py script; see the README.sqldb file.
-The dbschema module contains tables definitions and some useful functions.
+The dbschema module contains tables definitions and some useful functions;
+The alchemyadapter adapts the SQLAlchemy ORM to the internal mechanisms
+of IMDbPY, and the objectadapter does the same for the SQLObject ORM.
 
 The class in the parser.mobile package is a subclass of the one found
 in parser.http, with some method overridden to be many times faster (from

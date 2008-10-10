@@ -109,7 +109,7 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
         #        we can't retrieve correct values after an update (I think
         #        it's never needed, but...)  Anyway, these are set to False
         #        for performance reason at insert time (see imdbpy2sql.py).
-        #table._cacheValue = False
+        table._cacheValue = False
     # Required by imdbpy2sql.py.
     conn.paramstyle = conn.module.paramstyle
     return conn

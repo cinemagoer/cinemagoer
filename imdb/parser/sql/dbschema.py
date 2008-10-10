@@ -103,8 +103,8 @@ roleTypeDefs = {'role': ('actor', 'actress', 'producer', 'writer',
                         'production designer', 'guest')}
 
 # Schema of tables in our database.
-# XXX: ForeignKey can be used to create constrains between tables,
-#      but they create an Index in the database, and this
+# XXX: Foreign keys can be used to create constrains between tables,
+#      but they create indexes in the database, and this
 #      means poor performances at insert-time.
 DB_SCHEMA = [
     DBTable('Name',

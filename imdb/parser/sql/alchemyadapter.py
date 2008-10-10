@@ -115,7 +115,6 @@ class QAdapter(object):
         self.colMap = colMap
 
     def __getattr__(self, name):
-        # XXX: raise AttributeError, if there's not such an attribute?
         try: return getattr(self.table.c, self.colMap[name])
         except KeyError, e: raise AttributeError, "unable to get '%s'" % name
 
@@ -286,16 +285,18 @@ class TableAdapter(object):
             if col.name == 'id':
                 continue
             if col.params.get('alternateID', False):
-                # TODO: pass checkfirst.
-                self._createIndex(col)
+                self._createIndex(col, checkfirst=checkfirst)
 
-    def _createIndex(self, col):
+    def _createIndex(self, col, checkfirst=True):
         """Create an index for a given (schema) column."""
-        # FIXME: indexLen is ignored in SQLAlchemy, and that means that
-        #        indexes will be over the whole 255 chars strings...
-        # TODO: how can we check that a given index is not already present?
-        idx = Index('%s.%s' % (self.table.name, col.index or col.name),
-                    getattr(self.table.c, self.colMap[col.name]))
+        # XXX: indexLen is ignored in SQLAlchemy, and that means that
+        #      indexes will be over the whole 255 chars strings...
+        idx_name = '%s.%s' % (self.table.name, col.index or col.name)
+        if checkfirst:
+            for index in self.table.indexes:
+                if index.name == idx_name:
+                    return
+        idx = Index(idx_name, getattr(self.table.c, self.colMap[col.name]))
         # XXX: beware that exc.OperationalError can be raised, is some
         #      strange circumstances; that's why the index name doesn't
         #      follow the SQLObject convention, but includes the table name:
@@ -307,8 +308,7 @@ class TableAdapter(object):
         """Create all required indexes."""
         for col in self._imdbpySchema.cols:
             if col.index:
-                # TODO: pass checkfirst.
-                self._createIndex(col)
+                self._createIndex(col, checkfirst=ifNotExists)
 
     def __call__(self, *args, **kwds):
         """To insert a new row with the syntax: TableClass(key=value, ...)"""

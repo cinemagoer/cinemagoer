@@ -13,6 +13,8 @@ I'd like to thank the following people for their help:
 * H. Turgut Uyar for a number of bug reports and a lot of work on
   the test-suite.
 
+* Rdian06 for a patch for movies without plot authors.
+
 * Jesper Nøhr for a lot of testing, especially on 'sql'.
 
 * James Rubino for many bug reports.

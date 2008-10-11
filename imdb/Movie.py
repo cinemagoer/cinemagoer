@@ -338,7 +338,7 @@ class Movie(_Container):
             s += u'Rating: %s' % rating
             nr_votes = self.get('votes')
             if nr_votes:
-                s += u'(%s votes)' % nr_votes
+                s += u' (%s votes)' % nr_votes
             s += u'.\n'
         plot = self.get('plot')
         if plot:

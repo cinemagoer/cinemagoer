@@ -1056,6 +1056,16 @@ class HTMLPlotParser(ParserBase):
             self._plot_writer += data
 
 
+def _process_plotsummary(x):
+    """Process a plot (contributed by Rdian06)."""
+    if x.get('author') is None:
+        xauthor = u'Anonymous'
+    else:
+        xauthor = x.get('author').replace('{', '<').replace('}',
+                        '>').replace('(','<').replace(')', '>')
+    xplot = x.get('plot', '').strip()
+    return u'%s::%s' % (xauthor, xplot)
+
 class DOMHTMLPlotParser(DOMParserBase):
     """Parser for the "plot summary" page of a given movie.
     The page should be provided as a string, as taken from
@@ -1075,9 +1085,7 @@ class DOMHTMLPlotParser(DOMParserBase):
                             multi=True,
                             path={'plot': './text()',
                                 'author': './i/a/text()'},
-                            postprocess=lambda x: u'%s::%s' % (
-                            x.get('author').replace('{', '<').replace('}', '>'),
-                            x.get('plot', '').strip())))]
+                            postprocess=lambda x: _process_plotsummary(x)))]
 
 
 class HTMLAwardsParser(ParserBase):

@@ -688,12 +688,12 @@ class DOMParserBase(object):
         ##html_string = subSGMLRefs(html_string)
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
-        if self.getRefs:
-            self.gather_refs(html_string)
         html_string = html_string.strip()
         if html_string:
             dom = self.get_dom(html_string)
             dom = self.preprocess_dom(dom)
+            if self.getRefs:
+                self.gather_refs(dom)
             data = self.parse_dom(dom)
         else:
             data = {}
@@ -733,13 +733,13 @@ class DOMParserBase(object):
         ##print html_string.encode('utf8')
         return html_string
 
-    def gather_refs(self, html_string):
+    def gather_refs(self, dom):
         """Collect refs."""
-        # XXX: does this degrades performances?  Probably not at all.
         grParser = GatherRefs(useModule=self._useModule)
         grParser._as = self._as
         grParser._modFunct = self._modFunct
-        refs = grParser.parse(html_string)
+        refs = grParser.parse_dom(dom)
+        refs = grParser.postprocess_data(refs)
         self._namesRefs = refs['names refs']
         self._titlesRefs = refs['titles refs']
         self._charactersRefs = refs['characters refs']

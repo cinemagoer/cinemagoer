@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.8.cvs20081012 "Rise" (12 Oct 2008)
+* What's the new in release 3.8.cvs20081012b "Rise" (12 Oct 2008)
   [http]
   - fixed search system for direct hits.
   - fixed IDs so that they always are str and not unicode.

@@ -48,23 +48,16 @@ def setattribute(node, attrName, attrValue):
     node.set(attrName, attrValue)
 
 
-def fix_rowspans(html_string):
-    """Repeat td elements according to their rowspan attributes in subsequent
-    tr elements.
-    """
-    dom = fromstring(html_string)
-    cols = dom.xpath("//td[@rowspan]")
-    for col in cols:
-        span = int(col.get('rowspan'))
-        position = len(col.xpath("./preceding-sibling::td"))
-        row = col.getparent()
-        next = row
-        for i in xrange(span-1):
-            next = next.xpath("./following-sibling::tr[1]")[0]
-            # if not cloned, child will be moved to new parent
-            clone = fromstring(tostring(col))
-            next.insert(position, clone)
-    return tostring(dom)
+def getparent(node):
+    """Return the parent of the given node."""
+    return node.getparent()
+
+
+def clone(node):
+    """Return a clone of the given node."""
+    # XXX: test with deepcopy?  Check if there are problems with
+    #      python 2.4 and previous.
+    return fromstring(tostring(node))
 
 
 def apply_xpath(element, path):

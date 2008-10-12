@@ -1380,7 +1380,6 @@ class DOMHTMLAwardsParser(DOMParserBase):
         result = awparser.parse(awards_html_string)
     """
     subject = 'title'
-    _fixRowSpans = True
     _containsObjects = True
 
     extractors = [
@@ -1428,6 +1427,26 @@ class DOMHTMLAwardsParser(DOMParserBase):
         (re.compile('(<small>.*?)<br>(.*?</small)', re.I), r'\1 \2'),
         (re.compile('(</tr>\n\n)(<td)', re.I), r'\1<tr>\2')
         ]
+
+    def preprocess_dom(self, dom):
+        """Repeat td elements according to their rowspan attributes
+        in subsequent tr elements.
+        """
+        cols = self.xpath(dom, "//td[@rowspan]")
+        for col in cols:
+            span = int(self.getattribute(col, 'rowspan'))
+            position = len(self.xpath(col, "./preceding-sibling::td"))
+            row = self.getparent(col)
+            next = row
+            for i in xrange(span-1):
+                next = self.xpath(next, "./following-sibling::tr[1]")[0]
+                # if not cloned, child will be moved to new parent
+                clone = self.clone(col)
+                # XXX: beware that here we don't use an "adapted" function,
+                #      because both BeautifulSoup and lxml uses the same
+                #      "insert" method.
+                next.insert(position, clone)
+        return dom
 
     def postprocess_data(self, data):
         if len(data) == 0:

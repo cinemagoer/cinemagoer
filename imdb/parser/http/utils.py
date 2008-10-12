@@ -598,7 +598,6 @@ class DOMParserBase(object):
     DOM/XPath version."""
     _defGetRefs = False
     _containsObjects = False
-    _fixRowSpans = False
 
     preprocessors = []
     extractors = []
@@ -620,14 +619,16 @@ class DOMParserBase(object):
                     from lxmladapter import tostring
                     from lxmladapter import setattribute
                     from lxmladapter import getattribute
-                    from lxmladapter import fix_rowspans
+                    from lxmladapter import getparent
+                    from lxmladapter import clone
                     from lxmladapter import apply_xpath
                 elif mod == 'beautifulsoup':
                     from bsoupadapter import fromstring
                     from bsoupadapter import tostring
                     from bsoupadapter import setattribute
                     from bsoupadapter import getattribute
-                    from bsoupadapter import fix_rowspans
+                    from bsoupadapter import getparent
+                    from bsoupadapter import clone
                     from bsoupadapter import apply_xpath
                 else:
                     warnings.warn('unknown module "%s".' % mod)
@@ -636,8 +637,9 @@ class DOMParserBase(object):
                 self.tostring = tostring
                 self.setattribute = setattribute
                 self.getattribute = getattribute
+                self.getparent = getparent
+                self.clone = clone
                 self.apply_xpath = apply_xpath
-                self.fix_rowspans = fix_rowspans
                 if _gotError:
                     warnings.warn('falling back to "%s".' % mod)
                 break
@@ -709,9 +711,6 @@ class DOMParserBase(object):
     def xpath(self, element, xpath):
         return self.apply_xpath(element, xpath)
 
-    def _fix_rowspans(self, html_string):
-        return self.fix_rowspans(html_string)
-
     def preprocess_string(self, html_string):
         """Here we can modify the text, before it's parsed."""
         if len(html_string) == 0:
@@ -728,13 +727,11 @@ class DOMParserBase(object):
                 html_string = html_string.replace(src, sub)
             elif callable(src):
                 html_string = src(html_string)
-        if self._fixRowSpans:
-            html_string = self._fix_rowspans(html_string)
         ##print html_string.encode('utf8')
         return html_string
 
     def gather_refs(self, dom):
-        """Collect refs."""
+        """Collect references."""
         grParser = GatherRefs(useModule=self._useModule)
         grParser._as = self._as
         grParser._modFunct = self._modFunct
@@ -747,10 +744,6 @@ class DOMParserBase(object):
     def preprocess_dom(self, dom):
         """Last chance to modify the dom, before the rules in self.extractors
         are applied by the parse_dom method."""
-        # TODO: I suppose that gather_refs and even _fix_rowspans can be
-        #       handled after preprocess_dom and not after preprocess_string:
-        #       working directly with the dom should avoid the need to parse
-        #       the html more than one time.
         return dom
 
     def parse_dom(self, dom):

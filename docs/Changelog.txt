@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.8.cvs20081012b "Rise" (12 Oct 2008)
+* What's the new in release 3.8.cvs20081012c "Rise" (12 Oct 2008)
   [http]
   - fixed search system for direct hits.
   - fixed IDs so that they always are str and not unicode.
@@ -9,6 +9,7 @@
   - for pages about a single episode of a series, "Series Crew" are
     now separated items.
   - introduced the preprocess_dom method of the DOMParserBase class.
+  - handling rowspan for DOMHTMLAwardsParser is no more a special case.
 
   [sql]
   - introduced support for SQLAlchemy.

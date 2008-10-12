@@ -618,11 +618,15 @@ class DOMParserBase(object):
                 if mod == 'lxml':
                     from lxmladapter import fromstring
                     from lxmladapter import tostring
+                    from lxmladapter import setattribute
+                    from lxmladapter import getattribute
                     from lxmladapter import fix_rowspans
                     from lxmladapter import apply_xpath
                 elif mod == 'beautifulsoup':
                     from bsoupadapter import fromstring
                     from bsoupadapter import tostring
+                    from bsoupadapter import setattribute
+                    from bsoupadapter import getattribute
                     from bsoupadapter import fix_rowspans
                     from bsoupadapter import apply_xpath
                 else:
@@ -630,6 +634,8 @@ class DOMParserBase(object):
                     continue
                 self.fromstring = fromstring
                 self.tostring = tostring
+                self.setattribute = setattribute
+                self.getattribute = getattribute
                 self.apply_xpath = apply_xpath
                 self.fix_rowspans = fix_rowspans
                 if _gotError:
@@ -686,7 +692,9 @@ class DOMParserBase(object):
             self.gather_refs(html_string)
         html_string = html_string.strip()
         if html_string:
-            data = self.parse_dom(html_string)
+            dom = self.get_dom(html_string)
+            dom = self.preprocess_dom(dom)
+            data = self.parse_dom(dom)
         else:
             data = {}
         data = self.postprocess_data(data)
@@ -736,10 +744,18 @@ class DOMParserBase(object):
         self._titlesRefs = refs['titles refs']
         self._charactersRefs = refs['characters refs']
 
-    def parse_dom(self, html_string):
-        """Parse the given string according to the rules specified
+    def preprocess_dom(self, dom):
+        """Last chance to modify the dom, before the rules in self.extractors
+        are applied by the parse_dom method."""
+        # TODO: I suppose that gather_refs and even _fix_rowspans can be
+        #       handled after preprocess_dom and not after preprocess_string:
+        #       working directly with the dom should avoid the need to parse
+        #       the html more than one time.
+        return dom
+
+    def parse_dom(self, dom):
+        """Parse the given dom according to the rules specified
         in self.extractors."""
-        dom = self.get_dom(html_string)
         result = {}
         for extractor in self.extractors:
             if extractor.group is None:
@@ -942,6 +958,8 @@ class GatherRefs(DOMParserBase):
                 else:
                     obj = Character(characterID=imdbID, name=k,
                                 accessSystem=self._as, modFunct=self._modFunct)
+                # XXX: companies aren't handled: are they ever found in text,
+                #      as links to their page?
                 result[item][k] = obj
         return result
 

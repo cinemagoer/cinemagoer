@@ -665,12 +665,6 @@ class DOMHTMLMovieParser(DOMParserBase):
     """
     _containsObjects = True
 
-    # XXX: this class collects also information related to the series,
-    #      parsing an episode's page (the old parser, stopped at the
-    #      episode's data).  This may not be a problem, but the two
-    #      sets of information end up in the same list; it would be
-    #      wonderful if the series info can be put in a "series KEYWORD"
-    #      list, but I think it's not easy at all.
     extractors = [Extractor(label='title',
                             path="//h1",
                             attrs=Attribute(key='title',
@@ -876,6 +870,18 @@ class DOMHTMLMovieParser(DOMParserBase):
         ('<td> </td>', '<td>...</td>'),
         (_reRolesMovie, _manageRoles),
         (_reAkas, _replaceBR)]
+
+    def preprocess_dom(self, dom):
+        xpath = self.xpath(dom, "//b[text()='Series Crew']")
+        if not xpath:
+            return dom
+        b = xpath[-1] # In doubt, take the last one.
+        from lxml import etree
+        for a in self.xpath(b, "./following::h5/a[@class='glossary']"):
+            name = self.getattribute(a, 'name')
+            if name:
+                self.setattribute(a, 'name', 'series %s' % name)
+        return dom
 
     re_space = re.compile(r'\s+')
     re_airdate = re.compile(r'(.*)\s*\(season (\d+), episode (\d+)\)', re.I)

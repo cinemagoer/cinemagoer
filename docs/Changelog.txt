@@ -1,11 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.8.cvs20081011 "National Treasure: Book of Secrets" (11 Oct 2008)
+* What's the new in release 3.8.cvs20081012 "Rise" (12 Oct 2008)
   [http]
   - fixed search system for direct hits.
   - fixed IDs so that they always are str and not unicode.
   - fixed a bug about plot without authors.
+  - for pages about a single episode of a series, "Series Crew" are
+    now separated items.
+  - introduced the preprocess_dom method of the DOMParserBase class.
 
   [sql]
   - introduced support for SQLAlchemy.

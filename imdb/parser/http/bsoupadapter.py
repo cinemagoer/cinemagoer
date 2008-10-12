@@ -40,6 +40,17 @@ def tostring(element):
         return str(element)
 
 
+def getattribute(node, attrName):
+    """Return an attribute value or None."""
+    return node.get(attrName)
+
+
+def setattribute(node, attrName, attrValue):
+    """Set an attribute to a given value."""
+    # XXX: it could be an idea to remove an attribute, when set to None.
+    node[attrName] = attrValue
+
+
 def fix_rowspans(html_string):
     """Repeat td elements according to their rowspan attributes in subsequent
     tr elements.

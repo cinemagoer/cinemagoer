@@ -44,8 +44,10 @@ def getattribute(node, attrName):
 
 def setattribute(node, attrName, attrValue):
     """Set an attribute to a given value."""
-    # XXX: it could be an idea to remove an attribute, when set to None.
-    node.set(attrName, attrValue)
+    if attrValue is None:
+        del node.attrib[attrName]
+    else:
+        node.set(attrName, attrValue)
 
 
 def getparent(node):

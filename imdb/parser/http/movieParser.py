@@ -1434,17 +1434,16 @@ class DOMHTMLAwardsParser(DOMParserBase):
         cols = self.xpath(dom, "//td[@rowspan]")
         for col in cols:
             span = int(self.getattribute(col, 'rowspan'))
+            self.setattribute(col, 'rowspan', None)
             position = len(self.xpath(col, "./preceding-sibling::td"))
             row = self.getparent(col)
-            next = row
-            for i in xrange(span-1):
-                next = self.xpath(next, "./following-sibling::tr[1]")[0]
+            for tr in self.xpath(row, "./following-sibling::tr")[:span-1]:
                 # if not cloned, child will be moved to new parent
                 clone = self.clone(col)
                 # XXX: beware that here we don't use an "adapted" function,
                 #      because both BeautifulSoup and lxml uses the same
                 #      "insert" method.
-                next.insert(position, clone)
+                tr.insert(position, clone)
         return dom
 
     def postprocess_data(self, data):

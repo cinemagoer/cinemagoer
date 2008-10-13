@@ -876,7 +876,6 @@ class DOMHTMLMovieParser(DOMParserBase):
         if not xpath:
             return dom
         b = xpath[-1] # In doubt, take the last one.
-        from lxml import etree
         for a in self.xpath(b, "./following::h5/a[@class='glossary']"):
             name = self.getattribute(a, 'name')
             if name:

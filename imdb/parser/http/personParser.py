@@ -1205,7 +1205,6 @@ class DOMHTMLPersonSalesParser(DOMParserBase):
 from movieParser import HTMLOfficialsitesParser
 from movieParser import HTMLAwardsParser
 from movieParser import HTMLTechParser, DOMHTMLTechParser
-from movieParser import HTMLNewsParser
 from movieParser import HTMLSalesParser
 
 from movieParser import DOMHTMLOfficialsitesParser
@@ -1234,7 +1233,7 @@ _OBJECTS = {
                             HTMLPersonGenresParser), None),
     'person_keywords_parser': ((DOMHTMLPersonGenresParser,
                             HTMLPersonGenresParser), {'kind': 'keywords'}),
-    'news_parser': ((DOMHTMLNewsParser, HTMLNewsParser), None),
+    'news_parser': ((DOMHTMLNewsParser, DOMHTMLNewsParser), None),
     'sales_parser': ((DOMHTMLPersonSalesParser, HTMLSalesParser), None)
 }
 

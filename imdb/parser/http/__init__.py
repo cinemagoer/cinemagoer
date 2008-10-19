@@ -44,14 +44,24 @@ import characterParser
 import companyParser
 
 
+class _FakeParser(object):
+    """Fake parser to replace obsoleted old parsers."""
+    def __init__(self, *args, **kwds):
+        pass
+
+    def parse(self, *args, **kwds):
+        return {'data': {}}
+
+
 class _ModuleProxy:
     """A proxy to instantiate and access parsers."""
     def __init__(self, module, defaultKeys=None, oldParsers=False,
-                useModule=None):
+                useModule=None, fallBackToNew=False):
         """Initialize a proxy for the given module; defaultKeys, if set,
         muste be a dictionary of values to set for instanced objects."""
         self.oldParsers = oldParsers
         self.useModule = useModule
+        self.fallBackToNew = fallBackToNew
         if defaultKeys is None:
             defaultKeys = {}
         self._defaultKeys = defaultKeys
@@ -70,8 +80,13 @@ class _ModuleProxy:
             parserClass = _entry[0][self.oldParsers]
             # Warns when the old parser was requested, but it's gone.
             if self.oldParsers and parserClass is _entry[0][0]:
-                warnings.warn('Old parser "%s" not available; falling back ' \
-                                'to the new one.' % name)
+                if not self.fallBackToNew:
+                    warnings.warn('Old parser "%s" not available; these ' \
+                                'data will not be available.' % name)
+                    parserClass = _FakeParser
+                else:
+                    warnings.warn('Old parser "%s" not available; falling ' \
+                                'back to the new one.' % name)
             obj = parserClass(**kwds)
             attrsToSet = self._defaultKeys.copy()
             attrsToSet.update(_entry[1] or {})
@@ -216,8 +231,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
     accessSystem = 'http'
 
     def __init__(self, isThin=0, adultSearch=1, proxy=-1, oldParsers=False,
-                useModule=None, cookie_id=-1, cookie_uu=None,
-                *arguments, **keywords):
+                fallBackToNew=False, useModule=None, cookie_id=-1,
+                cookie_uu=None, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         self.urlOpener =  IMDbURLopener()
@@ -249,21 +264,29 @@ class IMDbHTTPAccessSystem(IMDbBase):
         _def = {'_modFunct': self._defModFunct, '_as': self.accessSystem}
         # Proxy objects.
         self.smProxy = _ModuleProxy(searchMovieParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule)
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
         self.spProxy = _ModuleProxy(searchPersonParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule)
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
         self.scProxy = _ModuleProxy(searchCharacterParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule)
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
         self.scompProxy = _ModuleProxy(searchCompanyParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule)
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
         self.mProxy = _ModuleProxy(movieParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule)
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
         self.pProxy = _ModuleProxy(personParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule)
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
         self.cProxy = _ModuleProxy(characterParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule)
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
         self.compProxy = _ModuleProxy(companyParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule)
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""

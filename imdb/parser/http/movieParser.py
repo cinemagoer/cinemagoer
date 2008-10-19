@@ -351,12 +351,13 @@ class HTMLMovieParser(ParserBase):
             pass
         try: votes = rg.group(3)
         except IndexError: return
-        votes = votes.replace(',', '')
-        try:
-            votes = int(votes)
-            self._data['votes'] = votes
-        except ValueError:
-            pass
+        if votes:
+            votes = votes.replace(',', '')
+            try:
+                votes = int(votes)
+                self._data['votes'] = votes
+            except ValueError:
+                pass
 
     def start_span(self, attrs): pass
 
@@ -3400,115 +3401,6 @@ class DOMHTMLRecParser(DOMParserBase):
         return data
 
 
-class HTMLNewsParser(ParserBase):
-    """Parser for the "news" page of a given movie or person.
-    The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        nwparser = HTMLNewsParser()
-        result = nwparser.parse(news_html_string)
-    """
-    _defGetRefs = True
-
-    def _reset(self):
-        """Reset the parser."""
-        self._cur_news = {}
-        self._cur_text = u''
-        self._cur_title = u''
-        self._cur_link = u''
-        self._cur_full_link = u''
-        self._news = []
-        self._in_h2 = False
-        self._no_more = False
-        self._seen_p = False
-
-    def get_data(self):
-        """Return the dictionary."""
-        if not self._news: return {}
-        return {'news': self._news}
-
-    def start_h2(self, attrs):
-        if not self._in_content: return
-        self._in_h2 = True
-
-    def end_h2(self):
-        self._in_h2 = False
-
-    def do_br(self, attrs):
-        if not self._in_content: return
-        if self._no_more: return
-        self._cur_text += '\n'
-
-    def do_hr(self, attrs):
-        if not self._in_content: return
-        self._cur_text = self._cur_text.strip()
-        self._cur_title = self._cur_title.strip()
-        if self._cur_title and self._cur_text:
-            sepidx = self._cur_text.find('\n\n\n\n')
-            if sepidx != -1:
-                info = self._cur_text[:sepidx].rstrip().split('|')
-                if len(info) == 3:
-                    self._cur_news['from'] = info[1].replace('From ','').strip()
-                    self._cur_news['date'] = info[0].strip()
-                self._cur_text = self._cur_text[sepidx:].strip()
-                if self._cur_text.endswith('(more)'):
-                    self._cur_text = self._cur_text[:-6].rstrip()
-            self._cur_news['title'] = self._cur_title
-            self._cur_text = self._cur_text.replace('\n\n', '::::')
-            self._cur_text = self._cur_text.replace('\n', ' ')
-            self._cur_text = self._cur_text.replace('::::', '\n\n')
-            self._cur_news['body'] = self._cur_text
-            self._news.append(self._cur_news)
-            if self._cur_link:
-                self._cur_news['link'] = self._cur_link
-        self._cur_title = u''
-        self._cur_text = u''
-        self._cur_link = u''
-        self._cur_full_link = u''
-        self._cur_news = {}
-        self._no_more = False
-        self._seen_p = False
-
-    def start_p(self, attr):
-        pass
-
-    def end_p(self):
-        if self._cur_text:
-            if self._seen_p:
-                self._no_more = True
-                self._seen_p = False
-            else:
-                self._seen_p = True
-
-    def start_a(self, attrs):
-        if not self._in_content: return
-        href = self.get_attr_value(attrs, 'href')
-        if href:
-            if href.startswith('/news/ni'):
-                self._cur_link = '%s%s' % (imdbURL_base, href[1:])
-            elif href.startswith('http://') and self._no_more:
-                self._cur_full_link = href
-
-    def end_a(self): pass
-
-    def _add_full_link(self):
-        if self._cur_full_link and self._news:
-            self._news[-1]['full article link'] = self._cur_full_link
-            self._cur_full_link = u''
-
-    def _handle_data(self, data):
-        if not self._in_content: return
-        if self._in_h2:
-            self._cur_title += data
-        elif not self._no_more:
-            self._cur_text += data
-        else:
-            if data.strip().lower().startswith('see full article at'):
-                self._add_full_link()
-
-
 class DOMHTMLNewsParser(DOMParserBase):
     """Parser for the "news" page of a given movie or person.
     The page should be provided as a string, as taken from
@@ -4897,7 +4789,7 @@ _OBJECTS = {
     'locations_parser':  ((DOMHTMLLocationsParser, HTMLLocationsParser), None),
     'dvd_parser':  ((DOMHTMLDvdParser, HTMLDvdParser), None),
     'rec_parser':  ((DOMHTMLRecParser, HTMLRecParser), None),
-    'news_parser':  ((DOMHTMLNewsParser, HTMLNewsParser), None),
+    'news_parser':  ((DOMHTMLNewsParser, DOMHTMLNewsParser), None),
     'amazonrev_parser':  ((DOMHTMLAmazonReviewsParser, HTMLAmazonReviewsParser),
                             None),
     'sales_parser':  ((DOMHTMLSalesParser, HTMLSalesParser), None),

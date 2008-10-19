@@ -371,6 +371,16 @@ def toUTF8(s):
     return s
 
 
+class _AlchemyConnection(object):
+    """A proxy for the connection object, required since _ConnectionFairy
+    uses __slots__."""
+    def __init__(self, conn):
+        self.conn = conn
+
+    def __getattr__(self, name):
+        return getattr(self.conn, name)
+
+
 def setConnection(uri, tables, encoding='utf8', debug=False):
     """Set connection for every table."""
     # FIXME: why on earth mysql requires and additional parameter,
@@ -396,7 +406,7 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
     #      .IntegrityError attributes.
     #      Another attribute of "connection" is the getConnection() function,
     #      used to return an object with a .cursor() method.
-    connection = eng_conn.connection
+    connection = _AlchemyConnection(eng_conn.connection)
     paramstyle = eng_conn.dialect.paramstyle
     connection.module = connection.connection
     connection.paramstyle = paramstyle

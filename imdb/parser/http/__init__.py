@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import sys
+import warnings
 from urllib import FancyURLopener, quote_plus
 from codecs import lookup
 
@@ -66,7 +67,12 @@ class _ModuleProxy:
             kwds = {}
             if not self.oldParsers and self.useModule:
                 kwds = {'useModule': self.useModule}
-            obj = _entry[0][self.oldParsers](**kwds)
+            parserClass = _entry[0][self.oldParsers]
+            # Warns when the old parser was requested, but it's gone.
+            if self.oldParsers and parserClass is _entry[0][0]:
+                warnings.warn('Old parser "%s" not available; falling back ' \
+                                'to the new one.' % name)
+            obj = parserClass(**kwds)
             attrsToSet = self._defaultKeys.copy()
             attrsToSet.update(_entry[1] or {})
             # Set attribute to the object.
@@ -179,7 +185,6 @@ class IMDbURLopener(FancyURLopener):
         if encode is None:
             encode = 'latin_1'
             # The detection of the encoding is error prone...
-            import warnings
             warnings.warn('Unable to detect the encoding of the retrieved '
                         'page [%s]; falling back to default latin1.' % encode)
         return unicode(content, encode, 'replace')

@@ -4073,7 +4073,7 @@ class HTMLEpisodesParser(ParserBase):
             except: pass
         else:
             self._eps_number = max(self._episodes.get(self._cur_season,
-                                    {-1: None}).keys()) + 1
+                                    {0: None}).keys()) + 1
         eps = Movie(movieID=self._cur_id, title=self._eps_title,
                     accessSystem=self._as, modFunct=self._modFunct)
         eps['year'] = self._cur_year

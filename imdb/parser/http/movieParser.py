@@ -4522,7 +4522,9 @@ class DOMHTMLAiringParser(DOMParserBase):
     extractors = [
         Extractor(label='series title',
             path="//title",
-            attrs=Attribute(key='series title', path="./text()")),
+            attrs=Attribute(key='series title', path="./text()",
+                            postprocess=lambda x: \
+                                    x.replace(' - TV schedule', u''))),
         Extractor(label='tv airings',
             path="//tr[@class]",
             attrs=Attribute(key='airing',

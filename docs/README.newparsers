@@ -7,7 +7,7 @@ were finite-states machines, being SGMLParser a SAX parser) to
 a set of parsers based on the libxml2 library or on the BeautifulSoup
 module (and so, using a DOM/XPath-based approach).
 The idea and the implementation of these new parsers is mostly a
-work of H. Turgut Uyar, and can brings to parsers shorter, easier
+work of H. Turgut Uyar, and can bring to parsers shorter, easier
 to write and maybe even faster.
 
 
@@ -66,6 +66,18 @@ parameter to True.  E.g.:
     from imdb import IMDb
     ia = IMDb('http', oldParsers=True)
     ...
+
+The path to remove the old parsers is set; right now they'll
+remain until some major parser will not be definitely outdated.
+Secondary parsers will be removed as they'll become useless; by
+default they will return an empty result (issuing a warning), but
+they can be replaced with a call to the corresponding new parser,
+if you want: all you need to do is to set to True the "fallBackToNew"
+parameter.
+E.g.:
+  from imdb import IMDb
+  ia = IMDb('http', oldParsers=True, fallBackToNew=True)
+  ...
 
 
   FORCING LXML OR BEAUTIFULSOUP

@@ -22,6 +22,7 @@ movies and persons information.
 This means that MySQL, PostgreSQL, SQLite, Firebird, MAX DB,
 Sybase and MSSQL are supported and, as your read this text,
 maybe other database backends were added.
+
 Since release 3.8, SQLAlchemy (version 0.4 and 0.5) is also supported
 (this adds at least DB2/Informix IDS to the list of supported databases).
 
@@ -42,7 +43,7 @@ SVN command to download the latest development version:
   svn co http://svn.colorstudy.com/SQLObject/trunk SQLObject
 
 [SQLAlchemy]
-Support for SQLAlchemy is still in beta (please report any error!)
+Support for SQLAlchemy is still in beta (please report any bug!)
 and a bit slower than SQLObject; anyway, you need version 0.4 or 0.5.
 
 SQLAlchemy home page: http://www.sqlalchemy.org/
@@ -99,7 +100,10 @@ Some examples:
     sqlite:/C|/full/path/to/database
     sqlite:/:memory:
 
-For other information you can read the SQLObject documentation.
+For other information you can read the SQLObject/SQLAlchemy documentation.
+You can force the use of SQLObject or SQLAlchemy with the '-o' command
+line option (i.e.: "-o sqlobject" or "-o sqlalchemy" or a list of comma
+separated values to specify an order of preference).
 
 
   TIMING
@@ -112,6 +116,8 @@ complete on my test system (read below).
 A lot of memory (RAM or swap space) is required, in the range of
 at least 250/500 megabytes (plus more for the database server).
 In the end, the database will require between 2.5GB and 5GB of disc space.
+The should be no difference - at insert time - between SQLObject and
+SQLAlchemy.
 
 As said, the performances varies greatly using a database server or another:
 MySQL, for instance, has an executemany() method of the cursor object

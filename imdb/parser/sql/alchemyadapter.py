@@ -408,7 +408,8 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
     #      used to return an object with a .cursor() method.
     connection = _AlchemyConnection(eng_conn.connection)
     paramstyle = eng_conn.dialect.paramstyle
-    connection.module = connection.connection
+    connection.module = eng_conn.dialect.dbapi
+    ##connection.module = connection.connection
     connection.paramstyle = paramstyle
     connection.getConnection = lambda: connection.connection
     connection.dbName = engine.url.drivername

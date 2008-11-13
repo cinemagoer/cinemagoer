@@ -253,8 +253,16 @@ else:
 # Connect to the database.
 conn = setConnection(URI, DB_TABLES)
 # Extract exceptions to trap.
-OperationalError = conn.module.OperationalError
-IntegrityError = conn.module.IntegrityError
+try:
+    OperationalError = conn.module.OperationalError
+except AttributeError, e:
+    warnings.warn('Unable to import OperationalError')
+    OperationalError = Exception
+try:
+    IntegrityError = conn.module.IntegrityError
+except AttributeError, e:
+    warnings.warn('Unable to import IntegrityError')
+    IntegrityError = Exception
 
 connectObject = conn.getConnection()
 # Cursor object.

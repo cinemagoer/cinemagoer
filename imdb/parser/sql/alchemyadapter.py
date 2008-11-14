@@ -394,6 +394,12 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
     params = {'encoding': encoding}
     if debug:
         params['echo'] = True
+    if uri.startswith('ibm_db'):
+        # An extreme attempt to work with DB2, who obstinately refuse
+        # to play with us (bad bad child!)
+        import ibm_db_dbi
+        params['conn_options'] = {ibm_db_dbi.SQL_ATTR_AUTOCOMMIT: \
+                                    ibm_db_dbi.SQL_AUTOCOMMIT_ON}
     # XXX: is this the best way to connect?
     engine = create_engine(uri, **params)
     metadata.bind = engine

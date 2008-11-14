@@ -325,6 +325,7 @@ def createSQLstr(table, cols, command='INSERT'):
         elif PARAM_STYLE == 'numeric': return ':%s' % index
         elif PARAM_STYLE == 'named': return ':%s' % s
         elif PARAM_STYLE == 'pyformat': return '%(' + s + ')s'
+        return '%s'
     for col in cols:
         if isinstance(col, RawValue):
             colNames.append(colName(table, col.string))

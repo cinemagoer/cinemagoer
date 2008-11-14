@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081113 "Ninja Phantom Heroes" (13 Nov 2008)
+* What's the new in release 3.9cvs20081114 "Ninja Phantom Heroes" (13 Nov 2008)
   [sql]
   - fixes for DB2 (with SQLAlchemy).
 

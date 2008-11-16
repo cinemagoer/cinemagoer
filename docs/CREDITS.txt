@@ -21,7 +21,8 @@ I'd like to thank the following people for their help:
 
 * Alen Ribic for some bug reports and hints.
 
-* Joachim Selke for some bug reports with SQLAlchemy and DB2.
+* Joachim Selke for some bug reports with SQLAlchemy and DB2 and a lot
+  of testing and debugging of the ibm_db driver.
 
 * Helio MC Pereira for a bug report about unicode.
 

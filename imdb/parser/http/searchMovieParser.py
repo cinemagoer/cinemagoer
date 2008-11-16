@@ -330,7 +330,6 @@ class DOMBasicMovieParser(DOMParserBase):
     # Stay generic enough to be used also for other DOMBasic*Parser classes.
     _titleAttrPath = ".//text()"
     _linkPath = "//a[starts-with(@href, '/title/tt')]"
-    # TODO: for other searches!
     _titleFunct = lambda self, x: analyze_title(x or u'', canonical=1)
 
     def _init(self):

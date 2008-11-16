@@ -291,7 +291,9 @@ class TableAdapter(object):
         """Create an index for a given (schema) column."""
         # XXX: indexLen is ignored in SQLAlchemy, and that means that
         #      indexes will be over the whole 255 chars strings...
-        idx_name = '%s.%s' % (self.table.name, col.index or col.name)
+        # NOTE: don't use a dot as a separator, or DB2 will do
+        #       nasty things.
+        idx_name = '%s_%s' % (self.table.name, col.index or col.name)
         if checkfirst:
             for index in self.table.indexes:
                 if index.name == idx_name:
@@ -413,7 +415,6 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
             connection.set_autocommit(True)
     paramstyle = eng_conn.dialect.paramstyle
     connection.module = eng_conn.dialect.dbapi
-    ##connection.module = connection.connection
     connection.paramstyle = paramstyle
     connection.getConnection = lambda: connection.connection
     connection.dbName = engine.url.drivername

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081115 "Changeling" (15 Nov 2008)
+* What's the new in release 3.9cvs20081116 "Changeling" (16 Nov 2008)
   [sql]
   - fixes for DB2 (with SQLAlchemy).
 

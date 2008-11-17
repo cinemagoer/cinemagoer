@@ -396,6 +396,9 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
     params = {'encoding': encoding}
     if debug:
         params['echo'] = True
+    if uri.startswith('ibm_db'):
+        # Try to work-around a possible bug of the ibm_db DB2 driver.
+        params['convert_unicode'] = True
     # XXX: is this the best way to connect?
     engine = create_engine(uri, **params)
     metadata.bind = engine
@@ -409,10 +412,6 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
     #      Another attribute of "connection" is the getConnection() function,
     #      used to return an object with a .cursor() method.
     connection = _AlchemyConnection(eng_conn.connection)
-    if uri.startswith('ibm_db'):
-        # Try to fix a strange behavior of DB2.
-        if callable(getattr(connection, 'set_autocommit')):
-            connection.set_autocommit(True)
     paramstyle = eng_conn.dialect.paramstyle
     connection.module = eng_conn.dialect.dbapi
     connection.paramstyle = paramstyle

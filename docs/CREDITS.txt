@@ -24,6 +24,9 @@ I'd like to thank the following people for their help:
 * Joachim Selke for some bug reports with SQLAlchemy and DB2 and a lot
   of testing and debugging of the ibm_db driver.
 
+* Arjan Gijsberts for a bug report and patch for a problem with
+  movies listed in the Bottom 100.
+
 * Helio MC Pereira for a bug report about unicode.
 
 * Michael Charclo for some bug reports performing 'http' queries.

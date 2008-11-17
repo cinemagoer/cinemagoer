@@ -653,6 +653,18 @@ def makeSplitter(lstrip=None, sep='|', comments=True):
         return lx
     return splitter
 
+
+def _toInt(val, replace=()):
+    """Return the value, converted to integer, or None; if present, 'replace'
+    must be a list of tuples of values to replace."""
+    for before, after in replace:
+        val = val.replace(before, after)
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return None
+
+
 class DOMHTMLMovieParser(DOMParserBase):
     """Parser for the "combined details" (and if instance.mdparse is
     True also for the "main details") page of a given movie.
@@ -798,13 +810,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                                         personID=analyze_imdbid(x.get('link')))
                                     )),
 
-                Extractor(label='top 250',
+                Extractor(label='top 250/bottom 100',
                             path="//div[@class='left']/a[starts-with(@href, " \
                                     "'/chart/')]",
-                            attrs=Attribute(key='top 250 rank',
-                                            path="./text()",
-                                            postprocess=lambda x: \
-                                            int(x.replace('Top 250: #', '')))),
+                            attrs=Attribute(key='top/bottom rank',
+                                            path="./text()")),
 
                 Extractor(label='series years',
                             path="//div[@id='tn15title']//span" \
@@ -819,7 +829,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                             attrs=Attribute(key='number of episodes',
                                     path="./text()",
                                     postprocess=lambda x: \
-                                            int(x.replace(' Episodes', '')))),
+                                            _toInt(x, [(' Episodes', '')]))),
 
                 Extractor(label='akas',
                         path="//i[@class='transl']",
@@ -952,6 +962,17 @@ class DOMHTMLMovieParser(DOMParserBase):
             if k not in data:
                 data[k] = data[t_k]
             del data[t_k]
+        if 'top/bottom rank' in data:
+            tbVal = data['top/bottom rank'].lower()
+            if tbVal.startswith('top'):
+                tbKey = 'top 250 rank'
+                tbVal = _toInt(tbVal, [('top 250: #', '')])
+            else:
+                tbKey = 'bottom 100 rank'
+                tbVal = _toInt(tbVal, [('bottom 100: #', '')])
+            if tbVal:
+                data[tbKey] = tbVal
+            del data['top/bottom rank']
         if 'year' in data and data['year'] == '????':
             del data['year']
         if 'tv series link' in data:
@@ -973,7 +994,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 try:
                     rating = float(rating)
                     data['rating'] = rating
-                except ValueError:
+                except (TypeError, ValueError):
                     pass
                 try: votes = rg.group(3)
                 except IndexError: rating = 'invalid'
@@ -981,7 +1002,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 try:
                     votes = int(votes)
                     data['votes'] = votes
-                except ValueError:
+                except (TypeError, ValueError):
                     pass
         return data
 

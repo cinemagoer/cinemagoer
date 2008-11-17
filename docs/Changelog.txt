@@ -1,7 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081117 "Changeling" (17 Nov 2008)
+* What's the new in release 3.9cvs20081117b "Changeling" (17 Nov 2008)
+  [http]
+  - fixed a bug regarding movies listed in the Bottom 100.
+
   [sql]
   - fixes for DB2 (with SQLAlchemy).
 

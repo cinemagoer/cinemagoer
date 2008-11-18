@@ -274,7 +274,11 @@ class TableAdapter(object):
 
     def dropTable(self, checkfirst=True):
         """Drop the table."""
-        self.table.drop(checkfirst=checkfirst)
+        dropParams = {'checkfirst': checkfirst}
+        # Guess what?  Another work-around for a ibm_db bug.
+        if self.table.bind.engine.url.drivername.startswith('ibm_db'):
+            del dropParams['checkfirst']
+        self.table.drop(**dropParams)
 
     def createTable(self, checkfirst=True):
         """Create the table."""

@@ -278,7 +278,13 @@ class TableAdapter(object):
         # Guess what?  Another work-around for a ibm_db bug.
         if self.table.bind.engine.url.drivername.startswith('ibm_db'):
             del dropParams['checkfirst']
-        self.table.drop(**dropParams)
+        try:
+            self.table.drop(**dropParams)
+        except exc.ProgrammingError:
+            # As above: re-raise the exception, but only if it's not ibm_db.
+            if not self.table.bind.engine.url.drivername.startswith('ibm_db'):
+                raise
+
 
     def createTable(self, checkfirst=True):
         """Create the table."""

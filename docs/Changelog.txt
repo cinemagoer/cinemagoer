@@ -1,12 +1,15 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081119 "Changeling" (19 Nov 2008)
+* What's the new in release 3.9cvs20081121 "Changeling" (21 Nov 2008)
   [http]
   - fixed a bug regarding movies listed in the Bottom 100.
 
   [sql]
   - fixes for DB2 (with SQLAlchemy).
+  - improved support for movies' aka titles (for series).
+  - made imdbpy2sql.py more robust, catching exceptions even when huge
+    amounts of data are skipped due to errors.
 
 
 * What's the new in release 3.8 "Quattro Carogne a Malopasso" (03 Nov 2008)

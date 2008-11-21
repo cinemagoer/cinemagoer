@@ -256,7 +256,8 @@ conn = setConnection(URI, DB_TABLES)
 try:
     OperationalError = conn.module.OperationalError
 except AttributeError, e:
-    warnings.warn('Unable to import OperationalError')
+    warnings.warn('Unable to import OperationalError; report this as a bug, ' \
+            'since it will mask important exceptions: %s' % e)
     OperationalError = Exception
 try:
     IntegrityError = conn.module.IntegrityError
@@ -592,7 +593,6 @@ class _BaseCache(dict):
             self._tmpDict[key] = counter
         else:
             self._deferredData[key] = counter
-            #self._deferredData[key] = self.counter.next()
 
     def flush(self, quiet=0, _recursionLevel=0):
         """Flush to the database."""
@@ -645,6 +645,11 @@ class _BaseCache(dict):
                                                         _recursionLevel
                 self.flush(quiet=quiet, _recursionLevel=_recursionLevel)
                 self._tmpDict.clear()
+            except Exception, e:
+                print 'WARNING: unknown exception caught committing the data'
+                print 'WARNING: to the database; report this as a bug, since'
+                print 'WARNING: many data (%d items) were lost: %s' % \
+                        (len(self._tmpDict), e)
         self._flushing = 0
         # Flush also deferred data.
         if self._deferredData:
@@ -760,7 +765,7 @@ class MoviesCache(_BaseCache):
             episodeOf = None
             kind = tget('kind')
             if kind == 'episode':
-                #series title
+                # Series title.
                 stitle = build_title(tget('episode of'), canonical=1,
                                     _emptyString='')
                 episodeOf = self.addUnique(stitle)
@@ -1026,6 +1031,11 @@ class SQLData(dict):
             self.flush(_resetRecursion=0)
             self.clear()
             self.counter = self.counterInit
+        except Exception, e:
+            print 'WARNING: unknown exception caught committing the data'
+            print 'WARNING: to the database; report this as a bug, since'
+            print 'WARNING: many data (%d items) were lost: %s' % \
+                    (len(self._tmpDict), e)
         connectObject.commit()
 
     def _toDB(self):
@@ -1317,10 +1327,27 @@ def doAkaTitles():
                             pwarning=pwarning)
         except IOError:
             continue
+        isEpisode = False
+        seriesID = None
         for line in fp:
             if line and line[0] != ' ':
                 if line[0] == '\n': continue
-                mid = CACHE_MID.addUnique(line.strip())
+                line = line.strip()
+                mid = CACHE_MID.addUnique(line)
+                if line[0] == '"':
+                    titleDict = analyze_title(line,
+                                                _emptyString='')
+                    if 'episode of' in titleDict:
+                        series = build_title(titleDict['episode of'],
+                                            canonical=1, ptdf=1)
+                        seriesID = CACHE_MID.addUnique(series)
+                        isEpisode = True
+                    else:
+                        seriesID = None
+                        isEpisode = False
+                else:
+                    seriesID = None
+                    isEpisode = False
             else:
                 res = unpack(line.strip(), ('title', 'note'))
                 note = res.get('note')
@@ -1335,10 +1362,18 @@ def doAkaTitles():
                 if count % 10000 == 0:
                     print 'SCANNING %s:' % fname[:-8].replace('-', ' '),
                     print _(akat)
+                if isEpisode and seriesID is not None:
+                    # Handle series for which only single episodes have
+                    # aliases.
+                    akaDict = analyze_title(akat, _emptyString='')
+                    if 'episode of' in akaDict:
+                        akaSeries = build_title(akaDict['episode of'],
+                                                canonical=1, ptdf=1)
+                        CACHE_MID_AKAS.add(akaSeries, [('ids', seriesID)])
                 append_data = [('ids', mid)]
                 if note is not None:
                     append_data.append(('notes', note))
-                aka_id = CACHE_MID_AKAS.add(akat, append_data)
+                CACHE_MID_AKAS.add(akat, append_data)
                 count += 1
         fp.close()
     CACHE_MID_AKAS.flush()

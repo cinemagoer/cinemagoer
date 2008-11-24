@@ -111,6 +111,9 @@ def _findBetween(s, begins, ends, beginindx=0, maxRes=None):
     return lres
 
 
+# Remove AKAs.
+_reAKAS = re.compile(r'aka <em.*?</td>', re.I | re.M)
+
 class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
     """The class used to access IMDb's data through the web for
     mobile terminals."""
@@ -194,6 +197,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 title += ' (mini)'
             res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
         else:
+            cont = _reAKAS.sub('</td>', cont)
             lis = _findBetween(cont, 'td valign="top">', ['</td>', '</small>'])
             for li in lis:
                 imdbid = re_imdbID.findall(li)

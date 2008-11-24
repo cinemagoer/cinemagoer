@@ -399,7 +399,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
             if self._linkPrefix == '/title/tt':
                 # Only for movies.
                 html_string = html_string.replace('(TV mini-series)', '(mini)')
-                html_string = _reAKAS.sub('', html_string)
+                html_string = _reAKAS.sub('</td>', html_string)
             return html_string
         # Direct hit!
         dbme = self._BaseParser(useModule=self._useModule)

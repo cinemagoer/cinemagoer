@@ -247,6 +247,8 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
                 role = role[:nidx].rstrip()
     if title[-9:] == 'TV Series':
         title = title[:-9].rstrip()
+    elif title[-14:] == 'TV mini-series':
+        title = title[:-14] + ' (mini)'
     # Try to understand where the movie title ends.
     while True:
         if title[-1:] != ')':

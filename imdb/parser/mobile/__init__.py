@@ -190,13 +190,16 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 if mid and not mid[0].isdigit():
                     mid = re_imdbID.findall(mid[0])
             if not (mid and title): return res
+            if cont.find('<span class="tv-extra">TV mini-series</span>') != -1:
+                title += ' (mini)'
             res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
         else:
-            lis = _findBetween(cont, 'td valign="top">', ['</td>', '<small>'])
+            lis = _findBetween(cont, 'td valign="top">', ['</td>', '</small>'])
             for li in lis:
                 imdbid = re_imdbID.findall(li)
                 mtitle = _unHtml(li)
                 if not (imdbid and mtitle): continue
+                mtitle = mtitle.replace('(TV mini-series)', '(mini)')
                 res.append((str(imdbid[0]), analyze_title(mtitle, canonical=1)))
         return res
 
@@ -206,6 +209,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not title:
             raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
         title = _unHtml(title[0])
+        if cont.find('<span class="tv-extra">TV mini-series</span>') != -1:
+            title += ' (mini)'
         d = analyze_title(title, canonical=1)
         kind = d.get('kind')
         tv_series = _findBetween(cont, 'TV Series:</h5>', '</a>', maxRes=1)

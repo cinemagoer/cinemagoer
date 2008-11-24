@@ -879,18 +879,23 @@ class DOMHTMLMovieParser(DOMParserBase):
             r'</div><div>\1'),
         ('<small>Full cast and crew for<br></small>', ''),
         ('<td> </td>', '<td>...</td>'),
+        ('<span class="tv-extra">TV mini-series</span>',
+            '<span class="tv-extra">(mini)</span>'),
         (_reRolesMovie, _manageRoles),
         (_reAkas, _replaceBR)]
 
     def preprocess_dom(self, dom):
+        # Handle series information.
         xpath = self.xpath(dom, "//b[text()='Series Crew']")
-        if not xpath:
-            return dom
-        b = xpath[-1] # In doubt, take the last one.
-        for a in self.xpath(b, "./following::h5/a[@class='glossary']"):
-            name = self.getattribute(a, 'name')
-            if name:
-                self.setattribute(a, 'name', 'series %s' % name)
+        if xpath:
+            b = xpath[-1] # In doubt, take the last one.
+            for a in self.xpath(b, "./following::h5/a[@class='glossary']"):
+                name = self.getattribute(a, 'name')
+                if name:
+                    self.setattribute(a, 'name', 'series %s' % name)
+        # Remove links to IMDbPro.
+        for proLink in self.xpath(dom, "//span[@class='pro-link']"):
+            self.droptree(proLink)
         return dom
 
     re_space = re.compile(r'\s+')
@@ -4143,11 +4148,17 @@ def _build_episode(x):
     episode_title = x.get('title')
     e = Movie(movieID=episode_id, title=episode_title)
     e['kind'] = u'episode'
+    oad = x.get('oad')
+    if oad:
+        e['original air date'] = oad.strip()
     year = x.get('year')
     if year is not None:
         year = year[5:]
         if year == 'unknown': year = u'????'
         e['year'] = year
+    else:
+        if oad and oad[-4:].isdigit():
+            e['year'] = oad[-4:]
     epinfo = x.get('episode')
     if epinfo is not None:
         season, episode = epinfo.split(':')[0].split(',')
@@ -4159,9 +4170,6 @@ def _build_episode(x):
     plot = x.get('plot')
     if plot:
         e['plot'] = plot.strip()
-    oad = x.get('oad')
-    if oad:
-        e['original air date'] = oad.strip()
     return e
 
 

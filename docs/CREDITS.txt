@@ -24,6 +24,8 @@ I'd like to thank the following people for their help:
 * Joachim Selke for some bug reports with SQLAlchemy and DB2 and a lot
   of testing and debugging of the ibm_db driver.
 
+* Yoav Aviram for a bug report about tv mini-series.
+
 * Arjan Gijsberts for a bug report and patch for a problem with
   movies listed in the Bottom 100.
 

@@ -333,6 +333,8 @@ class DOMBasicMovieParser(DOMParserBase):
     _titleFunct = lambda self, x: analyze_title(x or u'', canonical=1)
 
     def _init(self):
+        self.preprocessors += [('<span class="tv-extra">TV mini-series</span>',
+                                '<span class="tv-extra">(mini)</span>')]
         self.extractors = [Extractor(label='title',
                                 path="//h1",
                                 attrs=Attribute(key='title',
@@ -360,6 +362,9 @@ class DOMBasicMovieParser(DOMParserBase):
                 data = []
         return data
 
+
+# Remove AKAs.
+_reAKAS = re.compile(r'aka <em.*?</td>', re.I | re.M)
 
 class DOMHTMLSearchMovieParser(DOMParserBase):
     """Parse the html page that the IMDb web server shows when the
@@ -391,6 +396,10 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
 
     def preprocess_string(self, html_string):
         if self._notDirectHitTitle in html_string[:1024].lower():
+            if self._linkPrefix == '/title/tt':
+                # Only for movies.
+                html_string = html_string.replace('(TV mini-series)', '(mini)')
+                html_string = _reAKAS.sub('', html_string)
             return html_string
         # Direct hit!
         dbme = self._BaseParser(useModule=self._useModule)

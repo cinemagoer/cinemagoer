@@ -620,6 +620,7 @@ class DOMParserBase(object):
                     from lxmladapter import setattribute
                     from lxmladapter import getattribute
                     from lxmladapter import getparent
+                    from lxmladapter import droptree
                     from lxmladapter import clone
                     from lxmladapter import apply_xpath
                 elif mod == 'beautifulsoup':
@@ -628,6 +629,7 @@ class DOMParserBase(object):
                     from bsoupadapter import setattribute
                     from bsoupadapter import getattribute
                     from bsoupadapter import getparent
+                    from bsoupadapter import droptree
                     from bsoupadapter import clone
                     from bsoupadapter import apply_xpath
                 else:
@@ -638,6 +640,7 @@ class DOMParserBase(object):
                 self.setattribute = setattribute
                 self.getattribute = getattribute
                 self.getparent = getparent
+                self.droptree = droptree
                 self.clone = clone
                 self.apply_xpath = apply_xpath
                 if _gotError:

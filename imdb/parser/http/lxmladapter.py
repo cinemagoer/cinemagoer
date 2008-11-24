@@ -55,6 +55,13 @@ def getparent(node):
     return node.getparent()
 
 
+def droptree(node):
+    """Remove a node and all its children."""
+    # XXX: catch the raised exception, if the node is already gone?
+    #      i.e.: removing <p> contained in an already removed <p>.
+    node.drop_tree()
+
+
 def clone(node):
     """Return a clone of the given node."""
     # XXX: test with deepcopy?  Check if there are problems with

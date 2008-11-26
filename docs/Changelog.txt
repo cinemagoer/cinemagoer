@@ -1,7 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081124b "Prime Evil" (24 Nov 2008)
+* What's the new in release 3.9cvs20081126 "Battlestar Galactica Season 1" (26 Nov 2008)
+  [general]
+  - introduced the search_episode method, to search for episodes' titles.
+
   [http]
   - fixed a bug regarding movies listed in the Bottom 100.
   - fixed bugs about tv mini-series.

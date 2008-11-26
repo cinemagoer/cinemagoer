@@ -31,7 +31,7 @@ from stat import ST_SIZE
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb.utils import analyze_title, analyze_name, re_episodes, \
                         normalizeName, analyze_company_name, \
-                        split_company_name_notes
+                        split_company_name_notes, normalizeTitle
 
 from imdb.Movie import Movie
 from imdb.Company import Company
@@ -144,12 +144,14 @@ except ImportError:
 try:
     from imdb.parser.common.cutils import search_title
 
-    def _scan_titles(keyFile, title1, title2, title3, results=0):
+    def _scan_titles(keyFile, title1, title2, title3, results=0,
+                    _only_episodes=0):
         """Scan the given file, using the cutils.search_title
         C function, for title variations."""
         title1, title2, title3 = [x.encode('latin_1', 'replace')
                                     for x in title1, title2, title3]
-        st = search_title(keyFile, title1, title2, title3, results)
+        st = search_title(keyFile, title1, title2, title3, results,
+                            _only_episodes)
         res = []
         for x in st:
             tmpd = analyze_title(latin2utf(x[2]))
@@ -179,13 +181,19 @@ except ImportError:
             yield (long(ls[1], 16), titled)
         kf.close()
 
-    def _scan_titles(keyFile, title1, title2, title3, results=0):
+    def _scan_titles(keyFile, title1, title2, title3, results=0,
+                    _only_episodes=0):
         """Scan the given file, using the common.locsql.scan_titles
         pure-Python function, for title variations."""
         se = 0
-        if title3 and title3[-1] == '}': se = 1
+        if _only_episodes:
+            se = 1
+        else:
+            if title3 and title3[-1] == '}':
+                se = 1
         return scan_titles(_readTitlesKeyFile(keyFile, searchingEpisode=se),
-                            title1, title2, title3, results)
+                            title1, title2, title3, results,
+                            onlyEpisodes=_only_episodes)
 
 try:
     from imdb.parser.common.cutils import search_company_name
@@ -371,15 +379,20 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         shown in the results of a search."""
         self.doAdult = doAdult
 
-    def _search_movie(self, title, results):
+    def _search_movie(self, title, results, _episodes=False):
         title = title.strip()
         if not title: return []
         # Search for these title variations.
-        title1, title2, title3 = titleVariations(title)
+        if not _episodes:
+            title1, title2, title3 = titleVariations(title)
+        else:
+            title1 = normalizeTitle(title)
+            title2 = ''
+            title3 = ''
         resultsST = results
         if not self.doAdult: resultsST = 0
         res = _scan_titles('%stitles.key' % self.__db,
-                            title1, title2, title3, resultsST)
+                            title1, title2, title3, resultsST, _episodes)
         if self.doAdult and results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
         # Check for adult movies.
@@ -395,6 +408,14 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
             res[:] = newlist
             if results > 0: res[:] = res[:results]
         return res
+
+    def _search_episode(self, title, results):
+        title = title.strip()
+        if not title: return
+        _episodes = True
+        if analyze_title(title)['kind'] == 'episode':
+            _episodes = False
+        return self._search_movie(title, results, _episodes=_episodes)
 
     def get_movie_main(self, movieID):
         # Information sets provided by this method.

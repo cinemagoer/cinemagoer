@@ -1023,7 +1023,8 @@ class DOMHTMLSeriesParser(DOMParserBase):
             link = self.xpath(dom, "//a/@href")[0]
             title = self.xpath(dom, "//a/text()")[0][1:-1]
             series = Movie(movieID=analyze_imdbid(link),
-                           data=analyze_title(title, canonical=1))
+                           data=analyze_title(title, canonical=1),
+                           accessSystem=self._as, modFunct=self._modFunct)
             nd[series] = []
             for episode in data[key]:
                 # XXX: should we create a copy of 'series', to avoid

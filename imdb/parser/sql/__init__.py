@@ -423,7 +423,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         shown in the results of a search."""
         self.doAdult = doAdult
 
-    def _search_movie(self, title, results):
+    def _search_movie(self, title, results, _episodes=False):
         title = title.strip()
         if not title: return []
         title_dict = analyze_title(title, canonical=1)
@@ -432,11 +432,15 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         episodeOf = title_dict.get('episode of')
 
         if not episodeOf:
-            s_title_split = s_title.split(', ')
-            if len(s_title_split) >1 and s_title_split[-1].lower() in _articles:
-                s_title_rebuilt = ', '.join(s_title_split[:-1])
-                if s_title_rebuilt: s_title = s_title_rebuilt
+            if not _episodes:
+                s_title_split = s_title.split(', ')
+                if len(s_title_split) > 1 and \
+                        s_title_split[-1].lower() in _articles:
+                    s_title_rebuilt = ', '.join(s_title_split[:-1])
+                    if s_title_rebuilt:
+                        s_title = s_title_rebuilt
         else:
+            _episodes = False
             s_title = normalizeTitle(s_title)
         if isinstance(s_title, UnicodeType):
             s_title = s_title.encode('ascii', 'ignore')
@@ -446,7 +450,12 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # XXX: improve the search restricting the kindID if the
         #      "kind" of the input differs from "movie"?
         condition = conditionAka = None
-        if title_dict['kind'] == 'episode' and episodeOf is not None:
+        if _episodes:
+            condition = AND(Title.q.phoneticCode == soundexCode,
+                            Title.q.kindID == self._kindRev['episode'])
+            conditionAka = AND(AkaTitle.q.phoneticCode == soundexCode,
+                            AkaTitle.q.kindID == self._kindRev['episode'])
+        elif title_dict['kind'] == 'episode' and episodeOf is not None:
             series_title = build_title(episodeOf, canonical=1)
             # XXX: is it safe to get "results" results?
             #      Too many?  Too few?
@@ -479,8 +488,12 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
 
         # Up to 3 variations of the title are searched, plus the
         # long imdb canonical title, if provided.
-        title1, title2, title3 = titleVariations(title)
-
+        if not _episodes:
+            title1, title2, title3 = titleVariations(title)
+        else:
+            title1 = title
+            title2 = ''
+            title3 = ''
         try:
             qr = [(q.id, get_movie_data(q.id, self._kind))
                     for q in Title.select(condition)]
@@ -495,6 +508,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not self.doAdult: resultsST = 0
         res = scan_titles(qr, title1, title2, title3, resultsST,
                             searchingEpisode=episodeOf is not None,
+                            onlyEpisodes=_episodes,
                             ro_thresold=0.0)
         if self.doAdult and results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
@@ -510,6 +524,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             res[:] = [x for x in res if x[0] not in adultlist]
             if results > 0: res[:] = res[:results]
         return res
+
+    def _search_episode(self, title, results):
+        return self._search_movie(title, results, _episodes=True)
 
     def get_movie_main(self, movieID):
         # Every movie information is retrieved from here.

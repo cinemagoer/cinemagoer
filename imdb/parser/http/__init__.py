@@ -32,6 +32,7 @@ from codecs import lookup
 
 from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, \
                 imdbURL_character_main, imdbURL_company_main, imdbURL_find
+from imdb.utils import analyze_title
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 
 import searchMovieParser
@@ -393,6 +394,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
             ton = ton.encode('utf-8')
         ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
         params = 's=%s;mx=%s;q=%s' % (kind, str(results), quote_plus(ton))
+        if kind == 'ep':
+            params = params.replace('s=ep;', 's=tt;ttype=ep;', 1)
         cont = self._retrieve(imdbURL_find % params)
         #print 'URL:', imdbURL_find % params
         if cont.find('more than 500 partial matches') == -1:
@@ -411,6 +414,13 @@ class IMDbHTTPAccessSystem(IMDbBase):
         ##params = 'q=%s&tt=on&mx=%s' % (quote_plus(title), str(results))
         ##cont = self._retrieve(imdbURL_find % params)
         cont = self._get_search_content('tt', title, results)
+        return self.smProxy.search_movie_parser.parse(cont, results=results)['data']
+
+    def _search_episode(self, title, results):
+        t_dict = analyze_title(title)
+        if t_dict['kind'] == 'episode':
+            title = t_dict['title']
+        cont = self._get_search_content('ep', title, results)
         return self.smProxy.search_movie_parser.parse(cont, results=results)['data']
 
     def get_movie_main(self, movieID):

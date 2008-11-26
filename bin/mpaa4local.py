@@ -97,13 +97,13 @@ def doMPAA():
 
 mpaaFileGZ = gzip.open(os.path.join(IMDB_PTDF_DIR,
                                     'mpaa-ratings-reasons.list.gz'))
+print 'Creating the mpaa-ratings-reasons.data file...',
 mpaaFileOut = open(os.path.join(LOCAL_DATA_DIR,
                                 'mpaa-ratings-reasons.data'), 'w')
 
 for aLine in mpaaFileGZ:
-    print 'Creating the mpaa-ratings-reasons.data file...',
     mpaaFileOut.write(aLine)
-    print 'DONE!'
+print 'DONE!'
 
 mpaaFileOut.close()
 mpaaFileGZ.close()

@@ -31,6 +31,9 @@ NOTE: it's always time to clean the code! <g>
 [searches]
 * Support advanced query for movie titles and person/character/company names -
   if possible this should be available in every data access systems.
+* Using 'local', searching for '"TV Series" Episode' doesn't return the
+  expected results.
+
 
 
 [Movie objects]
@@ -154,4 +157,12 @@ Things to do:
   SQL database, but I think this is a nearly impossible task.
 * There are a lot of things to do to improve SQLAlchemy support (especially
   in terms of performances); see FIXME/TODO/XXX notices in the code.
+* The pysqlite2.dbapi2.OperationalError exception is raise when SQLite
+  is used with SQLAlchemy (but only if the --sqlite-transactions command
+  line argument is used).
+* With SQLAlchemy, some TEXT columns are converted to VARCHAR(255),
+  bacause with SQLAlchemy you can't create an INDEX on a (partial)
+  TEXT column; this is good for MySQL 4.x (which supports up to 255
+  chars for a VARCHAR field), but wrong for IBM DB2, which explodes
+  instead of truncating the very few longer lines encountered.
 

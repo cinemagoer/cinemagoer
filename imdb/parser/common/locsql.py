@@ -287,7 +287,7 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
 
 
 def scan_titles(titles_list, title1, title2, title3, results=0,
-                searchingEpisode=0, ro_thresold=None):
+                searchingEpisode=0, onlyEpisodes=0, ro_thresold=None):
     """Scan a list of titles, searching for best matches against
     the given variations."""
     if ro_thresold is not None: RO_THRESHOLD = ro_thresold
@@ -297,7 +297,6 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
     sm3 = SequenceMatcher()
     sm1.set_seq1(title1.lower())
     sm2.set_seq2(title2.lower())
-    #searchingEpisode = 0
     if title3:
         sm3.set_seq1(title3.lower())
         if title3[-1] == '}': searchingEpisode = 1
@@ -305,6 +304,20 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
     if title2 != title1: hasArt = 1
     resd = {}
     for i, t_data in titles_list:
+        if onlyEpisodes:
+            if t_data.get('kind') != 'episode':
+                continue
+            til = t_data['title']
+            if til[-1] == ')':
+                dateIdx = til.rfind('(')
+                if dateIdx != -1:
+                    til = til[:dateIdx].rstrip()
+            if not til:
+                continue
+            ratio = ratcliff(title1, til, sm1)
+            if ratio >= RO_THRESHOLD:
+                resd[i] = (ratio, (i, t_data))
+            continue
         if searchingEpisode:
             if t_data.get('kind') != 'episode': continue
         elif t_data.get('kind') == 'episode': continue

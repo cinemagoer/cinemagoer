@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '3.9cvs20081124b'
+__version__ = VERSION = '3.9cvs20081126'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -335,13 +335,15 @@ class IMDbBase:
         self.update(movie, info)
         return movie
 
+    get_episode = get_movie
+
     def _search_movie(self, title, results):
         """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
 
-    def search_movie(self, title, results=None):
+    def search_movie(self, title, results=None, _episodes=False):
         """Return a list of Movie objects for a query for the given title.
         The results argument is the maximum number of results to return."""
         if results is None:
@@ -354,10 +356,25 @@ class IMDbBase:
         #      an unicode string... this is just a guess.
         if not isinstance(title, UnicodeType):
             title = unicode(title, encoding, 'replace')
-        res = self._search_movie(title, results)
+        if not _episodes:
+            res = self._search_movie(title, results)
+        else:
+            res = self._search_episode(title, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]
+
+    def _search_episode(self, title, results):
+        """Return a list of tuples (movieID, {movieData})"""
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        raise NotImplementedError, 'override this method'
+
+    def search_episode(self, title, results=None):
+        """Return a list of Movie objects for a query for the given title.
+        The results argument is the maximum number of results to return;
+        this method searches only for titles of tv (mini) series' episodes."""
+        return self.search_movie(title, results=results, _episodes=True)
 
     def get_person(self, personID, info=Person.Person.default_info,
                     modFunct=None):

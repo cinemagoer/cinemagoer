@@ -83,15 +83,15 @@ char *articles[ART_COUNT] = {"the ", "la ", "a ", "die ", "der ", "le ", "el ",
         "l'", "il ", "das ", "les ", "i ", "o ", "ein ", "un ", "de ", "los ",
         "an ", "una ", "las ", "eine ", "den ", "het ", "gli ", "lo ", "os ",
         "ang ", "oi ", "az ", "een ", "ha-", "det ", "ta ", "al-",
-	"mga ", "un'", "uno ", "ett ", "dem ", "egy ", "els ", "eines ", "Ο ",
-	"Η ", "Το ", "Οι "};
+        "mga ", "un'", "uno ", "ett ", "dem ", "egy ", "els ", "eines ", "Ο ",
+        "Η ", "Το ", "Οι "};
 
 char *articlesNoSP[ART_COUNT] = {"the", "la", "a", "die", "der", "le", "el",
         "l'", "il", "das", "les", "i", "o", "ein", "un", "de", "los",
         "an", "una", "las", "eine", "den", "het", "gli", "lo", "os",
         "ang", "oi", "az", "een", "ha-", "det", "ta", "al-",
-	"mga", "un'", "uno", "ett", "dem", "egy", "els", "eines", "Ο",
-	"Η", "Το", "Οι"};
+        "mga", "un'", "uno", "ett", "dem", "egy", "els", "eines", "Ο",
+        "Η", "Το", "Οι"};
 
 
 //*****************************************
@@ -224,6 +224,7 @@ pyratcliff(PyObject *self, PyObject *pArgs)
 /*========== titles and names searches ==========*/
 /* Search for the 'name1', 'name2' and 'name3' name variations
  * in the key file keyFileName, returning at most nrResults results.
+ * If _scan_character is True, we're handling characters' names.
  *
  * See also the documentation of the _search_person() method of the
  * parser.sql python module, and the _nameVariations() method of the
@@ -355,6 +356,7 @@ search_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
 
 /* Search for the 'title1', title2' and 'title3' title variations
  * in the key file keyFileName, returning at most nrResults results.
+ * If _only_episodes is True, only the titles of episodes are considered.
  *
  * See also the documentation of the _search_movie() method of the
  * parser.sql python module, and the _titleVariations() method of the
@@ -371,7 +373,7 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     FILE *keyFile;
     char line[MXLINELEN+1];
     char origLine[MXLINELEN+1];
-    char *cp;
+    char *cp, *cp2;
     char *key;
     unsigned short hasArt = 0;
     unsigned short matchHasArt = 0;
@@ -381,12 +383,15 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     unsigned short searchingEpisode = 0;
     unsigned int count = 0;
     char noArt[MXLINELEN+1] = "";
+    PyObject *onlyEpisodes = NULL;
+    unsigned short onlyEps = 0;
     static char *argnames[] = {"keyFile", "title1", "title2", "title3",
-                                "results", NULL};
+                                "results", "_only_episodes", NULL};
     PyObject *result = PyList_New(0);
 
-    if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|ssi",
-            argnames, &keyFileName, &title1, &title2, &title3, &nrResults))
+    if (!PyArg_ParseTupleAndKeywords(pArgs, pKwds, "ss|ssiO",
+            argnames, &keyFileName, &title1, &title2, &title3, &nrResults,
+            &onlyEpisodes))
         return NULL;
 
     if (strlen(title1) > MXLINELEN)
@@ -412,6 +417,9 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
         return NULL;
     }
 
+    if (onlyEpisodes != NULL && PyObject_IsTrue(onlyEpisodes))
+        onlyEps = 1;
+
     linelen = strlen(title1);
     for (count = 0; count < ART_COUNT; count++) {
         artlen = strlen(articlesNoSP[count]);
@@ -432,6 +440,35 @@ search_title(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             key = cp+1;
             strcpy(origLine, line);
         } else { continue; }
+
+        /* We're interested only in the title of the episode, without
+	 * considering the title of the series.  */
+        if (onlyEps) {
+            if (line[strlen(line)-1] != '}')
+                continue;
+            cp = strrchr(line, '{');
+            if (cp == NULL)
+                continue;
+            line[strlen(line)-1] = '\0';
+            if (line[strlen(line)-1] == ')') {
+                line[strlen(line)-1] = '\0';
+                cp2 = strrchr(cp+1, '(');
+                if (cp2 != NULL) {
+                    *cp2 = '\0';
+                    if ((cp2-1)[0] == ' ')
+                        *(cp2-1) = '\0';
+                }
+            }
+            cp++;
+            if (cp[0] == '\0')
+                continue;
+            strtolower(cp);
+            ratio = ratcliff(title1, cp);
+            if (ratio >= RO_THRESHOLD)
+                PyList_Append(result, Py_BuildValue("(dis)",
+                                ratio, strtol(key, NULL, 16), origLine));
+            continue;
+        }
 
         /* We're searching a tv series episode, and this is not one. */
         if (searchingEpisode) {
@@ -547,7 +584,7 @@ search_company_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
     }
 
     if (line[strlen(line)-1] == ']')
-	    withoutCountry = 0;
+        withoutCountry = 0;
 
     while (fgets(line, MXLINELEN+1, keyFile) != NULL) {
         /* Split a "origLine|key" line. */
@@ -556,14 +593,14 @@ search_company_name(PyObject *self, PyObject *pArgs, PyObject *pKwds)
             key = cp+1;
             strcpy(origLine, line);
         } else { continue; }
-	var = 0.0;
+        var = 0.0;
         /* Strip the optional countryCode, if required. */
         if (withoutCountry && (cp = strrchr(line, '[')) != NULL) {
             *(cp-1) = '\0';
-	    var = -0.05;
-	}
+            var = -0.05;
+        }
 
-	strtolower(line);
+        strtolower(line);
 
         ratio = ratcliff(name1, line) + var;
 

@@ -2048,7 +2048,6 @@ def run():
 
     # Read the constants.
     readConstants()
-    sys.exit()
 
     # Populate the CACHE_MID instance.
     readMovieList()

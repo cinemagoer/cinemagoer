@@ -87,10 +87,10 @@ Obviously, if no imdbpy.cfg file is found (or is not readable or it can't
 be parsed), 'http' is still considered the default.
 
 
-The imdb_access object has nine main methods: search_movie(title),
+The imdb_access object has ten main methods: search_movie(title),
 get_movie(movieID), search_person(name), get_person(personID),
 search_character(name), get_character(characterID), search_company(name),
-get_company(companyID) and update(MovieOrPersonObject)
+get_company(companyID), search_episode() and update(MovieOrPersonObject)
 
   Methods description:
 
@@ -114,6 +114,11 @@ movie title and year, and with a "movieID" instance variable:
      movieID will be an integer, as read from the "titles.key" file;
      if, for example, you've put IMDb's data into a local database, the
      movieID can be an index in a given table of the database, and so on.
+
+search_episode(title) is identical to search_movie(), except that its
+tailored to search for episodes' titles; best results are expected
+searching for just the title of the episode, _without_ the title of
+the TV series.
 
 get_movie(movieID) will fetch the needed data and return a Movie object
 for the movie referenced by the given movieID; the Movie class can be

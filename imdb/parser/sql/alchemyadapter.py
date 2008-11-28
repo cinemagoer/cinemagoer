@@ -208,10 +208,11 @@ class ResultAdapter(object):
 
 class TableAdapter(object):
     """Adapter for a SQLAlchemy Table object, to mimic a SQLObject class."""
-    def __init__(self, table):
+    def __init__(self, table, uri=None):
         """Initialize a TableAdapter object."""
         self._imdbpySchema = table
         self._imdbpyName = table.name
+        self.connectionURI = uri
         self.colMap = {}
         columns = []
         for col in table.cols:
@@ -234,10 +235,21 @@ class TableAdapter(object):
                 # XXX: limit length for UNICODECOLs that will have an index.
                 #      this can result in name.name and title.title truncations!
                 colClass = Unicode
-                # XXX: looks like everything up to 333 will be accepted
-                #      without warnings, at least with recent versions of
-                #      MySQL.  255 seems a safer value, anyway.
-                colKindParams['length'] = 255
+                # Should work for most of the database servers.
+                length = 511
+                if self.connectionURI:
+                    if self.connectionURI.startswith('mysql'):
+                        # To stay compatible with MySQL 4.x.
+                        length = 255
+                colKindParams['length'] = length
+            elif self._imdbpyName == 'PersonInfo' and col.name == 'info':
+                if self.connectionURI:
+                    if self.connectionURI.startswith('ibm'):
+                        # There are some entries longer than 32KB.
+                        colClass = CLOB
+                        # I really do hope that this space isn't wasted
+                        # for each other shorter entry... <g>
+                        colKindParams['length'] = 65*1024
             colKind = colClass(**colKindParams)
             if 'alternateID' in params:
                 # There's no need to handle them here.
@@ -336,15 +348,16 @@ class TableAdapter(object):
 # XXX: is this the best way to act?
 TABLES_REPOSITORY = {}
 
-def getDBTables():
+def getDBTables(uri=None):
     """Return a list of TableAdapter objects to be used to access the
-    database through the SQLAlchemy ORM."""
+    database through the SQLAlchemy ORM.  The connection uri is optional, and
+    can be used to tailor the db schema to specific needs."""
     DB_TABLES = []
     for table in DB_SCHEMA:
         if table.name in TABLES_REPOSITORY:
             DB_TABLES.append(TABLES_REPOSITORY[table.name])
             continue
-        tableAdapter = TableAdapter(table)
+        tableAdapter = TableAdapter(table, uri)
         DB_TABLES.append(tableAdapter)
         TABLES_REPOSITORY[table.name] = tableAdapter
     return DB_TABLES
@@ -395,7 +408,7 @@ class _AlchemyConnection(object):
 
 def setConnection(uri, tables, encoding='utf8', debug=False):
     """Set connection for every table."""
-    # FIXME: why on earth mysql requires and additional parameter,
+    # FIXME: why on earth MySQL requires and additional parameter,
     #        is well beyond my understanding...
     if uri.startswith('mysql'):
         if '?' in uri:

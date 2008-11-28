@@ -113,8 +113,8 @@ the plot of a movie).
   OTHER TIPS
   ==========
 
-Remember that, calling the search_movie() and search_person()
-methods of the "IMDb" object, you can provide a "results"
+Remember that, calling the search_movie(), search_episode() and
+search_person() methods of the "IMDb" object, you can provide a "results"
 parameter, to download only a limited amount of results (20,
 by default).
 

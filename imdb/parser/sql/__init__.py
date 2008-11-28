@@ -188,7 +188,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                             ('ISNULL', ISNULL)]:
                     globals()[k] = v
                 self.toUTF8 = toUTF8
-                DB_TABLES = getDBTables()
+                DB_TABLES = getDBTables(uri)
                 for t in DB_TABLES:
                     globals()[t._imdbpyName] = t
                 if _gotError:

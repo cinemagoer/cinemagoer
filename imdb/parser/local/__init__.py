@@ -384,7 +384,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not title: return []
         # Search for these title variations.
         if not _episodes:
-            title1, title2, title3 = titleVariations(title)
+            title1, title2, title3 = titleVariations(title, fromPtdf=1)
         else:
             title1 = normalizeTitle(title)
             title2 = ''

@@ -162,6 +162,8 @@ inside the "parser" package; this new package must provide a subclass
 of the imdb.IMDb class which must define at least the following methods:
  _search_movie(title)  - to search for a given title; must return a
                          list of (movieID, {movieData}) tuples.
+ _search_episode(title)  - to search for a given episode title; must return a
+                           list of (movieID, {movieData}) tuples.
  _search_person(name)  - to search for a given name; must return a
                          list of (movieID, {personData}) tuples.
  _search_character(name)  - to search for a given character's name; must

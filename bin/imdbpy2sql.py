@@ -233,7 +233,7 @@ for idx, mod in enumerate(USE_ORM):
         else:
             warnings.warn('unknown module "%s".' % mod)
             continue
-        DB_TABLES = getDBTables()
+        DB_TABLES = getDBTables(URI)
         for t in DB_TABLES:
             globals()[t._imdbpyName] = t
         if _gotError:

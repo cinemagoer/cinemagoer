@@ -51,9 +51,9 @@ E.g., you're writing on a terminal with iso-8859-1 charset (aka latin-1):
  >>>
  >>> results = ia.search_person(utf8_str)
 
-If you pass a string to search_person() and search_movie() functions, IMDbPY
-attempts to guess the encoding, using the sys.stdin.encoding or the value
-returned from the sys.getdefaultencoding function.
+If you pass a string to search_person(), search_movie() or search_episode()
+functions, IMDbPY attempts to guess the encoding, using the sys.stdin.encoding
+or the value returned from the sys.getdefaultencoding function.
 Trust me: you want to provide an unicode string...
 
 Maybe in a future release the IMDb() function can take a "defaultInputEncoding"

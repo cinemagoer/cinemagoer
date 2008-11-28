@@ -62,9 +62,10 @@ addIndexes = classmethod(addIndexes)
 # XXX: is this the best way to act?
 TABLES_REPOSITORY = {}
 
-def getDBTables():
+def getDBTables(uri=None):
     """Return a list of classes to be used to access the database
-    through the SQLObject ORM."""
+    through the SQLObject ORM.  The connection uri is optional, and
+    can be used to tailor the db schema to specific needs."""
     DB_TABLES = []
     for table in DB_SCHEMA:
         if table.name in TABLES_REPOSITORY:

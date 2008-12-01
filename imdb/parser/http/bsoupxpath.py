@@ -254,7 +254,10 @@ class PathStep:
             elif self.axis == AXIS_DESCENDANT:
                 found = node.findAll(recursive=True, **self.soup_args)
             elif self.axis == AXIS_ATTRIBUTE:
-                found = [node[self.node_test]]
+                try:
+                    found = [node[self.node_test]]
+                except KeyError:
+                    found = []
             elif self.axis == AXIS_FOLLOWING_SIBLING:
                 found = node.findNextSiblings(**self.soup_args)
             elif self.axis == AXIS_PRECEDING_SIBLING:

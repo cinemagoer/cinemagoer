@@ -22,7 +22,10 @@ I'd like to thank the following people for their help:
 * Alen Ribic for some bug reports and hints.
 
 * Joachim Selke for some bug reports with SQLAlchemy and DB2 and a lot
-  of testing and debugging of the ibm_db driver.
+  of testing and debugging of the ibm_db driver (plus a lot of hints
+  about how to improve the imdbpy2sql.py script).
+
+* Indy (indyx) for a bug about series cast parsing using BeautifulSoup.
 
 * Yoav Aviram for a bug report about tv mini-series.
 

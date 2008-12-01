@@ -1,13 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081128 "Battlestar Galactica Season 1" (28 Nov 2008)
+* What's the new in release 3.9cvs20081201 "Max Payne" (01 Dec 2008)
   [general]
   - introduced the search_episode method, to search for episodes' titles.
 
   [http]
   - fixed a bug regarding movies listed in the Bottom 100.
   - fixed bugs about tv mini-series.
+  - fixed a bug about 'series cast' using BeautifulSoup.
 
   [sql]
   - fixes for DB2 (with SQLAlchemy).

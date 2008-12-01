@@ -756,6 +756,7 @@ class DOMParserBase(object):
         in self.extractors."""
         result = {}
         for extractor in self.extractors:
+            ##print extractor.label
             if extractor.group is None:
                 elements = [(extractor.label, element)
                             for element in self.xpath(dom, extractor.path)]

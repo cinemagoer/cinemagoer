@@ -45,7 +45,7 @@ for i, art in enumerate(_articles):
 re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 HELP = """imdbpy2sql.py usage:
-    %s -d /directory/with/PlainTextDataFiles/ -u URI [-o sqlobject,sqlalchemy] [--COMPATIBILITY-OPTIONS]
+    %s -d /directory/with/PlainTextDataFiles/ -u URIa [-c /directory/for/CSV_files] [-o sqlobject,sqlalchemy] [--COMPATIBILITY-OPTIONS]
 
         # NOTE: URI is something along the line:
                 scheme://[user[:password]@]host[:port]/database[?parameters]
@@ -74,10 +74,12 @@ IMDB_PTDF_DIR = None
 URI = None
 # ORM to use.
 USE_ORM = None
-#
+# List of tables of the database.
 DB_TABLES = []
 # Max allowed recursion, inserting data.
 MAX_RECURSION = 10
+# If set, this directory is used to output CSV files.
+CSV_DIR = None
 # Store custom queries specified on the command line.
 CUSTOM_QUERIES = {}
 # Allowed time specification, for custom queries.
@@ -116,12 +118,12 @@ if '--sqlite-transactions' in sys.argv[1:]:
 
 # Manage arguments list.
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:o:h',
+    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:o:c:h',
                                                 ['uri=', 'data=', 'execute=',
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
                                                 'mysql-force-myisam', 'orm',
-                                                'help'])
+                                                'csv', 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
     print HELP
@@ -132,6 +134,8 @@ for opt in optlist:
         IMDB_PTDF_DIR = opt[1]
     elif opt[0] in ('-u', '--uri'):
         URI = opt[1]
+    elif opt[0] in ('-c', '--csv'):
+        CSV_DIR = opt[1]
     elif opt[0] in ('-e', '--execute'):
         if opt[1].find(':') == -1:
             print 'WARNING: wrong command syntax: "%s"' % opt[1]
@@ -219,17 +223,16 @@ if not isinstance(USE_ORM, (tuple, list)):
         USE_ORM = [USE_ORM]
 nrMods = len(USE_ORM)
 _gotError = False
+# FIXME: it should be possible to run it even with no ORM, using CSV!
 for idx, mod in enumerate(USE_ORM):
     mod = mod.lower()
     try:
         if mod == 'sqlalchemy':
             from imdb.parser.sql.alchemyadapter import getDBTables, \
-                    NotFoundError, setConnection, AND, OR, IN, ISNULL, \
-                    ISNOTNULL, toUTF8
+                    NotFoundError, setConnection, ISNOTNULL
         elif mod == 'sqlobject':
             from imdb.parser.sql.objectadapter import getDBTables, \
-                    NotFoundError, setConnection, AND, OR, IN, ISNULL, \
-                    ISNOTNULL, toUTF8
+                    NotFoundError, setConnection, ISNOTNULL
         else:
             warnings.warn('unknown module "%s".' % mod)
             continue
@@ -250,8 +253,128 @@ for idx, mod in enumerate(USE_ORM):
 else:
     raise IMDbError, 'unable to use any ORM in %s' % str(USE_ORM)
 
-# Connect to the database.
-conn = setConnection(URI, DB_TABLES)
+
+#-----------------------
+# CSV Handling.
+
+CSV_TABLE_VALUES = {}
+
+
+class CSVException(Exception):
+    """Base class for CSV exceptions."""
+    pass
+
+class CSVOperationalError(CSVException):
+    """OperationalError exception for CSV (never raised, actually)."""
+    pass
+
+class CSVIntegrityError(CSVException):
+    """IntegrityError exception for CSV (never raised, actually)."""
+    pass
+
+
+class CSVFakeContainer(object):
+    """A fake container, used by CSVFakeConnection."""
+    pass
+
+
+class CSVCursor(object):
+    """Emulate a cursor object, but instead it writes data to a set
+    of CSV files."""
+    def __init__(self, csvDir, csvExt='.csv', csvEOL='\n', delimeter=',',
+            quote='"', escape=r'\\', null=''):
+        """Initialize a CSVCursor object; csvDir is the directory where the
+        CSV files will be stored."""
+        self.csvDir = csvDir
+        self.csvExt = csvExt
+        self.csvEOL = csvEOL
+        self._fdPool = {}
+        self.delimeter = delimeter
+        self.quote = quote
+        self.escape = escape
+        self.escaped = '%s%s' % (escape, quote)
+        self.null = null
+
+    def buildLine(self, items):
+        """Build a single text line for a set of information."""
+        quote = self.quote
+        escape = self.escape
+        null = self.null
+        escaped = self.escaped
+        r = list(items)
+        for idx, val in enumerate(r):
+            if val is None:
+                r[idx] = null
+                continue
+            #if isinstance(val, (int, long)):
+            #    r[idx] = str(val)
+            #    continue
+            val = str(val)
+            if quote:
+                val = '%s%s%s' % (quote, val.replace(quote, escaped), quote)
+            r[idx] = val
+        # Add end-of-line.
+        r.append(self.csvEOL)
+        return self.delimeter.join(r)
+
+    def executemany(self, sqlstr, items):
+        """Emulate the executemany method of a cursor, but writes the
+        data in a set of CSV files."""
+        # XXX: find a safer way to get the table/file name!
+        tName = sqlstr.split()[2]
+        # Open the file descriptor or get it from the pool.
+        if tName in self._fdPool:
+            tFD = self._fdPool[tName]
+        else:
+            tFD = open(os.path.join(CSV_DIR, tName + self.csvExt), 'w')
+            self._fdPool[tName] = tFD
+        buildLine = self.buildLine
+        # Write these lines.
+        tFD.writelines(buildLine(i) for i in items)
+        #print 'CSVCursor executemany:', sqlstr, len(items)
+
+    def close(self, tName):
+        if tName in self._fdPool:
+            self._fdPool[tName].close()
+
+    def closeAll(self):
+        """Close all open file descriptors."""
+        for fd in self._fdPool.values():
+            fd.close()
+
+
+class CSVFakeConnection(object):
+    """A fake connection object."""
+    module = CSVFakeContainer()
+    module.OperationalError = CSVOperationalError
+    module.IntegrityError = CSVIntegrityError
+    dbName = 'CSV'
+    paramstyle = 'CSV'
+
+    def __init__(self, csvDir):
+        """Initialize a fake connection instance."""
+        self.csvDir = csvDir
+
+    def getConnection(self):
+        """Return a fake container suitable for CSV access."""
+        conn = CSVFakeContainer()
+        conn.cursor = lambda: CSVCursor(self.csvDir)
+        conn.commit = lambda: None
+        return conn
+
+#-----------------------
+
+
+if not CSV_DIR:
+    # Connect to the database.
+    # FIXME: using this approach (replacing the conn/CURS objects) will
+    #        be really difficult to use it along with an open connection
+    #        to a database - a better solution MUST be found.
+    conn = setConnection(URI, DB_TABLES)
+else:
+    # Go for a CSV ride...
+    conn = CSVFakeConnection(CSV_DIR)
+
 # Extract exceptions to trap.
 try:
     OperationalError = conn.module.OperationalError
@@ -326,6 +449,7 @@ def createSQLstr(table, cols, command='INSERT'):
         elif PARAM_STYLE == 'numeric': return ':%s' % index
         elif PARAM_STYLE == 'named': return ':%s' % s
         elif PARAM_STYLE == 'pyformat': return '%(' + s + ')s'
+        elif PARAM_STYLE == 'CSV': return '%s'
         return '%s'
     for col in cols:
         if isinstance(col, RawValue):
@@ -646,6 +770,8 @@ class _BaseCache(dict):
                 self.flush(quiet=quiet, _recursionLevel=_recursionLevel)
                 self._tmpDict.clear()
             except Exception, e:
+                if isinstance(e, KeyboardInterrupt):
+                    raise
                 print 'WARNING: unknown exception caught committing the data'
                 print 'WARNING: to the database; report this as a bug, since'
                 print 'WARNING: many data (%d items) were lost: %s' % \
@@ -1032,6 +1158,8 @@ class SQLData(dict):
             self.clear()
             self.counter = self.counterInit
         except Exception, e:
+            if isinstance(e, KeyboardInterrupt):
+                raise
             print 'WARNING: unknown exception caught committing the data'
             print 'WARNING: to the database; report this as a bug, since'
             print 'WARNING: many data (%d items) were lost: %s' % \
@@ -1197,11 +1325,14 @@ def castLists(_charIDsList=None):
     # is processed).
     if _charIDsList is None:
         _charIDsList = []
-    for rt in RoleType.select():
-        roleid = rt.id
-        rolename = fname = rt.role
+    if not CSV_DIR:
+        rt = [(x.id, x.role) for x in RoleType.select()]
+    else:
+        rt = csvGetValues(RoleType)
+    for roleid, rolename in rt:
         if rolename == 'guest':
             continue
+        fname = rolename
         fname = fname.replace(' ', '-')
         if fname == 'actress': fname = 'actresses.list.gz'
         elif fname == 'miscellaneous-crew': fname = 'miscellaneous.list.gz'
@@ -1545,7 +1676,11 @@ def nmmvFiles(fp, funct, fname):
     if fname == 'biographies.list.gz':
         datakind = 'person'
         sqls = sqlsP
-        guestid = RoleType.select(RoleType.q.role == 'guest')[0].id
+        if not CSV_DIR:
+            guestid = RoleType.select(RoleType.q.role == 'guest')[0].id
+        else:
+            vals = dict([(v, k) for k, v in csvGetValues(RoleType)])
+            guestid = vals['guest']
         roleid = str(guestid)
         guestdata = SQLData(table=CastInfo,
                 cols=['personID', 'movieID', 'personRoleID', 'note',
@@ -1813,8 +1948,12 @@ def getPlot(lines):
 def completeCast():
     """Movie's complete cast/crew information."""
     CCKind = {}
-    for x in CompCastType.select():
-        CCKind[x.kind] = x.id
+    if not CSV_DIR:
+        cckinds = [(x.id, x.kind) for x in CompCastType.select()]
+    else:
+        cckinds = csvGetValues(CompCastType)
+    for k, v in cckinds:
+        CCKind[v] = k
     for fname, start in [('complete-cast.list.gz',COMPCAST_START),
                         ('complete-crew.list.gz',COMPCREW_START)]:
         try:
@@ -1887,9 +2026,56 @@ def readConstants():
         COMP_TYPES[x.kind] = x.id
 
 
+def csvGetValues(table):
+    """Build constants for the CSV files."""
+    values = dict(table._imdbpySchema.values).popitem()
+    ret = []
+    # XXX: not exactly a nice solution: values are re-calculated every time...
+    count = 1
+    for v in values[1]:
+        ret.append((count, v))
+        count += 1
+    return ret
+
+
+def csvCreateTables(tables):
+    """Create tables containing constants."""
+    for table in tables:
+        if not table._imdbpySchema.values:
+            continue
+        tName = tableName(table)
+        CURS.executemany('INSERT INTO %s' % tName, csvGetValues(table))
+        CURS.close(tName)
+
+
+def csvReadConstants():
+    """Populate constant tables for the CSV files."""
+    global INFO_TYPES, MOVIELINK_IDS, KIND_IDS, KIND_STRS, \
+            CCAST_TYPES, COMP_TYPES
+
+    for k, v in csvGetValues(InfoType):
+        INFO_TYPES[v] = k
+
+    for k, v in csvGetValues(LinkType):
+        MOVIELINK_IDS.append((v, len(v), k))
+    MOVIELINK_IDS.sort(_cmpfunc)
+
+    for k, v in csvGetValues(KindType):
+        KIND_IDS[v] = k
+        KIND_STRS[k] = v
+
+    for k, v in csvGetValues(CompCastType):
+        CCAST_TYPES[v] = k
+
+    for k, v in csvGetValues(CompanyType):
+        COMP_TYPES[v] = k
+
+
 def notNULLimdbID(cls):
     """Return a list of dictionaries for titles or names for which a
     imdbID is present in the database."""
+    if CSV_DIR:
+        return []
     if cls is Title: cname = 'movies'
     elif cls is Name: cname = 'people'
     elif cls is CompanyName: cname = 'companies'
@@ -1928,6 +2114,8 @@ def notNULLimdbID(cls):
 
 def restoreImdbID(tons, cls):
     """Restore imdbID for movies or people."""
+    if CSV_DIR:
+        return
     if cls is Title:
         CACHE = CACHE_MID
         cname = 'movies'
@@ -1978,6 +2166,8 @@ def _executeQuery(query):
 
 def executeCustomQueries(when, _keys=None, _timeit=True):
     """Run custom queries as specified on the command line."""
+    if CSV_DIR:
+        return
     if _keys is None: _keys = {}
     for query in CUSTOM_QUERIES.get(when, []):
         print 'EXECUTING "%s:%s"...' % (when, query)
@@ -2029,25 +2219,30 @@ def run():
         companies_imdbIDs = []
         print 'WARNING: failed to read imdbIDs for companies: %s' % e
 
-    # Truncate the current database.
-    print 'DROPPING current database...',
-    sys.stdout.flush()
-    dropTables(DB_TABLES)
-    print 'DONE!'
+    if not CSV_DIR:
+        # Truncate the current database.
+        print 'DROPPING current database...',
+        sys.stdout.flush()
+        dropTables(DB_TABLES)
+        print 'DONE!'
 
     executeCustomQueries('BEFORE_CREATE')
-
-    # Rebuild the database structure.
-    print 'CREATING new tables...',
-    sys.stdout.flush()
-    createTables(DB_TABLES)
-    print 'DONE!'
-    t('dropping and recreating the database')
-
+    if not CSV_DIR:
+        # Rebuild the database structure.
+        print 'CREATING new tables...',
+        sys.stdout.flush()
+        createTables(DB_TABLES)
+        print 'DONE!'
+        t('dropping and recreating the database')
+    else:
+        csvCreateTables(DB_TABLES)
     executeCustomQueries('AFTER_CREATE')
 
     # Read the constants.
-    readConstants()
+    if not CSV_DIR:
+        readConstants()
+    else:
+        csvReadConstants()
 
     # Populate the CACHE_MID instance.
     readMovieList()
@@ -2125,6 +2320,8 @@ def run():
     except Exception, e:
         print 'WARNING: failed to restore imdbIDs for people: %s' % e
 
+    CURS.closeAll()
+
     # Flush caches.
     CACHE_MID.flush()
     CACHE_MID.clear()
@@ -2139,11 +2336,12 @@ def run():
 
     executeCustomQueries('BEFORE_INDEXES')
 
-    print 'building database indexes (this may take a while)'
-    sys.stdout.flush()
-    # Build database indexes.
-    createIndexes(DB_TABLES)
-    t('createIndexes()')
+    if not CSV_DIR:
+        print 'building database indexes (this may take a while)'
+        sys.stdout.flush()
+        # Build database indexes.
+        createIndexes(DB_TABLES)
+        t('createIndexes()')
 
     executeCustomQueries('END')
 

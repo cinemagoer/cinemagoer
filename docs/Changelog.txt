@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081201 "Max Payne" (01 Dec 2008)
+* What's the new in release 3.9cvs20081201b "Max Payne" (01 Dec 2008)
   [general]
   - introduced the search_episode method, to search for episodes' titles.
 
@@ -15,6 +15,7 @@
   - improved support for movies' aka titles (for series).
   - made imdbpy2sql.py more robust, catching exceptions even when huge
     amounts of data are skipped due to errors.
+  - introduced CSV support in the imdbpy2sql.py script.
 
 
 * What's the new in release 3.8 "Quattro Carogne a Malopasso" (03 Nov 2008)

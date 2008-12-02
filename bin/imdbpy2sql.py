@@ -274,14 +274,21 @@ class CSVCursor(object):
         self.escape = escape
         self.escaped = '%s%s' % (escape, quote)
         self.null = null
+        self.counters = {}
 
-    def buildLine(self, items):
+    def buildLine(self, items, tableToAddID=False):
         """Build a single text line for a set of information."""
         quote = self.quote
         escape = self.escape
         null = self.null
         escaped = self.escaped
-        r = list(items)
+        if not tableToAddID:
+            r = []
+        else:
+            counters = self.counters
+            r = [counters[tableToAddID]]
+            counters[tableToAddID] += 1
+        r += list(items)
         for idx, val in enumerate(r):
             if val is None:
                 r[idx] = null
@@ -309,8 +316,17 @@ class CSVCursor(object):
             tFD = open(os.path.join(CSV_DIR, tName + self.csvExt), 'w')
             self._fdPool[tName] = tFD
         buildLine = self.buildLine
+        tableToAddID = False
+        if tName in ('cast_info', 'movie_info', 'person_info',
+                    'movie_companies', 'movie_link', 'aka_name',
+                    'complete_cast'):
+            tableToAddID = tName
+            if tName not in self.counters:
+                self.counters[tName] = 1
         # Write these lines.
-        tFD.writelines(buildLine(i) for i in items)
+        tFD.writelines(buildLine(i, tableToAddID=tableToAddID) for i in items)
+        # Flush to disk, so that no truncaded entries are ever left?
+        #tFD.flush()
         #print 'CSVCursor executemany:', sqlstr, len(items)
 
     def close(self, tName):

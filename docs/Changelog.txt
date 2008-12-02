@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081202 "Max Payne" (02 Dec 2008)
+* What's the new in release 3.9cvs20081202b "Max Payne" (02 Dec 2008)
   [general]
   - introduced the search_episode method, to search for episodes' titles.
 

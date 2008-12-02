@@ -80,6 +80,7 @@ DB_TABLES = []
 MAX_RECURSION = 10
 # If set, this directory is used to output CSV files.
 CSV_DIR = None
+CSV_CURS = None
 # Store custom queries specified on the command line.
 CUSTOM_QUERIES = {}
 # Allowed time specification, for custom queries.
@@ -223,7 +224,6 @@ if not isinstance(USE_ORM, (tuple, list)):
         USE_ORM = [USE_ORM]
 nrMods = len(USE_ORM)
 _gotError = False
-# FIXME: it should be possible to run it even with no ORM, using CSV!
 for idx, mod in enumerate(USE_ORM):
     mod = mod.lower()
     try:
@@ -256,26 +256,6 @@ else:
 
 #-----------------------
 # CSV Handling.
-
-CSV_TABLE_VALUES = {}
-
-
-class CSVException(Exception):
-    """Base class for CSV exceptions."""
-    pass
-
-class CSVOperationalError(CSVException):
-    """OperationalError exception for CSV (never raised, actually)."""
-    pass
-
-class CSVIntegrityError(CSVException):
-    """IntegrityError exception for CSV (never raised, actually)."""
-    pass
-
-
-class CSVFakeContainer(object):
-    """A fake container, used by CSVFakeConnection."""
-    pass
 
 
 class CSVCursor(object):
@@ -342,38 +322,13 @@ class CSVCursor(object):
         for fd in self._fdPool.values():
             fd.close()
 
-
-class CSVFakeConnection(object):
-    """A fake connection object."""
-    module = CSVFakeContainer()
-    module.OperationalError = CSVOperationalError
-    module.IntegrityError = CSVIntegrityError
-    dbName = 'CSV'
-    paramstyle = 'CSV'
-
-    def __init__(self, csvDir):
-        """Initialize a fake connection instance."""
-        self.csvDir = csvDir
-
-    def getConnection(self):
-        """Return a fake container suitable for CSV access."""
-        conn = CSVFakeContainer()
-        conn.cursor = lambda: CSVCursor(self.csvDir)
-        conn.commit = lambda: None
-        return conn
-
 #-----------------------
 
 
-if not CSV_DIR:
-    # Connect to the database.
-    # FIXME: using this approach (replacing the conn/CURS objects) will
-    #        be really difficult to use it along with an open connection
-    #        to a database - a better solution MUST be found.
-    conn = setConnection(URI, DB_TABLES)
-else:
+conn = setConnection(URI, DB_TABLES)
+if CSV_DIR:
     # Go for a CSV ride...
-    conn = CSVFakeConnection(CSV_DIR)
+    CSV_CURS = CSVCursor(CSV_DIR)
 
 # Extract exceptions to trap.
 try:
@@ -449,7 +404,6 @@ def createSQLstr(table, cols, command='INSERT'):
         elif PARAM_STYLE == 'numeric': return ':%s' % index
         elif PARAM_STYLE == 'named': return ':%s' % s
         elif PARAM_STYLE == 'pyformat': return '%(' + s + ')s'
-        elif PARAM_STYLE == 'CSV': return '%s'
         return '%s'
     for col in cols:
         if isinstance(col, RawValue):
@@ -910,7 +864,10 @@ class MoviesCache(_BaseCache):
         self._runCommand(l)
 
     def _runCommand(self, dataList):
-        CURS.executemany(self.sqlstr, self.converter(dataList))
+        if not CSV_DIR:
+            CURS.executemany(self.sqlstr, self.converter(dataList))
+        else:
+            CSV_CURS.executemany(self.sqlstr, dataList)
 
 
 class PersonsCache(_BaseCache):
@@ -963,7 +920,10 @@ class PersonsCache(_BaseCache):
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name)
             lapp((v, name, tget('imdbIndex'),
                 namePcodeCf, namePcodeNf, surnamePcode))
-        CURS.executemany(self.sqlstr, self.converter(l))
+        if not CSV_DIR:
+            CURS.executemany(self.sqlstr, self.converter(l))
+        else:
+            CSV_CURS.executemany(self.sqlstr, l)
 
 
 class CharactersCache(_BaseCache):
@@ -1016,7 +976,10 @@ class CharactersCache(_BaseCache):
                                                                 character=True)
             lapp((v, name, tget('imdbIndex'),
                 namePcodeCf, surnamePcode))
-        CURS.executemany(self.sqlstr, self.converter(l))
+        if not CSV_DIR:
+            CURS.executemany(self.sqlstr, self.converter(l))
+        else:
+            CSV_CURS.executemany(self.sqlstr, l)
 
 
 class CompaniesCache(_BaseCache):
@@ -1071,7 +1034,10 @@ class CompaniesCache(_BaseCache):
             if k != name:
                 namePcodeSf = soundex(k)
             lapp((v, name, country, namePcodeNf, namePcodeSf))
-        CURS.executemany(self.sqlstr, self.converter(l))
+        if not CSV_DIR:
+            CURS.executemany(self.sqlstr, self.converter(l))
+        else:
+            CSV_CURS.executemany(self.sqlstr, l)
 
 
 class SQLData(dict):
@@ -1168,7 +1134,10 @@ class SQLData(dict):
 
     def _toDB(self):
         print ' * FLUSHING SQLData...'
-        CURS.executemany(self.sqlString, self.converter(self.values()))
+        if not CSV_DIR:
+            CURS.executemany(self.sqlString, self.converter(self.values()))
+        else:
+            CSV_CURS.executemany(self.sqlString, self.values())
 
 
 # Miscellaneous functions.
@@ -1325,10 +1294,7 @@ def castLists(_charIDsList=None):
     # is processed).
     if _charIDsList is None:
         _charIDsList = []
-    if not CSV_DIR:
-        rt = [(x.id, x.role) for x in RoleType.select()]
-    else:
-        rt = csvGetValues(RoleType)
+    rt = [(x.id, x.role) for x in RoleType.select()]
     for roleid, rolename in rt:
         if rolename == 'guest':
             continue
@@ -1431,7 +1397,10 @@ class AkasMoviesCache(MoviesCache):
             new_item.append(self.notes.get(the_id))
             new_dataListapp(tuple(new_item))
         new_dataList.reverse()
-        CURS.executemany(self.sqlstr, self.converter(new_dataList))
+        if not CSV_DIR:
+            CURS.executemany(self.sqlstr, self.converter(new_dataList))
+        else:
+            CSV_CURS.executemany(self.sqlstr, new_dataList)
 CACHE_MID_AKAS = AkasMoviesCache()
 
 
@@ -1676,11 +1645,7 @@ def nmmvFiles(fp, funct, fname):
     if fname == 'biographies.list.gz':
         datakind = 'person'
         sqls = sqlsP
-        if not CSV_DIR:
-            guestid = RoleType.select(RoleType.q.role == 'guest')[0].id
-        else:
-            vals = dict([(v, k) for k, v in csvGetValues(RoleType)])
-            guestid = vals['guest']
+        guestid = RoleType.select(RoleType.q.role == 'guest')[0].id
         roleid = str(guestid)
         guestdata = SQLData(table=CastInfo,
                 cols=['personID', 'movieID', 'personRoleID', 'note',
@@ -1948,10 +1913,7 @@ def getPlot(lines):
 def completeCast():
     """Movie's complete cast/crew information."""
     CCKind = {}
-    if not CSV_DIR:
-        cckinds = [(x.id, x.kind) for x in CompCastType.select()]
-    else:
-        cckinds = csvGetValues(CompCastType)
+    cckinds = [(x.id, x.kind) for x in CompCastType.select()]
     for k, v in cckinds:
         CCKind[v] = k
     for fname, start in [('complete-cast.list.gz',COMPCAST_START),
@@ -2026,56 +1988,9 @@ def readConstants():
         COMP_TYPES[x.kind] = x.id
 
 
-def csvGetValues(table):
-    """Build constants for the CSV files."""
-    values = dict(table._imdbpySchema.values).popitem()
-    ret = []
-    # XXX: not exactly a nice solution: values are re-calculated every time...
-    count = 1
-    for v in values[1]:
-        ret.append((count, v))
-        count += 1
-    return ret
-
-
-def csvCreateTables(tables):
-    """Create tables containing constants."""
-    for table in tables:
-        if not table._imdbpySchema.values:
-            continue
-        tName = tableName(table)
-        CURS.executemany('INSERT INTO %s' % tName, csvGetValues(table))
-        CURS.close(tName)
-
-
-def csvReadConstants():
-    """Populate constant tables for the CSV files."""
-    global INFO_TYPES, MOVIELINK_IDS, KIND_IDS, KIND_STRS, \
-            CCAST_TYPES, COMP_TYPES
-
-    for k, v in csvGetValues(InfoType):
-        INFO_TYPES[v] = k
-
-    for k, v in csvGetValues(LinkType):
-        MOVIELINK_IDS.append((v, len(v), k))
-    MOVIELINK_IDS.sort(_cmpfunc)
-
-    for k, v in csvGetValues(KindType):
-        KIND_IDS[v] = k
-        KIND_STRS[k] = v
-
-    for k, v in csvGetValues(CompCastType):
-        CCAST_TYPES[v] = k
-
-    for k, v in csvGetValues(CompanyType):
-        COMP_TYPES[v] = k
-
-
 def notNULLimdbID(cls):
-    """Return a list of dictionaries for titles or names for which a
+    """Return a list of dictionaries for titles or names for which an
     imdbID is present in the database."""
-    if CSV_DIR:
-        return []
     if cls is Title: cname = 'movies'
     elif cls is Name: cname = 'people'
     elif cls is CompanyName: cname = 'companies'
@@ -2113,9 +2028,7 @@ def notNULLimdbID(cls):
 
 
 def restoreImdbID(tons, cls):
-    """Restore imdbID for movies or people."""
-    if CSV_DIR:
-        return
+    """Restore imdbID for movies, people, companies and characters."""
     if cls is Title:
         CACHE = CACHE_MID
         cname = 'movies'
@@ -2166,8 +2079,6 @@ def _executeQuery(query):
 
 def executeCustomQueries(when, _keys=None, _timeit=True):
     """Run custom queries as specified on the command line."""
-    if CSV_DIR:
-        return
     if _keys is None: _keys = {}
     for query in CUSTOM_QUERIES.get(when, []):
         print 'EXECUTING "%s:%s"...' % (when, query)
@@ -2219,30 +2130,23 @@ def run():
         companies_imdbIDs = []
         print 'WARNING: failed to read imdbIDs for companies: %s' % e
 
-    if not CSV_DIR:
-        # Truncate the current database.
-        print 'DROPPING current database...',
-        sys.stdout.flush()
-        dropTables(DB_TABLES)
-        print 'DONE!'
+    # Truncate the current database.
+    print 'DROPPING current database...',
+    sys.stdout.flush()
+    dropTables(DB_TABLES)
+    print 'DONE!'
 
     executeCustomQueries('BEFORE_CREATE')
-    if not CSV_DIR:
-        # Rebuild the database structure.
-        print 'CREATING new tables...',
-        sys.stdout.flush()
-        createTables(DB_TABLES)
-        print 'DONE!'
-        t('dropping and recreating the database')
-    else:
-        csvCreateTables(DB_TABLES)
+    # Rebuild the database structure.
+    print 'CREATING new tables...',
+    sys.stdout.flush()
+    createTables(DB_TABLES)
+    print 'DONE!'
+    t('dropping and recreating the database')
     executeCustomQueries('AFTER_CREATE')
 
     # Read the constants.
-    if not CSV_DIR:
-        readConstants()
-    else:
-        csvReadConstants()
+    readConstants()
 
     # Populate the CACHE_MID instance.
     readMovieList()
@@ -2320,7 +2224,8 @@ def run():
     except Exception, e:
         print 'WARNING: failed to restore imdbIDs for people: %s' % e
 
-    CURS.closeAll()
+    if CSV_DIR:
+        CURS.closeAll()
 
     # Flush caches.
     CACHE_MID.flush()
@@ -2336,17 +2241,20 @@ def run():
 
     executeCustomQueries('BEFORE_INDEXES')
 
-    if not CSV_DIR:
-        print 'building database indexes (this may take a while)'
-        sys.stdout.flush()
-        # Build database indexes.
-        createIndexes(DB_TABLES)
-        t('createIndexes()')
+    print 'building database indexes (this may take a while)'
+    sys.stdout.flush()
+    # Build database indexes.
+    createIndexes(DB_TABLES)
+    t('createIndexes()')
 
     executeCustomQueries('END')
 
     print 'DONE! (in %d minutes, %d seconds)' % \
             divmod(int(time.time())-BEGIN_TIME, 60)
+
+    if CSV_DIR:
+        print ''
+        print 'Now you should load the CSV files in %s into your db.' % CSV_DIR
 
 
 _HEARD = 0

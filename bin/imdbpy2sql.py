@@ -293,9 +293,9 @@ class CSVCursor(object):
             if val is None:
                 r[idx] = null
                 continue
-            #if isinstance(val, (int, long)):
-            #    r[idx] = str(val)
-            #    continue
+            if isinstance(val, (int, long)):
+                r[idx] = str(val)
+                continue
             val = str(val)
             if quote:
                 val = '%s%s%s' % (quote, val.replace(quote, escaped), quote)

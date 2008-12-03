@@ -262,7 +262,7 @@ class CSVCursor(object):
     """Emulate a cursor object, but instead it writes data to a set
     of CSV files."""
     def __init__(self, csvDir, csvExt='.csv', csvEOL='\n', delimeter=',',
-            quote='"', escape=r'\\', null=''):
+            quote='"', escape='\\', null=''):
         """Initialize a CSVCursor object; csvDir is the directory where the
         CSV files will be stored."""
         self.csvDir = csvDir
@@ -2241,7 +2241,7 @@ def run():
         print 'WARNING: failed to restore imdbIDs for people: %s' % e
 
     if CSV_DIR:
-        CURS.closeAll()
+        CSV_CURS.closeAll()
 
     # Flush caches.
     CACHE_MID.flush()

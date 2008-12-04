@@ -61,7 +61,7 @@ HELP = """imdbpy2sql.py usage:
             --csv-eol CHR           end-of-line (\\n)
             --csv-delimeter CHR     fields delimiter (,)
             --csv-quote CHR         quote char (")
-            --csv-escape CHR        escape char (\\)
+            --csv-escape CHR        escape char (")
             --csv-null STRING       string for the NULL values (empty string)
             --csv-quoteint          quote integer values (default, False)
 
@@ -94,7 +94,7 @@ CSV_EXT = '.csv'
 CSV_EOL = '\n'
 CSV_DELIMITER = ','
 CSV_QUOTE = '"'
-CSV_ESCAPE = '\\'
+CSV_ESCAPE = '"'
 CSV_NULL = ''
 CSV_QUOTEINT = False
 # Store custom queries specified on the command line.
@@ -364,7 +364,12 @@ class CSVCursor(object):
         # Flush to disk, so that no truncaded entries are ever left?
         #tFD.flush()
 
+    def fileNames(self):
+        """Return the list of file names."""
+        return [fd.name for fd in self._fdPool.values()]
+
     def close(self, tName):
+        """Close a given table/file."""
         if tName in self._fdPool:
             self._fdPool[tName].close()
 

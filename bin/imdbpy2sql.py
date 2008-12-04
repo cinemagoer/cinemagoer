@@ -45,7 +45,7 @@ for i, art in enumerate(_articles):
 re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 HELP = """imdbpy2sql.py usage:
-    %s -d /directory/with/PlainTextDataFiles/ -u URIa [-c /directory/for/CSV_files] [-o sqlobject,sqlalchemy] [--COMPATIBILITY-OPTIONS]
+    %s -d /directory/with/PlainTextDataFiles/ -u URIa [-c /directory/for/CSV_files] [-o sqlobject,sqlalchemy] [--CSV-OPTIONS] [--COMPATIBILITY-OPTIONS]
 
         # NOTE: URI is something along the line:
                 scheme://[user[:password]@]host[:port]/database[?parameters]
@@ -55,6 +55,15 @@ HELP = """imdbpy2sql.py usage:
                 postgres://user:password@host/database
                 sqlite:/tmp/imdb.db
                 sqlite:/C|/full/path/to/database
+
+        # NOTE: --CSV-OPTIONS can be one or more of:
+            --csv-ext STRING        files extension (.csv)
+            --csv-eol CHR           end-of-line (\\n)
+            --csv-delimeter CHR     fields delimiter (,)
+            --csv-quote CHR         quote char (")
+            --csv-escape CHR        escape char (\\)
+            --csv-null STRING       string for the NULL values (empty string)
+            --csv-quoteint          quote integer values (default, False)
 
         # NOTE: --COMPATIBILITY-OPTIONS can be one of:
             --mysql-innodb          insert data into a MySQL MyISAM db,
@@ -81,6 +90,13 @@ MAX_RECURSION = 10
 # If set, this directory is used to output CSV files.
 CSV_DIR = None
 CSV_CURS = None
+CSV_EXT = '.csv'
+CSV_EOL = '\n'
+CSV_DELIMITER = ','
+CSV_QUOTE = '"'
+CSV_ESCAPE = '\\'
+CSV_NULL = ''
+CSV_QUOTEINT = False
 # Store custom queries specified on the command line.
 CUSTOM_QUERIES = {}
 # Allowed time specification, for custom queries.
@@ -124,7 +140,10 @@ try:
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
                                                 'mysql-force-myisam', 'orm',
-                                                'csv', 'help'])
+                                                'csv=', 'csv-ext=', 'csv-eol=',
+                                                'csv-delimeter=', 'csv-quote=',
+                                                'csv-escape=', 'csv-null=',
+                                                'csv-quoteint', 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
     print HELP
@@ -137,6 +156,20 @@ for opt in optlist:
         URI = opt[1]
     elif opt[0] in ('-c', '--csv'):
         CSV_DIR = opt[1]
+    elif opt[0] == 'csv-ext':
+        CSV_EXT = opt[1]
+    elif opt[0] == 'csv-eol':
+        CSV_EOL = opt[1]
+    elif opt[0] == 'csv-delimeter':
+        CSV_DELIMITER = opt[1]
+    elif opt[0] == 'csv-quote':
+        CSV_QUOTE = opt[1]
+    elif opt[0] == 'csv-escape':
+        CSV_ESCAPE = opt[1]
+    elif opt[0] == 'csv-null':
+        CSV_NULL = opt[1]
+    elif opt[0] == 'csv-quoteint':
+        CSV_QUOTEINT = True
     elif opt[0] in ('-e', '--execute'):
         if opt[1].find(':') == -1:
             print 'WARNING: wrong command syntax: "%s"' % opt[1]
@@ -261,20 +294,22 @@ else:
 class CSVCursor(object):
     """Emulate a cursor object, but instead it writes data to a set
     of CSV files."""
-    def __init__(self, csvDir, csvExt='.csv', csvEOL='\n', delimeter=',',
-            quote='"', escape='\\', null=''):
+    def __init__(self, csvDir, csvExt=CSV_EXT, csvEOL=CSV_EOL,
+            delimeter=CSV_DELIMITER, quote=CSV_QUOTE, escape=CSV_ESCAPE,
+            null=CSV_NULL, quoteInteger=CSV_QUOTEINT):
         """Initialize a CSVCursor object; csvDir is the directory where the
         CSV files will be stored."""
         self.csvDir = csvDir
         self.csvExt = csvExt
         self.csvEOL = csvEOL
-        self._fdPool = {}
         self.delimeter = delimeter
         self.quote = quote
         self.escape = escape
         self.escaped = '%s%s' % (escape, quote)
         self.null = null
-        self.counters = {}
+        self.quoteInteger = quoteInteger
+        self._fdPool = {}
+        self._counters = {}
 
     def buildLine(self, items, tableToAddID=False):
         """Build a single text line for a set of information."""
@@ -282,18 +317,19 @@ class CSVCursor(object):
         escape = self.escape
         null = self.null
         escaped = self.escaped
+        quoteInteger = self.quoteInteger
         if not tableToAddID:
             r = []
         else:
-            counters = self.counters
-            r = [counters[tableToAddID]]
-            counters[tableToAddID] += 1
+            _counters = self._counters
+            r = [_counters[tableToAddID]]
+            _counters[tableToAddID] += 1
         r += list(items)
         for idx, val in enumerate(r):
             if val is None:
                 r[idx] = null
                 continue
-            if isinstance(val, (int, long)):
+            if (not quoteInteger) and isinstance(val, (int, long)):
                 r[idx] = str(val)
                 continue
             val = str(val)
@@ -321,13 +357,12 @@ class CSVCursor(object):
                     'movie_companies', 'movie_link', 'aka_name',
                     'complete_cast'):
             tableToAddID = tName
-            if tName not in self.counters:
-                self.counters[tName] = 1
+            if tName not in self._counters:
+                self._counters[tName] = 1
         # Write these lines.
         tFD.writelines(buildLine(i, tableToAddID=tableToAddID) for i in items)
         # Flush to disk, so that no truncaded entries are ever left?
         #tFD.flush()
-        #print 'CSVCursor executemany:', sqlstr, len(items)
 
     def close(self, tName):
         if tName in self._fdPool:

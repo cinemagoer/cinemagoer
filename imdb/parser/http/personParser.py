@@ -975,7 +975,7 @@ def _build_episode(link, title, minfo, role, roleA, roleAID):
                 if eps_data.get('year', '????') == '????':
                     syear = date.split()[-1]
                     if syear.isdigit():
-                        e['year'] = syear
+                        e['year'] = int(syear)
     return e
 
 

@@ -306,7 +306,10 @@ def analyze_title(title, canonical=None,
         elif episode_or_year.startswith('Episode dated'):
             oad = episode_or_year[14:]
             if oad[-4:].isdigit():
-                ep_year = oad[-4:]
+                try:
+                    ep_year = int(oad[-4:])
+                except (TypeError, ValueError):
+                    pass
         episode_d = analyze_title(episode_or_year, canonical=canonicalEpisode)
         episode_d['kind'] = u'episode'
         episode_d['episode of'] = series_d
@@ -373,12 +376,14 @@ def analyze_title(title, canonical=None,
     result['title'] = title
     result['kind'] = kind or u'movie'
     if year and year != '????':
-        result['year'] = year
+        try:
+            result['year'] = int(year)
+        except (TypeError, ValueError):
+            pass
     if imdbIndex:
         result['imdbIndex'] = imdbIndex
     if isinstance(_emptyString, str):
         result['kind'] = str(kind or 'movie')
-        if year and year != '????': result['year'] = str(year)
     return result
 
 
@@ -438,7 +443,7 @@ def build_title(title_dict, canonical=None, canonicalSeries=0,
         ep_title = ep_dict['title']
         if not ptdf:
             doYear = 1
-            ep_dict['year'] = title_dict.get('year') or '????'
+            ep_dict['year'] = title_dict.get('year', '????')
             if ep_title[0:1] == '(' and ep_title[-1:] == ')' and \
                     ep_title[1:5].isdigit():
                 ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=1,

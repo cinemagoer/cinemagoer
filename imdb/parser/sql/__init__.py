@@ -127,6 +127,11 @@ def get_movie_data(movieID, kindDict, fromAka=0):
             mdict['series years'] = unicode(m.seriesYears)
     if mdict['imdbIndex'] is None: del mdict['imdbIndex']
     if mdict['year'] is None: del mdict['year']
+    else:
+        try:
+            mdict['year'] = int(mdict['year'])
+        except (TypeError, ValueError):
+            del mdict['year']
     if mdict['season'] is None: del mdict['season']
     else:
         try: mdict['season'] = int(mdict['season'])
@@ -258,7 +263,10 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if val is None:
             return ISNULL(col)
         else:
-            return col == self.toUTF8(val)
+            if isinstance(val, (int, long)):
+                return col == val
+            else:
+                return col == self.toUTF8(val)
 
     def _getTitleID(self, title):
         """Given a long imdb canonical title, returns a movieID or

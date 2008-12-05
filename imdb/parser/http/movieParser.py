@@ -1377,6 +1377,8 @@ class HTMLAwardsParser(ParserBase):
 def _process_award(x):
     award = {}
     award['year'] = x.get('year').strip()
+    if award['year'] and award['year'].isdigit():
+        award['year'] = int(award['year'])
     award['result'] = x.get('result').strip()
     award['award'] = x.get('award').strip()
     category = x.get('category').strip()
@@ -4049,6 +4051,8 @@ class HTMLEpisodesParser(ParserBase):
                 self._add_episode()
                 year = name[23:]
                 if year == 'unknown': year = u'????'
+                if year and year.isdigit():
+                    year = int(year)
                 self._cur_year = year
             href = self.get_attr_value(attrs, 'href')
             if href and href.lower().startswith('/title/tt'):
@@ -4155,10 +4159,12 @@ def _build_episode(x):
     if year is not None:
         year = year[5:]
         if year == 'unknown': year = u'????'
+        if year and year.isdigit():
+            year = int(year)
         e['year'] = year
     else:
         if oad and oad[-4:].isdigit():
-            e['year'] = oad[-4:]
+            e['year'] = int(oad[-4:])
     epinfo = x.get('episode')
     if epinfo is not None:
         season, episode = epinfo.split(':')[0].split(',')

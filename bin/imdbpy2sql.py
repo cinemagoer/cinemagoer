@@ -156,19 +156,19 @@ for opt in optlist:
         URI = opt[1]
     elif opt[0] in ('-c', '--csv'):
         CSV_DIR = opt[1]
-    elif opt[0] == 'csv-ext':
+    elif opt[0] == '--csv-ext':
         CSV_EXT = opt[1]
-    elif opt[0] == 'csv-eol':
+    elif opt[0] == '--csv-eol':
         CSV_EOL = opt[1]
-    elif opt[0] == 'csv-delimeter':
+    elif opt[0] == '--csv-delimeter':
         CSV_DELIMITER = opt[1]
-    elif opt[0] == 'csv-quote':
+    elif opt[0] == '--csv-quote':
         CSV_QUOTE = opt[1]
-    elif opt[0] == 'csv-escape':
+    elif opt[0] == '--csv-escape':
         CSV_ESCAPE = opt[1]
-    elif opt[0] == 'csv-null':
+    elif opt[0] == '--csv-null':
         CSV_NULL = opt[1]
-    elif opt[0] == 'csv-quoteint':
+    elif opt[0] == '--csv-quoteint':
         CSV_QUOTEINT = True
     elif opt[0] in ('-e', '--execute'):
         if opt[1].find(':') == -1:
@@ -1465,6 +1465,8 @@ class AkasMoviesCache(MoviesCache):
         new_dataListapp = new_dataList.append
         while dataList:
             item = dataList.pop()
+            # Remove the imdbID.
+            del item[5]
             # id used to store this entry.
             the_id = item[0]
             # id of the referred title.
@@ -1596,7 +1598,7 @@ def doMovieLinks():
 def minusHashFiles(fp, funct, defaultid, descr):
     """A file with lines starting with '# ' and '- '."""
     sqldata = SQLData(table=MovieInfo,
-                        cols=['movieID', 'infoTypeID', 'info'])
+                        cols=['movieID', 'infoTypeID', 'info', 'note'])
     sqldata.flushEvery = 2500
     if descr == 'quotes': sqldata.flushEvery = 4000
     elif descr == 'soundtracks': sqldata.flushEvery = 3000
@@ -1610,7 +1612,7 @@ def minusHashFiles(fp, funct, defaultid, descr):
             print 'SCANNING %s:' % descr,
             print _(title)
         for data in d:
-            sqldata.add((mid, defaultid, data))
+            sqldata.add((mid, defaultid, data, None))
         count += 1
     sqldata.flush()
 
@@ -1640,7 +1642,7 @@ def getTaglines():
     try: fp = SourceFile('taglines.list.gz', start=TAGL_START, stop=TAGL_STOP)
     except IOError: return
     sqldata = SQLData(table=MovieInfo,
-                cols=['movieID', 'infoTypeID', 'info'],
+                cols=['movieID', 'infoTypeID', 'info', 'note'],
                 flushEvery=10000)
     count = 0
     for title, text in fp.getByHashSections():
@@ -1651,7 +1653,7 @@ def getTaglines():
             if not tag: continue
             if count % 10000 == 0:
                 print 'SCANNING taglines:', _(title)
-            sqldata.add((mid, INFO_TYPES['taglines'], tag))
+            sqldata.add((mid, INFO_TYPES['taglines'], tag, None))
         count += 1
     sqldata.flush()
     fp.close()
@@ -1926,7 +1928,8 @@ def getRating():
     """Movie's rating."""
     try: fp = SourceFile('ratings.list.gz', start=RAT_START, stop=RAT_STOP)
     except IOError: return
-    sqldata = SQLData(table=MovieInfo, cols=['movieID', 'infoTypeID', 'info'])
+    sqldata = SQLData(table=MovieInfo, cols=['movieID', 'infoTypeID',
+                                            'info', 'note'])
     count = 0
     for line in fp:
         data = unpack(line, ('votes distribution', 'votes', 'rating', 'title'),
@@ -1938,8 +1941,8 @@ def getRating():
                 print 'SCANNING rating:', _(title)
         sqldata.add((mid, INFO_TYPES['votes distribution'],
                     data.get('votes distribution')))
-        sqldata.add((mid, INFO_TYPES['votes'], data.get('votes')))
-        sqldata.add((mid, INFO_TYPES['rating'], data.get('rating')))
+        sqldata.add((mid, INFO_TYPES['votes'], data.get('votes'), None))
+        sqldata.add((mid, INFO_TYPES['rating'], data.get('rating'), None))
         count += 1
     sqldata.flush()
     fp.close()
@@ -1954,7 +1957,8 @@ def getTopBottomRating():
         except IOError: break
         sqldata = SQLData(table=MovieInfo,
                     cols=['movieID',
-                        RawValue('infoTypeID', str(INFO_TYPES[what])), 'info'])
+                        RawValue('infoTypeID', str(INFO_TYPES[what])),
+                        'info', 'note'])
         count = 1
         print 'SCANNING %s...' % what
         for line in fp:
@@ -1965,7 +1969,7 @@ def getTopBottomRating():
             mid = CACHE_MID.addUnique(title)
             if what == 'top 250 rank': rank = count
             else: rank = 11 - count
-            sqldata.add((mid, str(rank)))
+            sqldata.add((mid, str(rank), None))
             count += 1
         sqldata.flush()
         fp.close()

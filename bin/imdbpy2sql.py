@@ -311,7 +311,7 @@ class CSVCursor(object):
         self._fdPool = {}
         self._counters = {}
 
-    def buildLine(self, items, tableToAddID=False):
+    def buildLine(self, items, tableToAddID=False, rawValues=()):
         """Build a single text line for a set of information."""
         quote = self.quote
         escape = self.escape
@@ -336,9 +336,16 @@ class CSVCursor(object):
             if quote:
                 val = '%s%s%s' % (quote, val.replace(quote, escaped), quote)
             r[idx] = val
-        # Add end-of-line.
-        r.append(self.csvEOL)
-        return self.delimeter.join(r)
+        # Add RawValue(s), if present.
+        rinsert = r.insert
+        if tableToAddID:
+            shift = 1
+        else:
+            shift = 0
+        for idx, item in rawValues:
+            rinsert(idx + shift, item)
+        # Build the line and add the end-of-line.
+        return '%s%s' % (self.delimeter.join(r), self.csvEOL)
 
     def executemany(self, sqlstr, items):
         """Emulate the executemany method of a cursor, but writes the
@@ -359,8 +366,20 @@ class CSVCursor(object):
             tableToAddID = tName
             if tName not in self._counters:
                 self._counters[tName] = 1
+        # Identify if there are RawValue in the VALUES (...) portion of
+        # the query.
+        parIdx = sqlstr.rfind('(')
+        rawValues = []
+        vals = sqlstr[parIdx+1:-1]
+        if parIdx != 0:
+            vals = sqlstr[parIdx+1:-1]
+            for idx, item in enumerate(vals.split(', ')):
+                if item[0] in ('%', '?', ':'):
+                    continue
+                rawValues.append((idx, item))
         # Write these lines.
-        tFD.writelines(buildLine(i, tableToAddID=tableToAddID) for i in items)
+        tFD.writelines(buildLine(i, tableToAddID=tableToAddID,
+                        rawValues=rawValues) for i in items)
         # Flush to disk, so that no truncaded entries are ever left?
         #tFD.flush()
 
@@ -840,7 +859,7 @@ class MoviesCache(_BaseCache):
         self._id_for_custom_q = 'MOVIES'
         self.sqlstr, self.converter = createSQLstr(Title, ('id', 'title',
                                     'imdbIndex', 'kindID', 'productionYear',
-                                    'phoneticCode', 'episodeOfID',
+                                    'imdbID', 'phoneticCode', 'episodeOfID',
                                     'seasonNr', 'episodeNr', 'seriesYears'))
 
     def populate(self):
@@ -915,7 +934,7 @@ class MoviesCache(_BaseCache):
             title = tget('title')
             soundex = title_soundex(title)
             lapp((v, title, tget('imdbIndex'), KIND_IDS[kind],
-                    tget('year'), soundex, episodeOf,
+                    tget('year'), None, soundex, episodeOf,
                     tget('season'), tget('episode'), tget('series years')))
         self._runCommand(l)
 
@@ -936,8 +955,8 @@ class PersonsCache(_BaseCache):
         self._table_name = tableName(Name)
         self._id_for_custom_q = 'PERSONS'
         self.sqlstr, self.converter = createSQLstr(Name, ['id', 'name',
-                                'imdbIndex', 'namePcodeCf', 'namePcodeNf',
-                                'surnamePcode'])
+                                'imdbIndex', 'imdbID', 'namePcodeCf',
+                                'namePcodeNf', 'surnamePcode'])
 
     def populate(self):
         print ' * POPULATING PersonsCache...'
@@ -974,7 +993,7 @@ class PersonsCache(_BaseCache):
             tget = t.get
             name = tget('name')
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name)
-            lapp((v, name, tget('imdbIndex'),
+            lapp((v, name, tget('imdbIndex'), None,
                 namePcodeCf, namePcodeNf, surnamePcode))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
@@ -992,7 +1011,8 @@ class CharactersCache(_BaseCache):
         self._table_name = tableName(CharName)
         self._id_for_custom_q = 'CHARACTERS'
         self.sqlstr, self.converter = createSQLstr(CharName, ['id', 'name',
-                                'imdbIndex', 'namePcodeNf', 'surnamePcode'])
+                                'imdbIndex', 'imdbID', 'namePcodeNf',
+                                'surnamePcode'])
 
     def populate(self):
         print ' * POPULATING CharactersCache...'
@@ -1030,7 +1050,7 @@ class CharactersCache(_BaseCache):
             name = tget('name')
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name,
                                                                 character=True)
-            lapp((v, name, tget('imdbIndex'),
+            lapp((v, name, tget('imdbIndex'), None,
                 namePcodeCf, surnamePcode))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
@@ -1048,7 +1068,8 @@ class CompaniesCache(_BaseCache):
         self._table_name = tableName(CompanyName)
         self._id_for_custom_q = 'COMPANIES'
         self.sqlstr, self.converter = createSQLstr(CompanyName, ['id', 'name',
-                                'countryCode', 'namePcodeNf', 'namePcodeSf'])
+                                'countryCode', 'imdbID', 'namePcodeNf',
+                                'namePcodeSf'])
 
     def populate(self):
         print ' * POPULATING CharactersCache...'
@@ -1089,7 +1110,7 @@ class CompaniesCache(_BaseCache):
             country = tget('country')
             if k != name:
                 namePcodeSf = soundex(k)
-            lapp((v, name, country, namePcodeNf, namePcodeSf))
+            lapp((v, name, country, None, namePcodeNf, namePcodeSf))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
         else:
@@ -2246,8 +2267,8 @@ def run():
     # biographies, business, laserdisc, literature, mpaa-ratings-reasons, plot.
     doNMMVFiles()
 
-    # certificates, color-info, countries, genres, keywords,
-    # language, locations, running-times, sound-mix, technical, release-dates.
+    # certificates, color-info, countries, genres, keywords, language,
+    # locations, running-times, sound-mix, technical, release-dates.
     doMiscMovieInfo()
     # movie-links.
     doMovieLinks()

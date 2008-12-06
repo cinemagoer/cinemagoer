@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081205 "The Labyrinth of the Faun" (05 Dec 2008)
+* What's the new in release 3.9cvs20081206 "Bolt" (06 Dec 2008)
   [general]
   - introduced the search_episode method, to search for episodes' titles.
   - movie['year'] is now an integer, and no more a string.

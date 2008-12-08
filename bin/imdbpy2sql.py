@@ -1940,7 +1940,7 @@ def getRating():
         if count % 10000 == 0:
                 print 'SCANNING rating:', _(title)
         sqldata.add((mid, INFO_TYPES['votes distribution'],
-                    data.get('votes distribution')))
+                    data.get('votes distribution'), None))
         sqldata.add((mid, INFO_TYPES['votes'], data.get('votes'), None))
         sqldata.add((mid, INFO_TYPES['rating'], data.get('rating'), None))
         count += 1
@@ -1957,7 +1957,7 @@ def getTopBottomRating():
         except IOError: break
         sqldata = SQLData(table=MovieInfo,
                     cols=['movieID',
-                        RawValue('infoTypeID', str(INFO_TYPES[what])),
+                        RawValue('infoTypeID', INFO_TYPES[what]),
                         'info', 'note'])
         count = 1
         print 'SCANNING %s...' % what

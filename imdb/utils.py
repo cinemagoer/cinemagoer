@@ -531,7 +531,7 @@ def analyze_company_name(name, stripNotes=False):
         idx = name.rfind('[')
         if idx != -1:
             country = name[idx:]
-            name = name[:idx-1].rstrip()
+            name = name[:idx].rstrip()
     if not name:
         raise IMDbParserError, 'invalid name: "%s"' % o_name
     result = {'name': name}

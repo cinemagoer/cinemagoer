@@ -1,10 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9cvs20081208 "Bolt" (08 Dec 2008)
+* What's the new in release 3.9cvs20081208b "Bolt" (08 Dec 2008)
   [general]
   - introduced the search_episode method, to search for episodes' titles.
   - movie['year'] is now an integer, and no more a string.
+  - fixed a bug parsing company names.
 
   [http]
   - fixed a bug regarding movies listed in the Bottom 100.

@@ -300,7 +300,10 @@ def analyze_title(title, canonical=None,
                                     episode_or_year[1:2] != '#':
                         oad = episode_or_year
                         if oad[1:5] and oad[5:6] == '-':
-                            ep_year = oad[1:5]
+                            try:
+                                ep_year = int(oad[1:5])
+                            except (TypeError, ValueError):
+                                pass
                 if not oad and not sen and episode_or_year.startswith('(#'):
                     sen = episode_or_year
         elif episode_or_year.startswith('Episode dated'):

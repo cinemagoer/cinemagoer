@@ -249,7 +249,7 @@ class TableAdapter(object):
                         colClass = CLOB
                         # I really do hope that this space isn't wasted
                         # for each other shorter entry... <g>
-                        colKindParams['length'] = 65*1024
+                        colKindParams['length'] = 68*1024
             colKind = colClass(**colKindParams)
             if 'alternateID' in params:
                 # There's no need to handle them here.

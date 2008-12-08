@@ -1464,7 +1464,7 @@ class AkasMoviesCache(MoviesCache):
         new_dataList = []
         new_dataListapp = new_dataList.append
         while dataList:
-            item = dataList.pop()
+            item = list(dataList.pop())
             # Remove the imdbID.
             del item[5]
             # id used to store this entry.
@@ -2018,7 +2018,7 @@ def completeCast():
             if count % 10000 == 0:
                 print 'SCANNING %s:' % fname[:-8].replace('-', ' '),
                 print _(title)
-            sqldata.add((mid, str(CCKind[ll[1].lower().strip()])))
+            sqldata.add((mid, CCKind[ll[1].lower().strip()]))
             count += 1
         fp.close()
         sqldata.flush()

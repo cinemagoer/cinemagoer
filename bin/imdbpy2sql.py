@@ -45,7 +45,7 @@ for i, art in enumerate(_articles):
 re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 HELP = """imdbpy2sql.py usage:
-    %s -d /directory/with/PlainTextDataFiles/ -u URIa [-c /directory/for/CSV_files] [-o sqlobject,sqlalchemy] [--CSV-OPTIONS] [--COMPATIBILITY-OPTIONS]
+    %s -d /directory/with/PlainTextDataFiles/ -u URI [-c /directory/for/CSV_files] [-o sqlobject,sqlalchemy] [--CSV-OPTIONS] [--COMPATIBILITY-OPTIONS]
 
         # NOTE: URI is something along the line:
                 scheme://[user[:password]@]host[:port]/database[?parameters]
@@ -56,14 +56,8 @@ HELP = """imdbpy2sql.py usage:
                 sqlite:/tmp/imdb.db
                 sqlite:/C|/full/path/to/database
 
-        # NOTE: --CSV-OPTIONS can be one or more of:
+        # NOTE: --CSV-OPTIONS can be:
             --csv-ext STRING        files extension (.csv)
-            --csv-eol CHR           end-of-line (\\n)
-            --csv-delimeter CHR     fields delimiter (,)
-            --csv-quote CHR         quote char (")
-            --csv-escape CHR        escape char (")
-            --csv-null STRING       string for the NULL values (empty string)
-            --csv-quoteint          quote integer values (default, False)
 
         # NOTE: --COMPATIBILITY-OPTIONS can be one of:
             --mysql-innodb          insert data into a MySQL MyISAM db,
@@ -95,8 +89,13 @@ CSV_EOL = '\n'
 CSV_DELIMITER = ','
 CSV_QUOTE = '"'
 CSV_ESCAPE = '"'
-CSV_NULL = ''
+CSV_NULL = 'NULL'
 CSV_QUOTEINT = False
+CSV_LOAD_SQL = None
+CSV_MYSQL = "LOAD DATA LOCAL INFILE '%(file)s' INTO TABLE `%(table)s` FIELDS TERMINATED BY '%(delimiter)s' ENCLOSED BY '%(quote)s' ESCAPED BY '%(escape)s' LINES TERMINATED BY '%(eol)s'"
+CSV_PGSQL = "COPY %(table)s FROM '%(file)s' WITH DELIMITER AS '%(delimiter)s' NULL AS '%(null)s' QUOTE AS '%(quote)s' ESCAPE AS '%(escape)s' CSV"
+CSV_DB2 = "LOAD FROM '%(file)s' OF del INSERT INTO %(table)s"
+
 # Store custom queries specified on the command line.
 CUSTOM_QUERIES = {}
 # Allowed time specification, for custom queries.
@@ -109,7 +108,8 @@ ALLOWED_TIMES = ('BEGIN', 'BEFORE_DROP', 'BEFORE_CREATE', 'AFTER_CREATE',
                 'AFTER_AKAMOVIES_TODB', 'BEFORE_CHARACTERS_TODB',
                 'AFTER_CHARACTERS_TODB', 'BEFORE_COMPANIES_TODB',
                 'AFTER_COMPANIES_TODB', 'BEFORE_EVERY_TODB',
-                'AFTER_EVERY_TODB')
+                'AFTER_EVERY_TODB', 'BEFORE_CSV_LOAD', 'BEFORE_CSV_TODB',
+                'AFTER_CSV_TODB')
 
 # Shortcuts for some compatibility options.
 MYSQLFORCEMYISAM_OPTS = ['-e',
@@ -140,10 +140,7 @@ try:
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
                                                 'mysql-force-myisam', 'orm',
-                                                'csv=', 'csv-ext=', 'csv-eol=',
-                                                'csv-delimeter=', 'csv-quote=',
-                                                'csv-escape=', 'csv-null=',
-                                                'csv-quoteint', 'help'])
+                                                'csv=', 'csv-ext=', 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
     print HELP
@@ -158,18 +155,6 @@ for opt in optlist:
         CSV_DIR = opt[1]
     elif opt[0] == '--csv-ext':
         CSV_EXT = opt[1]
-    elif opt[0] == '--csv-eol':
-        CSV_EOL = opt[1]
-    elif opt[0] == '--csv-delimeter':
-        CSV_DELIMITER = opt[1]
-    elif opt[0] == '--csv-quote':
-        CSV_QUOTE = opt[1]
-    elif opt[0] == '--csv-escape':
-        CSV_ESCAPE = opt[1]
-    elif opt[0] == '--csv-null':
-        CSV_NULL = opt[1]
-    elif opt[0] == '--csv-quoteint':
-        CSV_QUOTEINT = True
     elif opt[0] in ('-e', '--execute'):
         if opt[1].find(':') == -1:
             print 'WARNING: wrong command syntax: "%s"' % opt[1]
@@ -250,6 +235,20 @@ if ('--mysql-force-myisam' in sys.argv[1:] and
     print "\nWARNING: you've specified command line options that don't\n"\
             "belong to the database server you're using: proceed at your\n"\
             "own risk!\n"
+
+
+if CSV_DIR:
+    if URIlower.startswith('mysql'):
+        CSV_LOAD_SQL = CSV_MYSQL
+    elif URIlower.startswith('postrges'):
+        CSV_LOAD_SQL = CSV_PGSQL
+    elif URIlower.startswith('ibm'):
+        CSV_LOAD_SQL = CSV_DB2
+        CSV_NULL = ''
+    else:
+        print "\nERROR: importing CSV files is not supported for this database"
+        sys.exit(3)
+
 
 if USE_ORM is None:
     USE_ORM = ('sqlobject', 'sqlalchemy')
@@ -380,8 +379,9 @@ class CSVCursor(object):
         # Write these lines.
         tFD.writelines(buildLine(i, tableToAddID=tableToAddID,
                         rawValues=rawValues) for i in items)
-        # Flush to disk, so that no truncaded entries are ever left?
-        #tFD.flush()
+        # Flush to disk, so that no truncaded entries are ever left.
+        # XXX: is this a good idea?
+        tFD.flush()
 
     def fileNames(self):
         """Return the list of file names."""
@@ -396,6 +396,29 @@ class CSVCursor(object):
         """Close all open file descriptors."""
         for fd in self._fdPool.values():
             fd.close()
+
+
+def loadCSVFiles():
+    """Load every CSV file into the database."""
+    CSV_REPL = {'quote': CSV_QUOTE, 'delimiter': CSV_DELIMITER,
+                'escape': CSV_ESCAPE, 'null': CSV_NULL, 'eol': CSV_EOL}
+    for fName in CSV_CURS.fileNames():
+        connectObject.commit()
+        tName = os.path.basename(fName[:-len(CSV_EXT)])
+        cfName = os.path.join(CSV_DIR, fName)
+        CSV_REPL['file'] = cfName
+        CSV_REPL['table'] = tName
+        sqlStr = CSV_LOAD_SQL % CSV_REPL
+        print ' * LOADING CSV FILE %s...' % cfName
+        sys.stdout.flush()
+        executeCustomQueries('BEFORE_CSV_TODB')
+        try:
+            CURS.execute(sqlStr)
+        except Exception, e:
+            print 'ERROR: unable to import CSV file %s: %s' % (cfName, str(e))
+            continue
+        connectObject.commit()
+        executeCustomQueries('AFTER_CSV_TODB')
 
 #-----------------------
 
@@ -2317,7 +2340,7 @@ def run():
     CACHE_CID.clear()
     t('fushing caches...')
 
-    print 'TOTAL TIME TO INSERT DATA: %d minutes, %d seconds' % \
+    print 'TOTAL TIME TO INSERT/WRITE DATA: %d minutes, %d seconds' % \
             divmod(int(time.time())-BEGIN_TIME, 60)
 
     executeCustomQueries('BEFORE_INDEXES')
@@ -2328,14 +2351,15 @@ def run():
     createIndexes(DB_TABLES)
     t('createIndexes()')
 
+    if CSV_DIR:
+        print 'loading CSV files into the database'
+        executeCustomQueries('BEFORE_CSV_LOAD')
+        loadCSVFiles()
+
     executeCustomQueries('END')
 
     print 'DONE! (in %d minutes, %d seconds)' % \
             divmod(int(time.time())-BEGIN_TIME, 60)
-
-    if CSV_DIR:
-        print ''
-        print 'Now you should load the CSV files in %s into your db.' % CSV_DIR
 
 
 _HEARD = 0

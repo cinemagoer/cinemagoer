@@ -308,10 +308,15 @@ class CSVCursor(object):
         self.null = null
         self.quoteInteger = quoteInteger
         self._fdPool = {}
+        self._lobFDPool = {}
         self._counters = {}
 
-    def buildLine(self, items, tableToAddID=False, rawValues=()):
+    def buildLine(self, items, tableToAddID=False, rawValues=(),
+                    lobFD=None, lobFN=None):
         """Build a single text line for a set of information."""
+        # FIXME: there are too many special cases to handle, and that
+        #        affect performances: management of LOB files, at least,
+        #        must be moved away from here.
         quote = self.quote
         escape = self.escape
         null = self.null
@@ -332,7 +337,7 @@ class CSVCursor(object):
                 r[idx] = str(val)
                 continue
             val = str(val)
-            if quote:
+            if quote and not lobFD:
                 val = '%s%s%s' % (quote, val.replace(quote, escaped), quote)
             r[idx] = val
         # Add RawValue(s), if present.
@@ -343,6 +348,16 @@ class CSVCursor(object):
             shift = 0
         for idx, item in rawValues:
             rinsert(idx + shift, item)
+        if lobFD:
+            # XXX: totally tailored to suit person_info.info column!
+            val3 = r[3]
+            val3len = len(val3 or '') or -1
+            if val3len == -1:
+                val3off = 0
+            else:
+                val3off = lobFD.tell()
+            r[3] = '%s.%d.%d/' % (lobFN, val3off, val3len)
+            lobFD.write(val3)
         # Build the line and add the end-of-line.
         return '%s%s' % (self.delimeter.join(r), self.csvEOL)
 
@@ -351,12 +366,26 @@ class CSVCursor(object):
         data in a set of CSV files."""
         # XXX: find a safer way to get the table/file name!
         tName = sqlstr.split()[2]
+        lobFD = None
+        lobFN = None
+        doLOB = False
+        # XXX: ugly special case, to create the LOB file.
+        if URIlower.startswith('ibm') and tName == 'person_info':
+            doLOB = True
         # Open the file descriptor or get it from the pool.
         if tName in self._fdPool:
             tFD = self._fdPool[tName]
+            lobFD = self._lobFDPool.get(tName)
+            lobFN = getattr(lobFD, 'name', None)
+            if lobFN:
+                lobFN = os.path.basename(lobFN)
         else:
             tFD = open(os.path.join(CSV_DIR, tName + self.csvExt), 'w')
             self._fdPool[tName] = tFD
+            if doLOB:
+                lobFN = '%s.lob' % tName
+                lobFD = open(os.path.join(CSV_DIR, lobFN), 'w')
+                self._lobFDPool[tName] = lobFD
         buildLine = self.buildLine
         tableToAddID = False
         if tName in ('cast_info', 'movie_info', 'person_info',
@@ -378,7 +407,8 @@ class CSVCursor(object):
                 rawValues.append((idx, item))
         # Write these lines.
         tFD.writelines(buildLine(i, tableToAddID=tableToAddID,
-                        rawValues=rawValues) for i in items)
+                        rawValues=rawValues, lobFD=lobFD, lobFN=lobFN)
+                        for i in items)
         # Flush to disk, so that no truncaded entries are ever left.
         # XXX: is this a good idea?
         tFD.flush()
@@ -395,6 +425,8 @@ class CSVCursor(object):
     def closeAll(self):
         """Close all open file descriptors."""
         for fd in self._fdPool.values():
+            fd.close()
+        for fd in self._lobFDPool.values():
             fd.close()
 
 
@@ -1229,7 +1261,7 @@ class SQLData(dict):
             print 'WARNING: unknown exception caught committing the data'
             print 'WARNING: to the database; report this as a bug, since'
             print 'WARNING: many data (%d items) were lost: %s' % \
-                    (len(self._tmpDict), e)
+                    (len(self), e)
         connectObject.commit()
 
     def _toDB(self):
@@ -2355,6 +2387,7 @@ def run():
         print 'loading CSV files into the database'
         executeCustomQueries('BEFORE_CSV_LOAD')
         loadCSVFiles()
+        t('loadCSVFiles()')
 
     executeCustomQueries('END')
 

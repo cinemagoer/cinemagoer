@@ -298,7 +298,8 @@ class HTMLMaindetailsParser(ParserBase):
 
 
 from movieParser import _manageRoles
-_reRoles = re.compile(r'<li>.*? \.\.\.\. (.*?)</li>', re.I)
+_reRoles = re.compile(r'(<li>.*? \.\.\.\. )(.*?)(</li>|<br>)',
+                        re.I | re.M | re.S)
 
 class DOMHTMLMaindetailsParser(DOMParserBase):
     """Parser for the "categorized" (maindetails) page of a given person.

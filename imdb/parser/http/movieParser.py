@@ -613,13 +613,14 @@ class HTMLMovieParser(ParserBase):
 def _manageRoles(mo):
     """Perform some transformation on the html, so that roleIDs can
     be easily retrieved."""
-    firstHalf = mo.group(0)
-    secondHalf = mo.group(1)
+    firstHalf = mo.group(1)
+    secondHalf = mo.group(2)
     newRoles = []
     roles = secondHalf.split(' / ')
     for role in roles:
         role = role.strip()
-        if not role: continue
+        if not role:
+            continue
         roleID = analyze_imdbid(role)
         if roleID is None:
             roleID = u'/'
@@ -627,9 +628,11 @@ def _manageRoles(mo):
             roleID += u'/'
         newRoles.append(u'<div class="_imdbpyrole" roleid="%s">%s</div>' % \
                 (roleID, role.strip()))
+    return firstHalf + u' / '.join(newRoles) + mo.group(3)
     return firstHalf.replace(secondHalf, u' / '.join(newRoles))
 
-_reRolesMovie = re.compile(r'<td class="char">(.*?)</td>', re.I | re.M | re.S)
+_reRolesMovie = re.compile(r'(<td class="char">)(.*?)(</td>)',
+                            re.I | re.M | re.S)
 
 def _replaceBR(mo):
     """Replaces <br> tags with '::' (useful for some akas)"""

@@ -34,7 +34,7 @@ DO_SCRIPTS = 1
 
 # version of the software; SVN releases contain a string
 # like ".svnYearMonthDay(OptionalChar)".
-version = '3.9svn20081216e'
+version = '3.9svn20081220'
 
 home_page = 'http://imdbpy.sf.net/'
 

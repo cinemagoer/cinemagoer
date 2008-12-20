@@ -336,8 +336,10 @@ class CSVCursor(object):
             if (not quoteInteger) and isinstance(val, (int, long)):
                 r[idx] = str(val)
                 continue
+            if lobFD and idx == 3:
+                continue
             val = str(val)
-            if quote and not lobFD:
+            if quote:
                 val = '%s%s%s' % (quote, val.replace(quote, escaped), quote)
             r[idx] = val
         # Add RawValue(s), if present.

@@ -94,7 +94,7 @@ CSV_QUOTEINT = False
 CSV_LOAD_SQL = None
 CSV_MYSQL = "LOAD DATA LOCAL INFILE '%(file)s' INTO TABLE `%(table)s` FIELDS TERMINATED BY '%(delimiter)s' ENCLOSED BY '%(quote)s' ESCAPED BY '%(escape)s' LINES TERMINATED BY '%(eol)s'"
 CSV_PGSQL = "COPY %(table)s FROM '%(file)s' WITH DELIMITER AS '%(delimiter)s' NULL AS '%(null)s' QUOTE AS '%(quote)s' ESCAPE AS '%(escape)s' CSV"
-CSV_DB2 = "LOAD FROM '%(file)s' OF del INSERT INTO %(table)s"
+CSV_DB2 = "CALL SYSPROC.ADMIN_CMD('LOAD %(file)s OF del INSERT INTO %(table)s')"
 
 # Store custom queries specified on the command line.
 CUSTOM_QUERIES = {}
@@ -448,6 +448,12 @@ def loadCSVFiles():
         executeCustomQueries('BEFORE_CSV_TODB')
         try:
             CURS.execute(sqlStr)
+            try:
+                res = CURS.fetchall()
+                if res:
+                    print 'LOADING OUTPUT:', res
+            except:
+                pass
         except Exception, e:
             print 'ERROR: unable to import CSV file %s: %s' % (cfName, str(e))
             continue

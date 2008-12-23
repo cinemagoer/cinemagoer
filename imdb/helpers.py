@@ -64,11 +64,48 @@ re_subst = re.compile(r'%\((.+?)\)s')
 # Regular expression for <if condition>....</if condition> clauses.
 re_conditional = re.compile(r'<if\s+(.+?)\s*>(.+?)</if\s+\1\s*>')
 
+
+def makeTextNote(replaceTxtNote):
+    """Create a function useful to handle text[::optional_note] values.
+    replaceTxtNote is a format string, which can include the following
+    values: %(text)s and %(note)s.
+    Portions of the text can be conditionally excluded, if one of the
+    values is absent. E.g.: <if note>[%(note)s]</if note> will be replaced
+    with '[note]' if note exists, or by an empty string otherwise.
+    The returned function is suitable be passed as applyToValues argument
+    of the makeObject2Txt function."""
+    def _replacer(s):
+        outS = replaceTxtNote
+        if not isinstance(s, (unicode, str)):
+            return s
+        ssplit = s.split('::', 1)
+        text = ssplit[0]
+        # Used to keep track of text and note existence.
+        keysDict = {}
+        if text:
+            keysDict['text'] = True
+        outS = outS.replace('%(text)s', text)
+        if len(ssplit) == 2:
+            keysDict['note'] = True
+            outS = outS.replace('%(note)s', ssplit[1])
+        else:
+            outS = outS.replace('%(note)s', u'')
+        def _excludeFalseConditionals(matchobj):
+            # Return an empty string if the conditional is false/empty.
+            if matchobj.group(1) in keysDict:
+                return matchobj.group(2)
+            return u''
+        while re_conditional.search(outS):
+            outS = re_conditional.sub(_excludeFalseConditionals, outS)
+        return outS
+    return _replacer
+
+
 def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
                companyTxt=None, joiner=' / ',
                applyToValues=lambda x: x, _recurse=True):
-    """"Return a function useful to pretty-print Movie, Person and
-    Character instances.
+    """"Return a function useful to pretty-print Movie, Person,
+    Character and Company instances.
 
     *movieTxt* -- how to format a Movie object.
     *personTxt* -- how to format a Person object.

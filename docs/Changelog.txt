@@ -1,11 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9svn20081223 "Prom Night" (23 Dec 2008)
+* What's the new in release 3.9svn20081223b "Prom Night" (23 Dec 2008)
   [general]
   - introduced the search_episode method, to search for episodes' titles.
   - movie['year'] is now an integer, and no more a string.
   - fixed a bug parsing company names.
+  - introduced the helpers.makeTextNote function, useful to pretty-print
+    strings in the 'TEXT::NOTE' format.
 
   [http]
   - fixed a bug regarding movies listed in the Bottom 100.

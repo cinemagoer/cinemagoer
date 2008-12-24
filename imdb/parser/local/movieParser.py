@@ -133,7 +133,7 @@ def getPlot(movieID, plotIF, plotDF):
         if line.startswith('PL: '):
             plotltmp.append(line[4:])
         elif line.startswith('BY: '):
-            plotl.append('%s::%s' % (line[4:].strip(), ' '.join(plotltmp)))
+            plotl.append('%s::%s' % (' '.join(plotltmp), line[4:].strip()))
             plotltmp[:] = []
         elif line.startswith('MV: ') or not line: break
     dataf.close()

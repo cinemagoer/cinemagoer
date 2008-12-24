@@ -664,16 +664,16 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         res = _reGroupDict(res, self._moviesubs)
         # Do some transformation to preserve consistency with other
         # data access systems.
-        if res.has_key('plot'):
-            nl = []
-            for i in res['plot']:
-                if i[-1] == ')':
-                    sauth = i.rfind('::(author: ')
-                    if sauth != -1:
-                        nl.append(i[sauth+11:-1] + '::' + i[:sauth])
-                    else: nl.append(i)
-                else: nl.append(i)
-            res['plot'][:] = nl
+        #if res.has_key('plot'):
+        #    nl = []
+        #    for i in res['plot']:
+        #        if i[-1] == ')':
+        #            sauth = i.rfind('::(author: ')
+        #            if sauth != -1:
+        #                nl.append(i[sauth+11:-1] + '::' + i[:sauth])
+        #            else: nl.append(i)
+        #        else: nl.append(i)
+        #    res['plot'][:] = nl
         # Other transformations.
         if res.has_key('runtimes') and len(res['runtimes']) > 0:
             rt = res['runtimes'][0]
@@ -682,8 +682,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 res['runtimes'][0] = re_episodes.sub('', rt)
                 if res['runtimes'][0][-2:] == '::':
                     res['runtimes'][0] = res['runtimes'][0][:-2]
-        if res.has_key('year'):
-            res['year'] = res['year']
+        #if res.has_key('year'):
+        #    res['year'] = res['year']
         if res.has_key('votes'):
             res['votes'] = int(res['votes'][0])
         if res.has_key('rating'):
@@ -853,16 +853,16 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                         'birth name', 'height'):
             if res.has_key(key):
                 res[key] = res[key][0]
-        if res.has_key('mini biography'):
-            nl = []
-            for i in res['mini biography']:
-                if i[-1] == ')':
-                    sauth = i.rfind('::(author: ')
-                    if sauth != -1:
-                        nl.append(i[sauth+11:-1] + '::' + i[:sauth])
-                    else: nl.append(i)
-                else: nl.append(i)
-            res['mini biography'][:] = nl
+        #if res.has_key('mini biography'):
+        #    nl = []
+        #    for i in res['mini biography']:
+        #        if i[-1] == ')':
+        #            sauth = i.rfind('::(author: ')
+        #            if sauth != -1:
+        #                nl.append(i[sauth+11:-1] + '::' + i[:sauth])
+        #            else: nl.append(i)
+        #        else: nl.append(i)
+        #    res['mini biography'][:] = nl
         if res.has_key('guest'):
             res['notable tv guest appearances'] = res['guest']
             del res['guest']

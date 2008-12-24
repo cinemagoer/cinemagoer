@@ -1847,10 +1847,11 @@ def nmmvFiles(fp, funct, fname):
                     if k in ('plot', 'mini biography'):
                         s = i.split('::')
                         if len(s) == 2:
-                            if note: note += ' '
-                            else: note = ''
-                            note += '(author: %s)' % s[0]
-                            i = s[1]
+                            #if note: note += ' '
+                            #else: note = ''
+                            #note += '(author: %s)' % s[1]
+                            note = s[1]
+                            i = s[0]
                     if i: sqldata.add((mopid, theid, i, note))
                     note = None
             else:
@@ -2049,7 +2050,7 @@ def getPlot(lines):
         if linestart == 'PL: ':
             plotltmpappend(line[4:])
         elif linestart == 'BY: ':
-            plotlappend('%s::%s' % (line[4:].strip(), ' '.join(plotltmp)))
+            plotlappend('%s::%s' % (' '.join(plotltmp), line[4:].strip()))
             plotltmp[:] = []
     return {'plot': plotl}
 

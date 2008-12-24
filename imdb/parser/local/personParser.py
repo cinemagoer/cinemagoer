@@ -115,7 +115,7 @@ def _parseBioBy(l):
             tmpbioappend(line[4:].strip())
         elif line[:4] == 'BY: ':
             if tmpbio:
-                biosappend(line[4:].strip() + '::' + joiner(tmpbio))
+                biosappend(joiner(tmpbio) + '::' + line[4:].strip())
                 tmpbio[:] = []
     # Cut mini biographies up to 2**16-1 chars, to prevent errors with
     # some MySQL versions - when used by the imdbpy2sql.py script.
@@ -139,24 +139,12 @@ def _parseBiography(biol):
                 res['birth date'] = date
             if notes:
                 res['birth notes'] = notes
-            #bdate = x.strip()
-            #i = bdate.find(',')
-            #if i != -1:
-            #    res['birth notes'] = bdate[i+1:].strip()
-            #    bdate = bdate[:i]
-            #res['birth date'] = bdate[4:]
         elif x4 == 'DD: ':
             date, notes = date_and_notes(x[4:])
             if date:
                 res['death date'] = date
             if notes:
                 res['death notes'] = notes
-            #ddate = x.strip()
-            #i = ddate.find(',')
-            #if i != -1:
-            #    res['death notes'] = ddate[i+1:].strip()
-            #    ddate = ddate[:i]
-            #res['death date'] = ddate[4:]
         elif x6 == 'SP: * ':
             res.setdefault('spouse', []).append(x[6:].strip())
         elif x4 == 'RN: ':

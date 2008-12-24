@@ -466,6 +466,12 @@ It's easier to understand if you look at it; look at the output of:
   m = i.get_movie('0094226')
   print m['akas']
 
+As a rule, there's as much as one '::' separator inside a string,
+splitting it two logical pieces: "TEXT::NOTE".
+In the helpers module there's the makeTextNote function, that can
+be used to create a custom function to pretty-print this kind of
+information.  See its documentation for more info.
+
 
   MOVIE TITLES AND PERSON/CHARACTER NAMES REFERENCES
   ==================================================

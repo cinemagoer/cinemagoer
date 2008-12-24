@@ -1099,14 +1099,14 @@ def _process_plotsummary(x):
         xauthor = x.get('author').replace('{', '<').replace('}',
                         '>').replace('(','<').replace(')', '>')
     xplot = x.get('plot', '').strip()
-    return u'%s::%s' % (xauthor, xplot)
+    return u'%s::%s' % (xplot, xauthor)
 
 class DOMHTMLPlotParser(DOMParserBase):
     """Parser for the "plot summary" page of a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a 'plot' key, containing a list
-    of string with the structure: 'summary_author <author@email>::summary'.
+    of string with the structure: 'summary::summary_author <author@email>'.
 
     Example:
         pparser = HTMLPlotParser()

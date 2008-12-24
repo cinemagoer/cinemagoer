@@ -26,6 +26,11 @@ maybe other database backends were added.
 Since release 3.8, SQLAlchemy (version 0.4 and 0.5) is also supported
 (this adds at least DB2/Informix IDS to the list of supported databases).
 
+Since release 3.9, there's a partial support to output large tables
+in a set of CSV (Comma Separated Values) files, to be later imported
+in a database.  Actually only MySQL, PostgreSQL and IBM DB2 are
+supported.
+
 
   REQUIREMENTS
   ============
@@ -320,4 +325,18 @@ To use transactions to speed-up SQLite, try:
 
 Which is also the same thing the command line option '--sqlite-transactions'
 does.
+
+
+  CSV files
+  =========
+
+Keep in mind that actually only MySQL, PostgreSQL and IBM DB2 are
+currently supported.  Moreover, you may incur in problems (e.g.: your
+postgres _server_ process must have reading access to the directory
+you're storing the CSV files).
+
+To create (and import) a set of CSV files, run imdbpy2sql.py with the
+syntax:
+  ./imdbpy2sql.py -d /dir/with/plainTextDataFiles/ -u URI -c /directory/where/to/store/CSVfiles
+
 

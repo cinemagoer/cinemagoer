@@ -438,10 +438,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             wbyidx = p.rfind(' Written by ')
             if wbyidx != -1:
                 plot[i] = '%s::%s' % \
-                    (p[wbyidx+12:].rstrip().replace('{','<').replace('}','>'),
-                    p[:wbyidx].rstrip())
+                        (p[:wbyidx].rstrip(),
+                    p[wbyidx+12:].rstrip().replace('{','<').replace('}','>'))
             else:
-                plot[i] = 'Anonymous::%s' % p
+                plot[i] = '%s::Anonymous' % p
         if plot: return {'data': {'plot': plot}}
         return {'data': {}}
 
@@ -674,8 +674,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 for bio in data:
                     byidx = bio.rfind('IMDb Mini Biography By')
                     if byidx != -1:
-                        bio = u'%s::%s' % (bio[byidx+23:].lstrip(),
-                                            bio[:byidx].rstrip())
+                        bioAuth = bio[:byidx].rstrip()
+                    else:
+                        bioAuth = 'Anonymous'
+                    bio = u'%s::%s' % (bioAuth, bio[byidx+23:].lstrip())
                     ndata.append(bio)
                 data[:] = ndata
                 if 'mini biography' in d:

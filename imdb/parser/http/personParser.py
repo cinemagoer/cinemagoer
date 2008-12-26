@@ -301,6 +301,17 @@ from movieParser import _manageRoles
 _reRoles = re.compile(r'(<li>.*? \.\.\.\. )(.*?)(</li>|<br>)',
                         re.I | re.M | re.S)
 
+def build_date(date):
+    day = date.get('day')
+    year = date.get('year')
+    if day and year:
+        return "%s %s" % (day, year)
+    if day:
+        return day
+    if year:
+        return year
+    return ""
+
 class DOMHTMLMaindetailsParser(DOMParserBase):
     """Parser for the "categorized" (maindetails) page of a given person.
     The page should be provided as a string, as taken from
@@ -320,8 +331,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                             'year': "./a[starts-with(@href, " \
                                     "'/BornInYear?')]/text()"
                             },
-                        postprocess=lambda x: u"%s %s" % (x.get('day'),
-                                                        x.get('year'))),
+                        postprocess=lambda x: build_date(x)),
                     Attribute(key='birth notes',
                         path="./a[starts-with(@href, '/BornWhere?')]/text()")]
     _death_attrs = [Attribute(key='death date',
@@ -331,8 +341,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                             'year': "./a[starts-with(@href, " \
                                     "'/DiedInYear?')]/text()"
                             },
-                        postprocess=lambda x: u"%s %s" % (x.get('day'),
-                                                        x.get('year'))),
+                        postprocess=lambda x: build_date(x)),
                     Attribute(key='death notes',
                         path="./text()",
                         # TODO: check if this slicing is always correct
@@ -573,8 +582,7 @@ class DOMHTMLBioParser(DOMParserBase):
                             'year': "./a[starts-with(@href, " \
                                     "'/BornInYear?')]/text()"
                             },
-                        postprocess=lambda x: u"%s %s" % (x.get('day'),
-                                                        x.get('year'))),
+                        postprocess=lambda x: build_date(x)),
                     Attribute(key='birth notes',
                         path="./a[starts-with(@href, '/BornWhere?')]/text()")]
     _death_attrs = [Attribute(key='death date',
@@ -584,8 +592,7 @@ class DOMHTMLBioParser(DOMParserBase):
                             'year': "./a[starts-with(@href, " \
                                     "'/DiedInYear?')]/text()"
                             },
-                        postprocess=lambda x: u"%s %s" % (x.get('day'),
-                                                        x.get('year'))),
+                        postprocess=lambda x: build_date(x)),
                     Attribute(key='death notes',
                         path="./text()",
                         # TODO: check if this slicing is always correct

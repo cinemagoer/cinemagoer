@@ -65,17 +65,17 @@ re_subst = re.compile(r'%\((.+?)\)s')
 re_conditional = re.compile(r'<if\s+(.+?)\s*>(.+?)</if\s+\1\s*>')
 
 
-def makeTextNote(replaceTxtNote):
+def makeTextNotes(replaceTxtNotes):
     """Create a function useful to handle text[::optional_note] values.
-    replaceTxtNote is a format string, which can include the following
-    values: %(text)s and %(note)s.
+    replaceTxtNotes is a format string, which can include the following
+    values: %(text)s and %(notes)s.
     Portions of the text can be conditionally excluded, if one of the
-    values is absent. E.g.: <if note>[%(note)s]</if note> will be replaced
-    with '[note]' if note exists, or by an empty string otherwise.
+    values is absent. E.g.: <if notes>[%(notes)s]</if notes> will be replaced
+    with '[notes]' if notes exists, or by an empty string otherwise.
     The returned function is suitable be passed as applyToValues argument
     of the makeObject2Txt function."""
     def _replacer(s):
-        outS = replaceTxtNote
+        outS = replaceTxtNotes
         if not isinstance(s, (unicode, str)):
             return s
         ssplit = s.split('::', 1)
@@ -86,10 +86,10 @@ def makeTextNote(replaceTxtNote):
             keysDict['text'] = True
         outS = outS.replace('%(text)s', text)
         if len(ssplit) == 2:
-            keysDict['note'] = True
-            outS = outS.replace('%(note)s', ssplit[1])
+            keysDict['notes'] = True
+            outS = outS.replace('%(notes)s', ssplit[1])
         else:
-            outS = outS.replace('%(note)s', u'')
+            outS = outS.replace('%(notes)s', u'')
         def _excludeFalseConditionals(matchobj):
             # Return an empty string if the conditional is false/empty.
             if matchobj.group(1) in keysDict:

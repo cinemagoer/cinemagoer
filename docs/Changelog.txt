@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9svn20081224 "Prom Night" (24 Dec 2008)
+* What's the new in release 3.9svn20090101 "Magascar: Escape 2 Africa" (01 Jan 2009)
   [general]
   - introduced the search_episode method, to search for episodes' titles.
   - movie['year'] is now an integer, and no more a string.

@@ -746,7 +746,6 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         if nl is None:
             raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
         res = analyze_name(nl)
-        print 'UUU', personID
         res.update(getBio(personID, '%sbiographies.index' % self.__db,
                     '%sbiographies.data' % self.__db))
         akas = getAkaNames(personID,

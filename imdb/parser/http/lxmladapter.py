@@ -4,6 +4,7 @@ parser.http.lxmladapter module (imdb.parser.http package).
 This module adapts the lxml xpath support to the internal mechanism.
 
 Copyright 2008 H. Turgut Uyar <uyar@tekir.org>
+          2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,6 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+from lxml import etree
 from lxml import html
 
 
@@ -35,6 +37,18 @@ def tostring(element):
     if isinstance(element, (unicode, str)):
         return element
     return html.tostring(element, encoding=unicode)
+
+
+def appendchild(parent, tagname, attrs=None, text=None):
+    """Append a child element to an existing element."""
+    child = etree.Element(tagname)
+    if attrs is not None:
+        for key, value in attrs:
+            setattribute(child, key, value)
+    if text is not None:
+        child.text = text
+    parent.append(child)
+    return child
 
 
 def getattribute(node, attrName):

@@ -4,6 +4,7 @@ parser.http.bsoupadapter module (imdb.parser.http package).
 This module adapts the beautifulsoup xpath support to the internal mechanism.
 
 Copyright 2008 H. Turgut Uyar <uyar@tekir.org>
+          2008 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -38,6 +39,19 @@ def tostring(element):
         return unicode(element)
     except AttributeError:
         return str(element)
+
+
+def appendchild(dom, parent, tagname, attrs=None, text=None):
+    """Append a child element to an existing element."""
+    child = BeautifulSoup.Tag(dom, tagname)
+    if attrs is not None:
+        for key, value in attrs:
+            setattribute(child, key, value)
+    if text is not None:
+        textnode = BeautifulSoup.NavigableString(text)
+        child.append(textnode)
+    parent.append(child)
+    return child
 
 
 def getattribute(node, attrName):

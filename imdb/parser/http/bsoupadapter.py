@@ -45,8 +45,8 @@ def appendchild(dom, parent, tagname, attrs=None, text=None):
     """Append a child element to an existing element."""
     child = BeautifulSoup.Tag(dom, tagname)
     if attrs is not None:
-        for key, value in attrs:
-            setattribute(child, key, value)
+        for key in attrs:
+            setattribute(child, key, attrs[key])
     if text is not None:
         textnode = BeautifulSoup.NavigableString(text)
         child.append(textnode)

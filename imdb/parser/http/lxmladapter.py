@@ -39,7 +39,7 @@ def tostring(element):
     return html.tostring(element, encoding=unicode)
 
 
-def appendchild(parent, tagname, attrs=None, text=None):
+def appendchild(parent, tagname, attrs=None, text=None, dom=None):
     """Append a child element to an existing element."""
     child = etree.Element(tagname)
     if attrs is not None:

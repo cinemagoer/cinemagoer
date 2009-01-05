@@ -41,8 +41,10 @@ def tostring(element):
         return str(element)
 
 
-def appendchild(dom, parent, tagname, attrs=None, text=None):
+def appendchild(parent, tagname, attrs=None, text=None, dom=None):
     """Append a child element to an existing element."""
+    if dom is None:
+        raise ValueError("A soup instance must be supplied")
     child = BeautifulSoup.Tag(dom, tagname)
     if attrs is not None:
         for key in attrs:

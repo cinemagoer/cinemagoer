@@ -34,7 +34,7 @@ DO_SCRIPTS = 1
 
 # version of the software; SVN releases contain a string
 # like ".svnYearMonthDay(OptionalChar)".
-version = '3.9svn20090101'
+version = '3.9'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -121,7 +121,7 @@ if DO_SCRIPTS:
 if sys.version_info >= (2, 1):
     params['keywords'] = ['imdb', 'movie', 'people', 'database', 'cinema',
                             'film', 'person', 'cast', 'actor', 'actress',
-                            'director', 'sql', 'character', 'company']
+                            'director', 'sql', 'character', 'company', 'csv']
     params['platforms'] = 'any'
 
 if sys.version_info >= (2, 3):

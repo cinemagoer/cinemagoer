@@ -320,14 +320,15 @@ The "currentRole" attribute is always None.
 Since release 1.2, it's possibile to retrieve almost every piece of
 information about a given movie or person; this can be a problem, because
 (at least for the 'http' data access system) it means that a lot of
-web pages must be fetched and parsed, and this can be time consuming,
-especially if you're interested only in a small set of information.
+web pages must be fetched and parsed, and this can be time and
+bandwidth consuming, especially if you're interested only in a small set
+of information.
 
 Now the get_person, get_movie, get_character, get_company and update
 methods have an optional 'info' argument, which can be set to a list
 of strings, each one representing an "information set".
-Movie/Person/Character/Company objects have, respectively, their own list of
-available "information sets".
+Movie/Person/Character/Company objects have, respectively, their own list
+of available "information sets".
 E.g.: the Movie class have a set called 'taglines' for the taglines
 of the movie, a set called 'vote details' for the number of votes for
 rating [1-10], demographic breakdowns and top 250 rank; the Person
@@ -358,6 +359,14 @@ see the all_info and default_info instance variable of Movie, Person
 and Character classes.  Each object instance of Movie, Person or Character,
 also have a current_info instance variable, to remember the information sets
 already retrieved.
+
+Beware that the information sets vary from an access system to another:
+locally not every data is accessible, while - for example for sql -
+accessing one set of data automatically means automatic access to a number
+of other unrelated information (without major performace drawbacks).
+You can get the list of available info set with the methods:
+i.get_movie_infoset(), i.get_person_infoset(), i.get_character_infoset()
+and i.get_company_infoset().
 
 
   Person OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Person OBJECT
@@ -468,7 +477,7 @@ It's easier to understand if you look at it; look at the output of:
 
 As a rule, there's as much as one '::' separator inside a string,
 splitting it two logical pieces: "TEXT::NOTE".
-In the helpers module there's the makeTextNote function, that can
+In the helpers module there's the makeTextNotes function, that can
 be used to create a custom function to pretty-print this kind of
 information.  See its documentation for more info.
 

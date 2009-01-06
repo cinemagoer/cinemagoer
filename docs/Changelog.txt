@@ -1,12 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 3.9svn20090101 "Magascar: Escape 2 Africa" (01 Jan 2009)
+* What's the new in release 3.9 "The Strangers" (06 Jan 2009)
   [general]
   - introduced the search_episode method, to search for episodes' titles.
   - movie['year'] is now an integer, and no more a string.
   - fixed a bug parsing company names.
-  - introduced the helpers.makeTextNote function, useful to pretty-print
+  - introduced the helpers.makeTextNotes function, useful to pretty-print
     strings in the 'TEXT::NOTE' format.
 
   [http]

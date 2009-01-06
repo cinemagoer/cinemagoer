@@ -99,6 +99,9 @@ for more information.
 Since release 3.8, IMDbPY supports both SQLObject and SQLAlchemy; see
 README.sqldb for more information.
 
+Since release 3.9 support dumping the plain text data files in CSV files;
+see README.sqldb for more information.
+
 
   FEATURES
   ========

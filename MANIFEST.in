@@ -10,6 +10,8 @@ recursive-include docs *
 global-exclude *~
 prune CVS
 prune .svn
+global-exclude CVS
+global-exclude .svn
 
 # Uncomment the following line if you don't want to install the logo images.
 # exclude docs/*.png docs/*.xpm docs/*.bmp

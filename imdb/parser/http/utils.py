@@ -617,34 +617,14 @@ class DOMParserBase(object):
             mod = mod.strip().lower()
             try:
                 if mod == 'lxml':
-                    from lxmladapter import fromstring
-                    from lxmladapter import tostring
-                    from lxmladapter import setattribute
-                    from lxmladapter import getattribute
-                    from lxmladapter import getparent
-                    from lxmladapter import droptree
-                    from lxmladapter import clone
-                    from lxmladapter import apply_xpath
+                    from lxml.html import fromstring, tostring
                 elif mod == 'beautifulsoup':
-                    from bsoupadapter import fromstring
-                    from bsoupadapter import tostring
-                    from bsoupadapter import setattribute
-                    from bsoupadapter import getattribute
-                    from bsoupadapter import getparent
-                    from bsoupadapter import droptree
-                    from bsoupadapter import clone
-                    from bsoupadapter import apply_xpath
+                    from bsouplxml import fromstring, tostring
                 else:
                     warnings.warn('unknown module "%s".' % mod)
                     continue
                 self.fromstring = fromstring
-                self.tostring = tostring
-                self.setattribute = setattribute
-                self.getattribute = getattribute
-                self.getparent = getparent
-                self.droptree = droptree
-                self.clone = clone
-                self.apply_xpath = apply_xpath
+                self._tostring = tostring
                 if _gotError:
                     warnings.warn('falling back to "%s".' % mod)
                 break
@@ -713,8 +693,21 @@ class DOMParserBase(object):
     def get_dom(self, html_string):
         return self.fromstring(html_string)
 
-    def xpath(self, element, xpath):
-        return self.apply_xpath(element, xpath)
+    def xpath(self, element, path):
+        result = []
+        for item in element.xpath(path):
+            if isinstance(item, str):
+                item = unicode(item)
+            result.append(item)
+        return result
+
+    def tostring(self, element):
+        if isinstance(element, (unicode, str)):
+            return element
+        return self._tostring(element, encoding=unicode)
+
+    def clone(self, element):
+        return self.fromstring(self.tostring(element))
 
     def preprocess_string(self, html_string):
         """Here we can modify the text, before it's parsed."""

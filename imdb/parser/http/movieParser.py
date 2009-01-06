@@ -893,12 +893,12 @@ class DOMHTMLMovieParser(DOMParserBase):
         if xpath:
             b = xpath[-1] # In doubt, take the last one.
             for a in self.xpath(b, "./following::h5/a[@class='glossary']"):
-                name = self.getattribute(a, 'name')
+                name = a.get('name')
                 if name:
-                    self.setattribute(a, 'name', 'series %s' % name)
+                    a.set('name', 'series %s' % name)
         # Remove links to IMDbPro.
         for proLink in self.xpath(dom, "//span[@class='pro-link']"):
-            self.droptree(proLink)
+            proLink.drop_tree()
         return dom
 
     re_space = re.compile(r'\s+')
@@ -1465,10 +1465,10 @@ class DOMHTMLAwardsParser(DOMParserBase):
         """
         cols = self.xpath(dom, "//td[@rowspan]")
         for col in cols:
-            span = int(self.getattribute(col, 'rowspan'))
-            self.setattribute(col, 'rowspan', None)
+            span = int(col.get('rowspan'))
+            del col.attrib['rowspan']
             position = len(self.xpath(col, "./preceding-sibling::td"))
-            row = self.getparent(col)
+            row = col.getparent()
             for tr in self.xpath(row, "./following-sibling::tr")[:span-1]:
                 # if not cloned, child will be moved to new parent
                 clone = self.clone(col)

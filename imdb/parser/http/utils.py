@@ -617,9 +617,13 @@ class DOMParserBase(object):
             mod = mod.strip().lower()
             try:
                 if mod == 'lxml':
-                    from lxml.html import fromstring, tostring
+                    from lxml.html import fromstring
+                    from lxml.etree import tostring
+                    self._is_xml_unicode = False
                 elif mod == 'beautifulsoup':
-                    from bsouplxml import fromstring, tostring
+                    from bsouplxml.html import fromstring
+                    from bsouplxml.etree import tostring
+                    self._is_xml_unicode = True
                 else:
                     warnings.warn('unknown module "%s".' % mod)
                     continue
@@ -694,8 +698,12 @@ class DOMParserBase(object):
         return self.fromstring(html_string)
 
     def xpath(self, element, path):
+        xpath_result = element.xpath(path)
+        if self._is_xml_unicode:
+            return xpath_result
+
         result = []
-        for item in element.xpath(path):
+        for item in xpath_result:
             if isinstance(item, str):
                 item = unicode(item)
             result.append(item)
@@ -703,8 +711,9 @@ class DOMParserBase(object):
 
     def tostring(self, element):
         if isinstance(element, (unicode, str)):
-            return element
-        return self._tostring(element, encoding=unicode)
+            return unicode(element)
+        else:
+            return self._tostring(element, encoding=unicode)
 
     def clone(self, element):
         return self.fromstring(self.tostring(element))

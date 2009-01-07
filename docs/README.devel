@@ -36,9 +36,12 @@ imdb (package)
        |    +-> searchCharacterParser
        |    +-> searchCompanyParser
        |    +-> utils
-       |    +-> _bsoup.py
-       |    +-> bsoupxpath.py
-       |    +-> bsouplxml.py
+       |    +-> bsouplxml
+       |         |
+       |         +-> _bsoup.py
+       |         +-> etree.py
+       |         +-> html.py
+       |         +-> bsoupxpath.py
        |
        +-> local (package)
        |    |
@@ -97,10 +100,13 @@ http.searchCharacterParser: parse an html string, result of a query for a
 http.searchCompanyParser: parse an html string, result of a query for a
                           company name.
 http.utils: miscellaneous utilities used only by the http package.
-http._bsoup: just a copy of the BeautifulSoup module, so that it's not
-             an external dependency.
-http.bsouplxml and http.bsoupxpath: adapter to make BeautifulSoup behave
-like lxml (internally, the API of lxml is always used).
+http.bsouplxml (package): adapter to make BeautifulSoup behave like lxml
+                          (internally, the API of lxml is always used).
+http.bsouplxml._bsoup: just a copy of the BeautifulSoup module, so that it's not
+                       an external dependency.
+http.bsouplxml.etree: adapter for the lxml.etree module.
+http.bsouplxml.html: adapter for the lxml.html module.
+http.bsouplxml.bsoupxpath: xpath support for beautifulsoup.
 
 The modules under the parser.local package are the same of the
 parser.http package (the search functions are placed directly in the

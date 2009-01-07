@@ -86,7 +86,7 @@ params = {'name': 'IMDbPY',
       'url': home_page,
       'license': 'GPL',
       'packages': ['imdb', 'imdb.parser', 'imdb.parser.http',
-                    'imdb.parser.mobile']}
+                    'imdb.parser.http.bsouplxml', 'imdb.parser.mobile']}
 
 
 if DO_LOCAL or DO_SQL:

@@ -1,7 +1,7 @@
 """
-parser.http.bsouplxml module (imdb.parser.http package).
+parser.http.bsouplxml.etree module (imdb.parser.http package).
 
-This module adapts the beautifulsoup interface to lxml.
+This module adapts the beautifulsoup interface to lxml.etree module.
 
 Copyright 2008 H. Turgut Uyar <uyar@tekir.org>
           2008 Davide Alberani <da@erlug.linux.it>
@@ -22,45 +22,28 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import _bsoup as BeautifulSoup
+from _bsoup import Tag as Element
+
 import bsoupxpath
 
 
-class ETree(BeautifulSoup.BeautifulSoup):
-    """Adapter for a soup."""
-
-    def __init__(self, html_string):
-        BeautifulSoup.BeautifulSoup.__init__(self, html_string,
-            convertEntities=BeautifulSoup.BeautifulSoup.HTML_ENTITIES)
-        self.root = self.findChild(True)
-        self.root.soup = self
-
-
-def fromstring(html_string):
+def fromstring(xml_string):
     """Return a DOM representation of the string."""
-    return ETree(html_string).root
+    return BeautifulSoup.BeautifulStoneSoup(xml_string,
+        convertEntities=BeautifulSoup.BeautifulStoneSoup.XML_ENTITIES
+        ).findChild(True)
 
-def tostring(element, encoding=None):
+def tostring(element, encoding=None, pretty_print=False):
     """Return a unicode representation of an element."""
-    return unicode(element)
-
-
-def get_attribute(tag, attr):
-    if attr == 'attrib':
-        return tag
-    return BeautifulSoup.Tag.__getattr_backup__(tag, attr)
+    if isinstance(element, unicode):
+        return element
+    if isinstance(element, BeautifulSoup.NavigableString):
+        return unicode(element)
+    if isinstance(element, BeautifulSoup.Tag):
+        return element.__str__(None, pretty_print)
 
 def setattribute(tag, name, value):
     tag[name] = value
-
-def getparent(node):
-    """Return the parent of the given node."""
-    return node.parent
-
-def drop_tree(node):
-    """Remove a node and all its children."""
-    # XXX: catch the raised exception, if the node is already gone?
-    #      i.e.: removing <p> contained in an already removed <p>.
-    node.extract()
 
 def xpath(node, expr):
     """Apply an xpath expression to a node. Return a list of nodes."""
@@ -70,10 +53,11 @@ def xpath(node, expr):
 
 
 # XXX: monkey patching the beautifulsoup tag class
-BeautifulSoup.Tag.__getattr_backup__ = BeautifulSoup.Tag.__getattr__
-BeautifulSoup.Tag.__getattr__ = get_attribute
-
+BeautifulSoup.Tag.attrib = property(fget=lambda self: self)
+BeautifulSoup.Tag.text = property(fget=lambda self: self.string)
 BeautifulSoup.Tag.set = setattribute
-BeautifulSoup.Tag.getparent = getparent
-BeautifulSoup.Tag.drop_tree = drop_tree
+BeautifulSoup.Tag.getparent = lambda self: self.parent
+BeautifulSoup.Tag.drop_tree = BeautifulSoup.Tag.extract
 BeautifulSoup.Tag.xpath = xpath
+
+# TODO: setting the text attribute for tags

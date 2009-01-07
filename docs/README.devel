@@ -36,10 +36,9 @@ imdb (package)
        |    +-> searchCharacterParser
        |    +-> searchCompanyParser
        |    +-> utils
-       |    +-> bsoupadapter.py
        |    +-> _bsoup.py
        |    +-> bsoupxpath.py
-       |    +-> lxmladapter.py
+       |    +-> bsouplxml.py
        |
        +-> local (package)
        |    |
@@ -100,8 +99,8 @@ http.searchCompanyParser: parse an html string, result of a query for a
 http.utils: miscellaneous utilities used only by the http package.
 http._bsoup: just a copy of the BeautifulSoup module, so that it's not
              an external dependency.
-http.bsoupadapter, http.bsoupxpath and http.lxmladapter: adapters for
-BeautifulSoup and lxml.
+http.bsouplxml and http.bsoupxpath: adapter to make BeautifulSoup behave
+like lxml (internally, the API of lxml is always used).
 
 The modules under the parser.local package are the same of the
 parser.http package (the search functions are placed directly in the
@@ -112,7 +111,8 @@ The parser.sql package manages the access to the data in the SQL
 database, created with the imdbpy2sql.py script; see the README.sqldb file.
 The dbschema module contains tables definitions and some useful functions;
 The alchemyadapter adapts the SQLAlchemy ORM to the internal mechanisms
-of IMDbPY, and the objectadapter does the same for the SQLObject ORM.
+of IMDbPY, and the objectadapter does the same for the SQLObject ORM
+(internally the API of SQLObject is always used).
 
 The class in the parser.mobile package is a subclass of the one found
 in parser.http, with some method overridden to be many times faster (from

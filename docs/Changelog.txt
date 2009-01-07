@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.0svn20090107 "The Strangers" (07 Jan 2009)
+  [http]
+  - adapted BeautifulSoup to lxml (internally, the lxml API is used).
+
+
 * What's the new in release 3.9 "The Strangers" (06 Jan 2009)
   [general]
   - introduced the search_episode method, to search for episodes' titles.

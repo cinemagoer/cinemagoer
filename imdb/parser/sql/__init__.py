@@ -542,6 +542,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             if aka_title == orig_title:
                 new_res.append(r)
                 continue
+            orig_dict['akas'] = [aka_title]
             new_res.append((r[0], orig_dict))
         if results > 0: new_res[:] = new_res[:results]
         return new_res

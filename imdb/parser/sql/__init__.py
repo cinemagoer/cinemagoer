@@ -7,7 +7,7 @@ the SQLObject Object Relational Manager is available.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "sql", "database" or "db".
 
-Copyright 2005-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -512,13 +512,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
 
-        resultsST = results
-        if not self.doAdult: resultsST = 0
+        resultsST = results * 3
         res = scan_titles(qr, title1, title2, title3, resultsST,
                             searchingEpisode=episodeOf is not None,
                             onlyEpisodes=_episodes,
                             ro_thresold=0.0)
-        if self.doAdult and results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
 
         if res and not self.doAdult:
@@ -530,8 +528,23 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                                 MovieInfo.q.info == 'Adult',
                                 IN(MovieInfo.q.movieID, mids)))]
             res[:] = [x for x in res if x[0] not in adultlist]
-            if results > 0: res[:] = res[:results]
-        return res
+
+        new_res = []
+        # XXX: can there be duplicated?
+        for r in res:
+            if r not in q2:
+                new_res.append(r)
+                continue
+            mdict = r[1]
+            aka_title = build_title(mdict, canonical=1, ptdf=1)
+            orig_dict = get_movie_data(r[0], self._kind)
+            orig_title = build_title(orig_dict, canonical=1, ptdf=1)
+            if aka_title == orig_title:
+                new_res.append(r)
+                continue
+            new_res.append((r[0], orig_dict))
+        if results > 0: new_res[:] = new_res[:results]
+        return new_res
 
     def _search_episode(self, title, results):
         return self._search_movie(title, results, _episodes=True)

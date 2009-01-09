@@ -6,7 +6,7 @@ IMDb's data through a local installation.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "local" or "files".
 
-Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ from stat import ST_SIZE
 
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb.utils import analyze_title, analyze_name, re_episodes, \
-                        normalizeName, analyze_company_name, \
+                        normalizeName, analyze_company_name, build_title, \
                         split_company_name_notes, normalizeTitle
 
 from imdb.Movie import Movie
@@ -389,11 +389,11 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
             title1 = normalizeTitle(title)
             title2 = ''
             title3 = ''
-        resultsST = results
-        if not self.doAdult: resultsST = 0
+        # XXX: only a guess: results are shrinked, to exclude Adult
+        #      titles and to remove duplicated entries.
+        resultsST = results * 3
         res = _scan_titles('%stitles.key' % self.__db,
                             title1, title2, title3, resultsST, _episodes)
-        if self.doAdult and results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
         # Check for adult movies.
         if not self.doAdult:
@@ -406,8 +406,36 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                                 attrKF='%sattributes.key' % self.__db)
                 if 'Adult' not in genres: newlist.append(entry)
             res[:] = newlist
-            if results > 0: res[:] = res[:results]
-        return res
+        # Get the real title, if this is an AKA.
+        new_res = []
+        seen_MID = []
+        for idx, (movieID, r) in enumerate(res):
+            # Remove duplicates.
+            # XXX: find a way to prefer titles with an AKA?  Or prefer
+            #      the original title?
+            if movieID in seen_MID:
+                continue
+            else:
+                seen_MID.append(movieID)
+            realMID = self._get_real_movieID(movieID)
+            if realMID in seen_MID:
+                continue
+            else:
+                seen_MID.append(realMID)
+            if movieID == realMID:
+                new_res.append((movieID, r))
+                continue
+            aka_title = build_title(r, canonical=1)
+            real_title = getLabel(realMID, '%stitles.index' % self.__db,
+                                '%stitles.key' % self.__db)
+            if aka_title == real_title:
+                new_res.append((realMID, r))
+                continue
+            new_r = analyze_title(real_title, canonical=1)
+            new_r['akas'] = [aka_title]
+            new_res.append((realMID, new_r))
+        if results > 0: new_res[:] = new_res[:results]
+        return new_res
 
     def _search_episode(self, title, results):
         title = title.strip()

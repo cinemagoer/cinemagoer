@@ -762,8 +762,10 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         try:
             qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
                     for q in Name.select(condition)]
-            qr += [(q.personID, {'name': q.name, 'imdbIndex': q.imdbIndex})
+            
+            q2 = [(q.personID, {'name': q.name, 'imdbIndex': q.imdbIndex})
                     for q in AkaName.select(conditionAka)]
+            qr += q2
         except NotFoundError, e:
             raise IMDbDataAccessError, \
                     'unable to search the database: "%s"' % str(e)
@@ -777,7 +779,28 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             if tmpd['imdbIndex'] is None:
                 del tmpd['imdbIndex']
             returnl.append((x[0], tmpd))
-        return returnl
+
+        new_res = []
+        # XXX: can there be duplicated?
+        for r in returnl:
+            if r not in q2:
+                new_res.append(r)
+                continue
+            pdict = r[1]
+            aka_name = build_name(pdict, canonical=1)
+            p = Name.get(r[0])
+            orig_dict = {'name': p.name, 'imdbIndex': p.imdbIndex}
+            if orig_dict['imdbIndex'] is None:
+                del orig_dict['imdbIndex']
+            orig_name = build_name(orig_dict, canonical=1)
+            if aka_name == orig_name:
+                new_res.append(r)
+                continue
+            orig_dict['akas'] = [aka_name]
+            new_res.append((r[0], orig_dict))
+        if results > 0: new_res[:] = new_res[:results]
+
+        return new_res
 
     def get_person_main(self, personID):
         # Every person information is retrieved from here.

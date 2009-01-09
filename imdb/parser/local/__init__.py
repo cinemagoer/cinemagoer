@@ -31,7 +31,7 @@ from stat import ST_SIZE
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb.utils import analyze_title, analyze_name, re_episodes, \
                         normalizeName, analyze_company_name, build_title, \
-                        split_company_name_notes, normalizeTitle
+                        split_company_name_notes, normalizeTitle, build_name
 
 from imdb.Movie import Movie
 from imdb.Company import Company
@@ -406,7 +406,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                                 attrKF='%sattributes.key' % self.__db)
                 if 'Adult' not in genres: newlist.append(entry)
             res[:] = newlist
-        # Get the real title, if this is an AKA.
+        # Get the real name, if this is an AKA.
+        # XXX: duplicated code!
         new_res = []
         seen_MID = []
         for idx, (movieID, r) in enumerate(res):
@@ -418,13 +419,13 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
             else:
                 seen_MID.append(movieID)
             realMID = self._get_real_movieID(movieID)
+            if movieID == realMID:
+                new_res.append((movieID, r))
+                continue
             if realMID in seen_MID:
                 continue
             else:
                 seen_MID.append(realMID)
-            if movieID == realMID:
-                new_res.append((movieID, r))
-                continue
             aka_title = build_title(r, canonical=1)
             real_title = getLabel(realMID, '%stitles.index' % self.__db,
                                 '%stitles.key' % self.__db)
@@ -762,9 +763,36 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         name1, name2, name3 = nameVariations(name)
         res =  _scan_names('%snames.key' % self.__db,
                             name1, name2, name3, results)
-        ##if results > 0: res[:] = res[:results]
         res[:] = [x[1] for x in res]
-        return res
+        new_res = []
+        seen_PID = []
+        for idx, (personID, r) in enumerate(res):
+            # Remove duplicates.
+            # XXX: find a way to prefer names with an AKA?  Or prefer
+            #      the original name?
+            if personID in seen_PID:
+                continue
+            else:
+                seen_PID.append(personID)
+            realPID = self._get_real_personID(personID)
+            if personID == realPID:
+                new_res.append((personID, r))
+                continue
+            if realPID in seen_PID:
+                continue
+            else:
+                seen_PID.append(realPID)
+            aka_name = build_name(r, canonical=1)
+            real_name = getLabel(realPID, '%snames.index' % self.__db,
+                                '%snames.key' % self.__db)
+            if aka_name == real_name:
+                new_res.append((realPID, r))
+                continue
+            new_r = analyze_name(real_name, canonical=1)
+            new_r['akas'] = [aka_name]
+            new_res.append((realPID, new_r))
+        if results > 0: new_res[:] = new_res[:results]
+        return new_res
 
     def get_person_main(self, personID):
         infosets = ('main', 'biography', 'other works')

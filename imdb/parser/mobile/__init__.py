@@ -6,7 +6,7 @@ IMDb's data for mobile systems.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "mobile".
 
-Copyright 2005-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -111,9 +111,6 @@ def _findBetween(s, begins, ends, beginindx=0, maxRes=None):
     return lres
 
 
-# Remove AKAs.
-_reAKAS = re.compile(r'aka <em.*?</td>', re.I | re.M)
-
 class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
     """The class used to access IMDb's data through the web for
     mobile terminals."""
@@ -183,7 +180,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not title: return res
         tl = title[0].lower()
         if not tl.startswith('imdb title'):
-            # XXX: a direct hit!
+            # a direct hit!
             title = _unHtml(title[0])
             midtag = _getTagsWith(cont, 'name="arg"', maxRes=1)
             if not midtag: midtag = _getTagsWith(cont, 'name="auto"', maxRes=1)
@@ -197,14 +194,21 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 title += ' (mini)'
             res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
         else:
-            cont = _reAKAS.sub('</td>', cont)
             lis = _findBetween(cont, 'td valign="top">', ['</td>', '</small>'])
             for li in lis:
+                akas = _findBetween(li, '<em>"', '"</em>')
+                if akas:
+                    aIdx = li.find('<br> aka')
+                    if aIdx != -1:
+                        li = li[:aIdx]
                 imdbid = re_imdbID.findall(li)
                 mtitle = _unHtml(li)
                 if not (imdbid and mtitle): continue
                 mtitle = mtitle.replace('(TV mini-series)', '(mini)')
-                res.append((str(imdbid[0]), analyze_title(mtitle, canonical=1)))
+                resd = analyze_title(mtitle, canonical=1)
+                if akas:
+                    resd['akas'] = akas
+                res.append((str(imdbid[0]), resd))
         return res
 
     def get_movie_main(self, movieID):
@@ -455,7 +459,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not name: return res
         nl = name[0].lower()
         if not nl.startswith('imdb name'):
-            # XXX: a direct hit!
+            # a direct hit!
             name = _unHtml(name[0])
             # Easiest way: the board link (for person who already have
             # messages in the board).
@@ -475,13 +479,20 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if not (pid and name): return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:
-            lis = _findBetween(cont, 'td valign="top">',
-                                ['<small', '</td>', '<br> aka'])
+            lis = _findBetween(cont, 'td valign="top">', '</td>')
             for li in lis:
+                akas = _findBetween(li, '<em>"', '"</em>')
+                for sep in ['<small', '<br> aka', '<br> birth name']:
+                    sepIdx = li.find(sep)
+                    if sepIdx != -1:
+                        li = li[:sepIdx]
                 pid = re_imdbID.findall(li)
                 pname = _unHtml(li)
                 if not (pid and pname): continue
-                res.append((str(pid[0]), analyze_name(pname, canonical=1)))
+                resd = analyze_name(pname, canonical=1)
+                if akas:
+                    resd['akas'] = akas
+                res.append((str(pid[0]), resd))
         return res
 
     def get_person_main(self, personID, _parseChr=False):
@@ -694,7 +705,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         nl = name[0].lower()
         if not (nl.startswith('imdb search') or nl.startswith('imdb  search') \
                 or nl.startswith('imdb character')):
-            # XXX: a direct hit!
+            # a direct hit!
             name = _unHtml(name[0]).replace('(Character)', '').strip()
             pidtag = _getTagsWith(cont, '/character/ch', maxRes=1)
             pid = None

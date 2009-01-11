@@ -1,9 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090109b "The Strangers" (09 Jan 2009)
+* What's the new in release 4.0dev20090111 "The Strangers" (11 Jan 2009)
   [http]
   - adapted BeautifulSoup to lxml (internally, the lxml API is used).
+  - searching for movies and persons - if present - the 'akas' keyword
+    if filled, in the results.
 
   [sql]
   - searching for a movie, the original titles are returned, instead

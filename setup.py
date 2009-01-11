@@ -1,40 +1,13 @@
 #!/usr/bin/env python
 
-import sys
-from distutils.core import setup, Extension
+import ez_setup
+ez_setup.use_setuptools()
 
-# --- CONFIGURE
+import setuptools
 
-# XXX NOTE: if you _really_ don't want to install the "local data access
-# system", set DO_LOCAL to 0.
-# The local access system requires the _whole_ IMDb's database installed
-# in your computer; this not useful/possible in small devices like
-# hand-held computers, where it makes sense to also save the little space
-# taken by the local interface package.
-# When possible it's _always safer_ to leave it to 1.
-DO_LOCAL = 1
-
-# XXX NOTE: the "sql data access system" requires the MySQLdb python
-# module and a connection to a database with the whole IMDb data,
-# that must be create using the imdbpy2sql.py script.
-# Setting this to 1 will always install at least the imdbpy2sql.py script.
-DO_SQL = 1
-
-# XXX NOTE: setting at least one of DO_LOCAL and DO_SQL to 1,
-# the "cutils" C module will be compiled; if you don't have a C compiler
-# in your environment, pure-python versions of the functions in the
-# C module will be used.  Beware the they are extremely slow, especially
-# using the "local" data access system.
-
-# Install some very simple example scripts.
-DO_SCRIPTS = 1
-
-
-# --- NOTHING TO CONFIGURE BELOW, GO AWAY! ;-)
-
-# version of the software; SVN releases contain a string
-# like ".svnYearMonthDay(OptionalChar)".
-version = '4.0svn20090109b'
+# version of the software; in SVN this represents the _next_ release.
+# setuptools will automatically add 'dev-rREVISION'.
+version = '4.0'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -73,78 +46,147 @@ Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries
 Topic :: Software Development :: Libraries :: Python Modules
 """
 
-params = {'name': 'IMDbPY',
-      'version': version,
-      'description': 'Python package to access the IMDb\'s database',
-      'long_description': long_desc,
-      'author': 'Davide Alberani',
-      'author_email': 'da@erlug.linux.it',
-      'contact': 'IMDbPY-devel mailing list',
-      'contact_email': 'imdbpy-devel@lists.sourceforge.net',
-      'maintainer': 'Davide Alberani',
-      'maintainer_email': 'da@erlug.linux.it',
-      'url': home_page,
-      'license': 'GPL',
-      'packages': ['imdb', 'imdb.parser', 'imdb.parser.http',
-                    'imdb.parser.http.bsouplxml', 'imdb.parser.mobile']}
+keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
+            'cast', 'actor', 'actress', 'director', 'sql', 'character',
+            'company', 'svn', 'package', 'plain text data files']
 
 
-if DO_LOCAL or DO_SQL:
-    params['packages'] = params['packages'] + ['imdb.parser.common']
-    cutils = Extension('imdb.parser.common.cutils',
-                        ['imdb/parser/common/cutils.c'])
-    params['ext_modules'] = [cutils]
-    params['scripts'] = []
+cutils = setuptools.Extension('imdb.parser.common.cutils',
+                                ['imdb/parser/common/cutils.c'])
 
-if DO_LOCAL:
-    params['packages'] = params['packages'] + ['imdb.parser.local']
-    params['scripts'] = params['scripts'] + ['./bin/characters4local.py',
-                                            './bin/companies4local.py',
-                                            './bin/mpaa4local.py',
-                                            './bin/misc-companies4local.py']
+scripts = ['./bin/get_first_movie.py',
+            './bin/get_movie.py', './bin/search_movie.py',
+            './bin/get_first_person.py', './bin/get_person.py',
+            './bin/search_person.py', './bin/get_character.py',
+            './bin/get_first_character.py', './bin/get_company.py',
+            './bin/search_character.py', './bin/search_company.py',
+            './bin/get_first_company.py']
 
-if DO_SQL:
-    params['packages'] = params['packages'] + ['imdb.parser.sql']
-    params['scripts'] = params['scripts'] + ['./bin/imdbpy2sql.py']
-
-if DO_SCRIPTS:
-    if not params.has_key('scripts'): params['scripts'] = []
-    params['scripts'] = params['scripts'] + ['./bin/get_first_movie.py',
-                        './bin/get_movie.py', './bin/search_movie.py',
-                        './bin/get_first_person.py', './bin/get_person.py',
-                        './bin/search_person.py', './bin/get_character.py',
-                        './bin/get_first_character.py', './bin/get_company.py',
-                        './bin/search_character.py', './bin/search_company.py',
-                        './bin/get_first_company.py']
+# XXX: I'm not sure that 'etc' is a good idea.  Making it an absolute
+#      path seems a recipe for a disaster (with bdist_egg, at least).
+data_files = [('doc', [f for f in setuptools.findall('docs')
+                if '.svn' not in f]), ('etc', ['docs/imdbpy.cfg'])]
 
 
-if sys.version_info >= (2, 1):
-    params['keywords'] = ['imdb', 'movie', 'people', 'database', 'cinema',
-                            'film', 'person', 'cast', 'actor', 'actress',
-                            'director', 'sql', 'character', 'company', 'csv']
-    params['platforms'] = 'any'
+# Defining these 'features', it's possible to run commands like:
+# python ./setup.py --without-sql --without-local bdist
+# having (in this example) imdb.parser.sql, imdb.parser.local (and
+# their shared code in imdb.parser.common) removed.
 
-if sys.version_info >= (2, 3):
-    params['download_url'] = dwnl_url
-    params['classifiers'] = filter(None, classifiers.split("\n"))
+featCutils = setuptools.dist.Feature('compile the C module', standard=True,
+        ext_modules=[cutils])
 
+featCommon = setuptools.dist.Feature('common code for "sql" and "local"',
+        standard=False, remove='imdb.parser.common')
+
+localScripts = ['./bin/characters4local.py', './bin/companies4local.py',
+                './bin/misc-companies4local.py', './bin/mpaa4local.py']
+featLocal = setuptools.dist.Feature('access to local mkdb data', standard=True,
+        require_features='common', remove='imdb.parser.local',
+        scripts=localScripts)
+
+featLxml = setuptools.dist.Feature('add lxml dependency', standard=True,
+        install_requires=['lxml'])
+
+
+# XXX: it seems there's no way to specify that we need EITHER
+#      SQLObject OR SQLAlchemy.
+featSQLObject = setuptools.dist.Feature('add SQLObject dependency',
+        standard=True, install_requires=['SQLObject'],
+        require_features='sql')
+
+featSQLAlchemy = setuptools.dist.Feature('add SQLAlchemy dependency',
+        standard=True, install_requires=['SQLAlchemy'],
+        require_features='sql')
+
+sqlScripts = ['./bin/imdbpy2sql.py']
+featSQL = setuptools.dist.Feature('access to SQL databases', standard=False,
+        require_features='common', remove='imdb.parser.sql', scripts=sqlScripts)
+
+features = {
+    'common': featCommon,
+    'cutils': featCutils,
+    'sql': featSQL,
+    'local': featLocal,
+    'lxml': featLxml,
+    'sqlobject': featSQLObject,
+    'sqlalchemy': featSQLAlchemy
+}
+
+
+params = {
+        # Meta-information.
+        'name': 'IMDbPY',
+        'version': version,
+        'description': 'Python package to access the IMDb\'s database',
+        'long_description': long_desc,
+        'author': 'Davide Alberani',
+        'author_email': 'da@erlug.linux.it',
+        'contact': 'IMDbPY-devel mailing list',
+        'contact_email': 'imdbpy-devel@lists.sourceforge.net',
+        'maintainer': 'Davide Alberani',
+        'maintainer_email': 'da@erlug.linux.it',
+        'license': 'GPL',
+        'platforms': 'any',
+        'keywords': keywords,
+        'classifiers': filter(None, classifiers.split("\n")),
+        'zip_safe': True, # XXX: I guess, at least...
+        # Download URLs.
+        'url': home_page,
+        'download_url': dwnl_url,
+        # Scripts.
+        'scripts': scripts,
+        # Documentation files.
+        'data_files': data_files,
+        # C extensions.
+        #'ext_modules': [cutils],
+        # Requirements.  XXX: maybe we can use extras_require?
+        #'install_requires': install_requires,
+        #'extras_require': extras_require,
+        'features': features,
+        # Packages.
+        'packages': setuptools.find_packages()
+}
+
+
+ERR_MSG = """
+====================================================================
+  ERROR
+  =====
+
+  Looks like we're unable to fetch or install some dependencies,
+  or to compile the C module.
+
+  The best solution is to resolve these dependencies (maybe you're
+  not connected to Internet?) or install a C compiler.
+
+  You may, however, go on without some optional pieces of IMDbPY;
+  try re-running this script with the corresponding optional argument:
+
+      --without-lxml        exclude lxml ( speeds up 'http' )
+      --without-cutils      don't compile the C module (speeds up 'local/sql')
+      --without-sqlobject   exclude SQLObject  (you need at least one of)
+      --without-sqlalchemy  exclude SQLAlchemy (SQLObject or SQLAlchemy,)
+                                               (if you want to access a )
+                                               (local SQL database      )
+
+  The following arguments exclude altogether some features of IMDbPY,
+  in case you don't need them (if both are specified, the cutils C module
+  is not compiled, either):
+      --without-local       no access to local (mkdb generated) data.
+      --without-sql         no access to SQL databases (implied if both
+                            --without-sqlobject and --without-sqlalchemy
+                            are used)
+
+  Example:
+      python ./setup.py --without-lxml --without-local --without-sql install
+
+  The caught exception, is re-raise below:
+"""
 
 try:
-    setup(**params)
-except SystemExit, e:
-    print '    WARNING ! WARNING ! WARNING ! WARNING ! WARNING'
-    print '    WARNING: '
-    print '    WARNING: Unable to compile the "cutils" C module.'
-    print '    WARNING: Error message:'
-    print '    WARNING:     "%s"' % str(e)
-    print '    WARNING: '
-    print '    WARNING: Restarting the setup process excluding the C module.'
-    print '    WARNING: Beware that the "sql" data access system will be'
-    print '    WARNING: slow, and the "local" data access system will be'
-    print '    WARNING: _really_ slow.'
-    print '    WARNING: '
-    print '    WARNING ! WARNING ! WARNING ! WARNING ! WARNING'
-    del params['ext_modules']
-    setup(**params)
-
+    setuptools.setup(**params)
+except SystemExit:
+    print ERR_MSG
+    raise
 

@@ -8,7 +8,7 @@ E.g., for when searching for the title "the passion", the parsed
 page would be:
     http://akas.imdb.com/find?q=the+passion&tt=on&mx=20
 
-Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -363,8 +363,14 @@ class DOMBasicMovieParser(DOMParserBase):
         return data
 
 
-# Remove AKAs.
-_reAKAS = re.compile(r'aka <em.*?</td>', re.I | re.M)
+_reTitleGarbage = re.compile(r'(.*?\))[^ ].*')
+def custom_analyze_title(title):
+    """Remove garbage notes after the (year), (year/imdbIndex) or (year) (TV)"""
+    title = _reTitleGarbage.sub(r'\1', title)
+    return analyze_title(title, canonical=1)
+
+# Manage AKAs.
+_reAKAStitles = re.compile(r'(?:aka) <em>"(.*?)(<br>|<\/td>)', re.I | re.M)
 
 class DOMHTMLSearchMovieParser(DOMParserBase):
     """Parse the html page that the IMDb web server shows when the
@@ -379,11 +385,13 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                         multi=True,
                         path={
                             'link': "./a[1]/@href",
-                            'info': ".//text()"
+                            'info': ".//text()",
+                            'akas': ".//div[@class='_imdbpyAKA']//text()"
                             },
                         postprocess=lambda x: (
                             analyze_imdbid(x.get('link') or u''),
-                            analyze_title(x.get('info') or u'', canonical=1)
+                            custom_analyze_title(x.get('info') or u''),
+                            x.get('akas')
                         ))]
     extractors = [Extractor(label='search',
                         path="//td[3]/a[starts-with(@href, '/title/tt')]/..",
@@ -399,7 +407,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
             if self._linkPrefix == '/title/tt':
                 # Only for movies.
                 html_string = html_string.replace('(TV mini-series)', '(mini)')
-                html_string = _reAKAS.sub('</td>', html_string)
+                html_string = _reAKAStitles.sub(
+                        r'<div class="_imdbpyAKA">\1::</div>\2', html_string)
             return html_string
         # Direct hit!
         dbme = self._BaseParser(useModule=self._useModule)
@@ -424,6 +433,17 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         results = getattr(self, 'results', None)
         if results is not None:
             data['data'][:] = data['data'][:results]
+        # Horrible hack to support AKAs.
+        if data and data['data'] and len(data['data'][0]) == 3:
+            for idx, datum in enumerate(data['data']):
+                if datum[2] is not None:
+                    akas = filter(None, datum[2].split('::'))
+                    if self._linkPrefix == '/title/tt':
+                        akas = [a.replace('" - ', '::') for a in akas]
+                    datum[1]['akas'] = akas
+                    data['data'][idx] = (datum[0], datum[1])
+                else:
+                    data['data'][idx] = (datum[0], datum[1])
         return data
 
     def add_refs(self, data):

@@ -7,7 +7,7 @@ for a given person.
 E.g., when searching for the name "Mel Gibson", the parsed page would be:
     http://akas.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
 
-Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import re
 from imdb.utils import analyze_name, build_name
 from utils import ParserBase, Extractor, Attribute, analyze_imdbid
 
@@ -94,6 +95,9 @@ class DOMBasicPersonParser(DOMBasicMovieParser):
     _titleFunct = lambda self, x: analyze_name(x or u'', canonical=1)
 
 
+_reAKASp = re.compile(r'(?:aka|birth name) (<em>")(.*?)"(<br>|<\/em>|<\/td>)',
+                    re.I | re.M)
+
 class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, for persons."""
@@ -107,16 +111,24 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
                         path={
                             'link': "./a[1]/@href",
                             'name': "./a[1]/text()",
-                            'index': "./text()[1]"
+                            'index': "./text()[1]",
+                            'akas': ".//div[@class='_imdbpyAKA']/text()"
                             },
                         postprocess=lambda x: (
                             analyze_imdbid(x.get('link') or u''),
                             analyze_name(x.get('name')+(x.get('index') or u''),
-                                         canonical=1)
+                                         canonical=1), x.get('akas')
                         ))]
     extractors = [Extractor(label='search',
                             path="//td[3]/a[starts-with(@href, '/name/nm')]/..",
                             attrs=_attrs)]
+
+    def preprocess_string(self, html_string):
+        if self._notDirectHitTitle in html_string[:1024].lower():
+            html_string = _reAKASp.sub(
+                                    r'\1<div class="_imdbpyAKA">\2::</div>\3',
+                                    html_string)
+        return DOMHTMLSearchMovieParser.preprocess_string(self, html_string)
 
 
 from searchMovieParser import HTMLSearchMovieParser as HTMLSearchPersonParser

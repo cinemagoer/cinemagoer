@@ -194,13 +194,21 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 title += ' (mini)'
             res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
         else:
-            lis = _findBetween(cont, 'td valign="top">', ['</td>', '</small>'])
+            lis = _findBetween(cont, 'td valign="top">', '</td>')
             for li in lis:
-                akas = _findBetween(li, '<em>"', '"</em>')
+                akaIdx = li.find('aka <em>')
+                akas = []
+                if akaIdx != -1:
+                    akas = [_unHtml(x) for x in li[akaIdx:].split('<br>')]
+                    li = li[:akaIdx]
                 if akas:
-                    aIdx = li.find('<br> aka')
-                    if aIdx != -1:
-                        li = li[:aIdx]
+                    for idx, aka in enumerate(akas):
+                        aka = aka.replace('" - ', '::')
+                        if aka.startswith('aka "'):
+                            aka = aka[5:]
+                        if aka[-1] == '"':
+                            aka = aka[:-1]
+                        akas[idx] = aka
                 imdbid = re_imdbID.findall(li)
                 mtitle = _unHtml(li)
                 if not (imdbid and mtitle): continue

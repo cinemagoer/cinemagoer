@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # FIXME: this whole module was written in a veeery short amount of time.
 #        The code should be commented, rewritten and cleaned. :-)
 
-from types import UnicodeType
 import warnings
 
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
@@ -450,7 +449,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         else:
             _episodes = False
             s_title = normalizeTitle(s_title)
-        if isinstance(s_title, UnicodeType):
+        if isinstance(s_title, unicode):
             s_title = s_title.encode('ascii', 'ignore')
 
         soundexCode = soundex(s_title)
@@ -741,7 +740,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not name: return []
         s_name = analyze_name(name)['name']
         if not s_name: return []
-        if isinstance(s_name, UnicodeType):
+        if isinstance(s_name, unicode):
             s_name = s_name.encode('ascii', 'ignore')
         soundexCode = soundex(s_name)
         name1, name2, name3 = nameVariations(name)
@@ -924,7 +923,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if not name: return []
         s_name = analyze_name(name)['name']
         if not s_name: return []
-        if isinstance(s_name, UnicodeType):
+        if isinstance(s_name, unicode):
             s_name = s_name.encode('ascii', 'ignore')
         s_name = normalizeName(s_name)
         soundexCode = soundex(s_name)
@@ -1017,7 +1016,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     def _search_company(self, name, results):
         name = name.strip()
         if not name: return []
-        if isinstance(name, UnicodeType):
+        if isinstance(name, unicode):
             name = name.encode('ascii', 'ignore')
         soundexCode = soundex(name)
         # If the soundex is None, compare only with the first

@@ -21,7 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from types import UnicodeType
 from copy import deepcopy
 
 from imdb.utils import analyze_name, build_name, normalizeName, \
@@ -212,7 +211,7 @@ class Person(_Container):
         # XXX: add also currentRole and notes, if present?
         r = '<Person id:%s[%s] name:_%s_>' % (self.personID, self.accessSystem,
                                         self.get('long imdb canonical name'))
-        if isinstance(r, UnicodeType): r = r.encode('utf_8', 'replace')
+        if isinstance(r, unicode): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):

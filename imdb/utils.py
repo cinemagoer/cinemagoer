@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from __future__ import generators
 import re
-from types import UnicodeType, StringType, ListType, TupleType, DictType
 from copy import copy, deepcopy
 from time import strptime, strftime
 
@@ -685,20 +684,20 @@ def modifyStrings(o, modFunct, titlesRefs, namesRefs, charactersRefs):
     """Modify a string (or string values in a dictionary or strings
     in a list), using the provided modFunct function and titlesRefs
     namesRefs and charactersRefs references dictionaries."""
-    if isinstance(o, (UnicodeType, StringType)):
+    if isinstance(o, (unicode, str)):
         return modFunct(o, titlesRefs, namesRefs, charactersRefs)
-    elif isinstance(o, (ListType, TupleType)):
+    elif isinstance(o, (list, tuple)):
         _stillorig = 1
-        if isinstance(o, ListType): keys = xrange(len(o))
+        if isinstance(o, list): keys = xrange(len(o))
         else: keys = o.keys()
         for i in keys:
             v = o[i]
-            if isinstance(v, (UnicodeType, StringType)):
+            if isinstance(v, (unicode, str)):
                 if _stillorig:
                     o = copy(o)
                     _stillorig = 0
                 o[i] = modFunct(v, titlesRefs, namesRefs, charactersRefs)
-            elif isinstance(v, (ListType, TupleType)):
+            elif isinstance(v, (list, tuple)):
                 modifyStrings(o[i], modFunct, titlesRefs, namesRefs,
                             charactersRefs)
     return o
@@ -844,7 +843,7 @@ class _Container(object):
 
     def _set_currentRole(self, role):
         """Set self.currentRole to a Character or Person instance."""
-        if isinstance(role, (UnicodeType, StringType)):
+        if isinstance(role, (unicode, str)):
             if not role:
                 self.__role = None
             else:
@@ -853,7 +852,7 @@ class _Container(object):
         elif isinstance(role, (list, tuple)):
             self.__role = RolesList()
             for item in role:
-                if isinstance(item, (UnicodeType, StringType)):
+                if isinstance(item, (unicode, str)):
                     self.__role.append(self._roleClass(name=item,
                                         accessSystem=self.accessSystem,
                                         modFunct=self.modFunct))
@@ -1111,7 +1110,7 @@ class _Container(object):
         return deepcopy(self)
 
 
-def flatten(seq, toDescend=(ListType, DictType, TupleType),
+def flatten(seq, toDescend=(list, dict, tuple),
             yieldDictKeys=0, onlyKeysType=(_Container,), scalar=None):
     """Iterate over nested lists and dictionaries; toDescend is a list
     or a tuple of types to be considered non-scalar; if yieldDictKeys is
@@ -1121,7 +1120,7 @@ def flatten(seq, toDescend=(ListType, DictType, TupleType),
         if scalar is None or isinstance(seq, scalar):
             yield seq
     else:
-        if isinstance(seq, (DictType, _Container)):
+        if isinstance(seq, (dict, _Container)):
             if yieldDictKeys:
                 # Yield also the keys of the dictionary.
                 for key in seq.iterkeys():

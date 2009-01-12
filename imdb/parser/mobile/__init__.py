@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from urllib import unquote
-from types import ListType, TupleType
 
 from imdb import imdbURL_movie_main, imdbURL_person_main, imdbURL_character_main
 from imdb.Movie import Movie
@@ -96,7 +95,7 @@ def _findBetween(s, begins, ends, beginindx=0, maxRes=None):
     bi = s.find(begins, beginindx)
     if bi != -1:
         lbegins = len(begins)
-        if isinstance(ends, (ListType, TupleType)):
+        if isinstance(ends, (list, tuple)):
             eset = [s.find(end, bi+lbegins) for end in ends]
             eset[:] = [x for x in eset if x != -1]
             if not eset: ei = -1

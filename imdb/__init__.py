@@ -31,7 +31,7 @@ __version__ = VERSION = '4.0'
 import _compat
 
 import sys, os, ConfigParser
-from types import UnicodeType, TupleType, ListType, MethodType
+from types import MethodType
 
 from imdb import Movie, Person, Character, Company
 from imdb._exceptions import IMDbError, IMDbDataAccessError
@@ -354,7 +354,7 @@ class IMDbBase:
             results = 20
         # XXX: I suppose it will be much safer if the user provides
         #      an unicode string... this is just a guess.
-        if not isinstance(title, UnicodeType):
+        if not isinstance(title, unicode):
             title = unicode(title, encoding, 'replace')
         if not _episodes:
             res = self._search_movie(title, results)
@@ -414,7 +414,7 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if not isinstance(name, UnicodeType):
+        if not isinstance(name, unicode):
             name = unicode(name, encoding, 'replace')
         res = self._search_person(name, results)
         return [Person.Person(personID=self._get_real_personID(pi),
@@ -459,7 +459,7 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if not isinstance(name, UnicodeType):
+        if not isinstance(name, unicode):
             name = unicode(name, encoding, 'replace')
         res = self._search_character(name, results)
         return [Character.Character(characterID=self._get_real_characterID(pi),
@@ -504,7 +504,7 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if not isinstance(name, UnicodeType):
+        if not isinstance(name, unicode):
             name = unicode(name, encoding, 'replace')
         res = self._search_company(name, results)
         return [Company.Company(companyID=self._get_real_companyID(pi),
@@ -515,11 +515,11 @@ class IMDbBase:
         """Return a Movie object."""
         # XXX: not really useful...
         if keywords.has_key('title'):
-            if not isinstance(keywords['title'], UnicodeType):
+            if not isinstance(keywords['title'], unicode):
                 keywords['title'] = unicode(keywords['title'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if not isinstance(arguments[1], UnicodeType):
+            if not isinstance(arguments[1], unicode):
                 arguments[1] = unicode(arguments[1], encoding, 'replace')
         return Movie.Movie(accessSystem=self.accessSystem,
                             *arguments, **keywords)
@@ -528,11 +528,11 @@ class IMDbBase:
         """Return a Person object."""
         # XXX: not really useful...
         if keywords.has_key('name'):
-            if not isinstance(keywords['name'], UnicodeType):
+            if not isinstance(keywords['name'], unicode):
                 keywords['name'] = unicode(keywords['name'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if not isinstance(arguments[1], UnicodeType):
+            if not isinstance(arguments[1], unicode):
                 arguments[1] = unicode(arguments[1], encoding, 'replace')
         return Person.Person(accessSystem=self.accessSystem,
                                 *arguments, **keywords)
@@ -541,11 +541,11 @@ class IMDbBase:
         """Return a Character object."""
         # XXX: not really useful...
         if keywords.has_key('name'):
-            if not isinstance(keywords['name'], UnicodeType):
+            if not isinstance(keywords['name'], unicode):
                 keywords['name'] = unicode(keywords['name'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if not isinstance(arguments[1], UnicodeType):
+            if not isinstance(arguments[1], unicode):
                 arguments[1] = unicode(arguments[1], encoding, 'replace')
         return Character.Character(accessSystem=self.accessSystem,
                                     *arguments, **keywords)
@@ -554,11 +554,11 @@ class IMDbBase:
         """Return a Company object."""
         # XXX: not really useful...
         if keywords.has_key('name'):
-            if not isinstance(keywords['name'], UnicodeType):
+            if not isinstance(keywords['name'], unicode):
                 keywords['name'] = unicode(keywords['name'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if not isinstance(arguments[1], UnicodeType):
+            if not isinstance(arguments[1], unicode):
                 arguments[1] = unicode(arguments[1], encoding, 'replace')
         return Company.Company(accessSystem=self.accessSystem,
                                     *arguments, **keywords)
@@ -613,7 +613,7 @@ class IMDbBase:
                 info = self.get_character_infoset()
             else:
                 info = self.get_company_infoset()
-        if not isinstance(info, (TupleType, ListType)):
+        if not isinstance(info, (tuple, list)):
             info = (info,)
         res = {}
         for i in info:

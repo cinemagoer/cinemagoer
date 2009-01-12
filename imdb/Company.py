@@ -4,7 +4,7 @@ company module (imdb package).
 This module provides the company class, used to store information about
 a given company.
 
-Copyright 2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from types import UnicodeType
 from copy import deepcopy
 
 from imdb.utils import analyze_company_name, build_company_name, \
@@ -166,7 +165,7 @@ class Company(_Container):
         r = '<Company id:%s[%s] name:_%s_>' % (self.companyID,
                                         self.accessSystem,
                                         self.get('long imdb name'))
-        if isinstance(r, UnicodeType): r = r.encode('utf_8', 'replace')
+        if isinstance(r, unicode): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):

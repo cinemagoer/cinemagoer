@@ -7,7 +7,7 @@ the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "http" or "web"
 or "html" (this is the default).
 
-Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -60,9 +60,10 @@ class _ModuleProxy:
                 useModule=None, fallBackToNew=False):
         """Initialize a proxy for the given module; defaultKeys, if set,
         muste be a dictionary of values to set for instanced objects."""
-        self.oldParsers = oldParsers
+        if oldParsers or fallBackToNew:
+            warnings.warn('The old set of parsers was removed; falling ' \
+                    'back to the new parsers.')
         self.useModule = useModule
-        self.fallBackToNew = fallBackToNew
         if defaultKeys is None:
             defaultKeys = {}
         self._defaultKeys = defaultKeys
@@ -76,18 +77,9 @@ class _ModuleProxy:
             _entry = _sm._OBJECTS[name]
             # Initialize the parser.
             kwds = {}
-            if not self.oldParsers and self.useModule:
+            if self.useModule:
                 kwds = {'useModule': self.useModule}
-            parserClass = _entry[0][self.oldParsers]
-            # Warns when the old parser was requested, but it's gone.
-            if self.oldParsers and parserClass is _entry[0][0]:
-                if not self.fallBackToNew:
-                    warnings.warn('Old parser "%s" not available; these ' \
-                                'data will not be available.' % name)
-                    parserClass = _FakeParser
-                else:
-                    warnings.warn('Old parser "%s" not available; falling ' \
-                                'back to the new one.' % name)
+            parserClass = _entry[0][0]
             obj = parserClass(**kwds)
             attrsToSet = self._defaultKeys.copy()
             attrsToSet.update(_entry[1] or {})

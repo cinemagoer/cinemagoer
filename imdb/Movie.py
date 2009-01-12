@@ -4,7 +4,7 @@ Movie module (imdb package).
 This module provides the Movie class, used to store information about
 a given movie.
 
-Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from types import UnicodeType, ListType, TupleType, DictType
 from copy import deepcopy
 
 from imdb.utils import analyze_title, build_title, normalizeTitle, \
@@ -250,17 +249,17 @@ class Movie(_Container):
         from Company import Company
         if isinstance(item, Person):
             for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
-                            toDescend=(ListType, DictType, TupleType, Movie)):
+                            toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(p):
                     return 1
         elif isinstance(item, Character):
             for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
-                            toDescend=(ListType, DictType, TupleType, Movie)):
+                            toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(p.currentRole):
                     return 1
         elif isinstance(item, Company):
             for c in flatten(self.data, yieldDictKeys=1, scalar=Company,
-                            toDescend=(ListType, DictType, TupleType, Movie)):
+                            toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(c):
                     return 1
         return 0
@@ -288,7 +287,7 @@ class Movie(_Container):
             title = self.get('long imdb canonical title')
         r = '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
                                                 title)
-        if isinstance(r, UnicodeType): r = r.encode('utf_8', 'replace')
+        if isinstance(r, unicode): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):

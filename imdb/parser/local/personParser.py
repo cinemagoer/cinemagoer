@@ -22,8 +22,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from types import UnicodeType
-
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
 from imdb.utils import re_titleRef, analyze_name, build_name, normalizeName, \
@@ -76,7 +74,7 @@ def _buildGuests(gl):
     rlapp = rl.append
     for g in gl:
         # When used by the imdbpy2sql.py script, latin_1 strings are passed.
-        if not isinstance(g, UnicodeType):
+        if not isinstance(g, unicode):
             g = unicode(g, 'latin_1', 'replace')
         titl = re_titleRef.findall(g)
         if len(titl) != 1: continue

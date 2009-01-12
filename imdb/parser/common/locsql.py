@@ -22,7 +22,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from types import UnicodeType, StringType, ListType, TupleType, DictType
 from difflib import SequenceMatcher
 from codecs import lookup
 
@@ -50,7 +49,7 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
 
     def _findRefs(self, o, trefs, nrefs):
         """Find titles or names references in strings."""
-        if isinstance(o, (UnicodeType, StringType)):
+        if isinstance(o, (unicode, str)):
             for title in re_titleRef.findall(o):
                 a_title = analyze_title(title, canonical=1)
                 rtitle = build_title(a_title, canonical=1, ptdf=1)
@@ -84,10 +83,10 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
                     nrefs[rname2] = p
                 if name != rname and name != rname2:
                     nrefs[name] = p
-        elif isinstance(o, (ListType, TupleType)):
+        elif isinstance(o, (list, tuple)):
             for item in o:
                 self._findRefs(item, trefs, nrefs)
-        elif isinstance(o, DictType):
+        elif isinstance(o, dict):
             for value in o.values():
                 self._findRefs(value, trefs, nrefs)
         return (trefs, nrefs)

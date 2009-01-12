@@ -4,7 +4,7 @@ helpers module (imdb package).
 This module provides functions not used directly by the imdb package,
 but useful for IMDbPY-based programs.
 
-Copyright 2006-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2006-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from cgi import escape
-from types import UnicodeType, TupleType, ListType
 
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
@@ -51,7 +50,7 @@ def makeCgiPrintEncoding(encoding):
         """Encode the given string using the %s encoding, and replace
         chars outside the given charset with XML char references.""" % encoding
         s = escape(s, quote=1)
-        if isinstance(s, UnicodeType):
+        if isinstance(s, unicode):
             s = s.encode(encoding, 'xmlcharrefreplace')
         return s
     return cgiPrint
@@ -296,7 +295,7 @@ def sortedEpisodes(m, season=None):
     if season is None:
         seasons = sortedSeasons(m)
     else:
-        if not isinstance(season, (TupleType, ListType)):
+        if not isinstance(season, (tuple, list)):
             seasons = [season]
     for s in seasons:
         eps_indx = m.get('episodes', {}).get(s, {}).keys()

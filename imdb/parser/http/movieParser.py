@@ -111,7 +111,7 @@ def _manageRoles(mo):
         newRoles.append(u'<div class="_imdbpyrole" roleid="%s">%s</div>' % \
                 (roleID, role.strip()))
     return firstHalf + u' / '.join(newRoles) + mo.group(3)
-    return firstHalf.replace(secondHalf, u' / '.join(newRoles))
+
 
 _reRolesMovie = re.compile(r'(<td class="char">)(.*?)(</td>)',
                             re.I | re.M | re.S)

@@ -119,7 +119,8 @@ MYSQLINNODB_OPTS = ['-e',
         '-e', 'END:FOR_EVERY_TABLE:ALTER TABLE %(table)s ENGINE=InnoDB;']
 SQLSERVER_OPTS = ['-e', 'BEFORE_EVERY_TODB:SET IDENTITY_INSERT %(table)s ON;',
         '-e', 'AFTER_EVERY_TODB:SET IDENTITY_INSERT %(table)s OFF;']
-SQLITE_OPTS = ['-e', 'BEFORE_EVERY_TODB:BEGIN TRANSACTION;',
+SQLITE_OPTS = ['-e', 'BEGIN:PRAGMA synchronous = OFF;',
+        '-e', 'BEFORE_EVERY_TODB:BEGIN TRANSACTION;',
         '-e', 'AFTER_EVERY_TODB:COMMIT;',
         '-e', 'BEFORE_INDEXES:BEGIN TRANSACTION;',
         'e', 'END:COMMIT;']
@@ -1533,7 +1534,7 @@ class AkasMoviesCache(MoviesCache):
             # id used to store this entry.
             the_id = item[0]
             # id of the referred title.
-            original_title_id = self.ids.get(the_id)
+            original_title_id = self.ids.get(the_id) or 0
             new_item = [the_id, original_title_id]
             new_item += item[1:-1]
             new_item.append(self.notes.get(the_id))

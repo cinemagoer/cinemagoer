@@ -36,7 +36,9 @@ Everything you need to do is to run, as the root user, the command:
 
 If, for some reason, it doesn't work, you can copy the "./imdb"
 directory in the local site-packages directory of the python
-major version you're using.
+major version you're using, but remember that you'll not satisfy
+the required dependencies and neither compile the optional C module,
+so use this as your very last resort.
 To know what major version of python you've installed, run:
     $ python -V
 
@@ -44,7 +46,6 @@ It should return a string like "Python 2.3.5"; in this example
 the major version is "2.3".
 Now copy the "./imdb" directory:
     # cp -r ./imdb /usr/local/lib/python{MAJORVERSION}/site-packages/
-
 
 The setup.py contains some configuration options that could
 be useful if you're installing IMDbPY in a system with very
@@ -57,6 +58,21 @@ read the "README.local" file.
 
 If you want to insert the content of the plain text data files
 into a SQL database, read the "README.sqldb" file.
+
+The whole list of command line options of the setup.py script is:
+  --without-lxml	exclude lxml (speeds up "http" considerably,
+					so try to fix it).
+  --without-cutils	don't compile the C module (speeds up 'local/sql')
+  --without-sql		no access to SQL databases.
+  --without-local	no access to local (mkdb generated) data.
+
+If you're install 'sql', setup.py tries to install BOTH SQLObject
+and SQLAlchemy.  In fact, having one of them will be enough.
+You can exclude the unwanted one with:
+  --without-sqlobject	exclude SQLObject
+  --without-sqlalchemy	exclude SQLAlchemy
+
+If you specify both, --without-sql is implied.
 
 
   HELP
@@ -72,12 +88,13 @@ mailing list:  http://imdbpy.sf.net/?page=help#ml
 If you plan to package IMDbPY for your distribution/operating system,
 keep in mind that, while IMDbPY can works out-of-the-box, some external
 package may be required for certain functionality:
-  - SQLObject or SQLAlchemy: one of these is REQUIRED if you want to use
-    the 'sql' data access system.
   - python-lxml: the 'http' data access system will be much faster, if
     it's installed.
+  - SQLObject or SQLAlchemy: one of these is REQUIRED if you want to use
+    the 'sql' data access system.
 
-All of them should probably be "suggested" dependencies.
+All of them should probably be "recommended" (or at least "suggested")
+dependencies.
 
 
   RECENT IMPORTANT CHANGES

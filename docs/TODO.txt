@@ -152,4 +152,6 @@ Things to do:
 * The pysqlite2.dbapi2.OperationalError exception is raise when SQLite
   is used with SQLAlchemy (but only if the --sqlite-transactions command
   line argument is used).
+* With 0.5 branch of SQLAlchemy, it seems that there are serious problems
+  using SQLite; try switching to SQLObject, as a temporary solution.
 

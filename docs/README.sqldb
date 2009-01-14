@@ -93,7 +93,7 @@ to your database, with the schema:
   scheme://[user[:password]@]host[:port]/database[?parameters]
 
 Where 'scheme' is one in "sqlite", "mysql", "postgres", "firebird",
-"interbase", "maxdb", "sapdb", "mssql", "sybase".
+"interbase", "maxdb", "sapdb", "mssql", "sybase", "ibm_db_sa".
 
 Some examples:
     mysql://user:password@host/database
@@ -115,7 +115,10 @@ separated values to specify an order of preference).
   ======
 
 The performances are hugely dependant upon the underlying Python
-module/package used to access the database.
+module/package used to access the database.  The imdbpy2sql.py script
+has a number of command line arguments, useful to chose amongst
+presets that can improve performances, using specific database servers.
+
 The fastest database appears to be MySQL, with about 200 minutes to
 complete on my test system (read below).
 A lot of memory (RAM or swap space) is required, in the range of
@@ -130,6 +133,10 @@ that accept multiple data insertion with a single SQL statement; other
 database requires a call to the execute() method for every single row
 of data, and they will be much slower - from 2 to 7 times slower than
 MySQL.
+
+There are generic suggestions that can lead to better performances,
+like turning off your filesystem journaling.  Another option is
+the use of a ramdisk/tmpfs, if you have enough RAM.
 
 I've done some tests, using an AMD Athlon 1800+, 1GB of RAM, over a
 complete plain text data files set (as of 11 Apr 2008, with more than
@@ -200,12 +207,16 @@ writing this).
 For some reason, SQLite is really slow, except when used with
 transactions; you can use the '--sqlite-transactions' command
 line option to obtain acceptable performances.
+The same command, also turns off "PRAGMA synchronous".
+
+SQLite seems to hugely benefit from the use of a non-journaling
+filesystem and/or of a ramdisk/tmpfs.
 
 
 [SQLite failure]
 It seems that, with older versions of the python-sqlite package, the first
 run may fail; if you get a DatabaseError exception saying "no such table",
-try running again the command with the same arguments.
+try running again the command with the same arguments.  Double funny, uh? ;-)
 
 
 [data truncated]

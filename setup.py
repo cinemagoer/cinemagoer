@@ -154,16 +154,20 @@ ERR_MSG = """
   ERROR
   =====
 
-  Looks like we're unable to fetch or install some dependencies,
+  Aaargh!  An error!  An error!
+  Curse my metal body, I wasn't fast enough.  It's all my fault!
+
+  Anyway, if you were trying to build a package or install IMDbPY to your
+  system, looks like we're unable to fetch or install some dependencies,
   or to compile the C module.
 
   The best solution is to resolve these dependencies (maybe you're
-  not connected to Internet?) or install a C compiler.
+  not connected to Internet?) and/or install a C compiler.
 
   You may, however, go on without some optional pieces of IMDbPY;
   try re-running this script with the corresponding optional argument:
 
-      --without-lxml        exclude lxml ( speeds up 'http' )
+      --without-lxml        exclude lxml (speeds up 'http')
       --without-cutils      don't compile the C module (speeds up 'local/sql')
       --without-sqlobject   exclude SQLObject  (you need at least one of)
       --without-sqlalchemy  exclude SQLAlchemy (SQLObject or SQLAlchemy,)

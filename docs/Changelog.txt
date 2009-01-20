@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090114 "The Strangers" (14 Jan 2009)
+* What's the new in release 4.0dev20090120 "Let The Right One In" (20 Jan 2009)
   [general]
   - the installer is now based on setuptools.
   - searching for movies and persons - if present - the 'akas' keyword
@@ -16,6 +16,7 @@
   [sql]
   - searching for a movie, the original titles are returned, instead
     of AKAs.
+  - imdbpy2sql.py shows user time and system time, along with wall time.
 
   [local]
   - searching for a movie, the original titles are returned, instead

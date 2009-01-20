@@ -27,7 +27,7 @@ I'd like to thank the following people for their help:
 
 * Ori Cohen for some code and various hints.
 
-* Mike Castle for performace tests with SQLite.
+* Mike Castle for performace tests with SQLite and numerous hints.
 
 * Indy (indyx) for a bug about series cast parsing using BeautifulSoup.
 

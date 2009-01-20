@@ -575,14 +575,42 @@ def _(s):
     s = s.encode(sys.stdout.encoding or 'utf_8', 'replace')
     return s
 
+if not hasattr(os, 'times'):
+    def times():
+        """Fake times() function."""
+        return (0.0, 0.0, 0.0, 0.0, 0.0)
+    os.times = times
+
 # Show time consumed by the single function call.
 CTIME = int(time.time())
 BEGIN_TIME = CTIME
-def t(s):
-    global CTIME
+CTIMES = os.times()
+BEGIN_TIMES = CTIMES
+
+def _minSec(*t):
+    """Return a tuple of (mins, secs, ...) - two for every item passed."""
+    l = []
+    for i in t:
+        l.extend(divmod(int(i), 60))
+    return tuple(l)
+
+def t(s, sinceBegin=False):
+    """Pretty-print timing information."""
+    global CTIME, CTIMES
     nt = int(time.time())
-    print '# TIME', s, ': %d min, %s sec.' % divmod(nt-CTIME, 60)
-    CTIME = nt
+    ntimes = os.times()
+    if not sinceBegin:
+        ct = CTIME
+        cts = CTIMES
+    else:
+        ct = BEGIN_TIME
+        cts = BEGIN_TIMES
+    print '# TIME', s, \
+            ': %dmin, %dsec (wall) %dmin, %dsec (user) %dmin, %dsec (system)' \
+            % _minSec(nt-ct, ntimes[0]-cts[0], ntimes[1]-cts[1])
+    if not sinceBegin:
+        CTIME = nt
+        CTIMES = ntimes
 
 def title_soundex(title):
     """Return the soundex code for the given title; the (optional) ending
@@ -2382,8 +2410,9 @@ def run():
     CACHE_CID.clear()
     t('fushing caches...')
 
-    print 'TOTAL TIME TO INSERT/WRITE DATA: %d minutes, %d seconds' % \
-            divmod(int(time.time())-BEGIN_TIME, 60)
+    t('TOTAL TIME TO INSERT/WRITE DATA', sinceBegin=True)
+    #print 'TOTAL TIME TO INSERT/WRITE DATA: %d minutes, %d seconds' % \
+    #        divmod(int(time.time())-BEGIN_TIME, 60)
 
     executeCustomQueries('BEFORE_INDEXES')
 
@@ -2401,8 +2430,9 @@ def run():
 
     executeCustomQueries('END')
 
-    print 'DONE! (in %d minutes, %d seconds)' % \
-            divmod(int(time.time())-BEGIN_TIME, 60)
+    t('FINAL', sinceBegin=True)
+    #print 'DONE! (in %d minutes, %d seconds)' % \
+    #        divmod(int(time.time())-BEGIN_TIME, 60)
 
 
 _HEARD = 0

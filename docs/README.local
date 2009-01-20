@@ -46,7 +46,8 @@ thought with tv series episodes support in mind.
 It can still work very well, but you've to modify some constants
 in the code: edit the "moviedb.h" file in the "src" directory,
 and change MAXTITLES to _at least_ 1600000, MAXNAKAENTRIES
-to 700000, MAXFILMOGRAPHIES to 20470 and LINKSTART to 1000000.
+to 700000, MAXFILMOGRAPHIES to 20470, LINKSTART to 1000000
+and MAXBIOENTRIES to 500000.
 Also, setting MXLINELEN to 1023 is a good idea.
 See http://us.imdb.com/database_statistics for more up-to-date
 statistics.

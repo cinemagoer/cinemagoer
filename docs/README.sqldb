@@ -136,7 +136,11 @@ MySQL.
 
 There are generic suggestions that can lead to better performances,
 like turning off your filesystem journaling.  Another option is
-the use of a ramdisk/tmpfs, if you have enough RAM.
+the use of a ramdisk/tmpfs, if you have enough RAM.  Obviously these
+have effect only at insert-time: during the day-to-day use, you can
+turn your journaling on again.  You can also consider the use of
+the CSV output, explained below (but be sure that your database
+server of choice is able to import CSV files).
 
 I've done some tests, using an AMD Athlon 1800+, 1GB of RAM, over a
 complete plain text data files set (as of 11 Apr 2008, with more than
@@ -210,7 +214,8 @@ line option to obtain acceptable performances.
 The same command, also turns off "PRAGMA synchronous".
 
 SQLite seems to hugely benefit from the use of a non-journaling
-filesystem and/or of a ramdisk/tmpfs.
+filesystem and/or of a ramdisk/tmpfs: see the generic suggestions
+discussed above in the TIMING section.
 
 
 [SQLite failure]

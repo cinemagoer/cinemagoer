@@ -76,10 +76,12 @@ class DOMBasicMovieParser(DOMParserBase):
         return data
 
 
-_reTitleGarbage = re.compile(r'(.*?\))[^ ].*')
 def custom_analyze_title(title):
     """Remove garbage notes after the (year), (year/imdbIndex) or (year) (TV)"""
-    title = _reTitleGarbage.sub(r'\1', title)
+    # XXX: very crappy. :-(
+    nt = title.split('    ')[0]
+    if nt:
+        title = nt
     return analyze_title(title, canonical=1)
 
 # Manage AKAs.
@@ -152,7 +154,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                 if datum[2] is not None:
                     akas = filter(None, datum[2].split('::'))
                     if self._linkPrefix == '/title/tt':
-                        akas = [a.replace('" - ', '::') for a in akas]
+                        akas = [a.replace('" - ', '::').rstrip() for a in akas]
                     datum[1]['akas'] = akas
                     data['data'][idx] = (datum[0], datum[1])
                 else:

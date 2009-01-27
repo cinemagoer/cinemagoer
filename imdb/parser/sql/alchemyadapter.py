@@ -3,7 +3,7 @@ parser.sql.alchemyadapter module (imdb.parser.sql package).
 
 This module adpts the SQLAlchemy ORM to the internal mechanism.
 
-Copyright 2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,10 +21,19 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
+import warnings
 from sqlalchemy import *
 from sqlalchemy import schema
 try: from sqlalchemy import exc # 0.5
 except ImportError: from sqlalchemy import exceptions as exc # 0.4
+
+try:
+    import migrate.changeset
+    HAS_MC = True
+except ImportError:
+    HAS_MC = False
+    warnings.warn('Unable to import migrate.changeset: Foreign Keys will ' \
+                    'not be created.')
 
 from imdb._exceptions import IMDbDataAccessError
 from dbschema import *
@@ -297,7 +306,6 @@ class TableAdapter(object):
             if not self.table.bind.engine.url.drivername.startswith('ibm_db'):
                 raise
 
-
     def createTable(self, checkfirst=True):
         """Create the table."""
         self.table.create(checkfirst=checkfirst)
@@ -334,9 +342,45 @@ class TableAdapter(object):
             if col.index:
                 self._createIndex(col, checkfirst=ifNotExists)
 
+    def addForeignKeys(self, mapTables, ifNotExists=True):
+        """Create all required foreign keys."""
+        if not HAS_MC:
+            return
+        # It seems that there's no reason to prevent the creation of
+        # indexes for columns with FK constrains: if there's already
+        # an index, the FK index is not created.
+        countCols = 0
+        for col in self._imdbpySchema.cols:
+            countCols += 1
+            if not col.foreignKey:
+                continue
+            fks = col.foreignKey.split('.', 1)
+            foreignTableName = fks[0]
+            if len(fks) == 2:
+                foreignColName = fks[1]
+            else:
+                foreignColName = 'id'
+            foreignColName = mapTables[foreignTableName].colMap.get(
+                                                foreignColName, foreignColName)
+            thisColName = self.colMap.get(col.name, col.name)
+            thisCol = self.table.columns[thisColName]
+            foreignTable = mapTables[foreignTableName].table
+            foreignCol = getattr(foreignTable.c, foreignColName)
+            # Need to explicitly set an unique name, otherwise it will
+            # explode, if two cols points to the same table.
+            fkName = 'fk_%s_%s_%d' % (foreignTable.name, foreignColName,
+                                        countCols)
+            constrain = migrate.changeset.ForeignKeyConstraint([thisCol],
+                                                        [foreignCol],
+                                                        name=fkName)
+            constrain.create()
+
     def __call__(self, *args, **kwds):
         """To insert a new row with the syntax: TableClass(key=value, ...)"""
-        self._ta_insert.execute(*args, **kwds)
+        taArgs = {}
+        for key, value in kwds.items():
+            taArgs[self.colMap.get(key, key)] = value
+        self._ta_insert.execute(*args, **taArgs)
 
     def __repr__(self):
         return '<TableAdapter(table=%s) [id=%s]>' % (repr(self.table), id(self))

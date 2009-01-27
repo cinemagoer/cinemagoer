@@ -5,7 +5,7 @@ This module provides the schema used to describe the layout of the
 database used by the imdb.parser.sql package; functions to create/drop
 tables and indexes are also provided.
 
-Copyright 2005-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2009 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -35,12 +35,19 @@ class DBCol(object):
         self.kind = kind
         self.index = None
         self.indexLen = None
+        # If not None, two notations are accepted: 'TableName'
+        # and 'TableName.ColName'; in the first case, 'id' is assumed
+        # as the name of the pointed column.
+        self.foreignKey = None
         if 'index' in params:
             self.index = params['index']
             del params['index']
         if 'indexLen' in params:
             self.indexLen = params['indexLen']
             del params['indexLen']
+        if 'foreignKey' in params:
+            self.foreignKey = params['foreignKey']
+            del params['foreignKey']
         self.params = params
 
 class DBTable(object):
@@ -166,12 +173,13 @@ DB_SCHEMA = [
         DBCol('title', UNICODECOL, notNone=True,
                 index='idx_title', indexLen=10),
         DBCol('imdbIndex', UNICODECOL, length=12, default=None),
-        DBCol('kindID', INTCOL, notNone=True),
+        DBCol('kindID', INTCOL, notNone=True, foreignKey='KindType'),
         DBCol('productionYear', INTCOL, default=None),
         DBCol('imdbID', INTCOL, default=None),
         DBCol('phoneticCode', STRINGCOL, length=5, default=None,
                 index='idx_pcode'),
-        DBCol('episodeOfID', INTCOL, default=None, index='idx_epof'),
+        DBCol('episodeOfID', INTCOL, default=None, index='idx_epof',
+                foreignKey='Title'),
         DBCol('seasonNr', INTCOL, default=None),
         DBCol('episodeNr', INTCOL, default=None),
         # Maximum observed length is 44; 49 can store 5 comma-separated
@@ -187,7 +195,8 @@ DB_SCHEMA = [
 
     DBTable('AkaName',
         DBCol('id', INTCOL, notNone=True, alternateID=True),
-        DBCol('personID', INTCOL, notNone=True, index='idx_person'),
+        DBCol('personID', INTCOL, notNone=True, index='idx_person',
+                foreignKey='Name'),
         DBCol('name', UNICODECOL, notNone=True),
         DBCol('imdbIndex', UNICODECOL, length=12, default=None),
         DBCol('namePcodeCf',  STRINGCOL, length=5, default=None,
@@ -212,14 +221,16 @@ DB_SCHEMA = [
         # But there is no:
         # "Series, The" (2005)                "Other Title" (2005)
         DBCol('id', INTCOL, notNone=True, alternateID=True),
-        DBCol('movieID', INTCOL, notNone=True, index='idx_movieid'),
+        DBCol('movieID', INTCOL, notNone=True, index='idx_movieid',
+                foreignKey='Title'),
         DBCol('title', UNICODECOL, notNone=True),
         DBCol('imdbIndex', UNICODECOL, length=12, default=None),
-        DBCol('kindID', INTCOL, notNone=True),
+        DBCol('kindID', INTCOL, notNone=True, foreignKey='KindType'),
         DBCol('productionYear', INTCOL, default=None),
         DBCol('phoneticCode',  STRINGCOL, length=5, default=None,
                 index='idx_pcode'),
-        DBCol('episodeOfID', INTCOL, default=None, index='idx_epof'),
+        DBCol('episodeOfID', INTCOL, default=None, index='idx_epof',
+                foreignKey='AkaTitle'),
         DBCol('seasonNr', INTCOL, default=None),
         DBCol('episodeNr', INTCOL, default=None),
         DBCol('note', UNICODECOL, default=None)
@@ -233,12 +244,15 @@ DB_SCHEMA = [
 
     DBTable('CastInfo',
         DBCol('id', INTCOL, notNone=True, alternateID=True),
-        DBCol('personID', INTCOL, notNone=True, index='idx_pid'),
-        DBCol('movieID', INTCOL, notNone=True, index='idx_mid'),
-        DBCol('personRoleID', INTCOL, default=None, index='idx_cid'),
+        DBCol('personID', INTCOL, notNone=True, index='idx_pid',
+                foreignKey='Name'),
+        DBCol('movieID', INTCOL, notNone=True, index='idx_mid',
+                foreignKey='Title'),
+        DBCol('personRoleID', INTCOL, default=None, index='idx_cid',
+                foreignKey='CharName'),
         DBCol('note', UNICODECOL, default=None),
         DBCol('nrOrder', INTCOL, default=None),
-        DBCol('roleID', INTCOL, notNone=True)
+        DBCol('roleID', INTCOL, notNone=True, foreignKey='RoleType')
     ),
 
     DBTable('CompCastType',
@@ -249,9 +263,9 @@ DB_SCHEMA = [
 
     DBTable('CompleteCast',
         DBCol('id', INTCOL, notNone=True, alternateID=True),
-        DBCol('movieID', INTCOL, index='idx_mid'),
-        DBCol('subjectID', INTCOL, notNone=True),
-        DBCol('statusID', INTCOL, notNone=True)
+        DBCol('movieID', INTCOL, index='idx_mid', foreignKey='Title'),
+        DBCol('subjectID', INTCOL, notNone=True, foreignKey='CompCastType'),
+        DBCol('statusID', INTCOL, notNone=True, foreignKey='CompCastType')
     ),
 
     DBTable('InfoType',
@@ -268,31 +282,36 @@ DB_SCHEMA = [
 
     DBTable('MovieLink',
         DBCol('id', INTCOL, notNone=True, alternateID=True),
-        DBCol('movieID', INTCOL, notNone=True, index='idx_mid'),
-        DBCol('linkedMovieID', INTCOL, notNone=True),
-        DBCol('linkTypeID', INTCOL, notNone=True)
+        DBCol('movieID', INTCOL, notNone=True, index='idx_mid',
+                foreignKey='Title'),
+        DBCol('linkedMovieID', INTCOL, notNone=True, foreignKey='Title'),
+        DBCol('linkTypeID', INTCOL, notNone=True, foreignKey='LinkType')
     ),
 
     DBTable('MovieInfo',
         DBCol('id', INTCOL, notNone=True, alternateID=True),
-        DBCol('movieID', INTCOL, notNone=True, index='idx_mid'),
-        DBCol('infoTypeID', INTCOL, notNone=True),
+        DBCol('movieID', INTCOL, notNone=True, index='idx_mid',
+                foreignKey='Title'),
+        DBCol('infoTypeID', INTCOL, notNone=True, foreignKey='InfoType'),
         DBCol('info', UNICODECOL, notNone=True),
         DBCol('note', UNICODECOL, default=None)
     ),
 
     DBTable('MovieCompanies',
         DBCol('id', INTCOL, notNone=True, alternateID=True),
-        DBCol('movieID', INTCOL, notNone=True, index='idx_mid'),
-        DBCol('companyID', INTCOL, notNone=True, index='idx_cid'),
-        DBCol('companyTypeID', INTCOL, notNone=True),
+        DBCol('movieID', INTCOL, notNone=True, index='idx_mid',
+                foreignKey='Title'),
+        DBCol('companyID', INTCOL, notNone=True, index='idx_cid',
+                foreignKey='CompanyName'),
+        DBCol('companyTypeID', INTCOL, notNone=True, foreignKey='CompanyType'),
         DBCol('note', UNICODECOL, default=None)
     ),
 
     DBTable('PersonInfo',
         DBCol('id', INTCOL, notNone=True, alternateID=True),
-        DBCol('personID', INTCOL, notNone=True, index='idx_pid'),
-        DBCol('infoTypeID', INTCOL, notNone=True),
+        DBCol('personID', INTCOL, notNone=True, index='idx_pid',
+                foreignKey='Name'),
+        DBCol('infoTypeID', INTCOL, notNone=True, foreignKey='InfoType'),
         DBCol('info', UNICODECOL, notNone=True),
         DBCol('note', UNICODECOL, default=None)
     )
@@ -322,4 +341,12 @@ def createIndexes(tables, ifNotExists=True):
     """Create the indexes in the database."""
     for table in tables:
         table.addIndexes(ifNotExists)
+
+def createForeignKeys(tables, ifNotExists=True):
+    """Create Foreign Keys."""
+    mapTables = {}
+    for table in tables:
+        mapTables[table._imdbpyName] = table
+    for table in tables:
+        table.addForeignKeys(mapTables, ifNotExists)
 

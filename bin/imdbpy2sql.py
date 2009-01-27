@@ -5,7 +5,7 @@ imdbpy2sql.py script.
 This script puts the data of the plain text data files into a
 SQL database.
 
-Copyright 2005-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2009 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -2410,6 +2410,12 @@ def run():
     CACHE_CID.clear()
     t('fushing caches...')
 
+    if CSV_DIR:
+        print 'loading CSV files into the database'
+        executeCustomQueries('BEFORE_CSV_LOAD')
+        loadCSVFiles()
+        t('loadCSVFiles()')
+
     t('TOTAL TIME TO INSERT/WRITE DATA', sinceBegin=True)
     #print 'TOTAL TIME TO INSERT/WRITE DATA: %d minutes, %d seconds' % \
     #        divmod(int(time.time())-BEGIN_TIME, 60)
@@ -2422,11 +2428,11 @@ def run():
     createIndexes(DB_TABLES)
     t('createIndexes()')
 
-    if CSV_DIR:
-        print 'loading CSV files into the database'
-        executeCustomQueries('BEFORE_CSV_LOAD')
-        loadCSVFiles()
-        t('loadCSVFiles()')
+    print 'adding foreign keys (this may take a while)'
+    sys.stdout.flush()
+    # Add FK.
+    createForeignKeys(DB_TABLES)
+    t('createForeignKeys()')
 
     executeCustomQueries('END')
 

@@ -3,7 +3,7 @@ parser.sql.objectadapter module (imdb.parser.sql package).
 
 This module adpts the SQLObject ORM to the internal mechanism.
 
-Copyright 2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -56,6 +56,21 @@ def addIndexes(cls, ifNotExists=True):
 addIndexes = classmethod(addIndexes)
 
 
+import warnings
+def addForeignKeys(cls, mapTables, ifNotExists=True):
+    """Create all required foreign keys."""
+    for col in cls._imdbpySchema.cols:
+        if not col.foreignKey:
+            continue
+        warnings.warn('UNABLE TO ADD FOREIGN KEYS, IN SQLOBJECT!')
+        #cls.sqlmeta.delColumn('kindID', changeSchema=True)
+        #fk = ForeignKey("KindType", name='kind', default=None)
+        #cls.sqlmeta.addColumn(fk, changeSchema=True)
+        ##o = cls.sqlmeta.columns['kindID']
+        ##print o, type(o), dir(o)
+addForeignKeys = classmethod(addForeignKeys)
+
+
 # Module-level "cache" for SQLObject classes, to prevent
 # "class TheClass is already in the registry" errors, when
 # two or more connections to the database are made.
@@ -72,7 +87,7 @@ def getDBTables(uri=None):
             DB_TABLES.append(TABLES_REPOSITORY[table.name])
             continue
         attrs = {'_imdbpyName': table.name, '_imdbpySchema': table,
-                'addIndexes': addIndexes}
+                'addIndexes': addIndexes, 'addForeignKeys': addForeignKeys}
         for col in table.cols:
             if col.name == 'id':
                 continue

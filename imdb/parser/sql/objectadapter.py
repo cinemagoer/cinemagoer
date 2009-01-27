@@ -56,18 +56,71 @@ def addIndexes(cls, ifNotExists=True):
 addIndexes = classmethod(addIndexes)
 
 
-import warnings
+# Global repository for "fake" tables with Foreign Keys - need to
+# prevent troubles if addForeignKeys is called more than one time.
+FAKE_TABLES_REPOSITORY = {}
+
+def _buildFakeFKTable(cls, fakeTableName):
+    """Return a "fake" table, with foreign keys where needed."""
+    countCols = 0
+    attrs = {}
+    for col in cls._imdbpySchema.cols:
+        countCols += 1
+        if col.name == 'id':
+            continue
+        if not col.foreignKey:
+            # A non-foreign key column - add it as usual.
+            attrs[col.name] = MAP_COLS[col.kind](**col.params)
+            continue
+        # XXX: Foreign Keys pointing to TableName.ColName not yet supported.
+        thisColName = col.name
+        if thisColName.endswith('ID'):
+            thisColName = thisColName[:-2]
+
+        fks = col.foreignKey.split('.', 1)
+        foreignTableName = fks[0]
+        if len(fks) == 2:
+            foreignColName = fks[1]
+        else:
+            foreignColName = 'id'
+        # Unused...
+        fkName = 'fk_%s_%s_%d' % (foreignTableName, foreignColName,
+                                countCols)
+        # Create a Foreign Key column, with the correct references.
+        fk = ForeignKey(foreignTableName, name=thisColName, default=None)
+        attrs[thisColName] = fk
+    # Build a _NEW_ SQLObject subclass, with foreign keys, if needed.
+    newcls = type(fakeTableName, (SQLObject,), attrs)
+    return newcls
+
 def addForeignKeys(cls, mapTables, ifNotExists=True):
     """Create all required foreign keys."""
+    # Do not even try, if there are no FK, in this table.
+    if not filter(None, [col.foreignKey for col in cls._imdbpySchema.cols]):
+        return
+    fakeTableName = 'myfaketable%s' % cls.sqlmeta.table
+    if fakeTableName in FAKE_TABLES_REPOSITORY:
+        newcls = FAKE_TABLES_REPOSITORY[fakeTableName]
+    else:
+        newcls = _buildFakeFKTable(cls, fakeTableName)
+        FAKE_TABLES_REPOSITORY[fakeTableName] = newcls
+    # Connect the class with foreign keys.
+    newcls.setConnection(cls._connection)
     for col in cls._imdbpySchema.cols:
+        if col.name == 'id':
+            continue
         if not col.foreignKey:
             continue
-        warnings.warn('UNABLE TO ADD FOREIGN KEYS, IN SQLOBJECT!')
-        #cls.sqlmeta.delColumn('kindID', changeSchema=True)
-        #fk = ForeignKey("KindType", name='kind', default=None)
-        #cls.sqlmeta.addColumn(fk, changeSchema=True)
-        ##o = cls.sqlmeta.columns['kindID']
-        ##print o, type(o), dir(o)
+        # Get the SQL that _WOULD BE_ run, if we had to create
+        # this "fake" table.
+        fkQuery = newcls._connection.createReferenceConstraint(newcls,
+                                newcls.sqlmeta.columns[col.name])
+        # Remove "myfaketable" to get references to _real_ tables.
+        fkQuery = fkQuery.replace('myfaketable', '')
+        # Execute the query.
+        newcls._connection.query(fkQuery)
+    # Disconnect it.
+    cls._connection.close()
 addForeignKeys = classmethod(addForeignKeys)
 
 

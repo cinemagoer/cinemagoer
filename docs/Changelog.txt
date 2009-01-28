@@ -1,12 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090127 "Defiance" (27 Jan 2009)
+* What's the new in release 4.0dev20090128 "Schindler's List" (28 Jan 2009)
   [general]
   - the installer is now based on setuptools.
   - searching for movies and persons - if present - the 'akas' keyword
     is filled, in the results.
   - the old set of parsers (based on sgmllib.SGMLParser) are gone.
+  - fixed a bug converting somethingIDs to real imdbIDs.
   - updates to the documentation.
 
   [http]

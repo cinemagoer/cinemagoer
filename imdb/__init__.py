@@ -667,133 +667,64 @@ class IMDbBase:
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError, 'override this method'
 
-    def _searchIMDb(self, params):
-        """Fetch the given search page from the IMDb akas server."""
-        from imdb.parser.http import IMDbURLopener
-        url = imdbURL_find % params
-        content = u''
+    def _searchIMDb(self, kind, ton):
+        """Search the IMDb akas server for the given title or name."""
+        # The Exact Primary search system is gone AWL, so we resort
+        # to the mobile search. :-/
+        if not ton:
+            return None
+        aSystem = IMDb('mobile')
+        if kind == 'tt':
+            searchFunct = aSystem.search_movie
+            check = 'long imdb canonical title'
+        elif kind == 'nm':
+            searchFunct = aSystem.search_person
+            check = 'long imdb canonical name'
+        elif kind == 'char':
+            searchFunct = aSystem.search_character
+            check = 'long imdb canonical name'
+        elif kind == 'co':
+            # XXX: are [COUNTRY] codes included in the results?
+            searchFunct = aSystem.search_company
+            check = 'long imdb name'
         try:
-            urlOpener = IMDbURLopener()
-            content = urlOpener.retrieve_unicode(url)
-        except (IOError, IMDbDataAccessError):
-            pass
-        return content
+            searchRes = searchFunct(ton)
+        except IMDbError:
+            return None
+        # When only one result is returned, assume it was from an
+        # exact match.
+        if len(searchRes) == 1:
+            return searchRes[0].getID()
+        for item in searchRes:
+            # Return the first perfect match.
+            if item[check] == ton:
+                return item.getID()
+        return None
 
     def title2imdbID(self, title):
         """Translate a movie title (in the plain text data files format)
         to an imdbID.
         Try an Exact Primary Title search on IMDb;
         return None if it's unable to get the imdbID."""
-        if not title: return None
-        import urllib
-        if isinstance(title, unicode):
-            title = title.encode('utf-8')
-        params = 'q=%s;s=pt' % str(urllib.quote_plus(title))
-        content = self._searchIMDb(params)
-        if content and content[:512].find('<title>IMDb Title') != -1:
-            # Sometimes (e.g.: for titles with a "+" in it) a list
-            # of results is returned even for Exact Primary searches;
-            # this try to deal with it, hoping that a "normal" query
-            # will result in just on title.
-            params = 's=tt&q=%s' % str(urllib.quote_plus(title))
-            content = self._searchIMDb(params)
-        if not content: return None
-        from imdb.parser.http.searchMovieParser import DOMBasicMovieParser
-        mparser = DOMBasicMovieParser()
-        result = mparser.parse(content)
-        if not (result and result.get('data')): return None
-        return result['data'][0][0]
+        return self._searchIMDb('tt', title)
 
     def name2imdbID(self, name):
         """Translate a person name in an imdbID.
         Try an Exact Primary Name search on IMDb;
         return None if it's unable to get the imdbID."""
-        if not name: return None
-        import urllib
-        if isinstance(name, unicode):
-            name = name.encode('utf-8')
-        params = 'q=%s;s=pn' % str(urllib.quote_plus(name))
-        content = self._searchIMDb(params)
-        if content and content[:512].find('<title>IMDb Name') != -1:
-            params = 's=nm&q=%s' % str(urllib.quote_plus(name))
-            content = self._searchIMDb(params)
-        if not content: return None
-        from imdb.parser.http.searchPersonParser import DOMBasicPersonParser
-        pparser = DOMBasicPersonParser()
-        result = pparser.parse(content)
-        if not (result and result.get('data')): return None
-        return result['data'][0][0]
+        return self._searchIMDb('tt', name)
 
     def character2imdbID(self, name):
         """Translate a character name in an imdbID.
         Try an Exact Primary Name search on IMDb;
         return None if it's unable to get the imdbID."""
-        if not name: return None
-        import urllib
-        if isinstance(name, unicode):
-            name = name.encode('utf-8')
-        # XXX: s=pc is just a assumption of mine; it doesn't seem
-        #      to work, and I can't find a working alternative.
-        params = 'q=%s;s=pc' % str(urllib.quote_plus(name))
-        content = self._searchIMDb(params)
-        if not content: return None
-        if content[:512].find('<title>IMDb  Search') != -1:
-            from imdb.parser.http.searchCharacterParser import \
-                        DOMHTMLSearchCharacterParser
-            search_character_parser = DOMHTMLSearchCharacterParser()
-            result = search_character_parser.parse(content)
-            if not result: return None
-            if not result.has_key('data'): return None
-            if not result['data']: return None
-            # Try to read the first result.
-            chID, dname = result['data'][0]
-            if isinstance(dname.get('name'), unicode):
-                rname = dname['name'].encode('utf-8')
-            if name == rname:
-                return chID
-            return None
-        # XXX: still needed?
-        from imdb.parser.http.searchCharacterParser import \
-                    DOMBasicCharacterParser
-        cparser = DOMBasicCharacterParser()
-        result = cparser.parse(content)
-        if not (result and result.get('data')): return None
-        return result['data'][0][0]
+        return self._searchIMDb('char', name)
 
     def company2imdbID(self, name):
         """Translate a company name in an imdbID.
         Try an Exact Primary Name search on IMDb;
         return None if it's unable to get the imdbID."""
-        if not name: return None
-        import urllib
-        if isinstance(name, unicode):
-            name = name.encode('utf-8')
-        # XXX: s=pco is just a assumption of mine; it doesn't seem
-        #      to work, and I can't find a working alternative.
-        params = 'q=%s;s=pco' % str(urllib.quote_plus(name))
-        content = self._searchIMDb(params)
-        if not content: return None
-        if content[:512].find('<title>IMDb  Search') != -1:
-            from imdb.parser.http.searchCompanyParser import \
-                        DOMHTMLSearchCompanyParser
-            search_company_parser = DOMHTMLSearchCompanyParser()
-            result = search_company_parser.parse(content)
-            if not result: return None
-            if not result.has_key('data'): return None
-            if not result['data']: return None
-            # Try to read the first result.
-            chID, dname = result['data'][0]
-            if isinstance(dname.get('name'), unicode):
-                rname = dname['name'].encode('utf-8')
-            if name == rname:
-                return chID
-            return None
-        # Still needed?
-        from imdb.parser.http.searchCompanyParser import DOMBasicCompanyParser
-        cparser = DOMBasicCompanyParser()
-        result = cparser.parse(content)
-        if not (result and result.get('data')): return None
-        return result['data'][0][0]
+        return self._searchIMDb('co', name)
 
     def get_imdbID(self, mop):
         """Return the imdbID for the given Movie, Person, Character or Company

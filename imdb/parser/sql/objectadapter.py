@@ -120,7 +120,7 @@ def addForeignKeys(cls, mapTables, ifNotExists=True):
         # Execute the query.
         newcls._connection.query(fkQuery)
     # Disconnect it.
-    cls._connection.close()
+    newcls._connection.close()
 addForeignKeys = classmethod(addForeignKeys)
 
 

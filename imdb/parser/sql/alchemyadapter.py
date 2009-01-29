@@ -373,7 +373,10 @@ class TableAdapter(object):
             constrain = migrate.changeset.ForeignKeyConstraint([thisCol],
                                                         [foreignCol],
                                                         name=fkName)
-            constrain.create()
+            try:
+                constrain.create()
+            except exc.OperationalError:
+                continue
 
     def __call__(self, *args, **kwds):
         """To insert a new row with the syntax: TableClass(key=value, ...)"""

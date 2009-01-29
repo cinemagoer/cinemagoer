@@ -115,6 +115,9 @@ def addForeignKeys(cls, mapTables, ifNotExists=True):
         # this "fake" table.
         fkQuery = newcls._connection.createReferenceConstraint(newcls,
                                 newcls.sqlmeta.columns[col.name])
+        if not fkQuery:
+            # Probably the db doesn't support foreign keys (SQLite).
+            continue
         # Remove "myfaketable" to get references to _real_ tables.
         fkQuery = fkQuery.replace('myfaketable', '')
         # Execute the query.

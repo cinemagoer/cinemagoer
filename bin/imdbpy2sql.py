@@ -2470,7 +2470,7 @@ if __name__ == '__main__':
         sys.stdout.flush()
         #import DONOTIMPORTPSYCO
         import psyco
-        psyco.log()
+        #psyco.log()
         psyco.profile()
         print 'DONE!'
         print ''

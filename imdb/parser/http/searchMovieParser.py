@@ -82,6 +82,8 @@ def custom_analyze_title(title):
     nt = title.split('    ')[0]
     if nt:
         title = nt
+    if not title:
+        return {}
     return analyze_title(title, canonical=1)
 
 # Manage AKAs.

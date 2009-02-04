@@ -228,7 +228,7 @@ class IMDbBase:
     # in the subclasses).
     accessSystem = 'UNKNOWN'
 
-    def __init__(self, defaultModFunct=None, results=20,
+    def __init__(self, defaultModFunct=None, results=20, keywordsResults=100,
                 *arguments, **keywords):
         """Initialize the access system.
         If specified, defaultModFunct is the function used by
@@ -246,6 +246,13 @@ class IMDbBase:
         if results < 1:
             results = 20
         self._results = results
+        try:
+            keywordsResults = int(keywordsResults)
+        except (TypeError, ValueError):
+            keywordsResults = 100
+        if keywordsResults < 1:
+            keywordsResults = 100
+        self._keywordsResults = keywordsResults
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -510,6 +517,47 @@ class IMDbBase:
         return [Company.Company(companyID=self._get_real_companyID(pi),
                 data=pd, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for pi, pd in res][:results]
+
+    def _search_keyword(self, keyword, results):
+        """Return a list of 'keyword' strings."""
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        raise NotImplementedError, 'override this method'
+
+    def search_keyword(self, keyword, results=None):
+        """Search for existing keywords, similar to the given one."""
+        if results is None:
+            results = self._keywordsResults
+        try:
+            results = int(results)
+        except (ValueError, OverflowError):
+            results = 100
+        if not isinstance(keyword, unicode):
+            keyword = unicode(keyword, encoding, 'replace')
+        return self._search_keyword(keyword, results)
+
+    def _get_keyword(self, keyword, results):
+        """Return a list of tuples (movieID, {movieData})"""
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        raise NotImplementedError, 'override this method'
+
+    def get_keyword(self, keyword, results=None):
+        """Return a list of movies for the given keyword."""
+        if results is None:
+            results = self._keywordsResults
+        try:
+            results = int(results)
+        except (ValueError, OverflowError):
+            results = 100
+        # XXX: I suppose it will be much safer if the user provides
+        #      an unicode string... this is just a guess.
+        if not isinstance(keyword, unicode):
+            keyword = unicode(keyword, encoding, 'replace')
+        res = self._get_keyword(keyword, results)
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                data=md, modFunct=self._defModFunct,
+                accessSystem=self.accessSystem) for mi, md in res][:results]
 
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""

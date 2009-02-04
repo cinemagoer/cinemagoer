@@ -39,7 +39,8 @@ from personParser import getFilmography, getBio, getAkaNames
 from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
                         getPlot, getRatingData, getMovieMisc, getTaglines, \
                         getQuotes, getMovieLinks, getBusiness, getLiterature, \
-                        getLaserdisc, getMPAA
+                        getLaserdisc, getMPAA, searchSimilarKeywords, \
+                        getKeywordMovies
 from characterParser import getCharacterName, getCharacterFilmography
 from companyParser import getCompanyName, getCompanyFilmography, getCompanyID
 from utils import getFullIndex, KeyFScan, latin2utf
@@ -962,4 +963,14 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         if filmography:
             res.update(filmography)
         return {'data': res}
+
+    def _search_keyword(self, keyword, results):
+        return searchSimilarKeywords(keyword,
+                            '%skeywords.data' % self.__db)[:results]
+
+    def _get_keyword(self, keyword, results):
+        return [(movieID, analyze_title(getLabel(movieID,
+                '%stitles.index' % self.__db, '%stitles.key' % self.__db)))
+                for movieID in getKeywordMovies(keyword,
+                    '%skeywords.data' % self.__db)][:results]
 

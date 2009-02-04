@@ -3,7 +3,7 @@ parser.sql package (imdb package).
 
 This package provides the IMDbSqlAccessSystem class used to access
 IMDb's data through a SQL database.  Every database supported by
-the SQLObject Object Relational Manager is available.
+the SQLObject _AND_ SQLAlchemy Object Relational Managers is available.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "sql", "database" or "db".
 
@@ -31,7 +31,8 @@ import warnings
 
 from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                     scan_names, scan_titles, titleVariations, \
-                    nameVariations, merge_roles, scan_company_names
+                    nameVariations, merge_roles, scan_company_names, \
+                    soundex, filterSimilarKeywords
 from imdb.utils import normalizeTitle, normalizeName, build_title, \
                         build_name, analyze_name, analyze_title, \
                         build_company_name, re_episodes, _articles
@@ -39,32 +40,6 @@ from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb.Company import Company
 from imdb._exceptions import IMDbDataAccessError, IMDbError
-
-try:
-    from imdb.parser.common.cutils import soundex
-except ImportError:
-    warnings.warn('Unable to import the cutils.soundex function.'
-                    '  Searches of movie titles and person names will be'
-                    ' a bit slower.')
-
-    _translate = dict(B='1', C='2', D='3', F='1', G='2', J='2', K='2', L='4',
-                      M='5', N='5', P='1', Q='2', R='6', S='2', T='3', V='1',
-                      X='2', Z='2')
-    _translateget = _translate.get
-
-    def soundex(s):
-        """Return the soundex code for the given string."""
-        # Maximum length of the soundex code.
-        SOUNDEX_LEN = 5
-        if not s: return None
-        s = s.upper()
-        soundCode =  s[0]
-        for c in s[1:]:
-            cw = _translateget(c, '0')
-            if cw != '0' and soundCode[-1] != cw:
-                soundCode += cw
-        return soundCode[:SOUNDEX_LEN]
-
 
 _litlist = ['screenplay/teleplay', 'novel', 'adaption', 'book',
             'production process protocol', 'interviews',
@@ -151,6 +126,13 @@ def get_movie_data(movieID, kindDict, fromAka=0):
     return mdict
 
 
+def _iterKeywords(results):
+    """Iterate over (key.id, key.keyword) columns of a selection of
+    the Keyword table."""
+    for key in results:
+        yield key.id, key.keyword
+
+
 class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     """The class used to access IMDb's data through a SQL database."""
 
@@ -176,11 +158,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 if mod == 'sqlalchemy':
                     from alchemyadapter import getDBTables, NotFoundError, \
                                                 setConnection, AND, OR, IN, \
-                                                ISNULL, toUTF8
+                                                ISNULL, CONTAINSSTRING, toUTF8
                 elif mod == 'sqlobject':
                     from objectadapter import getDBTables, NotFoundError, \
                                                 setConnection, AND, OR, IN, \
-                                                ISNULL, toUTF8
+                                                ISNULL, CONTAINSSTRING, toUTF8
                 else:
                     warnings.warn('unknown module "%s".' % mod)
                     continue
@@ -189,7 +171,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 #      through the whole module.
                 for k, v in [('NotFoundError', NotFoundError),
                             ('AND', AND), ('OR', OR), ('IN', IN),
-                            ('ISNULL', ISNULL)]:
+                            ('ISNULL', ISNULL),
+                            ('CONTAINSSTRING', CONTAINSSTRING)]:
                     globals()[k] = v
                 self.toUTF8 = toUTF8
                 DB_TABLES = getDBTables(uri)
@@ -593,6 +576,10 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # Info about the movie.
         minfo = [(self._info[m.infoTypeID], m.info, m.note)
                 for m in MovieInfo.select(MovieInfo.q.movieID == movieID)]
+        minfo += [(self._info[m.infoTypeID], m.info, m.note)
+                for m in MovieInfoIdx.select(MovieInfoIdx.q.movieID == movieID)]
+        minfo += [('keywords', Keyword.get(m.keywordID).keyword, None)
+                for m in MovieKeyword.select(MovieKeyword.q.movieID == movieID)]
         minfo = _groupListBy(minfo, 0)
         for group in minfo:
             sect = group[0][0]
@@ -1076,6 +1063,23 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 res.setdefault(ctype, []).append(movie)
             res.get(ctype, []).sort()
         return {'data': res, 'info sets': infosets}
+
+    def _search_keyword(self, keyword, results):
+        # XXX: check if soundex is empty.
+        keyword = keyword.encode('ascii', 'ignore')
+        constr = OR(Keyword.q.phoneticCode == soundex(keyword),
+                    CONTAINSSTRING(Keyword.q.keyword, keyword))
+        return filterSimilarKeywords(keyword,
+                        _iterKeywords(Keyword.select(constr)))[:results]
+
+    def _get_keyword(self, keyword, results):
+        keyID = Keyword.select(Keyword.q.keyword == keyword)
+        if keyID.count() == 0:
+            return []
+        keyID = keyID[0].id
+        movies = MovieKeyword.select(MovieKeyword.q.keywordID ==
+                                    keyID)[:results]
+        return [(m.id, get_movie_data(m.id, self._kind)) for m in movies]
 
     def __del__(self):
         """Ensure that the connection is closed."""

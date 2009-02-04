@@ -29,7 +29,8 @@ from gzip import GzipFile
 from types import UnicodeType
 from imdb.parser.sql.dbschema import *
 
-from imdb.parser.sql import soundex, get_movie_data
+from imdb.parser.common.locsql import soundex
+from imdb.parser.sql import get_movie_data
 from imdb.utils import analyze_title, analyze_name, \
         build_name, build_title, normalizeName, _articles, \
         build_company_name, analyze_company_name
@@ -893,6 +894,7 @@ class _BaseCache(dict):
             except Exception, e:
                 if isinstance(e, KeyboardInterrupt):
                     raise
+                raise
                 print 'WARNING: unknown exception caught committing the data'
                 print 'WARNING: to the database; report this as a bug, since'
                 print 'WARNING: many data (%d items) were lost: %s' % \
@@ -927,7 +929,7 @@ class _BaseCache(dict):
     def addUnique(self, key, miscData=None):
         """Insert a new key and return its value; if the key is already
         in the dictionary, its previous  value is returned."""
-        if self.has_key(key): return self[key]
+        if key in self: return self[key]
         else: return self.add(key, miscData)
 
 
@@ -1203,6 +1205,49 @@ class CompaniesCache(_BaseCache):
             if k != name:
                 namePcodeSf = soundex(k)
             lapp((v, name, country, None, namePcodeNf, namePcodeSf))
+        if not CSV_DIR:
+            CURS.executemany(self.sqlstr, self.converter(l))
+        else:
+            CSV_CURS.executemany(self.sqlstr, l)
+
+
+class KeywordsCache(_BaseCache):
+    """Manage the list of keywords."""
+    counter = counter()
+    className = 'KeywordsCache'
+
+    def __init__(self, *args, **kwds):
+        _BaseCache.__init__(self, *args, **kwds)
+        self._table_name = tableName(CompanyName)
+        self._id_for_custom_q = 'KEYWORDS'
+        self.flushEvery = 10000
+        self.sqlstr, self.converter = createSQLstr(Keyword, ['id', 'keyword',
+                                'phoneticCode'])
+
+    def populate(self):
+        print ' * POPULATING KeywordsCache...'
+        nameTbl = tableName(CompanyName)
+        keywordidCol = colName(Keyword, 'id')
+        keyCol = colName(Keyword, 'name')
+        CURS.execute('SELECT %s, %s FROM %s;' % (keywordidCol, keyCol,
+                                                    nameTbl))
+        _oldcacheValues = Keyword.sqlmeta.cacheValues
+        Keyword.sqlmeta.cacheValues = False
+        for x in fetchsome(CURS, self.flushEvery):
+            dict.__setitem__(self, x[1], x[0])
+        self.counter = counter(Keyword.select().count() + 1)
+        Keyword.sqlmeta.cacheValues = _oldcacheValues
+
+    def _toDB(self, quiet=0):
+        if not quiet:
+            print ' * FLUSHING KeywordsCache...'
+            sys.stdout.flush()
+        l = []
+        lapp = l.append
+        tmpDictiter = self._tmpDict.iteritems
+        for k, v in tmpDictiter():
+            keySoundex = soundex(k)
+            lapp((v, k, keySoundex))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
         else:
@@ -1971,8 +2016,6 @@ def doMovieCompaniesInfo():
 
 def doMiscMovieInfo():
     """Files with information on a single line about movies."""
-    sqldata = SQLData(table=MovieInfo,
-                cols=['movieID', 'infoTypeID', 'info', 'note'])
     for dataf in (('certificates.list.gz',CER_START),
                     ('color-info.list.gz',COL_START),
                     ('countries.list.gz',COU_START),
@@ -1992,6 +2035,12 @@ def doMiscMovieInfo():
         if typeindex == 'running times': typeindex = 'runtimes'
         elif typeindex == 'technical': typeindex = 'tech info'
         elif typeindex == 'language': typeindex = 'languages'
+        if typeindex != 'keywords':
+            sqldata = SQLData(table=MovieInfo,
+                        cols=['movieID', 'infoTypeID', 'info', 'note'])
+        else:
+            sqldata = SQLData(table=MovieKeyword,
+                        cols=['movieID', 'keywordID'])
         infoid =  INFO_TYPES[typeindex]
         count = 0
         if dataf[0] == 'locations.list.gz':
@@ -2010,9 +2059,17 @@ def doMiscMovieInfo():
             if count % 10000 == 0:
                 print 'SCANNING %s:' % dataf[0][:-8].replace('-', ' '),
                 print _(data['title'])
-            sqldata.add((mid, infoid, data['info'], note))
+            info = data['info']
+            if typeindex == 'keywords':
+                keywordID = CACHE_KWRDID.addUnique(info)
+                sqldata.add((mid, keywordID))
+            else:
+                sqldata.add((mid, infoid, info, note))
             count += 1
         sqldata.flush()
+        if typeindex == 'keywords':
+            CACHE_KWRDID.flush()
+            CACHE_KWRDID.clear()
         fp.close()
         t('doMiscMovieInfo(%s)' % dataf[0][:-8].replace('-', ' '))
 
@@ -2048,7 +2105,7 @@ def getTopBottomRating():
         else: st = RAT_BOT10_START
         try: fp = SourceFile('ratings.list.gz', start=st, stop=TOPBOT_STOP)
         except IOError: break
-        sqldata = SQLData(table=MovieInfo,
+        sqldata = SQLData(table=MovieInfoIdx,
                     cols=['movieID',
                         RawValue('infoTypeID', INFO_TYPES[what]),
                         'info', 'note'])
@@ -2123,6 +2180,7 @@ CACHE_PID = PersonsCache()
 CACHE_CID = CharactersCache()
 CACHE_CID.className = 'CharactersCache'
 CACHE_COMPID = CompaniesCache()
+CACHE_KWRDID = KeywordsCache()
 
 def _cmpfunc(x, y):
     """Sort a list of tuples, by the length of the first item (in reverse)."""

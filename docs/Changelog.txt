@@ -1,9 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090128 "Schindler's List" (28 Jan 2009)
+* What's the new in release 4.0dev20090204 "Valkyrie" (04 Feb 2009)
   [general]
   - the installer is now based on setuptools.
+  - new functions get_keyword and search_keyword to handle movie's keywords.
   - searching for movies and persons - if present - the 'akas' keyword
     is filled, in the results.
   - the old set of parsers (based on sgmllib.SGMLParser) are gone.
@@ -12,12 +13,14 @@
 
   [http]
   - adapted BeautifulSoup to lxml (internally, the lxml API is used).
+  - fixed a bug search for too common terms.
   - fixed a bug identifying 'kind', searching for titles.
 
   [sql]
   - searching for a movie, the original titles are returned, instead
     of AKAs.
   - support for Foreign Keys.
+  - minor changes to the db's design.
   - fixed a bug populating tables with SQLAlchemy.
   - imdbpy2sql.py shows user time and system time, along with wall time.
 

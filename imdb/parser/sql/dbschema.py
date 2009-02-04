@@ -1,3 +1,4 @@
+#-*- encoding: utf-8 -*-
 """
 parser.sql.dbschema module (imdb.parser.sql package).
 
@@ -280,6 +281,27 @@ DB_SCHEMA = [
         values=linkTypeDefs
     ),
 
+    DBTable('Keyword',
+        DBCol('id', INTCOL, notNone=True, alternateID=True),
+        # XXX: can't use alternateID=True, because it would create
+        #      a UNIQUE index; unfortunately (at least with a common
+        #      collation like utf8_unicode_ci) MySQL will consider
+        #      some different keywords identical - like
+        #      "fiancée" and "fiancee".
+        DBCol('keyword', STRINGCOL, length=255, notNone=True,
+                index='idx_keyword', indexLen=5),
+        DBCol('phoneticCode', STRINGCOL, length=5, default=None,
+                index='idx_pcode')
+    ),
+
+    DBTable('MovieKeyword',
+        DBCol('id', INTCOL, notNone=True, alternateID=True),
+        DBCol('movieID', INTCOL, notNone=True, index='idx_mid',
+                foreignKey='Title'),
+        DBCol('keywordID', INTCOL, notNone=True, index='idx_keywordid',
+                foreignKey='Keyword')
+    ),
+
     DBTable('MovieLink',
         DBCol('id', INTCOL, notNone=True, alternateID=True),
         DBCol('movieID', INTCOL, notNone=True, index='idx_mid',
@@ -294,6 +316,16 @@ DB_SCHEMA = [
                 foreignKey='Title'),
         DBCol('infoTypeID', INTCOL, notNone=True, foreignKey='InfoType'),
         DBCol('info', UNICODECOL, notNone=True),
+        DBCol('note', UNICODECOL, default=None)
+    ),
+
+    DBTable('MovieInfoIdx',
+        DBCol('id', INTCOL, notNone=True, alternateID=True),
+        DBCol('movieID', INTCOL, notNone=True, index='idx_mid',
+                foreignKey='Title'),
+        DBCol('infoTypeID', INTCOL, notNone=True, index='idx_infotypeid',
+                foreignKey='InfoType'),
+        DBCol('info', UNICODECOL, notNone=True, index='idx_info', indexLen=10),
         DBCol('note', UNICODECOL, default=None)
     ),
 

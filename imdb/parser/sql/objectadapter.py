@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from sqlobject import *
-from sqlobject.sqlbuilder import ISNULL, ISNOTNULL, AND, OR, IN
+from sqlobject.sqlbuilder import ISNULL, ISNOTNULL, AND, OR, IN, CONTAINSSTRING
 
 from dbschema import *
 
@@ -52,7 +52,12 @@ def addIndexes(cls, ifNotExists=True):
                 continue
             idx = DatabaseIndex(colToIdx, name=idxName)
             cls.sqlmeta.addIndex(idx)
-    cls.createIndexes(ifNotExists)
+    try:
+        cls.createIndexes(ifNotExists)
+    except dberrors.OperationalError, e:
+        import warnings
+        warnings.warn('Skipping creation of the %s.%s index: %s' %
+                        (cls.sqlmeta.table, col.name, e))
 addIndexes = classmethod(addIndexes)
 
 

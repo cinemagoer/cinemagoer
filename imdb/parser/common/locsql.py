@@ -4,7 +4,7 @@ locsql module (imdb.parser.common package).
 This module provides some functions and classes shared amongst
 "local" and "sql" parsers.
 
-Copyright 2005-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -397,5 +397,71 @@ def scan_company_names(name_list, name1, results=0, ro_thresold=None):
     res.reverse()
     if results > 0: res[:] = res[:results]
     return res
+
+
+try:
+    from imdb.parser.common.cutils import soundex
+except ImportError:
+    warnings.warn('Unable to import the cutils.soundex function.'
+                    '  Searches of movie titles and person names will be'
+                    ' a bit slower.')
+
+    _translate = dict(B='1', C='2', D='3', F='1', G='2', J='2', K='2', L='4',
+                      M='5', N='5', P='1', Q='2', R='6', S='2', T='3', V='1',
+                      X='2', Z='2')
+    _translateget = _translate.get
+
+    def soundex(s):
+        """Return the soundex code for the given string."""
+        # Maximum length of the soundex code.
+        SOUNDEX_LEN = 5
+        if not s: return None
+        s = s.upper()
+        soundCode =  s[0]
+        for c in s[1:]:
+            cw = _translateget(c, '0')
+            if cw != '0' and soundCode[-1] != cw:
+                soundCode += cw
+        return soundCode[:SOUNDEX_LEN]
+
+
+def _sortKeywords(keyword, kwds):
+    """Sort a list of keywords, based on the searched one."""
+    sm = SequenceMatcher()
+    sm.set_seq1(keyword.lower())
+    ratios = [(ratcliff(keyword, k, sm), k) for k in kwds]
+    checkContained = False
+    if len(keyword) > 4:
+        checkContained = True
+    for idx, data in enumerate(ratios):
+        ratio, key = data
+        if key.startswith(keyword):
+            ratios[idx] = (ratio+0.5, key)
+        elif checkContained and keyword in key:
+            ratios[idx] = (ratio+0.3, key)
+    ratios.sort()
+    ratios.reverse()
+    return [r[1] for r in ratios]
+
+
+def filterSimilarKeywords(keyword, kwdsIterator):
+    """Return a sorted list of keywords similar to the one given."""
+    seenDict = {}
+    kwdSndx = soundex(keyword)
+    matches = []
+    matchesappend = matches.append
+    checkContained = False
+    if len(keyword) > 4:
+        checkContained = True
+    for movieID, key in kwdsIterator:
+        if key in seenDict:
+            continue
+        seenDict[key] = None
+        if checkContained and keyword in key:
+            matchesappend(key)
+            continue
+        if kwdSndx == soundex(key.encode('ascii', 'ignore')):
+            matchesappend(key)
+    return _sortKeywords(keyword, matches)
 
 

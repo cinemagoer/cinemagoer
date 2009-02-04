@@ -5,7 +5,7 @@ This module provides the functions used to parse the
 information about movies in a local installation of the
 IMDb database.
 
-Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ from os import stat
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb._exceptions import IMDbDataAccessError
+from imdb.parser.common.locsql import filterSimilarKeywords
 from characterParser import getCharactersIDs
 from utils import convBin, getRawData, getFullIndex, getLabel, latin2utf
 
@@ -420,4 +421,37 @@ def getMovieMisc(movieID, dataF, indexF, attrIF, attrKF):
     fdata.close()
     return result
 
+
+def iterKeywords(kwdFN, _onlyForKeyword=None):
+    """Iter over keywords file; if _onlyForKeyword is a string,
+    only the matching (movieID, keyword) tuples are returned."""
+    # XXX: quite slow - it's a good candidate for a C function.
+    try:
+        kwdFile = open(kwdFN, 'rb')
+    except IOError, e:
+        raise IMDbDataAccessError, str(e)
+    kwdFileread = kwdFile.read
+    while True:
+        movieIDbin = kwdFileread(3)
+        if len(movieIDbin) != 3:
+            break
+        movieID = convBin(movieIDbin, 'movieID')
+        rawLen = kwdFileread(1)
+        bytesLen = ord(rawLen)
+        key = latin2utf(kwdFileread(bytesLen))
+        if _onlyForKeyword is None or key == _onlyForKeyword:
+            yield movieID, key
+        kwdFileread(3)
+    kwdFile.close()
+
+
+def getKeywordMovies(keyword, kwdFN):
+    """Return a list of movieIDs that have the given keyword."""
+    return list(idk[0] for idk in iterKeywords(kwdFN, _onlyForKeyword=keyword))
+
+
+def searchSimilarKeywords(keyword, kwdFN):
+    """Return a sorted list of keywords similar to the one given."""
+    keyword = keyword.encode('ascii', 'ignore')
+    return filterSimilarKeywords(keyword, iterKeywords(kwdFN))
 

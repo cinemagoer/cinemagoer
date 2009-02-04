@@ -334,7 +334,11 @@ class TableAdapter(object):
         #      follow the SQLObject convention, but includes the table name:
         #      sqlite, for example, expects index names to be unique at
         #      db-level.
-        idx.create()
+        try:
+            idx.create()
+        except exc.OperationalError, e:
+            warnings.warn('Skipping creation of the %s.%s index: %s' %
+                            (self.sqlmeta.table, col.name, e))
 
     def addIndexes(self, ifNotExists=True):
         """Create all required indexes."""
@@ -435,6 +439,10 @@ def ISNULL(x):
 def ISNOTNULL(x):
     """Emulate SQLObject's ISNOTNULL."""
     return x != None
+
+def CONTAINSSTRING(expr, pattern):
+    """Emulate SQLObject's CONTAINSSTRING."""
+    return expr.like('%%%s%%' % pattern)
 
 
 def toUTF8(s):

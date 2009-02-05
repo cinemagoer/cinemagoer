@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from imdb.Movie import Movie
+from imdb.Person import Person
 from imdb.utils import analyze_name, canonicalName, normalizeName, \
                         analyze_title, date_and_notes
 from utils import build_movie, DOMParserBase, Attribute, Extractor, \
@@ -138,6 +139,16 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             (_reRoles, _manageRoles)]
 
 
+def _build_spouse(spouse):
+    link = spouse.get('link')
+    if not link:
+        return "%s::%s" % \
+               (spouse.get('name').strip(), spouse.get('info').strip())
+    imdbid = analyze_imdbid(link)
+    return Person(name=spouse.get('name').strip(), personID=imdbid,
+                  notes=spouse.get('info').strip())
+
+
 class DOMHTMLBioParser(DOMParserBase):
     """Parser for the "biography" page of a given person.
     The page should be provided as a string, as taken from
@@ -214,11 +225,10 @@ class DOMHTMLBioParser(DOMParserBase):
                             multi=True,
                             path={
                                 'name': "./td[1]//text()",
+                                'link': "./td[1]/a/@href",
                                 'info': "./td[2]//text()"
                                 },
-                            postprocess=lambda x: "%s::%s" % \
-                                            (x.get('name').strip(),
-                                                x.get('info').strip()))),
+                            postprocess=lambda x: _build_spouse(x))),
             Extractor(label='trade mark',
                         path="//div[h5='Trade Mark']/p",
                         attrs=Attribute(key='trade mark',

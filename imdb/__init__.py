@@ -56,6 +56,8 @@ imdbURL_character_main = imdbURL_character_base + 'ch%s/'
 imdbURL_company_base = '%scompany/' % imdbURL_base
 # http://akas.imdb.com/company/co%s/
 imdbURL_company_main = imdbURL_company_base + 'co%s/'
+# http://akas.imdb.com/keyword/%s/
+imdbURL_keyword_main = imdbURL_base + 'keyword/%s/'
 # http://akas.imdb.com/find?%s
 imdbURL_find = imdbURL_base + 'find?%s'
 

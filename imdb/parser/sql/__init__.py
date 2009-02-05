@@ -1066,8 +1066,8 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
 
     def _search_keyword(self, keyword, results):
         # XXX: check if soundex is empty.
-        keyword = keyword.encode('ascii', 'ignore')
-        constr = OR(Keyword.q.phoneticCode == soundex(keyword),
+        constr = OR(Keyword.q.phoneticCode ==
+                    soundex(keyword.encode('ascii', 'ignore')),
                     CONTAINSSTRING(Keyword.q.keyword, keyword))
         return filterSimilarKeywords(keyword,
                         _iterKeywords(Keyword.select(constr)))[:results]

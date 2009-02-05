@@ -452,6 +452,5 @@ def getKeywordMovies(keyword, kwdFN):
 
 def searchSimilarKeywords(keyword, kwdFN):
     """Return a sorted list of keywords similar to the one given."""
-    keyword = keyword.encode('ascii', 'ignore')
     return filterSimilarKeywords(keyword, iterKeywords(kwdFN))
 

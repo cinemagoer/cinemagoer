@@ -447,7 +447,7 @@ def _sortKeywords(keyword, kwds):
 def filterSimilarKeywords(keyword, kwdsIterator):
     """Return a sorted list of keywords similar to the one given."""
     seenDict = {}
-    kwdSndx = soundex(keyword)
+    kwdSndx = soundex(keyword.encode('ascii', 'ignore'))
     matches = []
     matchesappend = matches.append
     checkContained = False

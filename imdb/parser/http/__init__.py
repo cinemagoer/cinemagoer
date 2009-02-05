@@ -31,7 +31,8 @@ from urllib import FancyURLopener, quote_plus
 from codecs import lookup
 
 from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, \
-                imdbURL_character_main, imdbURL_company_main, imdbURL_find
+                imdbURL_character_main, imdbURL_company_main, \
+                imdbURL_keyword_main, imdbURL_find
 from imdb.utils import analyze_title
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 
@@ -39,6 +40,7 @@ import searchMovieParser
 import searchPersonParser
 import searchCharacterParser
 import searchCompanyParser
+import searchKeywordParser
 import movieParser
 import personParser
 import characterParser
@@ -266,6 +268,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
                                     oldParsers=oldParsers, useModule=useModule,
                                     fallBackToNew=fallBackToNew)
         self.scompProxy = _ModuleProxy(searchCompanyParser, defaultKeys=_def,
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
+        self.skProxy = _ModuleProxy(searchKeywordParser, defaultKeys=_def,
                                     oldParsers=oldParsers, useModule=useModule,
                                     fallBackToNew=fallBackToNew)
         self.mProxy = _ModuleProxy(movieParser, defaultKeys=_def,
@@ -690,5 +695,25 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(imdbURL_company_main % companyID)
         ret = self.compProxy.company_main_parser.parse(cont)
         return ret
+
+    def _search_keyword(self, keyword, results):
+        # XXX: the IMDb web server seems to have some serious problem with
+        #      non-ascii keyword.
+        #      E.g.: http://akas.imdb.com/keyword/fianc%E9/
+        #      will return a 500 Internal Server Error: Redirect Recursion.
+        keyword = keyword.encode('utf8', 'ignore')
+        try:
+            cont = self._get_search_content('kw', keyword, results)
+        except IMDbDataAccessError:
+            return []
+        return self.skProxy.search_keyword_parser.parse(cont, results=results)['data']
+
+    def _get_keyword(self, keyword, results):
+        keyword = keyword.encode('utf8', 'ignore')
+        try:
+            cont = self._retrieve(imdbURL_keyword_main % keyword)
+        except IMDbDataAccessError:
+            return []
+        return self.skProxy.search_moviekeyword_parser.parse(cont, results=results)['data']
 
 

@@ -133,6 +133,41 @@ def _iterKeywords(results):
         yield key.id, key.keyword
 
 
+def getSingleInfo(table, movieID, infoType, notAList=False):
+    """Return a dictionary in the form {infoType: infoListOrString},
+    retrieving a single set of information about a given movie, from
+    the specified table."""
+    infoTypeID = InfoType.select(InfoType.q.info == infoType)
+    if infoTypeID.count() == 0:
+        return {}
+    res = table.select(AND(table.q.movieID == movieID,
+                        table.q.infoTypeID == infoTypeID[0].id))
+    retList = []
+    for r in res:
+        info = r.info
+        note = r.note
+        if note:
+            info += u'::%s' % note
+        retList.append(info)
+    if not retList:
+        return {}
+    if not notAList: return {infoType: retList}
+    else: return {infoType: retList[0]}
+
+
+def _cmpTop(a, b, what='top 250 rank'):
+    """Compare function used to sort top 250/bottom 10 rank."""
+    av = int(a[1].get(what))
+    bv = int(b[1].get(what))
+    if av == bv:
+        return 0
+    return (1, -1)[av > bv]
+
+def _cmpBottom(a, b):
+    """Compare function used to sort top 250/bottom 10 rank."""
+    return _cmpTop(a, b, what='bottom 10 rank')
+
+
 class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     """The class used to access IMDb's data through a SQL database."""
 
@@ -695,6 +730,12 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if res.has_key('guest'):
             res['guests'] = res['guest']
             del res['guest']
+        if 'top 250 rank' in res:
+            try: res['top 250 rank'] = int(res['top 250 rank'])
+            except: pass
+        if 'bottom 10 rank' in res:
+            try: res['bottom 10 rank'] = int(res['bottom 10 rank'])
+            except: pass
         trefs,nrefs = {}, {}
         trefs,nrefs = self._extractRefs(sub_dict(res,Movie.keys_tomodify_list))
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
@@ -1079,7 +1120,38 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         keyID = keyID[0].id
         movies = MovieKeyword.select(MovieKeyword.q.keywordID ==
                                     keyID)[:results]
-        return [(m.id, get_movie_data(m.id, self._kind)) for m in movies]
+        return [(m.movieID, get_movie_data(m.movieID, self._kind))
+                for m in movies]
+
+    def _get_top_bottom_movies(self, kind):
+        if kind == 'top':
+            kind = 'top 250 rank'
+        elif kind == 'bottom':
+            # Not a refuse: the plain text data files contains only
+            # the bottom 10 movies.
+            kind = 'bottom 10 rank'
+        else:
+            return []
+        infoID = InfoType.select(InfoType.q.info == kind)
+        if infoID.count() == 0:
+            return []
+        infoID = infoID[0].id
+        movies = MovieInfoIdx.select(MovieInfoIdx.q.infoTypeID == infoID)
+        ml = []
+        for m in movies:
+            minfo = get_movie_data(m.movieID, self._kind)
+            # XXX: move these information in MovieInfoIdx?
+            for k in 'votes', 'rating', 'votes distribution':
+                minfo.update(getSingleInfo(MovieInfo, m.movieID, k,
+                            notAList=True))
+            rank = getSingleInfo(MovieInfoIdx, m.movieID, kind, notAList=True)
+            if rank:
+                rank[kind] = int(rank[kind])
+                minfo.update(rank)
+            ml.append((m.movieID, minfo))
+        sorter = (_cmpBottom, _cmpTop)[kind == 'top 250 rank']
+        ml.sort(sorter)
+        return ml
 
     def __del__(self):
         """Ensure that the connection is closed."""

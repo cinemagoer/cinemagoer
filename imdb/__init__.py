@@ -58,6 +58,10 @@ imdbURL_company_base = '%scompany/' % imdbURL_base
 imdbURL_company_main = imdbURL_company_base + 'co%s/'
 # http://akas.imdb.com/keyword/%s/
 imdbURL_keyword_main = imdbURL_base + 'keyword/%s/'
+# http://akas.imdb.com/chart/top
+imdbURL_top250 = imdbURL_base + 'chart/top'
+# http://akas.imdb.com/chart/bottom
+imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
 # http://akas.imdb.com/find?%s
 imdbURL_find = imdbURL_base + 'find?%s'
 
@@ -560,6 +564,28 @@ class IMDbBase:
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]
+
+    def _get_top_bottom_movies(self, kind):
+        """Return the list of the top 250 or bottom 100 movies."""
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        #      This method must return a list of (movieID, {movieDict})
+        #      tuples.  The kind parameter can be 'top' or 'bottom'.
+        raise NotImplementedError, 'override this method'
+
+    def get_top250_movies(self):
+        """Return the list of the top 250 movies."""
+        res = self._get_top_bottom_movies('top')
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                data=md, modFunct=self._defModFunct,
+                accessSystem=self.accessSystem) for mi, md in res]
+
+    def get_bottom100_movies(self):
+        """Return the list of the bottom 100 movies."""
+        res = self._get_top_bottom_movies('bottom')
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                data=md, modFunct=self._defModFunct,
+                accessSystem=self.accessSystem) for mi, md in res]
 
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""

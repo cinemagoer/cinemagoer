@@ -32,7 +32,8 @@ from codecs import lookup
 
 from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, \
                 imdbURL_character_main, imdbURL_company_main, \
-                imdbURL_keyword_main, imdbURL_find
+                imdbURL_keyword_main, imdbURL_find, imdbURL_top250, \
+                imdbURL_bottom100
 from imdb.utils import analyze_title
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 
@@ -45,6 +46,7 @@ import movieParser
 import personParser
 import characterParser
 import companyParser
+import topBottomParser
 
 
 class _FakeParser(object):
@@ -285,6 +287,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self.compProxy = _ModuleProxy(companyParser, defaultKeys=_def,
                                     oldParsers=oldParsers, useModule=useModule,
                                     fallBackToNew=fallBackToNew)
+        self.topBottomProxy = _ModuleProxy(topBottomParser, defaultKeys=_def,
+                                    oldParsers=oldParsers, useModule=useModule,
+                                    fallBackToNew=fallBackToNew)
+
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -715,5 +721,17 @@ class IMDbHTTPAccessSystem(IMDbBase):
         except IMDbDataAccessError:
             return []
         return self.skProxy.search_moviekeyword_parser.parse(cont, results=results)['data']
+
+    def _get_top_bottom_movies(self, kind):
+        if kind == 'top':
+            parser = self.topBottomProxy.top250_parser
+            url = imdbURL_top250
+        elif kind == 'bottom':
+            parser = self.topBottomProxy.bottom100_parser
+            url = imdbURL_bottom100
+        else:
+            return []
+        cont = self._retrieve(url)
+        return parser.parse(cont)['data']
 
 

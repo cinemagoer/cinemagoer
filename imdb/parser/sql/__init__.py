@@ -1142,8 +1142,13 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             minfo = get_movie_data(m.movieID, self._kind)
             # XXX: move these information in MovieInfoIdx?
             for k in 'votes', 'rating', 'votes distribution':
-                minfo.update(getSingleInfo(MovieInfo, m.movieID, k,
-                            notAList=True))
+                valueDict = getSingleInfo(MovieInfo, m.movieID,
+                                            k, notAList=True)
+                if k == 'votes' and k in valueDict:
+                    valueDict[k] = int(valueDict[k])
+                elif k == 'rating' and k in valueDict:
+                    valueDict[k] = float(valueDict[k])
+                minfo.update(valueDict)
             rank = getSingleInfo(MovieInfoIdx, m.movieID, kind, notAList=True)
             if rank:
                 rank[kind] = int(rank[kind])

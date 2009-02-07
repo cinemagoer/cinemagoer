@@ -80,7 +80,8 @@ featCommon = setuptools.dist.Feature('common code for "sql" and "local"',
         standard=False, remove='imdb.parser.common')
 
 localScripts = ['./bin/characters4local.py', './bin/companies4local.py',
-                './bin/misc-companies4local.py', './bin/mpaa4local.py']
+                './bin/misc-companies4local.py', './bin/mpaa4local.py',
+                './bin/topbottom4local.py']
 featLocal = setuptools.dist.Feature('access to local mkdb data', standard=True,
         require_features='common', remove='imdb.parser.local',
         scripts=localScripts)

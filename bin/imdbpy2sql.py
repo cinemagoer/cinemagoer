@@ -2117,7 +2117,9 @@ def getTopBottomRating():
             if not data.has_key('title'): continue
             title = data['title'].strip()
             mid = CACHE_MID.addUnique(title)
-            sqldata.add((mid, str(count), None))
+            if what == 'top 250 rank': rank = count
+            else: rank = 11 - count
+            sqldata.add((mid, str(rank), None))
             count += 1
         sqldata.flush()
         fp.close()

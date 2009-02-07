@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from stat import ST_SIZE
 from os import stat
+import shelve
 
 from imdb.Person import Person
 from imdb.Movie import Movie
@@ -453,4 +454,20 @@ def getKeywordMovies(keyword, kwdFN):
 def searchSimilarKeywords(keyword, kwdFN):
     """Return a sorted list of keywords similar to the one given."""
     return filterSimilarKeywords(keyword, iterKeywords(kwdFN))
+
+
+def getTopBottomList(kind, tbFN):
+    """Return the list of top 250/bottom 10 movies."""
+    try:
+        shlv = shelve.open(tbFN, 'r')
+    except Exception, e:
+        import warnings
+        warnings.warn('Unable to access the topbottom.db file; try running '
+                'the topbottom4local.py script: %s' % e)
+        return []
+    if kind in shlv:
+        data = shlv[kind]
+        shlv.close()
+        return data
+    return []
 

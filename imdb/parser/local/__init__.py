@@ -40,7 +40,7 @@ from movieParser import getLabel, getMovieCast, getAkaTitles, parseMinusList, \
                         getPlot, getRatingData, getMovieMisc, getTaglines, \
                         getQuotes, getMovieLinks, getBusiness, getLiterature, \
                         getLaserdisc, getMPAA, searchSimilarKeywords, \
-                        getKeywordMovies
+                        getKeywordMovies, getTopBottomList
 from characterParser import getCharacterName, getCharacterFilmography
 from companyParser import getCompanyName, getCompanyFilmography, getCompanyID
 from utils import getFullIndex, KeyFScan, latin2utf
@@ -973,4 +973,27 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 '%stitles.index' % self.__db, '%stitles.key' % self.__db)))
                 for movieID in getKeywordMovies(keyword,
                     '%skeywords.data' % self.__db)][:results]
+
+    def _get_top_bottom_movies(self, kind):
+        if kind == 'top':
+            kind = 'top 250 rank'
+        elif kind == 'bottom':
+            kind = 'bottom 10 rank'
+        else:
+            return []
+        info = getTopBottomList(kind, '%stopbottom.db' % self.__db)
+        if not info:
+            return []
+        res = []
+        for d in info:
+            if not 'movieID' in d:
+                continue
+            movieID = d['movieID']
+            del d['movieID']
+            minfo = analyze_title(getLabel(movieID,
+                                    '%stitles.index' % self.__db,
+                                    '%stitles.key' % self.__db))
+            minfo.update(d)
+            res.append((movieID, minfo))
+        return res
 

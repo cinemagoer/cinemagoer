@@ -161,7 +161,7 @@ def _cmpTop(a, b, what='top 250 rank'):
     bv = int(b[1].get(what))
     if av == bv:
         return 0
-    return (1, -1)[av > bv]
+    return (-1, 1)[av > bv]
 
 def _cmpBottom(a, b):
     """Compare function used to sort top 250/bottom 10 rank."""
@@ -1106,7 +1106,6 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         return {'data': res, 'info sets': infosets}
 
     def _search_keyword(self, keyword, results):
-        # XXX: check if soundex is empty.
         constr = OR(Keyword.q.phoneticCode ==
                     soundex(keyword.encode('ascii', 'ignore')),
                     CONTAINSSTRING(Keyword.q.keyword, keyword))
@@ -1140,19 +1139,14 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         ml = []
         for m in movies:
             minfo = get_movie_data(m.movieID, self._kind)
-            # XXX: move these information in MovieInfoIdx?
-            for k in 'votes', 'rating', 'votes distribution':
-                valueDict = getSingleInfo(MovieInfo, m.movieID,
+            for k in kind, 'votes', 'rating', 'votes distribution':
+                valueDict = getSingleInfo(MovieInfoIdx, m.movieID,
                                             k, notAList=True)
-                if k == 'votes' and k in valueDict:
+                if k in (kind, 'votes') and k in valueDict:
                     valueDict[k] = int(valueDict[k])
                 elif k == 'rating' and k in valueDict:
                     valueDict[k] = float(valueDict[k])
                 minfo.update(valueDict)
-            rank = getSingleInfo(MovieInfoIdx, m.movieID, kind, notAList=True)
-            if rank:
-                rank[kind] = int(rank[kind])
-                minfo.update(rank)
             ml.append((m.movieID, minfo))
         sorter = (_cmpBottom, _cmpTop)[kind == 'top 250 rank']
         ml.sort(sorter)

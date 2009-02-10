@@ -151,7 +151,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         if results is not None:
             data['data'][:] = data['data'][:results]
         # Horrible hack to support AKAs.
-        if data and data['data'] and len(data['data'][0]) == 3:
+        if data and data['data'] and len(data['data'][0]) == 3 and \
+                isinstance(data['data'][0], tuple):
             for idx, datum in enumerate(data['data']):
                 if datum[2] is not None:
                     akas = filter(None, datum[2].split('::'))

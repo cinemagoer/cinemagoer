@@ -1,10 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090204 "Valkyrie" (04 Feb 2009)
+* What's the new in release 4.0dev20090210 "Untraceable" (10 Feb 2009)
   [general]
   - the installer is now based on setuptools.
   - new functions get_keyword and search_keyword to handle movie's keywords.
+  - two new functions, get_top250_movies and get_bottom100_movies, to
+    retrieve lists of best/worst movies.
   - searching for movies and persons - if present - the 'akas' keyword
     is filled, in the results.
   - the old set of parsers (based on sgmllib.SGMLParser) are gone.

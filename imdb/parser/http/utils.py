@@ -527,7 +527,7 @@ class DOMParserBase(object):
                     elif key.startswith('self.'):
                         key = getattr(self, key[5:])
                     if attr.multi:
-                        if not result.has_key(key):
+                        if key not in result:
                             result[key] = []
                         result[key].append(data)
                     else:

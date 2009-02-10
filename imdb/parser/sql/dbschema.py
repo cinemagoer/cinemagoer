@@ -319,6 +319,8 @@ DB_SCHEMA = [
         DBCol('note', UNICODECOL, default=None)
     ),
 
+    # This table is identical to MovieInfo, except that both 'infoTypeID'
+    # and 'info' are indexed.
     DBTable('MovieInfoIdx',
         DBCol('id', INTCOL, notNone=True, alternateID=True),
         DBCol('movieID', INTCOL, notNone=True, index='idx_mid',

@@ -784,7 +784,6 @@ def getSectionHash(fp):
         curTitle = ''
 
 NMMVSections = dict([(x, None) for x in ('MV: ', 'NM: ', 'OT: ', 'MOVI')])
-NMMVSectionsHASK = NMMVSections.has_key
 def getSectionNMMV(fp):
     """Return sections separated by lines starting with 'NM: ', 'MV: ',
     'OT: ' or 'MOVI'."""
@@ -793,7 +792,7 @@ def getSectionNMMV(fp):
     curNMMV = ''
     joiner = ''.join
     for line in fp:
-        if NMMVSectionsHASK(line[:4]):
+        if line[:4] in NMMVSections:
             if curSectList and curNMMV:
                 yield curNMMV, joiner(curSectList)
                 curSectList[:] = []
@@ -1403,7 +1402,7 @@ def _parseColonList(lines, replaceKeys):
         k = cols[0]
         k = replaceKeys.get(k, k)
         v = ' '.join(cols[1:]).strip()
-        if not out.has_key(k): out[k] = []
+        if k not in out: out[k] = []
         out[k].append(v)
     return out
 
@@ -1994,14 +1993,14 @@ def doMovieCompaniesInfo():
         count = 0
         for line in fp:
             data = unpack(line.strip(), ('title', 'company', 'note'))
-            if not data.has_key('title'): continue
-            if not data.has_key('company'): continue
+            if 'title' not in data: continue
+            if 'company' not in data: continue
             title = data['title']
             company = data['company']
             mid = CACHE_MID.addUnique(title)
             cid = CACHE_COMPID.addUnique(company)
             note = None
-            if data.has_key('note'):
+            if 'note' in data:
                 note = data['note']
             if count % 10000 == 0:
                 print 'SCANNING %s:' % dataf[0][:-8].replace('-', ' '),
@@ -2049,12 +2048,12 @@ def doMiscMovieInfo():
             sqldata.flushEvery = 20000
         for line in fp:
             data = unpack(line.strip(), ('title', 'info', 'note'))
-            if not data.has_key('title'): continue
-            if not data.has_key('info'): continue
+            if 'title' not in data: continue
+            if 'info' not in data: continue
             title = data['title']
             mid = CACHE_MID.addUnique(title)
             note = None
-            if data.has_key('note'):
+            if 'note' in data:
                 note = data['note']
             if count % 10000 == 0:
                 print 'SCANNING %s:' % dataf[0][:-8].replace('-', ' '),
@@ -2078,13 +2077,13 @@ def getRating():
     """Movie's rating."""
     try: fp = SourceFile('ratings.list.gz', start=RAT_START, stop=RAT_STOP)
     except IOError: return
-    sqldata = SQLData(table=MovieInfo, cols=['movieID', 'infoTypeID',
-                                            'info', 'note'])
+    sqldata = SQLData(table=MovieInfoIdx, cols=['movieID', 'infoTypeID',
+                                                'info', 'note'])
     count = 0
     for line in fp:
         data = unpack(line, ('votes distribution', 'votes', 'rating', 'title'),
                         sep='  ')
-        if not data.has_key('title'): continue
+        if 'title' not in data: continue
         title = data['title'].strip()
         mid = CACHE_MID.addUnique(title)
         if count % 10000 == 0:
@@ -2113,8 +2112,8 @@ def getTopBottomRating():
         print 'SCANNING %s...' % what
         for line in fp:
             data = unpack(line, ('votes distribution', 'votes', 'rank',
-                            'title'), sep='  ')
-            if not data.has_key('title'): continue
+                                'title'), sep='  ')
+            if 'title' not in data: continue
             title = data['title'].strip()
             mid = CACHE_MID.addUnique(title)
             if what == 'top 250 rank': rank = count

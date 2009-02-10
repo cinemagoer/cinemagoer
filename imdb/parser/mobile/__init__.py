@@ -88,10 +88,11 @@ def _getTagsWith(s, cont, toClosure=False, maxRes=None):
     return lres
 
 
-def _findBetween(s, begins, ends, beginindx=0, maxRes=None):
+def _findBetween(s, begins, ends, beginindx=0, maxRes=None, lres=None):
     """Return the list of strings from the 's' string which are included
     between the 'begins' and 'ends' strings."""
-    lres = []
+    if lres is None:
+        lres = []
     bi = s.find(begins, beginindx)
     if bi != -1:
         lbegins = len(begins)
@@ -106,7 +107,8 @@ def _findBetween(s, begins, ends, beginindx=0, maxRes=None):
             match = s[bi+lbegins:ei]
             lres.append(match)
             if maxRes is not None and len(lres) >= maxRes: return lres
-            lres += _findBetween(s, begins, ends, ei)
+            _findBetween(s, begins, ends, beginindx=ei, maxRes=maxRes,
+                        lres=lres)
     return lres
 
 
@@ -193,7 +195,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 title += ' (mini)'
             res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
         else:
-            lis = _findBetween(cont, 'td valign="top">', '</td>')
+            # XXX: this results*3 prevents some recursion errors, but...
+            #      it's not exactly understandable (i.e.: why 'results' is
+            #      not enough to get all the results?)
+            lis = _findBetween(cont, 'td valign="top">', '</td>',
+                                maxRes=results*3)
             for li in lis:
                 akaIdx = li.find('aka <em>')
                 akas = []
@@ -486,7 +492,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if not (pid and name): return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:
-            lis = _findBetween(cont, 'td valign="top">', '</td>')
+            lis = _findBetween(cont, 'td valign="top">', '</td>',
+                                maxRes=results*3)
             for li in lis:
                 akas = _findBetween(li, '<em>"', '"</em>')
                 for sep in ['<small', '<br> aka', '<br> birth name']:
@@ -721,8 +728,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if not (pid and name): return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=0))]
         else:
-            sects = _findBetween(cont, '<b>Popular Characters</b>', '</table>')
-            sects += _findBetween(cont, '<b>Characters', '</table>')
+            sects = _findBetween(cont, '<b>Popular Characters</b>', '</table>',
+                                maxRes=results*3)
+            sects += _findBetween(cont, '<b>Characters', '</table>',
+                                maxRes=results*3)
             for sect in sects:
                 lis = _findBetween(sect, '<a href="/character/',
                                     ['<small', '</td>', '<br'])
@@ -747,7 +756,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if intro:
                 d['introduction'] = intro
         bios = _findBetween(cont, '<div class="display">',
-                            '<div class="history">', maxRes=1)
+                            '<div class="history">')
         if bios:
             bios = _findBetween(bios[0], '<h4>', ('<h4>', '</div>'))
         if bios:

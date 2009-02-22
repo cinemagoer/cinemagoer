@@ -27,6 +27,8 @@ I'd like to thank the following people for their help:
   of testing and debugging of the ibm_db driver (plus a lot of hints
   about how to improve the imdbpy2sql.py script).
 
+* Chris Thompson for some bug reports about summary() methods.
+
 * Ori Cohen for some code and various hints.
 
 * Mike Castle for performace tests with SQLite and numerous hints.

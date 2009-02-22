@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090210 "Untraceable" (10 Feb 2009)
+* What's the new in release 4.0dev20090222 "Doomsday" (22 Feb 2009)
   [general]
   - the installer is now based on setuptools.
   - new functions get_keyword and search_keyword to handle movie's keywords.
@@ -11,6 +11,7 @@
     is filled, in the results.
   - the old set of parsers (based on sgmllib.SGMLParser) are gone.
   - fixed a bug converting somethingIDs to real imdbIDs.
+  - fixed some summary methods.
   - updates to the documentation.
 
   [http]

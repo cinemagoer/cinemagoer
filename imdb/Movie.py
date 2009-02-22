@@ -312,7 +312,7 @@ class Movie(_Container):
         s = u'Movie\n=====\nTitle: %s\n' % \
                     self.get('long imdb canonical title', u'')
         genres = self.get('genres')
-        if genres: s += u'Genres: %s.' % u', '.join(genres)
+        if genres: s += u'Genres: %s.\n' % u', '.join(genres)
         director = self.get('director')
         if director:
             s += u'Director: %s.\n' % _nameAndRole(director)
@@ -340,11 +340,15 @@ class Movie(_Container):
                 s += u' (%s votes)' % nr_votes
             s += u'.\n'
         plot = self.get('plot')
+        if not plot:
+            plot = self.get('plot summary')
+            if plot:
+                plot = [plot]
         if plot:
             plot = plot[0]
             i = plot.find('::')
             if i != -1:
-                plot = plot[i+2:]
+                plot = plot[:i]
             s += u'Plot: %s' % plot
         return s
 

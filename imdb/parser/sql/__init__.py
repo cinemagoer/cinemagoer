@@ -1108,7 +1108,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
     def _search_keyword(self, keyword, results):
         constr = OR(Keyword.q.phoneticCode ==
                     soundex(keyword.encode('ascii', 'ignore')),
-                    CONTAINSSTRING(Keyword.q.keyword, keyword))
+                    CONTAINSSTRING(Keyword.q.keyword, self.toUTF8(keyword)))
         return filterSimilarKeywords(keyword,
                         _iterKeywords(Keyword.select(constr)))[:results]
 

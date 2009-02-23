@@ -27,6 +27,9 @@ and 'mpaa4local.py' scripts.
 After that, you can also add support for companies' information:
 just run the 'companies4local.py' script!
 
+If you want to access top250/bottom100 lists, run the 'topbottom4local.py'
+script.
+
 
   INSTRUCTIONS
   ============

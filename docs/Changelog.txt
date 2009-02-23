@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090223 "Doomsday" (23 Feb 2009)
+* What's the new in release 4.0dev20090223b "Doomsday" (23 Feb 2009)
   [general]
   - the installer is now based on setuptools.
   - new functions get_keyword and search_keyword to handle movie's keywords.

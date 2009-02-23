@@ -841,14 +841,15 @@ def _tag4TON(ton):
                 crValue = cr['long imdb name']
             crValue = _normalizeValue(crValue)
             crID = cr.getID() or ''
-            extras += u'<current-role><%s id="%s"><name>%s</name>' % (crTag,
-                                                                crID, crValue)
+            extras += u'\n<current-role><%s id="%s"><name>%s</name></%s>' % \
+                            (crTag, crID, crValue, crTag)
             if cr.notes:
                 extras += u'<notes>%s</notes>' % _normalizeValue(cr.notes)
             extras += u'</current-role>'
     # XXX: exclude 'id' altogether, if theID is None?
     theID = ton.getID() or ''
     beginTag = u'<%s id="%s"><%s>%s</%s>' % (tag, theID, what, value, what)
+    beginTag += extras
     if ton.notes:
         beginTag += u'<notes>%s</notes>' % _normalizeValue(ton.notes)
     return (beginTag, u'</%s>' % tag)
@@ -1142,6 +1143,8 @@ class _Container(object):
     def getAsXML(self, key):
         """Return a XML representation of the specified key, or None
         if empty."""
+        # Prevent modifyStrings in __getitem__ to be called; if needed,
+        # it will be called by the _normalizeValue function.
         origModFunct = self.modFunct
         self.modFunct = modNull
         try:
@@ -1182,7 +1185,7 @@ class _Container(object):
         # Handle key aliases.
         key = self.keys_alias.get(key, key)
         rawData = self.data[key]
-        if self.keys_tomodify.has_key(key) and \
+        if key in self.keys_tomodify and \
                 self.modFunct not in (None, modNull):
             try:
                 return modifyStrings(rawData, self.modFunct, self.titlesRefs,

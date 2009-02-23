@@ -35,6 +35,8 @@ imdb (package)
        |    +-> searchPersonParser
        |    +-> searchCharacterParser
        |    +-> searchCompanyParser
+       |    +-> searchKeywordParser
+       |    +-> topBottomParser
        |    +-> utils
        |    +-> bsouplxml
        |         |
@@ -99,6 +101,9 @@ http.searchCharacterParser: parse an html string, result of a query for a
                             character name.
 http.searchCompanyParser: parse an html string, result of a query for a
                           company name.
+http.searchKeywordParser: parse an html string, result of a query for a keyword.
+http.topBottomParser: parse an html string, result of a query for top250
+                      and bottom100 movies.
 http.utils: miscellaneous utilities used only by the http package.
 http.bsouplxml (package): adapter to make BeautifulSoup behave like lxml
                           (internally, the API of lxml is always used).
@@ -198,6 +203,10 @@ of the imdb.IMDb class which must define at least the following methods:
                             information defined for a company object;
                             should return a dictionary with the relative
                             information.
+ _get_top_bottom_movies(kind) - kind can be one of 'top' and 'bottom';
+                                returns the related list of movies.
+ _get_keyword(keyword) - return a list of Movie objects with the given keyword.
+ _search_keyword(key) - return a list of keywords similar to the given key.
  get_imdbMovieID(movieID) - must convert the given movieID to a string
                             representing the imdbID, as used by the IMDb web
                             server (e.g.: '0094226' for Brian De Palma's

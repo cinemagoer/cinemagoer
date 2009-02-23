@@ -1,0 +1,49 @@
+
+  INFORMATION IN XML FORMAT
+  =========================
+
+Since version 4.0, IMDbPY can output information of Movie, Person,
+Character and Company instances in XML format.
+It's possible to get a single information (a key) in XML format,
+using the getAsXML(key) method (it will return None if the key is
+not found).
+E.g.:
+  from imdb import IMDb
+  ia = IMDb('http')
+  movie = ia.get_movie(theMovieID)
+  print movie.getAsXML('keywords')
+
+It's also possible to get a representation of a whole object,
+using the asXML() method:
+  print movie.asXML()
+
+The returned strings are unicode.
+
+
+  XML FORMAT
+  ==========
+
+Keywords are converted to tags, items in lists are enclosed in
+a 'item' tag.  E.g.:
+  <keywords>
+    <item>a keyword</item>
+    <item>another keyword</item>
+  <keywords>
+
+Movie, Person, Character and Company instances are converted like
+that (portions enclosed in squares are optionals):
+  <movie id="movieID">
+    <title>Long IMDb Movie Title, A (YEAR)</title>
+    [<current-role>
+       <person id="personID">
+         <name>Person, Name</name>
+         [<note>A Note About The Person</note>]
+       </person>
+     </current-role>]
+     [<note>A Note About The Movie</note>]
+  </movie>
+
+Every 'id' can be empty.
+
+Actually the returned XML is not pretty-printed.
+

@@ -130,6 +130,12 @@ The search_person(name), get_person(personID) search_character(name)
 get_character(characterID), search_company(name) and get_company(companyID)
 methods work the same way as search_movie(title) and get_movie(movieID).
 
+The search_keyword(string) method returns a list of unicode string that are
+valid keywords, similar to the one given.
+The get_keyword(keyword) method returns a list of Movie instances that
+are tagged with the given keyword.
+For more information see README.keywords.
+
 The get_imdbMovieID(movieID), get_imdbPersonID(personID),
 get_imdbCharacterID(characterID) and get_imdbCompanyID(companyID) take,
 respectively, a movieID, a personID, a movieID and a companyID and return
@@ -367,6 +373,16 @@ of other unrelated information (without major performace drawbacks).
 You can get the list of available info set with the methods:
 i.get_movie_infoset(), i.get_person_infoset(), i.get_character_infoset()
 and i.get_company_infoset().
+
+
+  TOP250 / BOTTOM100 LISTS
+  ========================
+
+Since IMDbPY 4.0, it's possible to retrieve the list of top250
+and bottom100 movies.
+Use the get_top250_movies() and get_bottom100_movies() methods.
+Beware that for 'sql' and 'local', the bottom100 list is
+limited to the first 10 results.  See README.local if you're using 'local'.
 
 
   Person OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Person OBJECT

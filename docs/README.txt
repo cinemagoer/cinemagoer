@@ -96,6 +96,8 @@ package may be required for certain functionality:
 All of them should probably be "recommended" (or at least "suggested")
 dependencies.
 
+As of IMDbPY 4.0, the installer is based on setuptools.
+
 
   RECENT IMPORTANT CHANGES
   ========================
@@ -118,6 +120,17 @@ README.sqldb for more information.
 
 Since release 3.9 support dumping the plain text data files in CSV files;
 see README.sqldb for more information.
+
+Since release 4.0 it's possible to search for keywords (get keywords
+similar to a given one and get a list of movies for a specified keyword).
+See README.keywords for more information.
+Moreover, it's possible to get information out of Movie, Person, Character
+and Company instances as XML (getting a single keys or the representation
+of a whole object).
+See README.info2xml for more information.
+Another new feature, is the ability to get top250 and bottom100 lists;
+see the "TOP250 / BOTTOM100 LISTS" section of the README.package file
+for more information.
 
 
   FEATURES

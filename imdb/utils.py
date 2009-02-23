@@ -22,6 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from __future__ import generators
 import re
+import string
 from copy import copy, deepcopy
 from time import strptime, strftime
 
@@ -684,11 +685,12 @@ def modifyStrings(o, modFunct, titlesRefs, namesRefs, charactersRefs):
     """Modify a string (or string values in a dictionary or strings
     in a list), using the provided modFunct function and titlesRefs
     namesRefs and charactersRefs references dictionaries."""
+    # Notice that it doesn't go any deeper than the first two levels in a list.
     if isinstance(o, (unicode, str)):
         return modFunct(o, titlesRefs, namesRefs, charactersRefs)
-    elif isinstance(o, (list, tuple)):
+    elif isinstance(o, (list, tuple, dict)):
         _stillorig = 1
-        if isinstance(o, list): keys = xrange(len(o))
+        if isinstance(o, (list, tuple)): keys = xrange(len(o))
         else: keys = o.keys()
         for i in keys:
             v = o[i]
@@ -738,8 +740,122 @@ class RolesList(list):
         return u' / '.join([unicode(x).encode('utf8') for x in self])
 
 
+_allchars = string.maketrans('', '')
+_keepchars = _allchars.translate(_allchars, string.ascii_lowercase + '-' +
+                                string.digits)
+
+def _normalizeTag(tag):
+    """Normalize a tag name."""
+    if not isinstance(tag, unicode):
+        if isinstance(tag, str):
+            tag = unicode(tag, 'ascii', 'ignore')
+        else:
+            tag = unicode(tag)
+    tag = tag.lower().replace(' ', '-')
+    if not tag:
+        tag = 'unknown-key'
+    # A tag can't begin with a digit.
+    if tag[0].isdigit():
+        tag = 'key-%s' % tag
+    # Remove non-ascii/digit chars.
+    return str(tag).translate(_allchars, _keepchars)
+
+
+def escape4xml(value):
+    """Escape some chars that can't be present in a XML value."""
+    value = value.replace('&', '&amp;').replace('"', '&quot;')
+    return value.replace('<', '&lt;').replace('>', '&gt;')
+
+
+def _refsToReplace(value, modFunct, titlesRefs, namesRefs, charactersRefs):
+    """Return three lists - for movie titles, persons and characters names -
+    with two items tuples: the first item is the reference once escaped
+    by the user-provided modFunct function, the second is the same
+    reference un-escaped."""
+    mRefs = []
+    for refRe, refTemplate in [(re_titleRef, u'_%s_ (qv)'),
+                                (re_nameRef, u"'%s' (qv)"),
+                                (re_characterRef, u'#%s# (qv)')]:
+        theseRefs = []
+        for theRef in refRe.findall(value):
+            # refTemplate % theRef values don't change for a single
+            # _Container instance, so this is a good candidate for a
+            # cache or something - even if it's so rarely used that...
+            # Moreover, it can grow - ia.update(...) - and change if
+            # modFunct is modified.
+            goodValue = modFunct(refTemplate % theRef, titlesRefs, namesRefs,
+                                charactersRefs)
+            toReplace = escape4xml(goodValue)
+            # Only the 'value' portion is replaced.
+            replaceWith = goodValue.replace(theRef, escape4xml(theRef))
+            theseRefs.append((toReplace, replaceWith))
+        mRefs.append(theseRefs)
+    return mRefs
+
+
+def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
+                    namesRefs=None, charactersRefs=None):
+    """Replace some chars that can't be present in a XML text."""
+    # XXX: use s.encode(encoding, 'xmlcharrefreplace') ?  Probably not
+    #      a great idea: after all, returning a unicode is safe.
+    if isinstance(value, (unicode, str)):
+        if not withRefs:
+            value = escape4xml(value)
+        else:
+            # Replace references that were accidentally escaped.
+            replaceLists = _refsToReplace(value, modFunct, titlesRefs,
+                                        namesRefs, charactersRefs)
+            value = modFunct(value, titlesRefs, namesRefs, charactersRefs)
+            value = escape4xml(value)
+            for replaceList in replaceLists:
+                for toReplace, replaceWith in replaceList:
+                    value = value.replace(toReplace, replaceWith)
+    else:
+        value = unicode(value)
+    return value
+
+
+def _tag4TON(ton):
+    """Build a tag for the given _Container instance;
+    both open and close tags are returned."""
+    tag = ton.__class__.__name__.lower()
+    what = 'name'
+    if tag == 'movie':
+        value = ton['long imdb canonical title']
+        what = 'title'
+    elif tag == 'person':
+        value = ton['long imdb canonical name']
+    else:
+        value = ton['long imdb name']
+    value = _normalizeValue(value)
+    extras = u''
+    crl = ton.currentRole
+    if crl:
+        if not isinstance(crl, list):
+            crl = [crl]
+        for cr in crl:
+            crTag = cr.__class__.__name__.lower()
+            if crTag == 'person':
+                crValue = cr['long imdb canonical name']
+            else:
+                crValue = cr['long imdb name']
+            crValue = _normalizeValue(crValue)
+            crID = cr.getID() or ''
+            extras += u'<current-role><%s id="%s"><name>%s</name>' % (crTag,
+                                                                crID, crValue)
+            if cr.notes:
+                extras += u'<notes>%s</notes>' % _normalizeValue(cr.notes)
+            extras += u'</current-role>'
+    # XXX: exclude 'id' altogether, if theID is None?
+    theID = ton.getID() or ''
+    beginTag = u'<%s id="%s"><%s>%s</%s>' % (tag, theID, what, value, what)
+    if ton.notes:
+        beginTag += u'<notes>%s</notes>' % _normalizeValue(ton.notes)
+    return (beginTag, u'</%s>' % tag)
+
+
 class _Container(object):
-    """Base class for Movie, Person and Character classes."""
+    """Base class for Movie, Person, Character and Company classes."""
      # The default sets of information retrieved.
     default_info = ()
 
@@ -749,13 +865,14 @@ class _Container(object):
     # List of keys to modify.
     keys_tomodify_list = ()
 
+    # Function used to compare two instances of this class.
     cmpFunct = None
 
     def __init__(self, myID=None, data=None, notes=u'',
                 currentRole=u'', roleID=None, roleIsPerson=False,
                 accessSystem=None, titlesRefs=None, namesRefs=None,
                 charactersRefs=None, modFunct=None, *args, **kwds):
-        """Initialize a Movie, Person or Character object.
+        """Initialize a Movie, Person, Character or Company object.
         *myID* -- your personal identifier for this object.
         *data* -- a dictionary used to initialize the object.
         *notes* -- notes for the person referred in the currentRole
@@ -988,6 +1105,69 @@ class _Container(object):
     def __len__(self):
         """Number of items in the data dictionary."""
         return len(self.data)
+
+    def seq2xml(self, seq, _l=None, withRefs=False, modFunct=None):
+        """Convert a sequence or a dictionary to a list of XML
+        unicode strings."""
+        # XXX: introduce a pretty-print option?
+        if _l is None:
+            _l = []
+        if isinstance(seq, dict):
+            for key in seq:
+                if isinstance(key, _Container):
+                    openTag, closeTag = _tag4TON(key)
+                else:
+                    tag = _normalizeTag(key)
+                    openTag = u'<%s>' % tag
+                    closeTag = u'</%s>' % tag
+                _l.append(openTag)
+                self.seq2xml(seq[key], _l, withRefs, modFunct)
+                _l.append(closeTag)
+        elif isinstance(seq, (list, tuple)):
+            for item in seq:
+                _l.append(u'<item>')
+                self.seq2xml(item, _l, withRefs, modFunct)
+                _l.append(u'</item>')
+        else:
+            if isinstance(seq, _Container):
+                _l.extend(_tag4TON(seq))
+            else:
+                _l.append(_normalizeValue(seq, withRefs=withRefs,
+                                            modFunct=modFunct,
+                                            titlesRefs=self.titlesRefs,
+                                            namesRefs=self.namesRefs,
+                                            charactersRefs=self.charactersRefs))
+        return _l
+
+    def getAsXML(self, key):
+        """Return a XML representation of the specified key, or None
+        if empty."""
+        origModFunct = self.modFunct
+        self.modFunct = modNull
+        try:
+            withRefs = False
+            if key in self.keys_tomodify and \
+                    origModFunct not in (None, modNull):
+                withRefs = True
+            value = self.get(key)
+            if value is None:
+                return None
+            return u''.join(self.seq2xml({key: value}, withRefs=withRefs,
+                                        modFunct=origModFunct))
+        finally:
+            self.modFunct = origModFunct
+
+    def asXML(self):
+        """Return a XML representation of the whole object."""
+        beginTag, endTag = _tag4TON(self)
+        resList = [beginTag]
+        for key in self.keys():
+            value = self.getAsXML(key)
+            if not value:
+                continue
+            resList.append(value)
+        resList.append(endTag)
+        return u'\n'.join(resList)
 
     def _getitem(self, key):
         """Handle special keys."""

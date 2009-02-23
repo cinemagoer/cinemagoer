@@ -70,6 +70,8 @@ class Person(_Container):
                   'biography author': 'imdb mini-biography by',
                   'genre': 'genres',
                   'keys': 'keywords',
+                  'tv series episodes': 'episodes',
+                  'tv-series episodes': 'episodes',
                   'keyword': 'keywords'}
 
     # 'nick names'???

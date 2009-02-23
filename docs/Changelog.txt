@@ -1,10 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090222 "Doomsday" (22 Feb 2009)
+* What's the new in release 4.0dev20090223 "Doomsday" (23 Feb 2009)
   [general]
   - the installer is now based on setuptools.
   - new functions get_keyword and search_keyword to handle movie's keywords.
+  - Movie/Person/... keys (and whole instances) can be converted to XML.
   - two new functions, get_top250_movies and get_bottom100_movies, to
     retrieve lists of best/worst movies.
   - searching for movies and persons - if present - the 'akas' keyword

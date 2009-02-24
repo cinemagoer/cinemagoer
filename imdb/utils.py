@@ -805,7 +805,8 @@ def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
             # Replace references that were accidentally escaped.
             replaceLists = _refsToReplace(value, modFunct, titlesRefs,
                                         namesRefs, charactersRefs)
-            value = modFunct(value, titlesRefs, namesRefs, charactersRefs)
+            value = modFunct(value, titlesRefs or {}, namesRefs or {},
+                            charactersRefs or {})
             value = escape4xml(value)
             for replaceList in replaceLists:
                 for toReplace, replaceWith in replaceList:
@@ -853,6 +854,43 @@ def _tag4TON(ton):
     if ton.notes:
         beginTag += u'<notes>%s</notes>' % _normalizeValue(ton.notes)
     return (beginTag, u'</%s>' % tag)
+
+
+def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
+            titlesRefs=None, namesRefs=None, charactersRefs=None):
+    """Convert a sequence or a dictionary to a list of XML
+    unicode strings."""
+    # XXX: introduce a pretty-print option?
+    if _l is None:
+        _l = []
+    if isinstance(seq, dict):
+        for key in seq:
+            if isinstance(key, _Container):
+                openTag, closeTag = _tag4TON(key)
+            else:
+                tag = _normalizeTag(key)
+                openTag = u'<%s>' % tag
+                closeTag = u'</%s>' % tag
+            _l.append(openTag)
+            _seq2xml(seq[key], _l, withRefs, modFunct, titlesRefs,
+                    namesRefs, charactersRefs)
+            _l.append(closeTag)
+    elif isinstance(seq, (list, tuple)):
+        for item in seq:
+            _l.append(u'<item>')
+            _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
+                    namesRefs, charactersRefs)
+            _l.append(u'</item>')
+    else:
+        if isinstance(seq, _Container):
+            _l.extend(_tag4TON(seq))
+        else:
+            _l.append(_normalizeValue(seq, withRefs=withRefs,
+                                        modFunct=modFunct,
+                                        titlesRefs=titlesRefs,
+                                        namesRefs=namesRefs,
+                                        charactersRefs=charactersRefs))
+    return _l
 
 
 class _Container(object):
@@ -1107,39 +1145,6 @@ class _Container(object):
         """Number of items in the data dictionary."""
         return len(self.data)
 
-    def seq2xml(self, seq, _l=None, withRefs=False, modFunct=None):
-        """Convert a sequence or a dictionary to a list of XML
-        unicode strings."""
-        # XXX: introduce a pretty-print option?
-        if _l is None:
-            _l = []
-        if isinstance(seq, dict):
-            for key in seq:
-                if isinstance(key, _Container):
-                    openTag, closeTag = _tag4TON(key)
-                else:
-                    tag = _normalizeTag(key)
-                    openTag = u'<%s>' % tag
-                    closeTag = u'</%s>' % tag
-                _l.append(openTag)
-                self.seq2xml(seq[key], _l, withRefs, modFunct)
-                _l.append(closeTag)
-        elif isinstance(seq, (list, tuple)):
-            for item in seq:
-                _l.append(u'<item>')
-                self.seq2xml(item, _l, withRefs, modFunct)
-                _l.append(u'</item>')
-        else:
-            if isinstance(seq, _Container):
-                _l.extend(_tag4TON(seq))
-            else:
-                _l.append(_normalizeValue(seq, withRefs=withRefs,
-                                            modFunct=modFunct,
-                                            titlesRefs=self.titlesRefs,
-                                            namesRefs=self.namesRefs,
-                                            charactersRefs=self.charactersRefs))
-        return _l
-
     def getAsXML(self, key):
         """Return a XML representation of the specified key, or None
         if empty."""
@@ -1155,8 +1160,11 @@ class _Container(object):
             value = self.get(key)
             if value is None:
                 return None
-            return u''.join(self.seq2xml({key: value}, withRefs=withRefs,
-                                        modFunct=origModFunct))
+            return u''.join(_seq2xml({key: value}, withRefs=withRefs,
+                                        modFunct=origModFunct,
+                                        titlesRefs=self.titlesRefs,
+                                        namesRefs=self.namesRefs,
+                                        charactersRefs=self.charactersRefs))
         finally:
             self.modFunct = origModFunct
 

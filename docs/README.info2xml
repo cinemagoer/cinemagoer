@@ -45,5 +45,16 @@ that (portions enclosed in squares are optionals):
 
 Every 'id' can be empty.
 
-Actually the returned XML is not pretty-printed.
+Actually the returned XML is mostly not pretty-printed.
+
+
+  REFERENCES
+  ==========
+
+Some text keys can contain references to other movies, persons
+and characters.  The user can provide the defaultModFunct function (see
+the "MOVIE TITLES AND PERSON/CHARACTER NAMES REFERENCES" section of
+the README.package file), to replace these references with their own
+strings (e.g.: a link to a web page); it's up to the user, to be sure
+that the output of the defaultModFunct function is valid XML.
 

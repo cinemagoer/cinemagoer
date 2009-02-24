@@ -842,8 +842,13 @@ def _tag4TON(ton):
                 crValue = cr['long imdb name']
             crValue = _normalizeValue(crValue)
             crID = cr.getID() or ''
-            extras += u'\n<current-role><%s id="%s"><name>%s</name></%s>' % \
-                            (crTag, crID, crValue, crTag)
+            if crID:
+                extras += u'\n<current-role><%s id="%s"><name>%s</name></%s>' % \
+                                (crTag, crID, crValue, crTag)
+            else:
+                # XXX: not really sure about this, but marking duties like
+                # "sound editor" inside a character and name looks bad
+                extras += u'\n<current-role>%s' % (crValue,)
             if cr.notes:
                 extras += u'<notes>%s</notes>' % _normalizeValue(cr.notes)
             extras += u'</current-role>'
@@ -877,10 +882,14 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
             _l.append(closeTag)
     elif isinstance(seq, (list, tuple)):
         for item in seq:
-            _l.append(u'<item>')
-            _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
-                    namesRefs, charactersRefs)
-            _l.append(u'</item>')
+            if isinstance(item, _Container):
+                _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
+                         namesRefs, charactersRefs)
+            else:
+                _l.append(u'<item>')
+                _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
+                        namesRefs, charactersRefs)
+                _l.append(u'</item>')
     else:
         if isinstance(seq, _Container):
             _l.extend(_tag4TON(seq))

@@ -822,10 +822,8 @@ def _tag4TON(ton):
     tag = ton.__class__.__name__.lower()
     what = 'name'
     if tag == 'movie':
-        value = ton['long imdb canonical title']
+        value = ton['long imdb title']
         what = 'title'
-    elif tag == 'person':
-        value = ton['long imdb canonical name']
     else:
         value = ton['long imdb name']
     value = _normalizeValue(value)
@@ -836,19 +834,16 @@ def _tag4TON(ton):
             crl = [crl]
         for cr in crl:
             crTag = cr.__class__.__name__.lower()
-            if crTag == 'person':
-                crValue = cr['long imdb canonical name']
-            else:
-                crValue = cr['long imdb name']
+            crValue = cr['long imdb name']
             crValue = _normalizeValue(crValue)
             crID = cr.getID() or ''
             if crID:
-                extras += u'\n<current-role><%s id="%s"><name>%s</name></%s>' % \
+                extras += u'<current-role><%s id="%s"><name>%s</name></%s>' % \
                                 (crTag, crID, crValue, crTag)
             else:
                 # XXX: not really sure about this, but marking duties like
                 # "sound editor" inside a character and name looks bad
-                extras += u'\n<current-role>%s' % (crValue,)
+                extras += u'<current-role>%s' % (crValue,)
             if cr.notes:
                 extras += u'<notes>%s</notes>' % _normalizeValue(cr.notes)
             extras += u'</current-role>'
@@ -1187,7 +1182,7 @@ class _Container(object):
                 continue
             resList.append(value)
         resList.append(endTag)
-        return u'\n'.join(resList)
+        return u''.join(resList)
 
     def _getitem(self, key):
         """Handle special keys."""

@@ -841,9 +841,8 @@ def _tag4TON(ton):
                 extras += u'<current-role><%s id="%s"><name>%s</name></%s>' % \
                                 (crTag, crID, crValue, crTag)
             else:
-                # XXX: not really sure about this, but marking duties like
-                # "sound editor" inside a character and name looks bad
-                extras += u'<current-role>%s' % (crValue,)
+                extras += u'\n<current-role><%s><name>%s</name></%s>' % \
+                               (crTag, crValue, crTag)
             if cr.notes:
                 extras += u'<notes>%s</notes>' % _normalizeValue(cr.notes)
             extras += u'</current-role>'

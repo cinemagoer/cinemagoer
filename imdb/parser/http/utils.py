@@ -182,13 +182,18 @@ def build_person(txt, personID=None, billingPos=None,
         elif role_comment[-6:] == '& ....':
             role_comment = role_comment[:-6].rstrip()
         # Get the notes.
-        cmt_idx = role_comment.find('(')
-        if cmt_idx != -1:
-            role = role_comment[:cmt_idx].rstrip()
-            notes = role_comment[cmt_idx:]
+        if roleID is not None:
+            cmt_idx = role_comment.find('(')
+            if cmt_idx != -1:
+                role = role_comment[:cmt_idx].rstrip()
+                notes = role_comment[cmt_idx:]
+            else:
+                # Just a role, without notes.
+                role = role_comment
         else:
-            # Just a role, without notes.
-            role = role_comment
+            # We're managing something that doesn't have a 'role', so
+            # everything are notes.
+            notes = role_comment
     if role == '....': role = u''
     # Manages multiple roleIDs.
     if isinstance(roleID, list):

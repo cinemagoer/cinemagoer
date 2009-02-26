@@ -797,9 +797,7 @@ class DOMHTMLGoofsParser(DOMParserBase):
     _defGetRefs = True
 
     extractors = [Extractor(label='goofs', path="//ul[@class='trivia']/li",
-                    attrs=Attribute(key='goofs', multi=True, path=".//text()",
-                            postprocess=lambda x: u'%s%s' % (x[0].lower(),
-                                            x[1:].replace(': ', '::', 1))))]
+                    attrs=Attribute(key='goofs', multi=True, path=".//text()"))]
 
 
 class DOMHTMLQuotesParser(DOMParserBase):
@@ -814,6 +812,7 @@ class DOMHTMLQuotesParser(DOMParserBase):
     """
     _defGetRefs = True
 
+    # FIXME: it still contains too many ::
     extractors = [
         Extractor(label='quotes',
             path="//div[@class='_imdbpy']",
@@ -1340,7 +1339,7 @@ def _parse_review(x):
     if x.get('item') is not None:
         item = x.get('item').strip()
         review = review[len(item):].strip()
-        review = "%s::%s" % (item, review)
+        review = "%s: %s" % (item, review)
     result['review'] = review
     return result
 
@@ -1637,6 +1636,7 @@ class DOMHTMLFaqsParser(DOMParserBase):
     _defGetRefs = True
 
     # XXX: bsoup and lxml don't match (looks like a minor issue, anyway).
+    # FIXME: remove the :: ?
 
     extractors = [
         Extractor(label='faqs',
@@ -1713,9 +1713,11 @@ class DOMHTMLAiringParser(DOMParserBase):
                 airing['episode'] = e
                 del airing['link']
                 del airing['title']
-        del data['series title']
-        data['airing'] = filter(None, data['airing'])
-        if not data['airing']:
+        if 'series title' in data:
+            del data['series title']
+        if 'airing' in data:
+            data['airing'] = filter(None, data['airing'])
+        if 'airing' not in data or not data['airing']:
             return {}
         return data
 

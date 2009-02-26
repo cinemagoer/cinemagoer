@@ -841,7 +841,7 @@ def _tag4TON(ton):
                 extras += u'<current-role><%s id="%s"><name>%s</name></%s>' % \
                                 (crTag, crID, crValue, crTag)
             else:
-                extras += u'\n<current-role><%s><name>%s</name></%s>' % \
+                extras += u'<current-role><%s><name>%s</name></%s>' % \
                                (crTag, crValue, crTag)
             if cr.notes:
                 extras += u'<notes>%s</notes>' % _normalizeValue(cr.notes)

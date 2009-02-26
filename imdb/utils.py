@@ -3,7 +3,8 @@ utils module (imdb package).
 
 This module provides basic utilities for the imdb package.
 
-Copyright 2004-2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
+               2009 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -836,19 +837,24 @@ def _tag4TON(ton):
             crTag = cr.__class__.__name__.lower()
             crValue = cr['long imdb name']
             crValue = _normalizeValue(crValue)
-            crID = cr.getID() or ''
-            if crID:
-                extras += u'<current-role><%s id="%s"><name>%s</name></%s>' % \
-                                (crTag, crID, crValue, crTag)
+            crID = cr.getID()
+            if crID is not None:
+                extras += u'<current-role><%s id="%s" access-system="%s">' \
+                            u'<name>%s</name></%s>' % (crTag, crID,
+                                                        cr.accessSystem,
+                                                        crValue, crTag)
             else:
                 extras += u'<current-role><%s><name>%s</name></%s>' % \
                                (crTag, crValue, crTag)
             if cr.notes:
                 extras += u'<notes>%s</notes>' % _normalizeValue(cr.notes)
             extras += u'</current-role>'
-    # XXX: exclude 'id' altogether, if theID is None?
-    theID = ton.getID() or ''
-    beginTag = u'<%s id="%s"><%s>%s</%s>' % (tag, theID, what, value, what)
+    theID = ton.getID()
+    if theID is not None:
+        beginTag = u'<%s id="%s" access-system="%s"><%s>%s</%s>' % (tag, theID,
+                                        ton.accessSystem, what, value, what)
+    else:
+        beginTag = u'<%s><%s>%s</%s>' % (tag, what, value, what)
     beginTag += extras
     if ton.notes:
         beginTag += u'<notes>%s</notes>' % _normalizeValue(ton.notes)

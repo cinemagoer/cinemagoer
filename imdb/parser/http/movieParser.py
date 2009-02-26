@@ -1704,12 +1704,19 @@ class DOMHTMLAiringParser(DOMParserBase):
             return {}
         if data.has_key('airing'):
             for airing in data['airing']:
+                title = airing.get('title', '').strip()
+                if not title:
+                    airing.clear()
+                    continue
                 e = Movie(title='%s {%s}' % (data['series title'],
                     airing['title']), movieID=analyze_imdbid(airing['link']))
                 airing['episode'] = e
                 del airing['link']
                 del airing['title']
         del data['series title']
+        data['airing'] = filter(None, data['airing'])
+        if not data['airing']:
+            return {}
         return data
 
 

@@ -62,7 +62,8 @@ class DOMBasicMovieParser(DOMParserBase):
                                     ))]
 
     # Remove 'More at IMDb Pro' links.
-    preprocessors = [(re.compile(r'<span class="pro-link".*?</span>'), '')]
+    preprocessors = [(re.compile(r'<span class="pro-link".*?</span>'), ''),
+            (re.compile(r'<a href="http://ad.doubleclick.net.*?;id=(co[0-9]{7});'), r'<a href="http://pro.imdb.com/company/\1"></a>< a href="')]
 
     def postprocess_data(self, data):
         if not 'link' in data:

@@ -22,16 +22,16 @@ inside a list of movies in which a given character was portrayed.
 
 Schema:
   movie['cast'][0].currentRole -> a Character object.
-                  |
-                  +-> a Person object.
+                |
+                +-> a Person object.
 
   person['actor'][0].currentRole -> a Character object.
-                    |
-                    +-> a Movie object.
+                  |
+                  +-> a Movie object.
 
   character['filmography'][0].currentRole -> a Person object.
-                             |
-                             +-> a Movie object.
+                           |
+                           +-> a Movie object.
 
 The roleID attribute can be used to access/set the characterID
 or personID instance attribute of the current currentRole.

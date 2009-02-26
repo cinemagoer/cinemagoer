@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090224 "Doomsday" (24 Feb 2009)
+* What's the new in release 4.0dev20090226 "Doomsday" (26 Feb 2009)
   [general]
   - the installer is now based on setuptools.
   - new functions get_keyword and search_keyword to handle movie's keywords.
@@ -19,6 +19,8 @@
   - adapted BeautifulSoup to lxml (internally, the lxml API is used).
   - fixed a bug search for too common terms.
   - fixed a bug identifying 'kind', searching for titles.
+  - fixed a bug parsing airing dates.
+  - fixed a bug searching for company names (when there's a direct hit).
 
   [sql]
   - searching for a movie, the original titles are returned, instead

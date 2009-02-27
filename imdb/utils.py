@@ -185,7 +185,7 @@ for article in _articles:
 def canonicalTitle(title):
     """Return the title in the canonic format 'Movie Title, The'."""
     try:
-        if _articlesDict.has_key(title.split(', ')[-1].lower()): return title
+        if title.split(', ')[-1].lower() in _articlesDict: return title
     except IndexError: pass
     ltitle = title.lower()
     for article in _spArticles:
@@ -210,7 +210,7 @@ def canonicalTitle(title):
 def normalizeTitle(title):
     """Return the title in the normal "The Title" format."""
     stitle = title.split(', ')
-    if len(stitle) > 1 and _articlesDict.has_key(stitle[-1].lower()):
+    if len(stitle) > 1 and stitle[-1].lower() in _articlesDict:
         sep = ' '
         if stitle[-1][-1] in ("'", '-'): sep = ''
         title = '%s%s%s' % (stitle[-1], sep, ', '.join(stitle[:-1]))
@@ -817,7 +817,7 @@ def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
     return value
 
 
-def _tag4TON(ton):
+def _tag4TON(ton, addAccessSystem=False):
     """Build a tag for the given _Container instance;
     both open and close tags are returned."""
     tag = ton.__class__.__name__.lower()
@@ -839,9 +839,8 @@ def _tag4TON(ton):
             crValue = _normalizeValue(crValue)
             crID = cr.getID()
             if crID is not None:
-                extras += u'<current-role><%s id="%s" access-system="%s">' \
+                extras += u'<current-role><%s id="%s">' \
                             u'<name>%s</name></%s>' % (crTag, crID,
-                                                        cr.accessSystem,
                                                         crValue, crTag)
             else:
                 extras += u'<current-role><%s><name>%s</name></%s>' % \
@@ -851,8 +850,10 @@ def _tag4TON(ton):
             extras += u'</current-role>'
     theID = ton.getID()
     if theID is not None:
-        beginTag = u'<%s id="%s" access-system="%s"><%s>%s</%s>' % (tag, theID,
-                                        ton.accessSystem, what, value, what)
+        beginTag = u'<%s id="%s"' % (tag, theID)
+        if addAccessSystem and ton.accessSystem:
+            beginTag += ' access-system="%s"' % ton.accessSystem
+        beginTag += u'><%s>%s</%s>' % (what, value, what)
     else:
         beginTag = u'<%s><%s>%s</%s>' % (tag, what, value, what)
     beginTag += extras
@@ -862,33 +863,38 @@ def _tag4TON(ton):
 
 
 def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
-            titlesRefs=None, namesRefs=None, charactersRefs=None):
+            titlesRefs=None, namesRefs=None, charactersRefs=None,
+            _topLevel=True, key2infoset=None):
     """Convert a sequence or a dictionary to a list of XML
     unicode strings."""
-    # XXX: introduce a pretty-print option?
     if _l is None:
         _l = []
     if isinstance(seq, dict):
         for key in seq:
             if isinstance(key, _Container):
+                # Here we're assuming that a _Container is never a top-level
+                # key (otherwise we should handle key2infoset).
                 openTag, closeTag = _tag4TON(key)
             else:
                 tag = _normalizeTag(key)
-                openTag = u'<%s>' % tag
+                openTag = u'<%s' % tag
+                if _topLevel and key2infoset and key in key2infoset:
+                    openTag += u' infoset="%s"' % key2infoset[key]
+                openTag += u'>'
                 closeTag = u'</%s>' % tag
             _l.append(openTag)
             _seq2xml(seq[key], _l, withRefs, modFunct, titlesRefs,
-                    namesRefs, charactersRefs)
+                    namesRefs, charactersRefs, _topLevel=False)
             _l.append(closeTag)
     elif isinstance(seq, (list, tuple)):
         for item in seq:
             if isinstance(item, _Container):
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
-                         namesRefs, charactersRefs)
+                         namesRefs, charactersRefs, _topLevel=False)
             else:
                 _l.append(u'<item>')
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
-                        namesRefs, charactersRefs)
+                        namesRefs, charactersRefs, _topLevel=False)
                 _l.append(u'</item>')
     else:
         if isinstance(seq, _Container):
@@ -1044,6 +1050,8 @@ class _Container(object):
         self.charactersRefs = {}
         self.modFunct = modClearRefs
         self.current_info = []
+        self.infoset2keys = {}
+        self.key2infoset = {}
         self.__role = None
         self._reset()
 
@@ -1057,6 +1065,8 @@ class _Container(object):
         self.namesRefs = {}
         self.charactersRefs = {}
         self.current_info = []
+        self.infoset2keys = {}
+        self.key2infoset = {}
         self.__role = None
         self._clear()
 
@@ -1066,14 +1076,28 @@ class _Container(object):
         """Return the current set of information retrieved."""
         return self.current_info
 
+    def update_infoset_map(self, infoset, keys, mainInfoset):
+        """Update the mappings between infoset and keys."""
+        if keys is None:
+            keys = []
+        if mainInfoset is not None:
+            theIS = mainInfoset
+        else:
+            theIS = infoset
+        self.infoset2keys[theIS] = keys
+        for key in keys:
+            self.key2infoset[key] = theIS
+
     def set_current_info(self, ci):
         """Set the current set of information retrieved."""
+        # XXX:Remove? It's never used and there's no way to update infoset2keys.
         self.current_info = ci
 
-    def add_to_current_info(self, val):
+    def add_to_current_info(self, val, keys=None, mainInfoset=None):
         """Add a set of information to the current list."""
         if val not in self.current_info:
             self.current_info.append(val)
+            self.update_infoset_map(val, keys, mainInfoset)
 
     def has_current_info(self, val):
         """Return true if the given set of information is in the list."""
@@ -1173,13 +1197,14 @@ class _Container(object):
                                         modFunct=origModFunct,
                                         titlesRefs=self.titlesRefs,
                                         namesRefs=self.namesRefs,
-                                        charactersRefs=self.charactersRefs))
+                                        charactersRefs=self.charactersRefs,
+                                        key2infoset=self.key2infoset))
         finally:
             self.modFunct = origModFunct
 
     def asXML(self):
         """Return a XML representation of the whole object."""
-        beginTag, endTag = _tag4TON(self)
+        beginTag, endTag = _tag4TON(self, addAccessSystem=True)
         resList = [beginTag]
         for key in self.keys():
             value = self.getAsXML(key)

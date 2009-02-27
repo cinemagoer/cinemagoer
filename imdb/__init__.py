@@ -590,7 +590,7 @@ class IMDbBase:
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""
         # XXX: not really useful...
-        if keywords.has_key('title'):
+        if 'title' in keywords:
             if not isinstance(keywords['title'], unicode):
                 keywords['title'] = unicode(keywords['title'],
                                             encoding, 'replace')
@@ -603,7 +603,7 @@ class IMDbBase:
     def new_person(self, *arguments, **keywords):
         """Return a Person object."""
         # XXX: not really useful...
-        if keywords.has_key('name'):
+        if 'name' in keywords:
             if not isinstance(keywords['name'], unicode):
                 keywords['name'] = unicode(keywords['name'],
                                             encoding, 'replace')
@@ -616,7 +616,7 @@ class IMDbBase:
     def new_character(self, *arguments, **keywords):
         """Return a Character object."""
         # XXX: not really useful...
-        if keywords.has_key('name'):
+        if 'name' in keywords:
             if not isinstance(keywords['name'], unicode):
                 keywords['name'] = unicode(keywords['name'],
                                             encoding, 'replace')
@@ -629,7 +629,7 @@ class IMDbBase:
     def new_company(self, *arguments, **keywords):
         """Return a Company object."""
         # XXX: not really useful...
-        if keywords.has_key('name'):
+        if 'name' in keywords:
             if not isinstance(keywords['name'], unicode):
                 keywords['name'] = unicode(keywords['name'],
                                             encoding, 'replace')
@@ -700,18 +700,23 @@ class IMDbBase:
             except AttributeError:
                 raise IMDbDataAccessError, 'unknown information set "%s"' % i
             ret = method(mopID)
-            if ret.has_key('info sets'):
-                for ri in ret['info sets']:
-                    mop.add_to_current_info(ri)
-            else:
-                mop.add_to_current_info(i)
-            if ret.has_key('data'):
+            keys = None
+            if 'data' in ret:
                 res.update(ret['data'])
-            if ret.has_key('titlesRefs'):
+                if isinstance(ret['data'], dict):
+                    keys = ret['data'].keys()
+            if 'info sets' in ret:
+                for ri in ret['info sets']:
+                    mop.add_to_current_info(ri, keys, mainInfoset=i)
+                # So that only the 'main' required info set is set.
+                #mop.update_infoset_map(i, keys)
+            else:
+                mop.add_to_current_info(i, keys)
+            if 'titlesRefs' in ret:
                 mop.update_titlesRefs(ret['titlesRefs'])
-            if ret.has_key('namesRefs'):
+            if 'namesRefs' in ret:
                 mop.update_namesRefs(ret['namesRefs'])
-            if ret.has_key('charactersRefs'):
+            if 'charactersRefs' in ret:
                 mop.update_charactersRefs(ret['charactersRefs'])
         mop.set_data(res, override=0)
 

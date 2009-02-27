@@ -34,13 +34,10 @@ def fromstring(xml_string):
         ).findChild(True)
 
 def tostring(element, encoding=None, pretty_print=False):
-    """Return a unicode representation of an element."""
-    if isinstance(element, unicode):
-        return element
-    if isinstance(element, BeautifulSoup.NavigableString):
-        return unicode(element)
-    if isinstance(element, BeautifulSoup.Tag):
-        return element.__str__(None, pretty_print)
+    """Return a string or unicode representation of an element."""
+    if encoding is unicode:
+        encoding = None
+    return element.__str__(encoding, pretty_print)
 
 def setattribute(tag, name, value):
     tag[name] = value

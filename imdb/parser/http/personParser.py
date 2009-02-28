@@ -480,7 +480,7 @@ _OBJECTS = {
     'maindetails_parser': ((DOMHTMLMaindetailsParser,), None),
     'bio_parser': ((DOMHTMLBioParser,), None),
     'otherworks_parser': ((DOMHTMLOtherWorksParser,), None),
-    'agent_parser': ((DOMHTMLOtherWorksParser,), {'kind': 'agent'}),
+    #'agent_parser': ((DOMHTMLOtherWorksParser,), {'kind': 'agent'}),
     'person_officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'person_awards_parser': ((DOMHTMLAwardsParser,), {'subject': 'name'}),
     'publicity_parser': ((DOMHTMLTechParser,), {'kind': 'publicity'}),

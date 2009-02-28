@@ -23,6 +23,7 @@
   - fixed a bug identifying 'kind', searching for titles.
   - fixed a bug parsing airing dates.
   - fixed a bug searching for company names (when there's a direct hit).
+  - removed the 'agent' page.
 
   [sql]
   - searching for a movie, the original titles are returned, instead

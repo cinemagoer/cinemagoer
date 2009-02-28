@@ -1772,7 +1772,10 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
-        if len(data) == 0:
+        for key in data:
+            if not data[key]:
+                del data[key]
+        if not data:
             return {}
         return {'parents guide': data}
 

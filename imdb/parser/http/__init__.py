@@ -632,9 +632,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(imdbURL_person_main % personID + 'otherworks')
         return self.pProxy.otherworks_parser.parse(cont, getRefs=self._getRefs)
 
-    def get_person_agent(self, personID):
-        cont = self._retrieve(imdbURL_person_main % personID + 'agent')
-        return self.pProxy.agent_parser.parse(cont)
+    #def get_person_agent(self, personID):
+    #    cont = self._retrieve(imdbURL_person_main % personID + 'agent')
+    #    return self.pProxy.agent_parser.parse(cont)
 
     def get_person_publicity(self, personID):
         cont = self._retrieve(imdbURL_person_main % personID + 'publicity')

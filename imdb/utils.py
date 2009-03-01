@@ -759,6 +759,8 @@ def _normalizeTag(tag):
     if tag[0].isdigit():
         tag = 'key-%s' % tag
     # Remove non-ascii/digit chars.
+    if isinstance(tag, unicode):
+        tag = tag.encode('ascii', 'ignore')
     return str(tag).translate(_allchars, _keepchars)
 
 

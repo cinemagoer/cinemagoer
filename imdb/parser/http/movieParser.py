@@ -1772,12 +1772,13 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
+        data2 = {}
         for key in data:
-            if not data[key]:
-                del data[key]
-        if not data:
+            if data[key]:
+                data2[key] = data[key]
+        if not data2:
             return {}
-        return {'parents guide': data}
+        return {'parents guide': data2}
 
 
 _OBJECTS = {

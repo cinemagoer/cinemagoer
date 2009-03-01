@@ -759,15 +759,24 @@ def _normalizeTag(tag):
     if tag[0].isdigit():
         tag = 'key-%s' % tag
     # Remove non-ascii/digit chars.
+    # FIXME: this must be changed! We can't strip/modify non-ascii chars;
+    #        what about returning 'a-tag name="ESCAPED NON-ASCII VALUE"' ?
     if isinstance(tag, unicode):
         tag = tag.encode('ascii', 'ignore')
     return str(tag).translate(_allchars, _keepchars)
 
 
+# Replace & with &amp;, but only if it's not already part of a charref.
+_re_amp = re.compile(r'(&)(?!\w+;)', re.I)
+
 def escape4xml(value):
     """Escape some chars that can't be present in a XML value."""
-    value = value.replace('&', '&amp;').replace('"', '&quot;')
-    return value.replace('<', '&lt;').replace('>', '&gt;')
+    value = _re_amp.sub('&amp;', value)
+    value = value.replace('"', '&quot;').replace("'", '&apos;')
+    value = value.replace('<', '&lt;').replace('>', '&gt;')
+    if isinstance(value, unicode):
+        value = value.encode('ascii', 'xmlcharrefreplace')
+    return value
 
 
 def _refsToReplace(value, modFunct, titlesRefs, namesRefs, charactersRefs):

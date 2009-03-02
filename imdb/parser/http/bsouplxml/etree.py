@@ -29,14 +29,21 @@ import bsoupxpath
 
 def fromstring(xml_string):
     """Return a DOM representation of the string."""
+    # We try to not use BeautifulSoup.BeautifulStoneSoup.XML_ENTITIES,
+    # for convertEntities.
     return BeautifulSoup.BeautifulStoneSoup(xml_string,
-        convertEntities=BeautifulSoup.BeautifulStoneSoup.XML_ENTITIES
-        ).findChild(True)
+                        convertEntities=None).findChild(True)
+
 
 def tostring(element, encoding=None, pretty_print=False):
     """Return a string or unicode representation of an element."""
     if encoding is unicode:
         encoding = None
+    # For BeautifulSoup 3.1
+    #encArgs = {'prettyPrint': pretty_print}
+    #if encoding is not None:
+    #    encArgs['encoding'] = encoding
+    #return element.encode(**encArgs)
     return element.__str__(encoding, pretty_print)
 
 def setattribute(tag, name, value):
@@ -50,6 +57,12 @@ def xpath(node, expr):
 
 
 # XXX: monkey patching the beautifulsoup tag class
+class _EverythingIsNestable(dict):
+    """"Fake that every tag is nestable."""
+    def get(self, key, *args, **kwds):
+        return []
+
+BeautifulSoup.BeautifulStoneSoup.NESTABLE_TAGS = _EverythingIsNestable()
 BeautifulSoup.Tag.attrib = property(fget=lambda self: self)
 BeautifulSoup.Tag.text = property(fget=lambda self: self.string)
 BeautifulSoup.Tag.set = setattribute

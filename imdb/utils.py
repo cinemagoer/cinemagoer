@@ -746,24 +746,27 @@ _keepchars = _allchars.translate(_allchars, string.ascii_lowercase + '-' +
                                 string.digits)
 
 def _normalizeTag(tag):
-    """Normalize a tag name."""
+    """Normalize a tag name.  Beware that it can return one of
+    'tagName' or 'named-key name="escapedTagName"' """
     if not isinstance(tag, unicode):
         if isinstance(tag, str):
             tag = unicode(tag, 'ascii', 'ignore')
         else:
             tag = unicode(tag)
     tag = tag.lower().replace(' ', '-')
-    if not tag:
-        tag = 'unknown-key'
-    # A tag can't begin with a digit.
-    if tag[0].isdigit():
-        tag = 'key-%s' % tag
+    orginalTag = tag
     # Remove non-ascii/digit chars.
-    # FIXME: this must be changed! We can't strip/modify non-ascii chars;
-    #        what about returning 'a-tag name="ESCAPED NON-ASCII VALUE"' ?
     if isinstance(tag, unicode):
         tag = tag.encode('ascii', 'ignore')
-    return str(tag).translate(_allchars, _keepchars)
+    tag = str(tag).translate(_allchars, _keepchars)
+    if not tag:
+        tag = 'named-key'
+    # A tag can't begin with a digit.
+    if tag[0].isdigit() or tag[0] == '-':
+        tag = 'named-key'
+    if tag != orginalTag:
+        return 'named-key name="%s"' % escape4xml(orginalTag)
+    return tag
 
 
 # Replace & with &amp;, but only if it's not already part of a charref.
@@ -892,6 +895,8 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                 if _topLevel and key2infoset and key in key2infoset:
                     openTag += u' infoset="%s"' % key2infoset[key]
                 openTag += u'>'
+                if tag.endswith('"'):
+                    tag = tag.split(' ')[0]
                 closeTag = u'</%s>' % tag
             _l.append(openTag)
             _seq2xml(seq[key], _l, withRefs, modFunct, titlesRefs,

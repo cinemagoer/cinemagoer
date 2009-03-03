@@ -747,14 +747,14 @@ _keepchars = _allchars.translate(_allchars, string.ascii_lowercase + '-' +
 
 def _normalizeTag(tag):
     """Normalize a tag name.  Beware that it can return one of
-    'tagName' or 'named-key name="escapedTagName"' """
+    'tagName' or 'tagName name="escapedName"' """
     if not isinstance(tag, unicode):
         if isinstance(tag, str):
             tag = unicode(tag, 'ascii', 'ignore')
         else:
             tag = unicode(tag)
-    tag = tag.lower().replace(' ', '-')
     orginalTag = tag
+    tag = tag.lower().replace(' ', '-')
     # Remove non-ascii/digit chars.
     if isinstance(tag, unicode):
         tag = tag.encode('ascii', 'ignore')
@@ -765,7 +765,7 @@ def _normalizeTag(tag):
     if tag[0].isdigit() or tag[0] == '-':
         tag = 'named-key'
     if tag != orginalTag:
-        return 'named-key name="%s"' % escape4xml(orginalTag)
+        return '%s name="%s"' % (tag, escape4xml(orginalTag))
     return tag
 
 

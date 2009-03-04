@@ -753,17 +753,17 @@ def _normalizeTag(tag):
             tag = unicode(tag, 'ascii', 'ignore')
         else:
             tag = unicode(tag)
-    orginalTag = tag
     tag = tag.lower().replace(' ', '-')
+    orginalTag = tag
     # Remove non-ascii/digit chars.
     if isinstance(tag, unicode):
         tag = tag.encode('ascii', 'ignore')
     tag = str(tag).translate(_allchars, _keepchars)
     if not tag:
-        tag = 'named-key'
+        tag = 'item'
     # A tag can't begin with a digit.
     if tag[0].isdigit() or tag[0] == '-':
-        tag = 'named-key'
+        tag = 'item'
     if tag != orginalTag:
         return '%s name="%s"' % (tag, escape4xml(orginalTag))
     return tag

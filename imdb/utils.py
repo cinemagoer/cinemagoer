@@ -765,7 +765,7 @@ def _normalizeTag(tag):
     if tag[0].isdigit() or tag[0] == '-':
         tag = 'item'
     if tag != orginalTag:
-        return '%s name="%s"' % (tag, escape4xml(orginalTag))
+        return '%s title="%s"' % (tag, escape4xml(orginalTag))
     return tag
 
 

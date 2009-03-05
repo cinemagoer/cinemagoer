@@ -63,6 +63,7 @@ class _EverythingIsNestable(dict):
         return []
 
 BeautifulSoup.BeautifulStoneSoup.NESTABLE_TAGS = _EverythingIsNestable()
+BeautifulSoup.Tag.tag = property(fget=lambda self: self.name)
 BeautifulSoup.Tag.attrib = property(fget=lambda self: self)
 BeautifulSoup.Tag.text = property(fget=lambda self: self.string)
 BeautifulSoup.Tag.set = setattribute

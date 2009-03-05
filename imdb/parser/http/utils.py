@@ -197,7 +197,7 @@ def build_person(txt, personID=None, billingPos=None,
     if role == '....': role = u''
     # Manages multiple roleIDs.
     if isinstance(roleID, list):
-        role = role.split(' / ')
+        role = role.split('/')
         lr = len(role)
         lrid = len(roleID)
         if lr > lrid:
@@ -290,7 +290,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         roleID = roleID[0]
     # Manages multiple roleIDs.
     if isinstance(roleID, list):
-        role = role.split(' / ')
+        role = role.split('/')
         lr = len(role)
         lrid = len(roleID)
         if lr > lrid:

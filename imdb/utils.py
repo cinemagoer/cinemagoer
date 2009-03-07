@@ -23,7 +23,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from __future__ import generators
 import re
-import string
 from copy import copy, deepcopy
 from time import strptime, strftime
 
@@ -741,34 +740,6 @@ class RolesList(list):
         return u' / '.join([unicode(x).encode('utf8') for x in self])
 
 
-_allchars = string.maketrans('', '')
-_keepchars = _allchars.translate(_allchars, string.ascii_lowercase + '-' +
-                                string.digits)
-
-def _normalizeTag(tag):
-    """Normalize a tag name.  Beware that it can return one of
-    'tagName' or 'tagName name="escapedName"' """
-    if not isinstance(tag, unicode):
-        if isinstance(tag, str):
-            tag = unicode(tag, 'ascii', 'ignore')
-        else:
-            tag = unicode(tag)
-    tag = tag.lower().replace(' ', '-')
-    orginalTag = tag
-    # Remove non-ascii/digit chars.
-    if isinstance(tag, unicode):
-        tag = tag.encode('ascii', 'ignore')
-    tag = str(tag).translate(_allchars, _keepchars)
-    if not tag:
-        tag = 'item'
-    # A tag can't begin with a digit.
-    if tag[0].isdigit() or tag[0] == '-':
-        tag = 'item'
-    if tag != orginalTag:
-        return '%s title="%s"' % (tag, escape4xml(orginalTag))
-    return tag
-
-
 # Replace & with &amp;, but only if it's not already part of a charref.
 _re_amp = re.compile(r'(&)(?!\w+;)', re.I)
 
@@ -808,6 +779,14 @@ def _refsToReplace(value, modFunct, titlesRefs, namesRefs, charactersRefs):
     return mRefs
 
 
+def _handleTextNotes(s):
+    """Split text::notes strings."""
+    ssplit = s.split('::', 1)
+    if len(ssplit) == 1:
+        return s
+    return u'%s<notes>%s</notes>' % (ssplit[0], ssplit[1])
+
+
 def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
                     namesRefs=None, charactersRefs=None):
     """Replace some chars that can't be present in a XML text."""
@@ -815,14 +794,14 @@ def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
     #      a great idea: after all, returning a unicode is safe.
     if isinstance(value, (unicode, str)):
         if not withRefs:
-            value = escape4xml(value)
+            value = _handleTextNotes(escape4xml(value))
         else:
             # Replace references that were accidentally escaped.
             replaceLists = _refsToReplace(value, modFunct, titlesRefs,
                                         namesRefs, charactersRefs)
             value = modFunct(value, titlesRefs or {}, namesRefs or {},
                             charactersRefs or {})
-            value = escape4xml(value)
+            value = _handleTextNotes(escape4xml(value))
             for replaceList in replaceLists:
                 for toReplace, replaceWith in replaceList:
                     value = value.replace(toReplace, replaceWith)
@@ -890,14 +869,19 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                 # key (otherwise we should handle key2infoset).
                 openTag, closeTag = _tag4TON(key)
             else:
-                tag = _normalizeTag(key)
-                openTag = u'<%s' % tag
+                if not isinstance(key, unicode):
+                    if isinstance(key, str):
+                        escapedKey = unicode(key, 'ascii', 'ignore')
+                    else:
+                        escapedKey = unicode(key)
+                else:
+                    escapedKey = key
+                escapedKey = escape4xml(escapedKey)
+                openTag = u'<item title="%s"' % escapedKey
                 if _topLevel and key2infoset and key in key2infoset:
                     openTag += u' infoset="%s"' % key2infoset[key]
                 openTag += u'>'
-                if tag.endswith('"'):
-                    tag = tag.split(' ')[0]
-                closeTag = u'</%s>' % tag
+                closeTag = u'</item>'
             _l.append(openTag)
             _seq2xml(seq[key], _l, withRefs, modFunct, titlesRefs,
                     namesRefs, charactersRefs, _topLevel=False)
@@ -916,6 +900,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
         if isinstance(seq, _Container):
             _l.extend(_tag4TON(seq))
         else:
+            # Text, ints, floats and the like.
             _l.append(_normalizeValue(seq, withRefs=withRefs,
                                         modFunct=modFunct,
                                         titlesRefs=titlesRefs,

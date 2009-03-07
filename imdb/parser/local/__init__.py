@@ -632,6 +632,8 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
         mq = getQuotes(movieID, '%squotes.data' % self.__db,
                             '%squotes.index' % self.__db)
         trefs, nrefs = self._extractRefs(mq)
+        for idx, quote in enumerate(mq):
+            mq[idx] = quote.split('::')
         if mq: return {'data': {'quotes': mq},
                         'titlesRefs': trefs, 'namesRefs': nrefs}
         return {'data': {}}

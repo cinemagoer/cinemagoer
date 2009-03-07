@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090304 "Seytan" (04 Mar 2009)
+* What's the new in release 4.0dev20090307 "Watchmen" (07 Mar 2009)
   [general]
   - the installer is now based on setuptools.
   - new functions get_keyword and search_keyword to handle movie's keywords.
@@ -10,6 +10,7 @@
     retrieve lists of best/worst movies.
   - searching for movies and persons - if present - the 'akas' keyword
     is filled, in the results.
+  - 'quotes' for movies is now always a list of lists.
   - the old set of parsers (based on sgmllib.SGMLParser) are gone.
   - fixed a bug converting somethingIDs to real imdbIDs.
   - fixed some summary methods.

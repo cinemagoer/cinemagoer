@@ -830,6 +830,13 @@ class DOMHTMLQuotesParser(DOMParserBase):
         (re.compile('<hr/>', re.I), '</div>'),
         ]
 
+    def postprocess_data(self, data):
+        if 'quotes' not in data:
+            return {}
+        for idx, quote in enumerate(data['quotes']):
+            data['quotes'][idx] = quote.split('::')
+        return data
+
 
 class DOMHTMLReleaseinfoParser(DOMParserBase):
     """Parser for the "release dates" page of a given movie.

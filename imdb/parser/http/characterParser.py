@@ -155,7 +155,7 @@ class DOMHTMLCharacterQuotesParser(DOMParserBase):
     _defGetRefs = True
 
     extractors = [
-        Extractor(label='introduction',
+        Extractor(label='charquotes',
                     group="//h5",
                     group_key="./a/text()",
                     path="./following-sibling::div[1]",
@@ -173,8 +173,10 @@ class DOMHTMLCharacterQuotesParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
-        if len(data) == 0:
+        if not data:
             return {}
+        for title in data:
+            data[title][:] = [quote.split('::') for quote in data[title]]
         return {'quotes': data}
 
 

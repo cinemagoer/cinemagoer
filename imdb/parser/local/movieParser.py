@@ -316,6 +316,7 @@ def getQuotes(movieID, dataF, indexF):
         qtf.seek(index)
         qtf.readline()
         qttl = []
+        # XXX: remove :: after ']', as in http?
         while 1:
             line = latin2utf(qtf.readline())
             line = line.rstrip()
@@ -325,6 +326,7 @@ def getQuotes(movieID, dataF, indexF):
                     line = line.lstrip()
                     if line: qttl[-1] += ' %s' % line
                 elif line.startswith('# '):
+                    # Leave :: because they are handly for 'sql'.
                     if qttl: qtL.append('::'.join(qttl))
                     break
                 else:

@@ -710,6 +710,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         #        else: nl.append(i)
         #    res['plot'][:] = nl
         # Other transformations.
+        if 'quotes' in res:
+            for idx, quote in enumerate(res['quotes']):
+                res['quotes'][idx] = quote.split('::')
         if res.has_key('runtimes') and len(res['runtimes']) > 0:
             rt = res['runtimes'][0]
             episodes = re_episodes.findall(rt)

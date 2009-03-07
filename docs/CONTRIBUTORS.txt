@@ -6,7 +6,8 @@ NAME: H. Turgut Uyar
 EMAIL: <uyar --> tekir.org>
 CONTRIBUTION: the whole new "http" data access system (using a DOM and
 XPath-based approach) is based on his work.  The imdbpykit interface
-is wholly copyrighted by him.
+was mostly written by him and he holds the copyright over the whole
+code (with some portions shared with others).
 
 
 NAME: Giuseppe "Cowo" Corbelli

@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from __future__ import generators
 import re
+import string
 from copy import copy, deepcopy
 from time import strptime, strftime
 
@@ -855,9 +856,20 @@ def _tag4TON(ton, addAccessSystem=False):
     return (beginTag, u'</%s>' % tag)
 
 
+TAGS_TO_MODIFY = {
+    'movie.parents-guide': 'item',
+    'person.merchandising-links': 'item',
+    'person.genres': 'item',
+    'person.keywords': 'item',
+    }
+
+_allchars = string.maketrans('', '')
+_keepchars = _allchars.translate(_allchars, string.ascii_lowercase + '-' +
+                                 string.digits)
+
 def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
             titlesRefs=None, namesRefs=None, charactersRefs=None,
-            _topLevel=True, key2infoset=None):
+            _topLevel=True, key2infoset=None, fullpath=''):
     """Convert a sequence or a dictionary to a list of XML
     unicode strings."""
     if _l is None:
@@ -869,32 +881,43 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                 # key (otherwise we should handle key2infoset).
                 openTag, closeTag = _tag4TON(key)
             else:
-                if not isinstance(key, unicode):
+                with_title = False
+                if fullpath in TAGS_TO_MODIFY:
+                    tagName = TAGS_TO_MODIFY[fullpath]
+                    with_title = True
+                elif not isinstance(key, unicode):
                     if isinstance(key, str):
-                        escapedKey = unicode(key, 'ascii', 'ignore')
+                        tagName = unicode(key, 'ascii', 'ignore')
                     else:
-                        escapedKey = unicode(key)
+                        tagName = unicode(key)
                 else:
-                    escapedKey = key
-                escapedKey = escape4xml(escapedKey)
-                openTag = u'<item title="%s"' % escapedKey
+                    tagName = key
+                tagName = tagName.lower().replace(' ', '-')
+                tagName = str(tagName).translate(_allchars, _keepchars)
+                if with_title:
+                    openTag = u'<%s title="%s"' % (tagName, escape4xml(key))
+                else:
+                    openTag = u'<%s' % tagName
                 if _topLevel and key2infoset and key in key2infoset:
                     openTag += u' infoset="%s"' % key2infoset[key]
                 openTag += u'>'
-                closeTag = u'</item>'
+                closeTag = u'</%s>' % tagName
             _l.append(openTag)
             _seq2xml(seq[key], _l, withRefs, modFunct, titlesRefs,
-                    namesRefs, charactersRefs, _topLevel=False)
+                    namesRefs, charactersRefs, _topLevel=False,
+                    fullpath='%s.%s' % (fullpath, tagName))
             _l.append(closeTag)
     elif isinstance(seq, (list, tuple)):
         for item in seq:
             if isinstance(item, _Container):
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
-                         namesRefs, charactersRefs, _topLevel=False)
+                         namesRefs, charactersRefs, _topLevel=False,
+                         fullpath=fullpath)
             else:
                 _l.append(u'<item>')
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
-                        namesRefs, charactersRefs, _topLevel=False)
+                        namesRefs, charactersRefs, _topLevel=False,
+                        fullpath=fullpath+'.item')
                 _l.append(u'</item>')
     else:
         if isinstance(seq, _Container):
@@ -1194,12 +1217,14 @@ class _Container(object):
             value = self.get(key)
             if value is None:
                 return None
+            tag = self.__class__.__name__.lower()
             return u''.join(_seq2xml({key: value}, withRefs=withRefs,
                                         modFunct=origModFunct,
                                         titlesRefs=self.titlesRefs,
                                         namesRefs=self.namesRefs,
                                         charactersRefs=self.charactersRefs,
-                                        key2infoset=self.key2infoset))
+                                        key2infoset=self.key2infoset,
+                                        fullpath=tag))
         finally:
             self.modFunct = origModFunct
 

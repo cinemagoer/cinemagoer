@@ -880,6 +880,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                 # Here we're assuming that a _Container is never a top-level
                 # key (otherwise we should handle key2infoset).
                 openTag, closeTag = _tag4TON(key)
+                tagName = key
             else:
                 with_title = False
                 if fullpath in TAGS_TO_MODIFY:

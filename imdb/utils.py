@@ -746,6 +746,8 @@ _re_amp = re.compile(r'(&)(?!\w+;)', re.I)
 
 def escape4xml(value):
     """Escape some chars that can't be present in a XML value."""
+    if isinstance(value, int):
+        value = str(value)
     value = _re_amp.sub('&amp;', value)
     value = value.replace('"', '&quot;').replace("'", '&apos;')
     value = value.replace('<', '&lt;').replace('>', '&gt;')
@@ -857,10 +859,11 @@ def _tag4TON(ton, addAccessSystem=False):
 
 
 TAGS_TO_MODIFY = {
-    'movie.parents-guide': 'item',
-    'person.merchandising-links': 'item',
-    'person.genres': 'item',
-    'person.keywords': 'item',
+    'movie.parents-guide': ('item', 'title'),
+    'movie.number-of-votes': ('item', 'title'),
+    'person.merchandising-links':  ('item', 'title'),
+    'person.genres':  ('item', 'title'),
+    'person.keywords':  ('item', 'title'),
     }
 
 _allchars = string.maketrans('', '')
@@ -882,10 +885,9 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                 openTag, closeTag = _tag4TON(key)
                 tagName = key
             else:
-                with_title = False
+                value_attr = None
                 if fullpath in TAGS_TO_MODIFY:
-                    tagName = TAGS_TO_MODIFY[fullpath]
-                    with_title = True
+                    tagName, value_attr = TAGS_TO_MODIFY[fullpath]
                 elif not isinstance(key, unicode):
                     if isinstance(key, str):
                         tagName = unicode(key, 'ascii', 'ignore')
@@ -895,8 +897,9 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                     tagName = key
                 tagName = tagName.lower().replace(' ', '-')
                 tagName = str(tagName).translate(_allchars, _keepchars)
-                if with_title:
-                    openTag = u'<%s title="%s"' % (tagName, escape4xml(key))
+                if value_attr is not None:
+                    openTag = u'<%s %s="%s"' % (tagName, value_attr,
+                                                escape4xml(key))
                 else:
                     openTag = u'<%s' % tagName
                 if _topLevel and key2infoset and key in key2infoset:

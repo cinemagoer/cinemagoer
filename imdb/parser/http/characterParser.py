@@ -173,6 +173,7 @@ class DOMHTMLCharacterQuotesParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
+        # XXX: should keys of quotes dictionary be Movie instances?
         if not data:
             return {}
         for title in data:

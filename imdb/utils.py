@@ -862,14 +862,53 @@ TAGS_TO_MODIFY = {
     'movie.parents-guide': ('item', 'title'),
     'movie.number-of-votes': ('item', 'title'),
     'movie.soundtrack.item': ('item', 'title'),
+    'movie.quotes': ('quote', None),
+    'movie.quotes.quote': ('line', None),
+    'movie.demographic': ('item', 'title'),
     'person.merchandising-links':  ('item', 'title'),
     'person.genres':  ('item', 'title'),
+    'person.quotes':  ('quote', None),
     'person.keywords':  ('item', 'title'),
+    'character.quotes': ('item', 'title'),
+    'character.quotes.item': ('quote', None),
+    'character.quotes.item.quote': ('line', None)
     }
 
 _allchars = string.maketrans('', '')
 _keepchars = _allchars.translate(_allchars, string.ascii_lowercase + '-' +
                                  string.digits)
+
+def _tagAttr(key, fullpath):
+    """Return a tuple with a tag name and a (possibly empty) attribute,
+    applying the conversions specified in TAGS_TO_MODIFY and checking
+    that the tag is safe for a XML document."""
+    value_attr = None
+    attrs = u''
+    if fullpath in TAGS_TO_MODIFY:
+        tagName, value_attr = TAGS_TO_MODIFY[fullpath]
+    elif not isinstance(key, unicode):
+        if isinstance(key, str):
+            tagName = unicode(key, 'ascii', 'ignore')
+        else:
+            tagName = unicode(key)
+    else:
+        tagName = key
+    tagName = tagName.lower().replace(' ', '-')
+    origTagName = tagName
+    tagName = str(tagName).translate(_allchars, _keepchars)
+    if (not tagName) or tagName[0].isdigit() or tagName[0] == '-' or \
+            origTagName != tagName:
+        # This is a fail-safe: we should never be here, since unpredictable
+        # keys must be listed in TAGS_TO_MODIFY.
+        # This will break the DTD/schema, but at least it will produce a
+        # valid XML.
+        print 'ERROR - INVALID TAG: %s [%s]' % (escape4xml(key), fullpath)
+        tagName = 'item'
+        value_attr = 'key'
+    if value_attr is not None:
+        attrs = u'%s="%s"' % (value_attr, escape4xml(key))
+    return tagName, attrs
+
 
 def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
             titlesRefs=None, namesRefs=None, charactersRefs=None,
@@ -884,25 +923,13 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                 # Here we're assuming that a _Container is never a top-level
                 # key (otherwise we should handle key2infoset).
                 openTag, closeTag = _tag4TON(key)
-                tagName = key
+                # So that fullpath will contains something meaningful.
+                tagName = key.__class__.__name__.lower()
             else:
-                value_attr = None
-                if fullpath in TAGS_TO_MODIFY:
-                    tagName, value_attr = TAGS_TO_MODIFY[fullpath]
-                elif not isinstance(key, unicode):
-                    if isinstance(key, str):
-                        tagName = unicode(key, 'ascii', 'ignore')
-                    else:
-                        tagName = unicode(key)
-                else:
-                    tagName = key
-                tagName = tagName.lower().replace(' ', '-')
-                tagName = str(tagName).translate(_allchars, _keepchars)
-                if value_attr is not None:
-                    openTag = u'<%s %s="%s"' % (tagName, value_attr,
-                                                escape4xml(key))
-                else:
-                    openTag = u'<%s' % tagName
+                tagName, attrs = _tagAttr(key, fullpath)
+                openTag = u'<%s' % tagName
+                if attrs:
+                    openTag += ' %s' % attrs
                 if _topLevel and key2infoset and key in key2infoset:
                     openTag += u' infoset="%s"' % key2infoset[key]
                 openTag += u'>'
@@ -913,17 +940,24 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                     fullpath='%s.%s' % (fullpath, tagName))
             _l.append(closeTag)
     elif isinstance(seq, (list, tuple)):
+        tagName, attrs = _tagAttr('item', fullpath)
+        beginTag = u'<%s' % tagName
+        if attrs:
+            beginTag += u' %s' % attrs
+        beginTag += u'>'
+        closeTag = u'</%s>' % tagName
         for item in seq:
             if isinstance(item, _Container):
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
                          namesRefs, charactersRefs, _topLevel=False,
-                         fullpath=fullpath)
+                         fullpath='%s.%s' % (fullpath,
+                                    item.__class__.__name__.lower()))
             else:
-                _l.append(u'<item>')
+                _l.append(beginTag)
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
                         namesRefs, charactersRefs, _topLevel=False,
-                        fullpath=fullpath+'.item')
-                _l.append(u'</item>')
+                        fullpath='%s.%s' % (fullpath, tagName))
+                _l.append(closeTag)
     else:
         if isinstance(seq, _Container):
             _l.extend(_tag4TON(seq))

@@ -1162,6 +1162,15 @@ class DOMHTMLTechParser(DOMParserBase):
             data[key] = filter(None, data[key])
         if self.kind in ('literature', 'business', 'contacts') and data:
             data = {self.kind: data}
+        else:
+            # Tech info.
+            for key in data:
+                if key.startswith('film negative format'):
+                    data['film negative format'] = data[key]
+                    del data[key]
+                elif key.startswith('film length'):
+                    data['film length'] = data[key]
+                    del data[key]
         return data
 
 

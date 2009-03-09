@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090309 "Watchmen" (09 Mar 2009)
+* What's the new in release 4.0dev20090309b "Watchmen" (09 Mar 2009)
   [general]
   - the installer is now based on setuptools.
   - new functions get_keyword and search_keyword to handle movie's keywords.
@@ -14,8 +14,6 @@
   - the old set of parsers (based on sgmllib.SGMLParser) are gone.
   - fixed a bug converting somethingIDs to real imdbIDs.
   - fixed some summary methods.
-  - fixed a bug handling multiple characters.
-  - nicer keys for technical details.
   - updates to the documentation.
 
   [http]
@@ -26,6 +24,10 @@
   - fixed a bug identifying 'kind', searching for titles.
   - fixed a bug parsing airing dates.
   - fixed a bug searching for company names (when there's a direct hit).
+  - inverted the order of text and notes for character's biography.
+  - fixed a bug handling multiple characters.
+  - fixed a bug parsing episode ratings.
+  - nicer keys for technical details.
   - removed the 'agent' page.
 
   [sql]

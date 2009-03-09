@@ -1000,8 +1000,14 @@ class DOMHTMLEpisodesRatings(DOMParserBase):
             votes = i['votes']
             rating = i['rating']
             if not (ept and movieID and votes and rating): continue
-            votes = int(votes)
-            rating = float(rating)
+            try:
+                votes = int(votes.replace(',', '').replace('.', ''))
+            except:
+                pass
+            try:
+                rating = float(rating)
+            except:
+                pass
             ept = ept.strip()
             ept = u'%s {%s' % (title, ept)
             nr = i['nr']
@@ -1011,6 +1017,10 @@ class DOMHTMLEpisodesRatings(DOMParserBase):
             if movieID is not None:
                 movieID = str(movieID)
             m = Movie(title=ept, movieID=movieID, accessSystem=self._as,
+                        modFunct=self._modFunct)
+            epofdict = m.get('episode of')
+            if epofdict is not None:
+                m['episode of'] = Movie(data=epofdict, accessSystem=self._as,
                         modFunct=self._modFunct)
             nd.append({'episode': m, 'votes': votes, 'rating': rating})
         return {'episodes rating': nd}

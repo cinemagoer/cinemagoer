@@ -35,7 +35,7 @@ from personParser import DOMHTMLMaindetailsParser
 
 _personIDs = re.compile(r'/name/nm([0-9]{7})')
 class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
-    """Parser for the "biography" page of a given character.
+    """Parser for the "filmography" page of a given character.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -125,9 +125,9 @@ class DOMHTMLCharacterBioParser(DOMParserBase):
                                 'text': ".//text()",
                             },
                             postprocess=lambda x: u'%s::%s' % (
-                                x.get('info').strip(),
                                 x.get('text').replace('\n',
-                                    ' ').replace('||', '\n\n').strip()))),
+                                    ' ').replace('||', '\n\n').strip(),
+                                x.get('info').strip()))),
     ]
 
     preprocessors = [

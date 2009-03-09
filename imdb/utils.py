@@ -861,6 +861,7 @@ def _tag4TON(ton, addAccessSystem=False):
 TAGS_TO_MODIFY = {
     'movie.parents-guide': ('item', 'title'),
     'movie.number-of-votes': ('item', 'title'),
+    'movie.soundtrack.item': ('item', 'title'),
     'person.merchandising-links':  ('item', 'title'),
     'person.genres':  ('item', 'title'),
     'person.keywords':  ('item', 'title'),

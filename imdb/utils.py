@@ -865,6 +865,8 @@ TAGS_TO_MODIFY = {
     'movie.quotes': ('quote', None),
     'movie.quotes.quote': ('line', None),
     'movie.demographic': ('item', 'title'),
+    'movie.episodes': ('season', 'number'),
+    'movie.episodes.season': ('episode', 'number'),
     'person.merchandising-links':  ('item', 'title'),
     'person.genres':  ('item', 'title'),
     'person.quotes':  ('quote', None),

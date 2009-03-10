@@ -1257,6 +1257,8 @@ class DOMHTMLDvdParser(DOMParserBase):
             for key in dvd.keys():
                 if not dvd[key]:
                     del dvd[key]
+            if 'supplements' in dvd:
+                dvd['supplements'] = dvd['supplements'].split('::')
         return data
 
 

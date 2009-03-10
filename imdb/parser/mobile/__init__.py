@@ -767,6 +767,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 bio = bio.replace('<br/>', '\n')
                 bio = subSGMLRefs(re_unhtmlsub('', bio).strip())
                 bio = bio.replace(' ::', '::').replace(':: ', '::')
+                bio = bio.replace('::', ': ', 1)
                 if bio:
                     d.setdefault('biography', []).append(bio)
         return {'data': d}

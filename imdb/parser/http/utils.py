@@ -183,21 +183,35 @@ def build_person(txt, personID=None, billingPos=None,
             role_comment = role_comment[:-6].rstrip()
         # Get the notes.
         if roleID is not None:
-            cmt_idx = role_comment.find('(')
-            if cmt_idx != -1:
-                role = role_comment[:cmt_idx].rstrip()
-                notes = role_comment[cmt_idx:]
+            if not isinstance(roleID, list):
+                cmt_idx = role_comment.find('(')
+                if cmt_idx != -1:
+                    role = role_comment[:cmt_idx].rstrip()
+                    notes = role_comment[cmt_idx:]
+                else:
+                    # Just a role, without notes.
+                    role = role_comment
             else:
-                # Just a role, without notes.
                 role = role_comment
         else:
             # We're managing something that doesn't have a 'role', so
             # everything are notes.
             notes = role_comment
     if role == '....': role = u''
+    roleNotes = []
     # Manages multiple roleIDs.
     if isinstance(roleID, list):
-        role = role.split('/')
+        rolesplit = role.split('/')
+        role = []
+        for r in rolesplit:
+            nidx = r.find('(')
+            rnotes = u''
+            if nidx != -1:
+                role.append(r[:nidx].rstrip())
+                roleNotes.append(r[nidx:])
+            else:
+                role.append(r)
+                roleNotes.append(None)
         lr = len(role)
         lrid = len(roleID)
         if lr > lrid:
@@ -215,9 +229,14 @@ def build_person(txt, personID=None, billingPos=None,
     if personID is not None:
         personID = str(personID)
     # XXX: return None if something strange is detected?
-    return Person(name=name, personID=personID, currentRole=role,
+    person = Person(name=name, personID=personID, currentRole=role,
                     roleID=roleID, notes=notes, billingPos=billingPos,
                     modFunct=modFunct, accessSystem=accessSystem)
+    if roleNotes and len(roleNotes) == len(roleID):
+        for idx, role in enumerate(person.currentRole):
+            if roleNotes[idx]:
+                role.notes = roleNotes[idx]
+    return person
 
 
 # To shrink spaces.
@@ -238,16 +257,10 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
     tsplit = title.split(_defSep, 1)
     role = u''
     notes = u''
+    roleNotes = []
     if len(tsplit) == 2:
         title = tsplit[0].rstrip()
         role = tsplit[1].lstrip()
-        # Find notes in the role.
-        if role[-1:] == ')':
-            nidx = role.find('(')
-            # XXX: check balanced parentheses?
-            if nidx != -1:
-                notes = role[nidx:]
-                role = role[:nidx].rstrip()
     if title[-9:] == 'TV Series':
         title = title[:-9].rstrip()
     elif title[-14:] == 'TV mini-series':
@@ -290,7 +303,16 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         roleID = roleID[0]
     # Manages multiple roleIDs.
     if isinstance(roleID, list):
-        role = role.split('/')
+        tmprole = role.split('/')
+        role = []
+        for r in tmprole:
+            nidx = r.find('(')
+            if nidx != -1:
+                role.append(r[:nidx].rstrip())
+                roleNotes.append(r[nidx:])
+            else:
+                role.append(r)
+                roleNotes.append(None)
         lr = len(role)
         lrid = len(roleID)
         if lr > lrid:
@@ -310,6 +332,10 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
     m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
                 roleID=roleID, roleIsPerson=_parsingCharacter,
                 modFunct=modFunct, accessSystem=accessSystem)
+    if roleNotes and len(roleNotes) == len(roleID):
+        for idx, role in enumerate(m.currentRole):
+            if roleNotes[idx]:
+                role.notes = roleNotes[idx]
     # Status can't be checked here, and must be detected by the parser.
     if status:
         m['status'] = status
@@ -317,8 +343,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
 
 
 class DOMParserBase(object):
-    """Base parser to handle HTML data from the IMDb's web server -
-    DOM/XPath version."""
+    """Base parser to handle HTML data from the IMDb's web server."""
     _defGetRefs = False
     _containsObjects = False
 

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0dev20090310 "Watchmen" (10 Mar 2009)
+* What's the new in release 4.0dev20090310b "Watchmen" (10 Mar 2009)
   [general]
   - the installer is now based on setuptools.
   - new functions get_keyword and search_keyword to handle movie's keywords.
@@ -12,6 +12,7 @@
     is filled, in the results.
   - 'quotes' for movies is now always a list of lists.
   - the old set of parsers (based on sgmllib.SGMLParser) are gone.
+  - fixed limitations handling multiple roles (with notes).
   - fixed a bug converting somethingIDs to real imdbIDs.
   - fixed some summary methods.
   - updates to the documentation.

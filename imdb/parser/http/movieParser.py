@@ -991,7 +991,7 @@ class DOMHTMLEpisodesRatings(DOMParserBase):
                                         'votes': ".//td[4]/text()"}))]
 
     def postprocess_data(self, data):
-        if 'title' not in data or 'episodes' not in data: return data
+        if 'title' not in data or 'episodes' not in data: return {}
         nd = []
         title = data['title']
         for i in data['episodes']:

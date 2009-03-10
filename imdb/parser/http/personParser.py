@@ -218,7 +218,7 @@ class DOMHTMLBioParser(DOMParserBase):
                                 },
                             postprocess=lambda x: "%s::%s" % \
                                             (x.get('name').strip(),
-                                                x.get('info').strip()))),
+                                                (x.get('info') or u'').strip()))),
             Extractor(label='trade mark',
                         path="//div[h5='Trade Mark']/p",
                         attrs=Attribute(key='trade mark',

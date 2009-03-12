@@ -60,7 +60,8 @@ scripts = ['./bin/get_first_movie.py',
             './bin/search_person.py', './bin/get_character.py',
             './bin/get_first_character.py', './bin/get_company.py',
             './bin/search_character.py', './bin/search_company.py',
-            './bin/get_first_company.py']
+            './bin/get_first_company.py', './bin/get_keyword.py',
+            './bin/search_keyword.py', './bin/get_top_bottom_movies.py']
 
 # XXX: I'm not sure that 'etc' is a good idea.  Making it an absolute
 #      path seems a recipe for a disaster (with bdist_egg, at least).

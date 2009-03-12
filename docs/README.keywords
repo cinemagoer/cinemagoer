@@ -6,6 +6,7 @@ Since version 4.0, it's possible (for every data access system) to
 search for movies' keywords.
 People's keywords are not supported.
 
+
   SEARCH FOR A KEYWORD SIMILAR TO A GIVEN STRING
   ==============================================
 

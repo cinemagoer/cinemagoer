@@ -30,17 +30,23 @@ a 'item' tag.  E.g.:
     <item>another keyword</item>
   <keywords>
 
+Except when keys are known to be not fixed (e.g.: a list of keywords),
+in which case this schema is used:
+  <item title="EscapedKeyword">
+     ...
+  </item>
+
 Movie, Person, Character and Company instances are converted like
 that (portions enclosed in squares are optionals):
-  <movie id="movieID">
-    <title>Long IMDb Movie Title, A (YEAR)</title>
+  <movie id="movieID" access-system="accessSystem">
+    <title>A Long IMDb Movie Title (YEAR)</title>
     [<current-role>
-       <person id="personID">
-         <name>Person, Name</name>
-         [<note>A Note About The Person</note>]
+       <person id="personID" access-system="accessSystem">
+         <name>Name Surname</name>
+         [<notes>A Note About The Person</notes>]
        </person>
      </current-role>]
-     [<note>A Note About The Movie</note>]
+     [<notes>A Note About The Movie</notes>]
   </movie>
 
 Every 'id' can be empty.

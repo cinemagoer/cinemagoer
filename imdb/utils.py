@@ -904,7 +904,7 @@ def _tagAttr(key, fullpath):
         # keys must be listed in TAGS_TO_MODIFY.
         # This will break the DTD/schema, but at least it will produce a
         # valid XML.
-        print 'ERROR - INVALID TAG: %s [%s]' % (escape4xml(key), fullpath)
+        #print 'ERROR - INVALID TAG: %s [%s]' % (escape4xml(key), fullpath)
         tagName = 'item'
         value_attr = 'key'
     if value_attr is not None:

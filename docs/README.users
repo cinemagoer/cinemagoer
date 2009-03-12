@@ -22,7 +22,8 @@ information about the first matching title.
 
 Now guess what 'get_person.py', 'search_person.py','get_first_person.py',
 'get_character.py', 'search_character.py','get_first_character.py',
-'get_company.py', 'search_company.py' and 'get_first_company.py'
+'get_company.py', 'search_company.py', 'get_first_company.py',
+'search_keyword.py', 'get_keyword.py' and 'get_top_bottom_movies.py'
 scripts do... :-)
 
 Remember that you've to be connected to the net, if you want to

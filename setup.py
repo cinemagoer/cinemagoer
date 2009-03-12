@@ -48,7 +48,8 @@ Topic :: Software Development :: Libraries :: Python Modules
 
 keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
             'cast', 'actor', 'actress', 'director', 'sql', 'character',
-            'company', 'svn', 'package', 'plain text data files']
+            'company', 'svn', 'package', 'plain text data files',
+            'keywords', 'top250', 'bottom100', 'xml']
 
 
 cutils = setuptools.Extension('imdb.parser.common.cutils',

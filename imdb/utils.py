@@ -813,7 +813,7 @@ def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
     return value
 
 
-def _tag4TON(ton, addAccessSystem=False):
+def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
     """Build a tag for the given _Container instance;
     both open and close tags are returned."""
     tag = ton.__class__.__name__.lower()
@@ -849,9 +849,15 @@ def _tag4TON(ton, addAccessSystem=False):
         beginTag = u'<%s id="%s"' % (tag, theID)
         if addAccessSystem and ton.accessSystem:
             beginTag += ' access-system="%s"' % ton.accessSystem
-        beginTag += u'><%s>%s</%s>' % (what, value, what)
+        if not _containerOnly:
+            beginTag += u'><%s>%s</%s>' % (what, value, what)
+        else:
+            beginTag += u'>'
     else:
-        beginTag = u'<%s><%s>%s</%s>' % (tag, what, value, what)
+        if not _containerOnly:
+            beginTag = u'<%s><%s>%s</%s>' % (tag, what, value, what)
+        else:
+            beginTag = u'<%s>' % tag
     beginTag += extras
     if ton.notes:
         beginTag += u'<notes>%s</notes>' % _normalizeValue(ton.notes)
@@ -1271,7 +1277,8 @@ class _Container(object):
 
     def asXML(self):
         """Return a XML representation of the whole object."""
-        beginTag, endTag = _tag4TON(self, addAccessSystem=True)
+        beginTag, endTag = _tag4TON(self, addAccessSystem=True,
+                                    _containerOnly=True)
         resList = [beginTag]
         for key in self.keys():
             value = self.getAsXML(key)

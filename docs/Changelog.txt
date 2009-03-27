@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.0svn20090327 "Gran Torino" (27 Mar 2009)
+  [http]
+  - minor fix to XML code to work with the test-suite.
+
+
 * What's the new in release 4.0 "Watchmen" (12 Mar 2009)
   [general]
   - the installer is now based on setuptools.

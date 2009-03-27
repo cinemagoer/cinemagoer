@@ -819,10 +819,10 @@ def _tag4TON(ton, addAccessSystem=False):
     tag = ton.__class__.__name__.lower()
     what = 'name'
     if tag == 'movie':
-        value = ton['long imdb title']
+        value = ton.get('long imdb title') or ton.get('title', '')
         what = 'title'
     else:
-        value = ton['long imdb name']
+        value = ton.get('long imdb name') or ton.get('name', '')
     value = _normalizeValue(value)
     extras = u''
     crl = ton.currentRole

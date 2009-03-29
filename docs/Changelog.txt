@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090327b "Gran Torino" (27 Mar 2009)
+* What's the new in release 4.0svn20090329 "Gran Torino" (29 Mar 2009)
   [http]
   - minor fix to XML code to work with the test-suite.
 

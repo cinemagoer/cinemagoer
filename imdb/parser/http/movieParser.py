@@ -1171,8 +1171,15 @@ class DOMHTMLTechParser(DOMParserBase):
         for key in data:
             data[key] = filter(None, data[key])
         if self.kind in ('literature', 'business', 'contacts') and data:
+            if 'screenplay/teleplay' in data:
+                data['screenplay-teleplay'] = data['screenplay/teleplay']
+                del data['screenplay/teleplay']
             data = {self.kind: data}
         else:
+            if self.kind == 'publicity':
+                if 'biography (print)' in data:
+                    data['biography-print'] = data['biography (print)']
+                    del data['biography (print)']
             # Tech info.
             for key in data:
                 if key.startswith('film negative format'):

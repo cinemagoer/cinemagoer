@@ -979,6 +979,12 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
     return _l
 
 
+# XXX: the path is still to be decided (and there's no file, actually)
+_xmlHead = u"""<?xml version="1.0" charset="ascii"?>
+<!DOCTYPE %s SYSTEM "http://imdbpy.sf.net/4.1/imdbpy.dtd">
+
+"""
+
 class _Container(object):
     """Base class for Movie, Person, Character and Company classes."""
      # The default sets of information retrieved.
@@ -1286,7 +1292,8 @@ class _Container(object):
                 continue
             resList.append(value)
         resList.append(endTag)
-        return u''.join(resList)
+        head = _xmlHead % self.__class__.__name__.lower()
+        return head + u''.join(resList)
 
     def _getitem(self, key):
         """Handle special keys."""

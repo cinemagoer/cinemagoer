@@ -981,7 +981,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
 
 # XXX: the path is still to be decided (and there's no file, actually)
 _xmlHead = u"""<?xml version="1.0" charset="ascii"?>
-<!DOCTYPE %s SYSTEM "http://imdbpy.sf.net/4.1/imdbpy.dtd">
+<!DOCTYPE %s SYSTEM "http://imdbpy.sf.net/dtd/imdbpy41.dtd">
 
 """
 

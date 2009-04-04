@@ -21,6 +21,8 @@ I'd like to thank the following people for their help:
 
 * James Rubino for many bug reports.
 
+* neonrush for a bug parsing Malcolm McDowell filmography!
+
 * Alen Ribic for some bug reports and hints.
 
 * Joachim Selke for some bug reports with SQLAlchemy and DB2 and a lot

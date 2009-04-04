@@ -251,7 +251,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
     elif _parsingCompany:
         _defSep = ' ... '
     else:
-        _defSep = '....'
+        _defSep = ' .... '
     title = re_spaces.sub(' ', txt).strip()
     # Split the role/notes from the movie title.
     tsplit = title.split(_defSep, 1)

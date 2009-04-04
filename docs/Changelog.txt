@@ -1,10 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090331c "Gran Torino" (31 Mar 2009)
+* What's the new in release 4.0svn20090404 "Gran Torino" (04 Apr 2009)
   [http]
   - DTD definition.
   - minor fix to XML code to work with the test-suite.
+  - fixed a bug with movies containing '....' in titles.  And I'm
+    talking about Malcolm McDowell filmography...
 
 
 * What's the new in release 4.0 "Watchmen" (12 Mar 2009)

@@ -1065,7 +1065,8 @@ class _Container(object):
         if not self.__role:
             # XXX: needed?  Just ignore it?  It's probably safer to
             #      ignore it, to prevent some bugs in the parsers.
-            raise IMDbError, "Can't set ID of an empty Character/Person object."
+            #raise IMDbError,"Can't set ID of an empty Character/Person object."
+            pass
         if not self._roleIsPerson:
             if not isinstance(roleID, (list, tuple)):
                 self.currentRole.characterID = roleID

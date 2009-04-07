@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import glob
 import msgfmt
 import os

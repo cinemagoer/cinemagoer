@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import re
 import sys
 
@@ -47,3 +49,4 @@ for element in sorted(elements):
     print 'msgid "%s"' % element
     print 'msgstr ""'
     print
+

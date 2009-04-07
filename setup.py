@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import ez_setup
 ez_setup.use_setuptools()
 
@@ -191,7 +192,24 @@ ERR_MSG = """
   The caught exception, is re-raise below:
 """
 
+
+REBUILDMO_DIR = os.path.join('imdb', 'locale')
+REBUILDMO_SCRIPT = os.path.join('.', 'rebuildmo.py')
+
+def runRebuildmo():
+    """Call the script to rebuild the locales."""
+    cwd = os.getcwd()
+    try:
+        os.chdir(REBUILDMO_DIR)
+        # XXX; check return status.
+        os.system(REBUILDMO_SCRIPT)
+    except Exception, e:
+        print 'ERROR: unable to rebuild .mo files; caught exception %s' % e
+    os.chdir(cwd)
+
+
 try:
+    runRebuildmo()
     setuptools.setup(**params)
 except SystemExit:
     print ERR_MSG

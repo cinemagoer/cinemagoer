@@ -194,15 +194,21 @@ ERR_MSG = """
 
 
 REBUILDMO_DIR = os.path.join('imdb', 'locale')
-REBUILDMO_SCRIPT = os.path.join('.', 'rebuildmo.py')
+REBUILDMO_NAME = 'rebuildmo'
 
 def runRebuildmo():
-    """Call the script to rebuild the locales."""
+    """Call the function to rebuild the locales."""
     cwd = os.getcwd()
     try:
-        os.chdir(REBUILDMO_DIR)
-        # XXX; check return status.
-        os.system(REBUILDMO_SCRIPT)
+        import imp
+        import sys
+        scriptPath =  os.path.dirname(__file__)
+        modulePath = os.path.join(cwd, scriptPath, REBUILDMO_DIR)
+        sys.path += [modulePath, '.', cwd]
+        modInfo = imp.find_module(REBUILDMO_NAME, [modulePath, '.', cwd])
+        rebuildmo = imp.load_module('rebuildmo', *modInfo)
+        os.chdir(modulePath)
+        rebuildmo.rebuildmo()
     except Exception, e:
         print 'ERROR: unable to rebuild .mo files; caught exception %s' % e
     os.chdir(cwd)

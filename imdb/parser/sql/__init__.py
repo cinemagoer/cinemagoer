@@ -737,7 +737,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             try: res['top 250 rank'] = int(res['top 250 rank'])
             except: pass
         if 'bottom 10 rank' in res:
-            try: res['bottom 10 rank'] = int(res['bottom 10 rank'])
+            try: res['bottom 100 rank'] = int(res['bottom 10 rank'])
             except: pass
         trefs,nrefs = {}, {}
         trefs,nrefs = self._extractRefs(sub_dict(res,Movie.keys_tomodify_list))

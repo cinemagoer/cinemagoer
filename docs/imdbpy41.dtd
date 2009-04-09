@@ -59,6 +59,7 @@
   | kind
   | laboratory
   | languages
+  | laserdisc
   | literature
   | locations
   | long-imdb-canonical-title
@@ -426,22 +427,145 @@
 <!ELEMENT written-by (#PCDATA)>
 
 <!ELEMENT connections (
-    featured-in
+    alternate-language-version-of
+  | edited-from
+  | edited-into
+  | featured-in
   | features
   | followed-by
+  | follows
   | referenced-in
   | references
+  | remade-as
+  | remake-of
+  | similar-to
   | spin-off
+  | spin-off-from
   | spoofed-in
+  | spoofs
+  | version-of
+  | unknown-link
  )*>
+<!ELEMENT alternate-language-version-of (movie)*>
+<!ELEMENT edited-from (movie)*>
+<!ELEMENT edited-into (movie)*>
 <!ELEMENT featured-in (movie)*>
 <!ELEMENT features (movie)*>
 <!ELEMENT followed-by (movie)*>
+<!ELEMENT follows (movie)*>
 <!ELEMENT referenced-in (movie)*>
 <!ELEMENT references (movie)*>
+<!ELEMENT remade-as (movie)*>
+<!ELEMENT remake-of (movie)*>
+<!ELEMENT similar-to (movie)*>
 <!ELEMENT spin-off (movie)*>
+<!ELEMENT spin-off-from (movie)*>
 <!ELEMENT spoofed-in (movie)*>
+<!ELEMENT spoofs (movie)*>
+<!ELEMENT version-of (movie)*>
+<!ELEMENT unknown-link (movie)*>
 
+<!ELEMENT laserdic (
+    ld-additional-information
+  | ld-analog-left
+  | ld-analog-right
+  | ld-aspect-ratio
+  | ld-audio-noise
+  | ld-audio-quality
+  | ld-catalog-number
+  | ld-category
+  | ld-certification
+  | ld-close-captions-teletext-ld-g
+  | ld-color-information
+  | ld-color-rendition
+  | ld-contrast
+  | ld-dialogue-intellegibility
+  | ld-digital-sound
+  | ld-disc-format
+  | ld-disc-size
+  | ld-dynamic-range
+  | ld-frequency-response
+  | ld-group-genre
+  | ld-label
+  | ld-language
+  | ld-laserdisc-title
+  | ld-length
+  | ld-master-format
+  | ld-number
+  | ld-number-of-chapter-stops
+  | ld-number-of-sides
+  | ld-official-retail-price
+  | ld-original-title
+  | ld-picture-format
+  | ld-pressing-plant
+  | ld-production-country
+  | ld-quality-of-source
+  | ld-quality-program
+  | ld-release-country
+  | ld-release-date
+  | ld-review
+  | ld-sharpness
+  | ld-sound-encoding
+  | ld-spaciality
+  | ld-status-of-availablility
+  | ld-subtitles
+  | ld-supplement
+  | ld-video-artifacts
+  | ld-video-noise
+  | ld-video-quality
+  | ld-video-standard
+  | ld-year
+ )*>
+
+<!ELEMENT ld-additional-information (item)*>
+<!ELEMENT ld-analog-left (item)*>
+<!ELEMENT ld-analog-right (item)*>
+<!ELEMENT ld-aspect-ratio (item)*>
+<!ELEMENT ld-audio-noise (item)*>
+<!ELEMENT ld-audio-quality (item)*>
+<!ELEMENT ld-catalog-number (item)*>
+<!ELEMENT ld-category (item)*>
+<!ELEMENT ld-certification (item)*>
+<!ELEMENT ld-close-captions-teletext-ld-g (item)*>
+<!ELEMENT ld-color-information (item)*>
+<!ELEMENT ld-color-rendition (item)*>
+<!ELEMENT ld-contrast (item)*>
+<!ELEMENT ld-dialogue-intellegibility (item)*>
+<!ELEMENT ld-digital-sound (item)*>
+<!ELEMENT ld-disc-format (item)*>
+<!ELEMENT ld-disc-size (item)*>
+<!ELEMENT ld-dynamic-range (item)*>
+<!ELEMENT ld-frequency-response (item)*>
+<!ELEMENT ld-group-genre (item)*>
+<!ELEMENT ld-label (item)*>
+<!ELEMENT ld-language (item)*>
+<!ELEMENT ld-laserdisc-title (item)*>
+<!ELEMENT ld-length (item)*>
+<!ELEMENT ld-master-format (item)*>
+<!ELEMENT ld-number (item)*>
+<!ELEMENT ld-number-of-chapter-stops (item)*>
+<!ELEMENT ld-number-of-sides (item)*>
+<!ELEMENT ld-official-retail-price (item)*>
+<!ELEMENT ld-original-title (item)*>
+<!ELEMENT ld-picture-format (item)*>
+<!ELEMENT ld-pressing-plant (item)*>
+<!ELEMENT ld-production-country (item)*>
+<!ELEMENT ld-quality-of-source (item)*>
+<!ELEMENT ld-quality-program (item)*>
+<!ELEMENT ld-release-country (item)*>
+<!ELEMENT ld-release-date (item)*>
+<!ELEMENT ld-review (item)*>
+<!ELEMENT ld-sharpness (item)*>
+<!ELEMENT ld-sound-encoding (item)*>
+<!ELEMENT ld-spaciality (item)*>
+<!ELEMENT ld-status-of-availablility (item)*>
+<!ELEMENT ld-subtitles (item)*>
+<!ELEMENT ld-supplement (item)*>
+<!ELEMENT ld-video-artifacts (item)*>
+<!ELEMENT ld-video-noise (item)*>
+<!ELEMENT ld-video-quality (item)*>
+<!ELEMENT ld-video-standard (item)*>
+<!ELEMENT ld-year (item)*>
 <!ELEMENT faqs (item)*>
 
 <!ELEMENT recommendations (database)*>

@@ -107,9 +107,14 @@ for _k, _v in entitydefs.items():
     entcharrefs[_k] = _v
 del _sgmlentkeys, _k, _v
 entcharrefs['#160'] = u' '
+entcharrefs['#xA0'] = u' '
+entcharrefs['#xa0'] = u' '
+entcharrefs['#XA0'] = u' '
+entcharrefs['#x22'] = u'"'
+entcharrefs['#X22'] = u'"'
 
-re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' %
-                            '|'.join(map(re.escape, entcharrefs)))
+re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5}|\#x[0-9a-f]{1,3});' %
+                            '|'.join(map(re.escape, entcharrefs)), re.I)
 re_entcharrefssub = re_entcharrefs.sub
 
 sgmlentity.update(dict([('#34', u'"'), ('#38', u'&'),
@@ -130,8 +135,12 @@ def _replXMLRef(match):
     if value is None:
         if ref[0] == '#':
             ref_code = ref[1:]
-            if ref_code in ('34', '38', '60', '62', '39'): return match.group(0)
-            else: return unichr(int(ref[1:]))
+            if ref_code in ('34', '38', '60', '62', '39'):
+                return match.group(0)
+            elif ref_code[0].lower() == 'x':
+                return unichr(int(ref[2:], 16))
+            else:
+                return unichr(int(ref[1:]))
         else:
             return ref
     return value

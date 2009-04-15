@@ -687,7 +687,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                             accessSystem='sql')
                 m['episode of'] = parentSeries
                 season = episode_data.get('season', 'UNKNOWN')
-                if not episodes.has_key(season): episodes[season] = {}
+                if season not in episodes: episodes[season] = {}
                 ep_number = episode_data.get('episode')
                 if ep_number is None:
                     ep_number = max((episodes[season].keys() or [0])) + 1
@@ -699,46 +699,37 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         res = _reGroupDict(res, self._moviesubs)
         # Do some transformation to preserve consistency with other
         # data access systems.
-        #if res.has_key('plot'):
-        #    nl = []
-        #    for i in res['plot']:
-        #        if i[-1] == ')':
-        #            sauth = i.rfind('::(author: ')
-        #            if sauth != -1:
-        #                nl.append(i[sauth+11:-1] + '::' + i[:sauth])
-        #            else: nl.append(i)
-        #        else: nl.append(i)
-        #    res['plot'][:] = nl
-        # Other transformations.
         if 'quotes' in res:
             for idx, quote in enumerate(res['quotes']):
                 res['quotes'][idx] = quote.split('::')
-        if res.has_key('runtimes') and len(res['runtimes']) > 0:
+        if 'runtimes' in res and len(res['runtimes']) > 0:
             rt = res['runtimes'][0]
             episodes = re_episodes.findall(rt)
             if episodes:
                 res['runtimes'][0] = re_episodes.sub('', rt)
                 if res['runtimes'][0][-2:] == '::':
                     res['runtimes'][0] = res['runtimes'][0][:-2]
-        #if res.has_key('year'):
-        #    res['year'] = res['year']
-        if res.has_key('votes'):
+        if 'votes' in res:
             res['votes'] = int(res['votes'][0])
-        if res.has_key('rating'):
+        if 'rating' in res:
             res['rating'] = float(res['rating'][0])
-        if res.has_key('votes distribution'):
+        if 'votes distribution' in res:
             res['votes distribution'] = res['votes distribution'][0]
-        if res.has_key('mpaa'):
+        if 'mpaa' in res:
             res['mpaa'] = res['mpaa'][0]
-        if res.has_key('guest'):
-            res['guests'] = res['guest']
-            del res['guest']
         if 'top 250 rank' in res:
             try: res['top 250 rank'] = int(res['top 250 rank'])
             except: pass
         if 'bottom 10 rank' in res:
             try: res['bottom 100 rank'] = int(res['bottom 10 rank'])
             except: pass
+            del res['bottom 10 rank']
+        for old, new in [('guest', 'guests'), ('trademarks', 'trade-mark'),
+                        ('articles', 'article'), ('pictorials', 'pictorial'),
+                        ('magazine-covers', 'magazine-cover-photo')]:
+            if old in res:
+                res[new] = res[old]
+                del res[old]
         trefs,nrefs = {}, {}
         trefs,nrefs = self._extractRefs(sub_dict(res,Movie.keys_tomodify_list))
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
@@ -792,7 +783,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         try:
             qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
                     for q in Name.select(condition)]
-            
+
             q2 = [(q.personID, {'name': q.name, 'imdbIndex': q.imdbIndex})
                     for q in AkaName.select(conditionAka)]
             qr += q2
@@ -858,7 +849,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 duty = orig_duty = group[0][3]
                 if duty not in seenDuties: seenDuties.append(orig_duty)
                 note = mdata[2] or u''
-                if mdata[4].has_key('episode of'):
+                if 'episode of' in mdata[4]:
                     duty = 'episodes'
                     if orig_duty not in ('actor', 'actress'):
                         if note: note = ' %s' % note
@@ -883,16 +874,11 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 episodes[k].reverse()
             res['episodes'] = episodes
         for duty in seenDuties:
-            if res.has_key(duty):
+            if duty in res:
                 if duty in ('actor', 'actress', 'himself', 'herself',
                             'themselves'):
                     res[duty] = merge_roles(res[duty])
                 res[duty].sort()
-        # XXX: is 'guest' still needed?  I think every GA reference in
-        #      the biographies.list file was removed.
-        if res.has_key('guest'):
-            res['notable tv guest appearances'] = res['guest']
-            del res['guest']
         # Info about the person.
         pinfo = [(self._info[pi.infoTypeID], pi.info, pi.note)
                 for pi in PersonInfo.select(PersonInfo.q.personID == personID)]
@@ -918,24 +904,14 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         # data access systems.
         for key in ('birth date', 'birth notes', 'death date', 'death notes',
                         'birth name', 'height'):
-            if res.has_key(key):
+            if key in res:
                 res[key] = res[key][0]
-        #if res.has_key('mini biography'):
-        #    nl = []
-        #    for i in res['mini biography']:
-        #        if i[-1] == ')':
-        #            sauth = i.rfind('::(author: ')
-        #            if sauth != -1:
-        #                nl.append(i[sauth+11:-1] + '::' + i[:sauth])
-        #            else: nl.append(i)
-        #        else: nl.append(i)
-        #    res['mini biography'][:] = nl
-        if res.has_key('guest'):
+        if 'guest' in res:
             res['notable tv guest appearances'] = res['guest']
             del res['guest']
         miscnames = res.get('nick names', [])
-        if res.has_key('birth name'): miscnames.append(res['birth name'])
-        if res.has_key('akas'):
+        if 'birth name' in res: miscnames.append(res['birth name'])
+        if 'akas' in res:
             for mname in miscnames:
                 if mname in res['akas']: res['akas'].remove(mname)
             if not res['akas']: del res['akas']
@@ -1073,7 +1049,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         for x in res:
             tmpd = x[1]
             country = tmpd.get('country')
-            if country is None and tmpd.has_key('country'):
+            if country is None and 'country' in tmpd:
                 del tmpd['country']
             returnl.append((x[0], tmpd))
         return returnl

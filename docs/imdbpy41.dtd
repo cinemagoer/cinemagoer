@@ -2,6 +2,8 @@
 
      XML Document Type Definition for IMDbPY 4.1.
 
+     http://imdbpy.sf.net/dtd/4.1/imdbpy41.dtd
+
      Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
 
  -->
@@ -32,6 +34,8 @@
   | cinematographer
   | cinematographic-process
   | color-info
+  | complete-cast
+  | complete-crew
   | connections
   | costume-department
   | costume-designer
@@ -132,6 +136,7 @@
   | stunt-performer
   | synopsis
   | taglines
+  | tech-info
   | thanks
   | title
   | top-250-rank
@@ -140,6 +145,7 @@
   | video-clips
   | visual-effects
   | votes
+  | votes-distribution
   | writer
   | year
  )*>
@@ -148,6 +154,7 @@
 <!ELEMENT person (
     actor
   | actress
+  | agent-address
   | akas
   | animation-department
   | archive-footage
@@ -317,6 +324,7 @@
 
 <!ELEMENT current-role (character | notes | person)*>
 
+<!ELEMENT agent-address (item)*>
 <!ELEMENT akas (item)*>
 <!ELEMENT alternate-versions (item)*>
 <!ELEMENT article (item)*>
@@ -327,6 +335,8 @@
 <!ELEMENT certificates (item)*>
 <!ELEMENT cinematographic-process (item)*>
 <!ELEMENT color-info (item)*>
+<!ELEMENT complete-cast (item)*>
+<!ELEMENT complete-crew (item)*>
 <!ELEMENT countries (item)*>
 <!ELEMENT crazy-credits (item)*>
 <!ELEMENT demographic (item)*>
@@ -359,6 +369,7 @@
 <!ELEMENT sound-clips (item)*>
 <!ELEMENT spouse (item)*>
 <!ELEMENT taglines (item)*>
+<!ELEMENT tech-info (item)*>
 <!ELEMENT trivia (item)*>
 <!ELEMENT trade-mark (item)*>
 <!ELEMENT sound-mix (item)*>
@@ -387,7 +398,9 @@
   | filming-dates
   | gross
   | opening-weekend
+  | production-dates
   | rentals
+  | studios
   | weekend-gross
  )*>
 <!ELEMENT admissions (item)*>
@@ -396,7 +409,9 @@
 <!ELEMENT filming-dates (item)*>
 <!ELEMENT gross (item)*>
 <!ELEMENT opening-weekend (item)*>
+<!ELEMENT production-dates (item)*>
 <!ELEMENT rentals (item)*>
+<!ELEMENT studios (item)*>
 <!ELEMENT weekend-gross (item)*>
 
 <!ELEMENT amazon-reviews (item)*>
@@ -683,4 +698,5 @@
 <!ELEMENT title (#PCDATA)>
 <!ELEMENT top-250-rank (#PCDATA)>
 <!ELEMENT votes (#PCDATA)>
+<!ELEMENT votes-distribution (#PCDATA)>
 <!ELEMENT year (#PCDATA)>

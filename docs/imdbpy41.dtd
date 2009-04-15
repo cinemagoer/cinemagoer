@@ -406,14 +406,22 @@
 <!ELEMENT review-kind (#PCDATA)>
 
 <!ELEMENT literature (
-    essays
+    adaption
+  | book
+  | essays
   | interviews
+  | novel
+  | other-literature
   | printed-media-reviews
   | production-process-protocol
   | screenplay-teleplay
  )*>
+<!ELEMENT adaption (item)*>
+<!ELEMENT book (item)*>
 <!ELEMENT essays (item)*>
+<!ELEMENT novel (item)*>
 <!ELEMENT interviews (item)*>
+<!ELEMENT other-literature (item)*>
 <!ELEMENT printed-media-reviews (item)*>
 <!ELEMENT production-process-protocol (item)*>
 <!ELEMENT screenplay-teleplay (item)*>

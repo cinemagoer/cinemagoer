@@ -48,5 +48,10 @@ for element in sorted(elements):
         print '# Default: %s' % element.replace('-', ' ').capitalize()
     print 'msgid "%s"' % element
     print 'msgstr ""'
+    # use this part instead of the line above to generate the po file for English
+    #if element in DEFAULT_MESSAGES:
+    #    print 'msgstr "%s"' % DEFAULT_MESSAGES[element]
+    #else:
+    #    print 'msgstr "%s"' % element.replace('-', ' ').capitalize()
     print
 

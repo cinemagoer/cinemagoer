@@ -199,10 +199,10 @@ REBUILDMO_NAME = 'rebuildmo'
 def runRebuildmo():
     """Call the function to rebuild the locales."""
     cwd = os.getcwd()
+    import sys
     path = list(sys.path)
     try:
         import imp
-        import sys
         scriptPath =  os.path.dirname(__file__)
         modulePath = os.path.join(cwd, scriptPath, REBUILDMO_DIR)
         sys.path += [modulePath, '.', cwd]

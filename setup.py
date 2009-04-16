@@ -199,6 +199,7 @@ REBUILDMO_NAME = 'rebuildmo'
 def runRebuildmo():
     """Call the function to rebuild the locales."""
     cwd = os.getcwd()
+    path = list(sys.path)
     try:
         import imp
         import sys
@@ -208,9 +209,11 @@ def runRebuildmo():
         modInfo = imp.find_module(REBUILDMO_NAME, [modulePath, '.', cwd])
         rebuildmo = imp.load_module('rebuildmo', *modInfo)
         os.chdir(modulePath)
-        rebuildmo.rebuildmo()
+        languages = rebuildmo.rebuildmo()
+        print 'Created locale for: %s.' % ' '.join(languages)
     except Exception, e:
         print 'ERROR: unable to rebuild .mo files; caught exception %s' % e
+    sys.path = path
     os.chdir(cwd)
 
 

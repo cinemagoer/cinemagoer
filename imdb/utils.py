@@ -1263,6 +1263,11 @@ class _Container(object):
         # it will be called by the _normalizeValue function.
         origModFunct = self.modFunct
         self.modFunct = modNull
+        # XXX: not totally sure it's a good idea, but could prevent
+        #      problems (i.e.: the returned string always contains
+        #      a DTD valid tag, and not something that can be only in
+        #      the keys_alias map).
+        key = self.keys_alias.get(key, key)
         try:
             withRefs = False
             if key in self.keys_tomodify and \

@@ -4,32 +4,32 @@ msgstr ""
 "Project-Id-Version: imdbpy\n"
 "POT-Creation-Date: 2009-04-16 10:37+0000\n"
 "PO-Revision-Date: YYYY-MM-DD HH:MM+0000\n"
-"Last-Translator: YOUR NAME <YOUR@EMAIL>\n"
-"Language-Team: TEAM NAME <TEAM@EMAIL>\n"
+"Last-Translator: Davide Alberani <da@erlug.linux.it>\n"
+"Language-Team: Davide Alberani <da@erlug.linux.it>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"Language-Code: en\n"
-"Language-Name: English\n"
+"Language-Code: it\n"
+"Language-Name: Italian\n"
 "Preferred-Encodings: utf-8\n"
 "Domain: imdbpy\n"
 
 # Default: Actor
 msgid "actor"
-msgstr ""
+msgstr "Attore"
 
 # Default: Actress
 msgid "actress"
-msgstr ""
+msgstr "Attrice"
 
 # Default: Adaption
 msgid "adaption"
-msgstr ""
+msgstr "Adattamento"
 
 # Default: Additional information
 msgid "additional-information"
-msgstr ""
+msgstr "Ulteriori informazioni"
 
 # Default: Admissions
 msgid "admissions"
@@ -41,7 +41,7 @@ msgstr ""
 
 # Default: Airing
 msgid "airing"
-msgstr ""
+msgstr "In onda"
 
 # Default: Akas
 msgid "akas"
@@ -57,7 +57,7 @@ msgstr ""
 
 # Default: Alternate versions
 msgid "alternate-versions"
-msgstr ""
+msgstr "Versioni alternative"
 
 # Default: Amazon reviews
 msgid "amazon-reviews"

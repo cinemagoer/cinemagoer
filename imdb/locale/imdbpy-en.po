@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: imdbpy\n"
-"POT-Creation-Date: 2009-04-02 16:54+0000\n"
+"POT-Creation-Date: 2009-04-16 10:37+0000\n"
 "PO-Revision-Date: YYYY-MM-DD HH:MM+0000\n"
 "Last-Translator: YOUR NAME <YOUR@EMAIL>\n"
 "Language-Team: TEAM NAME <TEAM@EMAIL>\n"
@@ -23,9 +23,21 @@ msgstr "Actor"
 msgid "actress"
 msgstr "Actress"
 
+# Default: Adaption
+msgid "adaption"
+msgstr ""
+
+# Default: Additional information
+msgid "additional-information"
+msgstr ""
+
 # Default: Admissions
 msgid "admissions"
 msgstr "Admissions"
+
+# Default: Agent address
+msgid "agent-address"
+msgstr ""
 
 # Default: Airing
 msgid "airing"
@@ -39,6 +51,10 @@ msgstr "Akas"
 msgid "all-products"
 msgstr "All products"
 
+# Default: Alternate language version of
+msgid "alternate-language-version-of"
+msgstr ""
+
 # Default: Alternate versions
 msgid "alternate-versions"
 msgstr "Alternate versions"
@@ -46,6 +62,14 @@ msgstr "Alternate versions"
 # Default: Amazon reviews
 msgid "amazon-reviews"
 msgstr "Amazon reviews"
+
+# Default: Analog left
+msgid "analog-left"
+msgstr ""
+
+# Default: Analog right
+msgid "analog-right"
+msgstr ""
 
 # Default: Animation department
 msgid "animation-department"
@@ -95,6 +119,14 @@ msgstr "Assistant director"
 msgid "auctions"
 msgstr "Auctions"
 
+# Default: Audio noise
+msgid "audio-noise"
+msgstr ""
+
+# Default: Audio quality
+msgid "audio-quality"
+msgstr ""
+
 # Default: Award
 msgid "award"
 msgstr "Award"
@@ -130,6 +162,10 @@ msgstr "Birth notes"
 # Default: Body
 msgid "body"
 msgstr "Body"
+
+# Default: Book
+msgid "book"
+msgstr ""
 
 # Default: Books
 msgid "books"
@@ -187,6 +223,10 @@ msgstr "Casting department"
 msgid "casting-director"
 msgstr "Casting director"
 
+# Default: Catalog number
+msgid "catalog-number"
+msgstr ""
+
 # Default: Category
 msgid "category"
 msgstr "Category"
@@ -198,6 +238,10 @@ msgstr "Certificate"
 # Default: Certificates
 msgid "certificates"
 msgstr "Certificates"
+
+# Default: Certification
+msgid "certification"
+msgstr ""
 
 # Default: Channel
 msgid "channel"
@@ -215,13 +259,33 @@ msgstr "Cinematographer"
 msgid "cinematographic-process"
 msgstr "Cinematographic process"
 
+# Default: Close captions teletext ld g
+msgid "close-captions-teletext-ld-g"
+msgstr ""
+
 # Default: Color info
 msgid "color-info"
 msgstr "Color info"
 
+# Default: Color information
+msgid "color-information"
+msgstr ""
+
+# Default: Color rendition
+msgid "color-rendition"
+msgstr ""
+
 # Default: Company
 msgid "company"
 msgstr "Company"
+
+# Default: Complete cast
+msgid "complete-cast"
+msgstr ""
+
+# Default: Complete crew
+msgid "complete-crew"
+msgstr ""
 
 # Default: Composer
 msgid "composer"
@@ -230,6 +294,10 @@ msgstr "Composer"
 # Default: Connections
 msgid "connections"
 msgstr "Connections"
+
+# Default: Contrast
+msgid "contrast"
+msgstr ""
 
 # Default: Copyright holder
 msgid "copyright-holder"
@@ -299,9 +367,25 @@ msgstr "Demographic"
 msgid "description"
 msgstr "Description"
 
+# Default: Dialogue intellegibility
+msgid "dialogue-intellegibility"
+msgstr ""
+
+# Default: Digital sound
+msgid "digital-sound"
+msgstr ""
+
 # Default: Director
 msgid "director"
 msgstr "Director"
+
+# Default: Disc format
+msgid "disc-format"
+msgstr ""
+
+# Default: Disc size
+msgid "disc-size"
+msgstr ""
 
 # Default: Distributors
 msgid "distributors"
@@ -322,6 +406,18 @@ msgstr "Dvd format"
 # Default: Dvds
 msgid "dvds"
 msgstr "Dvds"
+
+# Default: Dynamic range
+msgid "dynamic-range"
+msgstr ""
+
+# Default: Edited from
+msgid "edited-from"
+msgstr ""
+
+# Default: Edited into
+msgid "edited-into"
+msgstr ""
 
 # Default: Editor
 msgid "editor"
@@ -355,6 +451,10 @@ msgstr "Episodes rating"
 msgid "essays"
 msgstr "Essays"
 
+# Default: External reviews
+msgid "external-reviews"
+msgstr ""
+
 # Default: Faqs
 msgid "faqs"
 msgstr "Faqs"
@@ -383,9 +483,17 @@ msgstr "Filmography"
 msgid "followed-by"
 msgstr "Followed by"
 
+# Default: Follows
+msgid "follows"
+msgstr ""
+
 # Default: For
 msgid "for"
 msgstr "For"
+
+# Default: Frequency response
+msgid "frequency-response"
+msgstr ""
 
 # Default: From
 msgid "from"
@@ -406,6 +514,10 @@ msgstr "Goofs"
 # Default: Gross
 msgid "gross"
 msgstr "Gross"
+
+# Default: Group genre
+msgid "group-genre"
+msgstr ""
 
 # Default: Headshot
 msgid "headshot"
@@ -451,9 +563,25 @@ msgstr "Label"
 msgid "laboratory"
 msgstr "Laboratory"
 
+# Default: Language
+msgid "language"
+msgstr ""
+
 # Default: Languages
 msgid "languages"
 msgstr "Languages"
+
+# Default: Laserdic
+msgid "laserdic"
+msgstr ""
+
+# Default: Laserdisc title
+msgid "laserdisc-title"
+msgstr ""
+
+# Default: Length
+msgid "length"
+msgstr ""
 
 # Default: Line
 msgid "line"
@@ -502,6 +630,10 @@ msgstr "Magazine cover photo"
 # Default: Make up
 msgid "make-up"
 msgstr "Make up"
+
+# Default: Master format
+msgid "master-format"
+msgstr ""
 
 # Default: Median
 msgid "median"
@@ -559,6 +691,18 @@ msgstr "Nick names"
 msgid "notes"
 msgstr "Notes"
 
+# Default: Novel
+msgid "novel"
+msgstr ""
+
+# Default: Number
+msgid "number"
+msgstr ""
+
+# Default: Number of chapter stops
+msgid "number-of-chapter-stops"
+msgstr ""
+
 # Default: Number of episodes
 msgid "number-of-episodes"
 msgstr "Number of episodes"
@@ -567,9 +711,17 @@ msgstr "Number of episodes"
 msgid "number-of-seasons"
 msgstr "Number of seasons"
 
+# Default: Number of sides
+msgid "number-of-sides"
+msgstr ""
+
 # Default: Number of votes
 msgid "number-of-votes"
 msgstr "Number of votes"
+
+# Default: Official retail price
+msgid "official-retail-price"
+msgstr ""
 
 # Default: Official sites
 msgid "official-sites"
@@ -586,6 +738,14 @@ msgstr "Original air date"
 # Default: Original music
 msgid "original-music"
 msgstr "Original music"
+
+# Default: Original title
+msgid "original-title"
+msgstr ""
+
+# Default: Other literature
+msgid "other-literature"
+msgstr ""
 
 # Default: Other works
 msgid "other-works"
@@ -611,6 +771,10 @@ msgstr "Photo sites"
 msgid "pictorial"
 msgstr "Pictorial"
 
+# Default: Picture format
+msgid "picture-format"
+msgstr ""
+
 # Default: Plot
 msgid "plot"
 msgstr "Plot"
@@ -622,6 +786,10 @@ msgstr "Plot outline"
 # Default: Portrayed in
 msgid "portrayed-in"
 msgstr "Portrayed in"
+
+# Default: Pressing plant
+msgid "pressing-plant"
+msgstr ""
 
 # Default: Printed film format
 msgid "printed-film-format"
@@ -639,6 +807,14 @@ msgstr "Producer"
 msgid "production-companies"
 msgstr "Production companies"
 
+# Default: Production country
+msgid "production-country"
+msgstr ""
+
+# Default: Production dates
+msgid "production-dates"
+msgstr ""
+
 # Default: Production design
 msgid "production-design"
 msgstr "Production design"
@@ -654,6 +830,14 @@ msgstr "Production manager"
 # Default: Production process protocol
 msgid "production-process-protocol"
 msgstr "Production process protocol"
+
+# Default: Quality of source
+msgid "quality-of-source"
+msgstr ""
+
+# Default: Quality program
+msgid "quality-program"
+msgstr ""
 
 # Default: Quote
 msgid "quote"
@@ -683,6 +867,10 @@ msgstr "References"
 msgid "region"
 msgstr "Region"
 
+# Default: Release country
+msgid "release-country"
+msgstr ""
+
 # Default: Release date
 msgid "release-date"
 msgstr "Release date"
@@ -690,6 +878,14 @@ msgstr "Release date"
 # Default: Release dates
 msgid "release-dates"
 msgstr "Release dates"
+
+# Default: Remade as
+msgid "remade-as"
+msgstr ""
+
+# Default: Remake of
+msgid "remake-of"
+msgstr ""
 
 # Default: Rentals
 msgid "rentals"
@@ -835,6 +1031,14 @@ msgstr "Series years"
 msgid "set-decoration"
 msgstr "Set decoration"
 
+# Default: Sharpness
+msgid "sharpness"
+msgstr ""
+
+# Default: Similar to
+msgid "similar-to"
+msgstr ""
+
 # Default: Sound clips
 msgid "sound-clips"
 msgstr "Sound clips"
@@ -843,6 +1047,10 @@ msgstr "Sound clips"
 msgid "sound-crew"
 msgstr "Sound crew"
 
+# Default: Sound encoding
+msgid "sound-encoding"
+msgstr ""
+
 # Default: Sound mix
 msgid "sound-mix"
 msgstr "Sound mix"
@@ -850,6 +1058,10 @@ msgstr "Sound mix"
 # Default: Soundtrack
 msgid "soundtrack"
 msgstr "Soundtrack"
+
+# Default: Spaciality
+msgid "spaciality"
+msgstr ""
 
 # Default: Special effects
 msgid "special-effects"
@@ -867,17 +1079,33 @@ msgstr "Special effects department"
 msgid "spin-off"
 msgstr "Spin off"
 
+# Default: Spin off from
+msgid "spin-off-from"
+msgstr ""
+
 # Default: Spoofed in
 msgid "spoofed-in"
 msgstr "Spoofed in"
+
+# Default: Spoofs
+msgid "spoofs"
+msgstr ""
 
 # Default: Spouse
 msgid "spouse"
 msgstr "Spouse"
 
+# Default: Status of availablility
+msgid "status-of-availablility"
+msgstr ""
+
 # Default: Studio
 msgid "studio"
 msgstr "Studio"
+
+# Default: Studios
+msgid "studios"
+msgstr ""
 
 # Default: Stunt performer
 msgid "stunt-performer"
@@ -886,6 +1114,14 @@ msgstr "Stunt performer"
 # Default: Stunts
 msgid "stunts"
 msgstr "Stunts"
+
+# Default: Subtitles
+msgid "subtitles"
+msgstr ""
+
+# Default: Supplement
+msgid "supplement"
+msgstr ""
 
 # Default: Supplements
 msgid "supplements"
@@ -898,6 +1134,10 @@ msgstr "Synopsis"
 # Default: Taglines
 msgid "taglines"
 msgstr "Taglines"
+
+# Default: Tech info
+msgid "tech-info"
+msgstr ""
 
 # Default: Thanks
 msgid "thanks"
@@ -939,17 +1179,41 @@ msgstr "Trivia"
 msgid "under-license-from"
 msgstr "Under license from"
 
+# Default: Unknown link
+msgid "unknown-link"
+msgstr ""
+
 # Default: Upc
 msgid "upc"
 msgstr "Upc"
+
+# Default: Version of
+msgid "version-of"
+msgstr ""
 
 # Default: Vhs
 msgid "vhs"
 msgstr "Vhs"
 
+# Default: Video artifacts
+msgid "video-artifacts"
+msgstr ""
+
 # Default: Video clips
 msgid "video-clips"
 msgstr "Video clips"
+
+# Default: Video noise
+msgid "video-noise"
+msgstr ""
+
+# Default: Video quality
+msgid "video-quality"
+msgstr ""
+
+# Default: Video standard
+msgid "video-standard"
+msgstr ""
 
 # Default: Visual effects
 msgid "visual-effects"
@@ -958,6 +1222,10 @@ msgstr "Visual effects"
 # Default: Votes
 msgid "votes"
 msgstr "Votes"
+
+# Default: Votes distribution
+msgid "votes-distribution"
+msgstr ""
 
 # Default: Weekend gross
 msgid "weekend-gross"
@@ -986,4 +1254,3 @@ msgstr "Year"
 # Default: Zshops
 msgid "zshops"
 msgstr "Zshops"
-

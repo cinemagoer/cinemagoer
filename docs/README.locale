@@ -45,6 +45,9 @@ E.g.:
 
 In the imdb.locale package, you'll find some scripts useful to build
 your own internationalization files.
+If you create a new translation or update an existing one, you can send
+it to the <imdbpy-devel@lists.sourceforge.net> mailing list, for
+inclusion in the next releases.
 
 - the generatepot.py should be used only when the DTD is changed; it's
   used to create the imdbpy.pot file (the one shipped is always

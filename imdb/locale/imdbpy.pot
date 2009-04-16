@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: imdbpy\n"
-"POT-Creation-Date: 2009-04-16 10:37+0000\n"
+"POT-Creation-Date: 2009-04-16 12:02+0000\n"
 "PO-Revision-Date: YYYY-MM-DD HH:MM+0000\n"
 "Last-Translator: YOUR NAME <YOUR@EMAIL>\n"
 "Language-Team: TEAM NAME <TEAM@EMAIL>\n"
@@ -571,8 +571,8 @@ msgstr ""
 msgid "languages"
 msgstr ""
 
-# Default: Laserdic
-msgid "laserdic"
+# Default: Laserdisc
+msgid "laserdisc"
 msgstr ""
 
 # Default: Laserdisc title

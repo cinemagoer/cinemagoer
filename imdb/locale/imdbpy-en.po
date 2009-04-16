@@ -571,8 +571,8 @@ msgstr ""
 msgid "languages"
 msgstr "Languages"
 
-# Default: Laserdic
-msgid "laserdic"
+# Default: Laserdisc
+msgid "laserdisc"
 msgstr ""
 
 # Default: Laserdisc title

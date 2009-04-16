@@ -489,7 +489,7 @@
 <!ELEMENT version-of (movie)*>
 <!ELEMENT unknown-link (movie)*>
 
-<!ELEMENT laserdic (
+<!ELEMENT laserdisc (
     additional-information
   | analog-left
   | analog-right

@@ -37,7 +37,7 @@ msgstr ""
 
 # Default: Agent address
 msgid "agent-address"
-msgstr ""
+msgstr "Indirizzo dell'agente"
 
 # Default: Airing
 msgid "airing"
@@ -45,7 +45,7 @@ msgstr "In onda"
 
 # Default: Akas
 msgid "akas"
-msgstr ""
+msgstr "Alias"
 
 # Default: All products
 msgid "all-products"
@@ -53,7 +53,7 @@ msgstr ""
 
 # Default: Alternate language version of
 msgid "alternate-language-version-of"
-msgstr ""
+msgstr "Versione in altra lingua di"
 
 # Default: Alternate versions
 msgid "alternate-versions"
@@ -61,43 +61,43 @@ msgstr "Versioni alternative"
 
 # Default: Amazon reviews
 msgid "amazon-reviews"
-msgstr ""
+msgstr "Recensione di Amazon"
 
 # Default: Analog left
 msgid "analog-left"
-msgstr ""
+msgstr "Analogico sinistro"
 
 # Default: Analog right
 msgid "analog-right"
-msgstr ""
+msgstr "Analogico destro"
 
 # Default: Animation department
 msgid "animation-department"
-msgstr ""
+msgstr "Dipartimento animazione"
 
 # Default: Archive footage
 msgid "archive-footage"
-msgstr ""
+msgstr "Materiale d'archivio"
 
 # Default: Arithmetic mean
 msgid "arithmetic-mean"
-msgstr ""
+msgstr "Media aritmetica"
 
 # Default: Art department
 msgid "art-department"
-msgstr ""
+msgstr "Dipartimento artistico"
 
 # Default: Art direction
 msgid "art-direction"
-msgstr ""
+msgstr "Direzione artistica"
 
 # Default: Art director
 msgid "art-director"
-msgstr ""
+msgstr "Direttore artistico"
 
 # Default: Article
 msgid "article"
-msgstr ""
+msgstr "Articolo"
 
 # Default: Asin
 msgid "asin"
@@ -105,7 +105,7 @@ msgstr ""
 
 # Default: Aspect ratio
 msgid "aspect-ratio"
-msgstr ""
+msgstr "Rapporto d'aspetto"
 
 # Default: Assigner
 msgid "assigner"
@@ -113,11 +113,11 @@ msgstr ""
 
 # Default: Assistant director
 msgid "assistant-director"
-msgstr ""
+msgstr "Assistente regista"
 
 # Default: Auctions
 msgid "auctions"
-msgstr ""
+msgstr "Aste"
 
 # Default: Audio noise
 msgid "audio-noise"
@@ -129,19 +129,19 @@ msgstr ""
 
 # Default: Award
 msgid "award"
-msgstr ""
+msgstr "Premio"
 
 # Default: Awards
 msgid "awards"
-msgstr ""
+msgstr "Premi"
 
 # Default: Biographical movies
 msgid "biographical-movies"
-msgstr ""
+msgstr "Film biografici"
 
 # Default: Biography
 msgid "biography"
-msgstr ""
+msgstr "Biografia"
 
 # Default: Biography print
 msgid "biography-print"
@@ -149,15 +149,15 @@ msgstr ""
 
 # Default: Birth date
 msgid "birth-date"
-msgstr ""
+msgstr "Data di nascita"
 
 # Default: Birth name
 msgid "birth-name"
-msgstr ""
+msgstr "Nome di nascita"
 
 # Default: Birth notes
 msgid "birth-notes"
-msgstr ""
+msgstr "Note di nascita"
 
 # Default: Body
 msgid "body"
@@ -173,7 +173,7 @@ msgstr ""
 
 # Default: Bottom 100 rank
 msgid "bottom-100-rank"
-msgstr ""
+msgstr "Posizione nella bottom 100"
 
 # Default: Budget
 msgid "budget"
@@ -217,11 +217,11 @@ msgstr ""
 
 # Default: Casting department
 msgid "casting-department"
-msgstr ""
+msgstr "Casting"
 
 # Default: Casting director
 msgid "casting-director"
-msgstr ""
+msgstr "Direttore del casting"
 
 # Default: Catalog number
 msgid "catalog-number"
@@ -229,31 +229,31 @@ msgstr ""
 
 # Default: Category
 msgid "category"
-msgstr ""
+msgstr "Categoria"
 
 # Default: Certificate
 msgid "certificate"
-msgstr ""
+msgstr "Certificazione"
 
 # Default: Certificates
 msgid "certificates"
-msgstr ""
+msgstr "Certificazioni"
 
 # Default: Certification
 msgid "certification"
-msgstr ""
+msgstr "Certificazioni"
 
 # Default: Channel
 msgid "channel"
-msgstr ""
+msgstr "Canale"
 
 # Default: Character
 msgid "character"
-msgstr ""
+msgstr "Personaggio"
 
 # Default: Cinematographer
 msgid "cinematographer"
-msgstr ""
+msgstr "Fotografia"
 
 # Default: Cinematographic process
 msgid "cinematographic-process"
@@ -265,7 +265,7 @@ msgstr ""
 
 # Default: Color info
 msgid "color-info"
-msgstr ""
+msgstr "Colore"
 
 # Default: Color information
 msgid "color-information"
@@ -277,51 +277,51 @@ msgstr ""
 
 # Default: Company
 msgid "company"
-msgstr ""
+msgstr "Compagnia"
 
 # Default: Complete cast
 msgid "complete-cast"
-msgstr ""
+msgstr "Cast completo"
 
 # Default: Complete crew
 msgid "complete-crew"
-msgstr ""
+msgstr "Troupe completa"
 
 # Default: Composer
 msgid "composer"
-msgstr ""
+msgstr "Compositore"
 
 # Default: Connections
 msgid "connections"
-msgstr ""
+msgstr "Collegamenti"
 
 # Default: Contrast
 msgid "contrast"
-msgstr ""
+msgstr "Contrasto"
 
 # Default: Copyright holder
 msgid "copyright-holder"
-msgstr ""
+msgstr "Detentore dei diritti d'autore"
 
 # Default: Costume department
 msgid "costume-department"
-msgstr ""
+msgstr "Dipartimento costumi"
 
 # Default: Costume designer
 msgid "costume-designer"
-msgstr ""
+msgstr "Costumista"
 
 # Default: Countries
 msgid "countries"
-msgstr ""
+msgstr "Paesi"
 
 # Default: Country
 msgid "country"
-msgstr ""
+msgstr "Paese"
 
 # Default: Courtesy of
 msgid "courtesy-of"
-msgstr ""
+msgstr "Cortesia di"
 
 # Default: Cover
 msgid "cover"
@@ -329,19 +329,19 @@ msgstr ""
 
 # Default: Cover url
 msgid "cover-url"
-msgstr ""
+msgstr "Locandina"
 
 # Default: Crazy credits
 msgid "crazy-credits"
-msgstr ""
+msgstr "Titoli pazzi"
 
 # Default: Creator
 msgid "creator"
-msgstr ""
+msgstr "Creatore"
 
 # Default: Current role
 msgid "current-role"
-msgstr ""
+msgstr "Ruolo"
 
 # Default: Database
 msgid "database"
@@ -349,15 +349,15 @@ msgstr ""
 
 # Default: Date
 msgid "date"
-msgstr ""
+msgstr "Data"
 
 # Default: Death date
 msgid "death-date"
-msgstr ""
+msgstr "Data di morte"
 
 # Default: Death notes
 msgid "death-notes"
-msgstr ""
+msgstr "Note di morte"
 
 # Default: Demographic
 msgid "demographic"
@@ -365,7 +365,7 @@ msgstr ""
 
 # Default: Description
 msgid "description"
-msgstr ""
+msgstr "Descrizione"
 
 # Default: Dialogue intellegibility
 msgid "dialogue-intellegibility"
@@ -377,7 +377,7 @@ msgstr ""
 
 # Default: Director
 msgid "director"
-msgstr ""
+msgstr "Regista"
 
 # Default: Disc format
 msgid "disc-format"
@@ -389,7 +389,7 @@ msgstr ""
 
 # Default: Distributors
 msgid "distributors"
-msgstr ""
+msgstr "Distributori"
 
 # Default: Dvd
 msgid "dvd"
@@ -413,11 +413,11 @@ msgstr ""
 
 # Default: Edited from
 msgid "edited-from"
-msgstr ""
+msgstr "Tratto da"
 
 # Default: Edited into
 msgid "edited-into"
-msgstr ""
+msgstr "Montato in"
 
 # Default: Editor
 msgid "editor"
@@ -429,11 +429,11 @@ msgstr ""
 
 # Default: Episode
 msgid "episode"
-msgstr ""
+msgstr "Episodio"
 
 # Default: Episode of
 msgid "episode-of"
-msgstr ""
+msgstr "Episodio di"
 
 # Default: Episode title
 msgid "episode-title"
@@ -441,11 +441,11 @@ msgstr ""
 
 # Default: Episodes
 msgid "episodes"
-msgstr ""
+msgstr "Episodi"
 
 # Default: Episodes rating
 msgid "episodes-rating"
-msgstr ""
+msgstr "Voto degli episodi"
 
 # Default: Essays
 msgid "essays"
@@ -453,7 +453,7 @@ msgstr ""
 
 # Default: External reviews
 msgid "external-reviews"
-msgstr ""
+msgstr "Recensioni esterne"
 
 # Default: Faqs
 msgid "faqs"
@@ -477,19 +477,19 @@ msgstr ""
 
 # Default: Filmography
 msgid "filmography"
-msgstr ""
+msgstr "Filmografia"
 
 # Default: Followed by
 msgid "followed-by"
-msgstr ""
+msgstr "Seguito da"
 
 # Default: Follows
 msgid "follows"
-msgstr ""
+msgstr "Segue"
 
 # Default: For
 msgid "for"
-msgstr ""
+msgstr "Per"
 
 # Default: Frequency response
 msgid "frequency-response"
@@ -497,7 +497,7 @@ msgstr ""
 
 # Default: From
 msgid "from"
-msgstr ""
+msgstr "Da"
 
 # Default: Full article link
 msgid "full-article-link"
@@ -505,15 +505,15 @@ msgstr ""
 
 # Default: Genres
 msgid "genres"
-msgstr ""
+msgstr "Generi"
 
 # Default: Goofs
 msgid "goofs"
-msgstr ""
+msgstr "Errori"
 
 # Default: Gross
 msgid "gross"
-msgstr ""
+msgstr "Lordo"
 
 # Default: Group genre
 msgid "group-genre"
@@ -521,11 +521,11 @@ msgstr ""
 
 # Default: Headshot
 msgid "headshot"
-msgstr ""
+msgstr "Foto"
 
 # Default: Height
 msgid "height"
-msgstr ""
+msgstr "Altezza"
 
 # Default: Imdbindex
 msgid "imdbindex"
@@ -533,15 +533,15 @@ msgstr ""
 
 # Default: Interview
 msgid "interview"
-msgstr ""
+msgstr "Intervista"
 
 # Default: Interviews
 msgid "interviews"
-msgstr ""
+msgstr "Interviste"
 
 # Default: Introduction
 msgid "introduction"
-msgstr ""
+msgstr "Introduzione"
 
 # Default: Item
 msgid "item"
@@ -549,11 +549,11 @@ msgstr ""
 
 # Default: Keywords
 msgid "keywords"
-msgstr ""
+msgstr "Parole chiave"
 
 # Default: Kind
 msgid "kind"
-msgstr ""
+msgstr "Tipo"
 
 # Default: Label
 msgid "label"
@@ -565,11 +565,11 @@ msgstr ""
 
 # Default: Language
 msgid "language"
-msgstr ""
+msgstr "Lingua"
 
 # Default: Languages
 msgid "languages"
-msgstr ""
+msgstr "Lingue"
 
 # Default: Laserdisc
 msgid "laserdisc"
@@ -581,15 +581,15 @@ msgstr ""
 
 # Default: Length
 msgid "length"
-msgstr ""
+msgstr "Durata"
 
 # Default: Line
 msgid "line"
-msgstr ""
+msgstr "Battuta"
 
 # Default: Link
 msgid "link"
-msgstr ""
+msgstr "Collegamento"
 
 # Default: Link text
 msgid "link-text"
@@ -597,7 +597,7 @@ msgstr ""
 
 # Default: Literature
 msgid "literature"
-msgstr ""
+msgstr "Letteratura"
 
 # Default: Locations
 msgid "locations"
@@ -645,7 +645,7 @@ msgstr ""
 
 # Default: Mini biography
 msgid "mini-biography"
-msgstr ""
+msgstr "Biografia"
 
 # Default: Misc links
 msgid "misc-links"
@@ -653,15 +653,15 @@ msgstr ""
 
 # Default: Miscellaneous companies
 msgid "miscellaneous-companies"
-msgstr ""
+msgstr "Altre compagnie"
 
 # Default: Miscellaneous crew
 msgid "miscellaneous-crew"
-msgstr ""
+msgstr "Altra troupe"
 
 # Default: Movie
 msgid "movie"
-msgstr ""
+msgstr "Film"
 
 # Default: Mpaa
 msgid "mpaa"
@@ -669,11 +669,11 @@ msgstr ""
 
 # Default: Music department
 msgid "music-department"
-msgstr ""
+msgstr "Dipartimento musicale"
 
 # Default: Name
 msgid "name"
-msgstr ""
+msgstr "Nome"
 
 # Default: News
 msgid "news"
@@ -685,11 +685,11 @@ msgstr ""
 
 # Default: Nick names
 msgid "nick-names"
-msgstr ""
+msgstr "Soprannomi"
 
 # Default: Notes
 msgid "notes"
-msgstr ""
+msgstr "Note"
 
 # Default: Novel
 msgid "novel"
@@ -697,7 +697,7 @@ msgstr ""
 
 # Default: Number
 msgid "number"
-msgstr ""
+msgstr "Numero"
 
 # Default: Number of chapter stops
 msgid "number-of-chapter-stops"
@@ -717,7 +717,7 @@ msgstr ""
 
 # Default: Number of votes
 msgid "number-of-votes"
-msgstr ""
+msgstr "Numero di voti"
 
 # Default: Official retail price
 msgid "official-retail-price"
@@ -725,7 +725,7 @@ msgstr ""
 
 # Default: Official sites
 msgid "official-sites"
-msgstr ""
+msgstr "Siti ufficiali"
 
 # Default: Opening weekend
 msgid "opening-weekend"
@@ -737,11 +737,11 @@ msgstr ""
 
 # Default: Original music
 msgid "original-music"
-msgstr ""
+msgstr "Musica originale"
 
 # Default: Original title
 msgid "original-title"
-msgstr ""
+msgstr "Titolo originale"
 
 # Default: Other literature
 msgid "other-literature"
@@ -749,7 +749,7 @@ msgstr ""
 
 # Default: Other works
 msgid "other-works"
-msgstr ""
+msgstr "Altri lavori"
 
 # Default: Parents guide
 msgid "parents-guide"
@@ -757,11 +757,11 @@ msgstr ""
 
 # Default: Performed by
 msgid "performed-by"
-msgstr ""
+msgstr "Eseguito da"
 
 # Default: Person
 msgid "person"
-msgstr ""
+msgstr "Persona"
 
 # Default: Photo sites
 msgid "photo-sites"
@@ -777,15 +777,15 @@ msgstr ""
 
 # Default: Plot
 msgid "plot"
-msgstr ""
+msgstr "Trama"
 
 # Default: Plot outline
 msgid "plot-outline"
-msgstr ""
+msgstr "Trama in breve"
 
 # Default: Portrayed in
 msgid "portrayed-in"
-msgstr ""
+msgstr "Rappresentato in"
 
 # Default: Pressing plant
 msgid "pressing-plant"
@@ -801,19 +801,19 @@ msgstr ""
 
 # Default: Producer
 msgid "producer"
-msgstr ""
+msgstr "Produttore"
 
 # Default: Production companies
 msgid "production-companies"
-msgstr ""
+msgstr "Compagnie di produzione"
 
 # Default: Production country
 msgid "production-country"
-msgstr ""
+msgstr "Paese di produzione"
 
 # Default: Production dates
 msgid "production-dates"
-msgstr ""
+msgstr "Date di produzione"
 
 # Default: Production design
 msgid "production-design"
@@ -825,7 +825,7 @@ msgstr ""
 
 # Default: Production manager
 msgid "production-manager"
-msgstr ""
+msgstr "Manager di produzione"
 
 # Default: Production process protocol
 msgid "production-process-protocol"
@@ -841,27 +841,27 @@ msgstr ""
 
 # Default: Quote
 msgid "quote"
-msgstr ""
+msgstr "Citazione"
 
 # Default: Quotes
 msgid "quotes"
-msgstr ""
+msgstr "Citazioni"
 
 # Default: Rating
 msgid "rating"
-msgstr ""
+msgstr "Voto"
 
 # Default: Recommendations
 msgid "recommendations"
-msgstr ""
+msgstr "Raccomandazioni"
 
 # Default: Referenced in
 msgid "referenced-in"
-msgstr ""
+msgstr "Citato in"
 
 # Default: References
 msgid "references"
-msgstr ""
+msgstr "Cita"
 
 # Default: Region
 msgid "region"
@@ -881,11 +881,11 @@ msgstr ""
 
 # Default: Remade as
 msgid "remade-as"
-msgstr ""
+msgstr "Rifatto come"
 
 # Default: Remake of
 msgid "remake-of"
-msgstr ""
+msgstr "Rifacimento di"
 
 # Default: Rentals
 msgid "rentals"
@@ -897,7 +897,7 @@ msgstr ""
 
 # Default: Review
 msgid "review"
-msgstr ""
+msgstr "Recensione"
 
 # Default: Review author
 msgid "review-author"
@@ -909,11 +909,11 @@ msgstr ""
 
 # Default: Runtime
 msgid "runtime"
-msgstr ""
+msgstr "Durata"
 
 # Default: Runtimes
 msgid "runtimes"
-msgstr ""
+msgstr "Durate"
 
 # Default: Salary history
 msgid "salary-history"
@@ -925,7 +925,7 @@ msgstr ""
 
 # Default: Season
 msgid "season"
-msgstr ""
+msgstr "Stagione"
 
 # Default: Second unit director or assistant director
 msgid "second-unit-director-or-assistant-director"
@@ -933,7 +933,7 @@ msgstr ""
 
 # Default: Self
 msgid "self"
-msgstr ""
+msgstr "Se stesso"
 
 # Default: Series animation department
 msgid "series-animation-department"
@@ -1037,7 +1037,7 @@ msgstr ""
 
 # Default: Similar to
 msgid "similar-to"
-msgstr ""
+msgstr "Simile a"
 
 # Default: Sound clips
 msgid "sound-clips"
@@ -1057,7 +1057,7 @@ msgstr ""
 
 # Default: Soundtrack
 msgid "soundtrack"
-msgstr ""
+msgstr "Colonna sonora"
 
 # Default: Spaciality
 msgid "spaciality"
@@ -1065,15 +1065,15 @@ msgstr ""
 
 # Default: Special effects
 msgid "special-effects"
-msgstr ""
+msgstr "Effetti speciali"
 
 # Default: Special effects companies
 msgid "special-effects-companies"
-msgstr ""
+msgstr "Compagni di effetti speciali"
 
 # Default: Special effects department
 msgid "special-effects-department"
-msgstr ""
+msgstr "Dipartimento effetti speciali"
 
 # Default: Spin off
 msgid "spin-off"
@@ -1081,19 +1081,19 @@ msgstr ""
 
 # Default: Spin off from
 msgid "spin-off-from"
-msgstr ""
+msgstr "Deriva da"
 
 # Default: Spoofed in
 msgid "spoofed-in"
-msgstr ""
+msgstr "Preso in giro in"
 
 # Default: Spoofs
 msgid "spoofs"
-msgstr ""
+msgstr "Prende in giro"
 
 # Default: Spouse
 msgid "spouse"
-msgstr ""
+msgstr "Coniuge"
 
 # Default: Status of availablility
 msgid "status-of-availablility"
@@ -1117,7 +1117,7 @@ msgstr ""
 
 # Default: Subtitles
 msgid "subtitles"
-msgstr ""
+msgstr "Sottotitoli"
 
 # Default: Supplement
 msgid "supplement"
@@ -1141,15 +1141,15 @@ msgstr ""
 
 # Default: Thanks
 msgid "thanks"
-msgstr ""
+msgstr "Ringraziamenti"
 
 # Default: Time
 msgid "time"
-msgstr ""
+msgstr "Tempo"
 
 # Default: Title
 msgid "title"
-msgstr ""
+msgstr "Titolo"
 
 # Default: Titles in this product
 msgid "titles-in-this-product"
@@ -1157,11 +1157,11 @@ msgstr ""
 
 # Default: To
 msgid "to"
-msgstr ""
+msgstr "A"
 
 # Default: Top 250 rank
 msgid "top-250-rank"
-msgstr ""
+msgstr "Posizione nella top 250"
 
 # Default: Trade mark
 msgid "trade-mark"
@@ -1169,15 +1169,15 @@ msgstr ""
 
 # Default: Transportation department
 msgid "transportation-department"
-msgstr ""
+msgstr "Dipartimento trasporti"
 
 # Default: Trivia
 msgid "trivia"
-msgstr ""
+msgstr "Frivolezze"
 
 # Default: Under license from
 msgid "under-license-from"
-msgstr ""
+msgstr "Sotto licenza da"
 
 # Default: Unknown link
 msgid "unknown-link"
@@ -1189,7 +1189,7 @@ msgstr ""
 
 # Default: Version of
 msgid "version-of"
-msgstr ""
+msgstr "Versione di"
 
 # Default: Vhs
 msgid "vhs"
@@ -1221,7 +1221,7 @@ msgstr ""
 
 # Default: Votes
 msgid "votes"
-msgstr ""
+msgstr "Voti"
 
 # Default: Votes distribution
 msgid "votes-distribution"
@@ -1237,19 +1237,19 @@ msgstr ""
 
 # Default: With
 msgid "with"
-msgstr ""
+msgstr "Con"
 
 # Default: Writer
 msgid "writer"
-msgstr ""
+msgstr "Scrittore"
 
 # Default: Written by
 msgid "written-by"
-msgstr ""
+msgstr "Scritto da"
 
 # Default: Year
 msgid "year"
-msgstr ""
+msgstr "Anno"
 
 # Default: Zshops
 msgid "zshops"

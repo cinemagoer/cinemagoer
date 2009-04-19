@@ -1713,6 +1713,10 @@ class DOMHTMLAiringParser(DOMParserBase):
             attrs=Attribute(key='series title', path="./text()",
                             postprocess=lambda x: \
                                     x.replace(' - TV schedule', u''))),
+        Extractor(label='series id',
+            path="//h1/a[@href]",
+            attrs=Attribute(key='series id', path="./@href")),
+
         Extractor(label='tv airings',
             path="//tr[@class]",
             attrs=Attribute(key='airing',
@@ -1731,7 +1735,7 @@ class DOMHTMLAiringParser(DOMParserBase):
                     'channel': x.get('channel').strip(),
                     'link': x.get('link'),
                     'title': x.get('title'),
-                    'season': x.get('season')
+                    'season': (x.get('season') or '').strip()
                     }
                 ))
     ]
@@ -1739,17 +1743,26 @@ class DOMHTMLAiringParser(DOMParserBase):
     def postprocess_data(self, data):
         if len(data) == 0:
             return {}
+        seriesTitle = data['series title']
+        seriesID = analyze_imdbid(data['series id'])
         if data.has_key('airing'):
             for airing in data['airing']:
                 title = airing.get('title', '').strip()
                 if not title:
-                    airing.clear()
-                    continue
-                e = Movie(title='%s {%s}' % (data['series title'],
-                    airing['title']), movieID=analyze_imdbid(airing['link']))
+                    epsTitle = seriesTitle
+                    if seriesID is None:
+                        continue
+                    epsID = seriesID
+                else:
+                    epsTitle = '%s {%s}' % (data['series title'],
+                                            airing['title'])
+                    epsID = analyze_imdbid(airing['link'])
+                e = Movie(title=epsTitle, movieID=epsID)
                 airing['episode'] = e
                 del airing['link']
                 del airing['title']
+                if not airing['season']:
+                    del airing['season']
         if 'series title' in data:
             del data['series title']
         if 'airing' in data:

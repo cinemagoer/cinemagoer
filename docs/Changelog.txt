@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090419 "Fast & Furious" (19 Apr 2009)
+* What's the new in release 4.0svn20090419b "Fast & Furious" (19 Apr 2009)
   [http]
   - DTD definition.
   - support for locale.
@@ -10,6 +10,7 @@
   - fixed a bug with movies containing '....' in titles.  And I'm
     talking about Malcolm McDowell filmography...
   - 'airing' contains object (so the accessSystem is set).
+  - 'tv schedule' ('airing') pages of episodes can be parsed.
 
 
 * What's the new in release 4.0 "Watchmen" (12 Mar 2009)

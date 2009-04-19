@@ -1705,6 +1705,8 @@ class DOMHTMLAiringParser(DOMParserBase):
         aparser = DOMHTMLAiringParser()
         result = aparser.parse(airing_html_string)
     """
+    _containsObjects = True
+
     extractors = [
         Extractor(label='series title',
             path="//title",

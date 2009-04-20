@@ -42,6 +42,7 @@ class Movie(_Container):
 
     # Aliases for some not-so-intuitive keys.
     keys_alias = {
+                'tv schedule': 'airing',
                 'user rating':  'rating',
                 'plot summary': 'plot',
                 'plot summaries': 'plot',

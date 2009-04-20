@@ -593,6 +593,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'tvschedule')
         return self.mProxy.airing_parser.parse(cont)
 
+    get_movie_tv_schedule = get_movie_airing
+
     def get_movie_synopsis(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'synopsis')
         return self.mProxy.synopsis_parser.parse(cont)

@@ -1765,6 +1765,8 @@ class DOMHTMLAiringParser(DOMParserBase):
                     del airing['season']
         if 'series title' in data:
             del data['series title']
+        if 'series id' in data:
+            del data['series id']
         if 'airing' in data:
             data['airing'] = filter(None, data['airing'])
         if 'airing' not in data or not data['airing']:

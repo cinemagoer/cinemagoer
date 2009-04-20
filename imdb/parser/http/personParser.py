@@ -137,6 +137,12 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                 '</li>'),
             (_reRoles, _manageRoles)]
 
+    def postprocess_data(self, data):
+        for what in 'birth date', 'death date':
+            if what in data and not data[what]:
+                del data[what]
+        return data
+
 
 class DOMHTMLBioParser(DOMParserBase):
     """Parser for the "biography" page of a given person.
@@ -216,9 +222,9 @@ class DOMHTMLBioParser(DOMParserBase):
                                 'name': "./td[1]//text()",
                                 'info': "./td[2]//text()"
                                 },
-                            postprocess=lambda x: "%s::%s" % \
-                                            (x.get('name').strip(),
-                                                (x.get('info') or u'').strip()))),
+                            postprocess=lambda x: ("%s::%s" % \
+                                (x.get('name').strip(),
+                                (x.get('info') or u'').strip())).strip(':'))),
             Extractor(label='trade mark',
                         path="//div[h5='Trade Mark']/p",
                         attrs=Attribute(key='trade mark',
@@ -262,6 +268,12 @@ class DOMHTMLBioParser(DOMParserBase):
         (re.compile('(<div id="tn15bot">)'), r'</div>\1'),
         (re.compile('\.<br><br>([^\s])', re.I), r'. \1')
         ]
+
+    def postprocess_data(self, data):
+        for what in 'birth date', 'death date':
+            if what in data and not data[what]:
+                del data[what]
+        return data
 
 
 class DOMHTMLOtherWorksParser(DOMParserBase):

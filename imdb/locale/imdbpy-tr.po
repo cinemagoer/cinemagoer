@@ -3,25 +3,25 @@ msgid ""
 msgstr ""
 "Project-Id-Version: imdbpy\n"
 "POT-Creation-Date: 2009-04-16 10:37+0000\n"
-"PO-Revision-Date: YYYY-MM-DD HH:MM+0000\n"
-"Last-Translator: YOUR NAME <YOUR@EMAIL>\n"
-"Language-Team: TEAM NAME <TEAM@EMAIL>\n"
+"PO-Revision-Date: 2009-04-21 19:04+0200\n"
+"Last-Translator: H. Turgut Uyar <uyar@itu.edu.tr>\n"
+"Language-Team: IMDbPY Türkçe <uyar@itu.edu.tr>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"Language-Code: en\n"
-"Language-Name: English\n"
+"Language-Code: tr\n"
+"Language-Name: Türkçe\n"
 "Preferred-Encodings: utf-8\n"
 "Domain: imdbpy\n"
 
 # Default: Actor
 msgid "actor"
-msgstr ""
+msgstr "Oyuncu"
 
 # Default: Actress
 msgid "actress"
-msgstr ""
+msgstr "Oyuncu"
 
 # Default: Adaption
 msgid "adaption"
@@ -29,7 +29,7 @@ msgstr ""
 
 # Default: Additional information
 msgid "additional-information"
-msgstr ""
+msgstr "Ek bilgi"
 
 # Default: Admissions
 msgid "admissions"
@@ -41,15 +41,15 @@ msgstr ""
 
 # Default: Airing
 msgid "airing"
-msgstr ""
+msgstr "Yayımlanma"
 
 # Default: Akas
 msgid "akas"
-msgstr ""
+msgstr "Diğer başlıklar"
 
 # Default: All products
 msgid "all-products"
-msgstr ""
+msgstr "Bütün ürünler"
 
 # Default: Alternate language version of
 msgid "alternate-language-version-of"
@@ -61,39 +61,39 @@ msgstr ""
 
 # Default: Amazon reviews
 msgid "amazon-reviews"
-msgstr ""
+msgstr "Amazon eleştirileri"
 
 # Default: Analog left
 msgid "analog-left"
-msgstr ""
+msgstr "Analog sol"
 
 # Default: Analog right
 msgid "analog-right"
-msgstr ""
+msgstr "Analog sağ"
 
 # Default: Animation department
 msgid "animation-department"
-msgstr ""
+msgstr "Animasyon departmanı"
 
 # Default: Archive footage
 msgid "archive-footage"
-msgstr ""
+msgstr "Arşiv çekimleri"
 
 # Default: Arithmetic mean
 msgid "arithmetic-mean"
-msgstr ""
+msgstr "Aritmetik ortalama"
 
 # Default: Art department
 msgid "art-department"
-msgstr ""
+msgstr "Sanat departmanı"
 
 # Default: Art direction
 msgid "art-direction"
-msgstr ""
+msgstr "Sanat yönetmenliği"
 
 # Default: Art director
 msgid "art-director"
-msgstr ""
+msgstr "Sanat yönetmeni"
 
 # Default: Article
 msgid "article"
@@ -101,87 +101,87 @@ msgstr ""
 
 # Default: Asin
 msgid "asin"
-msgstr ""
+msgstr "ASIN"
 
 # Default: Aspect ratio
 msgid "aspect-ratio"
-msgstr ""
+msgstr "En-boy oranı"
 
 # Default: Assigner
 msgid "assigner"
-msgstr ""
+msgstr "Veren"
 
 # Default: Assistant director
 msgid "assistant-director"
-msgstr ""
+msgstr "Yardımcı yönetmen"
 
 # Default: Auctions
 msgid "auctions"
-msgstr ""
+msgstr "Açık artırmalar"
 
 # Default: Audio noise
 msgid "audio-noise"
-msgstr ""
+msgstr "Ses gürültüsü"
 
 # Default: Audio quality
 msgid "audio-quality"
-msgstr ""
+msgstr "Ses kalitesi"
 
 # Default: Award
 msgid "award"
-msgstr ""
+msgstr "Ödül"
 
 # Default: Awards
 msgid "awards"
-msgstr ""
+msgstr "Ödüller"
 
 # Default: Biographical movies
 msgid "biographical-movies"
-msgstr ""
+msgstr "Biyografik filmler"
 
 # Default: Biography
 msgid "biography"
-msgstr ""
+msgstr "Biyografi"
 
 # Default: Biography print
 msgid "biography-print"
-msgstr ""
+msgstr "Basılı biyografi"
 
 # Default: Birth date
 msgid "birth-date"
-msgstr ""
+msgstr "Doğum tarihi"
 
 # Default: Birth name
 msgid "birth-name"
-msgstr ""
+msgstr "Asıl ismi"
 
 # Default: Birth notes
 msgid "birth-notes"
-msgstr ""
+msgstr "Doğum notları"
 
 # Default: Body
 msgid "body"
-msgstr ""
+msgstr "Metin"
 
 # Default: Book
 msgid "book"
-msgstr ""
+msgstr "Kitap"
 
 # Default: Books
 msgid "books"
-msgstr ""
+msgstr "Kitaplar"
 
 # Default: Bottom 100 rank
 msgid "bottom-100-rank"
-msgstr ""
+msgstr "En kötü 100 içindeki sırası"
 
 # Default: Budget
 msgid "budget"
-msgstr ""
+msgstr "Bütçe"
 
 # Default: Business
 msgid "business"
-msgstr ""
+msgstr "Gişe"
 
 # Default: By arrangement with
 msgid "by-arrangement-with"
@@ -189,11 +189,11 @@ msgstr ""
 
 # Default: Camera
 msgid "camera"
-msgstr ""
+msgstr "Kamera"
 
 # Default: Camera and electrical department
 msgid "camera-and-electrical-department"
-msgstr ""
+msgstr "Kamera ve elektrik departmanı"
 
 # Default: Canonical episode title
 msgid "canonical-episode-title"
@@ -213,31 +213,31 @@ msgstr ""
 
 # Default: Cast
 msgid "cast"
-msgstr ""
+msgstr "Oynayanlar"
 
 # Default: Casting department
 msgid "casting-department"
-msgstr ""
+msgstr "Oyuncu seçme departmanı"
 
 # Default: Casting director
 msgid "casting-director"
-msgstr ""
+msgstr "Oyuncu seçme yönetmeni"
 
 # Default: Catalog number
 msgid "catalog-number"
-msgstr ""
+msgstr "Katalog numarası"
 
 # Default: Category
 msgid "category"
-msgstr ""
+msgstr "Kategori"
 
 # Default: Certificate
 msgid "certificate"
-msgstr ""
+msgstr "Sertifika"
 
 # Default: Certificates
 msgid "certificates"
-msgstr ""
+msgstr "Sertifikalar"
 
 # Default: Certification
 msgid "certification"
@@ -245,15 +245,15 @@ msgstr ""
 
 # Default: Channel
 msgid "channel"
-msgstr ""
+msgstr "Kanal"
 
 # Default: Character
 msgid "character"
-msgstr ""
+msgstr "Karakter"
 
 # Default: Cinematographer
 msgid "cinematographer"
-msgstr ""
+msgstr "Kameraman"
 
 # Default: Cinematographic process
 msgid "cinematographic-process"
@@ -265,11 +265,11 @@ msgstr ""
 
 # Default: Color info
 msgid "color-info"
-msgstr ""
+msgstr "Renk bilgisi"
 
 # Default: Color information
 msgid "color-information"
-msgstr ""
+msgstr "Renk bilgisi"
 
 # Default: Color rendition
 msgid "color-rendition"
@@ -277,47 +277,47 @@ msgstr ""
 
 # Default: Company
 msgid "company"
-msgstr ""
+msgstr "Şirket"
 
 # Default: Complete cast
 msgid "complete-cast"
-msgstr ""
+msgstr "Bütün oynayanlar"
 
 # Default: Complete crew
 msgid "complete-crew"
-msgstr ""
+msgstr "Bütün çalışanlar"
 
 # Default: Composer
 msgid "composer"
-msgstr ""
+msgstr "Besteci"
 
 # Default: Connections
 msgid "connections"
-msgstr ""
+msgstr "Bağlantılar"
 
 # Default: Contrast
 msgid "contrast"
-msgstr ""
+msgstr "Kontrast"
 
 # Default: Copyright holder
 msgid "copyright-holder"
-msgstr ""
+msgstr "Telif sahibi"
 
 # Default: Costume department
 msgid "costume-department"
-msgstr ""
+msgstr "Kostüm departmanı"
 
 # Default: Costume designer
 msgid "costume-designer"
-msgstr ""
+msgstr "Kostüm tasarımcısı"
 
 # Default: Countries
 msgid "countries"
-msgstr ""
+msgstr "Ülkeler"
 
 # Default: Country
 msgid "country"
-msgstr ""
+msgstr "Ülke"
 
 # Default: Courtesy of
 msgid "courtesy-of"
@@ -325,11 +325,11 @@ msgstr ""
 
 # Default: Cover
 msgid "cover"
-msgstr ""
+msgstr "Poster"
 
 # Default: Cover url
 msgid "cover-url"
-msgstr ""
+msgstr "Poster adresi"
 
 # Default: Crazy credits
 msgid "crazy-credits"
@@ -337,35 +337,35 @@ msgstr ""
 
 # Default: Creator
 msgid "creator"
-msgstr ""
+msgstr "Yaratıcı"
 
 # Default: Current role
 msgid "current-role"
-msgstr ""
+msgstr "Şimdiki rol"
 
 # Default: Database
 msgid "database"
-msgstr ""
+msgstr "Veritabanı"
 
 # Default: Date
 msgid "date"
-msgstr ""
+msgstr "Tarih"
 
 # Default: Death date
 msgid "death-date"
-msgstr ""
+msgstr "Ölüm tarihi"
 
 # Default: Death notes
 msgid "death-notes"
-msgstr ""
+msgstr "Ölüm notları"
 
 # Default: Demographic
 msgid "demographic"
-msgstr ""
+msgstr "Demografi"
 
 # Default: Description
 msgid "description"
-msgstr ""
+msgstr "Tarif"
 
 # Default: Dialogue intellegibility
 msgid "dialogue-intellegibility"
@@ -373,39 +373,39 @@ msgstr ""
 
 # Default: Digital sound
 msgid "digital-sound"
-msgstr ""
+msgstr "Dijital ses"
 
 # Default: Director
 msgid "director"
-msgstr ""
+msgstr "Yönetmen"
 
 # Default: Disc format
 msgid "disc-format"
-msgstr ""
+msgstr "Disk formatı"
 
 # Default: Disc size
 msgid "disc-size"
-msgstr ""
+msgstr "Disk boyu"
 
 # Default: Distributors
 msgid "distributors"
-msgstr ""
+msgstr "Dağıtıcılar"
 
 # Default: Dvd
 msgid "dvd"
-msgstr ""
+msgstr "DVD"
 
 # Default: Dvd features
 msgid "dvd-features"
-msgstr ""
+msgstr "DVD özellikleri"
 
 # Default: Dvd format
 msgid "dvd-format"
-msgstr ""
+msgstr "DVD formatı"
 
 # Default: Dvds
 msgid "dvds"
-msgstr ""
+msgstr "DVD'ler"
 
 # Default: Dynamic range
 msgid "dynamic-range"
@@ -421,43 +421,43 @@ msgstr ""
 
 # Default: Editor
 msgid "editor"
-msgstr ""
+msgstr "Montajcı"
 
 # Default: Editorial department
 msgid "editorial-department"
-msgstr ""
+msgstr "Montaj departmanı"
 
 # Default: Episode
 msgid "episode"
-msgstr ""
+msgstr "Bölüm"
 
 # Default: Episode of
 msgid "episode-of"
-msgstr ""
+msgstr "Dizi"
 
 # Default: Episode title
 msgid "episode-title"
-msgstr ""
+msgstr "Bölüm başlığı"
 
 # Default: Episodes
 msgid "episodes"
-msgstr ""
+msgstr "Bölümler"
 
 # Default: Episodes rating
 msgid "episodes-rating"
-msgstr ""
+msgstr "Bölüm puanı"
 
 # Default: Essays
 msgid "essays"
-msgstr ""
+msgstr "Denemeler"
 
 # Default: External reviews
 msgid "external-reviews"
-msgstr ""
+msgstr "Harici eleştiriler"
 
 # Default: Faqs
 msgid "faqs"
-msgstr ""
+msgstr "SSS"
 
 # Default: Featured in
 msgid "featured-in"
@@ -469,27 +469,27 @@ msgstr ""
 
 # Default: Film negative format
 msgid "film-negative-format"
-msgstr ""
+msgstr "Film negatif formatı"
 
 # Default: Filming dates
 msgid "filming-dates"
-msgstr ""
+msgstr "Çekim tarihleri"
 
 # Default: Filmography
 msgid "filmography"
-msgstr ""
+msgstr "Filmografi"
 
 # Default: Followed by
 msgid "followed-by"
-msgstr ""
+msgstr "Peşinden gelen film"
 
 # Default: Follows
 msgid "follows"
-msgstr ""
+msgstr "Peşinden geldiği film"
 
 # Default: For
 msgid "for"
-msgstr ""
+msgstr "Çalışma"
 
 # Default: Frequency response
 msgid "frequency-response"
@@ -505,15 +505,15 @@ msgstr ""
 
 # Default: Genres
 msgid "genres"
-msgstr ""
+msgstr "Türler"
 
 # Default: Goofs
 msgid "goofs"
-msgstr ""
+msgstr "Hatalar"
 
 # Default: Gross
 msgid "gross"
-msgstr ""
+msgstr "Hasılat"
 
 # Default: Group genre
 msgid "group-genre"
@@ -521,11 +521,11 @@ msgstr ""
 
 # Default: Headshot
 msgid "headshot"
-msgstr ""
+msgstr "Resim"
 
 # Default: Height
 msgid "height"
-msgstr ""
+msgstr "Boy"
 
 # Default: Imdbindex
 msgid "imdbindex"
@@ -533,15 +533,15 @@ msgstr ""
 
 # Default: Interview
 msgid "interview"
-msgstr ""
+msgstr "Söyleşi"
 
 # Default: Interviews
 msgid "interviews"
-msgstr ""
+msgstr "Söyleşiler"
 
 # Default: Introduction
 msgid "introduction"
-msgstr ""
+msgstr "İlk filmi"
 
 # Default: Item
 msgid "item"
@@ -549,11 +549,11 @@ msgstr ""
 
 # Default: Keywords
 msgid "keywords"
-msgstr ""
+msgstr "Anahtar sözcükler"
 
 # Default: Kind
 msgid "kind"
-msgstr ""
+msgstr "Tip"
 
 # Default: Label
 msgid "label"
@@ -561,19 +561,19 @@ msgstr ""
 
 # Default: Laboratory
 msgid "laboratory"
-msgstr ""
+msgstr "Laboratuar"
 
 # Default: Language
 msgid "language"
-msgstr ""
+msgstr "Dil"
 
 # Default: Languages
 msgid "languages"
-msgstr ""
+msgstr "Diller"
 
 # Default: Laserdisc
 msgid "laserdisc"
-msgstr ""
+msgstr "Lazer Disk"
 
 # Default: Laserdisc title
 msgid "laserdisc-title"
@@ -581,27 +581,27 @@ msgstr ""
 
 # Default: Length
 msgid "length"
-msgstr ""
+msgstr "Süre"
 
 # Default: Line
 msgid "line"
-msgstr ""
+msgstr "Replik"
 
 # Default: Link
 msgid "link"
-msgstr ""
+msgstr "Bağlantı"
 
 # Default: Link text
 msgid "link-text"
-msgstr ""
+msgstr "Bağlantı metni"
 
 # Default: Literature
 msgid "literature"
-msgstr ""
+msgstr "Edebiyat"
 
 # Default: Locations
 msgid "locations"
-msgstr ""
+msgstr "Çekim yerleri"
 
 # Default: Long imdb canonical name
 msgid "long-imdb-canonical-name"
@@ -613,31 +613,31 @@ msgstr ""
 
 # Default: Long imdb episode title
 msgid "long-imdb-episode-title"
-msgstr ""
+msgstr "IMDb uzun bölüm başlığı"
 
 # Default: Long imdb name
 msgid "long-imdb-name"
-msgstr ""
+msgstr "IMDb uzun ismi"
 
 # Default: Long imdb title
 msgid "long-imdb-title"
-msgstr ""
+msgstr "IMDb uzun başlığı"
 
 # Default: Magazine cover photo
 msgid "magazine-cover-photo"
-msgstr ""
+msgstr "Dergi kapağı resmi"
 
 # Default: Make up
 msgid "make-up"
-msgstr ""
+msgstr "Makyaj"
 
 # Default: Master format
 msgid "master-format"
-msgstr ""
+msgstr "Master format"
 
 # Default: Median
 msgid "median"
-msgstr ""
+msgstr "Orta değer"
 
 # Default: Merchandising links
 msgid "merchandising-links"
@@ -645,7 +645,7 @@ msgstr ""
 
 # Default: Mini biography
 msgid "mini-biography"
-msgstr ""
+msgstr "Mini biyografi"
 
 # Default: Misc links
 msgid "misc-links"
@@ -661,43 +661,43 @@ msgstr ""
 
 # Default: Movie
 msgid "movie"
-msgstr ""
+msgstr "Film"
 
 # Default: Mpaa
 msgid "mpaa"
-msgstr ""
+msgstr "MPAA"
 
 # Default: Music department
 msgid "music-department"
-msgstr ""
+msgstr "Müzik departmanı"
 
 # Default: Name
 msgid "name"
-msgstr ""
+msgstr "İsim"
 
 # Default: News
 msgid "news"
-msgstr ""
+msgstr "Haberler"
 
 # Default: Newsgroup reviews
 msgid "newsgroup-reviews"
-msgstr ""
+msgstr "Haber grubu eleştirileri"
 
 # Default: Nick names
 msgid "nick-names"
-msgstr ""
+msgstr "Takma isimler"
 
 # Default: Notes
 msgid "notes"
-msgstr ""
+msgstr "Notlar"
 
 # Default: Novel
 msgid "novel"
-msgstr ""
+msgstr "Roman"
 
 # Default: Number
 msgid "number"
-msgstr ""
+msgstr "Sayı"
 
 # Default: Number of chapter stops
 msgid "number-of-chapter-stops"
@@ -705,11 +705,11 @@ msgstr ""
 
 # Default: Number of episodes
 msgid "number-of-episodes"
-msgstr ""
+msgstr "Bölüm sayısı"
 
 # Default: Number of seasons
 msgid "number-of-seasons"
-msgstr ""
+msgstr "Sezon sayısı"
 
 # Default: Number of sides
 msgid "number-of-sides"
@@ -717,27 +717,27 @@ msgstr ""
 
 # Default: Number of votes
 msgid "number-of-votes"
-msgstr ""
+msgstr "Oy sayısı"
 
 # Default: Official retail price
 msgid "official-retail-price"
-msgstr ""
+msgstr "Resmi perakende satış fiyatı"
 
 # Default: Official sites
 msgid "official-sites"
-msgstr ""
+msgstr "Resmi siteler"
 
 # Default: Opening weekend
 msgid "opening-weekend"
-msgstr ""
+msgstr "Açılış haftasonu"
 
 # Default: Original air date
 msgid "original-air-date"
-msgstr ""
+msgstr "İlk yayımlanma tarihi"
 
 # Default: Original music
 msgid "original-music"
-msgstr ""
+msgstr "Orijinal müzik"
 
 # Default: Original title
 msgid "original-title"
@@ -749,23 +749,23 @@ msgstr ""
 
 # Default: Other works
 msgid "other-works"
-msgstr ""
+msgstr "Diğer çalışmalar"
 
 # Default: Parents guide
 msgid "parents-guide"
-msgstr ""
+msgstr "Ana-baba kılavuzu"
 
 # Default: Performed by
 msgid "performed-by"
-msgstr ""
+msgstr "İcra eden"
 
 # Default: Person
 msgid "person"
-msgstr ""
+msgstr "Kişi"
 
 # Default: Photo sites
 msgid "photo-sites"
-msgstr ""
+msgstr "Fotoğraf siteleri"
 
 # Default: Pictorial
 msgid "pictorial"
@@ -773,15 +773,15 @@ msgstr ""
 
 # Default: Picture format
 msgid "picture-format"
-msgstr ""
+msgstr "Resim formatı"
 
 # Default: Plot
 msgid "plot"
-msgstr ""
+msgstr "Konu"
 
 # Default: Plot outline
 msgid "plot-outline"
-msgstr ""
+msgstr "Konu kısa özeti"
 
 # Default: Portrayed in
 msgid "portrayed-in"
@@ -793,39 +793,39 @@ msgstr ""
 
 # Default: Printed film format
 msgid "printed-film-format"
-msgstr ""
+msgstr "Basılı film formatı"
 
 # Default: Printed media reviews
 msgid "printed-media-reviews"
-msgstr ""
+msgstr "Basın eleştirileri"
 
 # Default: Producer
 msgid "producer"
-msgstr ""
+msgstr "Yapımcı"
 
 # Default: Production companies
 msgid "production-companies"
-msgstr ""
+msgstr "Yapım şirketleri"
 
 # Default: Production country
 msgid "production-country"
-msgstr ""
+msgstr "Yapımcı ülke"
 
 # Default: Production dates
 msgid "production-dates"
-msgstr ""
+msgstr "Yapım tarihleri"
 
 # Default: Production design
 msgid "production-design"
-msgstr ""
+msgstr "Yapım tasarımı"
 
 # Default: Production designer
 msgid "production-designer"
-msgstr ""
+msgstr "Yapım tasarımcısı"
 
 # Default: Production manager
 msgid "production-manager"
-msgstr ""
+msgstr "Yapım yöneticisi"
 
 # Default: Production process protocol
 msgid "production-process-protocol"
@@ -841,11 +841,11 @@ msgstr ""
 
 # Default: Quote
 msgid "quote"
-msgstr ""
+msgstr "Alıntı"
 
 # Default: Quotes
 msgid "quotes"
-msgstr ""
+msgstr "Alıntılar"
 
 # Default: Rating
 msgid "rating"
@@ -853,19 +853,19 @@ msgstr "Puan"
 
 # Default: Recommendations
 msgid "recommendations"
-msgstr ""
+msgstr "Tavsiyeler"
 
 # Default: Referenced in
 msgid "referenced-in"
-msgstr ""
+msgstr "Gönderme yapılan filmler"
 
 # Default: References
 msgid "references"
-msgstr ""
+msgstr "Gönderme yaptığı filmler"
 
 # Default: Region
 msgid "region"
-msgstr ""
+msgstr "Bölge"
 
 # Default: Release country
 msgid "release-country"
@@ -881,99 +881,99 @@ msgstr ""
 
 # Default: Remade as
 msgid "remade-as"
-msgstr ""
+msgstr "Yeniden çekilişi"
 
 # Default: Remake of
 msgid "remake-of"
-msgstr ""
+msgstr "Yeniden çekimi olduğu film"
 
 # Default: Rentals
 msgid "rentals"
-msgstr ""
+msgstr "Kiralamalar"
 
 # Default: Result
 msgid "result"
-msgstr ""
+msgstr "Sonuç"
 
 # Default: Review
 msgid "review"
-msgstr ""
+msgstr "Eleştiri"
 
 # Default: Review author
 msgid "review-author"
-msgstr ""
+msgstr "Eleştiri yazarı"
 
 # Default: Review kind
 msgid "review-kind"
-msgstr ""
+msgstr "Eleştiri tipi"
 
 # Default: Runtime
 msgid "runtime"
-msgstr ""
+msgstr "Süre"
 
 # Default: Runtimes
 msgid "runtimes"
-msgstr ""
+msgstr "Süreler"
 
 # Default: Salary history
 msgid "salary-history"
-msgstr ""
+msgstr "Üçret tarihçesi"
 
 # Default: Screenplay teleplay
 msgid "screenplay-teleplay"
-msgstr ""
+msgstr "Senaryo"
 
 # Default: Season
 msgid "season"
-msgstr ""
+msgstr "Sezon"
 
 # Default: Second unit director or assistant director
 msgid "second-unit-director-or-assistant-director"
-msgstr ""
+msgstr "İkinci birim yönetmeni ya da yardımcı yönetmen"
 
 # Default: Self
 msgid "self"
-msgstr ""
+msgstr "Kendisi"
 
 # Default: Series animation department
 msgid "series-animation-department"
-msgstr ""
+msgstr "Dizinin animasyon departmanı"
 
 # Default: Series art department
 msgid "series-art-department"
-msgstr ""
+msgstr "Dizinin sanat departmanı"
 
 # Default: Series assistant directors
 msgid "series-assistant-directors"
-msgstr ""
+msgstr "Dizinin yardımcı yönetmenleri"
 
 # Default: Series camera department
 msgid "series-camera-department"
-msgstr ""
+msgstr "Dizinin kamera departmanı"
 
 # Default: Series casting department
 msgid "series-casting-department"
-msgstr ""
+msgstr "Dizinin oyuncu seçimi departmanı"
 
 # Default: Series cinematographers
 msgid "series-cinematographers"
-msgstr ""
+msgstr "Dizinin kameramanları"
 
 # Default: Series costume department
 msgid "series-costume-department"
-msgstr ""
+msgstr "Dizinin kostüm departmanı"
 
 # Default: Series editorial department
 msgid "series-editorial-department"
-msgstr ""
+msgstr "Dizinin montaj departmanı"
 
 # Default: Series editors
 msgid "series-editors"
-msgstr ""
+msgstr "Dizinin montajcıları"
 
 # Default: Series make up department
 msgid "series-make-up-department"
-msgstr ""
+msgstr "Dizinin makyaj departmanı"
 
 # Default: Series miscellaneous
 msgid "series-miscellaneous"
@@ -981,75 +981,75 @@ msgstr ""
 
 # Default: Series music department
 msgid "series-music-department"
-msgstr ""
+msgstr "Dizinin müzik departmanı"
 
 # Default: Series producers
 msgid "series-producers"
-msgstr ""
+msgstr "Dizinin yapımcıları"
 
 # Default: Series production designers
 msgid "series-production-designers"
-msgstr ""
+msgstr "Dizinin yapım tasarımcıları"
 
 # Default: Series production managers
 msgid "series-production-managers"
-msgstr ""
+msgstr "Dizinin yapım yöneticileri"
 
 # Default: Series sound department
 msgid "series-sound-department"
-msgstr ""
+msgstr "Dizinin ses departmanı"
 
 # Default: Series special effects department
 msgid "series-special-effects-department"
-msgstr ""
+msgstr "Dizinin özel efekt departmanı"
 
 # Default: Series stunts
 msgid "series-stunts"
-msgstr ""
+msgstr "Dizinin dublörleri"
 
 # Default: Series title
 msgid "series-title"
-msgstr ""
+msgstr "Dizinin başlığı"
 
 # Default: Series transportation department
 msgid "series-transportation-department"
-msgstr ""
+msgstr "Dizinin ulaşım departmanı"
 
 # Default: Series visual effects department
 msgid "series-visual-effects-department"
-msgstr ""
+msgstr "Dizinin görsel efekt departmanı"
 
 # Default: Series writers
 msgid "series-writers"
-msgstr ""
+msgstr "Dizinin yazarları"
 
 # Default: Series years
 msgid "series-years"
-msgstr ""
+msgstr "Dizinin yılları"
 
 # Default: Set decoration
 msgid "set-decoration"
-msgstr ""
+msgstr "Set dekorasyonu"
 
 # Default: Sharpness
 msgid "sharpness"
-msgstr ""
+msgstr "Keskinlik"
 
 # Default: Similar to
 msgid "similar-to"
-msgstr ""
+msgstr "Benzer"
 
 # Default: Sound clips
 msgid "sound-clips"
-msgstr ""
+msgstr "Ses klipleri"
 
 # Default: Sound crew
 msgid "sound-crew"
-msgstr ""
+msgstr "Ses ekibi"
 
 # Default: Sound encoding
 msgid "sound-encoding"
-msgstr ""
+msgstr "Ses kodlaması"
 
 # Default: Sound mix
 msgid "sound-mix"
@@ -1057,7 +1057,7 @@ msgstr ""
 
 # Default: Soundtrack
 msgid "soundtrack"
-msgstr ""
+msgstr "Film müzikleri"
 
 # Default: Spaciality
 msgid "spaciality"
@@ -1065,15 +1065,15 @@ msgstr ""
 
 # Default: Special effects
 msgid "special-effects"
-msgstr ""
+msgstr "Özel efektler"
 
 # Default: Special effects companies
 msgid "special-effects-companies"
-msgstr ""
+msgstr "Özel efekt şirketleri"
 
 # Default: Special effects department
 msgid "special-effects-department"
-msgstr ""
+msgstr "Özel efekt departmanı"
 
 # Default: Spin off
 msgid "spin-off"
@@ -1085,15 +1085,15 @@ msgstr ""
 
 # Default: Spoofed in
 msgid "spoofed-in"
-msgstr ""
+msgstr "Dalga geçildiği filmler"
 
 # Default: Spoofs
 msgid "spoofs"
-msgstr ""
+msgstr "Dalga geçtiği filmler"
 
 # Default: Spouse
 msgid "spouse"
-msgstr ""
+msgstr "Eş"
 
 # Default: Status of availablility
 msgid "status-of-availablility"
@@ -1101,11 +1101,11 @@ msgstr ""
 
 # Default: Studio
 msgid "studio"
-msgstr ""
+msgstr "Stüdyo"
 
 # Default: Studios
 msgid "studios"
-msgstr ""
+msgstr "Stüdyolar"
 
 # Default: Stunt performer
 msgid "stunt-performer"
@@ -1113,11 +1113,11 @@ msgstr ""
 
 # Default: Stunts
 msgid "stunts"
-msgstr ""
+msgstr "Dublörler"
 
 # Default: Subtitles
 msgid "subtitles"
-msgstr ""
+msgstr "Altyazılar"
 
 # Default: Supplement
 msgid "supplement"
@@ -1129,51 +1129,51 @@ msgstr ""
 
 # Default: Synopsis
 msgid "synopsis"
-msgstr ""
+msgstr "Sinopsis"
 
 # Default: Taglines
 msgid "taglines"
-msgstr ""
+msgstr "Spotlar"
 
 # Default: Tech info
 msgid "tech-info"
-msgstr ""
+msgstr "Teknik bilgi"
 
 # Default: Thanks
 msgid "thanks"
-msgstr ""
+msgstr "Teşekkürler"
 
 # Default: Time
 msgid "time"
-msgstr ""
+msgstr "Zaman"
 
 # Default: Title
 msgid "title"
-msgstr ""
+msgstr "Başlık"
 
 # Default: Titles in this product
 msgid "titles-in-this-product"
-msgstr ""
+msgstr "Bu üründeki başlıklar"
 
 # Default: To
 msgid "to"
-msgstr ""
+msgstr "Alan"
 
 # Default: Top 250 rank
 msgid "top-250-rank"
-msgstr ""
+msgstr "En iyi 250 içindeki sırası"
 
 # Default: Trade mark
 msgid "trade-mark"
-msgstr ""
+msgstr "Kendine has özelliği"
 
 # Default: Transportation department
 msgid "transportation-department"
-msgstr ""
+msgstr "Ulaşım departmanı"
 
 # Default: Trivia
 msgid "trivia"
-msgstr ""
+msgstr "İlginç notlar"
 
 # Default: Under license from
 msgid "under-license-from"
@@ -1193,7 +1193,7 @@ msgstr ""
 
 # Default: Vhs
 msgid "vhs"
-msgstr ""
+msgstr "VHS"
 
 # Default: Video artifacts
 msgid "video-artifacts"
@@ -1201,39 +1201,39 @@ msgstr ""
 
 # Default: Video clips
 msgid "video-clips"
-msgstr ""
+msgstr "Video klipleri"
 
 # Default: Video noise
 msgid "video-noise"
-msgstr ""
+msgstr "Video gürültüsü"
 
 # Default: Video quality
 msgid "video-quality"
-msgstr ""
+msgstr "Video kalitesi"
 
 # Default: Video standard
 msgid "video-standard"
-msgstr ""
+msgstr "Video standardı"
 
 # Default: Visual effects
 msgid "visual-effects"
-msgstr ""
+msgstr "Ğörsel efektler"
 
 # Default: Votes
 msgid "votes"
-msgstr ""
+msgstr "Oylar"
 
 # Default: Votes distribution
 msgid "votes-distribution"
-msgstr ""
+msgstr "Oyların dağılımı"
 
 # Default: Weekend gross
 msgid "weekend-gross"
-msgstr ""
+msgstr "Haftasonu hasılatı"
 
 # Default: Where now
 msgid "where-now"
-msgstr ""
+msgstr "Şu anda nerede"
 
 # Default: With
 msgid "with"
@@ -1241,16 +1241,16 @@ msgstr ""
 
 # Default: Writer
 msgid "writer"
-msgstr ""
+msgstr "Yazar"
 
 # Default: Written by
 msgid "written-by"
-msgstr ""
+msgstr "Yazan"
 
 # Default: Year
 msgid "year"
-msgstr ""
+msgstr "Yıl"
 
 # Default: Zshops
 msgid "zshops"
-msgstr ""
+msgstr "ZShops"

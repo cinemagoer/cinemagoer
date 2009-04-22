@@ -1422,16 +1422,16 @@ class _Container(object):
         return deepcopy(self)
 
 
-def flatten(seq, toDescend=(list, dict, tuple),
-            yieldDictKeys=0, onlyKeysType=(_Container,), scalar=None):
+def flatten(seq, toDescend=(list, dict, tuple), yieldDictKeys=0,
+            onlyKeysType=(_Container,), scalar=None):
     """Iterate over nested lists and dictionaries; toDescend is a list
     or a tuple of types to be considered non-scalar; if yieldDictKeys is
     true, also dictionaries' keys are yielded; if scalar is not None, only
     items of the given type(s) are yielded."""
-    if not isinstance(seq, toDescend):
-        if scalar is None or isinstance(seq, scalar):
-            yield seq
-    else:
+    if scalar is None or isinstance(seq, scalar):
+        yield seq
+    #else:
+    if isinstance(seq, toDescend):
         if isinstance(seq, (dict, _Container)):
             if yieldDictKeys:
                 # Yield also the keys of the dictionary.
@@ -1446,7 +1446,7 @@ def flatten(seq, toDescend=(list, dict, tuple),
                                 yieldDictKeys=yieldDictKeys,
                                 onlyKeysType=onlyKeysType, scalar=scalar):
                     yield v
-        else:
+        elif not isinstance(seq, (str, unicode, int, float)):
             for item in seq:
                 for i in flatten(item, toDescend=toDescend,
                                 yieldDictKeys=yieldDictKeys,

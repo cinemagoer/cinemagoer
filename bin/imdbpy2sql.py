@@ -33,7 +33,7 @@ from imdb.parser.common.locsql import soundex
 from imdb.parser.sql import get_movie_data
 from imdb.utils import analyze_title, analyze_name, \
         build_name, build_title, normalizeName, _articles, \
-        build_company_name, analyze_company_name
+        build_company_name, analyze_company_name, canonicalTitle
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError, IMDbError
@@ -614,14 +614,13 @@ def t(s, sinceBegin=False):
         CTIMES = ntimes
 
 def title_soundex(title):
-    """Return the soundex code for the given title; the (optional) ending
+    """Return the soundex code for the given title; the (optional) starting
     article is pruned.  It assumes to receive a title without year/imdbIndex
     or kind indications, but just the title string, as the one in the
     analyze_title(title)['title'] value."""
-    ##if not isinstance(title, unicode): title = unicode(title, 'utf_8')
-    # Prune non-ascii chars from the string.
-    ##title = title.encode('ascii', 'replace')
     if not title: return None
+    # Convert to canonical format.
+    title = canonicalTitle(title)
     ts = title.split(', ')
     # Strip the ending article, if any.
     if ts[-1].lower() in _articles:

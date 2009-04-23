@@ -168,7 +168,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                             attrs=Attribute(key='title',
                                             path=".//text()",
                                             postprocess=lambda x: \
-                                            analyze_title(x, canonical=1))),
+                                            analyze_title(x))),
 
                 Extractor(label='glossarysections',
                         group="//a[@class='glossary']",

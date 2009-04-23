@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from copy import deepcopy
 
-from imdb.utils import analyze_title, build_title, normalizeTitle, \
+from imdb.utils import analyze_title, build_title, canonicalTitle, \
                         flatten, _Container, cmpMovies
 
 
@@ -172,7 +172,7 @@ class Movie(_Container):
     def set_title(self, title):
         """Set the title of the movie."""
         # XXX: convert title to unicode, if it's a plain string?
-        d_title = analyze_title(title, canonical=1)
+        d_title = analyze_title(title)
         self.data.update(d_title)
 
     def _additional_keys(self):
@@ -193,24 +193,21 @@ class Movie(_Container):
             if key == 'long imdb episode title':
                 return build_title(self.data, canonical=0)
             elif key == 'series title':
-                ser_title = self.data['episode of'].get('canonical title') or \
-                            self.data['episode of']['title']
-                return normalizeTitle(ser_title)
+                return self.data['episode of']['title']
             elif key == 'canonical series title':
-                ser_title = self.data['episode of'].get('canonical title') or \
-                            self.data['episode of']['title']
-                return ser_title
+                ser_title = self.data['episode of']['title']
+                return canonicalTitle(ser_title)
             elif key == 'episode title':
-                return normalizeTitle(self.data.get('title', u''))
-            elif key == 'canonical episode title':
                 return self.data.get('title', u'')
+            elif key == 'canonical episode title':
+                return canonicalTitle(self.data.get('title', u''))
         if self.data.has_key('title'):
             if key == 'title':
-                return normalizeTitle(self.data['title'])
+                return self.data['title']
             elif key == 'long imdb title':
                 return build_title(self.data, canonical=0)
             elif key == 'canonical title':
-                return self.data['title']
+                return canonicalTitle(self.data['title'])
             elif key == 'long imdb canonical title':
                 return build_title(self.data, canonical=1)
         return None

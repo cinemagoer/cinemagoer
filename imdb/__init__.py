@@ -819,7 +819,7 @@ class IMDbBase:
             if mop.movieID is not None:
                 imdbID = aSystem.get_imdbMovieID(mop.movieID)
             else:
-                imdbID = aSystem.title2imdbID(build_title(mop, canonical=1,
+                imdbID = aSystem.title2imdbID(build_title(mop, canonical=0,
                                                 ptdf=1))
         elif isinstance(mop, Person.Person):
             if mop.personID is not None:

@@ -43,7 +43,7 @@ class DOMBasicMovieParser(DOMParserBase):
     # Stay generic enough to be used also for other DOMBasic*Parser classes.
     _titleAttrPath = ".//text()"
     _linkPath = "//a[starts-with(@href, '/title/tt')]"
-    _titleFunct = lambda self, x: analyze_title(x or u'', canonical=1)
+    _titleFunct = lambda self, x: analyze_title(x or u'')
 
     def _init(self):
         self.preprocessors += [('<span class="tv-extra">TV mini-series</span>',
@@ -85,7 +85,7 @@ def custom_analyze_title(title):
         title = nt
     if not title:
         return {}
-    return analyze_title(title, canonical=1)
+    return analyze_title(title)
 
 # Manage AKAs.
 _reAKAStitles = re.compile(r'(?:aka) <em>"(.*?)(<br>|<\/td>)', re.I | re.M)
@@ -96,7 +96,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
 
     _BaseParser = DOMBasicMovieParser
     _notDirectHitTitle = '<title>imdb title'
-    _titleBuilder = lambda self, x: build_title(x, canonical=True)
+    _titleBuilder = lambda self, x: build_title(x)
     _linkPrefix = '/title/tt'
 
     _attrs = [Attribute(key='data',

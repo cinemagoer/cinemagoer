@@ -172,26 +172,43 @@ _articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el',
             "l'", 'il', 'das', 'les', 'i', 'o', 'ein', 'un', 'de', 'los',
             'an', 'una', 'las', 'eine', 'den', 'het', 'gli', 'lo', 'os',
             'ang', 'oi', 'az', 'een', 'ha-', 'det', 'ta', 'al-',
-            'mga', "un'", 'uno', 'ett', 'dem', 'egy', 'els', 'eines', u'\xcf',
-            u'\xc7', u'\xd4\xef', u'\xcf\xe9')
+            'mga', "un'", 'uno', 'ett', 'dem', 'egy', 'els', 'eines',
+            '\xc3\x8f', '\xc3\x87', '\xc3\x94\xc3\xaf', '\xc3\x8f\xc3\xa9')
+
+_unicodeArticles = tuple([art.decode('utf_8') for art in _articles])
 
 # Articles in a dictionary.
 _articlesDict = dict([(x, x) for x in _articles])
+_unicodeArticlesDict = dict([(x, x) for x in _unicodeArticles])
 _spArticles = []
 for article in _articles:
     if article[-1] not in ("'", '-'): article += ' '
     _spArticles.append(article)
+_spUnicodeArticles = []
+for article in _unicodeArticles:
+    if article[-1] not in ("'", '-'): article += u' '
+    _spUnicodeArticles.append(article)
+
+articlesDicts = (_articlesDict, _unicodeArticlesDict)
+spArticles = (_spArticles, _spUnicodeArticles)
 
 def canonicalTitle(title):
     """Return the title in the canonic format 'Movie Title, The'."""
+    isUnicode = isinstance(title, unicode)
     try:
-        if title.split(', ')[-1].lower() in _articlesDict: return title
-    except IndexError: pass
+        if title.split(', ')[-1].lower() in articlesDicts[isUnicode]:
+            return title
+    except IndexError:
+        pass
+    if isUnicode:
+        _format = u'%s, %s'
+    else:
+        _format = '%s, %s'
     ltitle = title.lower()
-    for article in _spArticles:
+    for article in spArticles[isUnicode]:
         if ltitle.startswith(article):
             lart = len(article)
-            title = '%s, %s' % (title[lart:], title[:lart])
+            title = _format % (title[lart:], title[:lart])
             if article[-1] == ' ': title = title[:-1]
             break
     ## XXX: an attempt using a dictionary lookup.
@@ -474,10 +491,10 @@ def build_title(title_dict, canonical=None, canonicalSeries=0,
                 episode_title += ')'
             episode_title = '{%s}' % episode_title
         return '%s %s' % (pre_title, episode_title)
-    title = title_dict.get('canonical title') or title_dict.get('title', '')
+    title = title_dict.get('title', '')
     if not title: return _emptyString
-    if not canonical:
-        title = normalizeTitle(title)
+    if canonical:
+        title = canonicalTitle(title)
     if pre_title:
         title = '%s %s' % (pre_title, title)
     if kind in (u'tv series', u'tv mini series'):

@@ -31,7 +31,7 @@ from imdb.Movie import Movie
 from imdb.utils import analyze_title, build_title, analyze_name, \
                         build_name, canonicalTitle, canonicalName, \
                         normalizeName, normalizeTitle, re_titleRef, \
-                        re_nameRef, re_year_index, _articles, \
+                        re_nameRef, re_year_index, _unicodeArticles, \
                         analyze_company_name
 
 re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
@@ -157,7 +157,7 @@ def titleVariations(title, fromPtdf=0):
     if title1:
         title2 = title1
         t2s = title2.split(u', ')
-        if t2s[-1].lower() in _articles:
+        if t2s[-1].lower() in _unicodeArticles:
             title2 = u', '.join(t2s[:-1])
     return title1, title2, title3
 
@@ -334,7 +334,7 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
             til2 = til
             tils = til2.split(', ')
             matchHasArt = 0
-            if tils[-1].lower() in _articles:
+            if tils[-1].lower() in _unicodeArticles:
                 til2 = ', '.join(tils[:-1])
                 matchHasArt = 1
             if hasArt and not matchHasArt:

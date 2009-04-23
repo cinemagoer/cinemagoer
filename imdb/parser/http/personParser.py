@@ -324,7 +324,7 @@ def _build_episode(link, title, minfo, role, roleA, roleAID):
                 slfRole = slfRole[:commidx]
         if slfRole and role is None and roleA is None:
             role = slfRole
-    eps_data = analyze_title(title, canonical=1)
+    eps_data = analyze_title(title)
     eps_data['kind'] = u'episode'
     # FIXME: it's wrong for multiple characters (very rare on tv series?).
     if role is None:
@@ -394,7 +394,7 @@ class DOMHTMLSeriesParser(DOMParserBase):
             link = self.xpath(dom, "//a/@href")[0]
             title = self.xpath(dom, "//a/text()")[0][1:-1]
             series = Movie(movieID=analyze_imdbid(link),
-                           data=analyze_title(title, canonical=1),
+                           data=analyze_title(title),
                            accessSystem=self._as, modFunct=self._modFunct)
             nd[series] = []
             for episode in data[key]:

@@ -193,7 +193,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if not (mid and title): return res
             if cont.find('<span class="tv-extra">TV mini-series</span>') != -1:
                 title += ' (mini)'
-            res[:] = [(str(mid[0]), analyze_title(title, canonical=1))]
+            res[:] = [(str(mid[0]), analyze_title(title))]
         else:
             # XXX: this results*3 prevents some recursion errors, but...
             #      it's not exactly understandable (i.e.: why 'results' is
@@ -218,7 +218,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 mtitle = _unHtml(li)
                 if not (imdbid and mtitle): continue
                 mtitle = mtitle.replace('(TV mini-series)', '(mini)')
-                resd = analyze_title(mtitle, canonical=1)
+                resd = analyze_title(mtitle)
                 if akas:
                     resd['akas'] = akas
                 res.append((str(imdbid[0]), resd))
@@ -232,14 +232,14 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         title = _unHtml(title[0])
         if cont.find('<span class="tv-extra">TV mini-series</span>') != -1:
             title += ' (mini)'
-        d = analyze_title(title, canonical=1)
+        d = analyze_title(title)
         kind = d.get('kind')
         tv_series = _findBetween(cont, 'TV Series:</h5>', '</a>', maxRes=1)
         if tv_series: mid = re_imdbID.findall(tv_series[0])
         else: mid = None
         if tv_series and mid:
             s_title = _unHtml(tv_series[0])
-            s_data = analyze_title(s_title, canonical=1)
+            s_data = analyze_title(s_title)
             m = Movie(movieID=str(mid[0]), data=s_data,
                         accessSystem=self.accessSystem,
                         modFunct=self._defModFunct)

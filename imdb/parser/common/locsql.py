@@ -51,8 +51,8 @@ class IMDbLocalAndSqlAccessSystem(IMDbBase):
         """Find titles or names references in strings."""
         if isinstance(o, (unicode, str)):
             for title in re_titleRef.findall(o):
-                a_title = analyze_title(title, canonical=1)
-                rtitle = build_title(a_title, canonical=1, ptdf=1)
+                a_title = analyze_title(title, canonical=0)
+                rtitle = build_title(a_title, canonical=0, ptdf=1)
                 if trefs.has_key(rtitle): continue
                 movieID = self._getTitleID(rtitle)
                 if movieID is None:

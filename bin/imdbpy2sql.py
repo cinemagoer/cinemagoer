@@ -987,7 +987,7 @@ class MoviesCache(_BaseCache):
                 if series_d['year'] is None: del series_d['year']
                 else: series_d['year'] = str(series_d['year'])
                 mdict['episode of'] = series_d
-            title = build_title(mdict, canonical=1, ptdf=1,
+            title = build_title(mdict, canonical=0, ptdf=1,
                                 _emptyString='')
             dict.__setitem__(self, title, x[0])
         self.counter = counter(Title.select().count() + 1)
@@ -1013,7 +1013,7 @@ class MoviesCache(_BaseCache):
             kind = tget('kind')
             if kind == 'episode':
                 # Series title.
-                stitle = build_title(tget('episode of'), canonical=1,
+                stitle = build_title(tget('episode of'), canonical=0,
                                     _emptyString='')
                 episodeOf = self.addUnique(stitle)
                 del t['episode of']
@@ -1653,7 +1653,7 @@ def doAkaTitles():
                                                 _emptyString='')
                     if 'episode of' in titleDict:
                         series = build_title(titleDict['episode of'],
-                                            canonical=1, ptdf=1)
+                                            canonical=0, ptdf=1)
                         seriesID = CACHE_MID.addUnique(series)
                         isEpisode = True
                     else:
@@ -1682,7 +1682,7 @@ def doAkaTitles():
                     akaDict = analyze_title(akat, _emptyString='')
                     if 'episode of' in akaDict:
                         akaSeries = build_title(akaDict['episode of'],
-                                                canonical=1, ptdf=1)
+                                                canonical=0, ptdf=1)
                         CACHE_MID_AKAS.add(akaSeries, [('ids', seriesID)])
                 append_data = [('ids', mid)]
                 if note is not None:
@@ -2276,7 +2276,7 @@ def restoreImdbID(tons, cls):
     count = 0
     for t in tons:
         if cls is Title:
-            t_str = build_title(t, canonical=1, ptdf=1)
+            t_str = build_title(t, canonical=0, ptdf=1)
         elif cls is CompanyName:
             t_str = build_company_name(t)
         else:

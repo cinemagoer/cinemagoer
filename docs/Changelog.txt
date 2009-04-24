@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090423 "Fast & Furious" (23 Apr 2009)
+* What's the new in release 4.0svn20090424 "Bloodrayne" (24 Apr 2009)
   [http]
   - DTD definition.
   - support for locale.

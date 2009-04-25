@@ -35,7 +35,7 @@ from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                     soundex, filterSimilarKeywords
 from imdb.utils import normalizeTitle, normalizeName, build_title, \
                         build_name, analyze_name, analyze_title, \
-                        build_company_name, re_episodes, _articles
+                        build_company_name, re_episodes, _unicodeArticles
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb.Company import Company
@@ -455,18 +455,24 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         s_title = title_dict['title']
         if not s_title: return []
         episodeOf = title_dict.get('episode of')
-
-        if not episodeOf:
-            if not _episodes:
-                s_title_split = s_title.split(', ')
-                if len(s_title_split) > 1 and \
-                        s_title_split[-1].lower() in _articles:
-                    s_title_rebuilt = ', '.join(s_title_split[:-1])
-                    if s_title_rebuilt:
-                        s_title = s_title_rebuilt
-        else:
+        if episodeOf:
             _episodes = False
-            s_title = normalizeTitle(s_title)
+        s_title_split = s_title.split(', ')
+        if len(s_title_split) > 1 and \
+                s_title_split[-1].lower() in _unicodeArticles:
+            s_title_rebuilt = ', '.join(s_title_split[:-1])
+            if s_title_rebuilt:
+                s_title = s_title_rebuilt
+        #if not episodeOf:
+        #    if not _episodes:
+        #        s_title_split = s_title.split(', ')
+        #        if len(s_title_split) > 1 and \
+        #                s_title_split[-1].lower() in _articles:
+        #            s_title_rebuilt = ', '.join(s_title_split[:-1])
+        #            if s_title_rebuilt:
+        #                s_title = s_title_rebuilt
+        #else:
+        #    _episodes = False
         if isinstance(s_title, unicode):
             s_title = s_title.encode('ascii', 'ignore')
 

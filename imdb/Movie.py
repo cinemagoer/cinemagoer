@@ -282,7 +282,7 @@ class Movie(_Container):
         if self.has_key('long imdb episode title'):
             title = self.get('long imdb episode title')
         else:
-            title = self.get('long imdb canonical title')
+            title = self.get('long imdb title')
         r = '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
                                                 title)
         if isinstance(r, unicode): r = r.encode('utf_8', 'replace')

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090424 "Bloodrayne" (24 Apr 2009)
+* What's the new in release 4.0svn20090425 "RockanRolla" (25 Apr 2009)
   [http]
   - DTD definition.
   - support for locale.
@@ -15,6 +15,10 @@
   - 'tv schedule' ('airing') pages of episodes can be parsed.
   - 'tv schedule' is now a valid alias for 'airing'.
   - minor fixes for empty/wrong strings.
+
+  [sql]
+  - in the database soundex values for titles are always calculated
+    after the article is stripped (if any).
 
 
 * What's the new in release 4.0 "Watchmen" (12 Mar 2009)

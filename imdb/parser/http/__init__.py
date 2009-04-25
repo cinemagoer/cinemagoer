@@ -49,15 +49,6 @@ import companyParser
 import topBottomParser
 
 
-class _FakeParser(object):
-    """Fake parser to replace obsoleted old parsers."""
-    def __init__(self, *args, **kwds):
-        pass
-
-    def parse(self, *args, **kwds):
-        return {'data': {}}
-
-
 class _ModuleProxy:
     """A proxy to instantiate and access parsers."""
     def __init__(self, module, defaultKeys=None, oldParsers=False,

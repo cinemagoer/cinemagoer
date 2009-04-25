@@ -329,6 +329,7 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
         #   titleS      -> titleR
         #   titleS, the -> titleR, the
         if not searchingEpisode:
+            til = canonicalTitle(til)
             ratios = [ratcliff(title1, til, sm1) + 0.05]
             # til2 is til without the article, if present.
             til2 = til

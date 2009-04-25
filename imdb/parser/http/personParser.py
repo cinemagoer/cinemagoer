@@ -68,7 +68,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                             'year': "./a[starts-with(@href, " \
                                     "'/BornInYear?')]/text()"
                             },
-                        postprocess=lambda x: build_date(x)),
+                        postprocess=build_date),
                     Attribute(key='birth notes',
                         path="./a[starts-with(@href, '/BornWhere?')]/text()")]
     _death_attrs = [Attribute(key='death date',
@@ -78,7 +78,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                             'year': "./a[starts-with(@href, " \
                                     "'/DiedInYear?')]/text()"
                             },
-                        postprocess=lambda x: build_date(x)),
+                        postprocess=build_date),
                     Attribute(key='death notes',
                         path="./text()",
                         # TODO: check if this slicing is always correct
@@ -163,7 +163,7 @@ class DOMHTMLBioParser(DOMParserBase):
                             'year': "./a[starts-with(@href, " \
                                     "'/BornInYear?')]/text()"
                             },
-                        postprocess=lambda x: build_date(x)),
+                        postprocess=build_date),
                     Attribute(key='birth notes',
                         path="./a[starts-with(@href, '/BornWhere?')]/text()")]
     _death_attrs = [Attribute(key='death date',
@@ -173,7 +173,7 @@ class DOMHTMLBioParser(DOMParserBase):
                             'year': "./a[starts-with(@href, " \
                                     "'/DiedInYear?')]/text()"
                             },
-                        postprocess=lambda x: build_date(x)),
+                        postprocess=build_date),
                     Attribute(key='death notes',
                         path="./text()",
                         # TODO: check if this slicing is always correct
@@ -469,7 +469,7 @@ class DOMHTMLPersonSalesParser(DOMParserBase):
                             'cover': "./ancestor::td[1]/../" \
                                     "td[1]/a[1]/img[1]/@src",
                             },
-                        postprocess=lambda x: _parse_merchandising_link(x))),
+                        postprocess=_parse_merchandising_link)),
     ]
 
     preprocessors = [

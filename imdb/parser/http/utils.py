@@ -214,7 +214,6 @@ def build_person(txt, personID=None, billingPos=None,
         role = []
         for r in rolesplit:
             nidx = r.find('(')
-            rnotes = u''
             if nidx != -1:
                 role.append(r[:nidx].rstrip())
                 roleNotes.append(r[nidx:])

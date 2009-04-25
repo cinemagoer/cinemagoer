@@ -24,7 +24,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.Movie import Movie
 from imdb.utils import analyze_title
 from utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
 

@@ -89,8 +89,8 @@ def _buildFakeFKTable(cls, fakeTableName):
         else:
             foreignColName = 'id'
         # Unused...
-        fkName = 'fk_%s_%s_%d' % (foreignTableName, foreignColName,
-                                countCols)
+        #fkName = 'fk_%s_%s_%d' % (foreignTableName, foreignColName,
+        #                        countCols)
         # Create a Foreign Key column, with the correct references.
         fk = ForeignKey(foreignTableName, name=thisColName, default=None)
         attrs[thisColName] = fk

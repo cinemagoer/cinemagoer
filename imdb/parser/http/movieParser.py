@@ -166,9 +166,8 @@ class DOMHTMLMovieParser(DOMParserBase):
     extractors = [Extractor(label='title',
                             path="//h1",
                             attrs=Attribute(key='title',
-                                            path=".//text()",
-                                            postprocess=lambda x: \
-                                            analyze_title(x))),
+                                        path=".//text()",
+                                        postprocess=analyze_title)),
 
                 Extractor(label='glossarysections',
                         group="//a[@class='glossary']",
@@ -526,7 +525,7 @@ class DOMHTMLPlotParser(DOMParserBase):
                             multi=True,
                             path={'plot': './text()',
                                 'author': './i/a/text()'},
-                            postprocess=lambda x: _process_plotsummary(x)))]
+                            postprocess=_process_plotsummary))]
 
 
 def _process_award(x):
@@ -584,7 +583,7 @@ class DOMHTMLAwardsParser(DOMParserBase):
                     'notes': "./small[last()]//text()",
                     'anchor': ".//text()"
                     },
-                postprocess=lambda x: _process_award(x)
+                postprocess=_process_award
                 )),
         Extractor(label='recipients',
             group="//table//big",
@@ -1405,7 +1404,7 @@ class DOMHTMLAmazonReviewsParser(DOMParserBase):
                     'review': ".//text()",
                     'author': "./i[starts-with(text(), '--')]/text()"
                     },
-                postprocess=lambda x: _parse_review(x)))
+                postprocess=_parse_review))
         ]
 
     preprocessors = [
@@ -1469,7 +1468,7 @@ class DOMHTMLSalesParser(DOMParserBase):
                             'cover': "./ancestor::td[1]/../td[1]"\
                                     "/a[1]/img[1]/@src",
                             },
-                        postprocess=lambda x: _parse_merchandising_link(x))),
+                        postprocess=_parse_merchandising_link)),
         Extractor(label='others',
                     group="//span[@class='_info']/..",
                     group_key="./h5/a[1]/text()",
@@ -1482,7 +1481,7 @@ class DOMHTMLSalesParser(DOMParserBase):
                             'shop': "./preceding-sibling::a[1]/text()",
                             'description': ".//text()",
                             },
-                        postprocess=lambda x: _parse_merchandising_link(x)))
+                        postprocess=_parse_merchandising_link))
     ]
 
     preprocessors = [
@@ -1557,7 +1556,7 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                                 path=".//title/text()"),
                         Attribute(key='series movieID',
                                 path=".//h1/a[@class='main']/@href",
-                                postprocess=lambda x: analyze_imdbid(x))
+                                postprocess=analyze_imdbid)
                     ]),
             Extractor(label='episodes',
                 group="//div[@class='_imdbpy']/h3",
@@ -1573,7 +1572,7 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                         'oad': self._oad_path,
                         'plot': "./following-sibling::text()[1]"
                     },
-                    postprocess=lambda x: _build_episode(x)))]
+                    postprocess=_build_episode))]
         if self.kind == 'episodes cast':
             self.extractors += [
                 Extractor(label='cast',

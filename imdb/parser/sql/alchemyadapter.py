@@ -463,7 +463,7 @@ class _AlchemyConnection(object):
 
 def setConnection(uri, tables, encoding='utf8', debug=False):
     """Set connection for every table."""
-    # FIXME: why on earth MySQL requires and additional parameter,
+    # FIXME: why on earth MySQL requires an additional parameter,
     #        is well beyond my understanding...
     if uri.startswith('mysql'):
         if '?' in uri:

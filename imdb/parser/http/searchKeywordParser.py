@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from utils import Extractor, Attribute, analyze_imdbid
-from imdb.utils import analyze_title
+from imdb.utils import analyze_title, analyze_company_name
 
 from searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
 
@@ -64,7 +64,7 @@ class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
 
 
 def custom_analyze_title4kwd(title, yearNote, outline):
-    """"""
+    """Return a dictionary with the needed info."""
     title = title.strip()
     if not title:
         return {}

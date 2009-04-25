@@ -27,7 +27,7 @@ import string
 from copy import copy, deepcopy
 from time import strptime, strftime
 
-from imdb._exceptions import IMDbParserError, IMDbError
+from imdb._exceptions import IMDbParserError
 
 # The regular expression for the "long" year format of IMDb, like
 # "(1998)" and "(1986/II)", where the optional roman number (that I call

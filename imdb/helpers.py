@@ -36,7 +36,7 @@ from imdb.Person import Person
 from imdb.Character import Character
 from imdb.Company import Company
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
-                                    entcharrefsget, subXMLRefs, subSGMLRefs
+                                    subXMLRefs, subSGMLRefs
 
 
 # An URL, more or less.

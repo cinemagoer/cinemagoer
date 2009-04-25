@@ -1647,6 +1647,9 @@ def doAkaTitles():
             if line and line[0] != ' ':
                 if line[0] == '\n': continue
                 line = line.strip()
+                if incontrib:
+                    line = build_title(analyze_title(line, _emptyString=''),
+                                        canonical=0, ptdf=1)
                 mid = CACHE_MID.addUnique(line)
                 if line[0] == '"':
                     titleDict = analyze_title(line,
@@ -1882,6 +1885,9 @@ def nmmvFiles(fp, funct, fname):
         if not ton: continue
         note = None
         if datakind == 'movie':
+            if fname == 'laserdisc.list.gz':
+                ton = build_title(analyze_title(ton, _emptyString=''),
+                                canonical=0, ptdf=1)
             mopid = CACHE_MID.addUnique(ton)
         else: mopid = CACHE_PID.addUnique(ton)
         if count % 6000 == 0:

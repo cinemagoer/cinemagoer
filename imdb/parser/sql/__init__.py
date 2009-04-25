@@ -33,7 +33,7 @@ from imdb.parser.common.locsql import IMDbLocalAndSqlAccessSystem, \
                     scan_names, scan_titles, titleVariations, \
                     nameVariations, merge_roles, scan_company_names, \
                     soundex, filterSimilarKeywords
-from imdb.utils import normalizeTitle, normalizeName, build_title, \
+from imdb.utils import normalizeName, build_title, \
                         build_name, analyze_name, analyze_title, \
                         build_company_name, re_episodes, _unicodeArticles
 from imdb.Person import Person
@@ -487,6 +487,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
             conditionAka = AND(AkaTitle.q.phoneticCode == soundexCode,
                             AkaTitle.q.kindID == self._kindRev['episode'])
         elif title_dict['kind'] == 'episode' and episodeOf is not None:
+            # set canonical=0 ?  Should not make much difference.
             series_title = build_title(episodeOf, canonical=1)
             # XXX: is it safe to get "results" results?
             #      Too many?  Too few?
@@ -559,9 +560,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 new_res.append(r)
                 continue
             mdict = r[1]
-            aka_title = build_title(mdict, canonical=1, ptdf=1)
+            aka_title = build_title(mdict, canonical=0, ptdf=1)
             orig_dict = get_movie_data(r[0], self._kind)
-            orig_title = build_title(orig_dict, canonical=1, ptdf=1)
+            orig_title = build_title(orig_dict, canonical=0, ptdf=1)
             if aka_title == orig_title:
                 new_res.append(r)
                 continue

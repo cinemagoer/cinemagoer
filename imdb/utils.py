@@ -193,7 +193,9 @@ articlesDicts = (_articlesDict, _unicodeArticlesDict)
 spArticles = (_spArticles, _spUnicodeArticles)
 
 def canonicalTitle(title):
-    """Return the title in the canonic format 'Movie Title, The'."""
+    """Return the title in the canonic format 'Movie Title, The';
+    beware that it doesn't handle long imdb titles, but only the
+    title portion, without year[/imdbIndex] or special markup."""
     isUnicode = isinstance(title, unicode)
     try:
         if title.split(', ')[-1].lower() in articlesDicts[isUnicode]:
@@ -225,7 +227,9 @@ def canonicalTitle(title):
     return title
 
 def normalizeTitle(title):
-    """Return the title in the normal "The Title" format."""
+    """Return the title in the normal "The Title" format;
+    beware that it doesn't handle long imdb titles, but only the
+    title portion, without year[/imdbIndex] or special markup."""
     stitle = title.split(', ')
     if len(stitle) > 1 and stitle[-1].lower() in _articlesDict:
         sep = ' '
@@ -615,12 +619,12 @@ def cmpMovies(m1, m2):
     if m1y > m2y: return -1
     if m1y < m2y: return 1
     # Ok, these movies have the same production year...
-    m1t = m1.get('canonical title', _last)
-    m2t = m2.get('canonical title', _last)
+    #m1t = m1.get('canonical title', _last)
+    #m2t = m2.get('canonical title', _last)
     # It should works also with normal dictionaries (returned from searches).
-    if m1t is _last and m2t is _last:
-        m1t = m1.get('title', _last)
-        m2t = m2.get('title', _last)
+    #if m1t is _last and m2t is _last:
+    m1t = m1.get('title', _last)
+    m2t = m2.get('title', _last)
     if m1t < m2t: return -1
     if m1t > m2t: return 1
     # Ok, these movies have the same title...

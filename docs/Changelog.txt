@@ -1,14 +1,16 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090425 "RockanRolla" (25 Apr 2009)
-  [http]
+* What's the new in release 4.0svn20090425b "RockanRolla" (25 Apr 2009)
+  [general]
   - DTD definition.
   - support for locale.
   - support for the new style for movie titles ("The Title" and no
     more "Title, The").
-  - char references in the &#xHEXCODE; format are handled.
   - minor fix to XML code to work with the test-suite.
+
+  [http]
+  - char references in the &#xHEXCODE; format are handled.
   - fixed a bug with movies containing '....' in titles.  And I'm
     talking about Malcolm McDowell filmography...
   - 'airing' contains object (so the accessSystem is set).

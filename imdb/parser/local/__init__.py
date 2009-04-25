@@ -427,7 +427,7 @@ class IMDbLocalAccessSystem(IMDbLocalAndSqlAccessSystem):
                 continue
             else:
                 seen_MID.append(realMID)
-            aka_title = build_title(r, canonical=1)
+            aka_title = build_title(r, canonical=0)
             real_title = getLabel(realMID, '%stitles.index' % self.__db,
                                 '%stitles.key' % self.__db)
             if aka_title == real_title:

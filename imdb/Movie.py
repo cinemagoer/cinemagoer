@@ -230,8 +230,8 @@ class Movie(_Container):
         if not isinstance(other, self.__class__): return 0
         if self.data.has_key('title') and \
                 other.data.has_key('title') and \
-                build_title(self.data, canonical=1) == \
-                build_title(other.data, canonical=1):
+                build_title(self.data, canonical=0) == \
+                build_title(other.data, canonical=0):
             return 1
         if self.accessSystem == other.accessSystem and \
                 self.movieID is not None and self.movieID == other.movieID:

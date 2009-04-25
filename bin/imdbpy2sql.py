@@ -1652,8 +1652,7 @@ def doAkaTitles():
                                         canonical=0, ptdf=1)
                 mid = CACHE_MID.addUnique(line)
                 if line[0] == '"':
-                    titleDict = analyze_title(line,
-                                                _emptyString='')
+                    titleDict = analyze_title(line, _emptyString='')
                     if 'episode of' in titleDict:
                         series = build_title(titleDict['episode of'],
                                             canonical=0, ptdf=1)

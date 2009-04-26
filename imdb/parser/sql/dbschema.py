@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 INTCOL = 1
 UNICODECOL = 2
 STRINGCOL = 3
+_strMap = {1: 'INTCOL', 2: 'UNICODECOL', 3: 'STRINGCOL'}
 
 class DBCol(object):
     """Define column objects."""
@@ -51,6 +52,44 @@ class DBCol(object):
             del params['foreignKey']
         self.params = params
 
+    def __str__(self):
+        """Class representation."""
+        s = '<DBCol %s %s' % (self.name, _strMap[self.kind])
+        if self.index:
+            s += ' INDEX'
+            if self.indexLen:
+                s += '[:%d]' % self.indexLen
+        if self.foreignKey:
+            s += ' FOREIGN'
+        if 'default' in self.params:
+            val = self.params['default']
+            if val is not None:
+                val = '"%s"' % val
+            s += ' DEFAULT=%s' % val
+        for param in self.params:
+            if param == 'default': continue
+            s += ' %s' % param.upper()
+        s += '>'
+        return s
+
+    def __repr__(self):
+        """Class representation."""
+        s = '<DBCol(name="%s", %s' % (self.name, _strMap[self.kind])
+        if self.index:
+            s += ', index="%s"' % self.index
+        if self.indexLen:
+             s += ', indexLen=%d' % self.indexLen
+        if self.foreignKey:
+            s += ', foreignKey="%s"' % self.foreignKey
+        for param in self.params:
+            val = self.params[param]
+            if isinstance(val, (unicode, str)):
+                val = u'"%s"' % val
+            s += ', %s=%s' % (param, val)
+        s += ')>'
+        return s
+
+
 class DBTable(object):
     """Define table objects."""
     def __init__(self, name, *cols, **kwds):
@@ -58,8 +97,24 @@ class DBTable(object):
         self.cols = cols
         # Default values.
         self.values = kwds.get('values', {})
-        # Indexes.
-        self.indexes = kwds.get('indexes', {})
+
+    def __str__(self):
+        """Class representation."""
+        return '<DBTable %s (%d cols, %d values)>' % (self.name,
+                len(self.cols), sum([len(v) for v in self.values.values()]))
+
+    def __repr__(self):
+        """Class representation."""
+        s = '<DBTable(name="%s"' % self.name
+        col_s = ', '.join([repr(col).rstrip('>').lstrip('<')
+                            for col in self.cols])
+        if col_s:
+            s += ', %s' % col_s
+        if self.values:
+            s += ', values=%s' % self.values
+        s += ')>'
+        return s
+
 
 # Default values to insert in some tables: {'column': (list, of, values, ...)}
 kindTypeDefs = {'kind': ('movie', 'tv series', 'tv movie', 'video movie',

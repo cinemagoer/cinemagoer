@@ -132,6 +132,12 @@ Another new feature, is the ability to get top250 and bottom100 lists;
 see the "TOP250 / BOTTOM100 LISTS" section of the README.package file
 for more information.
 
+Since release 4.1 a DTD for the XML output is available (see
+imdbpyXY.dtd).  Other important features are locale (i18n) support (see
+README.locale) and support for the new style of movie titles used by IMDb
+(now in the "The Title" style, and no more as "Title, The").
+The 'local' data access system should be considered obsolete.
+
 
   FEATURES
   ========

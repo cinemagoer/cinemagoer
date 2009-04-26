@@ -25,14 +25,14 @@ by the web server ("The Series" The Episode (2005)) or in the format
 of the plain text data files ("The Series" (2004) {The Episode (#ser.epi)})
 
 An example of the returned dictionary: call the function:
-  analyze_title('"The Series" The Episode (2005)', canonical=1)
+  analyze_title('"The Series" The Episode (2005)')
 
 the result will be:
   {'kind': 'episode',       # kind is set to 'episode'.
    'year': '2005',          # the release year of this episode.
-   'title': 'Episode, The', # episode title
+   'title': 'The Episode',  # episode title
    'episode of': {'kind': 'tv series',        # 'episode of' will contains
-                  'title': 'Series, The'}     # information about the series.
+                  'title': 'The Series'}      # information about the series.
   }
 
 
@@ -41,9 +41,9 @@ the same information.
 
 The build_title() function takes an optional argument: ptdf; is it's
 set to false (the default), it returns the title of the episode in
-the format used by the IMDb's web server ("Series, The" An Episode (2005)),
+the format used by the IMDb's web server ("The Series" An Episode (2006)),
 otherwise it uses the format used by the plain text data files (something
-like "Series, The" (2004) {An Episode (#2.5)})
+like "The Series" (2004) {An Episode (#2.5)})
 
 
   SERIES

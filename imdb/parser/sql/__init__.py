@@ -87,11 +87,15 @@ def sub_dict(d, keys):
     return dict([(k, d[k]) for k in keys if k in d])
 
 
-def get_movie_data(movieID, kindDict, fromAka=0):
+def get_movie_data(movieID, kindDict, fromAka=0, _table=None):
     """Return a dictionary containing data about the given movieID;
-    if fromAka is true, the AkaTitle table is searched."""
-    if not fromAka: Table = Title
-    else: Table = AkaTitle
+    if fromAka is true, the AkaTitle table is searched; _table is
+    reserved for the imdbpy2sql.py script."""
+    if _table is not None:
+        Table = _table
+    else:
+        if not fromAka: Table = Title
+        else: Table = AkaTitle
     m = Table.get(movieID)
     mdict = {'title': m.title, 'kind': kindDict[m.kindID],
             'year': m.productionYear, 'imdbIndex': m.imdbIndex,

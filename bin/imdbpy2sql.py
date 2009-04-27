@@ -32,16 +32,16 @@ from imdb.parser.sql.dbschema import *
 from imdb.parser.common.locsql import soundex
 from imdb.parser.sql import get_movie_data
 from imdb.utils import analyze_title, analyze_name, \
-        build_name, build_title, normalizeName, _articles, \
+        build_name, build_title, normalizeName, normalizeTitle, _articles, \
         build_company_name, analyze_company_name, canonicalTitle
 from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError, IMDbError
 
-_articles = list(_articles)
-for i, art in enumerate(_articles):
-    if not isinstance(art, unicode): continue
-    _articles[i] = art.encode('utf_8')
+#_articles = list(_articles)
+#for i, art in enumerate(_articles):
+#    if not isinstance(art, unicode): continue
+#    _articles[i] = art.encode('utf_8')
 
 re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
@@ -67,6 +67,8 @@ HELP = """imdbpy2sql.py usage:
             --ms-sqlserver          compatibility mode for Microsoft SQL Server
                                     and SQL Express.
             --sqlite-transactions   uses transactions, to speed-up SQLite.
+
+            --fix-old-style-titles  temporary fix for files in old titles style.
 
 
                 See README.sqldb for more information.
@@ -96,6 +98,9 @@ CSV_LOAD_SQL = None
 CSV_MYSQL = "LOAD DATA LOCAL INFILE '%(file)s' INTO TABLE `%(table)s` FIELDS TERMINATED BY '%(delimiter)s' ENCLOSED BY '%(quote)s' ESCAPED BY '%(escape)s' LINES TERMINATED BY '%(eol)s'"
 CSV_PGSQL = "COPY %(table)s FROM '%(file)s' WITH DELIMITER AS '%(delimiter)s' NULL AS '%(null)s' QUOTE AS '%(quote)s' ESCAPE AS '%(escape)s' CSV"
 CSV_DB2 = "CALL SYSPROC.ADMIN_CMD('LOAD FROM %(file)s OF del INSERT INTO %(table)s')"
+
+# Temporary fix for old style titles.
+FIX_OLD_STYLE_TITLES = False
 
 # Store custom queries specified on the command line.
 CUSTOM_QUERIES = {}
@@ -141,6 +146,7 @@ try:
                                                 ['uri=', 'data=', 'execute=',
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
+                                                'fix-old-style-titles',
                                                 'mysql-force-myisam', 'orm',
                                                 'csv=', 'csv-ext=', 'help'])
 except getopt.error, e:
@@ -179,6 +185,8 @@ for opt in optlist:
             CUSTOM_QUERIES.setdefault(when, []).append(cmd)
     elif opt[0] in ('-o', '--orm'):
         USE_ORM = opt[1].split(',')
+    elif opt[0] == '--fix-old-style-titles':
+        FIX_OLD_STYLE_TITLES = True
     elif opt[0] in ('-h', '--help'):
         print HELP
         sys.exit(0)
@@ -317,7 +325,7 @@ class CSVCursor(object):
                     lobFD=None, lobFN=None):
         """Build a single text line for a set of information."""
         # FIXME: there are too many special cases to handle, and that
-        #        affect performances: management of LOB files, at least,
+        #        affects performances: management of LOB files, at least,
         #        must be moved away from here.
         quote = self.quote
         escape = self.escape
@@ -994,6 +1002,7 @@ class MoviesCache(_BaseCache):
         Title.sqlmeta.cacheValues = _oldcacheValues
 
     def _toDB(self, quiet=0):
+        global FIX_OLD_STYLE_TITLES
         if not quiet:
             print ' * FLUSHING %s...' % self.className
             sys.stdout.flush()
@@ -1024,6 +1033,8 @@ class MoviesCache(_BaseCache):
             elif kind in ('tv series', 'tv mini series'):
                 t['series years'] = self.movieYear.get(v)
             title = tget('title')
+            if FIX_OLD_STYLE_TITLES:
+                title = normalizeTitle(title)
             soundex = title_soundex(title)
             lapp((v, title, tget('imdbIndex'), KIND_IDS[kind],
                     tget('year'), None, soundex, episodeOf,
@@ -2247,7 +2258,7 @@ def notNULLimdbID(cls):
         return []
     for t in tons:
         if cls is Title:
-            md = get_movie_data(t.id, _kdict)
+            md = get_movie_data(t.id, _kdict, _table=Title)
         elif cls is CompanyName:
             md = {'name': t.name}
             if t.countryCode is not None:

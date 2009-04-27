@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090426 "RockanRolla" (26 Apr 2009)
+* What's the new in release 4.0svn20090427 "Ti Stramo" (27 Apr 2009)
   [general]
   - DTD definition.
   - support for locale.
@@ -21,6 +21,9 @@
   [sql]
   - in the database soundex values for titles are always calculated
     after the article is stripped (if any).
+  - imdbpy2sql.py has the --fix-old-style-titles option, to handle
+    files in the old format.
+  - fixed a bug saving imdbIDs.
 
   [local]
   - the 'local' data access system should be considered obsolete, and

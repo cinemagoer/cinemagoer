@@ -230,11 +230,18 @@ def normalizeTitle(title):
     """Return the title in the normal "The Title" format;
     beware that it doesn't handle long imdb titles, but only the
     title portion, without year[/imdbIndex] or special markup."""
+    isUnicode = isinstance(title, unicode)
     stitle = title.split(', ')
-    if len(stitle) > 1 and stitle[-1].lower() in _articlesDict:
+    if len(stitle) > 1 and stitle[-1].lower() in articlesDicts[isUnicode]:
         sep = ' '
         if stitle[-1][-1] in ("'", '-'): sep = ''
-        title = '%s%s%s' % (stitle[-1], sep, ', '.join(stitle[:-1]))
+        if isUnicode:
+            _format = u'%s%s%s'
+            _joiner = u', '
+        else:
+            _format = '%s%s%s'
+            _joiner = ', '
+        title = _format % (stitle[-1], sep, _joiner.join(stitle[:-1]))
     return title
 
 

@@ -263,7 +263,7 @@ if CSV_DIR:
 if USE_ORM is None:
     USE_ORM = ('sqlobject', 'sqlalchemy')
 if not isinstance(USE_ORM, (tuple, list)):
-        USE_ORM = [USE_ORM]
+    USE_ORM = [USE_ORM]
 nrMods = len(USE_ORM)
 _gotError = False
 for idx, mod in enumerate(USE_ORM):
@@ -1659,14 +1659,20 @@ def doAkaTitles():
                 if line[0] == '\n': continue
                 line = line.strip()
                 if incontrib:
-                    line = build_title(analyze_title(line, _emptyString=''),
-                                        canonical=0, ptdf=1)
+                    tonD = analyze_title(line, _emptyString='')
+                    tonD['title'] = normalizeTitle(tonD['title'])
+                    line = build_title(tonD, canonical=0, ptdf=1,
+                                        _emptyString='')
                 mid = CACHE_MID.addUnique(line)
                 if line[0] == '"':
                     titleDict = analyze_title(line, _emptyString='')
                     if 'episode of' in titleDict:
+                        if incontrib or FIX_OLD_STYLE_TITLES:
+                            titleDict['episode of']['title'] = \
+                                normalizeTitle(titleDict['episode of']['title'])
                         series = build_title(titleDict['episode of'],
-                                            canonical=0, ptdf=1)
+                                            canonical=0, ptdf=1,
+                                            _emptyString='')
                         seriesID = CACHE_MID.addUnique(series)
                         isEpisode = True
                     else:
@@ -1686,6 +1692,14 @@ def doAkaTitles():
                 akat = res.get('title', '')
                 if akat[:5] == '(aka ': akat = akat[5:]
                 if akat[-2:] in ('))', '})'): akat = akat[:-1]
+                akat = akat.strip()
+                if not akat:
+                    continue
+                if incontrib or FIX_OLD_STYLE_TITLES:
+                    akatD = analyze_title(akat, _emptyString='')
+                    akatD['title'] = normalizeTitle(akatD['title'])
+                    akat = build_title(akatD, canonical=0, ptdf=1,
+                                        _emptyString='')
                 if count % 10000 == 0:
                     print 'SCANNING %s:' % fname[:-8].replace('-', ' '),
                     print _(akat)
@@ -1694,6 +1708,9 @@ def doAkaTitles():
                     # aliases.
                     akaDict = analyze_title(akat, _emptyString='')
                     if 'episode of' in akaDict:
+                        if incontrib or FIX_OLD_STYLE_TITLES:
+                            akaDict['episode of']['title'] = normalizeTitle(
+                                            akaDict['episode of']['title'])
                         akaSeries = build_title(akaDict['episode of'],
                                                 canonical=0, ptdf=1)
                         CACHE_MID_AKAS.add(akaSeries, [('ids', seriesID)])
@@ -1896,8 +1913,9 @@ def nmmvFiles(fp, funct, fname):
         note = None
         if datakind == 'movie':
             if fname == 'laserdisc.list.gz':
-                ton = build_title(analyze_title(ton, _emptyString=''),
-                                canonical=0, ptdf=1)
+                tonD = analyze_title(ton, _emptyString='')
+                tonD['title'] = normalizeTitle(tonD['title'])
+                ton = build_title(tonD, canonical=0, ptdf=1, _emptyString='')
             mopid = CACHE_MID.addUnique(ton)
         else: mopid = CACHE_PID.addUnique(ton)
         if count % 6000 == 0:
@@ -2102,7 +2120,7 @@ def getRating():
         title = data['title'].strip()
         mid = CACHE_MID.addUnique(title)
         if count % 10000 == 0:
-                print 'SCANNING rating:', _(title)
+            print 'SCANNING rating:', _(title)
         sqldata.add((mid, INFO_TYPES['votes distribution'],
                     data.get('votes distribution'), None))
         sqldata.add((mid, INFO_TYPES['votes'], data.get('votes'), None))

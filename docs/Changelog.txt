@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090427b "Ti Stramo" (27 Apr 2009)
+* What's the new in release 4.0svn20090427c "Ti Stramo" (27 Apr 2009)
   [general]
   - DTD definition.
   - support for locale.

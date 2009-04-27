@@ -1643,6 +1643,10 @@ def doAkaTitles():
                         AKAT_NO_START)):
         incontrib = 0
         pwarning = 1
+        # Looks like that the only up-to-date AKA file is aka-titles.
+        obsolete = False
+        if fname != 'aka-titles.list.gz':
+            obsolete = True
         if start in (AKAT_HU_START, AKAT_NO_START):
             pwarning = 0
             incontrib = 1
@@ -1658,7 +1662,7 @@ def doAkaTitles():
             if line and line[0] != ' ':
                 if line[0] == '\n': continue
                 line = line.strip()
-                if incontrib:
+                if incontrib or obsolete:
                     tonD = analyze_title(line, _emptyString='')
                     tonD['title'] = normalizeTitle(tonD['title'])
                     line = build_title(tonD, canonical=0, ptdf=1,
@@ -1667,7 +1671,7 @@ def doAkaTitles():
                 if line[0] == '"':
                     titleDict = analyze_title(line, _emptyString='')
                     if 'episode of' in titleDict:
-                        if incontrib or FIX_OLD_STYLE_TITLES:
+                        if incontrib or obsolete:
                             titleDict['episode of']['title'] = \
                                 normalizeTitle(titleDict['episode of']['title'])
                         series = build_title(titleDict['episode of'],
@@ -1695,7 +1699,7 @@ def doAkaTitles():
                 akat = akat.strip()
                 if not akat:
                     continue
-                if incontrib or FIX_OLD_STYLE_TITLES:
+                if incontrib or obsolete:
                     akatD = analyze_title(akat, _emptyString='')
                     akatD['title'] = normalizeTitle(akatD['title'])
                     akat = build_title(akatD, canonical=0, ptdf=1,
@@ -1708,7 +1712,7 @@ def doAkaTitles():
                     # aliases.
                     akaDict = analyze_title(akat, _emptyString='')
                     if 'episode of' in akaDict:
-                        if incontrib or FIX_OLD_STYLE_TITLES:
+                        if incontrib or obsolete:
                             akaDict['episode of']['title'] = normalizeTitle(
                                             akaDict['episode of']['title'])
                         akaSeries = build_title(akaDict['episode of'],
@@ -1906,13 +1910,16 @@ def nmmvFiles(fp, funct, fname):
     elif fname == 'literature.list.gz': sqldata.flushEvery = 5000
     elif fname == 'business.list.gz': sqldata.flushEvery = 10000
     elif fname == 'biographies.list.gz': sqldata.flushEvery = 5000
+    islaserdisc = False
+    if fname == 'laserdisc.list.gz':
+        islaserdisc = True
     _ltype = type([])
     for ton, text in fp.getByNMMVSections():
         ton = ton.strip()
         if not ton: continue
         note = None
         if datakind == 'movie':
-            if fname == 'laserdisc.list.gz':
+            if islaserdisc:
                 tonD = analyze_title(ton, _emptyString='')
                 tonD['title'] = normalizeTitle(tonD['title'])
                 ton = build_title(tonD, canonical=0, ptdf=1, _emptyString='')

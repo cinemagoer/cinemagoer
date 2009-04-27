@@ -489,7 +489,7 @@ msgstr "Peşinden geldiği film"
 
 # Default: For
 msgid "for"
-msgstr "Çalışma"
+msgstr "Film"
 
 # Default: Frequency response
 msgid "frequency-response"
@@ -1093,7 +1093,7 @@ msgstr "Dalga geçtiği filmler"
 
 # Default: Spouse
 msgid "spouse"
-msgstr "Eş"
+msgstr "Eşi"
 
 # Default: Status of availablility
 msgid "status-of-availablility"
@@ -1217,7 +1217,7 @@ msgstr "Video standardı"
 
 # Default: Visual effects
 msgid "visual-effects"
-msgstr "Ğörsel efektler"
+msgstr "Görsel efektler"
 
 # Default: Votes
 msgid "votes"

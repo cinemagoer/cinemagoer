@@ -146,9 +146,9 @@ class Person(_Container):
             elif key == 'canonical name':
                 return self.data['name']
             elif key == 'long imdb name':
-                return build_name(self.data)
+                return build_name(self.data, canonical=0)
             elif key == 'long imdb canonical name':
-                return build_name(self.data, canonical=1)
+                return build_name(self.data)
         return None
 
     def getID(self):

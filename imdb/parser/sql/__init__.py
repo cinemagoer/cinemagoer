@@ -383,7 +383,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         imdbID = movie.imdbID
         if imdbID is not None: return '%07d' % imdbID
         m_dict = get_movie_data(movie.id, self._kind)
-        titline = build_title(m_dict, canonical=0, ptdf=1)
+        titline = build_title(m_dict, ptdf=1)
         imdbID = self.title2imdbID(titline)
         # If the imdbID was retrieved from the web and was not in the
         # database, update the database (ignoring errors, because it's
@@ -564,9 +564,9 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
                 new_res.append(r)
                 continue
             mdict = r[1]
-            aka_title = build_title(mdict, canonical=0, ptdf=1)
+            aka_title = build_title(mdict, ptdf=1)
             orig_dict = get_movie_data(r[0], self._kind)
-            orig_title = build_title(orig_dict, canonical=0, ptdf=1)
+            orig_title = build_title(orig_dict, ptdf=1)
             if aka_title == orig_title:
                 new_res.append(r)
                 continue
@@ -655,7 +655,7 @@ class IMDbSqlAccessSystem(IMDbLocalAndSqlAccessSystem):
         if akat:
             res['akas'] = []
             for td, note in akat:
-                nt = build_title(td, canonical=0, ptdf=1)
+                nt = build_title(td, ptdf=1)
                 if note:
                     net = self._changeAKAencoding(note, nt)
                     if net is not None: nt = net

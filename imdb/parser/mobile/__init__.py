@@ -633,7 +633,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 try:
                     vtag = unquote(str(vtag[0]))
                     vtag = unicode(vtag, 'latin_1')
-                    r.update(analyze_name(vtag, canonical=0))
+                    r.update(analyze_name(vtag))
                 except UnicodeEncodeError:
                     pass
         return {'data': r, 'info sets': ('main', 'filmography')}
@@ -726,7 +726,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if pidtag:
                 pid = re_imdbID.findall(pidtag[0])
             if not (pid and name): return res
-            res[:] = [(str(pid[0]), analyze_name(name, canonical=0))]
+            res[:] = [(str(pid[0]), analyze_name(name))]
         else:
             sects = _findBetween(cont, '<b>Popular Characters</b>', '</table>',
                                 maxRes=results*3)
@@ -740,7 +740,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     pid = re_imdbID.findall(li)
                     pname = _unHtml(li)
                     if not (pid and pname): continue
-                    res.append((str(pid[0]), analyze_name(pname, canonical=0)))
+                    res.append((str(pid[0]), analyze_name(pname)))
         return res
 
     def get_character_main(self, characterID):

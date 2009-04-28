@@ -995,8 +995,7 @@ class MoviesCache(_BaseCache):
                 if series_d['year'] is None: del series_d['year']
                 else: series_d['year'] = str(series_d['year'])
                 mdict['episode of'] = series_d
-            title = build_title(mdict, canonical=0, ptdf=1,
-                                _emptyString='')
+            title = build_title(mdict, ptdf=1, _emptyString='')
             dict.__setitem__(self, title, x[0])
         self.counter = counter(Title.select().count() + 1)
         Title.sqlmeta.cacheValues = _oldcacheValues
@@ -1022,8 +1021,7 @@ class MoviesCache(_BaseCache):
             kind = tget('kind')
             if kind == 'episode':
                 # Series title.
-                stitle = build_title(tget('episode of'), canonical=0,
-                                    _emptyString='')
+                stitle = build_title(tget('episode of'), _emptyString='')
                 episodeOf = self.addUnique(stitle)
                 del t['episode of']
                 year = self.movieYear.get(v)
@@ -1074,7 +1072,7 @@ class PersonsCache(_BaseCache):
         for x in fetchsome(CURS, self.flushEvery):
             nd = {'name': x[1]}
             if x[2]: nd['imdbIndex'] = x[2]
-            name = build_name(nd, canonical=1)
+            name = build_name(nd)
             dict.__setitem__(self, name, x[0])
         self.counter = counter(Name.select().count() + 1)
         Name.sqlmeta.cacheValues = _oldcacheValues
@@ -1130,7 +1128,7 @@ class CharactersCache(_BaseCache):
         for x in fetchsome(CURS, self.flushEvery):
             nd = {'name': x[1]}
             if x[2]: nd['imdbIndex'] = x[2]
-            name = build_name(nd, canonical=1)
+            name = build_name(nd)
             dict.__setitem__(self, name, x[0])
         self.counter = counter(CharName.select().count() + 1)
         CharName.sqlmeta.cacheValues = _oldcacheValues
@@ -1665,8 +1663,7 @@ def doAkaTitles():
                 if incontrib or obsolete:
                     tonD = analyze_title(line, _emptyString='')
                     tonD['title'] = normalizeTitle(tonD['title'])
-                    line = build_title(tonD, canonical=0, ptdf=1,
-                                        _emptyString='')
+                    line = build_title(tonD, ptdf=1, _emptyString='')
                 mid = CACHE_MID.addUnique(line)
                 if line[0] == '"':
                     titleDict = analyze_title(line, _emptyString='')
@@ -1675,8 +1672,7 @@ def doAkaTitles():
                             titleDict['episode of']['title'] = \
                                 normalizeTitle(titleDict['episode of']['title'])
                         series = build_title(titleDict['episode of'],
-                                            canonical=0, ptdf=1,
-                                            _emptyString='')
+                                            ptdf=1, _emptyString='')
                         seriesID = CACHE_MID.addUnique(series)
                         isEpisode = True
                     else:
@@ -1702,8 +1698,7 @@ def doAkaTitles():
                 if incontrib or obsolete:
                     akatD = analyze_title(akat, _emptyString='')
                     akatD['title'] = normalizeTitle(akatD['title'])
-                    akat = build_title(akatD, canonical=0, ptdf=1,
-                                        _emptyString='')
+                    akat = build_title(akatD, ptdf=1, _emptyString='')
                 if count % 10000 == 0:
                     print 'SCANNING %s:' % fname[:-8].replace('-', ' '),
                     print _(akat)
@@ -1715,8 +1710,7 @@ def doAkaTitles():
                         if incontrib or obsolete:
                             akaDict['episode of']['title'] = normalizeTitle(
                                             akaDict['episode of']['title'])
-                        akaSeries = build_title(akaDict['episode of'],
-                                                canonical=0, ptdf=1)
+                        akaSeries = build_title(akaDict['episode of'], ptdf=1)
                         CACHE_MID_AKAS.add(akaSeries, [('ids', seriesID)])
                 append_data = [('ids', mid)]
                 if note is not None:
@@ -1922,7 +1916,7 @@ def nmmvFiles(fp, funct, fname):
             if islaserdisc:
                 tonD = analyze_title(ton, _emptyString='')
                 tonD['title'] = normalizeTitle(tonD['title'])
-                ton = build_title(tonD, canonical=0, ptdf=1, _emptyString='')
+                ton = build_title(tonD, ptdf=1, _emptyString='')
             mopid = CACHE_MID.addUnique(ton)
         else: mopid = CACHE_PID.addUnique(ton)
         if count % 6000 == 0:
@@ -2317,11 +2311,11 @@ def restoreImdbID(tons, cls):
     count = 0
     for t in tons:
         if cls is Title:
-            t_str = build_title(t, canonical=0, ptdf=1)
+            t_str = build_title(t, ptdf=1)
         elif cls is CompanyName:
             t_str = build_company_name(t)
         else:
-            t_str = build_name(t, canonical=1)
+            t_str = build_name(t)
         t_str = t_str.encode('utf_8')
         db_mopID = CACHE.get(t_str)
         if db_mopID is None:

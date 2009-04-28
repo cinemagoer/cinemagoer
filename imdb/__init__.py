@@ -830,6 +830,7 @@ class IMDbBase:
             if mop.characterID is not None:
                 imdbID = aSystem.get_imdbCharacterID(mop.characterID)
             else:
+                # canonical=0 ?
                 imdbID = aSystem.character2imdbID(build_name(mop, canonical=1))
         elif isinstance(mop, Company.Company):
             if mop.companyID is not None:

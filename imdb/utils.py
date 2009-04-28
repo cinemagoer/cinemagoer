@@ -61,11 +61,21 @@ def canonicalName(name):
     #      - Jr.: 8025
     # Don't convert names already in the canonical format.
     if name.find(', ') != -1: return name
+    if isinstance(name, unicode):
+        joiner = u'%s, %s'
+        sur_joiner = u'%s %s'
+        sur_space = u' %s'
+        space = u' '
+    else:
+        joiner = '%s, %s'
+        sur_joiner = '%s %s'
+        sur_space = ' %s'
+        space = ' '
     sname = name.split(' ')
     snl = len(sname)
     if snl == 2:
         # Just a name and a surname: how boring...
-        name = '%s, %s' % (sname[1], sname[0])
+        name = joiner % (sname[1], sname[0])
     elif snl > 2:
         lsname = [x.lower() for x in sname]
         if snl == 3: _indexes = (0, snl-2)
@@ -75,36 +85,42 @@ def canonicalName(name):
             if lsname[index] not in _sname_suffixes: continue
             try:
                 # Build the surname.
-                surn = '%s %s' % (sname[index], sname[index+1])
+                surn = sur_joiner % (sname[index], sname[index+1])
                 del sname[index]
                 del sname[index]
                 try:
                     # Handle the "Jr." after the name.
                     if lsname[index+2].startswith('jr'):
-                        surn += ' %s' % sname[index]
+                        surn += sur_space % sname[index]
                         del sname[index]
                 except (IndexError, ValueError):
                     pass
-                name = '%s, %s' % (surn, ' '.join(sname))
+                name = joiner % (surn, space.join(sname))
                 break
             except ValueError:
                 continue
         else:
-            name = '%s, %s' % (sname[-1], ' '.join(sname[:-1]))
+            name = joiner % (sname[-1], space.join(sname[:-1]))
     return name
 
 def normalizeName(name):
     """Return a name in the normal "Name Surname" format."""
+    if isinstance(name, unicode):
+        joiner = u'%s %s'
+    else:
+        joiner = '%s %s'
     sname = name.split(', ')
     if len(sname) == 2:
-        name = '%s %s' % (sname[1], sname[0])
+        name = joiner % (sname[1], sname[0])
     return name
 
-def analyze_name(name, canonical=0):
+def analyze_name(name, canonical=None):
     """Return a dictionary with the name and the optional imdbIndex
     keys, from the given string.
-    If canonical is true, it tries to convert the  name to
-    the canonical "Surname, Name" format.
+
+    If canonical is None (default), the name is stored in its own style.
+    If canonical is True, the name is converted to canonical style.
+    If canonical is False, the name is converted to normal format.
 
     raise an IMDbParserError exception if the name is not valid.
     """
@@ -120,24 +136,31 @@ def analyze_name(name, canonical=0):
             name = name[:opi].rstrip()
     if not name:
         raise IMDbParserError, 'invalid name: "%s"' % original_n
-    if canonical:
-        name = canonicalName(name)
+    if canonical is not None:
+        if canonical:
+            name = canonicalName(name)
+        else:
+            name = normalizeName(name)
     res['name'] = name
     if imdbIndex:
         res['imdbIndex'] = imdbIndex
     return res
 
 
-def build_name(name_dict, canonical=0):
+def build_name(name_dict, canonical=None):
     """Given a dictionary that represents a "long" IMDb name,
     return a string.
-    If canonical is not set, the name is returned in the normal
-    "Name Surname" format.
+    If canonical is None (default), the name is returned in the stored style.
+    If canonical is True, the name is converted to canonical style.
+    If canonical is False, the name is converted to normal format.
     """
     name = name_dict.get('canonical name') or name_dict.get('name', '')
     if not name: return ''
-    if not canonical:
-        name = normalizeName(name)
+    if canonical is not None:
+        if canonical:
+            name = canonicalName(name)
+        else:
+            name = normalizeName(name)
     imdbIndex = name_dict.get('imdbIndex')
     if imdbIndex:
         name += ' (%s)' % imdbIndex
@@ -167,7 +190,7 @@ def build_name(name_dict, canonical=0):
 # I've left in the list 'i' (1939 vs 2151) and 'uno' (52 vs 56)
 # I'm not sure what '-al' is, and so I've left it out...
 #
-# List of articles:
+# List of articles in utf-8 encoding:
 _articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el',
             "l'", 'il', 'das', 'les', 'i', 'o', 'ein', 'un', 'de', 'los',
             'an', 'una', 'las', 'eine', 'den', 'het', 'gli', 'lo', 'os',
@@ -179,8 +202,10 @@ _unicodeArticles = tuple([art.decode('utf_8') for art in _articles])
 
 # Articles in a dictionary.
 _articlesDict = dict([(x, x) for x in _articles])
+# Unicode version.
 _unicodeArticlesDict = dict([(x, x) for x in _unicodeArticles])
 _spArticles = []
+# Variations with a trailing space.
 for article in _articles:
     if article[-1] not in ("'", '-'): article += ' '
     _spArticles.append(article)
@@ -291,15 +316,16 @@ def is_series_episode(title):
     return 0
 
 
-def analyze_title(title, canonical=None,
-                    canonicalSeries=0, canonicalEpisode=0,
-                    _emptyString=u''):
+def analyze_title(title, canonical=None, canonicalSeries=None,
+                    canonicalEpisode=None, _emptyString=u''):
     """Analyze the given title and return a dictionary with the
     "stripped" title, the kind of the show ("movie", "tv series", etc.),
     the year of production and the optional imdbIndex (a roman number
     used to distinguish between movies with the same title and year).
-    If canonical is true, the title is converted to the canonical
-    format.
+
+    If canonical is None (default), the title is stored in its own style.
+    If canonical is True, the title is converted to canonical style.
+    If canonical is False, the title is converted to normal format.
 
     raise an IMDbParserError exception if the title is not valid.
     """
@@ -401,8 +427,11 @@ def analyze_title(title, canonical=None,
         title = title[1:-1].strip()
     if not title:
         raise IMDbParserError, 'invalid title: "%s"' % original_t
-    if canonical:
-        title = canonicalTitle(title)
+    if canonical is not None:
+        if canonical:
+            title = canonicalTitle(title)
+        else:
+            title = normalizeTitle(title)
     # 'kind' is one in ('movie', 'episode', 'tv series', 'tv mini series',
     #                   'tv movie', 'video movie', 'video game')
     result['title'] = title
@@ -447,13 +476,14 @@ def _convertTime(title, fromPTDFtoWEB=1, _emptyString=u''):
     return title
 
 
-def build_title(title_dict, canonical=None, canonicalSeries=0,
-                canonicalEpisode=0, ptdf=0, _doYear=1, _emptyString=u''):
+def build_title(title_dict, canonical=None, canonicalSeries=None,
+                canonicalEpisode=None, ptdf=0, _doYear=1, _emptyString=u''):
     """Given a dictionary that represents a "long" IMDb title,
     return a string.
 
-    If canonical is not true, the title is returned in the
-    normal format.
+    If canonical is None (default), the title is returned in the stored style.
+    If canonical is True, the title is converted to canonical style.
+    If canonical is False, the title is converted to normal format.
 
     If ptdf is true, the plain text data files format is used.
     """
@@ -504,8 +534,11 @@ def build_title(title_dict, canonical=None, canonicalSeries=0,
         return '%s %s' % (pre_title, episode_title)
     title = title_dict.get('title', '')
     if not title: return _emptyString
-    if canonical:
-        title = canonicalTitle(title)
+    if canonical is not None:
+        if canonical:
+            title = canonicalTitle(title)
+        else:
+            title = normalizeTitle(title)
     if pre_title:
         title = '%s %s' % (pre_title, title)
     if kind in (u'tv series', u'tv mini series'):

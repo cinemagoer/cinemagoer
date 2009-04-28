@@ -191,7 +191,7 @@ class Movie(_Container):
         """Handle special keys."""
         if self.data.has_key('episode of'):
             if key == 'long imdb episode title':
-                return build_title(self.data, canonical=0)
+                return build_title(self.data)
             elif key == 'series title':
                 return self.data['episode of']['title']
             elif key == 'canonical series title':
@@ -205,7 +205,7 @@ class Movie(_Container):
             if key == 'title':
                 return self.data['title']
             elif key == 'long imdb title':
-                return build_title(self.data, canonical=0)
+                return build_title(self.data)
             elif key == 'canonical title':
                 return canonicalTitle(self.data['title'])
             elif key == 'long imdb canonical title':

@@ -31,6 +31,12 @@ in a set of CSV (Comma Separated Values) files, to be later imported
 in a database.  Actually only MySQL, PostgreSQL and IBM DB2 are
 supported.
 
+In version 4.1 the imdbpy2sql.py script has the '--fix-old-style-titles'
+command line argument; if used, every movie title will be converted to
+the new style ("The Title", instead of the old "Title, The").
+This option will go away in 4.2, and is intended only to support old
+set of plain text data files.
+
 
   REQUIREMENTS
   ============

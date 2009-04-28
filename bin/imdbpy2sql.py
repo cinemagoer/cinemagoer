@@ -1001,7 +1001,6 @@ class MoviesCache(_BaseCache):
         Title.sqlmeta.cacheValues = _oldcacheValues
 
     def _toDB(self, quiet=0):
-        global FIX_OLD_STYLE_TITLES
         if not quiet:
             print ' * FLUSHING %s...' % self.className
             sys.stdout.flush()
@@ -1031,8 +1030,6 @@ class MoviesCache(_BaseCache):
             elif kind in ('tv series', 'tv mini series'):
                 t['series years'] = self.movieYear.get(v)
             title = tget('title')
-            if FIX_OLD_STYLE_TITLES:
-                title = normalizeTitle(title)
             soundex = title_soundex(title)
             lapp((v, title, tget('imdbIndex'), KIND_IDS[kind],
                     tget('year'), None, soundex, episodeOf,
@@ -1044,6 +1041,16 @@ class MoviesCache(_BaseCache):
             CURS.executemany(self.sqlstr, self.converter(dataList))
         else:
             CSV_CURS.executemany(self.sqlstr, dataList)
+
+    def addUnique(self, key, miscData=None):
+        """Insert a new key and return its value; if the key is already
+        in the dictionary, its previous  value is returned."""
+        # TODO: to be removed in IMDbPY 4.2!
+        if FIX_OLD_STYLE_TITLES:
+            key = build_title(analyze_title(key, canonical=False,
+                            _emptyString=''), ptdf=1, _emptyString='')
+        if key in self: return self[key]
+        else: return self.add(key, miscData)
 
 
 class PersonsCache(_BaseCache):

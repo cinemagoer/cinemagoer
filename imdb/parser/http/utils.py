@@ -357,6 +357,7 @@ class DOMParserBase(object):
 
     preprocessors = []
     extractors = []
+    usingModule = None
 
     def __init__(self, useModule=None):
         # Module to use.
@@ -374,10 +375,12 @@ class DOMParserBase(object):
                     from lxml.html import fromstring
                     from lxml.etree import tostring
                     self._is_xml_unicode = False
+                    self.usingModule = 'lxml'
                 elif mod == 'beautifulsoup':
                     from bsouplxml.html import fromstring
                     from bsouplxml.etree import tostring
                     self._is_xml_unicode = True
+                    self.usingModule = 'beautifulsoup'
                 else:
                     warnings.warn('unknown module "%s".' % mod)
                     continue
@@ -434,6 +437,10 @@ class DOMParserBase(object):
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
         html_string = html_string.strip()
+        # tag attributes like title="&#x22;Family Guy&#x22;" will be
+        # converted to title=""Family Guy"" and this confuses BeautifulSoup.
+        if self.usingModule == 'beautifulsoup':
+            html_string = html_string.replace('""', '"')
         if html_string:
             dom = self.get_dom(html_string)
             dom = self.preprocess_dom(dom)

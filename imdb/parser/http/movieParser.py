@@ -1257,7 +1257,7 @@ class DOMHTMLDvdParser(DOMParserBase):
         if not data:
             return data
         dvds = data['dvd']
-        for dvd in dvds.keys():
+        for dvd in dvds:
             if dvd['cover'].find('noposter') != -1:
                 del dvd['cover']
             for key in dvd.keys():
@@ -1348,7 +1348,7 @@ class DOMHTMLNewsParser(DOMParserBase):
     def postprocess_data(self, data):
         if not data.has_key('news'):
             return {}
-        for news in data['news'].keys():
+        for news in data['news']:
             if news.has_key('full article link'):
                 if news['full article link'] is None:
                     del news['full article link']

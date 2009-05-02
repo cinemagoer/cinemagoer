@@ -1,25 +1,25 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.0svn20090502 "Ti Stramo" (02 May 2009)
+* What's the new in release 4.1 "State Of Play" (02 May 2009)
   [general]
   - DTD definition.
   - support for locale.
   - support for the new style for movie titles ("The Title" and no
-    more "Title, The").
+    more "Title, The" is internally used).
   - minor fix to XML code to work with the test-suite.
 
   [http]
   - char references in the &#xHEXCODE; format are handled.
   - fixed a bug with movies containing '....' in titles.  And I'm
-    talking about Malcolm McDowell filmography...
-  - 'airing' contains object (so the accessSystem is set).
+    talking about Malcolm McDowell's filmography!
+  - 'airing' contains object (so the accessSystem variable is set).
   - 'tv schedule' ('airing') pages of episodes can be parsed.
   - 'tv schedule' is now a valid alias for 'airing'.
   - minor fixes for empty/wrong strings.
 
   [sql]
-  - in the database soundex values for titles are always calculated
+  - in the database, soundex values for titles are always calculated
     after the article is stripped (if any).
   - imdbpy2sql.py has the --fix-old-style-titles option, to handle
     files in the old format.

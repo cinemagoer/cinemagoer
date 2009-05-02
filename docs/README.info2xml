@@ -64,3 +64,21 @@ the README.package file), to replace these references with their own
 strings (e.g.: a link to a web page); it's up to the user, to be sure
 that the output of the defaultModFunct function is valid XML.
 
+
+  DTD
+  ===
+
+Since version 4.1 a DTD is available; it can be found in this
+directory or on the web, at:
+  http://imdbpy.sf.net/dtd/imdbpy41.dtd
+
+The version number may (or may not) change with new version, if
+changes to the DTD were introduced.
+
+
+  LOCALIZATION
+  ============
+
+Since version 4.1 it's possible to translate the XML tags;
+see README.locale.
+

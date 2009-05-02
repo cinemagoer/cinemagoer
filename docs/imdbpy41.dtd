@@ -182,6 +182,7 @@
   | headshot
   | height
   | imdbindex
+  | in-development
   | interview
   | keywords
   | long-imdb-canonical-name
@@ -345,6 +346,7 @@
 <!ELEMENT film-negative-format (item)*>
 <!ELEMENT genres (item)*>
 <!ELEMENT goofs (item)*>
+<!ELEMENT in-development (movie)*>
 <!ELEMENT interview (item)*>
 <!ELEMENT keywords (item)*>
 <!ELEMENT laboratory (item)*>

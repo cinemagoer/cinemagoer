@@ -1180,7 +1180,7 @@ class DOMHTMLTechParser(DOMParserBase):
                     data['biography-print'] = data['biography (print)']
                     del data['biography (print)']
             # Tech info.
-            for key in data:
+            for key in data.keys():
                 if key.startswith('film negative format'):
                     data['film negative format'] = data[key]
                     del data[key]
@@ -1257,7 +1257,7 @@ class DOMHTMLDvdParser(DOMParserBase):
         if not data:
             return data
         dvds = data['dvd']
-        for dvd in dvds:
+        for dvd in dvds.keys():
             if dvd['cover'].find('noposter') != -1:
                 del dvd['cover']
             for key in dvd.keys():
@@ -1348,7 +1348,7 @@ class DOMHTMLNewsParser(DOMParserBase):
     def postprocess_data(self, data):
         if not data.has_key('news'):
             return {}
-        for news in data['news']:
+        for news in data['news'].keys():
             if news.has_key('full article link'):
                 if news['full article link'] is None:
                     del news['full article link']

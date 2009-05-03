@@ -8,7 +8,7 @@ import setuptools
 
 # version of the software; in SVN this represents the _next_ release.
 # setuptools will automatically add 'dev-rREVISION'.
-version = '4.1'
+version = '4.2'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -134,7 +134,7 @@ params = {
         'platforms': 'any',
         'keywords': keywords,
         'classifiers': filter(None, classifiers.split("\n")),
-        'zip_safe': True, # XXX: I guess, at least...
+        'zip_safe': False, # XXX: I guess, at least...
         # Download URLs.
         'url': home_page,
         'download_url': dwnl_url,

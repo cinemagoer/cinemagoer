@@ -7,6 +7,7 @@
 # Comment out the "recursive-include docs" entry if you don't want
 # to install the documentation.
 recursive-include docs *
+recursive-include imdb/locale *
 global-exclude *~
 prune CVS
 prune .svn

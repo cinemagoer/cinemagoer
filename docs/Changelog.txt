@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.2 "Supercroc" (03 May 2009)
+  [general]
+  - fixes for the installer.
+
+
 * What's the new in release 4.1 "State Of Play" (02 May 2009)
   [general]
   - DTD definition.

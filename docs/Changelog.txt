@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2 "Supercroc" (03 May 2009)
+* What's the new in release 4.2svn20090504 "Supercroc" (04 May 2009)
   [general]
   - fixes for the installer.
 

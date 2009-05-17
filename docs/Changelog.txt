@@ -1,9 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090504 "Supercroc" (04 May 2009)
+* What's the new in release 4.2svn20090517 "Star Trek" (17 May 2009)
   [general]
   - fixes for the installer.
+
+  [http]
+  - removed garbage at the end of quotes.
 
 
 * What's the new in release 4.1 "State Of Play" (02 May 2009)

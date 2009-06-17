@@ -1,12 +1,15 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090517 "Star Trek" (17 May 2009)
+* What's the new in release 4.2svn20090617 "Mega Shark vs. Giant Octopus" (17 Jun 2009)
   [general]
   - fixes for the installer.
 
   [http]
   - removed garbage at the end of quotes.
+
+  [sql]
+  - fixed DB2 call for loading blobs/cblobs.
 
 
 * What's the new in release 4.1 "State Of Play" (02 May 2009)

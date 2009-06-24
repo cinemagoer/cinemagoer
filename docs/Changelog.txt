@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090617 "Mega Shark vs. Giant Octopus" (17 Jun 2009)
+* What's the new in release 4.2svn20090624 "E.R. And In The End..." (24 Jun 2009)
   [general]
   - fixes for the installer.
 
@@ -10,6 +10,8 @@
 
   [sql]
   - fixed DB2 call for loading blobs/cblobs.
+  - information from obsolete files are now used if and only if they
+    refer to still existing titles.
 
 
 * What's the new in release 4.1 "State Of Play" (02 May 2009)

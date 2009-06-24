@@ -1663,19 +1663,27 @@ def doAkaTitles():
             continue
         isEpisode = False
         seriesID = None
+        doNotAdd = False
         for line in fp:
             if line and line[0] != ' ':
+                # Reading the official title.
+                doNotAdd = False
                 if line[0] == '\n': continue
                 line = line.strip()
-                if incontrib or obsolete:
+                if obsolete:
                     tonD = analyze_title(line, _emptyString='')
                     tonD['title'] = normalizeTitle(tonD['title'])
                     line = build_title(tonD, ptdf=1, _emptyString='')
+                    # Aka information for titles in obsolete files are
+                    # added only if the movie already exists in the cache.
+                    if line not in CACHE_MID:
+                        doNotAdd = True
+                        continue
                 mid = CACHE_MID.addUnique(line)
                 if line[0] == '"':
                     titleDict = analyze_title(line, _emptyString='')
                     if 'episode of' in titleDict:
-                        if incontrib or obsolete:
+                        if obsolete:
                             titleDict['episode of']['title'] = \
                                 normalizeTitle(titleDict['episode of']['title'])
                         series = build_title(titleDict['episode of'],
@@ -1689,6 +1697,9 @@ def doAkaTitles():
                     seriesID = None
                     isEpisode = False
             else:
+                # Reading an aka title.
+                if obsolete and doNotAdd:
+                    continue
                 res = unpack(line.strip(), ('title', 'note'))
                 note = res.get('note')
                 if incontrib:
@@ -1702,7 +1713,7 @@ def doAkaTitles():
                 akat = akat.strip()
                 if not akat:
                     continue
-                if incontrib or obsolete:
+                if obsolete:
                     akatD = analyze_title(akat, _emptyString='')
                     akatD['title'] = normalizeTitle(akatD['title'])
                     akat = build_title(akatD, ptdf=1, _emptyString='')
@@ -1714,7 +1725,7 @@ def doAkaTitles():
                     # aliases.
                     akaDict = analyze_title(akat, _emptyString='')
                     if 'episode of' in akaDict:
-                        if incontrib or obsolete:
+                        if obsolete:
                             akaDict['episode of']['title'] = normalizeTitle(
                                             akaDict['episode of']['title'])
                         akaSeries = build_title(akaDict['episode of'], ptdf=1)
@@ -1924,6 +1935,10 @@ def nmmvFiles(fp, funct, fname):
                 tonD = analyze_title(ton, _emptyString='')
                 tonD['title'] = normalizeTitle(tonD['title'])
                 ton = build_title(tonD, ptdf=1, _emptyString='')
+                # Skips movies that are not already in the cache, since
+                # laserdisc.list.gz is an obsolete file.
+                if ton not in CACHE_MID:
+                    continue
             mopid = CACHE_MID.addUnique(ton)
         else: mopid = CACHE_PID.addUnique(ton)
         if count % 6000 == 0:
@@ -1998,12 +2013,12 @@ def nmmvFiles(fp, funct, fname):
 def doNMMVFiles():
     """Files with large sections, about movies and persons."""
     for fname, start, funct in [
-            ('biographies.list.gz',BIO_START,_parseBiography),
-            ('business.list.gz',BUS_START,getBusiness),
-            ('laserdisc.list.gz',LSD_START,getLaserDisc),
-            ('literature.list.gz',LIT_START,getLiterature),
-            ('mpaa-ratings-reasons.list.gz',MPAA_START,getMPAA),
-            ('plot.list.gz',PLOT_START,getPlot)]:
+            ('biographies.list.gz', BIO_START, _parseBiography),
+            ('business.list.gz', BUS_START, getBusiness),
+            ('laserdisc.list.gz', LSD_START, getLaserDisc),
+            ('literature.list.gz', LIT_START, getLiterature),
+            ('mpaa-ratings-reasons.list.gz', MPAA_START, getMPAA),
+            ('plot.list.gz', PLOT_START, getPlot)]:
     ##for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
         try:
             fp = SourceFile(fname, start=start)

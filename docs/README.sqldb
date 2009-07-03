@@ -37,6 +37,10 @@ the new style ("The Title", instead of the old "Title, The").
 This option will go away in 4.2, and is intended only to support old
 set of plain text data files.
 
+Since version 4.2 --fix-old-style-titles is no more needed, being
+turned on by default.  The --do-not-fix-old-style-titles was
+introduced in case you want to turn it off for some strange reason.
+
 
   REQUIREMENTS
   ============
@@ -141,12 +145,13 @@ of data, and they will be much slower - from 2 to 7 times slower than
 MySQL.
 
 There are generic suggestions that can lead to better performances,
-like turning off your filesystem journaling.  Another option is
-the use of a ramdisk/tmpfs, if you have enough RAM.  Obviously these
-have effect only at insert-time: during the day-to-day use, you can
-turn your journaling on again.  You can also consider the use of
-the CSV output, explained below (but be sure that your database
-server of choice is able to import CSV files).
+like turning off your filesystem journaling (so it can be a good idea to
+remount an ext3 filesystem as ext2).  Another option is the use of a
+ramdisk/tmpfs, if you have enough RAM.  Obviously these have effect only
+at insert-time: during the day-to-day use, you can turn your journaling
+on again.  You can also consider the use of the CSV output, explained
+below (but be sure that your database server of choice is able to
+import CSV files).
 
 I've done some tests, using an AMD Athlon 1800+, 1GB of RAM, over a
 complete plain text data files set (as of 11 Apr 2008, with more than
@@ -259,7 +264,7 @@ Beware that, while running, the imdbpy2sql.py script will output a lot
 of strings containing both person names and movie titles.  The script
 has absolutely no way to know that the processed title is an adult-only
 movie, so... if you leave it running and your little daughter runs to you
-screaming 'daddy!  daddy!  what kind of animals trains Rocco in the
+screaming 'daddy!  daddy!  what kind of animals Rocco trains in the
 documentary "Rocco: Animal Trainer 17"???'... well it's not my fault! ;-)
 
 

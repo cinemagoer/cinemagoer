@@ -40,5 +40,6 @@ CONTRIBUTION: many tests on IBM DB2 and work on the CSV support.
 
 NAME: Timo Schulz
 EMAIL: <gnuknight --> users.sourceforge.net>
-CONTRIBUTION: promised me some craziness. :-)
+CONTRIBUTION: did a lot of work 'sql', DB2 and CSV support and
+extensive analysis aimed at diff files support.
 

@@ -68,7 +68,10 @@ HELP = """imdbpy2sql.py usage:
                                     and SQL Express.
             --sqlite-transactions   uses transactions, to speed-up SQLite.
 
-            --fix-old-style-titles  temporary fix for files in old titles style.
+            --fix-old-style-titles  temporary fix for files in old titles style;
+                                    no more need (on by default).
+            --do-not-fix-old-style-titles   turn off the fix for titles' old
+                                            style.
 
 
                 See README.sqldb for more information.
@@ -100,7 +103,7 @@ CSV_PGSQL = "COPY %(table)s FROM '%(file)s' WITH DELIMITER AS '%(delimiter)s' NU
 CSV_DB2 = "CALL SYSPROC.ADMIN_CMD('LOAD FROM %(file)s OF del MODIFIED BY lobsinfile INSERT INTO %(table)s')"
 
 # Temporary fix for old style titles.
-FIX_OLD_STYLE_TITLES = False
+FIX_OLD_STYLE_TITLES = True
 
 # Store custom queries specified on the command line.
 CUSTOM_QUERIES = {}
@@ -147,6 +150,7 @@ try:
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
                                                 'fix-old-style-titles',
+                                                'do-not-fix-old-style-titles',
                                                 'mysql-force-myisam', 'orm',
                                                 'csv=', 'csv-ext=', 'help'])
 except getopt.error, e:
@@ -187,6 +191,8 @@ for opt in optlist:
         USE_ORM = opt[1].split(',')
     elif opt[0] == '--fix-old-style-titles':
         FIX_OLD_STYLE_TITLES = True
+    elif opt[0] == '--do-not-fix-old-style-titles':
+        FIX_OLD_STYLE_TITLES = False
     elif opt[0] in ('-h', '--help'):
         print HELP
         sys.exit(0)
@@ -1045,7 +1051,7 @@ class MoviesCache(_BaseCache):
     def addUnique(self, key, miscData=None):
         """Insert a new key and return its value; if the key is already
         in the dictionary, its previous  value is returned."""
-        # TODO: to be removed in IMDbPY 4.2!
+        # TODO: to be removed even it will be no more needed!
         if FIX_OLD_STYLE_TITLES:
             key = build_title(analyze_title(key, canonical=False,
                             _emptyString=''), ptdf=1, _emptyString='')

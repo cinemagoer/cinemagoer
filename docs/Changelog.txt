@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090703 "Diary Of The Dead" (03 Jul 2009)
+* What's the new in release 4.2svn20090706 "Live!" (06 Jul 2009)
   [general]
   - fixes for the installer.
 
@@ -12,8 +12,7 @@
   - fixed DB2 call for loading blobs/cblobs.
   - information from obsolete files are now used if and only if they
     refer to still existing titles.
-  - --fix-old-style-titles is now on by default. --do-not-fix-old-style-titles
-    can be used to turn it off (should not be needed).
+  - the --fix-old-style-titles argument is now obsolete.
 
 
 * What's the new in release 4.1 "State Of Play" (02 May 2009)

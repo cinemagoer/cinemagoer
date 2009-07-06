@@ -23,7 +23,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from __future__ import generators
 import os, sys, getopt, time, re, warnings
 from gzip import GzipFile
 from types import UnicodeType
@@ -38,10 +37,6 @@ from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
 from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError, IMDbError
 
-#_articles = list(_articles)
-#for i, art in enumerate(_articles):
-#    if not isinstance(art, unicode): continue
-#    _articles[i] = art.encode('utf_8')
 
 re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
@@ -67,11 +62,6 @@ HELP = """imdbpy2sql.py usage:
             --ms-sqlserver          compatibility mode for Microsoft SQL Server
                                     and SQL Express.
             --sqlite-transactions   uses transactions, to speed-up SQLite.
-
-            --fix-old-style-titles  temporary fix for files in old titles style;
-                                    no more need (on by default).
-            --do-not-fix-old-style-titles   turn off the fix for titles' old
-                                            style.
 
 
                 See README.sqldb for more information.
@@ -103,7 +93,7 @@ CSV_PGSQL = "COPY %(table)s FROM '%(file)s' WITH DELIMITER AS '%(delimiter)s' NU
 CSV_DB2 = "CALL SYSPROC.ADMIN_CMD('LOAD FROM %(file)s OF del MODIFIED BY lobsinfile INSERT INTO %(table)s')"
 
 # Temporary fix for old style titles.
-FIX_OLD_STYLE_TITLES = True
+#FIX_OLD_STYLE_TITLES = True
 
 # Store custom queries specified on the command line.
 CUSTOM_QUERIES = {}
@@ -150,7 +140,7 @@ try:
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
                                                 'fix-old-style-titles',
-                                                'do-not-fix-old-style-titles',
+                                                #'do-not-fix-old-style-titles',
                                                 'mysql-force-myisam', 'orm',
                                                 'csv=', 'csv-ext=', 'help'])
 except getopt.error, e:
@@ -190,9 +180,10 @@ for opt in optlist:
     elif opt[0] in ('-o', '--orm'):
         USE_ORM = opt[1].split(',')
     elif opt[0] == '--fix-old-style-titles':
-        FIX_OLD_STYLE_TITLES = True
-    elif opt[0] == '--do-not-fix-old-style-titles':
-        FIX_OLD_STYLE_TITLES = False
+        warnings.warn('The --fix-old-style-titles argument is obsolete.')
+    #    FIX_OLD_STYLE_TITLES = True
+    #elif opt[0] == '--do-not-fix-old-style-titles':
+    #    FIX_OLD_STYLE_TITLES = False
     elif opt[0] in ('-h', '--help'):
         print HELP
         sys.exit(0)
@@ -1051,10 +1042,10 @@ class MoviesCache(_BaseCache):
     def addUnique(self, key, miscData=None):
         """Insert a new key and return its value; if the key is already
         in the dictionary, its previous  value is returned."""
-        # TODO: to be removed even it will be no more needed!
-        if FIX_OLD_STYLE_TITLES:
-            key = build_title(analyze_title(key, canonical=False,
-                            _emptyString=''), ptdf=1, _emptyString='')
+        # DONE: to be removed when it will be no more needed!
+        #if FIX_OLD_STYLE_TITLES:
+        #    key = build_title(analyze_title(key, canonical=False,
+        #                    _emptyString=''), ptdf=1, _emptyString='')
         if key in self: return self[key]
         else: return self.add(key, miscData)
 

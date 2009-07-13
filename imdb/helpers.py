@@ -332,3 +332,20 @@ def get_byURL(url, info=None, args=None, kwds=None):
     return None
 
 
+# Idea and portions of code courtesy of Basil Shubin.
+_re_clearURL = re.compile(r'\._V1\._SX(\d+)_SY(\d+)_')
+def fullSizeCoverURL(obj):
+    """Given an URL string or a Movie, Person or Character instance,
+    returns an URL to the full-size version of the cover/headshot,
+    or None otherwise."""
+    if isinstance(obj, Movie):
+        coverUrl = obj.get('cover url')
+    elif isinstance(obj, (Person, Character)):
+        coverUrl = obj.get('headshot')
+    else:
+        coverUrl = obj
+    if not coverUrl:
+        return None
+    return _re_clearURL.sub('', coverUrl)
+
+

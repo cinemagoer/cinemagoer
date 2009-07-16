@@ -45,14 +45,6 @@ imdb (package)
        |         +-> html.py
        |         +-> bsoupxpath.py
        |
-       +-> local (package)
-       |    |
-       |    +-> movieParser
-       |    +-> personParser
-       |    +-> characterParser
-       |    +-> companyParser
-       |    +-> utils
-       |
        +-> mobile (package)
        |
        +-> sql (package)
@@ -60,11 +52,7 @@ imdb (package)
        |    +-> dbschema
        |    +-> alchemyadapter
        |    +-> objectadapter
-       |
-       +-> common (package)
-            |
             +-> cutils (C module)
-            +-> locsql
 
 
 Description:
@@ -113,10 +101,6 @@ http.bsouplxml.etree: adapter for the lxml.etree module.
 http.bsouplxml.html: adapter for the lxml.html module.
 http.bsouplxml.bsoupxpath: xpath support for beautifulsoup.
 
-The modules under the parser.local package are the same of the
-parser.http package (the search functions are placed directly in the
-IMDbLocalAccessSystem class); obviously they manage a local installation
-of the database.
 
 The parser.sql package manages the access to the data in the SQL
 database, created with the imdbpy2sql.py script; see the README.sqldb file.
@@ -124,25 +108,14 @@ The dbschema module contains tables definitions and some useful functions;
 The alchemyadapter adapts the SQLAlchemy ORM to the internal mechanisms
 of IMDbPY, and the objectadapter does the same for the SQLObject ORM
 (internally the API of SQLObject is always used).
+The cutils module is a C module containing C function to speed up the
+'sql' data access system; if it can't be compiled, a set of fall'back
+functions will be used.
 
 The class in the parser.mobile package is a subclass of the one found
 in parser.http, with some method overridden to be many times faster (from
 2 to 20 times); it's useful for systems with slow bandwidth and not
 much CPU power.
-
-The parser.common package contains code common to different packages;
-so far there're only the locsql and the cutils modules, both used by
-"local" and "sql" data access systems.
-The cutils module is a C module containing C function to speed up the
-IMDbPY package; for every function defined here, a (slower!) pure Python
-fall back is provided where it's needed.
-So far in the cutils module are included functions used to search
-names.keys and titles.key files by the "local" data access system,
-a function to get a list of episodes titles provided the movieID
-of a tv series (scanning titles.key), a function to calculate the
-Ratcliff-Obershelp similarity of two Python strings and another
-function to return the soundex code of a given Python string.
-
 
 The helpers module contains functions and other goodies not directly
 used by the IMDbPY package, but that can be useful to develop
@@ -155,7 +128,7 @@ IMDbPY-based programs.
 I wanted to stay independent from the source of the data for a given
 movie/person/character/company, and so the imdb.IMDb function returns
 an instance of a class that provides specific methods to access a given
-data source (web server, local installation, SQL database, etc.)
+data source (web server, SQL database, etc.)
 
 Unfortunately that means that the movieID in the Movie class, the
 personID in the Person class and the characterID in the Character class

@@ -53,8 +53,8 @@ keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
             'keywords', 'top250', 'bottom100', 'xml']
 
 
-cutils = setuptools.Extension('imdb.parser.common.cutils',
-                                ['imdb/parser/common/cutils.c'])
+cutils = setuptools.Extension('imdb.parser.sql.cutils',
+                                ['imdb/parser/sql/cutils.c'])
 
 scripts = ['./bin/get_first_movie.py',
             './bin/get_movie.py', './bin/search_movie.py',
@@ -72,26 +72,14 @@ data_files = [('doc', [f for f in setuptools.findall('docs')
 
 
 # Defining these 'features', it's possible to run commands like:
-# python ./setup.py --without-sql --without-local bdist
-# having (in this example) imdb.parser.sql, imdb.parser.local (and
-# their shared code in imdb.parser.common) removed.
+# python ./setup.py --without-sql bdist
+# having (in this example) imdb.parser.sql removed.
 
 featCutils = setuptools.dist.Feature('compile the C module', standard=True,
         ext_modules=[cutils])
 
-featCommon = setuptools.dist.Feature('common code for "sql" and "local"',
-        standard=False, remove='imdb.parser.common')
-
-localScripts = ['./bin/characters4local.py', './bin/companies4local.py',
-                './bin/misc-companies4local.py', './bin/mpaa4local.py',
-                './bin/topbottom4local.py']
-featLocal = setuptools.dist.Feature('access to local mkdb data', standard=True,
-        require_features='common', remove='imdb.parser.local',
-        scripts=localScripts)
-
 featLxml = setuptools.dist.Feature('add lxml dependency', standard=True,
         install_requires=['lxml'])
-
 
 # XXX: it seems there's no way to specify that we need EITHER
 #      SQLObject OR SQLAlchemy.
@@ -104,14 +92,14 @@ featSQLAlchemy = setuptools.dist.Feature('add SQLAlchemy dependency',
         require_features='sql')
 
 sqlScripts = ['./bin/imdbpy2sql.py']
+# standard=False so that it's not installed if both --without-sqlobject
+# and --without-sqlalchemy are specified.
 featSQL = setuptools.dist.Feature('access to SQL databases', standard=False,
-        require_features='common', remove='imdb.parser.sql', scripts=sqlScripts)
+                                remove='imdb.parser.sql', scripts=sqlScripts)
 
 features = {
-    'common': featCommon,
     'cutils': featCutils,
     'sql': featSQL,
-    'local': featLocal,
     'lxml': featLxml,
     'sqlobject': featSQLObject,
     'sqlalchemy': featSQLAlchemy
@@ -172,22 +160,17 @@ ERR_MSG = """
   try re-running this script with the corresponding optional argument:
 
       --without-lxml        exclude lxml (speeds up 'http')
-      --without-cutils      don't compile the C module (speeds up 'local/sql')
+      --without-cutils      don't compile the C module (speeds up 'sql')
       --without-sqlobject   exclude SQLObject  (you need at least one of)
       --without-sqlalchemy  exclude SQLAlchemy (SQLObject or SQLAlchemy,)
                                                (if you want to access a )
                                                (local SQL database      )
-
-  The following arguments exclude altogether some features of IMDbPY,
-  in case you don't need them (if both are specified, the cutils C module
-  is not compiled, either):
-      --without-local       no access to local (mkdb generated) data.
       --without-sql         no access to SQL databases (implied if both
                             --without-sqlobject and --without-sqlalchemy
                             are used)
 
   Example:
-      python ./setup.py --without-lxml --without-local --without-sql install
+      python ./setup.py --without-lxml --without-sql install
 
   The caught exception, is re-raise below:
 """

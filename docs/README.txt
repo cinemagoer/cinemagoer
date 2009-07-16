@@ -53,18 +53,14 @@ little hard disk space (like an handheld device) or where
 you've not a complete development environment available;
 read the "README.mobile" file.
 
-If you want to use a local copy of the whole IMDb's database,
-read the "README.local" file.
-
 If you want to insert the content of the plain text data files
 into a SQL database, read the "README.sqldb" file.
 
 The whole list of command line options of the setup.py script is:
   --without-lxml	exclude lxml (speeds up "http" considerably,
 					so try to fix it).
-  --without-cutils	don't compile the C module (speeds up 'local/sql')
+  --without-cutils	don't compile the C module (speeds up 'sql')
   --without-sql		no access to SQL databases.
-  --without-local	no access to local (mkdb generated) data.
 
 If you're install 'sql', setup.py tries to install BOTH SQLObject
 and SQLAlchemy.  In fact, having one of them will be enough.
@@ -136,7 +132,6 @@ Since release 4.1 a DTD for the XML output is available (see
 imdbpyXY.dtd).  Other important features are locale (i18n) support (see
 README.locale) and support for the new style of movie titles used by IMDb
 (now in the "The Title" style, and no more as "Title, The").
-The 'local' data access system should be considered obsolete.
 
 
   FEATURES
@@ -146,12 +141,10 @@ So far you can search for a movie with a given title, a person
 with a given name, a character you've seen in a movie or a company, and retrieve
 information for a given movie, person, character or company; the supported data
 access systems are 'http' (i.e.: the data are fetched through the IMDb's
-web server http://akas.imdb.com) and 'local', meaning that the data are
-taken from the plain text data files; see http://www.imdb.com/interfaces.html
-for more information.
-The same plain text data files used with the 'local' data access
-system can be converted to a SQL database, using the "imdbpy2sql.py"
-script, and then accessed using the 'sql' data access system.
+web server http://akas.imdb.com) and 'sql', meaning that the data are
+taken from a SQL database, populated (using the imdbpy2sql.py script) with
+data taken from the plain text data files; see
+http://www.imdb.com/interfaces.html for more information.
 For mobile systems there's the 'mobile' data access system, useful
 for PDA, hand-held devices and smart phones.
 Another data access system is 'httpThin', which is equal to 'http'
@@ -200,11 +193,5 @@ suitable for systems with limited bandwidth but normal CPU power.
 * Very lightweight, returns almost every needed information.
 * Accessories data sets (like 'goofs', 'trivia' and so on) are always
   available (being a subclass of the 'http' data access system).
-
-
-  FEATURES OF THE LOCAL DATA ACCESS SYSTEM
-  ========================================
-
-* Retrieve every available information, in a decently short time.
 
 

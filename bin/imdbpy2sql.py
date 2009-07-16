@@ -28,17 +28,12 @@ from gzip import GzipFile
 from types import UnicodeType
 from imdb.parser.sql.dbschema import *
 
-from imdb.parser.common.locsql import soundex
-from imdb.parser.sql import get_movie_data
-from imdb.utils import analyze_title, analyze_name, \
+from imdb.parser.sql import get_movie_data, soundex
+from imdb.utils import analyze_title, analyze_name, date_and_notes, \
         build_name, build_title, normalizeName, normalizeTitle, _articles, \
         build_company_name, analyze_company_name, canonicalTitle
-from imdb.parser.local.movieParser import _bus, _ldk, _lit, _links_sect
-from imdb.parser.local.personParser import _parseBiography
 from imdb._exceptions import IMDbParserError, IMDbError
 
-
-re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 HELP = """imdbpy2sql.py usage:
     %s -d /directory/with/PlainTextDataFiles/ -u URI [-c /directory/for/CSV_files] [-o sqlobject,sqlalchemy] [--CSV-OPTIONS] [--COMPATIBILITY-OPTIONS]
@@ -656,11 +651,6 @@ def name_soundexes(name, character=False):
         s3 = soundex(name.split(' ')[-1])
     if s3 and s3 in (s1, s2): s3 = None
     return (s1, s2, s3)
-
-
-# Handle laserdisc keys.
-for key, value in _ldk.items():
-    _ldk[key] = 'LD %s' % value
 
 
 # Tags to identify where the meaningful data begin/end in files.
@@ -1856,6 +1846,17 @@ def getQuotes(lines):
     return quotes
 
 
+_bus = {'BT': 'budget',
+        'WG': 'weekend gross',
+        'GR': 'gross',
+        'OW': 'opening weekend',
+        'RT': 'rentals',
+        'AD': 'admissions',
+        'SD': 'filming dates',
+        'PD': 'production dates',
+        'ST': 'studios',
+        'CP': 'copyright holder'
+}
 _usd = '$'
 _gbp = unichr(0x00a3).encode('utf_8')
 _eur = unichr(0x20ac).encode('utf_8')
@@ -1871,6 +1872,60 @@ def getBusiness(lines):
     return bd
 
 
+_ldk = {'OT': 'original title',
+        'PC': 'production country',
+        'YR': 'year',
+        'CF': 'certification',
+        'CA': 'category',
+        'GR': 'group genre',
+        'LA': 'language',
+        'SU': 'subtitles',
+        'LE': 'length',
+        'RD': 'release date',
+        'ST': 'status of availablility',
+        'PR': 'official retail price',
+        'RC': 'release country',
+        'VS': 'video standard',
+        'CO': 'color information',
+        'SE': 'sound encoding',
+        'DS': 'digital sound',
+        'AL': 'analog left',
+        'AR': 'analog right',
+        'MF': 'master format',
+        'PP': 'pressing plant',
+        'SZ': 'disc size',
+        'SI': 'number of sides',
+        'DF': 'disc format',
+        'PF': 'picture format',
+        'AS': 'aspect ratio',
+        'CC': 'close captions-teletext-ld-g',
+        'CS': 'number of chapter stops',
+        'QP': 'quality program',
+        'IN': 'additional information',
+        'SL': 'supplement',
+        'RV': 'review',
+        'V1': 'quality of source',
+        'V2': 'contrast',
+        'V3': 'color rendition',
+        'V4': 'sharpness',
+        'V5': 'video noise',
+        'V6': 'video artifacts',
+        'VQ': 'video quality',
+        'A1': 'frequency response',
+        'A2': 'dynamic range',
+        'A3': 'spaciality',
+        'A4': 'audio noise',
+        'A5': 'dialogue intellegibility',
+        'AQ': 'audio quality',
+        'LN': 'number',
+        'LB': 'label',
+        'CN': 'catalog number',
+        'LT': 'laserdisc title'
+}
+# Handle laserdisc keys.
+for key, value in _ldk.items():
+    _ldk[key] = 'LD %s' % value
+
 def getLaserDisc(lines):
     """Laserdisc information."""
     d = _parseColonList(lines, _ldk)
@@ -1879,6 +1934,16 @@ def getLaserDisc(lines):
     return d
 
 
+_lit = {'SCRP': 'screenplay-teleplay',
+        'NOVL': 'novel',
+        'ADPT': 'adaption',
+        'BOOK': 'book',
+        'PROT': 'production process protocol',
+        'IVIW': 'interviews',
+        'CRIT': 'printed media reviews',
+        'ESSY': 'essays',
+        'OTHR': 'other literature'
+}
 def getLiterature(lines):
     """Movie's literature information."""
     return _parseColonList(lines, _lit)
@@ -1892,6 +1957,8 @@ def getMPAA(lines):
         d[k] = ' '.join(v)
     return d
 
+
+re_nameImdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 def nmmvFiles(fp, funct, fname):
     """Files with sections separated by 'MV: ' or 'NM: '."""
@@ -2005,6 +2072,135 @@ def nmmvFiles(fp, funct, fname):
     if guestdata is not None: guestdata.flush()
     if akanamesdata is not None: akanamesdata.flush()
     sqldata.flush()
+
+
+# ============
+# Code from the old 'local' data access system.
+
+def _parseList(l, prefix, mline=1):
+    """Given a list of lines l, strips prefix and join consecutive lines
+    with the same prefix; if mline is True, there can be multiple info with
+    the same prefix, and the first line starts with 'prefix: * '."""
+    resl = []
+    reslapp = resl.append
+    ltmp = []
+    ltmpapp = ltmp.append
+    fistl = '%s: * ' % prefix
+    otherl = '%s:   ' % prefix
+    if not mline:
+        fistl = fistl[:-2]
+        otherl = otherl[:-2]
+    firstlen = len(fistl)
+    otherlen = len(otherl)
+    parsing = 0
+    joiner = ' '.join
+    for line in l:
+        if line[:firstlen] == fistl:
+            parsing = 1
+            if ltmp:
+                reslapp(joiner(ltmp))
+                ltmp[:] = []
+            data = line[firstlen:].strip()
+            if data: ltmpapp(data)
+        elif mline and line[:otherlen] == otherl:
+            data = line[otherlen:].strip()
+            if data: ltmpapp(data)
+        else:
+            if ltmp:
+                reslapp(joiner(ltmp))
+                ltmp[:] = []
+            if parsing:
+                if ltmp: reslapp(joiner(ltmp))
+                break
+    return resl
+
+
+def _parseBioBy(l):
+    """Return a list of biographies."""
+    bios = []
+    biosappend = bios.append
+    tmpbio = []
+    tmpbioappend = tmpbio.append
+    joiner = ' '.join
+    for line in l:
+        if line[:4] == 'BG: ':
+            tmpbioappend(line[4:].strip())
+        elif line[:4] == 'BY: ':
+            if tmpbio:
+                biosappend(joiner(tmpbio) + '::' + line[4:].strip())
+                tmpbio[:] = []
+    # Cut mini biographies up to 2**16-1 chars, to prevent errors with
+    # some MySQL versions - when used by the imdbpy2sql.py script.
+    bios[:] = [bio[:65535] for bio in bios]
+    return bios
+
+
+def _parseBiography(biol):
+    """Parse the biographies.data file."""
+    res = {}
+    bio = ' '.join(_parseList(biol, 'BG', mline=0))
+    bio = _parseBioBy(biol)
+    if bio: res['mini biography'] = bio
+
+    for x in biol:
+        x4 = x[:4]
+        x6 = x[:6]
+        if x4 == 'DB: ':
+            date, notes = date_and_notes(x[4:])
+            if date:
+                res['birth date'] = date
+            if notes:
+                res['birth notes'] = notes
+        elif x4 == 'DD: ':
+            date, notes = date_and_notes(x[4:])
+            if date:
+                res['death date'] = date
+            if notes:
+                res['death notes'] = notes
+        elif x6 == 'SP: * ':
+            res.setdefault('spouse', []).append(x[6:].strip())
+        elif x4 == 'RN: ':
+            n = x[4:].strip()
+            if not n: continue
+            rn = build_name(analyze_name(n, canonical=1), canonical=1)
+            res['birth name'] = rn
+        elif x6 == 'AT: * ':
+            res.setdefault('articles', []).append(x[6:].strip())
+        elif x4 == 'HT: ':
+            res['height'] = x[4:].strip()
+        elif x6 == 'PT: * ':
+            res.setdefault('pictorials', []).append(x[6:].strip())
+        elif x6 == 'CV: * ':
+            res.setdefault('magazine covers', []).append(x[6:].strip())
+        elif x4 == 'NK: ':
+            res.setdefault('nick names', []).append(normalizeName(x[4:]))
+        elif x6 == 'PI: * ':
+            res.setdefault('portrayed', []).append(x[6:].strip())
+        elif x6 == 'SA: * ':
+            sal = x[6:].strip().replace(' -> ', '::')
+            res.setdefault('salary history', []).append(sal)
+
+    trl = _parseList(biol, 'TR')
+    if trl: res['trivia'] = trl
+    quotes = _parseList(biol, 'QU')
+    if quotes: res['quotes'] = quotes
+    otherworks = _parseList(biol, 'OW')
+    if otherworks: res['other works'] = otherworks
+    books = _parseList(biol, 'BO')
+    if books: res['books'] = books
+    agent = _parseList(biol, 'AG')
+    if agent: res['agent address'] = agent
+    wherenow = _parseList(biol, 'WN')
+    if wherenow: res['where now'] = wherenow[0]
+    biomovies = _parseList(biol, 'BT')
+    if biomovies: res['biographical movies'] = biomovies
+    tm = _parseList(biol, 'TM')
+    if tm: res['trademarks'] = tm
+    interv = _parseList(biol, 'IT')
+    if interv: res['interviews'] = interv
+    return res
+
+# ============
 
 
 def doNMMVFiles():

@@ -34,8 +34,7 @@ E.g.:
 
 Beware that by default the list is limited to 100 movies, and
 it's not possible to get more results, using 'http'.
-Moreover, the lists returned using 'sql' and 'local' are not
-sorted in any way.
+Moreover, the lists returned using 'sql' are not sorted in any way.
 Another limit is that actually (as of february 2009), the IMDb's
 web server is unable to serve pages about non-ascii keywords.
 It's a known problem of their systems.

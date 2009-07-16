@@ -59,14 +59,13 @@ your account; see http://imdb.com/find/preferences?_adult=1
   OTHER DATA ACCESS SYSTEMS
   =========================
 
-Since version 2.2 every other data access system (local and sql)
+Since version 2.2 every other data access system (sql)
 support the same behavior of the http and mobile data access
 systems (i.e.: you can set the 'adultSearch' argument and use
 the 'do_adult_search' method).
 
-Notice that for the local and the sql data access systems only
-results from the search_movie() and search_episode() methods are
-filtered: there's no easy (and fast) way to tell that an actor/actress
-is a porn-star.
+Notice that for the sql data access system only results from the
+search_movie() and search_episode() methods are filtered: there's no
+easy (and fast) way to tell that an actor/actress is a porn-star.
 
 

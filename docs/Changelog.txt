@@ -1,8 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090713 "Underworld: Rise of the Lycans" (13 Jul 2009)
+* What's the new in release 4.2svn20090716 "Outlander" (16 Jul 2009)
   [general]
+  - the 'local' data access system is gone.  See README.local.
+  - the imdb.parser.common package was removed, and its code integrated
+    in imdb.parser.sql and in the imdbpy2sql.py script.
   - fixes for the installer.
   - the helpers module contains the fullSizeCoverURL, to convert
     a Movie, Person or Character instance (or a URL in a string)

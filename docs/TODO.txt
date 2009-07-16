@@ -18,7 +18,7 @@ NOTE: it's always time to clean the code! <g>
   at least for 'http' and 'mobile', since they are used by mobile devices.
 * The analyze_title/build_title functions are grown too complex and
   beyond their initial goals.
-* for local and sql data access systems: some episode titles are
+* for the  sql data access system: some episode titles are
   marked as {{SUSPENDED}}; they should probably be ignored.
 
 
@@ -34,15 +34,15 @@ NOTE: it's always time to clean the code! <g>
   an 'episode of' dictionary is in the data?
 * Should isSameTitle() check first the accessSystem and the movieID,
   and use 'title' only if movieID is None?
-* For TV series the list of directors/writers returned by 'local'
-  and 'sql' is a long list with every single episodes listed in the
+* For TV series the list of directors/writers returned by 'sql'
+  is a long list with every single episodes listed in the
   'notes' attribute (i.e.: the same person is listed more than one time,
   just with a different note).
   For 'http' and 'mobile' there's a list with one item for every
   person, with a long 'notes' listing every episode.
   It's not easy to split these information since they can contain
   notes ("written by", "as Aka Name", ...)
-* The 'laserdisc' information for 'local' and 'sql' is probabily
+* The 'laserdisc' information for 'sql' is probabily
   wrong: I think they merge data from different laserdisc titles.
   Anyway these data are no more updated by IMDb, and so...
 * there are links to hollywoodreporter.com that are not gathered in
@@ -57,8 +57,7 @@ NOTE: it's always time to clean the code! <g>
 * Fetching data from the web ('http' and 'mobile'), the filmography
   for a given person contains a list named "himself" or "herself" for
   movies/shows where they were not acting.
-  In 'local' and 'sql', these movies/shows are listed in the
-  "actor" or "actress" list.
+  In 'sql', these movies/shows are listed in the "actor" or "actress" list.
   Check if this is still true, with the new IMDb's schema.
 
 
@@ -93,33 +92,6 @@ NOTE: it's always time to clean the code! <g>
 [mobile data access system]
 * General optimization.
 * Make find() methods case insensitive.
-
-
-[local data access system]
-* characters' notes are not retrieved.
-* There's a bug with release dates: it seems that for some (many?)
-  movies, the wrong index to release-dates.data is returned; I'm
-  wondering if this is a bug of IMDbPY or a bug in mkdb.
-* There's probably a bug converting the rating to a float;
-  see: ER (1994) (TV), but I suspect this to be a mkdb bug.
-* In some rare circumstances, names/titles AKAs points to other existing
-  names/titles, in fact obscuring the good ones.
-* The 'votes' key is not correctly stored for very high values;
-  this is for sure a mkdb bug.
-* Files like biographies.data are plainly wrong: sometimes
-  a person is referred with 'Name Surname' (qv) and sometimes
-  with 'Surname, Name' (qv).
-  Names and titles with "'" are not handled properly and so on...
-  This is a problem of the Plain Text Data Files, and can't be fixed.
-* Keywords are messed up, since the list in plain text data file at
-  some point contains an out-of-order element, and this messes the
-  mkdb program.
-* You need the mkdb executable from the moviedb program to generate the
-  database/index files; moviedb is not open source software (although
-  it can be downloaded and used without paying money).
-  An open source (pure python?) script must be written.
-  NOTE: since release 2.1 I've introduced the imdbpy2sql.py script,
-  so a replacement for mkdb is no more an urgent issue.
 
 
 [sql data access system]

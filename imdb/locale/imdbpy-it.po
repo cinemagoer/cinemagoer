@@ -213,7 +213,7 @@ msgstr ""
 
 # Default: Cast
 msgid "cast"
-msgstr ""
+msgstr "Cast"
 
 # Default: Casting department
 msgid "casting-department"

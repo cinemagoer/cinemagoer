@@ -15,8 +15,4 @@ to a company is now an instance of the Company class.
 - 'mobile' data access system collects companies informations through
   the 'httpThin' method; it should be fast enough.
 
-- for 'local', you need to run the misc-companies4local.py BEFORE
-  you run the companies4local.py script.
-  See README.local for more information.
-
 

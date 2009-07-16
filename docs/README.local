@@ -1,72 +1,18 @@
   LOCAL INSTALLATION
   ==================
 
-NOTE: since you've to download the whole IMDb database,
-consider the use of the 'sql' data access system (it's faster
-and generally better than the 'local' one).  See the README.sqldb
-file.
-Obviously you can still prefer to use the 'local' data access
-system if you're already using the moviedb program.
+Simple instruction: switch to 'sql' (see the README.sqldb file).
+
+The 'local' data access system was removed since IMDbPY 4.2, for
+a series of good reasons:
+- the moviedb program was no more distributed by IMDb.
+- the new format for movie titles ("The Title" instead of "Title, The")
+  created way too many problems almost impossible to fix, since a lot
+  of damage was done by the - never updated - moviedb program.
+- it was slower and less complete than 'sql'.
+- there were very few users of it.
 
 
-  NOTES
-  =====
-
-CHARACTERS SUPPORT:
-See README.currentRole for information about character support;
-to put it simple, after you've installed everything you can use the
-'characters4local.py' script to generate files for characters (it will
-require some time).
-
-COMPANIES SUPPORT AND MISSING INFORMATION:
-Some information distributed through the plain text data files are
-not used by the moviedb program; after you've run it, you can add
-these missing information calling the 'misc-companies4local.py'
-and 'mpaa4local.py' scripts.
-
-After that, you can also add support for companies' information:
-just run the 'companies4local.py' script!
-
-If you want to access top250/bottom100 lists, run the 'topbottom4local.py'
-script.
-
-
-  INSTRUCTIONS
-  ============
-
-Select a mirror of the "The Plain Text Data Files" from
-the http://www.imdb.com/interfaces.html page and download
-every file in the main directory (beware that the "diffs"
-subdirectory contains _a lot_ of files you _don't_ need,
-so don't start mirroring everything!).
-
-From the same page, download also the latest version (3.24, as
-I'm writing) of the Col Needham's command line programs (moviedb),
-under the tools directory.
-
-NOTE: the current (3.24) moviedb version is old an it was not
-thought with tv series episodes support in mind.
-It can still work very well, but you've to modify some constants
-in the code: edit the "moviedb.h" file in the "src" directory,
-and change MAXTITLES to _at least_ 1600000, MAXNAKAENTRIES
-to 700000, MAXFILMOGRAPHIES to 20470, LINKSTART to 1000000
-and MAXBIOENTRIES to 500000.
-Also, setting MXLINELEN to 1023 is a good idea.
-See http://us.imdb.com/database_statistics for more up-to-date
-statistics.
-
-Install moviedb; in a stage of the installation, the mkdb program will
-generate a lot of data and index files in the directory specified by
-the DBDIR variable in the Makefile.
-
-Now you can use IMDbPY on these data:
-  from imdb import IMDb
-  i = IMDb('local', '/the/DBDIR/directory/')
-  resList = i.search_movie('the incredibles')
-  for x in resList: print x
-  ti = resList[1]
-  i.update(ti)
-  print ti['director'][0]
-
-and so on...
+If you are veeery willing to resuscitate it, you can write in
+the mailing list about your crazy idea. :-)
 

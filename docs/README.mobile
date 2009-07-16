@@ -21,20 +21,11 @@ Please read all the following section.
   ====================
 
 You can call the setup.py script with some arguments:
-Using --without-local, the parser.local package is not installed;
-this is useful if your system doesn't have the space (more than 600Mb)
-for a local installation of the IMDb's database.
-Preventing the installation of the parser.local package will also save
-at least 120Kb of disk space on your system.
 
 The --without-sql argument, if used, will excludes the parser.sql
 package; you don't need it if your system does not have any of the
 SQLObject or SQLAlchemy packages and/or you don't want to store the
 whole IMDb's plain text database files in a SQL database.
-
-If both --without-local and --without-sql are used, the parser.common
-package is not installed, and the "cutils" C module is not compiled.
-See README.txt, section 
 
 Now, if you're installing IMDbPY (using ./setup.py install), you
 should take a look at some options, like "--no-compile" and "-O0"

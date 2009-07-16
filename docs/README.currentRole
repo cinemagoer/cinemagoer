@@ -5,9 +5,9 @@
 Since version 3.3, IMDbPY supports the character pages of the IMDb
 database; this required some substantial changes to how actors'
 and acresses' roles were handled.
-Starting with release 3.4, "local" and "sql" data access systems
-are supported, too - but they work a bit differently from "http"
-and "mobile".  See "SQL AND LOCAL" below.
+Starting with release 3.4, "sql" data access system is supported,
+too - but it works a bit differently from "http" and "mobile".
+See "SQL" below.
 
 The currentRole instance attribute can be found in every instance
 of Person, Movie and Character classes, even if actually the Character
@@ -50,23 +50,16 @@ will return a good-old-unicode string, like expected in the previous
 version of IMDbPY.
 
 
-  SQL AND LOCAL
-  =============
+  SQL
+  ===
 
 Fetching data from the web, only characters with an active page
 on the web site will have their characterID; we don't have these
-information accessing "sql" and "local", so _every_ character
-will have an associated characterID.
+information accessing "sql", so _every_ character will have an
+associated characterID.
 This way, every character with the same name will share the same
 characterID, even if - in fact - they may not be portraying the
 same character.
-
-For "local", to activate support for characters, you have to
-run the characters4local.py script, specifying the directory
-with the local files (you need write access to this directory:
-some new files will be created).
-Probably the script will require 150/200MB of free space,
-about 500MB of RAM memory and about 1 hour to complete.
 
 
   GOODIES

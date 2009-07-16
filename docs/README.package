@@ -37,11 +37,11 @@ the basic invocation is:
   import imdb
   imdb_access = imdb.IMDb()
 
-If you're accessing a local installation of the IMDb's data,
+If you're accessing a sql installation of the IMDb's data,
 you must do:
-  imdb_access = imdb.IMDb('local', dbDirectory='/dir/with/files')
-where '/dir/with/files' is the directory which contains the *.data,
-*.key, *.titles, *.names and *.index files.
+  imdb_access = imdb.IMDb('sql', uri='URI_TO_YOUR_DB')
+where 'URI_TO_YOUR_DB' points to your SQL database (see README.sqldb
+for more information).
 
 Now you've the "imdb_access" object, instance of a subclass
 of the imdb.IMDbBase class, which can be used to search for a given
@@ -71,9 +71,6 @@ you can access movie data through the e-mail interface, etc. etc.
                             |           | Ideal for small systems like PDA,
                             |           | smart phones, hand-held devices with
                             |           | limited bandwidth and CPU power.
- ---------------------------+-----------+------------------------------------
-            'local'         |  'files'  | information are taken from the
-                            |           | plain text data files.
  ---------------------------+-----------+------------------------------------
           'httpThin'        | 'webThin' | identical to 'http', but less
                             | 'htmlThin'| information are gathered; useful
@@ -110,10 +107,8 @@ movie title and year, and with a "movieID" instance variable:
      you've  to pass to the get_movie() method, so that it can retrieve info
      about the referred movie.
      So, movieID _can_ be the imdbID ('0094226') if you're accessing
-     the web server, but with a local installation of the IMDb database,
-     movieID will be an integer, as read from the "titles.key" file;
-     if, for example, you've put IMDb's data into a local database, the
-     movieID can be an index in a given table of the database, and so on.
+     the web server, but with a sql installation of the IMDb database,
+     movieID will be an integer, as read from the id columns in the database.
 
 search_episode(title) is identical to search_movie(), except that its
 tailored to search for episodes' titles; best results are expected
@@ -381,8 +376,7 @@ and i.get_company_infoset().
 Since IMDbPY 4.0, it's possible to retrieve the list of top250
 and bottom100 movies.
 Use the get_top250_movies() and get_bottom100_movies() methods.
-Beware that for 'sql' and 'local', the bottom100 list is
-limited to the first 10 results.  See README.local if you're using 'local'.
+Beware that, for 'sql', the bottom100 list i limited to the first 10 results.
 
 
   Person OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Person OBJECT

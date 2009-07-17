@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090716 "Outlander" (16 Jul 2009)
+* What's the new in release 4.2svn20090717 "Outlander" (17 Jul 2009)
   [general]
   - the 'local' data access system is gone.  See README.local.
   - the imdb.parser.common package was removed, and its code integrated
@@ -11,6 +11,8 @@
     a Movie, Person or Character instance (or a URL in a string)
     in an URL to the full-size version of its cover/headshot.
     Courtesy of Basil Shubin.
+  - used a newer version of msgfmt.py, to work around a hideous bug
+    generating locales.
 
   [http]
   - removed garbage at the end of quotes.

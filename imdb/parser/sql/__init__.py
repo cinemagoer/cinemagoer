@@ -47,7 +47,6 @@ from imdb._exceptions import IMDbDataAccessError, IMDbError
 # =============================
 # Things that once upon a time were in imdb.parser.common.locsql.
 
-
 def titleVariations(title, fromPtdf=0):
     """Build title variations useful for searches; if fromPtdf is true,
     the input is assumed to be in the plain text data files format."""
@@ -682,7 +681,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             # Symbian/python 2.2 has a poor regexp implementation.
             import warnings
             warnings.warn('RuntimeError in '
-                    "imdb.parser.common.locsql.IMDbLocalAndSqlAccessSystem; "
+                    "imdb.parser.sql.IMDbSqlAccessSystem; "
                     "if it's not a recursion limit exceeded or we're not "
                     "running in a Symbian environment, it's a bug:\n%s" % e)
             return (trefs, nrefs)

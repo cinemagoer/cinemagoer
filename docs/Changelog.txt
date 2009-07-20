@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090717 "Outlander" (17 Jul 2009)
+* What's the new in release 4.2svn20090720 "Gone Baby Gone" (20 Jul 2009)
   [general]
   - the 'local' data access system is gone.  See README.local.
   - the imdb.parser.common package was removed, and its code integrated
@@ -257,7 +257,7 @@
   - fixed changes to some key names for movies.
   - introduced the search_character.py, get_character.py and
     get_first_character.py example scripts.
- 
+
   [http]
   - full support for character pages.
   - fixed a bug retrieving some 'cover url'.

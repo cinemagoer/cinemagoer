@@ -31,6 +31,7 @@ from utils import Attribute, Extractor, DOMParserBase, build_movie, \
                     analyze_imdbid
 from personParser import DOMHTMLMaindetailsParser
 
+from imdb.Movie import Movie
 
 _personIDs = re.compile(r'/name/nm([0-9]{7})')
 class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
@@ -121,7 +122,7 @@ class DOMHTMLCharacterBioParser(DOMParserBase):
                             multi=True,
                             path={
                                 'info': "./preceding-sibling::h4[1]//text()",
-                                'text': ".//text()",
+                                'text': ".//text()"
                             },
                             postprocess=lambda x: u'%s: %s' % (
                                 x.get('info').strip(),
@@ -159,9 +160,11 @@ class DOMHTMLCharacterQuotesParser(DOMParserBase):
                     group_key="./a/text()",
                     path="./following-sibling::div[1]",
                     attrs=Attribute(key=None,
-                        path=".//text()",
-                        postprocess=lambda x: x.strip().replace(':   ',
-                                    ': ').replace(':  ', ': ').split('||'))),
+                        path={'txt': ".//text()",
+                              'movieID': ".//a[1]/@href"},
+                        postprocess=lambda x: (analyze_imdbid(x['movieID']),
+                                    x['txt'].strip().replace(':   ',
+                                    ': ').replace(':  ', ': ').split('||'))))
     ]
 
     preprocessors = [
@@ -172,12 +175,18 @@ class DOMHTMLCharacterQuotesParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
-        # XXX: should keys of quotes dictionary be Movie instances?
         if not data:
             return {}
+        newData = {}
         for title in data:
-            data[title][:] = [quote.split('::') for quote in data[title]]
-        return {'quotes': data}
+            movieID, quotes = data[title]
+            if movieID is None:
+                movie = title
+            else:
+                movie = Movie(title=title, movieID=movieID,
+                              accessSystem=self._as, modFunct=self._modFunct)
+            newData[movie] = [quote.split('::') for quote in quotes]
+        return {'quotes': newData}
 
 
 from personParser import DOMHTMLSeriesParser

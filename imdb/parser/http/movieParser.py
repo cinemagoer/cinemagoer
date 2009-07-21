@@ -811,7 +811,6 @@ class DOMHTMLQuotesParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    # FIXME: it still contains too many ::
     extractors = [
         Extractor(label='quotes',
             path="//div[@class='_imdbpy']",
@@ -1671,7 +1670,6 @@ class DOMHTMLFaqsParser(DOMParserBase):
     _defGetRefs = True
 
     # XXX: bsoup and lxml don't match (looks like a minor issue, anyway).
-    # FIXME: remove the :: ?
 
     extractors = [
         Extractor(label='faqs',

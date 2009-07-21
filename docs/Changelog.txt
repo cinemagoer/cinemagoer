@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090720 "Gone Baby Gone" (20 Jul 2009)
+* What's the new in release 4.2svn20090721 "Gone Baby Gone" (21 Jul 2009)
   [general]
   - the 'local' data access system is gone.  See README.local.
   - the imdb.parser.common package was removed, and its code integrated
@@ -16,6 +16,7 @@
 
   [http]
   - removed garbage at the end of quotes.
+  - keys in character's quotes dictionary are now Movie instances.
 
   [sql]
   - fixed DB2 call for loading blobs/cblobs.

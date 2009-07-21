@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.1'
+__version__ = VERSION = '4.2'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -742,7 +742,7 @@ class IMDbBase:
 
     def _searchIMDb(self, kind, ton):
         """Search the IMDb akas server for the given title or name."""
-        # The Exact Primary search system is gone AWL, so we resort
+        # The Exact Primary search system has gone AWOL, so we resort
         # to the mobile search. :-/
         if not ton:
             return None

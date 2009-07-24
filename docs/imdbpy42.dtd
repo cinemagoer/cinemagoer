@@ -1,8 +1,8 @@
 <!--
 
-     XML Document Type Definition for IMDbPY 4.1.
+     XML Document Type Definition for IMDbPY 4.2.
 
-     http://imdbpy.sf.net/dtd/4.1/imdbpy41.dtd
+     http://imdbpy.sf.net/dtd/4.2/imdbpy42.dtd
 
      Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
 
@@ -379,7 +379,7 @@
 <!ELEMENT video-clips (item)*>
 <!ELEMENT where-now (item)*>
 
-<!ELEMENT quotes (item | quote)*>
+<!ELEMENT quotes (item | quote | movie)*>
 <!ELEMENT quote (#PCDATA | line)*>
 <!ELEMENT line (#PCDATA)>
 

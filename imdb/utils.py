@@ -27,6 +27,7 @@ import string
 from copy import copy, deepcopy
 from time import strptime, strftime
 
+from imdb import VERSION
 from imdb._exceptions import IMDbParserError
 
 # The regular expression for the "long" year format of IMDb, like
@@ -1040,11 +1041,12 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
     return _l
 
 
-# XXX: the path is still to be decided (and there's no file, actually)
 _xmlHead = u"""<?xml version="1.0"?>
-<!DOCTYPE %s SYSTEM "http://imdbpy.sf.net/dtd/imdbpy41.dtd">
+<!DOCTYPE %s SYSTEM "http://imdbpy.sf.net/dtd/imdbpy{VERSION}.dtd">
 
 """
+_xmlHead = _xmlHead.replace('{VERSION}', VERSION.replace('.', ''))
+
 
 class _Container(object):
     """Base class for Movie, Person, Character and Company classes."""

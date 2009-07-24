@@ -2,7 +2,7 @@
 
      XML Document Type Definition for IMDbPY 4.2.
 
-     http://imdbpy.sf.net/dtd/4.2/imdbpy42.dtd
+     http://imdbpy.sf.net/dtd/imdbpy42.dtd
 
      Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
 
@@ -60,6 +60,7 @@
   | film-negative-format
   | genres
   | goofs
+  | item
   | keywords
   | kind
   | laboratory

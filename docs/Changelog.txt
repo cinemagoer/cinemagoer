@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090724 "Notorious" (24 Jul 2009)
+* What's the new in release 4.2svn20090724b "Notorious" (24 Jul 2009)
   [general]
   - the 'local' data access system is gone.  See README.local.
   - the imdb.parser.common package was removed, and its code integrated

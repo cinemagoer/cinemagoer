@@ -1,13 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090724b "Notorious" (24 Jul 2009)
+* What's the new in release 4.2svn20090806 "Ergo Proxy" (06 Aug 2009)
   [general]
   - the 'local' data access system is gone.  See README.local.
   - the imdb.parser.common package was removed, and its code integrated
     in imdb.parser.sql and in the imdbpy2sql.py script.
   - fixes for the installer.
-  - the helpers module contains the fullSizeCoverURL, to convert
+  - the helpers module contains the fullSizeCoverURL function, to convert
     a Movie, Person or Character instance (or a URL in a string)
     in an URL to the full-size version of its cover/headshot.
     Courtesy of Basil Shubin.
@@ -18,6 +18,8 @@
   [http]
   - removed garbage at the end of quotes.
   - keys in character's quotes dictionary are now Movie instances.
+  - fixed a bug converting entities char references (affected BeautifulSoup).
+  - removed trailing garbage parsing movie quotes (affected BeautifulSoup).
 
   [sql]
   - fixed DB2 call for loading blobs/cblobs.

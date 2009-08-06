@@ -826,7 +826,9 @@ class DOMHTMLQuotesParser(DOMParserBase):
             r'\1<div class="_imdbpy">'),
         (re.compile('<hr width="30%">', re.I), '</div>'),
         (re.compile('<hr/>', re.I), '</div>'),
-        (re.compile('<script.*?</script>', re.I|re.S), '')
+        (re.compile('<script.*?</script>', re.I|re.S), ''),
+        # For BeautifulSoup.
+        (re.compile('<!-- sid: t-channel : MIDDLE_CENTER -->', re.I), '</div>')
         ]
 
     def postprocess_data(self, data):

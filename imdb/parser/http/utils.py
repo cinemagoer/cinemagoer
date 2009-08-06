@@ -113,7 +113,7 @@ entcharrefs['#XA0'] = u' '
 entcharrefs['#x22'] = u'"'
 entcharrefs['#X22'] = u'"'
 
-re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5}|\#x[0-9a-f]{1,3});' %
+re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5}|\#x[0-9a-f]{1,4});' %
                             '|'.join(map(re.escape, entcharrefs)), re.I)
 re_entcharrefssub = re_entcharrefs.sub
 
@@ -428,9 +428,10 @@ class DOMParserBase(object):
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
-        # XXX: useful only for the testsuite.
+        # Useful only for the testsuite.
         if not isinstance(html_string, unicode):
             html_string = unicode(html_string, 'latin_1', 'replace')
+        # XXX: is this useful only for BeautifulSoup?
         html_string = subXMLRefs(html_string)
         ## Not required?
         ##html_string = subSGMLRefs(html_string)

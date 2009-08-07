@@ -85,17 +85,20 @@ class Company(_Container):
         """Set the name of the company."""
         # XXX: convert name to unicode, if it's a plain string?
         # Company diverges a bit from other classes, being able
-        # to directly handle its "notes".
-        name = name.strip()
+        # to directly handle its "notes".  AND THAT'S PROBABLY A BAD IDEA!
+        oname = name = name.strip()
         notes = u''
         if name.endswith(')'):
             fparidx = name.find('(')
             if fparidx != -1:
                 notes = name[fparidx:]
                 name = name[:fparidx].rstrip()
+        if self.notes:
+            name = oname
         d = analyze_company_name(name)
         self.data.update(d)
-        if notes: self.notes = notes
+        if notes and not self.notes:
+            self.notes = notes
 
     def _additional_keys(self):
         """Valid keys to append to the data.keys() list."""

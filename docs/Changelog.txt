@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090806 "Ergo Proxy" (06 Aug 2009)
+* What's the new in release 4.2svn20090807 "Ergo Proxy" (07 Aug 2009)
   [general]
   - the 'local' data access system is gone.  See README.local.
   - the imdb.parser.common package was removed, and its code integrated
@@ -17,9 +17,9 @@
 
   [http]
   - removed garbage at the end of quotes.
+  - fixed problems parsing company names and notes.
   - keys in character's quotes dictionary are now Movie instances.
   - fixed a bug converting entities char references (affected BeautifulSoup).
-  - removed trailing garbage parsing movie quotes (affected BeautifulSoup).
 
   [sql]
   - fixed DB2 call for loading blobs/cblobs.

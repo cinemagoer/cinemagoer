@@ -335,17 +335,14 @@ class DOMHTMLMovieParser(DOMParserBase):
                         path="../ul/li",
                         attrs=Attribute(key=None,
                                 multi=True,
-                                path={'text': ".//text()",
-                                        'comp-link': "./a/@href"},
+                                path={'name': "./a//text()",
+                                        'comp-link': "./a/@href",
+                                        'notes': "./text()"},
                                 postprocess=lambda x: \
-                                        Company(name=x.get('text', u''),
-                                companyID=analyze_imdbid(x.get('comp-link')))
+                                        Company(name=x.get('name') or u'',
+                                companyID=analyze_imdbid(x.get('comp-link')),
+                                notes=(x.get('notes') or u'').strip())
                             )),
-
-                #Extractor(label='votes and rating',
-                #        path="//div[@class='general rating']",
-                #        attrs=Attribute(key='votes and rating',
-                #                        path=".//text()")),
 
                 Extractor(label='votes and rating',
                         path="//div[@class='meta']",

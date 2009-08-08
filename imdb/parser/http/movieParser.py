@@ -1322,6 +1322,8 @@ class DOMHTMLNewsParser(DOMParserBase):
                 path={
                     'title': "./text()",
                     'fromdate': "../following-sibling::p[1]/small//text()",
+                    # FIXME: sometimes (see The Matrix (1999)) <p> is found
+                    #        inside news text.
                     'body': "../following-sibling::p[2]//text()",
                     'link': "../..//a[text()='Permalink']/@href",
                     'fulllink': "../..//a[starts-with(text(), " \

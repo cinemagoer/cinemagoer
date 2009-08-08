@@ -72,6 +72,9 @@ NOTE: it's always time to clean the code! <g>
 
 
 [http data access system]
+* Serious confusion about handling XML/HTML/SGML char references; there
+  are too many fixes for special cases, and a better understanding of how
+  lxml and BeautifulSoup behave is required.
 * There's a known bug using IMDbPY with Python 2.0 and 2.1: 
   it fails to retrieve web pages, raising the httplib.UnknownTransferEncoding
   exception, if a proxy is used; unset the HTTP_PROXY environment variable

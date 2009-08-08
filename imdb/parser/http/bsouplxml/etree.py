@@ -26,7 +26,8 @@ from _bsoup import Tag as Element
 
 import bsoupxpath
 
-
+# Not directly used by IMDbPY, but do not remove: it's used by IMDbPYKit,
+# for example.
 def fromstring(xml_string):
     """Return a DOM representation of the string."""
     # We try to not use BeautifulSoup.BeautifulStoneSoup.XML_ENTITIES,

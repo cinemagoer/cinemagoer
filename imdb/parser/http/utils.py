@@ -112,6 +112,12 @@ entcharrefs['#xa0'] = u' '
 entcharrefs['#XA0'] = u' '
 entcharrefs['#x22'] = u'"'
 entcharrefs['#X22'] = u'"'
+# convert &x26; to &amp;, to make BeautifulSoup happy; beware that this
+# leaves lone '&' in the html broken, but I assume this is better than
+# the contrary...
+entcharrefs['#38'] = u'&amp;'
+entcharrefs['#x26'] = u'&amp;'
+entcharrefs['#x26'] = u'&amp;'
 
 re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5}|\#x[0-9a-f]{1,4});' %
                             '|'.join(map(re.escape, entcharrefs)), re.I)
@@ -138,6 +144,9 @@ def _replXMLRef(match):
             if ref_code in ('34', '38', '60', '62', '39'):
                 return match.group(0)
             elif ref_code[0].lower() == 'x':
+                #if ref[2:] == '26':
+                #    # Don't convert &x26; to &amp;, to make BeautifulSoup happy.
+                #    return '&amp;'
                 return unichr(int(ref[2:], 16))
             else:
                 return unichr(int(ref[1:]))
@@ -360,6 +369,10 @@ class DOMParserBase(object):
     usingModule = None
 
     def __init__(self, useModule=None):
+        """Initialize the parser. useModule can be used to force it
+        to use 'BeautifulSoup' or 'lxml'; by default, it's auto-detected,
+        using 'lxml' if available and falling back to 'BeautifulSoup'
+        otherwise."""
         # Module to use.
         if useModule is None:
             useModule = ('lxml', 'BeautifulSoup')
@@ -416,13 +429,17 @@ class DOMParserBase(object):
         self._reset()
 
     def _init(self):
+        """Subclasses can override this method, if needed."""
         pass
 
     def _reset(self):
+        """Subclasses can override this method, if needed."""
         pass
 
     def parse(self, html_string, getRefs=None, **kwds):
-        """Return the dictionary generated from the given html string."""
+        """Return the dictionary generated from the given html string;
+        getRefs can be used to force the gathering of movies/persons/characters
+        references."""
         self.reset()
         if getRefs is not None:
             self.getRefs = getRefs
@@ -431,10 +448,7 @@ class DOMParserBase(object):
         # Useful only for the testsuite.
         if not isinstance(html_string, unicode):
             html_string = unicode(html_string, 'latin_1', 'replace')
-        # XXX: is this useful only for BeautifulSoup?
         html_string = subXMLRefs(html_string)
-        ## Not required?
-        ##html_string = subSGMLRefs(html_string)
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
         html_string = html_string.strip()
@@ -457,9 +471,11 @@ class DOMParserBase(object):
         return data
 
     def get_dom(self, html_string):
+        """Return a dom object, from the given string."""
         return self.fromstring(html_string)
 
     def xpath(self, element, path):
+        """Return elements matching the given XPath."""
         xpath_result = element.xpath(path)
         if self._is_xml_unicode:
             return xpath_result
@@ -472,17 +488,19 @@ class DOMParserBase(object):
         return result
 
     def tostring(self, element):
+        """Convert the element to a string."""
         if isinstance(element, (unicode, str)):
             return unicode(element)
         else:
             return self._tostring(element, encoding=unicode)
 
     def clone(self, element):
+        """Clone an element."""
         return self.fromstring(self.tostring(element))
 
     def preprocess_string(self, html_string):
         """Here we can modify the text, before it's parsed."""
-        if len(html_string) == 0:
+        if not html_string:
             return html_string
         try:
             preprocessors = self.preprocessors

@@ -685,7 +685,10 @@ class IMDbBase:
             info = (info,)
         res = {}
         for i in info:
-            if i in mop.current_info and not override: continue
+            if i in mop.current_info and not override:
+                continue
+            if not i:
+                continue
             try:
                 method = getattr(aSystem, 'get_%s_%s' %
                                     (prefix, i.replace(' ', '_')))

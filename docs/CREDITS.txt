@@ -7,11 +7,13 @@ I'd like to thank the following people for their help:
 
 * Ana Guerrero, for maintaining the official debian package.
 
-* Tero Saarni, for the series 60 GUI and a lot of testing and
-  debugging.
-
 * H. Turgut Uyar for a number of bug reports and a lot of work on
   the test-suite.
+
+* Xavier Naidoo for a bug report about top250 and BeautifulSoup.
+
+* Tero Saarni, for the series 60 GUI and a lot of testing and
+  debugging.
 
 * Hieu Nguyen for a bug report about fetching real imdbIDs.
 

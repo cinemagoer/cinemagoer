@@ -43,16 +43,20 @@ class DOMHTMLTop250Parser(DOMParserBase):
     ranktext = 'top 250 rank'
 
     def _init(self):
+        # XXX: for some reason /..//tr[@valign] returns an empty list
+        #      with bsoup.  On the other hand, using /../..//tr[@valign]
+        #      returns every item TWO times (see the work-around in
+        #      postprocess_data.  Very odd.
         self.extractors = [Extractor(label=self.label,
                         path="//table//h1[starts-with(text(), '" + \
-                                self.h1text + "')]/..//tr[@valign]",
+                                self.h1text + "')]/../..//tr[@valign]",
                         attrs=Attribute(key=None,
                                 multi=True,
                                 path={self.ranktext: "./td[1]//text()",
                                         'rating': "./td[2]//text()",
                                         'title': "./td[3]//text()",
                                         'movieID': "./td[3]//a/@href",
-                                        'votes': "./td[4]//text()",
+                                        'votes': "./td[4]//text()"
                                         }))]
 
     def postprocess_data(self, data):
@@ -60,6 +64,8 @@ class DOMHTMLTop250Parser(DOMParserBase):
             return []
         mlist = []
         data = data[self.label]
+        # Avoid duplicates.  A real fix, using XPath, is auspicabile.
+        seenIDs = []
         for d in data:
             if 'movieID' not in d: continue
             if self.ranktext not in d: continue
@@ -68,6 +74,9 @@ class DOMHTMLTop250Parser(DOMParserBase):
             if theID is None:
                 continue
             theID = str(theID)
+            if theID in seenIDs:
+                continue
+            seenIDs.append(theID)
             minfo = analyze_title(d['title'])
             try: minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
             except: pass

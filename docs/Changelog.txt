@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.2svn20090808 "Ergo Proxy" (08 Aug 2009)
+* What's the new in release 4.2svn20090812 "Van Helsing" (12 Aug 2009)
   [general]
   - the 'local' data access system is gone.  See README.local.
   - the imdb.parser.common package was removed, and its code integrated
@@ -21,6 +21,7 @@
   - keys in character's quotes dictionary are now Movie instances.
   - fixed a bug converting entities char references (affected BeautifulSoup).
   - fixed a long-standing bug handling &amp; with BeautifulSoup.
+  - top250 is now correctly parsed by BeautifulSoup.
 
   [sql]
   - fixed DB2 call for loading blobs/cblobs.

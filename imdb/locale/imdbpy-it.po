@@ -677,7 +677,7 @@ msgstr "Nome"
 
 # Default: News
 msgid "news"
-msgstr ""
+msgstr "Notizie"
 
 # Default: Newsgroup reviews
 msgid "newsgroup-reviews"
@@ -701,7 +701,7 @@ msgstr "Numero"
 
 # Default: Number of chapter stops
 msgid "number-of-chapter-stops"
-msgstr "Numero di interruzzioni di capitolo"
+msgstr "Numero di interruzioni di capitolo"
 
 # Default: Number of episodes
 msgid "number-of-episodes"
@@ -1069,7 +1069,7 @@ msgstr "Effetti speciali"
 
 # Default: Special effects companies
 msgid "special-effects-companies"
-msgstr "Compagni di effetti speciali"
+msgstr "Compagnie di effetti speciali"
 
 # Default: Special effects department
 msgid "special-effects-department"

@@ -13,6 +13,7 @@
     Courtesy of Basil Shubin.
   - used a newer version of msgfmt.py, to work around a hideous bug
     generating locales.
+  - minor updates to locales.
   - updated the DTD to version 4.2.
 
   [http]

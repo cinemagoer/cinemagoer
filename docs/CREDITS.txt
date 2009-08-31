@@ -12,6 +12,10 @@ I'd like to thank the following people for their help:
 
 * Xavier Naidoo for a bug report about top250 and BeautifulSoup.
 
+* Basil Shubin for hints about a new helper function.
+
+* Mark Jeffery, for some help debugging a lxml bug.
+
 * Tero Saarni, for the series 60 GUI and a lot of testing and
   debugging.
 

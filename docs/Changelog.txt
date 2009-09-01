@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.3svn20090901 "Top Line" (01 Sep 2009)
+  [general]
+  - the installer now takes care of .mo files.
+
+
 * What's the new in release 4.2 "Battlestar Galactica" (31 Aug 2009)
   [general]
   - the 'local' data access system is gone.  See README.local.

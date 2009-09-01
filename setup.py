@@ -8,7 +8,7 @@ import setuptools
 
 # version of the software; in SVN this represents the _next_ release.
 # setuptools will automatically add 'dev-rREVISION'.
-version = '4.2'
+version = '4.3'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -184,6 +184,7 @@ def runRebuildmo():
     cwd = os.getcwd()
     import sys
     path = list(sys.path)
+    languages = []
     try:
         import imp
         scriptPath =  os.path.dirname(__file__)
@@ -198,10 +199,19 @@ def runRebuildmo():
         print 'ERROR: unable to rebuild .mo files; caught exception %s' % e
     sys.path = path
     os.chdir(cwd)
-
+    return languages
 
 try:
-    runRebuildmo()
+    languages = runRebuildmo()
+    for lang in languages:
+        files_found = [f for f in setuptools.findall('imdb/locale/%s' % lang)
+                        if '.svn' not in f]
+        if not files_found:
+            continue
+        base_dir = os.path.dirname(files_found[0])
+        if not base_dir:
+            continue
+        data_files.append((base_dir, files_found))
     setuptools.setup(**params)
 except SystemExit:
     print ERR_MSG

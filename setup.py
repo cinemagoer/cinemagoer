@@ -203,12 +203,15 @@ def runRebuildmo():
 
 try:
     languages = runRebuildmo()
+    if languages:
+        data_files.append(('imdb/locale', ['imdb/locale/imdbpy.pot']))
     for lang in languages:
         files_found = [f for f in setuptools.findall('imdb/locale/%s' % lang)
                         if '.svn' not in f]
         if not files_found:
             continue
         base_dir = os.path.dirname(files_found[0])
+        data_files.append(('imdb/locale', ['imdb/locale/imdbpy-%s.po' % lang]))
         if not base_dir:
             continue
         data_files.append((base_dir, files_found))

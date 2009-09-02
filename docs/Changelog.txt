@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.3svn20090901 "Top Line" (01 Sep 2009)
+* What's the new in release 4.3svn20090902 "Top Line" (02 Sep 2009)
   [general]
   - the installer now takes care of .mo files.
 

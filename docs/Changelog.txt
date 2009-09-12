@@ -1,9 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.3svn20090902 "Top Line" (02 Sep 2009)
+* What's the new in release 4.3svn20090912 "G.I. Joe" (12 Sep 2009)
   [general]
   - the installer now takes care of .mo files.
+
+  [sql]
+  - fixed a bug in the imdbpy2sql.py script using CSV files;
+    the 'movie_info_idx' and 'movie_keyword' were left
+    empty/with wrong data.
 
 
 * What's the new in release 4.2 "Battlestar Galactica" (31 Aug 2009)

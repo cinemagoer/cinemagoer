@@ -394,7 +394,7 @@ class CSVCursor(object):
         tableToAddID = False
         if tName in ('cast_info', 'movie_info', 'person_info',
                     'movie_companies', 'movie_link', 'aka_name',
-                    'complete_cast'):
+                    'complete_cast', 'movie_info_idx'):
             tableToAddID = tName
             if tName not in self._counters:
                 self._counters[tName] = 1

@@ -18,6 +18,8 @@ classes, as if they are dictionaries.
 E.g.: you can translate "long-imdb-name" - the tag returned by
 the call person.getAsXML('long imdb name') - but not "long imdb name"
 directly.
+To translate keys, you can use the helpers.translateKey function in
+the 'helpers' module.
 
 
   USAGE

@@ -25,12 +25,17 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from cgi import escape
+import gettext
+from gettext import gettext as _
+gettext.textdomain('imdbpy')
 
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
-from imdb.utils import modClearRefs, re_titleRef, re_nameRef, re_characterRef
+from imdb.utils import modClearRefs, re_titleRef, re_nameRef, \
+                    re_characterRef, _tagAttr
 from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base, \
                     imdbURL_character_base
+import imdb.locale
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.Character import Character
@@ -348,4 +353,14 @@ def fullSizeCoverURL(obj):
         return None
     return _re_clearURL.sub('', coverUrl)
 
+
+def keyToXML(key):
+    """Return a key (the ones used to access information in Movie and
+    other classes instances) converted to the style of the XML output."""
+    return _tagAttr(key, '')[0]
+
+
+def translateKey(key):
+    """Translate a given key."""
+    return _(keyToXML(key))
 

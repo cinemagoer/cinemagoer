@@ -99,6 +99,18 @@ _cookie_id = 'rH1jNAkjTlNXvHolvBVBsgaPICNZbNdjVjzFwzas9JRmusdjVoqBs/Hs12NR+1WFxE
 _cookie_uu = 'su4/m8cho4c6HP+W1qgq6wchOmhnF0w+lIWvHjRUPJ6nRA9sccEafjGADJ6hQGrMd4GKqLcz2X4z5+w+M4OIKnRn7FpENH7dxDQu3bQEHyx0ZEyeRFTPHfQEX03XF+yeN1dsPpcXaqjUZAw+lGRfXRQEfz3RIX9IgVEffdBAHw2wQXyf9xdMPrQELw0QNB8dsffsqcdQemjPB0w+moLcPh0JrKrHJ9hjBzdMPpcXTH7XRwwOk='
 
 
+class _FakeURLOpener(object):
+    """Fake URLOpener object, used to return empty strings instead of
+    errors.
+    """
+    def __init__(self, url, headers):
+        self.url = url
+        self.headers = headers
+    def read(self, *args, **kwds): return ''
+    def close(self, *args, **kwds): pass
+    def info(self, *args, **kwds): return self.headers
+
+
 class IMDbURLopener(FancyURLopener):
     """Fetch web pages and handle errors."""
     def __init__(self, *args, **kwargs):
@@ -193,6 +205,8 @@ class IMDbURLopener(FancyURLopener):
         return unicode(content, encode, 'replace')
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
+        if errcode == 404:
+            return _FakeURLOpener(url, headers)
         raise IMDbDataAccessError, {'url': 'http:%s' % url,
                                     'errcode': errcode,
                                     'errmsg': errmsg,

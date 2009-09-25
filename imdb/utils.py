@@ -28,6 +28,7 @@ from copy import copy, deepcopy
 from time import strptime, strftime
 
 from imdb import VERSION
+from imdb import articles
 from imdb._exceptions import IMDbParserError
 
 # The regular expression for the "long" year format of IMDb, like
@@ -168,61 +169,20 @@ def build_name(name_dict, canonical=None):
     return name
 
 
-# List of articles.
-# XXX: Managing titles in a lot of different languages, a function to recognize
-# an initial article can't be perfect; sometimes we'll stumble upon a short
-# word that is an article in some language, but it's not in another; in these
-# situations we have to choose if we want to interpret this little word
-# as an article or not (remember that we don't know what the original language
-# of the title was).
-# Example: 'da' is an article in (I think) Dutch and it's used as an article
-# even in some American slangs.  Unfortunately it's also a preposition in
-# Italian, and it's widely used in Mandarin (for whatever it means!).
-# Running a script over the whole list of titles (and aliases), I've found
-# that 'da' is used as an article only 23 times, and as another thing 298
-# times, so I've decided to _always_ consider 'da' as a non article.
-#
-# Here is a list of words that are _never_ considered as articles, complete
-# with the cound of times they are used in a way or another:
-# 'en' (376 vs 594), 'to' (399 vs 727), 'as' (198 vs 276), 'et' (79 vs 99),
-# 'des' (75 vs 150), 'al' (78 vs 304), 'ye' (14 vs 70),
-# 'da' (23 vs 298), "'n" (8 vs 12)
-#
-# I've left in the list 'i' (1939 vs 2151) and 'uno' (52 vs 56)
-# I'm not sure what '-al' is, and so I've left it out...
-#
-# List of articles in utf-8 encoding:
-_articles = ('the', 'la', 'a', 'die', 'der', 'le', 'el',
-            "l'", 'il', 'das', 'les', 'i', 'o', 'ein', 'un', 'de', 'los',
-            'an', 'una', 'las', 'eine', 'den', 'het', 'gli', 'lo', 'os',
-            'ang', 'oi', 'az', 'een', 'ha-', 'det', 'ta', 'al-',
-            'mga', "un'", 'uno', 'ett', 'dem', 'egy', 'els', 'eines',
-            '\xc3\x8f', '\xc3\x87', '\xc3\x94\xc3\xaf', '\xc3\x8f\xc3\xa9')
+# XXX: here only for backward compatibility.  Find and remove any dependency.
+_articles = articles.GENERIC_ARTICLES
+_unicodeArticles = articles.toUnicode(_articles)
+articlesDicts = articles.articlesDictsForLang(None)
+spArticles = articles.spArticlesForLang(None)
 
-_unicodeArticles = tuple([art.decode('utf_8') for art in _articles])
-
-# Articles in a dictionary.
-_articlesDict = dict([(x, x) for x in _articles])
-# Unicode version.
-_unicodeArticlesDict = dict([(x, x) for x in _unicodeArticles])
-_spArticles = []
-# Variations with a trailing space.
-for article in _articles:
-    if article[-1] not in ("'", '-'): article += ' '
-    _spArticles.append(article)
-_spUnicodeArticles = []
-for article in _unicodeArticles:
-    if article[-1] not in ("'", '-'): article += u' '
-    _spUnicodeArticles.append(article)
-
-articlesDicts = (_articlesDict, _unicodeArticlesDict)
-spArticles = (_spArticles, _spUnicodeArticles)
-
-def canonicalTitle(title):
+def canonicalTitle(title, lang=None):
     """Return the title in the canonic format 'Movie Title, The';
     beware that it doesn't handle long imdb titles, but only the
-    title portion, without year[/imdbIndex] or special markup."""
+    title portion, without year[/imdbIndex] or special markup.
+    The 'lang' argument can be used to specify the language of the title.
+    """
     isUnicode = isinstance(title, unicode)
+    articlesDicts = articles.articlesDictsForLang(lang)
     try:
         if title.split(', ')[-1].lower() in articlesDicts[isUnicode]:
             return title
@@ -233,11 +193,13 @@ def canonicalTitle(title):
     else:
         _format = '%s, %s'
     ltitle = title.lower()
+    spArticles = articles.spArticlesForLang(lang)
     for article in spArticles[isUnicode]:
         if ltitle.startswith(article):
             lart = len(article)
             title = _format % (title[lart:], title[:lart])
-            if article[-1] == ' ': title = title[:-1]
+            if article[-1] == ' ':
+                title = title[:-1]
             break
     ## XXX: an attempt using a dictionary lookup.
     ##for artSeparator in (' ', "'", '-'):
@@ -252,15 +214,19 @@ def canonicalTitle(title):
     ##        break
     return title
 
-def normalizeTitle(title):
+def normalizeTitle(title, lang=None):
     """Return the title in the normal "The Title" format;
     beware that it doesn't handle long imdb titles, but only the
-    title portion, without year[/imdbIndex] or special markup."""
+    title portion, without year[/imdbIndex] or special markup.
+    The 'lang' argument can be used to specify the language of the title.
+    """
     isUnicode = isinstance(title, unicode)
     stitle = title.split(', ')
+    articlesDicts = articles.articlesDictsForLang(lang)
     if len(stitle) > 1 and stitle[-1].lower() in articlesDicts[isUnicode]:
         sep = ' '
-        if stitle[-1][-1] in ("'", '-'): sep = ''
+        if stitle[-1][-1] in ("'", '-'):
+            sep = ''
         if isUnicode:
             _format = u'%s%s%s'
             _joiner = u', '
@@ -330,6 +296,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
 
     raise an IMDbParserError exception if the title is not valid.
     """
+    # XXX: introduce the 'lang' argument?
     if canonical is not None:
         canonicalSeries = canonicalEpisode = canonical
     original_t = title
@@ -478,13 +445,16 @@ def _convertTime(title, fromPTDFtoWEB=1, _emptyString=u''):
 
 
 def build_title(title_dict, canonical=None, canonicalSeries=None,
-                canonicalEpisode=None, ptdf=0, _doYear=1, _emptyString=u''):
+                canonicalEpisode=None, ptdf=0, lang=None, _doYear=1,
+                _emptyString=u''):
     """Given a dictionary that represents a "long" IMDb title,
     return a string.
 
     If canonical is None (default), the title is returned in the stored style.
     If canonical is True, the title is converted to canonical style.
     If canonical is False, the title is converted to normal format.
+
+    lang can be used to specify the language of the title.
 
     If ptdf is true, the plain text data files format is used.
     """
@@ -537,9 +507,9 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
     if not title: return _emptyString
     if canonical is not None:
         if canonical:
-            title = canonicalTitle(title)
+            title = canonicalTitle(title, lang=lang)
         else:
-            title = normalizeTitle(title)
+            title = normalizeTitle(title, lang=lang)
     if pre_title:
         title = '%s %s' % (pre_title, title)
     if kind in (u'tv series', u'tv mini series'):

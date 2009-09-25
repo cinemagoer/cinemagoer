@@ -1,11 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.3svn20090921 "Ido zero daisakusen" (21 Sep 2009)
+* What's the new in release 4.3svn20090925 "In The Shadown Of The Moon" (25 Sep 2009)
   [general]
   - the installer now takes care of .mo files.
   - introduced, in the helpers module, the functions keyToXML and
     translateKey, useful to translate dictionary keys.
+  - support for smart guessing of the language of a movie title.
 
   [http]
   - nicer handling of HTTP 404 response code.

@@ -39,17 +39,11 @@ class DOMHTMLTop250Parser(DOMParserBase):
         result = tparser.parse(top250_html_string)
     """
     label = 'top 250'
-    h1text = 'Top 250'
     ranktext = 'top 250 rank'
 
     def _init(self):
-        # XXX: for some reason /..//tr[@valign] returns an empty list
-        #      with bsoup.  On the other hand, using /../..//tr[@valign]
-        #      returns every item TWO times (see the work-around in
-        #      postprocess_data.  Very odd.
         self.extractors = [Extractor(label=self.label,
-                        path="//table//h1[starts-with(text(), '" + \
-                                self.h1text + "')]/../..//tr[@valign]",
+                        path="//div[@id='main']//table//tr",
                         attrs=Attribute(key=None,
                                 multi=True,
                                 path={self.ranktext: "./td[1]//text()",
@@ -65,6 +59,7 @@ class DOMHTMLTop250Parser(DOMParserBase):
         mlist = []
         data = data[self.label]
         # Avoid duplicates.  A real fix, using XPath, is auspicabile.
+        # XXX: probably this is no more needed.
         seenIDs = []
         for d in data:
             if 'movieID' not in d: continue
@@ -101,7 +96,6 @@ class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):
         result = tparser.parse(bottom100_html_string)
     """
     label = 'bottom 100'
-    h1text = 'Bottom 100'
     ranktext = 'bottom 100 rank'
 
 

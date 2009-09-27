@@ -321,7 +321,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             cvurl = _findBetween(cvurl[0], 'src="', '"', maxRes=1)
             if cvurl: d['cover url'] = cvurl[0]
         genres = _findBetween(cont, 'href="/Sections/Genres/', '/')
-        if genres: d['genres'] = genres
+        if genres:
+            d['genres'] = list(set(genres))
         ur = _findBetween(cont, '<div class="meta">', '</div>', maxRes=1)
         if ur:
             rat = _findBetween(ur[0], '<b>', '</b>', maxRes=1)

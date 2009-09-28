@@ -66,6 +66,7 @@ LANG_ARTICLES = {
     'Spanish': ('la', 'le', 'el', 'les', 'un', 'los', 'una', 'uno', 'unos',
                 'unas'),
     'Portuguese': ('a', 'as', 'o', 'os', 'um', 'uns', 'uma', 'umas'),
+    'Turkish': (), # Some languages doesn't have articles.
 }
 LANG_ARTICLESget = LANG_ARTICLES.get
 
@@ -78,6 +79,7 @@ _LANG_COUNTRIES = {
     'Italian': ('Italy',),
     'Spanish': ('Spain', 'Mexico'),
     'Portuguese': ('Portugal', 'Brazil'),
+    'Turkey': ('Turkish',),
     #'German': ('Germany', 'East Germany', 'West Germany'),
     #'French': ('France'),
 }

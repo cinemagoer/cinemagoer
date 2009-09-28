@@ -94,6 +94,8 @@ class Movie(_Container):
                 'aka':  'akas',
                 'also known as':    'akas',
                 'country':  'countries',
+                'production country':  'countries',
+                'production countries':  'countries',
                 'genre': 'genres',
                 'runtime':  'runtimes',
                 'lang': 'languages',
@@ -181,24 +183,27 @@ class Movie(_Container):
         addkeys = []
         if self.data.has_key('title'):
             addkeys += ['canonical title', 'long imdb title',
-                        'long imdb canonical title']
+                        'long imdb canonical title',
+                        'smart canonical title',
+                        'smart long imdb canonical title']
         if self.data.has_key('episode of'):
             addkeys += ['long imdb episode title', 'series title',
                         'canonical series title', 'episode title',
-                        'canonical episode title']
+                        'canonical episode title',
+                        'smart canonical series title',
+                        'smart canonical episode title']
         return addkeys
 
     def guessLanguage(self):
         """Guess the language of the title of this movie; returns None
         if there are no hints."""
-        country = self.get('countries')
-        lang = None
-        if country:
-            lang = articles.COUNTRY_LANG.get(country[0])
-        if not lang:
-            lang = self.get('languages')
-            if lang:
-                lang = lang[0]
+        lang = self.get('languages')
+        if lang:
+            lang = lang[0]
+        else:
+            country = self.get('countries')
+            if country:
+                lang = articles.COUNTRY_LANG.get(country[0])
         return lang
 
     def smartCanonicalTitle(self, title=None, lang=None):

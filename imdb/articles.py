@@ -79,7 +79,7 @@ _LANG_COUNTRIES = {
     'Italian': ('Italy',),
     'Spanish': ('Spain', 'Mexico'),
     'Portuguese': ('Portugal', 'Brazil'),
-    'Turkey': ('Turkish',),
+    'Turkish': ('Turkey',),
     #'German': ('Germany', 'East Germany', 'West Germany'),
     #'French': ('France'),
 }

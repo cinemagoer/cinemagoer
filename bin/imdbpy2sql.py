@@ -242,7 +242,7 @@ if ('--mysql-force-myisam' in sys.argv[1:] and
 if CSV_DIR:
     if URIlower.startswith('mysql'):
         CSV_LOAD_SQL = CSV_MYSQL
-    elif URIlower.startswith('postrges'):
+    elif URIlower.startswith('postgres'):
         CSV_LOAD_SQL = CSV_PGSQL
     elif URIlower.startswith('ibm'):
         CSV_LOAD_SQL = CSV_DB2

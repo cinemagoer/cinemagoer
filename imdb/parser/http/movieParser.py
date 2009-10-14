@@ -1334,7 +1334,7 @@ class DOMHTMLNewsParser(DOMParserBase):
                     'date': x.get('fromdate').split('|')[0].strip(),
                     'from': x.get('fromdate').split('|')[1].replace('From ',
                             '').strip(),
-                    'body': x.get('body').strip(),
+                    'body': (x.get('body') or u'').strip(),
                     'link': _normalize_href(x.get('link')),
                     'full article link': _normalize_href(x.get('fulllink'))
                 }))

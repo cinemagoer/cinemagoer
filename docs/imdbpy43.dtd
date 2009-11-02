@@ -700,6 +700,10 @@
 <!ELEMENT rating (#PCDATA)>
 <!ELEMENT series-title (#PCDATA)>
 <!ELEMENT series-years (#PCDATA)>
+<!ELEMENT smart-canonical-episode-title (#PCDATA)>
+<!ELEMENT smart-canonical-series-title (#PCDATA)>
+<!ELEMENT smart-canonical-title (#PCDATA)>
+<!ELEMENT smart-long-imdb-canonical-title (#PCDATA)>
 <!ELEMENT synopsis (#PCDATA)>
 <!ELEMENT title (#PCDATA)>
 <!ELEMENT top-250-rank (#PCDATA)>

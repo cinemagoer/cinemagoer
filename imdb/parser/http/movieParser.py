@@ -239,7 +239,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                             # Collects akas not encosed in <i> tags.
                             Attribute(key='other akas',
                                 path="./h5[starts-with(text(), " \
-                                        "'Also Known As')]/../text()",
+                                        "'Also Known As')]/../p/text()",
                                 postprocess=makeSplitter(sep='::')),
                             Attribute(key='runtimes',
                                 path="./h5[starts-with(text(), " \
@@ -401,7 +401,10 @@ class DOMHTMLMovieParser(DOMParserBase):
                         obj.accessSystem = self._as
                         obj.modFunct = self._modFunct
         if 'akas' in data or 'other akas' in data:
-            data['akas'] = data.get('other akas', []) + data.get('akas', [])
+            other_akas = data.get('akas')
+            if not other_akas:
+                other_akas = []
+            data['akas'] = data.get('other akas', []) + other_akas
             if 'other akas' in data:
                 del data['other akas']
         if 'runtimes' in data:

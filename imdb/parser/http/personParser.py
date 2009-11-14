@@ -63,24 +63,24 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
 
     _birth_attrs = [Attribute(key='birth date',
                         path={
-                            'day': "./a[starts-with(@href, " \
+                            'day': "./p/a[starts-with(@href, " \
                                     "'/OnThisDay?')]/text()",
-                            'year': "./a[starts-with(@href, " \
+                            'year': "./p/a[starts-with(@href, " \
                                     "'/BornInYear?')]/text()"
                             },
                         postprocess=build_date),
                     Attribute(key='birth notes',
-                        path="./a[starts-with(@href, '/BornWhere?')]/text()")]
+                        path="./p/a[starts-with(@href, '/BornWhere?')]/text()")]
     _death_attrs = [Attribute(key='death date',
                         path={
-                            'day': "./a[starts-with(@href, " \
+                            'day': "./p/a[starts-with(@href, " \
                                     "'/OnThisDay?')]/text()",
-                            'year': "./a[starts-with(@href, " \
+                            'year': "./p/a[starts-with(@href, " \
                                     "'/DiedInYear?')]/text()"
                             },
                         postprocess=build_date),
                     Attribute(key='death notes',
-                        path="./text()",
+                        path="./p/text()",
                         # TODO: check if this slicing is always correct
                         postprocess=lambda x: x.strip()[2:])]
     _film_attrs = [Attribute(key=None,
@@ -121,7 +121,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             Extractor(label='akas',
                         path="//div[h5='Alternate Names:']",
                         attrs=Attribute(key='akas',
-                            path="./text()",
+                            path="./p/text()",
                             postprocess=lambda x: x.strip().split(' | '))),
 
             Extractor(label='filmography',
@@ -175,7 +175,7 @@ class DOMHTMLBioParser(DOMParserBase):
                             },
                         postprocess=build_date),
                     Attribute(key='death notes',
-                        path="./text()",
+                        path="./p/text()",
                         # TODO: check if this slicing is always correct
                         postprocess=lambda x: u''.join(x).strip()[2:])]
     extractors = [
@@ -188,7 +188,7 @@ class DOMHTMLBioParser(DOMParserBase):
             Extractor(label='nick names',
                         path="//div[h5='Nickname']",
                         attrs=Attribute(key='nick names',
-                            path="./text()",
+                            path="./p/text()",
                             joiner='|',
                             postprocess=lambda x: [n.strip().replace(' (',
                                     '::(', 1) for n in x.split('|')

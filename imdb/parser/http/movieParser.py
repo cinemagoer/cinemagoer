@@ -209,20 +209,20 @@ class DOMHTMLMovieParser(DOMParserBase):
                         attrs=[
                             Attribute(key="plot summary",
                                 path="./h5[starts-with(text(), " \
-                                        "'Plot:')]/../text()",
+                                        "'Plot:')]/../p/text()",
                                 postprocess=lambda x: \
                                         x.strip().rstrip('|').rstrip()),
                             Attribute(key="aspect ratio",
                                 path="./h5[starts-with(text()," \
-                                        " 'Aspect')]/../text()",
+                                        " 'Aspect')]/../p/text()",
                                 postprocess=lambda x: x.strip()),
                             Attribute(key="mpaa",
                                 path="./h5/a[starts-with(text()," \
-                                        " 'MPAA')]/../../text()",
+                                        " 'MPAA')]/../../p/text()",
                                 postprocess=lambda x: x.strip()),
                             Attribute(key="countries",
                                 path="./h5[starts-with(text(), " \
-                                        "'Countr')]/../a/text()",
+                                        "'Countr')]/..//a/text()",
                                     postprocess=makeSplitter(sep='\n')),
                             Attribute(key="language",
                                 path="./h5[starts-with(text(), " \
@@ -243,7 +243,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 postprocess=makeSplitter(sep='::')),
                             Attribute(key='runtimes',
                                 path="./h5[starts-with(text(), " \
-                                        "'Runtime')]/../text()",
+                                        "'Runtime')]/../p/text()",
                                 postprocess=makeSplitter()),
                             Attribute(key='certificates',
                                 path="./h5[starts-with(text(), " \
@@ -251,21 +251,21 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 postprocess=makeSplitter('Certification:')),
                             Attribute(key='number of seasons',
                                 path="./h5[starts-with(text(), " \
-                                        "'Seasons')]/../text()",
+                                        "'Seasons')]/..//text()",
                                 postprocess=lambda x: x.count('|') + 1),
                             Attribute(key='original air date',
                                 path="./h5[starts-with(text(), " \
-                                        "'Original Air Date')]/../text()"),
+                                        "'Original Air Date')]/../p/text()"),
                             Attribute(key='tv series link',
                                 path="./h5[starts-with(text(), " \
-                                        "'TV Series')]/../a/@href"),
+                                        "'TV Series')]/..//a/@href"),
                             Attribute(key='tv series title',
                                 path="./h5[starts-with(text(), " \
-                                        "'TV Series')]/../a/text()")
+                                        "'TV Series')]/..//a/text()")
                             ]),
 
                 Extractor(label='creator',
-                            path="//h5[starts-with(text(), 'Creator')]/../a",
+                            path="//h5[starts-with(text(), 'Creator')]/..//a",
                             attrs=Attribute(key='creator', multi=True,
                                     path={'name': "./text()",
                                         'link': "./@href"},
@@ -275,7 +275,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                                     )),
 
                 Extractor(label='thin writer',
-                            path="//h5[starts-with(text(), 'Writer')]/../a",
+                            path="//h5[starts-with(text(), 'Writer')]/..//a",
                             attrs=Attribute(key='thin writer', multi=True,
                                     path={'name': "./text()",
                                         'link': "./@href"},
@@ -285,7 +285,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                                     )),
 
                 Extractor(label='thin director',
-                            path="//h5[starts-with(text(), 'Director')]/../a",
+                            path="//h5[starts-with(text(), 'Director')]/..//a",
                             attrs=Attribute(key='thin director', multi=True,
                                     path={'name': "./text()",
                                         'link': "@href"},

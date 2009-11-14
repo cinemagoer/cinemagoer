@@ -258,7 +258,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             air_date = air_date[0]
             vi = air_date.find('(')
             if vi != -1:
-                date = air_date[:vi].strip()
+                date = _unHtml(air_date[:vi]).strip()
                 if date != '????':
                     d['original air date'] = date
                 air_date = air_date[vi:]
@@ -393,7 +393,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             runtimes = runtimes[0]
             runtimes = [x.strip().replace(' min', '').replace(' (', '::(', 1)
                     for x in runtimes.split('|')]
-            d['runtimes'] = runtimes
+            d['runtimes'] = [_unHtml(x).strip() for x in runtimes]
         if kind == 'episode':
             # number of episodes.
             epsn = _findBetween(cont, 'title="Full Episode List">', '</a>',
@@ -438,13 +438,13 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if plotoutline:
             plotoutline = plotoutline[0].strip()
             plotoutline = plotoutline.rstrip('|').rstrip()
-            if plotoutline: d['plot outline'] = plotoutline
+            if plotoutline: d['plot outline'] = _unHtml(plotoutline)
         aratio = _findBetween(cont, 'Aspect Ratio:</h5>', ['<a ', '</div>'],
                             maxRes=1)
         if aratio:
             aratio = aratio[0].strip().replace(' (', '::(', 1)
             if aratio:
-                d['aspect ratio'] = aratio
+                d['aspect ratio'] = _unHtml(aratio)
         return {'data': d}
 
     def get_movie_plot(self, movieID):

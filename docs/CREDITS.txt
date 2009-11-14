@@ -10,6 +10,10 @@ I'd like to thank the following people for their help:
 * H. Turgut Uyar for a number of bug reports and a lot of work on
   the test-suite.
 
+* Adeodato Simó for a bug report about the new imdb.com layout.
+
+* Josh Harding for a bug report about the new imdb.com layout.
+
 * Xavier Naidoo for a bug report about top250 and BeautifulSoup.
 
 * Basil Shubin for hints about a new helper function.

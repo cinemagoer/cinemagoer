@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.3svn20091114 "Street Fighter: The Legend of Chun-Li" (14 Nov 2009)
+* What's the new in release 4.3svn20091117 "The Island" (17 Nov 2009)
   [general]
   - the installer now takes care of .mo files.
   - introduced, in the helpers module, the functions keyToXML and

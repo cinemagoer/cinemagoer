@@ -175,7 +175,7 @@ class DOMHTMLBioParser(DOMParserBase):
                             },
                         postprocess=build_date),
                     Attribute(key='death notes',
-                        path="./p/text()",
+                        path="./text()",
                         # TODO: check if this slicing is always correct
                         postprocess=lambda x: u''.join(x).strip()[2:])]
     extractors = [
@@ -188,7 +188,7 @@ class DOMHTMLBioParser(DOMParserBase):
             Extractor(label='nick names',
                         path="//div[h5='Nickname']",
                         attrs=Attribute(key='nick names',
-                            path="./p/text()",
+                            path="./text()",
                             joiner='|',
                             postprocess=lambda x: [n.strip().replace(' (',
                                     '::(', 1) for n in x.split('|')

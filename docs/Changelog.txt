@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.3svn20091117 "The Island" (17 Nov 2009)
+* What's the new in release 4.3 "Public Enemies" (18 Nov 2009)
   [general]
   - the installer now takes care of .mo files.
   - introduced, in the helpers module, the functions keyToXML and
@@ -10,7 +10,7 @@
   - updated the DTD.
 
   [http]
-  - fixed a log of bugs introduced by the new IMDb.com design.
+  - fixed a lot of bugs introduced by the new IMDb.com design.
   - nicer handling of HTTP 404 response code.
   - fixed parsers for top250 and bottom100 lists.
   - fixed a bug parsing AKAs.

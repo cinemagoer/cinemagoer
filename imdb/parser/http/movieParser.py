@@ -209,16 +209,16 @@ class DOMHTMLMovieParser(DOMParserBase):
                         attrs=[
                             Attribute(key="plot summary",
                                 path="./h5[starts-with(text(), " \
-                                        "'Plot:')]/../p/text()",
+                                        "'Plot:')]/../div/text()",
                                 postprocess=lambda x: \
                                         x.strip().rstrip('|').rstrip()),
                             Attribute(key="aspect ratio",
                                 path="./h5[starts-with(text()," \
-                                        " 'Aspect')]/../p/text()",
+                                        " 'Aspect')]/../div/text()",
                                 postprocess=lambda x: x.strip()),
                             Attribute(key="mpaa",
                                 path="./h5/a[starts-with(text()," \
-                                        " 'MPAA')]/../../p/text()",
+                                        " 'MPAA')]/../../div/text()",
                                 postprocess=lambda x: x.strip()),
                             Attribute(key="countries",
                                 path="./h5[starts-with(text(), " \
@@ -239,11 +239,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                             # Collects akas not encosed in <i> tags.
                             Attribute(key='other akas',
                                 path="./h5[starts-with(text(), " \
-                                        "'Also Known As')]/../p/text()",
+                                        "'Also Known As')]/../div/text()",
                                 postprocess=makeSplitter(sep='::')),
                             Attribute(key='runtimes',
                                 path="./h5[starts-with(text(), " \
-                                        "'Runtime')]/../p/text()",
+                                        "'Runtime')]/../div/text()",
                                 postprocess=makeSplitter()),
                             Attribute(key='certificates',
                                 path="./h5[starts-with(text(), " \
@@ -255,7 +255,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 postprocess=lambda x: x.count('|') + 1),
                             Attribute(key='original air date',
                                 path="./h5[starts-with(text(), " \
-                                        "'Original Air Date')]/../p/text()"),
+                                        "'Original Air Date')]/../div/text()"),
                             Attribute(key='tv series link',
                                 path="./h5[starts-with(text(), " \
                                         "'TV Series')]/..//a/@href"),

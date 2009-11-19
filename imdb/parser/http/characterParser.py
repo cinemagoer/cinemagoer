@@ -77,7 +77,7 @@ class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
             Extractor(label='akas',
                         path="//div[h5='Alternate Names:']",
                         attrs=Attribute(key='akas',
-                            path="./p//text()",
+                            path="./div//text()",
                             postprocess=lambda x: x.strip().split(' / '))),
 
             Extractor(label='filmography',

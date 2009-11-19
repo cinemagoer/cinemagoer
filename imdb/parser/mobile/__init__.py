@@ -564,7 +564,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         for work in workkind:
             wsplit = work.split('">', 1)
             if len(wsplit) == 2:
-                ws.append((wsplit[0], wsplit[1].lower()))
+                sect = wsplit[0]
+                if '"' in sect:
+                    sect = sect[:sect.find('"')]
+                ws.append((sect, wsplit[1].lower()))
         # XXX: I think "guest appearances" are gone.
         if s.find('<a href="#guest-appearances"') != -1:
             ws.append(('guest-appearances', 'notable tv guest appearances'))

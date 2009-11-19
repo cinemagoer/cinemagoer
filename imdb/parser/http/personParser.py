@@ -63,24 +63,24 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
 
     _birth_attrs = [Attribute(key='birth date',
                         path={
-                            'day': "./p/a[starts-with(@href, " \
+                            'day': "./div/a[starts-with(@href, " \
                                     "'/OnThisDay?')]/text()",
-                            'year': "./p/a[starts-with(@href, " \
+                            'year': "./div/a[starts-with(@href, " \
                                     "'/BornInYear?')]/text()"
                             },
                         postprocess=build_date),
                     Attribute(key='birth notes',
-                        path="./p/a[starts-with(@href, '/BornWhere?')]/text()")]
+                        path="./div/a[starts-with(@href, '/BornWhere?')]/text()")]
     _death_attrs = [Attribute(key='death date',
                         path={
-                            'day': "./p/a[starts-with(@href, " \
+                            'day': "./div/a[starts-with(@href, " \
                                     "'/OnThisDay?')]/text()",
-                            'year': "./p/a[starts-with(@href, " \
+                            'year': "./div/a[starts-with(@href, " \
                                     "'/DiedInYear?')]/text()"
                             },
                         postprocess=build_date),
                     Attribute(key='death notes',
-                        path="./p/text()",
+                        path="./div/text()",
                         # TODO: check if this slicing is always correct
                         postprocess=lambda x: x.strip()[2:])]
     _film_attrs = [Attribute(key=None,
@@ -121,7 +121,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             Extractor(label='akas',
                         path="//div[h5='Alternate Names:']",
                         attrs=Attribute(key='akas',
-                            path="./p/text()",
+                            path="./div/text()",
                             postprocess=lambda x: x.strip().split(' | '))),
 
             Extractor(label='filmography',

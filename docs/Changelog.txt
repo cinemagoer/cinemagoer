@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.4svn20091119 "Alien" (19 Nov 2009)
+  [http]
+  - fixes for the n-th set of changes to imdb's HTML.
+
+
 * What's the new in release 4.3 "Public Enemies" (18 Nov 2009)
   [general]
   - the installer now takes care of .mo files.

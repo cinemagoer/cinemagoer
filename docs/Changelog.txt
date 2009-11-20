@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.4svn20091120 "Alien" (19 Nov 2009)
+* What's the new in release 4.4svn20091120b "Alien" (20 Nov 2009)
   [http]
   - fixes for the n-th set of changes to imdb's HTML.
 

@@ -571,8 +571,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         # XXX: I think "guest appearances" are gone.
         if s.find('<a href="#guest-appearances"') != -1:
             ws.append(('guest-appearances', 'notable tv guest appearances'))
-        if _parseChr:
-            ws.append(('filmography', 'filmography'))
+        #if _parseChr:
+        #    ws.append(('filmography', 'filmography'))
         for sect, sectName in ws:
             raws = u''
             # Everything between the current section link and the end

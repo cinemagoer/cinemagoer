@@ -31,15 +31,23 @@ from utils import Extractor, Attribute, analyze_imdbid
 
 from searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
 
+
+def _cleanName(n):
+    """Clean the name in a title tag."""
+    if not n:
+        return u''
+    n = n.replace('Filmography by type for', '') # FIXME: temporary.
+    return n
+
 class DOMBasicPersonParser(DOMBasicMovieParser):
     """Simply get the name of a person and the imdbID.
 
     It's used by the DOMHTMLSearchPersonParser class to return a result
     for a direct match (when a search on IMDb results in a single
     person, the web server sends directly the movie page."""
-    _titleAttrPath = ".//text()"
+    _titleAttrPath = ".//a/text()"
     _linkPath = "//a[starts-with(@href, '/name/nm')]"
-    _titleFunct = lambda self, x: analyze_name(x or u'', canonical=1)
+    _titleFunct = lambda self, x: analyze_name(_cleanName(x), canonical=1)
 
 
 _reAKASp = re.compile(r'(?:aka|birth name) (<em>")(.*?)"(<br>|<\/em>|<\/td>)',

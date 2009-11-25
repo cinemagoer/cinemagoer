@@ -1015,7 +1015,8 @@ _xmlHead = u"""<?xml version="1.0"?>
 <!DOCTYPE %s SYSTEM "http://imdbpy.sf.net/dtd/imdbpy{VERSION}.dtd">
 
 """
-_xmlHead = _xmlHead.replace('{VERSION}', VERSION.replace('.', ''))
+_xmlHead = _xmlHead.replace('{VERSION}',
+            VERSION.replace('.', '').split('svn')[0])
 
 
 class _Container(object):

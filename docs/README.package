@@ -278,6 +278,25 @@ Other keys that contain list of companies are: production companies, special
 effects, sound mix, special effects companies, miscellaneous companies,
 distributors.
 
+Converting a title to its 'Title, The' canonical format, IMDbPY does
+some assumptions about what is an article and what not, and this could
+lead to some wrong canonical titles.  E.g.: "Hard, Die" instead of
+"Die Hard", since 'Die' is guessed as an article (and it is, in Germany...)
+To solve this problem, there are other keys, "smart canonical title",
+"smart long imdb canonical title", "smart canonical series title",
+"smart canonical episode title" which can be used to do a better job
+converting a title into its canonical format.
+
+It works, but it needs to know something about articles in various
+languages: if you want to help, see the LANG_ARTICLES and _LANG_COUNTRIES
+dictionaries in the '_articles' module.
+
+To know what the language in which a movie title is assumed to be,
+call its 'guessLanguage' method (it will return None, if unable to guess).
+If you want to force a given language instead of the guessed one, you
+can call its 'smartCanonicalTitle', setting the 'lang' argument
+appropriately.
+
 
   THE Person CLASS
   ================

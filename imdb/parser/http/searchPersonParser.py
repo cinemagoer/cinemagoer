@@ -45,8 +45,6 @@ class DOMBasicPersonParser(DOMBasicMovieParser):
     It's used by the DOMHTMLSearchPersonParser class to return a result
     for a direct match (when a search on IMDb results in a single
     person, the web server sends directly the movie page."""
-    _titleAttrPath = ".//a/text()"
-    _linkPath = "//a[starts-with(@href, '/name/nm')]"
     _titleFunct = lambda self, x: analyze_name(_cleanName(x), canonical=1)
 
 

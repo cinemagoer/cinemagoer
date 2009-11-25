@@ -36,10 +36,8 @@ class DOMBasicKeywordParser(DOMBasicMovieParser):
     for a direct match (when a search on IMDb results in a single
     keyword, the web server sends directly the keyword page.
     """
-    # FIXME: it's still to be done!
+    # XXX: it's still to be tested!
     # I'm not even sure there can be a direct hit, searching for keywords.
-    _titleAttrPath = ".//text()"
-    _linkPath = "//a[starts-with(@href, 'http://pro.imdb.com/company/')]"
     _titleFunct = lambda self, x: analyze_company_name(x or u'')
 
 

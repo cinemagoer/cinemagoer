@@ -37,8 +37,6 @@ class DOMBasicCharacterParser(DOMBasicMovieParser):
     It's used by the DOMHTMLSearchCharacterParser class to return a result
     for a direct match (when a search on IMDb results in a single
     character, the web server sends directly the movie page."""
-    _titleAttrPath = "./text()"
-    _linkPath = "//a[starts-with(@href, '/character/ch')]"
     _titleFunct = lambda self, x: analyze_name(x or u'', canonical=False)
 
 

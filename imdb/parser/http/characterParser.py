@@ -67,7 +67,8 @@ class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
                         attrs=Attribute(key='name',
                             path="./text()",
                             postprocess=lambda x: \
-                                    x.replace(' (Character)', '').strip())),
+                                    x.replace(' (Character)', '').replace(
+                                        '- Filmography by type', '').strip())),
 
             Extractor(label='headshot',
                         path="//a[@name='headshot']",

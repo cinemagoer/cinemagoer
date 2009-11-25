@@ -1,8 +1,8 @@
 <!--
 
-     XML Document Type Definition for IMDbPY 4.3.
+     XML Document Type Definition for IMDbPY 4.4.
 
-     http://imdbpy.sf.net/dtd/imdbpy43.dtd
+     http://imdbpy.sf.net/dtd/imdbpy44.dtd
 
      Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
                2009 Davide Alberani <da@erlug.linux.it>
@@ -230,12 +230,15 @@
   | archive-footage
   | biography
   | episodes
+  | feature
   | filmography
   | headshot
   | introduction
   | long-imdb-name
   | name
   | quotes
+  | tv
+  | video
  )*>
 <!ATTLIST character id CDATA #IMPLIED>
 
@@ -679,6 +682,7 @@
 <!ELEMENT death-notes (#PCDATA)>
 <!ELEMENT episode-title (#PCDATA)>
 <!ELEMENT external-reviews (item)*>
+<!ELEMENT feature (movie)*>
 <!ELEMENT headshot (#PCDATA)>
 <!ELEMENT height (#PCDATA)>
 <!ELEMENT imdbindex (#PCDATA)>
@@ -707,6 +711,8 @@
 <!ELEMENT synopsis (#PCDATA)>
 <!ELEMENT title (#PCDATA)>
 <!ELEMENT top-250-rank (#PCDATA)>
+<!ELEMENT tv (movie)*>
+<!ELEMENT video (movie)*>
 <!ELEMENT votes (#PCDATA)>
 <!ELEMENT votes-distribution (#PCDATA)>
 <!ELEMENT year (#PCDATA | item)*>

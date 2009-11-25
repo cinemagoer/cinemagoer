@@ -37,8 +37,6 @@ class DOMBasicCompanyParser(DOMBasicMovieParser):
     for a direct match (when a search on IMDb results in a single
     company, the web server sends directly the company page.
     """
-    _titleAttrPath = ".//text()"
-    _linkPath = "//a[starts-with(@href, 'http://pro.imdb.com/company/')]"
     _titleFunct = lambda self, x: analyze_company_name(x or u'')
 
 

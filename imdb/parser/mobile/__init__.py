@@ -183,13 +183,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not tl.startswith('imdb title'):
             # a direct hit!
             title = _unHtml(title[0])
-            midtag = _getTagsWith(cont, 'name="arg"', maxRes=1)
-            if not midtag: midtag = _getTagsWith(cont, 'name="auto"', maxRes=1)
             mid = None
+            midtag = _getTagsWith(cont, 'rel="canonical"', maxRes=1)
             if midtag:
-                mid = _findBetween(midtag[0], 'value="', '"', maxRes=1)
-                if mid and not mid[0].isdigit():
-                    mid = re_imdbID.findall(mid[0])
+                mid = _findBetween(midtag[0], '/title/tt', '/', maxRes=1)
             if not (mid and title): return res
             if cont.find('<span class="tv-extra">TV mini-series</span>') != -1:
                 title += ' (mini)'
@@ -475,21 +472,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not nl.startswith('imdb name'):
             # a direct hit!
             name = _unHtml(name[0])
-            # Easiest way: the board link (for person who already have
-            # messages in the board).
-            pidtag = _getTagsWith(cont, '/board/nest/', maxRes=1)
+            name = name.replace('- Filmography by type' , '').strip()
             pid = None
-            if pidtag: pid = _findBetween(pidtag[0], '/name/nm', '/', maxRes=1)
-            if not (pid and name):
-                # Otherwise, the 'credited alongside' for the name,
-                # and the biography link for the personID.
-                nametag = _getTagsWith(cont, 'NAME="primary"', maxRes=1)
-                if not nametag: return res
-                nametag = _findBetween(nametag[0], 'VALUE="', '"', maxRes=1)
-                if not nametag: return res
-                name = unquote(nametag[0])
-                pid = _findBetween(cont, '/name/nm', ('/', '"', '>'), maxRes=1)
-                if not pid: return res
+            pidtag = _getTagsWith(cont, 'rel="canonical"', maxRes=1)
+            if pidtag:
+                pid = _findBetween(pidtag[0], '/name/nm', '/', maxRes=1)
             if not (pid and name): return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:
@@ -525,6 +512,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         name = _unHtml(name[0])
         if _parseChr:
             name = name.replace('(Character)', '').strip()
+            name = name.replace('- Filmography by type', '').strip()
+        else:
+            name = name.replace('- Filmography by', '').strip()
         r = analyze_name(name, canonical=not _parseChr)
         for dKind in ('birth', 'death'):
             date = _findBetween(s, '<h5>Date of %s:</h5>' % dKind.capitalize(),
@@ -725,10 +715,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 or nl.startswith('imdb character')):
             # a direct hit!
             name = _unHtml(name[0]).replace('(Character)', '').strip()
-            pidtag = _getTagsWith(cont, '/character/ch', maxRes=1)
             pid = None
+            pidtag = _getTagsWith(cont, 'rel="canonical"', maxRes=1)
             if pidtag:
-                pid = re_imdbID.findall(pidtag[0])
+                pid = _findBetween(pidtag[0], '/character/ch', '/', maxRes=1)
             if not (pid and name): return res
             res[:] = [(str(pid[0]), analyze_name(name))]
         else:

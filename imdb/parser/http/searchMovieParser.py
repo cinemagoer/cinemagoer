@@ -39,7 +39,7 @@ class DOMBasicMovieParser(DOMParserBase):
     movie, the web server sends directly the movie page."""
     # Stay generic enough to be used also for other DOMBasic*Parser classes.
     _titleAttrPath = ".//text()"
-    _linkPath = "//a[starts-with(@href, '/title/tt')]"
+    _linkPath = "//link[@rel='canonical']"
     _titleFunct = lambda self, x: analyze_title(x or u'')
 
     def _init(self):

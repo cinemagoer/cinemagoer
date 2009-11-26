@@ -135,7 +135,6 @@ try:
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
                                                 'fix-old-style-titles',
-                                                #'do-not-fix-old-style-titles',
                                                 'mysql-force-myisam', 'orm',
                                                 'csv=', 'csv-ext=', 'help'])
 except getopt.error, e:
@@ -176,9 +175,6 @@ for opt in optlist:
         USE_ORM = opt[1].split(',')
     elif opt[0] == '--fix-old-style-titles':
         warnings.warn('The --fix-old-style-titles argument is obsolete.')
-    #    FIX_OLD_STYLE_TITLES = True
-    #elif opt[0] == '--do-not-fix-old-style-titles':
-    #    FIX_OLD_STYLE_TITLES = False
     elif opt[0] in ('-h', '--help'):
         print HELP
         sys.exit(0)
@@ -394,7 +390,7 @@ class CSVCursor(object):
         tableToAddID = False
         if tName in ('cast_info', 'movie_info', 'person_info',
                     'movie_companies', 'movie_link', 'aka_name',
-                    'complete_cast', 'movie_info_idx'):
+                    'complete_cast', 'movie_info_idx', 'movie_keyword'):
             tableToAddID = tName
             if tName not in self._counters:
                 self._counters[tName] = 1

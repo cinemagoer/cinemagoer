@@ -8,7 +8,7 @@ import setuptools
 
 # version of the software; in SVN this represents the _next_ release.
 # setuptools will automatically add 'dev-rREVISION'.
-version = '4.3'
+version = '4.4'
 
 home_page = 'http://imdbpy.sf.net/'
 

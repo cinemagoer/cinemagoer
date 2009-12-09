@@ -774,7 +774,8 @@ class RolesList(list):
 
 
 # Replace & with &amp;, but only if it's not already part of a charref.
-_re_amp = re.compile(r'(&)(?!\w+;)', re.I)
+#_re_amp = re.compile(r'(&)(?!\w+;)', re.I)
+_re_amp = re.compile(r'(?<=\W)&(?=[^a-zA-Z0-9_#])')
 
 def escape4xml(value):
     """Escape some chars that can't be present in a XML value."""
@@ -806,6 +807,11 @@ def _refsToReplace(value, modFunct, titlesRefs, namesRefs, charactersRefs):
             # modFunct is modified.
             goodValue = modFunct(refTemplate % theRef, titlesRefs, namesRefs,
                                 charactersRefs)
+            # Prevents problems with crap in plain text data files.
+            # We should probably exclude invalid chars and string that
+            # are too long in the re_*Ref expressions.
+            if '_' in goodValue or len(goodValue) > 128:
+                continue
             toReplace = escape4xml(goodValue)
             # Only the 'value' portion is replaced.
             replaceWith = goodValue.replace(theRef, escape4xml(theRef))

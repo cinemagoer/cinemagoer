@@ -775,7 +775,8 @@ class RolesList(list):
 
 # Replace & with &amp;, but only if it's not already part of a charref.
 #_re_amp = re.compile(r'(&)(?!\w+;)', re.I)
-_re_amp = re.compile(r'(?<=\W)&(?=[^a-zA-Z0-9_#])')
+#_re_amp = re.compile(r'(?<=\W)&(?=[^a-zA-Z0-9_#])')
+_re_amp = re.compile(r'&(?![^a-zA-Z0-9_#]{1,5};)')
 
 def escape4xml(value):
     """Escape some chars that can't be present in a XML value."""

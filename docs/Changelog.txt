@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.4svn20091210 "Ninja Assassin" (10 Dec 2009)
+* What's the new in release 4.4svn20091212 "Jennifer's Body" (12 Dec 2009)
   [http]
   - fixes for the n-th set of changes to imdb's HTML.
   - improvements to perfect-match searches.
@@ -14,6 +14,7 @@
   [sql]
   - movies' keywords are now correctly imported, using CSV files.
   - minor fixes to handle crap in the plain text data files.
+  - removed an outdate parameter passed to SQLObject.
 
 
 * What's the new in release 4.3 "Public Enemies" (18 Nov 2009)

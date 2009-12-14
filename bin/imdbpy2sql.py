@@ -1322,6 +1322,12 @@ class SQLData(dict):
                                     converter=self.converter)
             newdata._recursionLevel = self._recursionLevel
             newflushEvery = self.flushEvery / 2
+            if newflushEvery < 1:
+                print 'WARNING recursion level exceded trying to flush data'
+                print 'WARNING this batch of data is lost.'
+                self.clear()
+                self.counter = self.counterInit
+                return
             self.flushEvery = newflushEvery
             newdata.flushEvery = newflushEvery
             popitem = self.popitem

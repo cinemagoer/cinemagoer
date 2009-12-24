@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import logging
+import logging.config
 import warnings
 #import logging.handlers
 
@@ -31,6 +32,7 @@ imdbpyFormatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s]' \
                                     ' %(pathname)s:%(lineno)d: %(message)s')
 imdbpyStreamHandler.setFormatter(imdbpyFormatter)
 imdbpyLogger.addHandler(imdbpyStreamHandler)
+#logging.config.fileConfig('/home/da/.imdbpy.cfg', DEFAULTS)
 
 
 def log_and_warn(msg, args=None, logger=None, level=None):
@@ -44,6 +46,5 @@ def log_and_warn(msg, args=None, logger=None, level=None):
         args = ()
     #warnings.warn(msg % args, stacklevel=0)
     logger.log(level, msg % args)
-
 
 

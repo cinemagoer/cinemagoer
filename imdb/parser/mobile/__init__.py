@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
+import logging
 from urllib import unquote
 
 from imdb import imdbURL_movie_main, imdbURL_person_main, imdbURL_character_main
@@ -117,6 +118,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
     mobile terminals."""
 
     accessSystem = 'mobile'
+    _mobile_logger = logging.getLogger('imdbpy.parser.mobile')
 
     def __init__(self, isThin=1, *arguments, **keywords):
         self.accessSystem = 'mobile'
@@ -178,7 +180,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         cont = subXMLRefs(self._get_search_content('tt', title, results))
         title = _findBetween(cont, '<title>', '</title>', maxRes=1)
         res = []
-        if not title: return res
+        if not title:
+            self._mobile_logger.error('no title tag searching for movie %s',
+                                    title)
+            return res
         tl = title[0].lower()
         if not tl.startswith('imdb title'):
             # a direct hit!
@@ -187,7 +192,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             midtag = _getTagsWith(cont, 'rel="canonical"', maxRes=1)
             if midtag:
                 mid = _findBetween(midtag[0], '/title/tt', '/', maxRes=1)
-            if not (mid and title): return res
+            if not (mid and title):
+                self._mobile_logger.error('no direct hit title/movieID for' \
+                                            ' title %s', title)
+                return res
             if cont.find('<span class="tv-extra">TV mini-series</span>') != -1:
                 title += ' (mini)'
             res[:] = [(str(mid[0]), analyze_title(title))]
@@ -213,7 +221,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                         akas[idx] = aka
                 imdbid = re_imdbID.findall(li)
                 mtitle = _unHtml(li)
-                if not (imdbid and mtitle): continue
+                if not (imdbid and mtitle):
+                    self._mobile_logger.debug('no title/movieID parsing' \
+                                            ' %s searching for title %s', li,
+                                            title)
+                    continue
                 mtitle = mtitle.replace('(TV mini-series)', '(mini)')
                 resd = analyze_title(mtitle)
                 if akas:
@@ -331,7 +343,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                         rat = float(rat.strip())
                         d['rating'] = rat
                     except ValueError:
-                        pass
+                        self._mobile_logger.warn('wrong rating: %s', rat)
             vi = ur[0].rfind('tn15more">')
             if vi != -1 and ur[0][vi+10:].find('await') == -1:
                 try:
@@ -339,7 +351,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     votes = int(votes.replace(',', ''))
                     d['votes'] = votes
                 except ValueError:
-                    pass
+                    self._mobile_logger.warn('wrong votes: %s', ur)
         top250 = _findBetween(cont, 'href="/chart/top?', '</a>', maxRes=1)
         if top250:
             fn = top250[0].rfind('#')
@@ -348,7 +360,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     td = int(top250[0][fn+1:])
                     d['top 250 rank'] = td
                 except ValueError:
-                    pass
+                    self._mobile_logger.warn('wrong top250: %s', top250)
         castdata = _findBetween(cont, 'Cast overview', '</table>', maxRes=1)
         if not castdata:
             castdata = _findBetween(cont, 'Credited cast', '</table>', maxRes=1)
@@ -398,8 +410,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if epsn:
                 epsn = epsn[0].replace(' Episodes', '').strip()
                 if epsn:
-                    try: epsn = int(epsn)
-                    except: pass
+                    try:
+                        epsn = int(epsn)
+                    except:
+                        self._mobile_logger.warn('wrong episodes #: %s', epsn)
                     d['number of episodes'] = epsn
         country = _findBetween(cont, 'Country:</h5>', '</div>', maxRes=1)
         if country:
@@ -467,7 +481,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         cont = subXMLRefs(self._get_search_content('nm', name, results))
         name = _findBetween(cont, '<title>', '</title>', maxRes=1)
         res = []
-        if not name: return res
+        if not name:
+            self._mobile_logger.warn('no title tag searching for name %s', name)
+            return res
         nl = name[0].lower()
         if not nl.startswith('imdb name'):
             # a direct hit!
@@ -477,7 +493,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             pidtag = _getTagsWith(cont, 'rel="canonical"', maxRes=1)
             if pidtag:
                 pid = _findBetween(pidtag[0], '/name/nm', '/', maxRes=1)
-            if not (pid and name): return res
+            if not (pid and name):
+                self._mobile_logger.error('no direct hit name/personID for' \
+                                            ' name %s', name)
+                return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:
             lis = _findBetween(cont, 'td valign="top">', '</td>',
@@ -490,7 +509,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                         li = li[:sepIdx]
                 pid = re_imdbID.findall(li)
                 pname = _unHtml(li)
-                if not (pid and pname): continue
+                if not (pid and pname):
+                    self._mobile_logger.debug('no name/personID parsing' \
+                                            ' %s searching for name %s', li,
+                                            name)
+                    continue
                 resd = analyze_name(pname, canonical=1)
                 if akas:
                     resd['akas'] = akas
@@ -579,7 +602,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             for m in mlist:
                 # For every movie in the current section.
                 movieID = re_imdbID.findall(m)
-                if not movieID: continue
+                if not movieID:
+                    self._mobile_logger.debug('no movieID in %s', m)
+                    continue
                 if not _parseChr:
                     chrIndx = m.find(' .... ')
                 else:
@@ -609,7 +634,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                         status = _unHtml(m[stidx+3:stendidx])
                         m = m.replace(m[stidx+3:stendidx], '')
                 m = _unHtml(m)
-                if not m: continue
+                if not m:
+                    self._mobile_logger.warn('no title fo rmovieID %s', movieID)
+                    continue
                 movie = build_movie(m, movieID=movieID, status=status,
                                     roleID=chids, modFunct=self._defModFunct,
                                     accessSystem=self.accessSystem,
@@ -709,7 +736,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         cont = subXMLRefs(self._get_search_content('char', name, results))
         name = _findBetween(cont, '<title>', '</title>', maxRes=1)
         res = []
-        if not name: return res
+        if not name:
+            self._mobile_logger.error('no title tag searching character %s',
+                                    name)
+            return res
         nl = name[0].lower()
         if not (nl.startswith('imdb search') or nl.startswith('imdb  search') \
                 or nl.startswith('imdb character')):
@@ -719,7 +749,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             pidtag = _getTagsWith(cont, 'rel="canonical"', maxRes=1)
             if pidtag:
                 pid = _findBetween(pidtag[0], '/character/ch', '/', maxRes=1)
-            if not (pid and name): return res
+            if not (pid and name):
+                self._mobile_logger.error('no direct hit name/characterID for' \
+                                            ' character %s', name)
+                return res
             res[:] = [(str(pid[0]), analyze_name(name))]
         else:
             sects = _findBetween(cont, '<b>Popular Characters</b>', '</table>',
@@ -733,7 +766,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     li = '<%s' % li
                     pid = re_imdbID.findall(li)
                     pname = _unHtml(li)
-                    if not (pid and pname): continue
+                    if not (pid and pname):
+                        self._mobile_logger.debug('no name/characterID' \
+                                                ' parsing %s searching for' \
+                                                ' character %s', li, name)
+                        continue
                     res.append((str(pid[0]), analyze_name(pname)))
         return res
 

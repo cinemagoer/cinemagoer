@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import sys
+import logging
 import warnings
 from urllib import FancyURLopener, quote_plus
 from codecs import lookup
@@ -113,6 +114,8 @@ class _FakeURLOpener(object):
 
 class IMDbURLopener(FancyURLopener):
     """Fetch web pages and handle errors."""
+    _logger = logging.getLogger('imdbpy.parser.http.urlopener')
+
     def __init__(self, *args, **kwargs):
         self._last_url = u''
         FancyURLopener.__init__(self, *args, **kwargs)
@@ -200,13 +203,15 @@ class IMDbURLopener(FancyURLopener):
         if encode is None:
             encode = 'latin_1'
             # The detection of the encoding is error prone...
-            warnings.warn('Unable to detect the encoding of the retrieved '
-                        'page [%s]; falling back to default latin1.' % encode)
+            self._logger.warn('Unable to detect the encoding of the retrieved '
+                        'page [%s]; falling back to default latin1.', encode)
         ##print unicode(content, encode, 'replace').encode('utf8')
         return unicode(content, encode, 'replace')
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
         if errcode == 404:
+            self._logger.warn('404 code returned for %s: %s (headers: %s)',
+                                url, errmsg, headers)
             return _FakeURLOpener(url, headers)
         raise IMDbDataAccessError, {'url': 'http:%s' % url,
                                     'errcode': errcode,
@@ -232,6 +237,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     """The class used to access IMDb's data through the web."""
 
     accessSystem = 'http'
+    _http_logger = logging.getLogger('imdbpy.parser.http')
 
     def __init__(self, isThin=0, adultSearch=1, proxy=-1, oldParsers=False,
                 fallBackToNew=False, useModule=None, cookie_id=-1,
@@ -296,7 +302,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self.topBottomProxy = _ModuleProxy(topBottomParser, defaultKeys=_def,
                                     oldParsers=oldParsers, useModule=useModule,
                                     fallBackToNew=fallBackToNew)
-
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -391,6 +396,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def _retrieve(self, url, size=-1):
         """Retrieve the given URL."""
         ##print url
+        self._http_logger.debug('fetching url %s (size: %d)', url, size)
         return self.urlOpener.retrieve_unicode(url, size=size)
 
     def _get_search_content(self, kind, ton, results):
@@ -719,6 +725,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         try:
             cont = self._get_search_content('kw', keyword, results)
         except IMDbDataAccessError:
+            self._http_logger.warn('unable to search for keyword %s', keyword,
+                                    exc_info=True)
             return []
         return self.skProxy.search_keyword_parser.parse(cont, results=results)['data']
 
@@ -727,6 +735,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         try:
             cont = self._retrieve(imdbURL_keyword_main % keyword)
         except IMDbDataAccessError:
+            self._http_logger.warn('unable to get keyword %s', keyword,
+                                    exc_info=True)
             return []
         return self.skProxy.search_moviekeyword_parser.parse(cont, results=results)['data']
 

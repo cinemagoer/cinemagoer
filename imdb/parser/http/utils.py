@@ -172,10 +172,13 @@ def subSGMLRefs(s):
     return re_sgmlrefsub(_replSGMLRefs, s)
 
 
+_b_p_logger = logging.getLogger('imdbpy.parser.http.build_person')
 def build_person(txt, personID=None, billingPos=None,
                 roleID=None, accessSystem='http', modFunct=None):
     """Return a Person instance from the tipical <tr>...</tr> strings
     found in the IMDb's web site."""
+    #if personID is None
+    #    _b_p_logger.debug('empty name or personID for "%s"', txt)
     notes = u''
     role = u''
     # Search the (optional) separator between name and role/notes.
@@ -246,6 +249,9 @@ def build_person(txt, personID=None, billingPos=None,
         roleID = str(roleID)
     if personID is not None:
         personID = str(personID)
+    if (not name) or (personID is None):
+        # Set to 'debug', since build_person is expected to receive some crap.
+        _b_p_logger.debug('empty name or personID for "%s"', txt)
     # XXX: return None if something strange is detected?
     person = Person(name=name, personID=personID, currentRole=role,
                     roleID=roleID, notes=notes, billingPos=billingPos,
@@ -257,6 +263,7 @@ def build_person(txt, personID=None, billingPos=None,
     return person
 
 
+_b_m_logger = logging.getLogger('imdbpy.parser.http.build_movie')
 # To shrink spaces.
 re_spaces = re.compile(r'\s+')
 def build_movie(txt, movieID=None, roleID=None, status=None,
@@ -347,6 +354,8 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         roleID = str(roleID)
     if movieID is not None:
         movieID = str(movieID)
+    if (not title) or (movieID is None):
+        _b_m_logger.error('empty title or movieID for "%s"', txt)
     m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
                 roleID=roleID, roleIsPerson=_parsingCharacter,
                 modFunct=modFunct, accessSystem=accessSystem)
@@ -516,8 +525,8 @@ class DOMParserBase(object):
                 result.append(item)
             return result
         except Exception, e:
-            self._logger.error('%s: caught exception extracting a XPath',
-                                self._cname, exc_info=True)
+            self._logger.error('%s: caught exception extracting XPath "%s"',
+                                self._cname, path, exc_info=True)
             return []
 
     def tostring(self, element):
@@ -554,8 +563,8 @@ class DOMParserBase(object):
                 try:
                     html_string = src(html_string)
                 except Exception, e:
-                    _msg = 'caught exception preprocessing html (%s): %s'
-                    self._logger.error(_msg, self._cname, e)
+                    _msg = '%s: caught exception preprocessing html'
+                    self._logger.error(_msg, self._cname, exc_info=True)
                     continue
         ##print html_string.encode('utf8')
         return html_string

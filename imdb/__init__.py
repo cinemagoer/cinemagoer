@@ -25,12 +25,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.4svn20091214'
+__version__ = VERSION = '4.4svn20091224'
 
 # Import compatibility module (importing it is enough).
 import _compat
 
-import sys, os, ConfigParser
+import sys, os, ConfigParser, logging
 from types import MethodType
 
 from imdb import Movie, Person, Character, Company
@@ -152,6 +152,15 @@ def IMDb(accessSystem=None, *arguments, **keywords):
                 del kwds['accessSystem']
             else:
                 accessSystem = 'http'
+            if 'loggingConfig' in kwds:
+                logCfg = kwds['loggingConfig']
+                del kwds['loggingConfig']
+                try:
+                    import logging.config
+                    logging.config.fileConfig(os.path.expanduser(logCfg))
+                except Exception, e:
+                    import warnings
+                    warnings.warn('unable to read logger config: %s' % e)
             kwds.update(keywords)
             keywords = kwds
         except Exception, e:
@@ -226,6 +235,9 @@ class IMDbBase:
     # The name of the preferred access system (MUST be overridden
     # in the subclasses).
     accessSystem = 'UNKNOWN'
+
+    # Top-level logger for IMDbPY.
+    _imdb_logger = logging.getLogger('imdbpy')
 
     def __init__(self, defaultModFunct=None, results=20, keywordsResults=100,
                 *arguments, **keywords):
@@ -695,7 +707,14 @@ class IMDbBase:
                                     (prefix, i.replace(' ', '_')))
             except AttributeError:
                 raise IMDbDataAccessError, 'unknown information set "%s"' % i
-            ret = method(mopID)
+            try:
+                ret = method(mopID)
+            except Exception, e:
+                self._imdb_logger.critical('caught an exception retrieving ' \
+                                    'or parsing "%s" info set for mopID ' \
+                                    '"%s" (accessSystem: %s)',
+                                    i, mopID, mop.accessSystem, exc_info=True)
+                ret = {}
             keys = None
             if 'data' in ret:
                 res.update(ret['data'])
@@ -704,8 +723,6 @@ class IMDbBase:
             if 'info sets' in ret:
                 for ri in ret['info sets']:
                     mop.add_to_current_info(ri, keys, mainInfoset=i)
-                # So that only the 'main' required info set is set.
-                #mop.update_infoset_map(i, keys)
             else:
                 mop.add_to_current_info(i, keys)
             if 'titlesRefs' in ret:

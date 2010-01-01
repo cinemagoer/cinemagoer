@@ -1007,7 +1007,7 @@ class MoviesCache(_BaseCache):
                 episodeOf = self.addUnique(stitle)
                 del t['episode of']
                 year = self.movieYear.get(v)
-                if year is not None:
+                if year is not None and year != '????':
                     try: t['year'] = int(year)
                     except ValueError: pass
             elif kind in ('tv series', 'tv mini series'):

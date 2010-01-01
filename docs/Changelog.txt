@@ -1,9 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.4svn20091224 "Cowboy Bebop: the movie" (24 Dec 2009)
+* What's the new in release 4.4svn20100101 "Serial Experiments Lain" (01 Jan 2010)
   [general]
   - introduced a logging facility.
+  - the 'http' and 'mobile' should be a lot more robust.
 
   [http]
   - fixes for the n-th set of changes to imdb's HTML.

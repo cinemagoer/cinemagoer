@@ -43,7 +43,7 @@ re_index = re.compile(r'^\(([IVXLCDM]+)\)$')
 
 # Match the number of episodes.
 re_episodes = re.compile('\s?\((\d+) episodes\)', re.I)
-re_episode_info = re.compile(r'{(.+?)?\s?(\([0-9\?]{4}-[0-9\?]{1,2}-[0-9\?]{1,2}\))?\s?(\(#[0-9]+\.[0-9]+\))?}')
+re_episode_info = re.compile(r'{\s*(.+?)?\s?(\([0-9\?]{4}-[0-9\?]{1,2}-[0-9\?]{1,2}\))?\s?(\(#[0-9]+\.[0-9]+\))?}')
 
 # Common suffixes in surnames.
 _sname_suffixes = ('de', 'la', 'der', 'den', 'del', 'y', 'da', 'van',
@@ -251,7 +251,7 @@ def _split_series_episode(title):
         if begin_eps == -1: return '', ''
         series_title = title[:begin_eps].rstrip()
         # episode_or_year is returned with the {...}
-        episode_or_year = title[begin_eps:]
+        episode_or_year = title[begin_eps:].strip()
         if episode_or_year[:12] == '{SUSPENDED}}': return '', ''
     # XXX: works only with tv series; it's still unclear whether
     #      IMDb will support episodes for tv mini series and tv movies...
@@ -316,6 +316,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
             if match:
                 # Episode title, original air date and #season.episode
                 episode_or_year, oad, sen = match[0]
+                episode_or_year = episode_or_year.strip()
                 if not oad:
                     # No year, but the title is something like (2005-04-12)
                     if episode_or_year and episode_or_year[0] == '(' and \

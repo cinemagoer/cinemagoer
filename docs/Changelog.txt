@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.4svn20100101 "Serial Experiments Lain" (01 Jan 2010)
+* What's the new in release 4.4svn20100102 "Serial Experiments Lain" (02 Jan 2010)
   [general]
   - introduced a logging facility.
   - the 'http' and 'mobile' should be a lot more robust.
@@ -20,6 +20,7 @@
   - minor fixes to handle crap in the plain text data files.
   - removed an outdate parameter passed to SQLObject.
   - made imdbpy2sql.py more robust in some corner-cases.
+  - fixes for the Windows environment.
 
 
 * What's the new in release 4.3 "Public Enemies" (18 Nov 2009)

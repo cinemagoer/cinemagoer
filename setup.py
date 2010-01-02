@@ -88,7 +88,7 @@ featSQLObject = setuptools.dist.Feature('add SQLObject dependency',
         require_features='sql')
 
 featSQLAlchemy = setuptools.dist.Feature('add SQLAlchemy dependency',
-        standard=True, install_requires=['SQLAlchemy'],
+        standard=True, install_requires=['SQLAlchemy', 'sqlalchemy-migrate'],
         require_features='sql')
 
 sqlScripts = ['./bin/imdbpy2sql.py']

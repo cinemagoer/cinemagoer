@@ -380,11 +380,11 @@ class CSVCursor(object):
             if lobFN:
                 lobFN = os.path.basename(lobFN)
         else:
-            tFD = open(os.path.join(CSV_DIR, tName + self.csvExt), 'w')
+            tFD = open(os.path.join(CSV_DIR, tName + self.csvExt), 'wb')
             self._fdPool[tName] = tFD
             if doLOB:
                 lobFN = '%s.lob' % tName
-                lobFD = open(os.path.join(CSV_DIR, lobFN), 'w')
+                lobFD = open(os.path.join(CSV_DIR, lobFN), 'wb')
                 self._lobFDPool[tName] = lobFD
         buildLine = self.buildLine
         tableToAddID = False

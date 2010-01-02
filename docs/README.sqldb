@@ -69,9 +69,7 @@ SVN command to download the latest development version:
 [OTHER REQUIRED MODULES]
 Obviously SQLObject and SQLAlchemy can access databases only through other
 specific modules/packages, that you need to have installed (e.g.:
-python-mysqldb for MySQL, python-psycopg for PostgreSQL, python-sqlite
-for SQLite and so on).
-
+'mysql-python' for MySQL, 'psycopg' for PostgreSQL, and so on).
 
 
   SQL DATABASE INSTALLATION
@@ -177,6 +175,14 @@ If you have different experiences, please tell me!
 [save the output]
 The imdbpy2sql.py will print a lot of debug information on standard output;
 you can save it in a file, appending (without quotes) "2>&1 | tee output.txt"
+
+
+[Microsoft Windows paths]
+It's much safer, in a Microsoft Windows environment, to use full paths
+for the values of the '-c' and '-d' arguments, complete with drive letter.
+The best thing is to use _UNIX_ path separator, and to add a leading
+separator.  E.g.:
+  -d C:/path/to/imdb_files/ -c C:/path/to/csv_tmp_files/
 
 
 [MySQL]
@@ -358,7 +364,7 @@ does.
   =========
 
 Keep in mind that actually only MySQL, PostgreSQL and IBM DB2 are
-currently supported.  Moreover, you may incur in problems (e.g.: your
+supported.  Moreover, you may incur in problems (e.g.: your
 postgres _server_ process must have reading access to the directory
 you're storing the CSV files).
 
@@ -366,4 +372,6 @@ To create (and import) a set of CSV files, run imdbpy2sql.py with the
 syntax:
   ./imdbpy2sql.py -d /dir/with/plainTextDataFiles/ -u URI -c /directory/where/to/store/CSVfiles
 
+The created files will be imported near the end of the imdbpy2sql.py
+processing; notice that after that, you can safely cancel these files.
 

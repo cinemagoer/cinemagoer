@@ -173,7 +173,8 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
     # FIXME: it's absolutely unclear what we should do to correctly
     #        support unicode in MySQL; with some versions of SQLObject,
     #        it seems that setting use_unicode=1 is the _wrong_ thing to do.
-    if uri.lower().startswith('mysql'):
+    _uriLower = uri.lower()
+    if _uriLower.startswith('mysql'):
         kw['use_unicode'] = 1
         #kw['sqlobject_encoding'] = encoding
         kw['charset'] = encoding

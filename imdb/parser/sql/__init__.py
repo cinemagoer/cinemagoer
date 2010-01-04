@@ -7,7 +7,7 @@ the SQLObject _AND_ SQLAlchemy Object Relational Managers is available.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "sql", "database" or "db".
 
-Copyright 2005-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2010 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -331,11 +331,13 @@ except ImportError:
                       M='5', N='5', P='1', Q='2', R='6', S='2', T='3', V='1',
                       X='2', Z='2')
     _translateget = _translate.get
+    _re_non_ascii = re.compile(r'^[^a-z]*', re.I)
 
     def soundex(s):
         """Return the soundex code for the given string."""
         # Maximum length of the soundex code.
         SOUNDEX_LEN = 5
+        s = _re_non_ascii.sub('', s)
         if not s: return None
         s = s.upper()
         soundCode =  s[0]
@@ -343,7 +345,7 @@ except ImportError:
             cw = _translateget(c, '0')
             if cw != '0' and soundCode[-1] != cw:
                 soundCode += cw
-        return soundCode[:SOUNDEX_LEN]
+        return soundCode[:SOUNDEX_LEN] or None
 
 
 def _sortKeywords(keyword, kwds):

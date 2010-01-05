@@ -2725,8 +2725,6 @@ def run():
         t('loadCSVFiles()')
 
     t('TOTAL TIME TO INSERT/WRITE DATA', sinceBegin=True)
-    #print 'TOTAL TIME TO INSERT/WRITE DATA: %d minutes, %d seconds' % \
-    #        divmod(int(time.time())-BEGIN_TIME, 60)
 
     executeCustomQueries('BEFORE_INDEXES')
 
@@ -2745,8 +2743,6 @@ def run():
     executeCustomQueries('END')
 
     t('FINAL', sinceBegin=True)
-    #print 'DONE! (in %d minutes, %d seconds)' % \
-    #        divmod(int(time.time())-BEGIN_TIME, 60)
 
 
 _HEARD = 0

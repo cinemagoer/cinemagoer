@@ -6,7 +6,7 @@ This module provides the schema used to describe the layout of the
 database used by the imdb.parser.sql package; functions to create/drop
 tables and indexes are also provided.
 
-Copyright 2005-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2010 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,11 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
+
+import logging
+
+_dbschema_logger = logging.getLogger('imdbpy.parser.sql.dbschema')
+
 
 # Placeholders for column types.
 INTCOL = 1
@@ -410,25 +415,30 @@ DB_SCHEMA = [
 # Functions to manage tables.
 def dropTables(tables, ifExists=True):
     """Drop the tables."""
-    # In reverse order (is still useful?  We don't use foreign keys anymore).
+    # In reverse order (useful to avoid errors about foreign keys).
     DB_TABLES_DROP = list(tables)
     DB_TABLES_DROP.reverse()
     for table in DB_TABLES_DROP:
+        _dbschema_logger.info('dropping table %s', table.name)
         table.dropTable(ifExists)
 
 def createTables(tables, ifNotExists=True):
     """Create the tables and insert default values."""
     for table in tables:
         # Create the table.
+        _dbschema_logger.info('creating table %s', table.name)
         table.createTable(ifNotExists)
         # Insert default values, if any.
-        for key in table._imdbpySchema.values:
-            for value in table._imdbpySchema.values[key]:
-                table(**{key: unicode(value)})
+        if table._imdbpySchema.values:
+            _dbschema_logger.info('inserting values into table %s', table.name)
+            for key in table._imdbpySchema.values:
+                for value in table._imdbpySchema.values[key]:
+                    table(**{key: unicode(value)})
 
 def createIndexes(tables, ifNotExists=True):
     """Create the indexes in the database."""
     for table in tables:
+        _dbschema_logger.info('creating indexes for table %s', table.name)
         table.addIndexes(ifNotExists)
 
 def createForeignKeys(tables, ifNotExists=True):
@@ -437,5 +447,6 @@ def createForeignKeys(tables, ifNotExists=True):
     for table in tables:
         mapTables[table._imdbpyName] = table
     for table in tables:
+        _dbschema_logger.info('creating foreign keys for table %s', table.name)
         table.addForeignKeys(mapTables, ifNotExists)
 

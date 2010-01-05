@@ -7,6 +7,7 @@ NOTE: it's always time to clean the code! <g>
 
 
 [general]
+* improve the logging facility.
 * Write better summary() methods for Movie, Person, Character
   and Company classes.
 * Some portions of code are poorly commented.
@@ -75,10 +76,6 @@ NOTE: it's always time to clean the code! <g>
 * Serious confusion about handling XML/HTML/SGML char references; there
   are too many fixes for special cases, and a better understanding of how
   lxml and BeautifulSoup behave is required.
-* There's a known bug using IMDbPY with Python 2.0 and 2.1: 
-  it fails to retrieve web pages, raising the httplib.UnknownTransferEncoding
-  exception, if a proxy is used; unset the HTTP_PROXY environment variable
-  or call the imdbObject.set_proxy(None) method.
 * If the access through the proxy fails, is it possible to
   automatically try without?  It doesn't seem easy...
 * Access to the "my IMDb" functions for registered users would
@@ -116,12 +113,15 @@ Again: if there's something that bother you, write some code.
 It's free software, after all.
 
 Things to do:
+* command line options to only populate the CSV files and to only
+  upload the CSV files.
 * The imdbpy2sql.py script MUST be run on a database with empty tables;
   unfortunately so far a SQL installation can't be "updated" without
   recreating the database from scratch.
   IMDb releases also "diff" files to keep the plain text files updated;
   it would be wonderful to directly use these diff files to upgrade the
   SQL database, but I think this is a nearly impossible task.
+  A lot of attempts were made in this direction, always failing.
 * There are a lot of things to do to improve SQLAlchemy support (especially
   in terms of performances); see FIXME/TODO/XXX notices in the code.
 * The pysqlite2.dbapi2.OperationalError exception is raise when SQLite

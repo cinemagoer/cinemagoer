@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.4svn20100102'
+__version__ = VERSION = '4.4svn20100105'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -152,6 +152,9 @@ def IMDb(accessSystem=None, *arguments, **keywords):
                 del kwds['accessSystem']
             else:
                 accessSystem = 'http'
+            if 'loggingLevel' in kwds:
+                imdb._logging.setLevel(kwds['loggingLevel'])
+                del kwds['loggingLevel']
             if 'loggingConfig' in kwds:
                 logCfg = kwds['loggingConfig']
                 del kwds['loggingConfig']

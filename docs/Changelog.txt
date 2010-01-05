@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.4svn20100102 "Serial Experiments Lain" (02 Jan 2010)
+* What's the new in release 4.4svn20100105 "Gandhi" (05 Jan 2010)
   [general]
   - introduced a logging facility.
   - the 'http' and 'mobile' should be a lot more robust.

@@ -1,7 +1,7 @@
 """
 parser.sql.alchemyadapter module (imdb.parser.sql package).
 
-This module adpts the SQLAlchemy ORM to the internal mechanism.
+This module adapts the SQLAlchemy ORM to the internal mechanism.
 
 Copyright 2008-2009 Davide Alberani <da@erlug.linux.it>
 

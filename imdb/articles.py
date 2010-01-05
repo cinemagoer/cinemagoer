@@ -73,7 +73,7 @@ LANG_ARTICLESget = LANG_ARTICLES.get
 
 # Maps a language to countries where it is the main language.
 # If you want to add an entry for another language or country, mail it at
-# lists.sourceforge.net .
+# imdbpy-devel@lists.sourceforge.net .
 _LANG_COUNTRIES = {
     'English': ('USA', 'UK', 'Canada', 'Ireland', 'Australia'),
     'Italian': ('Italy',),

@@ -28,6 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #        The code should be commented, rewritten and cleaned. :-)
 
 import re
+import logging
 import warnings
 from difflib import SequenceMatcher
 from codecs import lookup
@@ -43,6 +44,9 @@ from imdb.Movie import Movie
 from imdb.Company import Company
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 
+
+# Logger for miscellaneous functions.
+_aux_logger = logging.getLogger('imdbpy.parser.sql.aux')
 
 # =============================
 # Things that once upon a time were in imdb.parser.common.locsql.
@@ -77,6 +81,8 @@ def titleVariations(title, fromPtdf=0):
         t2s = title2.split(u', ')
         if t2s[-1].lower() in _unicodeArticles:
             title2 = u', '.join(t2s[:-1])
+    _aux_logger.debug('title variations: 1:[%s] 2:[%s] 3:[%s]',
+                        title1, title2, title3)
     return title1, title2, title3
 
 
@@ -104,6 +110,8 @@ def nameVariations(name, fromPtdf=0):
     # name2 is the name in the normal format, if it differs from name1.
     name2 = normalizeName(name1)
     if name1 == name2: name2 = u''
+    _aux_logger.debug('name variations: 1:[%s] 2:[%s] 3:[%s]',
+                        name1, name2, name3)
     return name1, name2, name3
 
 
@@ -115,6 +123,7 @@ try:
         return _ratcliff(s1.encode('latin_1', 'replace'),
                         s2.encode('latin_1', 'replace'))
 except ImportError:
+    _aux_logger.warn('unable to import cutils.ratcliff')
     import warnings
     warnings.warn('Unable to import the cutils.ratcliff function.'
                     '  Searching names and titles using the "sql"'
@@ -323,6 +332,7 @@ def scan_company_names(name_list, name1, results=0, ro_thresold=None):
 try:
     from cutils import soundex
 except ImportError:
+    _aux_logger.warn('unable to import cutils.soundex')
     warnings.warn('Unable to import the cutils.soundex function.'
                     '  Searches of movie titles and person names will be'
                     ' a bit slower.')
@@ -332,11 +342,11 @@ except ImportError:
                       X='2', Z='2')
     _translateget = _translate.get
     _re_non_ascii = re.compile(r'^[^a-z]*', re.I)
+    SOUNDEX_LEN = 5
 
     def soundex(s):
         """Return the soundex code for the given string."""
         # Maximum length of the soundex code.
-        SOUNDEX_LEN = 5
         s = _re_non_ascii.sub('', s)
         if not s: return None
         s = s.upper()
@@ -526,6 +536,7 @@ class IMDbSqlAccessSystem(IMDbBase):
     """The class used to access IMDb's data through a SQL database."""
 
     accessSystem = 'sql'
+    _sql_logger = logging.getLogger('imdbpy.parser.sql')
 
     def __init__(self, uri, adultSearch=1, useORM=None, *arguments, **keywords):
         """Initialize the access system."""
@@ -553,8 +564,9 @@ class IMDbSqlAccessSystem(IMDbBase):
                                                 setConnection, AND, OR, IN, \
                                                 ISNULL, CONTAINSSTRING, toUTF8
                 else:
-                    warnings.warn('unknown module "%s".' % mod)
+                    warnings.warn('unknown module "%s"' % mod)
                     continue
+                self._sql_logger.info('using %s ORM', mod)
                 # XXX: look ma'... black magic!  It's used to make
                 #      TableClasses and some functions accessible
                 #      through the whole module.
@@ -568,7 +580,7 @@ class IMDbSqlAccessSystem(IMDbBase):
                 for t in DB_TABLES:
                     globals()[t._imdbpyName] = t
                 if _gotError:
-                    warnings.warn('falling back to "%s".' % mod)
+                    warnings.warn('falling back to "%s"' % mod)
                 break
             except ImportError, e:
                 if idx+1 >= nrMods:
@@ -581,6 +593,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         else:
             raise IMDbError, 'unable to use any ORM in %s' % str(useORM)
         # Set the connection to the database.
+        self._sql_logger.debug('connecting to %s', uri)
         try:
             self._connection = setConnection(uri, DB_TABLES)
         except AssertionError, e:
@@ -591,6 +604,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         # Maps some IDs to the corresponding strings.
         self._kind = {}
         self._kindRev = {}
+        self._sql_logger.debug('reading constants from the database')
         try:
             for kt in KindType.select():
                 self._kind[kt.id] = kt.kind
@@ -989,7 +1003,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             res[:] = [x for x in res if x[0] not in adultlist]
 
         new_res = []
-        # XXX: can there be duplicated?
+        # XXX: can there be duplicates?
         for r in res:
             if r not in q2:
                 new_res.append(r)
@@ -1244,7 +1258,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             returnl.append((x[0], tmpd))
 
         new_res = []
-        # XXX: can there be duplicated?
+        # XXX: can there be duplicates?
         for r in returnl:
             if r not in q2:
                 new_res.append(r)
@@ -1576,5 +1590,6 @@ class IMDbSqlAccessSystem(IMDbBase):
     def __del__(self):
         """Ensure that the connection is closed."""
         if not hasattr(self, '_connection'): return
+        self._sql_logger.debug('closing connection to the database')
         self._connection.close()
 

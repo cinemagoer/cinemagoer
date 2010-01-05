@@ -34,6 +34,11 @@ the "README.devel" file. ;-)
 Everything you need to do is to run, as the root user, the command:
     # python setup.py install
 
+IMDbPY itself can be installed through easy_install and pip,
+with - respectively - these commands (as root):
+  easy_install IMDbPY
+  pip install IMDbPY
+
 If, for some reason, it doesn't work, you can copy the "./imdb"
 directory in the local site-packages directory of the python
 major version you're using, but remember that you'll not satisfy
@@ -41,9 +46,8 @@ the required dependencies and neither compile the optional C module,
 so use this as your very last resort.
 To know what major version of python you've installed, run:
     $ python -V
-
-It should return a string like "Python 2.3.5"; in this example
-the major version is "2.3".
+It should return a string like "Python 2.6.1"; in this example
+the major version is "2.6".
 Now copy the "./imdb" directory:
     # cp -r ./imdb /usr/local/lib/python{MAJORVERSION}/site-packages/
 
@@ -69,6 +73,17 @@ You can exclude the unwanted one with:
   --without-sqlalchemy	exclude SQLAlchemy
 
 If you specify both, --without-sql is implied.
+
+
+  SVN VERSION
+  ===========
+
+The best thing is always to use a package for your distribution,
+or use easy_install or pip to install the latest release, but it
+goes without saying that sometimes you need the very latest version
+(keep in mind that the IMDb site is a moving target...).
+In this case, you can always use the SVN version, available here:
+  http://imdbpy.sourceforge.net/?page=download#svn
 
 
   HELP

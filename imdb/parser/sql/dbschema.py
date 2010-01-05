@@ -419,18 +419,19 @@ def dropTables(tables, ifExists=True):
     DB_TABLES_DROP = list(tables)
     DB_TABLES_DROP.reverse()
     for table in DB_TABLES_DROP:
-        _dbschema_logger.info('dropping table %s', table.name)
+        _dbschema_logger.info('dropping table %s', table._imdbpyName)
         table.dropTable(ifExists)
 
 def createTables(tables, ifNotExists=True):
     """Create the tables and insert default values."""
     for table in tables:
         # Create the table.
-        _dbschema_logger.info('creating table %s', table.name)
+        _dbschema_logger.info('creating table %s', table._imdbpyName)
         table.createTable(ifNotExists)
         # Insert default values, if any.
         if table._imdbpySchema.values:
-            _dbschema_logger.info('inserting values into table %s', table.name)
+            _dbschema_logger.info('inserting values into table %s',
+                                    table._imdbpyName)
             for key in table._imdbpySchema.values:
                 for value in table._imdbpySchema.values[key]:
                     table(**{key: unicode(value)})
@@ -438,7 +439,8 @@ def createTables(tables, ifNotExists=True):
 def createIndexes(tables, ifNotExists=True):
     """Create the indexes in the database."""
     for table in tables:
-        _dbschema_logger.info('creating indexes for table %s', table.name)
+        _dbschema_logger.info('creating indexes for table %s',
+                                table._imdbpyName)
         table.addIndexes(ifNotExists)
 
 def createForeignKeys(tables, ifNotExists=True):
@@ -447,6 +449,7 @@ def createForeignKeys(tables, ifNotExists=True):
     for table in tables:
         mapTables[table._imdbpyName] = table
     for table in tables:
-        _dbschema_logger.info('creating foreign keys for table %s', table.name)
+        _dbschema_logger.info('creating foreign keys for table %s',
+                                table._imdbpyName)
         table.addForeignKeys(mapTables, ifNotExists)
 

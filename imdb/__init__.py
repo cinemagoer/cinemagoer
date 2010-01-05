@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.4svn20100105'
+__version__ = VERSION = '4.4svn20100105b'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -152,18 +152,6 @@ def IMDb(accessSystem=None, *arguments, **keywords):
                 del kwds['accessSystem']
             else:
                 accessSystem = 'http'
-            if 'loggingLevel' in kwds:
-                imdb._logging.setLevel(kwds['loggingLevel'])
-                del kwds['loggingLevel']
-            if 'loggingConfig' in kwds:
-                logCfg = kwds['loggingConfig']
-                del kwds['loggingConfig']
-                try:
-                    import logging.config
-                    logging.config.fileConfig(os.path.expanduser(logCfg))
-                except Exception, e:
-                    import warnings
-                    warnings.warn('unable to read logger config: %s' % e)
             kwds.update(keywords)
             keywords = kwds
         except Exception, e:
@@ -175,6 +163,18 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             # wrong: ignore everything and pretend we were called with
             # the 'http' accessSystem.
             accessSystem = 'http'
+    if 'loggingLevel' in keywords:
+        imdb._logging.setLevel(keywords['loggingLevel'])
+        del keywords['loggingLevel']
+    if 'loggingConfig' in keywords:
+        logCfg = keywords['loggingConfig']
+        del keywords['loggingConfig']
+        try:
+            import logging.config
+            logging.config.fileConfig(os.path.expanduser(logCfg))
+        except Exception, e:
+            import warnings
+            warnings.warn('unable to read logger config: %s' % e)
     if accessSystem in ('http', 'web', 'html'):
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)

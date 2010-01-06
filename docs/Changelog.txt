@@ -1,18 +1,18 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.4svn20100105b "Gandhi" (05 Jan 2010)
+* What's the new in release 4.4svn20100106 "Gandhi" (06 Jan 2010)
   [general]
-  - introduced a logging facility.
+  - introduced a logging facility; see README.logging.
   - the 'http' and 'mobile' should be a lot more robust.
 
   [http]
-  - fixes for the n-th set of changes to imdb's HTML.
+  - fixes for the n-th set of changes to IMDb's HTML.
   - improvements to perfect-match searches.
   - slightly simplified the parsers for search results.
 
   [mobile]
-  - fixes for the n-th set of changes to imdb's HTML.
+  - fixes for the n-th set of changes to IMDb's HTML.
   - slightly simplified the parsers for search results.
 
   [sql]

@@ -6,7 +6,7 @@ IMDb's data for mobile systems.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "mobile".
 
-Copyright 2005-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2010 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -332,7 +332,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         genres = _findBetween(cont, 'href="/Sections/Genres/', '/')
         if genres:
             d['genres'] = list(set(genres))
-        ur = _findBetween(cont, '<div class="meta">', '</div>', maxRes=1)
+        ur = _findBetween(cont, '<div class="starbar-meta">', '</div>',
+                            maxRes=1)
         if ur:
             rat = _findBetween(ur[0], '<b>', '</b>', maxRes=1)
             if rat:

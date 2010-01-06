@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -295,8 +295,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                                     )),
 
                 Extractor(label='top 250/bottom 100',
-                            path="//div[@class='left']/a[starts-with(@href, " \
-                                    "'/chart/')]",
+                            path="//div[@class='starbar-special']/" \
+                                    "a[starts-with(@href, '/chart/')]",
                             attrs=Attribute(key='top/bottom rank',
                                             path="./text()")),
 
@@ -344,9 +344,14 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 notes=(x.get('notes') or u'').strip())
                             )),
 
-                Extractor(label='votes and rating',
-                        path="//div[@class='meta']",
-                        attrs=Attribute(key='votes and rating',
+                Extractor(label='rating',
+                        path="//div[@class='starbar-meta']/b",
+                        attrs=Attribute(key='rating',
+                                        path=".//text()")),
+
+                Extractor(label='votes',
+                        path="//div[@class='starbar-meta']/a[@href]",
+                        attrs=Attribute(key='votes',
                                         path=".//text()")),
 
                 Extractor(label='cover url',
@@ -381,8 +386,6 @@ class DOMHTMLMovieParser(DOMParserBase):
 
     re_space = re.compile(r'\s+')
     re_airdate = re.compile(r'(.*)\s*\(season (\d+), episode (\d+)\)', re.I)
-    re_votes = re.compile(r'([0-9][0-9]?\.[0-9])/10(\s+([0-9,]+)\s+votes)?',
-                            re.I|re.M|re.S)
     def postprocess_data(self, data):
         # Convert section names.
         for sect in data.keys():
@@ -473,26 +476,17 @@ class DOMHTMLMovieParser(DOMParserBase):
                                             modFunct=self._modFunct)
                 del data['tv series title']
             del data['tv series link']
-        rav = (data.get('votes and rating') or '').strip()
-        if rav:
-            del data['votes and rating']
-            rg = self.re_votes.search(rav)
-            if rg:
-                try: rating = rg.group(1)
-                except IndexError: rating = 'invalid'
-                try:
-                    rating = float(rating)
-                    data['rating'] = rating
-                except (TypeError, ValueError):
-                    pass
-                try: votes = rg.group(3)
-                except IndexError: rating = 'invalid'
-                votes = votes.replace(',', '')
-                try:
-                    votes = int(votes)
-                    data['votes'] = votes
-                except (TypeError, ValueError):
-                    pass
+        if 'rating' in data:
+            try:
+                data['rating'] = float(data['rating'].replace('/10', ''))
+            except (TypeError, ValueError):
+                pass
+        if 'votes' in data:
+            try:
+                votes = data['votes'].replace(',', '').replace('votes', '')
+                data['votes'] = int(votes)
+            except (TypeError, ValueError):
+                pass
         return data
 
 

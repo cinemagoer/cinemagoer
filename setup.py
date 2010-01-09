@@ -8,7 +8,7 @@ import setuptools
 
 # version of the software; in SVN this represents the _next_ release.
 # setuptools will automatically add 'dev-rREVISION'.
-version = '4.4'
+version = '4.5'
 
 home_page = 'http://imdbpy.sf.net/'
 
@@ -39,6 +39,8 @@ Intended Audience :: Developers
 Intended Audience :: End Users/Desktop
 License :: OSI Approved :: GNU General Public License (GPL)
 Natural Language :: English
+Natural Language :: Italian
+Natural Language :: Turkish
 Programming Language :: Python
 Programming Language :: C
 Operating System :: OS Independent

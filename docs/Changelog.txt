@@ -1,6 +1,12 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.5dev20100109 "Surrogates" (09 Jan 2010)
+  [general]
+  - moved to setuptools 0.6c11.
+  - trying to make to SVN release versions work fine. :-)
+
+
 * What's the new in release 4.4 "Gandhi" (06 Jan 2010)
   [general]
   - introduced a logging facility; see README.logging.

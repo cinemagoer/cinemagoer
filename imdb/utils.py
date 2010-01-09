@@ -3,7 +3,7 @@ utils module (imdb package).
 
 This module provides basic utilities for the imdb package.
 
-Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
                2009 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -1024,7 +1024,7 @@ _xmlHead = u"""<?xml version="1.0"?>
 
 """
 _xmlHead = _xmlHead.replace('{VERSION}',
-            VERSION.replace('.', '').split('svn')[0])
+            VERSION.replace('.', '').split('dev')[0])
 
 
 class _Container(object):

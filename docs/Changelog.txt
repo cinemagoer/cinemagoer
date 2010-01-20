@@ -1,10 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.5dev20100109 "Surrogates" (09 Jan 2010)
+* What's the new in release 4.5dev20100120 "Sherlock Holmes" (20 Jan 2010)
   [general]
   - moved to setuptools 0.6c11.
-  - trying to make to SVN release versions work fine. :-)
+  - trying to make the SVN release versions work fine.
+  - http/mobile should work in GAE (Google App Engine).
 
 
 * What's the new in release 4.4 "Gandhi" (06 Jan 2010)

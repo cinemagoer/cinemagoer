@@ -7,7 +7,7 @@ the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "http" or "web"
 or "html" (this is the default).
 
-Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -48,6 +48,17 @@ import personParser
 import characterParser
 import companyParser
 import topBottomParser
+
+# Logger for miscellaneous functions.
+_aux_logger = logging.getLogger('imdbpy.parser.http.aux')
+
+IN_GAE = False
+try:
+    import google.appengine
+    IN_GAE = True
+    _aux_logger.info('IMDbPY is running in the Google App Engine environment')
+except ImportError:
+    pass
 
 
 class _ModuleProxy:
@@ -166,7 +177,7 @@ class IMDbURLopener(FancyURLopener):
                 self.set_header('Range', 'bytes=0-%d' % size)
             uopener = self.open(url)
             kwds = {}
-            if PY_VERSION > (2, 3):
+            if PY_VERSION > (2, 3) and not IN_GAE:
                 kwds['size'] = size
             content = uopener.read(**kwds)
             self._last_url = uopener.url

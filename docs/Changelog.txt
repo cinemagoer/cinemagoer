@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.5dev20100120 "Sherlock Holmes" (20 Jan 2010)
+* What's the new in release 4.5dev20100127 "The Fourth Kind" (27 Jan 2010)
   [general]
   - moved to setuptools 0.6c11.
   - trying to make the SVN release versions work fine.

@@ -5,7 +5,7 @@ imdbpy2sql.py script.
 This script puts the data of the plain text data files into a
 SQL database.
 
-Copyright 2005-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2010 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -2494,7 +2494,11 @@ def notNULLimdbID(cls):
         return []
     for t in tons:
         if cls is Title:
-            md = get_movie_data(t.id, _kdict, _table=Title)
+            # imdb.parser.sql is not initialized, and we need
+            # to set imdb.parser.sql.Title .
+            import imdb.parser.sql
+            imdb.parser.sql.Title = cls
+            md = get_movie_data(t.id, _kdict, _table=cls)
         elif cls is CompanyName:
             md = {'name': t.name}
             if t.countryCode is not None:

@@ -51,8 +51,8 @@ HELP = """imdbpy2sql.py usage:
 
         # NOTE: --CSV-OPTIONS can be:
             --csv-ext STRING        files extension (.csv)
-            --only-write-csv        exit after the CSV files are written.
-            --only-load-csv         load an existing set of CSV files.
+            --csv-only-write        exit after the CSV files are written.
+            --csv-only-load         load an existing set of CSV files.
 
         # NOTE: --COMPATIBILITY-OPTIONS can be one of:
             --mysql-innodb          insert data into a MySQL MyISAM db,
@@ -142,8 +142,8 @@ try:
                                                 'sqlite-transactions',
                                                 'fix-old-style-titles',
                                                 'mysql-force-myisam', 'orm',
-                                                'only-write-csv',
-                                                'only-load-csv',
+                                                'csv-only-write',
+                                                'csv-only-load',
                                                 'csv=', 'csv-ext=', 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
@@ -183,9 +183,9 @@ for opt in optlist:
         USE_ORM = opt[1].split(',')
     elif opt[0] == '--fix-old-style-titles':
         warnings.warn('The --fix-old-style-titles argument is obsolete.')
-    elif opt[0] == '--only-write-csv':
+    elif opt[0] == '--csv-only-write':
         CSV_ONLY_WRITE = True
-    elif opt[0] == '--only-load-csv':
+    elif opt[0] == '--csv-only-load':
         CSV_ONLY_LOAD = True
     elif opt[0] in ('-h', '--help'):
         print HELP
@@ -447,7 +447,7 @@ class CSVCursor(object):
                 continue
             fd = _FakeFD()
             fd.name = fname
-            self._fdPool[fName[:-len(CSV_EXT)]] = fd
+            self._fdPool[fname[:-len(CSV_EXT)]] = fd
 
     def close(self, tName):
         """Close a given table/file."""
@@ -2569,7 +2569,12 @@ def restoreImdbID(tons, cls):
         else:
             t_str = build_name(t)
         t_str = t_str.encode('utf_8')
-        db_mopID = CACHE.get(t_str)
+        if CSV_ONLY_LOAD:
+            # Big assumption: that we're running
+            # --csv-only-load on the same set of data/db...
+            db_mopID = t['imdbID']
+        else:
+            db_mopID = CACHE.get(t_str)
         #print 'DEBUG: %s' % t_str, db_mopID
         if db_mopID is None:
             continue
@@ -2637,19 +2642,20 @@ def executeCustomQueries(when, _keys=None, _timeit=True):
 def pickle_ids(idl, fname):
     """Put imdbIDs in a pickle file."""
     try:
-        fd = open(os.path.join(CSV_DIR), fname, 'w')
-        pickle.dump(idl, fd, protocol=-1)
+        fd = open(os.path.join(CSV_DIR, fname), 'w')
+        pickle.dump(idl, fd, pickle.HIGHEST_PROTOCOL)
         fd.close()
-    except:
-        pass
+    except Exception, e:
+        print 'WARNING: unable to save imdbIDs: %s' % e
 
 def unpickle_ids(fname):
     """Read imdbIDs from a pickle file."""
     try:
-        fd = open(os.path.join(CSV_DIR), fname, 'r')
+        fd = open(os.path.join(CSV_DIR, fname), 'r')
         idl = pickle.load(fd)
         fd.close()
-    except:
+    except Exception, e:
+        print 'WARNING: unable to load imdbIDs: %s' % e
         idl = []
     return idl
 

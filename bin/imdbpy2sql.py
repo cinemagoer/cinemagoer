@@ -24,6 +24,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import os, sys, getopt, time, re, warnings
+try: import cPickle as pickle
+except ImportError: import pickle
 from gzip import GzipFile
 from types import UnicodeType
 from imdb.parser.sql.dbschema import *
@@ -49,6 +51,8 @@ HELP = """imdbpy2sql.py usage:
 
         # NOTE: --CSV-OPTIONS can be:
             --csv-ext STRING        files extension (.csv)
+            --only-write-csv        exit after the CSV files are written.
+            --only-load-csv         load an existing set of CSV files.
 
         # NOTE: --COMPATIBILITY-OPTIONS can be one of:
             --mysql-innodb          insert data into a MySQL MyISAM db,
@@ -75,6 +79,8 @@ MAX_RECURSION = 10
 # If set, this directory is used to output CSV files.
 CSV_DIR = None
 CSV_CURS = None
+CSV_ONLY_WRITE = False
+CSV_ONLY_LOAD = False
 CSV_EXT = '.csv'
 CSV_EOL = '\n'
 CSV_DELIMITER = ','
@@ -136,6 +142,8 @@ try:
                                                 'sqlite-transactions',
                                                 'fix-old-style-titles',
                                                 'mysql-force-myisam', 'orm',
+                                                'only-write-csv',
+                                                'only-load-csv',
                                                 'csv=', 'csv-ext=', 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
@@ -175,6 +183,10 @@ for opt in optlist:
         USE_ORM = opt[1].split(',')
     elif opt[0] == '--fix-old-style-titles':
         warnings.warn('The --fix-old-style-titles argument is obsolete.')
+    elif opt[0] == '--only-write-csv':
+        CSV_ONLY_WRITE = True
+    elif opt[0] == '--only-load-csv':
+        CSV_ONLY_LOAD = True
     elif opt[0] in ('-h', '--help'):
         print HELP
         sys.exit(0)
@@ -188,6 +200,12 @@ if URI is None:
     print 'You must supply the URI for the database connection'
     print HELP
     sys.exit(2)
+
+if (CSV_ONLY_WRITE or CSV_ONLY_LOAD) and not CSV_DIR:
+    print 'You must specify the CSV directory with the -c argument'
+    print HELP
+    sys.exit(3)
+
 
 # Some warnings and notices.
 URIlower = URI.lower()
@@ -416,6 +434,20 @@ class CSVCursor(object):
     def fileNames(self):
         """Return the list of file names."""
         return [fd.name for fd in self._fdPool.values()]
+
+    def buildFakeFileNames(self):
+        """Populate the self._fdPool dictionary with fake objects
+        taking file names from the content of the self.csvDir directory."""
+        class _FakeFD(object): pass
+        for fname in os.listdir(self.csvDir):
+            if not fname.endswith(CSV_EXT):
+                continue
+            fpath = os.path.join(self.csvDir, fname)
+            if not os.path.isfile(fpath):
+                continue
+            fd = _FakeFD()
+            fd.name = fname
+            self._fdPool[fName[:-len(CSV_EXT)]] = fd
 
     def close(self, tName):
         """Close a given table/file."""
@@ -1525,24 +1557,23 @@ def castLists(_charIDsList=None):
             f = SourceFile(fname, start=CAST_START, stop=CAST_STOP)
         except IOError:
             if rolename == 'actress':
-                try:
-                    restoreImdbID(_charIDsList, CharName)
-                    del _charIDsList
-                except Exception, e:
-                    print 'WARNING: failed to restore imdbIDs for characters:',e
                 CACHE_CID.flush()
-                CACHE_CID.clear()
+                runSafely(restoreImdbID,
+                            'failed to restore imdbIDs for characters',
+                            None, _charIDsList, CharName)
+                del _charIDsList
+                if not CSV_DIR:
+                    CACHE_CID.clear()
             continue
         doCast(f, roleid, rolename)
         f.close()
         if rolename == 'actress':
-            try:
-                restoreImdbID(_charIDsList, CharName)
-                del _charIDsList
-            except Exception, e:
-                print 'WARNING: failed to restore imdbIDs for characters:', e
             CACHE_CID.flush()
-            CACHE_CID.clear()
+            runSafely(restoreImdbID, 'failed to restore imdbIDs for characters',
+                        None, _charIDsList, CharName)
+            del _charIDsList
+            if not CSV_DIR:
+                CACHE_CID.clear()
         t('castLists(%s)' % rolename)
 
 
@@ -2539,13 +2570,15 @@ def restoreImdbID(tons, cls):
             t_str = build_name(t)
         t_str = t_str.encode('utf_8')
         db_mopID = CACHE.get(t_str)
+        #print 'DEBUG: %s' % t_str, db_mopID
         if db_mopID is None:
             continue
         try:
             mop_in_db = cls.get(db_mopID)
             try:
                 mop_in_db.imdbID = t['imdbID']
-            except:
+            except Exception, e:
+                print 'WARNING: error writing imdbID: %s' % e
                 continue
         except NotFoundError:
             continue
@@ -2553,7 +2586,20 @@ def restoreImdbID(tons, cls):
     print 'DONE! (restored %d entries out of %d)' % (count, len(tons))
 
 
+def runSafely(funct, fmsg, default, *args, **kwds):
+    """Run the function 'funct' with arguments args and
+    kwds, catching every exception; fmsg is printed out (along
+    with the exception message) in case of trouble; the return
+    value of the function is returned (or 'default')."""
+    try:
+        return funct(*args, **kwds)
+    except Exception, e:
+        print 'WARNING: %s: %s' % (fmsg, e)
+    return default
+
+
 def _executeQuery(query):
+    """Execute a query on the CURS object."""
     print 'EXECUTING "%s"...' % (query),
     sys.stdout.flush()
     try:
@@ -2588,6 +2634,67 @@ def executeCustomQueries(when, _keys=None, _timeit=True):
                 t('%s command' % when)
 
 
+def pickle_ids(idl, fname):
+    """Put imdbIDs in a pickle file."""
+    try:
+        fd = open(os.path.join(CSV_DIR), fname, 'w')
+        pickle.dump(idl, fd, protocol=-1)
+        fd.close()
+    except:
+        pass
+
+def unpickle_ids(fname):
+    """Read imdbIDs from a pickle file."""
+    try:
+        fd = open(os.path.join(CSV_DIR), fname, 'r')
+        idl = pickle.load(fd)
+        fd.close()
+    except:
+        idl = []
+    return idl
+
+
+def buildIndexesAndFK():
+    """Build indexes and Foreign Keys."""
+    executeCustomQueries('BEFORE_INDEXES')
+    print 'building database indexes (this may take a while)'
+    sys.stdout.flush()
+    # Build database indexes.
+    createIndexes(DB_TABLES)
+    t('createIndexes()')
+    print 'adding foreign keys (this may take a while)'
+    sys.stdout.flush()
+    # Add FK.
+    createForeignKeys(DB_TABLES)
+    t('createForeignKeys()')
+
+
+def restoreCSV():
+    """Only restore data from a set of CSV files."""
+    movies_imdbIDs = unpickle_ids('movies_imdbIDs.pkl')
+    people_imdbIDs = unpickle_ids('people_imdbIDs.pkl')
+    characters_imdbIDs = unpickle_ids('characters_imdbIDs.pkl')
+    companies_imdbIDs = unpickle_ids('companies_imdbIDs.pkl')
+    CSV_CURS.buildFakeFileNames()
+    print 'loading CSV files into the database'
+    executeCustomQueries('BEFORE_CSV_LOAD')
+    loadCSVFiles()
+    t('loadCSVFiles()')
+    executeCustomQueries('BEFORE_RESTORE')
+    runSafely(restoreImdbID, 'failed to restore imdbIDs for movies', None,
+                movies_imdbIDs, Title)
+    runSafely(restoreImdbID, 'failed to restore imdbIDs for people', None,
+                people_imdbIDs, Name)
+    runSafely(restoreImdbID, 'failed to restore imdbIDs for characters',
+                None, characters_imdbIDs, CharName)
+    runSafely(restoreImdbID, 'failed to restore imdbIDs for companies',
+                None, companies_imdbIDs, CompanyName)
+    t('TOTAL TIME TO LOAD CSV FILES', sinceBegin=True)
+    buildIndexesAndFK()
+    executeCustomQueries('END')
+    t('FINAL', sinceBegin=True)
+
+
 # begin the iterations...
 def run():
     print 'RUNNING imdbpy2sql.py'
@@ -2595,26 +2702,21 @@ def run():
     executeCustomQueries('BEGIN')
 
     # Storing imdbIDs for movies and persons.
-    try:
-        movies_imdbIDs = notNULLimdbID(Title)
-    except Exception, e:
-        movies_imdbIDs = []
-        print 'WARNING: failed to read imdbIDs for movies: %s' % e
-    try:
-        people_imdbIDs = notNULLimdbID(Name)
-    except Exception, e:
-        people_imdbIDs = []
-        print 'WARNING: failed to read imdbIDs for people: %s' % e
-    try:
-        characters_imdbIDs = notNULLimdbID(CharName)
-    except Exception, e:
-        characters_imdbIDs = []
-        print 'WARNING: failed to read imdbIDs for characters: %s' % e
-    try:
-        companies_imdbIDs = notNULLimdbID(CompanyName)
-    except Exception, e:
-        companies_imdbIDs = []
-        print 'WARNING: failed to read imdbIDs for companies: %s' % e
+    movies_imdbIDs = runSafely(notNULLimdbID,
+                                'failed to read imdbIDs for movies', [], Title)
+    people_imdbIDs = runSafely(notNULLimdbID,
+                                'failed to read imdbIDs for people', [], Name)
+    characters_imdbIDs = runSafely(notNULLimdbID,
+                                'failed to read imdbIDs for characters', [],
+                                CharName)
+    companies_imdbIDs = runSafely(notNULLimdbID,
+                                'failed to read imdbIDs for companies', [],
+                                CompanyName)
+    if CSV_ONLY_WRITE:
+        pickle_ids(movies_imdbIDs, 'movies_imdbIDs.pkl')
+        pickle_ids(people_imdbIDs, 'people_imdbIDs.pkl')
+        pickle_ids(characters_imdbIDs, 'characters_imdbIDs.pkl')
+        pickle_ids(companies_imdbIDs, 'companies_imdbIDs.pkl')
 
     # Truncate the current database.
     print 'DROPPING current database...',
@@ -2649,9 +2751,11 @@ def run():
     doMovieCompaniesInfo()
     # Do this now, and free some memory.
     CACHE_COMPID.flush()
-    restoreImdbID(companies_imdbIDs, CompanyName)
-    del companies_imdbIDs
-    CACHE_COMPID.clear()
+    if not CSV_DIR:
+        runSafely(restoreImdbID, 'failed to restore imdbIDs for companies',
+                    None, companies_imdbIDs, CompanyName)
+        del companies_imdbIDs
+        CACHE_COMPID.clear()
 
     executeCustomQueries('BEFORE_CAST')
 
@@ -2661,7 +2765,8 @@ def run():
     castLists(_charIDsList=characters_imdbIDs)
     ##CACHE_PID.populate()
     ##CACHE_CID.populate()
-    del characters_imdbIDs
+    if not CSV_DIR:
+        del characters_imdbIDs
 
     # Aka names and titles.
     doAkaNames()
@@ -2696,53 +2801,59 @@ def run():
     completeCast()
     t('completeCast()')
 
-    executeCustomQueries('BEFORE_RESTORE')
-
-    # Restoring imdbIDs for movies and persons.
-    try:
-        restoreImdbID(movies_imdbIDs, Title)
-        del movies_imdbIDs
-    except Exception, e:
-        print 'WARNING: failed to restore imdbIDs for movies: %s' % e
-    try:
-        restoreImdbID(people_imdbIDs, Name)
-        del people_imdbIDs
-    except Exception, e:
-        print 'WARNING: failed to restore imdbIDs for people: %s' % e
-
     if CSV_DIR:
         CSV_CURS.closeAll()
+    else:
+        executeCustomQueries('BEFORE_RESTORE')
+
+        # Restoring imdbIDs for movies and persons.
+        runSafely(restoreImdbID, 'failed to restore imdbIDs for movies', None,
+                    movies_imdbIDs, Title)
+        del movies_imdbIDs
+        runSafely(restoreImdbID, 'failed to restore imdbIDs for people', None,
+                    people_imdbIDs, Name)
+        del people_imdbIDs
 
     # Flush caches.
     CACHE_MID.flush()
-    CACHE_MID.clear()
     CACHE_PID.flush()
-    CACHE_PID.clear()
     CACHE_CID.flush()
-    CACHE_CID.clear()
+    if not CSV_DIR:
+        CACHE_MID.clear()
+        CACHE_PID.clear()
+        CACHE_CID.clear()
     t('fushing caches...')
+
+    if CSV_ONLY_WRITE:
+        t('TOTAL TIME TO WRITE CSV FILES', sinceBegin=True)
+        executeCustomQueries('END')
+        t('FINAL', sinceBegin=True)
+        return
 
     if CSV_DIR:
         print 'loading CSV files into the database'
         executeCustomQueries('BEFORE_CSV_LOAD')
         loadCSVFiles()
         t('loadCSVFiles()')
+        executeCustomQueries('BEFORE_RESTORE')
+
+        # Restoring imdbIDs for movies and persons.
+        runSafely(restoreImdbID, 'failed to restore imdbIDs for movies', None,
+                    movies_imdbIDs, Title)
+        del movies_imdbIDs
+        runSafely(restoreImdbID, 'failed to restore imdbIDs for people', None,
+                    people_imdbIDs, Name)
+        del people_imdbIDs
+        runSafely(restoreImdbID, 'failed to restore imdbIDs for characters',
+                    None, characters_imdbIDs, CharName)
+        del characters_imdbIDs
+        runSafely(restoreImdbID, 'failed to restore imdbIDs for companies',
+                    None, companies_imdbIDs, CompanyName)
+        del companies_imdbIDs
 
     t('TOTAL TIME TO INSERT/WRITE DATA', sinceBegin=True)
 
-    executeCustomQueries('BEFORE_INDEXES')
-
-    print 'building database indexes (this may take a while)'
-    sys.stdout.flush()
-    # Build database indexes.
-    createIndexes(DB_TABLES)
-    t('createIndexes()')
-
-    print 'adding foreign keys (this may take a while)'
-    sys.stdout.flush()
-    # Add FK.
-    createForeignKeys(DB_TABLES)
-    t('createForeignKeys()')
+    buildIndexesAndFK()
 
     executeCustomQueries('END')
 
@@ -2787,5 +2898,8 @@ if __name__ == '__main__':
         print ''
     import signal
     signal.signal(signal.SIGINT, _kdb_handler)
-    run()
+    if CSV_ONLY_LOAD:
+        restoreCSV()
+    else:
+        run()
 

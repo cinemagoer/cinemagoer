@@ -1,11 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.5dev20100129b "2001: A Space Odyssey" (29 Jan 2010)
+* What's the new in release 4.5dev20100130 "2001: A Space Odyssey" (30 Jan 2010)
   [general]
   - moved to setuptools 0.6c11.
   - trying to make the SVN release versions work fine.
   - http/mobile should work in GAE (Google App Engine).
+  - added some goodies scripts, useful for programmers (see the
+    docs/goodies directory).
 
   [sql]
   - fixes for bugs restoring imdbIDs.

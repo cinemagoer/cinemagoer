@@ -375,3 +375,20 @@ syntax:
 The created files will be imported near the end of the imdbpy2sql.py
 processing; notice that after that, you can safely cancel these files.
 
+
+  CSV partial processing
+  ======================
+
+It's possible, since IMDbPY 4.5, to separate the two steps involved using
+CSV files.
+With the --csv-only-write command line option the old database will
+be zeroed and the CSV files saved (along with imdbIDs information).
+Using the --csv-only-load option you can load these saved files into
+an existing database (this database MUST be the one left almost empty
+by the previous run).
+Beware that right now the whole procedure is not very well tested.
+Using both commands, on the command line you still have to specify
+the whole "-u URI -d /path/plainTextDataFiles/ -c /path/CSVfiles/"
+series of arguments.
+
+

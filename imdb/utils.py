@@ -644,6 +644,14 @@ def cmpMovies(m1, m2):
     m2i = m2.get('imdbIndex', _last)
     if m1i > m2i: return -1
     if m1i < m2i: return 1
+    m1id = m1.movieID
+    # Introduce this check even for other comparisons functions?
+    # XXX: is it safe to check without knowning the data access system?
+    #      probably not a great idea.  Check for 'kind', instead?
+    if m1id is not None:
+        m2id = m2.movieID
+        if m1id > m2id: return -1
+        elif m1id < m2id: return 1
     return 0
 
 

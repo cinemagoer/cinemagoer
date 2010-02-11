@@ -1558,21 +1558,22 @@ def castLists(_charIDsList=None):
         except IOError:
             if rolename == 'actress':
                 CACHE_CID.flush()
-                runSafely(restoreImdbID,
-                            'failed to restore imdbIDs for characters',
-                            None, _charIDsList, CharName)
-                del _charIDsList
                 if not CSV_DIR:
+                    runSafely(restoreImdbID,
+                                'failed to restore imdbIDs for characters',
+                                None, _charIDsList, CharName)
+                    del _charIDsList
                     CACHE_CID.clear()
             continue
         doCast(f, roleid, rolename)
         f.close()
         if rolename == 'actress':
             CACHE_CID.flush()
-            runSafely(restoreImdbID, 'failed to restore imdbIDs for characters',
-                        None, _charIDsList, CharName)
-            del _charIDsList
             if not CSV_DIR:
+                runSafely(restoreImdbID,
+                        'failed to restore imdbIDs for characters',
+                        None, _charIDsList, CharName)
+                del _charIDsList
                 CACHE_CID.clear()
         t('castLists(%s)' % rolename)
 
@@ -2718,7 +2719,7 @@ def run():
     companies_imdbIDs = runSafely(notNULLimdbID,
                                 'failed to read imdbIDs for companies', [],
                                 CompanyName)
-    if CSV_ONLY_WRITE:
+    if CSV_DIR:
         pickle_ids(movies_imdbIDs, 'movies_imdbIDs.pkl')
         pickle_ids(people_imdbIDs, 'people_imdbIDs.pkl')
         pickle_ids(characters_imdbIDs, 'characters_imdbIDs.pkl')

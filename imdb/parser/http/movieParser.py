@@ -896,7 +896,7 @@ class DOMHTMLRatingsParser(DOMParserBase):
             attrs=Attribute(key='mean and median',
                             path="text()")),
         Extractor(label='rating',
-            path="//a[starts-with(@href, '/List?ratings=')]",
+            path="//a[starts-with(@href, '/search/title?user_rating=')]",
             attrs=Attribute(key='rating',
                             path="text()")),
         Extractor(label='demographic voters',

@@ -1,13 +1,16 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.5dev20100211 "The Last House on the Left" (11 Feb 2010)
+* What's the new in release 4.5dev20100212 "The Last House on the Left" (12 Feb 2010)
   [general]
   - moved to setuptools 0.6c11.
   - trying to make the SVN release versions work fine.
   - http/mobile should work in GAE (Google App Engine).
   - added some goodies scripts, useful for programmers (see the
     docs/goodies directory).
+
+  [http/mobile]
+  - fixes for some minor changes to IMDb's html.
 
   [sql]
   - fixes for bugs restoring imdbIDs.

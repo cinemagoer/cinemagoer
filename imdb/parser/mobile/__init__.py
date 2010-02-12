@@ -428,13 +428,14 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             lang[:] = ['<a %s' % x for x in lang if x]
             lang[:] = [_unHtml(x.replace(' <i>', '::')) for x in lang]
             if lang: d['languages'] = lang
-        col = _findBetween(cont, '"/List?color-info=', '</div>')
+        col = _findBetween(cont, '"/search/title?colors=', '</div>')
         if col:
             col[:] = col[0].split(' | ')
             col[:] = ['<a %s' % x for x in col if x]
             col[:] = [_unHtml(x.replace(' <i>', '::')) for x in col]
             if col: d['color info'] = col
-        sm = _findBetween(cont, '/List?sound-mix=', '</div>', maxRes=1)
+        sm = _findBetween(cont, '/search/title?sound_mixes=', '</div>',
+                            maxRes=1)
         if sm:
             sm[:] = sm[0].split(' | ')
             sm[:] = ['<a %s' % x for x in sm if x]

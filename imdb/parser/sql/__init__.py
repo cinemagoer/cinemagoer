@@ -1435,7 +1435,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         return returnl
 
     def get_character_main(self, characterID, results=1000):
-        # Every person information is retrieved from here.
+        # Every character information is retrieved from here.
         infosets = self.get_character_infoset()
         try:
             c = CharName.get(characterID)

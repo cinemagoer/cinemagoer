@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.5dev20100212 "The Last House on the Left" (12 Feb 2010)
+* What's the new in release 4.5dev20100222 "Avatar" (22 Feb 2010)
   [general]
   - moved to setuptools 0.6c11.
   - trying to make the SVN release versions work fine.
@@ -11,6 +11,7 @@
 
   [http/mobile]
   - fixes for some minor changes to IMDb's html.
+  - fixes for garbage in movie quotes.
 
   [sql]
   - fixes for bugs restoring imdbIDs.

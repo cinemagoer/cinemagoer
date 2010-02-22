@@ -826,6 +826,12 @@ class DOMHTMLQuotesParser(DOMParserBase):
         (re.compile('<!-- sid: t-channel : MIDDLE_CENTER -->', re.I), '</div>')
         ]
 
+    def preprocess_dom(self, dom):
+        # Remove "link this quote" links.
+        for qLink in self.xpath(dom, "//p[@class='linksoda']"):
+            qLink.drop_tree()
+        return dom
+
     def postprocess_data(self, data):
         if 'quotes' not in data:
             return {}

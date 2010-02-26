@@ -134,7 +134,10 @@ class IMDbURLopener(FancyURLopener):
         # XXX: IMDb's web server doesn't like urllib-based programs,
         #      so lets fake to be Mozilla.
         #      Wow!  I'm shocked by my total lack of ethic! <g>
-        self.set_header('User-agent', 'Mozilla/5.0')
+        self.del_header('User-Agent')
+        self.del_header('User-agent')
+        self.del_header('user-agent')
+        self.set_header('User-Agent', 'Mozilla/5.0')
         # XXX: This class is used also to perform "Exact Primary
         #      [Title|Name]" searches, and so by default the cookie is set.
         c_header = 'id=%s; uu=%s' % (_cookie_id, _cookie_uu)

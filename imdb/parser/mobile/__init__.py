@@ -49,6 +49,9 @@ re_unhtmlsub = re_unhtml.sub
 # imdb person or movie ids.
 re_imdbID = re.compile(r'(?<=nm|tt|ch)([0-9]{7})\b')
 
+# movie AKAs.
+re_makas = re.compile('(<p class="find-aka">.*?</p>)')
+
 
 def _unHtml(s):
     """Return a string without tags and no multiple spaces."""
@@ -206,20 +209,16 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             lis = _findBetween(cont, 'td valign="top">', '</td>',
                                 maxRes=results*3)
             for li in lis:
-                akaIdx = li.find('aka <em>')
-                akas = []
-                if akaIdx != -1:
-                    akas = [_unHtml(x) for x in li[akaIdx:].split('<br>')]
-                    li = li[:akaIdx]
-                if akas:
-                    for idx, aka in enumerate(akas):
-                        aka = aka.replace('" - ', '::')
-                        if aka.startswith('aka "'):
-                            aka = aka[5:]
-                        if aka[-1] == '"':
-                            aka = aka[:-1]
-                        akas[idx] = aka
+                akas = re_makas.findall(li)
+                for idx, aka in enumerate(akas):
+                    aka = aka.replace('" - ', '::', 1)
+                    if aka.startswith('aka "'):
+                        aka = aka[5:]
+                    if aka[-1] == '"':
+                        aka = aka[:-1]
+                    akas[idx] = _unHtml(aka)
                 imdbid = re_imdbID.findall(li)
+                li = re_makas.sub('', li)
                 mtitle = _unHtml(li)
                 if not (imdbid and mtitle):
                     self._mobile_logger.debug('no title/movieID parsing' \

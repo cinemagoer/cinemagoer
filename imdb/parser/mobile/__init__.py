@@ -212,11 +212,12 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 akas = re_makas.findall(li)
                 for idx, aka in enumerate(akas):
                     aka = aka.replace('" - ', '::', 1)
+                    aka = _unHtml(aka)
                     if aka.startswith('aka "'):
-                        aka = aka[5:]
+                        aka = aka[5:].strip()
                     if aka[-1] == '"':
                         aka = aka[:-1]
-                    akas[idx] = _unHtml(aka)
+                    akas[idx] = aka
                 imdbid = re_imdbID.findall(li)
                 li = re_makas.sub('', li)
                 mtitle = _unHtml(li)

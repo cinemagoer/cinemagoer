@@ -8,7 +8,7 @@ E.g., for when searching for the title "the passion", the parsed
 page would be:
     http://akas.imdb.com/find?q=the+passion&tt=on&mx=20
 
-Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -101,7 +101,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                         path={
                             'link': "./a[1]/@href",
                             'info': ".//text()",
-                            'akas': ".//div[@class='_imdbpyAKA']//text()"
+                            #'akas': ".//div[@class='_imdbpyAKA']//text()"
+                            'akas': ".//p[@class='find-aka']//text()"
                             },
                         postprocess=lambda x: (
                             analyze_imdbid(x.get('link') or u''),
@@ -122,8 +123,10 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
             if self._linkPrefix == '/title/tt':
                 # Only for movies.
                 html_string = html_string.replace('(TV mini-series)', '(mini)')
-                html_string = _reAKAStitles.sub(
-                        r'<div class="_imdbpyAKA">\1::</div>\2', html_string)
+                html_string = html_string.replace('<p class="find-aka">',
+                        '<p class="find-aka">::')
+                #html_string = _reAKAStitles.sub(
+                #        r'<div class="_imdbpyAKA">\1::</div>\2', html_string)
             return html_string
         # Direct hit!
         dbme = self._BaseParser(useModule=self._useModule)
@@ -156,6 +159,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                     akas = filter(None, datum[2].split('::'))
                     if self._linkPrefix == '/title/tt':
                         akas = [a.replace('" - ', '::').rstrip() for a in akas]
+                        akas = [a.replace('aka "', '', 1).lstrip() for a in akas]
                     datum[1]['akas'] = akas
                     data['data'][idx] = (datum[0], datum[1])
                 else:

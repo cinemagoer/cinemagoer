@@ -239,7 +239,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                             # Collects akas not encosed in <i> tags.
                             Attribute(key='other akas',
                                 path="./h5[starts-with(text(), " \
-                                        "'Also Known As')]/../div/text()",
+                                        "'Also Known As')]/../div//text()",
                                 postprocess=makeSplitter(sep='::')),
                             Attribute(key='runtimes',
                                 path="./h5[starts-with(text(), " \
@@ -382,6 +382,11 @@ class DOMHTMLMovieParser(DOMParserBase):
         # Remove links to IMDbPro.
         for proLink in self.xpath(dom, "//span[@class='pro-link']"):
             proLink.drop_tree()
+        # Remove some 'more' links (keep others, like the one around
+        # the number of votes).
+        for tn15more in self.xpath(dom,
+                    "//a[@class='tn15more'][starts-with(@href, '/title/')]"):
+            tn15more.drop_tree()
         return dom
 
     re_space = re.compile(r'\s+')
@@ -404,12 +409,14 @@ class DOMHTMLMovieParser(DOMParserBase):
                         obj.accessSystem = self._as
                         obj.modFunct = self._modFunct
         if 'akas' in data or 'other akas' in data:
-            other_akas = data.get('akas')
-            if not other_akas:
-                other_akas = []
-            data['akas'] = data.get('other akas', []) + other_akas
+            akas = data.get('akas') or []
+            akas += data.get('other akas') or []
+            if 'akas' in data:
+                del data['akas']
             if 'other akas' in data:
                 del data['other akas']
+            if akas:
+                data['akas'] = akas
         if 'runtimes' in data:
             data['runtimes'] = [x.replace(' min', u'')
                                 for x in data['runtimes']]
@@ -855,12 +862,22 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
                     attrs=Attribute(key='release dates', multi=True,
                         path={'country': ".//td[1]//text()",
                             'date': ".//td[2]//text()",
-                            'notes': ".//td[3]//text()"}))]
+                            'notes': ".//td[3]//text()"})),
+                Extractor(label='akas',
+                    path="//div[@class='_imdbpy_akas']/table/tr",
+                    attrs=Attribute(key='akas', multi=True,
+                        path={'title': "./td[1]/text()",
+                            'countries': "./td[2]/text()"}))]
+
+    preprocessors = [
+        (re.compile('(<h5><a name="?akas"?.*</table>)', re.I | re.M | re.S),
+            r'<div class="_imdbpy_akas">\1</div>')]
 
     def postprocess_data(self, data):
-        if not 'release dates' in data: return data
+        if not ('release dates' in data or 'akas' in data): return data
+        releases = data['release dates']
         rl = []
-        for i in data['release dates']:
+        for i in releases:
             country = i.get('country')
             date = i.get('date')
             if not (country and date): continue
@@ -872,7 +889,26 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
             if notes:
                 info += notes
             rl.append(info)
-        data['release dates'] = rl
+        if releases:
+            del data['release dates']
+        if rl:
+            data['release dates'] = rl
+        akas = data.get('akas')
+        nakas = []
+        for aka in akas:
+            title = aka.get('title', '').strip()
+            if not title:
+                continue
+            countries = aka.get('countries', '').split('/')
+            if not countries:
+                nakas.append(title)
+            else:
+                for country in countries:
+                    nakas.append('%s::%s' % (title, country.strip()))
+        if akas:
+            del data['akas']
+        if nakas:
+            data['akas'] = nakas
         return data
 
 

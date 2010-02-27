@@ -134,9 +134,8 @@ class IMDbURLopener(FancyURLopener):
         # XXX: IMDb's web server doesn't like urllib-based programs,
         #      so lets fake to be Mozilla.
         #      Wow!  I'm shocked by my total lack of ethic! <g>
-        self.del_header('User-Agent')
-        self.del_header('User-agent')
-        self.del_header('user-agent')
+        for header in ('User-Agent', 'User-agent', 'user-agent'):
+            self.del_header(header)
         self.set_header('User-Agent', 'Mozilla/5.0')
         # XXX: This class is used also to perform "Exact Primary
         #      [Title|Name]" searches, and so by default the cookie is set.
@@ -499,7 +498,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_release_dates(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'releaseinfo')
-        return self.mProxy.releasedates_parser.parse(cont)
+        ret = self.mProxy.releasedates_parser.parse(cont)
+        ret['info sets'] = ('release dates', 'akas')
+        return ret
+    get_movie_akas = get_movie_release_dates
 
     def get_movie_vote_details(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'ratings')

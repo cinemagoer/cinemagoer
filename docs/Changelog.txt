@@ -1,6 +1,12 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.6dev20100228 "Dollhouse" (28 Feb 2010)
+  [general]
+  - added the dtd.
+  - fixes for AKAs on 'release dates'
+
+
 * What's the new in release 4.5 "Invictus" (28 Feb 2010)
   [general]
   - moved to setuptools 0.6c11.

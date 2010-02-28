@@ -875,7 +875,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
 
     def postprocess_data(self, data):
         if not ('release dates' in data or 'akas' in data): return data
-        releases = data['release dates']
+        releases = data.get('release dates') or []
         rl = []
         for i in releases:
             country = i.get('country')
@@ -893,7 +893,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
             del data['release dates']
         if rl:
             data['release dates'] = rl
-        akas = data.get('akas')
+        akas = data.get('akas') or []
         nakas = []
         for aka in akas:
             title = aka.get('title', '').strip()

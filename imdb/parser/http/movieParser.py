@@ -908,7 +908,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         if akas:
             del data['akas']
         if nakas:
-            data['akas'] = nakas
+            data['akas from release info'] = nakas
         return data
 
 

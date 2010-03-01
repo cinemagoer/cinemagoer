@@ -5,7 +5,7 @@
      http://imdbpy.sf.net/dtd/imdbpy44.dtd
 
      Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
-               2009 Davide Alberani <da@erlug.linux.it>
+               2009-2010 Davide Alberani <da@erlug.linux.it>
 
  -->
 
@@ -337,6 +337,7 @@
 
 <!ELEMENT agent-address (item)*>
 <!ELEMENT akas (item)*>
+<!ELEMENT akas-from-release-info (item)*>
 <!ELEMENT alternate-versions (item)*>
 <!ELEMENT article (item)*>
 <!ELEMENT biography (item)*>

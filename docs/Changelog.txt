@@ -1,10 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.6dev20100229 "Dollhouse" (29 Feb 2010)
+* What's the new in release 4.5.1 "Dollhouse" (01 Mar 2010)
   [general]
+  - reintroduced the ez_setup.py file.
+  - fixes for AKAs on 'release dates'.
   - added the dtd.
-  - fixes for AKAs on 'release dates'
 
 
 * What's the new in release 4.5 "Invictus" (28 Feb 2010)

@@ -1032,7 +1032,7 @@ _xmlHead = u"""<?xml version="1.0"?>
 
 """
 _xmlHead = _xmlHead.replace('{VERSION}',
-            VERSION.replace('.', '').split('dev')[0])
+        VERSION.replace('.', '').split('dev')[0][:2])
 
 
 class _Container(object):

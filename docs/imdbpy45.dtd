@@ -2,7 +2,7 @@
 
      XML Document Type Definition for IMDbPY 4.5.
 
-     http://imdbpy.sf.net/dtd/imdbpy44.dtd
+     http://imdbpy.sf.net/dtd/imdbpy45.dtd
 
      Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
                2009-2010 Davide Alberani <da@erlug.linux.it>
@@ -12,6 +12,7 @@
 <!ELEMENT movie (
     airing
   | akas
+  | akas-from-release-info
   | alternate-versions
   | amazon-reviews
   | animation-department

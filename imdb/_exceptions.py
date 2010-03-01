@@ -3,7 +3,7 @@ _exceptions module (imdb package).
 
 This module provides the exception hierarchy used by the imdb package.
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,9 +20,20 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import logging
+
+
 class IMDbError(Exception):
     """Base class for every exception raised by the imdb package."""
-    pass
+    _logger = logging.getLogger('imdbpy')
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the exception and pass the message to the log system."""
+        # Every raised exception also dispatch a critical log.
+        self._logger.critical('%s exception raised; args: %s; kwds: %s',
+                                self.__class__.__name__, args, kwargs,
+                                exc_info=True)
+        super(IMDbError, self).__init__(*args, **kwargs)
 
 class IMDbDataAccessError(IMDbError):
     """Exception raised when is not possible to access needed data."""
@@ -32,7 +43,4 @@ class IMDbParserError(IMDbError):
     """Exception raised when an error occurred parsing the data."""
     pass
 
-class IMDbNotAvailable(IMDbError):
-    """Exception raised when a required information is not available."""
-    pass
 

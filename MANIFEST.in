@@ -1,0 +1,20 @@
+#
+# MANIFEST.in
+#
+# Manifest template for creating the Distutils source distribution.
+#
+
+# Comment out the "recursive-include docs" entry if you don't want
+# to install the documentation.
+recursive-include docs *
+recursive-include imdb/locale *
+global-exclude *~
+prune CVS
+prune .svn
+global-exclude CVS
+global-exclude .svn
+
+# Uncomment the following line if you don't want to install the logo images.
+# exclude docs/*.png docs/*.xpm docs/*.bmp
+
+

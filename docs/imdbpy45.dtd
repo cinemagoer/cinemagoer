@@ -1,0 +1,720 @@
+<!--
+
+     XML Document Type Definition for IMDbPY 4.5.
+
+     http://imdbpy.sf.net/dtd/imdbpy45.dtd
+
+     Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
+               2009-2010 Davide Alberani <da@erlug.linux.it>
+
+ -->
+
+<!ELEMENT movie (
+    airing
+  | akas
+  | akas-from-release-info
+  | alternate-versions
+  | amazon-reviews
+  | animation-department
+  | arithmetic-mean
+  | art-department
+  | art-direction
+  | aspect-ratio
+  | assistant-director
+  | awards
+  | bottom-100-rank
+  | business
+  | camera
+  | camera-and-electrical-department
+  | canonical-episode-title
+  | canonical-series-title
+  | canonical-title
+  | cast
+  | casting-department
+  | casting-director
+  | certificates
+  | cinematographer
+  | cinematographic-process
+  | color-info
+  | complete-cast
+  | complete-crew
+  | connections
+  | costume-department
+  | costume-designer
+  | countries
+  | cover-url
+  | crazy-credits
+  | creator
+  | current-role
+  | demographic
+  | director
+  | distributors
+  | dvd
+  | editor
+  | editorial-department
+  | episode
+  | episode-of
+  | episodes
+  | episodes-rating
+  | episode-title
+  | external-reviews
+  | faqs
+  | film-negative-format
+  | genres
+  | goofs
+  | item
+  | keywords
+  | kind
+  | laboratory
+  | languages
+  | laserdisc
+  | literature
+  | locations
+  | long-imdb-canonical-title
+  | long-imdb-episode-title
+  | long-imdb-title
+  | make-up
+  | median
+  | merchandising-links
+  | miscellaneous-companies
+  | miscellaneous-crew
+  | misc-links
+  | movie
+  | mpaa
+  | music-department
+  | news
+  | newsgroup-reviews
+  | notes
+  | number-of-episodes
+  | number-of-seasons
+  | number-of-votes
+  | official-sites
+  | original-air-date
+  | original-music
+  | parents-guide
+  | photo-sites
+  | plot
+  | plot-outline
+  | printed-film-format
+  | producer
+  | production-companies
+  | production-design
+  | production-manager
+  | quotes
+  | rating
+  | recommendations
+  | release-dates
+  | runtimes
+  | season
+  | series-animation-department
+  | series-art-department
+  | series-assistant-directors
+  | series-camera-department
+  | series-canonical-title
+  | series-casting-department
+  | series-cinematographers
+  | series-costume-department
+  | series-editorial-department
+  | series-editors
+  | series-make-up-department
+  | series-miscellaneous
+  | series-music-department
+  | series-producers
+  | series-production-designers
+  | series-production-managers
+  | series-special-effects-department
+  | series-sound-department
+  | series-stunts
+  | series-title
+  | series-transportation-department
+  | series-visual-effects-department
+  | series-writers
+  | series-years
+  | set-decoration
+  | smart-canonical-episode-title
+  | smart-canonical-series-title
+  | smart-canonical-title
+  | smart-long-imdb-canonical-title
+  | sound-clips
+  | sound-crew
+  | sound-mix
+  | soundtrack
+  | special-effects-companies
+  | special-effects-department
+  | stunt-performer
+  | synopsis
+  | taglines
+  | tech-info
+  | thanks
+  | title
+  | top-250-rank
+  | trivia
+  | transportation-department
+  | video-clips
+  | visual-effects
+  | votes
+  | votes-distribution
+  | writer
+  | year
+ )*>
+<!ATTLIST movie id CDATA #REQUIRED>
+
+<!ELEMENT person (
+    actor
+  | actress
+  | agent-address
+  | akas
+  | animation-department
+  | archive-footage
+  | art-department
+  | art-director
+  | article
+  | awards
+  | biographical-movies
+  | biography-print
+  | birth-date
+  | birth-name
+  | birth-notes
+  | camera-and-electrical-department
+  | canonical-name
+  | cinematographer
+  | composer
+  | current-role
+  | death-date
+  | death-notes
+  | director
+  | editor
+  | episodes
+  | genres
+  | headshot
+  | height
+  | imdbindex
+  | in-development
+  | interview
+  | keywords
+  | long-imdb-canonical-name
+  | long-imdb-name
+  | magazine-cover-photo
+  | merchandising-links
+  | mini-biography
+  | miscellaneous-crew
+  | music-department
+  | name
+  | news
+  | nick-names
+  | notes
+  | official-sites
+  | other-works
+  | pictorial
+  | portrayed-in
+  | producer
+  | production-designer
+  | quotes
+  | salary-history
+  | second-unit-director-or-assistant-director
+  | self
+  | soundtrack
+  | special-effects
+  | spouse
+  | stunts
+  | thanks
+  | trade-mark
+  | trivia
+  | visual-effects
+  | where-now
+  | writer
+ )*>
+<!ATTLIST person id CDATA #REQUIRED>
+
+<!ELEMENT character (
+    akas
+  | archive-footage
+  | biography
+  | episodes
+  | feature
+  | filmography
+  | headshot
+  | introduction
+  | long-imdb-name
+  | name
+  | quotes
+  | tv
+  | video
+ )*>
+<!ATTLIST character id CDATA #IMPLIED>
+
+<!ELEMENT company (
+    country
+  | distributors
+  | long-imdb-name
+  | miscellaneous-companies
+  | name
+  | notes
+  | production-companies
+  | special-effects-companies
+ )*>
+<!ATTLIST company id CDATA #IMPLIED>
+
+<!ELEMENT episodes (movie | season)*>
+
+<!ELEMENT season (#PCDATA | episode)*>
+<!ATTLIST season number CDATA #IMPLIED>
+
+<!ELEMENT episode (#PCDATA | movie)*>
+<!ATTLIST episode number CDATA #IMPLIED>
+<!ELEMENT episode-of (movie)*>
+
+<!ELEMENT animation-department (movie | person)*>
+<!ELEMENT art-department (movie | person)*>
+<!ELEMENT camera-and-electrical-department (movie | person)*>
+<!ELEMENT cinematographer (movie | person)*>
+<!ELEMENT director (movie | person)*>
+<!ELEMENT editor (movie | person)*>
+<!ELEMENT miscellaneous-crew (movie | person)*>
+<!ELEMENT music-department (movie | person)*>
+<!ELEMENT producer (movie | person)*>
+<!ELEMENT thanks (movie | person)*>
+<!ELEMENT visual-effects (person | movie)*>
+<!ELEMENT writer (movie | person)*>
+
+<!ELEMENT actor (movie)*>
+<!ELEMENT actress (movie)*>
+<!ELEMENT archive-footage (movie)*>
+<!ELEMENT art-director (movie)*>
+<!ELEMENT composer (movie)*>
+<!ELEMENT filmography (movie)*>
+<!ELEMENT production-designer (movie)*>
+<!ELEMENT second-unit-director-or-assistant-director (movie)*>
+<!ELEMENT self (movie)*>
+<!ELEMENT special-effects (movie)*>
+<!ELEMENT stunts (movie)*>
+
+<!ELEMENT art-direction (person)*>
+<!ELEMENT assistant-director (person)*>
+<!ELEMENT cast (person)*>
+<!ELEMENT casting-department (person)*>
+<!ELEMENT casting-director (person)*>
+<!ELEMENT costume-department (person)*>
+<!ELEMENT costume-designer (person)*>
+<!ELEMENT creator (person)*>
+<!ELEMENT editorial-department (person)*>
+<!ELEMENT make-up (person)*>
+<!ELEMENT original-music (person)*>
+<!ELEMENT production-design (person)*>
+<!ELEMENT production-manager (person)*>
+<!ELEMENT series-animation-department (person)*>
+<!ELEMENT series-art-department (person)*>
+<!ELEMENT series-assistant-directors (person)*>
+<!ELEMENT series-camera-department (person)*>
+<!ELEMENT series-casting-department (person)*>
+<!ELEMENT series-costume-department (person)*>
+<!ELEMENT series-cinematographers (person)*>
+<!ELEMENT series-editors (person)*>
+<!ELEMENT series-editorial-department (person)*>
+<!ELEMENT series-make-up-department (person)*>
+<!ELEMENT series-miscellaneous (person)*>
+<!ELEMENT series-music-department (person)*>
+<!ELEMENT series-producers (person)*>
+<!ELEMENT series-production-designers (person)*>
+<!ELEMENT series-production-managers (person)*>
+<!ELEMENT series-sound-department (person)*>
+<!ELEMENT series-special-effects-department (person)*>
+<!ELEMENT series-stunts (person)*>
+<!ELEMENT series-transportation-department (person)*>
+<!ELEMENT series-visual-effects-department (person)*>
+<!ELEMENT series-writers (person)*>
+<!ELEMENT set-decoration (person)*>
+<!ELEMENT sound-crew (person)*>
+<!ELEMENT special-effects-department (person)*>
+<!ELEMENT stunt-performer (person)*>
+<!ELEMENT transportation-department (person)*>
+
+<!ELEMENT distributors (company | movie)*>
+<!ELEMENT miscellaneous-companies (company | movie)*>
+<!ELEMENT production-companies (company | movie)*>
+<!ELEMENT special-effects-companies (company | movie)*>
+
+<!ELEMENT current-role (character | notes | person)*>
+
+<!ELEMENT agent-address (item)*>
+<!ELEMENT akas (item)*>
+<!ELEMENT akas-from-release-info (item)*>
+<!ELEMENT alternate-versions (item)*>
+<!ELEMENT article (item)*>
+<!ELEMENT biography (item)*>
+<!ELEMENT biographical-movies (item)*>
+<!ELEMENT biography-print (item)*>
+<!ELEMENT camera (item)*>
+<!ELEMENT certificates (item)*>
+<!ELEMENT cinematographic-process (item)*>
+<!ELEMENT color-info (item)*>
+<!ELEMENT complete-cast (item)*>
+<!ELEMENT complete-crew (item)*>
+<!ELEMENT countries (item)*>
+<!ELEMENT crazy-credits (item)*>
+<!ELEMENT demographic (item)*>
+<!ELEMENT episodes-rating (item)*>
+<!ELEMENT film-negative-format (item)*>
+<!ELEMENT genres (item)*>
+<!ELEMENT goofs (item)*>
+<!ELEMENT in-development (movie)*>
+<!ELEMENT interview (item)*>
+<!ELEMENT keywords (item)*>
+<!ELEMENT laboratory (item)*>
+<!ELEMENT languages (item)*>
+<!ELEMENT locations (item)*>
+<!ELEMENT magazine-cover-photo (item)*>
+<!ELEMENT mini-biography (item)*>
+<!ELEMENT misc-links (item)*>
+<!ELEMENT newsgroup-reviews (item)*>
+<!ELEMENT nick-names (item)*>
+<!ELEMENT number-of-votes (item)*>
+<!ELEMENT official-sites (item)*>
+<!ELEMENT other-works (item)*>
+<!ELEMENT parents-guide (item)*>
+<!ELEMENT photo-sites (item)*>
+<!ELEMENT pictorial (item)*>
+<!ELEMENT plot (item)*>
+<!ELEMENT portrayed-in (item)*>
+<!ELEMENT printed-film-format (item)*>
+<!ELEMENT release-dates (item)*>
+<!ELEMENT runtimes (item)*>
+<!ELEMENT salary-history (item)*>
+<!ELEMENT sound-clips (item)*>
+<!ELEMENT spouse (item)*>
+<!ELEMENT taglines (item)*>
+<!ELEMENT tech-info (item)*>
+<!ELEMENT trivia (item)*>
+<!ELEMENT trade-mark (item)*>
+<!ELEMENT sound-mix (item)*>
+<!ELEMENT video-clips (item)*>
+<!ELEMENT where-now (item)*>
+
+<!ELEMENT quotes (item | quote | movie)*>
+<!ELEMENT quote (#PCDATA | line)*>
+<!ELEMENT line (#PCDATA)>
+
+<!ELEMENT awards (item)*>
+<!ELEMENT assigner (#PCDATA)>
+<!ELEMENT category (#PCDATA)>
+<!ELEMENT award (#PCDATA)>
+<!ELEMENT for (movie)*>
+<!ELEMENT result (#PCDATA)>
+<!ELEMENT to (person)*>
+<!ELEMENT with (#PCDATA)>
+
+<!ELEMENT aspect-ratio (#PCDATA | item)*>
+
+<!ELEMENT business (
+    admissions
+  | budget
+  | copyright-holder
+  | filming-dates
+  | gross
+  | opening-weekend
+  | production-dates
+  | rentals
+  | studios
+  | weekend-gross
+ )*>
+<!ELEMENT admissions (item)*>
+<!ELEMENT budget (item)*>
+<!ELEMENT copyright-holder (item)*>
+<!ELEMENT filming-dates (item)*>
+<!ELEMENT gross (item)*>
+<!ELEMENT opening-weekend (item)*>
+<!ELEMENT production-dates (item)*>
+<!ELEMENT rentals (item)*>
+<!ELEMENT studios (item)*>
+<!ELEMENT weekend-gross (item)*>
+
+<!ELEMENT amazon-reviews (item)*>
+<!ELEMENT link (#PCDATA)>
+<!ELEMENT review (#PCDATA)>
+<!ELEMENT review-author (#PCDATA)>
+<!ELEMENT review-kind (#PCDATA)>
+
+<!ELEMENT literature (
+    adaption
+  | book
+  | essays
+  | interviews
+  | novel
+  | other-literature
+  | printed-media-reviews
+  | production-process-protocol
+  | screenplay-teleplay
+ )*>
+<!ELEMENT adaption (item)*>
+<!ELEMENT book (item)*>
+<!ELEMENT essays (item)*>
+<!ELEMENT novel (item)*>
+<!ELEMENT interviews (item)*>
+<!ELEMENT other-literature (item)*>
+<!ELEMENT printed-media-reviews (item)*>
+<!ELEMENT production-process-protocol (item)*>
+<!ELEMENT screenplay-teleplay (item)*>
+
+<!ELEMENT soundtrack (item | movie)*>
+<!ELEMENT by-arrangement-with (#PCDATA)>
+<!ELEMENT courtesy-of (#PCDATA)>
+<!ELEMENT from (#PCDATA)>
+<!ELEMENT performed-by (#PCDATA)>
+<!ELEMENT under-license-from (#PCDATA)>
+<!ELEMENT written-by (#PCDATA)>
+
+<!ELEMENT connections (
+    alternate-language-version-of
+  | edited-from
+  | edited-into
+  | featured-in
+  | features
+  | followed-by
+  | follows
+  | referenced-in
+  | references
+  | remade-as
+  | remake-of
+  | similar-to
+  | spin-off
+  | spin-off-from
+  | spoofed-in
+  | spoofs
+  | version-of
+  | unknown-link
+ )*>
+<!ELEMENT alternate-language-version-of (movie)*>
+<!ELEMENT edited-from (movie)*>
+<!ELEMENT edited-into (movie)*>
+<!ELEMENT featured-in (movie)*>
+<!ELEMENT features (movie)*>
+<!ELEMENT followed-by (movie)*>
+<!ELEMENT follows (movie)*>
+<!ELEMENT referenced-in (movie)*>
+<!ELEMENT references (movie)*>
+<!ELEMENT remade-as (movie)*>
+<!ELEMENT remake-of (movie)*>
+<!ELEMENT similar-to (movie)*>
+<!ELEMENT spin-off (movie)*>
+<!ELEMENT spin-off-from (movie)*>
+<!ELEMENT spoofed-in (movie)*>
+<!ELEMENT spoofs (movie)*>
+<!ELEMENT version-of (movie)*>
+<!ELEMENT unknown-link (movie)*>
+
+<!ELEMENT laserdisc (
+    additional-information
+  | analog-left
+  | analog-right
+  | audio-noise
+  | audio-quality
+  | catalog-number
+  | category
+  | certification
+  | close-captions-teletext-ld-g
+  | color-information
+  | color-rendition
+  | contrast
+  | dialogue-intellegibility
+  | digital-sound
+  | disc-format
+  | disc-size
+  | dynamic-range
+  | frequency-response
+  | group-genre
+  | label
+  | language
+  | laserdisc-title
+  | length
+  | master-format
+  | number
+  | number-of-chapter-stops
+  | number-of-sides
+  | official-retail-price
+  | original-title
+  | picture-format
+  | pressing-plant
+  | production-country
+  | quality-of-source
+  | quality-program
+  | release-country
+  | release-date
+  | review
+  | sharpness
+  | sound-encoding
+  | spaciality
+  | status-of-availablility
+  | subtitles
+  | supplement
+  | video-artifacts
+  | video-noise
+  | video-quality
+  | video-standard
+  | year
+ )*>
+
+<!ELEMENT additional-information (item)*>
+<!ELEMENT analog-left (item)*>
+<!ELEMENT analog-right (item)*>
+<!ELEMENT aspect-ratio (item)*>
+<!ELEMENT audio-noise (item)*>
+<!ELEMENT audio-quality (item)*>
+<!ELEMENT catalog-number (item)*>
+<!ELEMENT category (item)*>
+<!ELEMENT certification (item)*>
+<!ELEMENT close-captions-teletext-ld-g (item)*>
+<!ELEMENT color-information (item)*>
+<!ELEMENT color-rendition (item)*>
+<!ELEMENT contrast (item)*>
+<!ELEMENT dialogue-intellegibility (item)*>
+<!ELEMENT digital-sound (item)*>
+<!ELEMENT disc-format (item)*>
+<!ELEMENT disc-size (item)*>
+<!ELEMENT dynamic-range (item)*>
+<!ELEMENT frequency-response (item)*>
+<!ELEMENT group-genre (item)*>
+<!ELEMENT language (item)*>
+<!ELEMENT laserdisc-title (item)*>
+<!ELEMENT length (item)*>
+<!ELEMENT master-format (item)*>
+<!ELEMENT number (item)*>
+<!ELEMENT number-of-chapter-stops (item)*>
+<!ELEMENT number-of-sides (item)*>
+<!ELEMENT official-retail-price (item)*>
+<!ELEMENT original-title (item)*>
+<!ELEMENT picture-format (item)*>
+<!ELEMENT pressing-plant (item)*>
+<!ELEMENT production-country (item)*>
+<!ELEMENT quality-of-source (item)*>
+<!ELEMENT quality-program (item)*>
+<!ELEMENT release-country (item)*>
+<!ELEMENT release-date (#PCDATA | item)*>
+<!ELEMENT review (item)*>
+<!ELEMENT sharpness (item)*>
+<!ELEMENT sound-encoding (item)*>
+<!ELEMENT spaciality (item)*>
+<!ELEMENT status-of-availablility (item)*>
+<!ELEMENT subtitles (item)*>
+<!ELEMENT supplement (item)*>
+<!ELEMENT video-artifacts (item)*>
+<!ELEMENT video-noise (item)*>
+<!ELEMENT video-quality (item)*>
+<!ELEMENT video-standard (item)*>
+<!ELEMENT faqs (item)*>
+
+<!ELEMENT recommendations (database)*>
+<!ELEMENT database (movie)*>
+
+<!ELEMENT dvd (item)*>
+<!ELEMENT asin (#PCDATA)>
+<!ELEMENT certificate (#PCDATA)>
+<!ELEMENT cover (#PCDATA)>
+<!ELEMENT dvd-features (#PCDATA)>
+<!ELEMENT dvd-format (#PCDATA)>
+<!ELEMENT label (#PCDATA | item)*>
+<!ELEMENT rating (#PCDATA)>
+<!ELEMENT region (#PCDATA)>
+<!ELEMENT runtime (#PCDATA)>
+<!ELEMENT studio (#PCDATA)>
+<!ELEMENT supplements (item)*>
+<!ELEMENT titles-in-this-product (#PCDATA)>
+<!ELEMENT upc (#PCDATA)>
+
+<!ELEMENT merchandising-links (
+    all-products
+  | auctions
+  | books
+  | dvds
+  | soundtrack
+  | vhs
+  | zshops
+  | item
+ )*>
+<!ELEMENT all-products (item)*>
+<!ELEMENT auctions (item)*>
+<!ELEMENT books (item)*>
+<!ELEMENT dvds (item)*>
+<!ELEMENT soundtrack (item)*>
+<!ELEMENT vhs (item)*>
+<!ELEMENT zshops (item)*>
+<!ELEMENT description (#PCDATA | notes)*>
+<!ELEMENT link-text (#PCDATA)>
+
+<!ELEMENT news (item)*>
+<!ELEMENT body (#PCDATA)>
+<!ELEMENT date (#PCDATA)>
+<!ELEMENT full-article-link (#PCDATA)>
+
+<!ELEMENT airing (item)*>
+<!ELEMENT channel (#PCDATA)>
+<!ELEMENT time (#PCDATA)>
+
+<!ELEMENT item (
+    #PCDATA
+  | asin | certificate | cover | dvd-features | dvd-format | label | rating
+         | release-date | region | runtime | studio | supplements
+         | titles-in-this-product | upc
+  | assigner | award | category | for | result | to | with | year
+  | body | date | full-article-link
+  | by-arrangement-with | courtesy-of | from | performed-by
+                        | under-license-from | written-by
+  | channel | season | time
+  | description | link-text
+  | item
+  | movie
+  | notes
+  | quote
+  | review | review-author | review-kind | link | title
+  | episode | votes
+ )*>
+<!ATTLIST item title CDATA #IMPLIED>
+
+<!ELEMENT arithmetic-mean (#PCDATA)>
+<!ELEMENT birth-date (#PCDATA)>
+<!ELEMENT birth-name (#PCDATA)>
+<!ELEMENT birth-notes (#PCDATA)>
+<!ELEMENT bottom-100-rank (#PCDATA)>
+<!ELEMENT canonical-name (#PCDATA)>
+<!ELEMENT canonical-episode-title (#PCDATA)>
+<!ELEMENT canonical-series-title (#PCDATA)>
+<!ELEMENT canonical-title (#PCDATA)>
+<!ELEMENT country (#PCDATA)>
+<!ELEMENT cover-url (#PCDATA)>
+<!ELEMENT death-date (#PCDATA)>
+<!ELEMENT death-notes (#PCDATA)>
+<!ELEMENT episode-title (#PCDATA)>
+<!ELEMENT external-reviews (item)*>
+<!ELEMENT feature (movie)*>
+<!ELEMENT headshot (#PCDATA)>
+<!ELEMENT height (#PCDATA)>
+<!ELEMENT imdbindex (#PCDATA)>
+<!ELEMENT introduction (#PCDATA)>
+<!ELEMENT kind (#PCDATA)>
+<!ELEMENT long-imdb-canonical-name (#PCDATA)>
+<!ELEMENT long-imdb-canonical-title (#PCDATA)>
+<!ELEMENT long-imdb-episode-title (#PCDATA)>
+<!ELEMENT long-imdb-name (#PCDATA)>
+<!ELEMENT long-imdb-title (#PCDATA)>
+<!ELEMENT median (#PCDATA)>
+<!ELEMENT mpaa (#PCDATA)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT notes (#PCDATA)>
+<!ELEMENT number-of-episodes (#PCDATA)>
+<!ELEMENT number-of-seasons (#PCDATA)>
+<!ELEMENT original-air-date (#PCDATA)>
+<!ELEMENT plot-outline (#PCDATA)>
+<!ELEMENT rating (#PCDATA)>
+<!ELEMENT series-title (#PCDATA)>
+<!ELEMENT series-years (#PCDATA)>
+<!ELEMENT smart-canonical-episode-title (#PCDATA)>
+<!ELEMENT smart-canonical-series-title (#PCDATA)>
+<!ELEMENT smart-canonical-title (#PCDATA)>
+<!ELEMENT smart-long-imdb-canonical-title (#PCDATA)>
+<!ELEMENT synopsis (#PCDATA)>
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT top-250-rank (#PCDATA)>
+<!ELEMENT tv (movie)*>
+<!ELEMENT video (movie)*>
+<!ELEMENT votes (#PCDATA)>
+<!ELEMENT votes-distribution (#PCDATA)>
+<!ELEMENT year (#PCDATA | item)*>

@@ -4,7 +4,7 @@ Movie module (imdb package).
 This module provides the Movie class, used to store information about
 a given movie.
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,60 +21,39 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import types
 from copy import deepcopy
-from utils import analyze_title, build_title, modifyStrings, modClearRefs, \
-                    normalizeTitle
-from Person import Person
+
+from imdb import articles
+from imdb.utils import analyze_title, build_title, canonicalTitle, \
+                        flatten, _Container, cmpMovies
 
 
-class Movie:
+class Movie(_Container):
     """A Movie.
-    
-    A Movie object emulates (most of) the dictionary interface.
 
     Every information about a movie can be accessed as:
         movieObject['information']
     to get a list of the kind of information stored in a
     Movie object, use the keys() method; some useful aliases
-    are defined (as "plot summary" for the "plot" key); see the
-    keys_alias dictionary.
+    are defined (as "casting" for the "casting director" key); see
+    the keys_alias dictionary.
     """
-
-    # Every information set available for a Movie object.
-    all_info = ('main', # Information from the "combined details" page
-                        # of a movie: title, director, cast, companies,
-                        # akas, genres, votes, rating, runtime, etc. etc.
-                'plot', # the plot.
-                'awards',   # awards won and nominations.
-                'taglines', # promotional taglines.
-                'keywords', # plot keywords.
-                'alternate versions',
-                'crazy credits',
-                'goofs',
-                'quotes',
-                'release dates',
-                'vote details', # number of votes for rating [1-10],
-                                # demographic breakdowns and top 250 rank.
-                'official sites',
-                'connections',
-                'trivia')
     # The default sets of information retrieved.
     default_info = ('main', 'plot')
 
     # Aliases for some not-so-intuitive keys.
     keys_alias = {
+                'tv schedule': 'airing',
                 'user rating':  'rating',
                 'plot summary': 'plot',
                 'plot summaries': 'plot',
                 'directed by':  'director',
+                'created by': 'creator',
                 'writing credits': 'writer',
                 'produced by':  'producer',
-                'original music by':    'composer',
-                'original music':    'composer',
-                'non-original music by':    'composer',
-                'non-original music':    'composer',
-                'music':    'composer',
+                'original music by':    'original music',
+                'non-original music by':    'non-original music',
+                'music':    'original music',
                 'cinematography by':    'cinematographer',
                 'cinematography':   'cinematographer',
                 'film editing by':  'editor',
@@ -84,350 +63,331 @@ class Movie:
                 'actresses':    'cast',
                 'casting by':   'casting director',
                 'casting':  'casting director',
-                'art direction by': 'art director',
-                'art direction': 'art director',
-                'set decoration by':    'set decorator',
-                'set decoration':   'set decorator',
+                'art direction by': 'art direction',
+                'set decoration by':    'set decoration',
                 'costume design by':    'costume designer',
                 'costume design':    'costume designer',
                 'makeup department':    'make up',
                 'makeup':    'make up',
                 'make-up':    'make up',
                 'production management':    'production manager',
+                'production company':    'production companies',
                 'second unit director or assistant director':
                                                 'assistant director',
                 'second unit director':   'assistant director',
                 'sound department': 'sound crew',
+                'costume and wardrobe department': 'costume department',
                 'special effects by':   'special effects',
                 'visual effects by':    'visual effects',
+                'special effects company':   'special effects companies',
                 'stunts':   'stunt performer',
-                'other crew':   'crewmembers',
-                'misc crew':   'crewmembers',
-                'other companies':  'miscellaneous companies',
+                'other crew':   'miscellaneous crew',
+                'misc crew':   'miscellaneous crew',
+                'miscellaneouscrew':   'miscellaneous crew',
+                'crewmembers': 'miscellaneous crew',
+                'crew members': 'miscellaneous crew',
+                'other companies': 'miscellaneous companies',
+                'misc companies': 'miscellaneous companies',
+                'miscellaneous company': 'miscellaneous companies',
+                'misc company': 'miscellaneous companies',
+                'other company': 'miscellaneous companies',
                 'aka':  'akas',
                 'also known as':    'akas',
                 'country':  'countries',
+                'production country':  'countries',
+                'production countries':  'countries',
+                'genre': 'genres',
                 'runtime':  'runtimes',
                 'lang': 'languages',
+                'color': 'color info',
+                'cover': 'cover url',
+                'seasons': 'number of seasons',
                 'language': 'languages',
                 'certificate':  'certificates',
                 'certifications':   'certificates',
-                'certification':    'certificates'}
+                'certification':    'certificates',
+                'miscellaneous links':  'misc links',
+                'miscellaneous':    'misc links',
+                'soundclips':   'sound clips',
+                'videoclips':   'video clips',
+                'photographs':  'photo sites',
+                'distributor': 'distributors',
+                'distribution': 'distributors',
+                'distribution companies': 'distributors',
+                'distribution company': 'distributors',
+                'guest': 'guests',
+                'guest appearances': 'guests',
+                'tv guests': 'guests',
+                'notable tv guest appearances': 'guests',
+                'episodes cast': 'guests',
+                'episodes number': 'number of episodes',
+                'amazon review': 'amazon reviews',
+                'merchandising': 'merchandising links',
+                'merchandise': 'merchandising links',
+                'sales': 'merchandising links',
+                'faq': 'faqs',
+                'parental guide': 'parents guide',
+                'frequently asked questions': 'faqs'}
 
-    def __init__(self, movieID=None, title='', myTitle='',
-                    myID=None, movieData={}, currentRole='', notes='',
-                    accessSystem=None, titlesRefs={}, namesRefs={},
-                    modFunct=modClearRefs):
+    keys_tomodify_list = ('plot', 'trivia', 'alternate versions', 'goofs',
+                        'quotes', 'dvd', 'laserdisc', 'news', 'soundtrack',
+                        'crazy credits', 'business', 'supplements',
+                        'video review', 'faqs')
+
+    cmpFunct = cmpMovies
+
+    def _init(self, **kwds):
         """Initialize a Movie object.
-        
+
         *movieID* -- the unique identifier for the movie.
-        *title* -- the title of the Movie, if not in the movieData dictionary.
+        *title* -- the title of the Movie, if not in the data dictionary.
         *myTitle* -- your personal title for the movie.
         *myID* -- your personal identifier for the movie.
-        *movieData* -- a dictionary used to initialize the object.
-        *currentRole* -- a string representing the current role or duty
-                        of a person in this movie.
+        *data* -- a dictionary used to initialize the object.
+        *currentRole* -- a Character instance representing the current role
+                         or duty of a person in this movie, or a Person
+                         object representing the actor/actress who played
+                         a given character in a Movie.  If a string is
+                         passed, an object is automatically build.
+        *roleID* -- if available, the characterID/personID of the currentRole
+                    object.
+        *roleIsPerson* -- when False (default) the currentRole is assumed
+                          to be a Character object, otherwise a Person.
         *notes* -- notes for the person referred in the currentRole
                     attribute; e.g.: '(voice)'.
         *accessSystem* -- a string representing the data access system used.
         *titlesRefs* -- a dictionary with references to movies.
         *namesRefs* -- a dictionary with references to persons.
+        *charactersRefs* -- a dictionary with references to characters.
         *modFunct* -- function called returning text fields.
         """
-        self.reset()
-        self.accessSystem = accessSystem
-        self.set_data(movieData, override=1)
-        self.update_titlesRefs(titlesRefs)
-        self.update_namesRefs(namesRefs)
-        if title and not movieData.has_key('title'):
+        title = kwds.get('title')
+        if title and not self.data.has_key('title'):
             self.set_title(title)
-        self.movieID = movieID
-        self.myTitle = myTitle
-        self.myID = myID
-        self.currentRole = currentRole
-        self.notes = notes
-        self.set_mod_funct(modFunct)
+        self.movieID = kwds.get('movieID', None)
+        self.myTitle = kwds.get('myTitle', u'')
 
-    def get_current_info(self):
-        """Return the current set of information retrieved."""
-        return self.current_info
-
-    def set_current_info(self, ci):
-        """Set the current set of information retrieved."""
-        self.current_info = ci
-
-    def add_to_current_info(self, val):
-        """Add a set of information to the current list."""
-        if val not in self.current_info:
-            self.current_info.append(val)
-
-    def has_current_info(self, val):
-        """Return true if the given set of information is in the list."""
-        return val in self.current_info
-    
-    def set_mod_funct(self, modFunct):
-        """Set the fuction used to modify the strings."""
-        if modFunct is None: modFunct = modClearRefs
-        self.__modFunct = modFunct
-
-    def update_titlesRefs(self, titlesRefs):
-        """Update the dictionary with the references to movies."""
-        self.__titlesRefs.update(titlesRefs)
-    
-    def get_titlesRefs(self):
-        """Return the dictionary with the references to movies."""
-        return self.__titlesRefs
-
-    def update_namesRefs(self, namesRefs):
-        """Update the dictionary with the references to names."""
-        self.__namesRefs.update(namesRefs)
-
-    def get_namesRefs(self):
-        """Return the dictionary with the references to names."""
-        return self.__namesRefs
-
-    def reset(self):
+    def _reset(self):
         """Reset the Movie object."""
-        self.__movie_data = {}
-        self.current_info = []
         self.movieID = None
-        self.myTitle = ''
-        self.myID = None
-        self.currentRole = ''
-        self.__titlesRefs = {}
-        self.__namesRefs = {}
-        self.__modFunct = modClearRefs
+        self.myTitle = u''
 
     def set_title(self, title):
         """Set the title of the movie."""
+        # XXX: convert title to unicode, if it's a plain string?
         d_title = analyze_title(title)
-        self.__movie_data.update(d_title)
+        self.data.update(d_title)
 
-    def set_data(self, md, override=0):
-        """Set the movie data to the given dictionary; if 'override' is
-        set, the previous data is removed, otherwise the two dictionary
-        are merged.
-        """
-        # XXX: uh.  Not sure this the best place/way to do it.
-        md = deepcopy(md)
-        if not override:
-            self.__movie_data.update(md)
+    def _additional_keys(self):
+        """Valid keys to append to the data.keys() list."""
+        addkeys = []
+        if self.data.has_key('title'):
+            addkeys += ['canonical title', 'long imdb title',
+                        'long imdb canonical title',
+                        'smart canonical title',
+                        'smart long imdb canonical title']
+        if self.data.has_key('episode of'):
+            addkeys += ['long imdb episode title', 'series title',
+                        'canonical series title', 'episode title',
+                        'canonical episode title',
+                        'smart canonical series title',
+                        'smart canonical episode title']
+        return addkeys
+
+    def guessLanguage(self):
+        """Guess the language of the title of this movie; returns None
+        if there are no hints."""
+        lang = self.get('languages')
+        if lang:
+            lang = lang[0]
         else:
-            self.__movie_data = md
-    
-    def clear(self):
-        """Reset the dictionary."""
-        self.__movie_data.clear()
+            country = self.get('countries')
+            if country:
+                lang = articles.COUNTRY_LANG.get(country[0])
+        return lang
 
-    def has_key(self, key):
-        """Return true if a given section is defined."""
-        try:
-            self.__getitem__(key)
-        except KeyError:
-            return 0
-        return 1
+    def smartCanonicalTitle(self, title=None, lang=None):
+        """Return the canonical title, guessing its language.
+        The title can be forces with the 'title' argument (internally
+        used) and the language can be forced with the 'lang' argument,
+        otherwise it's auto-detected."""
+        if title is None:
+            title = self.data.get('title', u'')
+        if lang is None:
+            lang = self.guessLanguage()
+        return canonicalTitle(title, lang=lang)
 
-    def keys(self):
-        """Return a list of valid keys."""
-        l = self.__movie_data.keys()
-        if 'title' in l:
-            l += ['canonical title', 'long imdb title',
-                    'long imdb canonical title']
-        return l
-
-    def items(self):
-        """Return the items in the dictionary."""
-        return [(k, self.__movie_data[k]) for k in self.keys()]
-
-    def values(self):
-        """Return the values in the dictionary."""
-        return [self.__movie_data[k] for k in self.keys()]
-
-    def append_item(self, key, item):
-        """The item is appended to the list identified by
-        the given key.
-        """
-        # TODO: this and the two other methods below are here only
-        #       for _future_ usage, when it will make sense to modify
-        #       a Movie object; right now they're incomplete and should
-        #       not be used.
-        if not self.__movie_data.has_key(key):
-            self.__movie_data[key] = []
-        self.__movie_data[key].append(item)
-
-    def set_item(self, key, item):
-        """Directly store the item with the given key."""
-        self.__movie_data[key] = item
-
-    def __setitem__(self, key, item):
-        """Directly store the item with the given key."""
-        self.__movie_data[key] = item
-    
-    def __delitem__(self, key):
-        """Remove the given section or key."""
-        # XXX: how to remove an item of a section?
-        del self.__movie_data[key]
-
-    def get(self, key, default=None):
-        """Return the given section, or default if it's not found."""
-        try:
-            return self.__getitem__(key)
-        except KeyError:
-            return default
-
-    def __getitem__(self, key):
-        """Return the value for a given key, checking key aliases;
-        a KeyError exception is raised if the key is not found.
-        """
-        if self.__movie_data.has_key('title'):
+    def _getitem(self, key):
+        """Handle special keys."""
+        if self.data.has_key('episode of'):
+            if key == 'long imdb episode title':
+                return build_title(self.data)
+            elif key == 'series title':
+                return self.data['episode of']['title']
+            elif key == 'canonical series title':
+                ser_title = self.data['episode of']['title']
+                return canonicalTitle(ser_title)
+            elif key == 'smart canonical series title':
+                ser_title = self.data['episode of']['title']
+                return self.smartCanonicalTitle(ser_title)
+            elif key == 'episode title':
+                return self.data.get('title', u'')
+            elif key == 'canonical episode title':
+                return canonicalTitle(self.data.get('title', u''))
+            elif key == 'smart canonical episode title':
+                return self.smartCanonicalTitle(self.data.get('title', u''))
+        if self.data.has_key('title'):
             if key == 'title':
-                return normalizeTitle(self.__movie_data['title'])
+                return self.data['title']
             elif key == 'long imdb title':
-                return build_title(self.__movie_data, canonical=0)
+                return build_title(self.data)
             elif key == 'canonical title':
-                return self.__movie_data['title']
+                return canonicalTitle(self.data['title'])
+            elif key == 'smart canonical title':
+                return self.smartCanonicalTitle(self.data['title'])
             elif key == 'long imdb canonical title':
-                return build_title(self.__movie_data, canonical=1)
-        if key in self.keys_alias.keys():
-            key = self.keys_alias[key]
-        return modifyStrings(self.__movie_data[key], self.__modFunct,
-                            self.__titlesRefs, self.__namesRefs)
+                return build_title(self.data, canonical=1)
+            elif key == 'smart long imdb canonical title':
+                return build_title(self.data, canonical=1,
+                                    lang=self.guessLanguage())
+        return None
+
+    def getID(self):
+        """Return the movieID."""
+        return self.movieID
 
     def __nonzero__(self):
-        """The Movie is "false" if the self.__movie_data is empty."""
+        """The Movie is "false" if the self.data does not contain a title."""
         # XXX: check the title and the movieID?
-        if self.__movie_data and self.__movie_data.has_key('title'):
-            return 1
+        if self.data.has_key('title'): return 1
         return 0
-
-    def __cmp__(self, other):
-        """Compare two Movie objects."""
-        # XXX: check the title and the movieID?
-        if not isinstance(other, self.__class__):
-            return -1
-        if self.__movie_data == other.__movie_data:
-            return 0
-        return 1
 
     def isSameTitle(self, other):
         """Return true if this and the compared object have the same
         long imdb title and/or movieID.
         """
-        if not isinstance(other, self.__class__):
-            return 0
-        if self.__movie_data.has_key('title') and \
-                other.__movie_data.has_key('title') and \
-                build_title(self.__movie_data, canonical=1) == \
-                build_title(other.__movie_data, canonical=1):
+        # XXX: obsolete?
+        if not isinstance(other, self.__class__): return 0
+        if self.data.has_key('title') and \
+                other.data.has_key('title') and \
+                build_title(self.data, canonical=0) == \
+                build_title(other.data, canonical=0):
             return 1
         if self.accessSystem == other.accessSystem and \
                 self.movieID is not None and self.movieID == other.movieID:
             return 1
         return 0
+    isSameMovie = isSameTitle # XXX: just for backward compatiblity.
 
     def __contains__(self, item):
-        """Return true if the given Person object is listed in this Movie."""
-        if not isinstance(item, Person):
-            return 0
-        for i in self.__movie_data.values():
-            if type(i) in (types.ListType, types.TupleType):
-                for j in i:
-                    if isinstance(j, Person) and item.isSamePerson(j):
-                        return 1
+        """Return true if the given Person object is listed in this Movie,
+        or if the the given Character is represented in this Movie."""
+        from Person import Person
+        from Character import Character
+        from Company import Company
+        if isinstance(item, Person):
+            for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
+                            toDescend=(list, dict, tuple, Movie)):
+                if item.isSame(p):
+                    return 1
+        elif isinstance(item, Character):
+            for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
+                            toDescend=(list, dict, tuple, Movie)):
+                if item.isSame(p.currentRole):
+                    return 1
+        elif isinstance(item, Company):
+            for c in flatten(self.data, yieldDictKeys=1, scalar=Company,
+                            toDescend=(list, dict, tuple, Movie)):
+                if item.isSame(c):
+                    return 1
         return 0
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Movie instance."""
-        m = Movie(self.movieID, '', self.myTitle, self.myID,
-                    deepcopy(self.__movie_data, memo), self.currentRole,
-                    self.notes, self.accessSystem,
-                    deepcopy(self.__titlesRefs, memo),
-                    deepcopy(self.__namesRefs, memo))
-        m.current_info = self.current_info
-        m.set_mod_funct(self.__modFunct)
+        m = Movie(title=u'', movieID=self.movieID, myTitle=self.myTitle,
+                    myID=self.myID, data=deepcopy(self.data, memo),
+                    currentRole=deepcopy(self.currentRole, memo),
+                    roleIsPerson=self._roleIsPerson,
+                    notes=self.notes, accessSystem=self.accessSystem,
+                    titlesRefs=deepcopy(self.titlesRefs, memo),
+                    namesRefs=deepcopy(self.namesRefs, memo),
+                    charactersRefs=deepcopy(self.charactersRefs, memo))
+        m.current_info = list(self.current_info)
+        m.set_mod_funct(self.modFunct)
         return m
 
-    def copy(self):
-        """Return a deep copy of the object itself."""
-        return deepcopy(self)
+    def __repr__(self):
+        """String representation of a Movie object."""
+        # XXX: add also currentRole and notes, if present?
+        if self.has_key('long imdb episode title'):
+            title = self.get('long imdb episode title')
+        else:
+            title = self.get('long imdb title')
+        r = '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
+                                                title)
+        if isinstance(r, unicode): r = r.encode('utf_8', 'replace')
+        return r
 
     def __str__(self):
         """Simply print the short title."""
-        return self.get('title', '')
+        return self.get('title', u'').encode('utf_8', 'replace')
+
+    def __unicode__(self):
+        """Simply print the short title."""
+        return self.get('title', u'')
 
     def summary(self):
         """Return a string with a pretty-printed summary for the movie."""
-        if not self:
-            return ''
-        s = 'Movie\n=====\n'
-        title = self.get('title')
-        if title:
-            s += 'Title: %s\n' % title
+        if not self: return u''
+        def _nameAndRole(personList, joiner=u', '):
+            """Build a pretty string with name and role."""
+            nl = []
+            for person in personList:
+                n = person.get('name', u'')
+                if person.currentRole: n += u' (%s)' % person.currentRole
+                nl.append(n)
+            return joiner.join(nl)
+        s = u'Movie\n=====\nTitle: %s\n' % \
+                    self.get('long imdb canonical title', u'')
         genres = self.get('genres')
-        if genres:
-            s += 'Genres: '
-            for gen in genres:
-                s += gen + ', '
-            s = s[:-2] + '.\n'
+        if genres: s += u'Genres: %s.\n' % u', '.join(genres)
         director = self.get('director')
         if director:
-            s += 'Director: '
-            for name in director:
-                s += str(name)
-                if name.currentRole:
-                    s += ' (%s)' % name.currentRole
-                s += ', '
-            s = s[:-2] + '.\n'
+            s += u'Director: %s.\n' % _nameAndRole(director)
         writer = self.get('writer')
         if writer:
-            s += 'Writer: '
-            for name in writer:
-                s += str(name)
-                if name.currentRole:
-                    s += ' (%s)' % name.currentRole
-                s += ', '
-            s = s[:-2] + '.\n'
+            s += u'Writer: %s.\n' % _nameAndRole(writer)
         cast = self.get('cast')
         if cast:
             cast = cast[:5]
-            s += 'Cast: '
-            for name in cast:
-                s += str(name)
-                if name.currentRole:
-                    s += ' (%s)' % name.currentRole
-                s += ', '
-            s = s[:-2] + '.\n'
+            s += u'Cast: %s.\n' % _nameAndRole(cast)
         runtime = self.get('runtimes')
         if runtime:
-            s += 'Runtime: '
-            for r in runtime:
-                s += r + ', '
-            s = s[:-2] + '.\n'
+            s += u'Runtime: %s.\n' % u', '.join(runtime)
         countries = self.get('countries')
         if countries:
-            s += 'Country: '
-            for c in countries:
-                s += c + ', '
-            s = s[:-2] + '.\n'
+            s += u'Country: %s.\n' % u', '.join(countries)
         lang = self.get('languages')
         if lang:
-            s += 'Language: '
-            for l in lang:
-                s += l + ', '
-            s = s[:-2] + '.\n'
+            s += u'Language: %s.\n' % u', '.join(lang)
         rating = self.get('rating')
         if rating:
-            s += 'Rating: %s\n' % rating
-        nr_votes = self.get('votes')
-        if nr_votes:
-            s += 'Votes: %s\n' % nr_votes
+            s += u'Rating: %s' % rating
+            nr_votes = self.get('votes')
+            if nr_votes:
+                s += u' (%s votes)' % nr_votes
+            s += u'.\n'
         plot = self.get('plot')
+        if not plot:
+            plot = self.get('plot summary')
+            if plot:
+                plot = [plot]
         if plot:
             plot = plot[0]
             i = plot.find('::')
             if i != -1:
-                plot = plot[i+2:]
-            s += 'Plot: %s' % plot
+                plot = plot[:i]
+            s += u'Plot: %s' % plot
         return s
 
 

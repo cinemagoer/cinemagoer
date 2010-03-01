@@ -8,7 +8,8 @@ E.g., for "Mel Gibson" the referred pages would be:
     biography:      http://akas.imdb.com/name/nm0000154/bio
     ...and so on...
 
-Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
+               2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,372 +26,484 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import re
 from imdb.Movie import Movie
-from imdb.utils import analyze_name, build_name
-from utils import ParserBase
+from imdb.utils import analyze_name, canonicalName, normalizeName, \
+                        analyze_title, date_and_notes
+from utils import build_movie, DOMParserBase, Attribute, Extractor, \
+                        analyze_imdbid
 
 
-class HTMLMaindetailsParser(ParserBase):
-    """Parser for the "categorized" page of a given person.
+from movieParser import _manageRoles
+_reRoles = re.compile(r'(<li>.*? \.\.\.\. )(.*?)(</li>|<br>)',
+                        re.I | re.M | re.S)
+
+def build_date(date):
+    day = date.get('day')
+    year = date.get('year')
+    if day and year:
+        return "%s %s" % (day, year)
+    if day:
+        return day
+    if year:
+        return year
+    return ""
+
+class DOMHTMLMaindetailsParser(DOMParserBase):
+    """Parser for the "categorized" (maindetails) page of a given person.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
-        cparser = HTMLMaindetailsParser()
+        cparser = DOMHTMLMaindetailsParser()
         result = cparser.parse(categorized_html_string)
     """
-    def _init(self):
-        # This is the dictionary that will be returned by the parse() method.
-        self.__person_data = {}
-        
-    def _reset(self):
-        """Reset the parser."""
-        self.__person_data.clear()
-        self.__in_name = 0
-        self.__name = ''
-        self.__in_birth = 0
-        self.__in_death = 0
-        self.__birth = ''
-        self.__death = ''
-        self.__in_list = 0
-        self.__in_title = 0
-        self.__title = ''
-        self.__roles = ''
-        self.__last_imdbID = ''
-        self.__in_sect = 0
-        self.__in_b = 0
-        self.__sect_name = ''
-        self.__in_emailfriend = 0
+    _containsObjects = True
 
-    def get_data(self):
-        """Return the dictionary."""
-        # Split birth/death date/notes.
-        b = self.__birth.split('::')
-        if b:
-            b_date = b[0]
-            del b[0]
-            b_notes = ''.join(b)
-            if b_date:
-                self.__person_data['birth date'] = b_date.strip()
-            if b_notes:
-                self.__person_data['birth notes'] = b_notes.strip()
-        d = self.__death.split('::')
-        if d:
-            d_date = d[0]
-            del d[0]
-            d_notes = ''.join(d)
-            if d_date:
-                self.__person_data['death date'] = d_date.strip()
-            if d_notes:
-                self.__person_data['death notes'] = d_notes.strip()
-        return self.__person_data
-    
-    def start_title(self, attrs):
-        self.__in_name = 1
+    _birth_attrs = [Attribute(key='birth date',
+                        path={
+                            'day': "./div/a[starts-with(@href, " \
+                                    "'/date/')]/text()",
+                            'year': "./div/a[starts-with(@href, " \
+                                    "'/search/name?birth_year=')]/text()"
+                            },
+                        postprocess=build_date),
+                    Attribute(key='birth notes',
+                        path="./div/a[starts-with(@href, " \
+                                "'/search/name?birth_place=')]/text()")]
+    _death_attrs = [Attribute(key='death date',
+                        path={
+                            'day': "./div/a[starts-with(@href, " \
+                                    "'/date/')]/text()",
+                            'year': "./div/a[starts-with(@href, " \
+                                    "'/search/name?death_date=')]/text()"
+                            },
+                        postprocess=build_date),
+                    Attribute(key='death notes',
+                        path="./div/text()",
+                        # TODO: check if this slicing is always correct
+                        postprocess=lambda x: x.strip()[2:])]
+    _film_attrs = [Attribute(key=None,
+                      multi=True,
+                      path={
+                          'link': "./a[1]/@href",
+                          'title': ".//text()",
+                          'status': "./i/a//text()",
+                          'roleID': "./div[@class='_imdbpyrole']/@roleid"
+                          },
+                      postprocess=lambda x:
+                          build_movie(x.get('title') or u'',
+                              movieID=analyze_imdbid(x.get('link') or u''),
+                              roleID=(x.get('roleID') or u'').split('/'),
+                              status=x.get('status') or None))]
 
-    def end_title(self):
-        self.__in_name = 0
-        d = analyze_name(self.__name.strip())
-        self.__person_data.update(d)
+    extractors = [
+            Extractor(label='page title',
+                        path="//title",
+                        attrs=Attribute(key='name',
+                            path="./text()",
+                            postprocess=lambda x: analyze_name(x,
+                                                            canonical=1))),
 
-    def do_img(self, attrs):
-        alt = self.get_attr_value(attrs, 'alt')
-        if alt and alt.lower().strip() == \
-                build_name(self.__person_data).lower():
-            src = self.get_attr_value(attrs, 'src')
-            if src: self.__person_data['headshot'] = src
-        if self.__in_list:
-            self.__in_list = 0
+            Extractor(label='birth info',
+                        path="//div[h5='Date of Birth:']",
+                        attrs=_birth_attrs),
 
-    def do_br(self, attrs):
-        # Birth/death date/notes are separated by a <br> tag.
-        if self.__in_birth and self.__birth:
-            self.__birth += '::'
-        elif self.__in_death and self.__death:
-            self.__death += '::'
-        elif self.__in_list:
-            self.__in_list = 0
+            Extractor(label='death info',
+                        path="//div[h5='Date of Death:']",
+                        attrs=_death_attrs),
 
-    def start_b(self, attrs):
-        self.__in_b = 1
+            Extractor(label='headshot',
+                        path="//a[@name='headshot']",
+                        attrs=Attribute(key='headshot',
+                            path="./img/@src")),
 
-    def end_b(self):
-        self.__in_b = 0
+            Extractor(label='akas',
+                        path="//div[h5='Alternate Names:']",
+                        attrs=Attribute(key='akas',
+                            path="./div/text()",
+                            postprocess=lambda x: x.strip().split(' | '))),
 
-    def start_p(self, attrs):
-        cl = self.get_attr_value(attrs, 'class')
-        if cl == 'ch':
-            self.__in_b = 1
+            Extractor(label='filmography',
+                        group="//div[@class='filmo'][h5]",
+                        group_key="./h5/a[@name]/text()",
+                        group_key_normalize=lambda x: x.lower()[:-1],
+                        path="./ol/li",
+                        attrs=_film_attrs)
+            ]
+    preprocessors = [
+            # XXX: check that this doesn't cut "status" or other info...
+            (re.compile(r'<br>(\.\.\.|    ?).+?</li>', re.I | re.M | re.S),
+                '</li>'),
+            (_reRoles, _manageRoles)]
 
-    def end_p(self): pass
-
-    def start_form(self, attrs):
-        act = self.get_attr_value(attrs, 'action')
-        if act and act.lower() == '/emailafriend':
-            self.__in_emailfriend = 1
-
-    def end_form(self):
-        self.__in_emailfriend = 0
-
-    def do_input(self, attrs):
-        if self.__in_emailfriend:
-            name = self.get_attr_value(attrs, 'name')
-            if name and name.lower() == 'arg':
-                value = self.get_attr_value(attrs, 'value')
-                if value:
-                    d = analyze_name(value)
-                    if d.has_key('name'):
-                        self.__person_data['name'] = d['name']
+    def postprocess_data(self, data):
+        for what in 'birth date', 'death date':
+            if what in data and not data[what]:
+                del data[what]
+        return data
 
 
-    def start_ol(self, attrs): pass
-
-    def end_ol(self):
-        self.__death += '::'
-        self.__in_sect = 0
-        self.__sect_name = ''
-
-    def start_li(self, attrs):
-        self.__in_list = 1
-
-    def end_li(self):
-        if self.__title and self.__sect_name:
-            tit = self.__title
-            notes = ''
-            self.__roles = self.__roles.strip()
-            if len(self.__roles) > 5:
-                if self.__roles[0] == '(' and self.__roles[1:5].isdigit():
-                    endp = self.__roles.find(')')
-                    if endp != -1:
-                        tit += ' %s' % self.__roles[:endp+1]
-                        self.__roles = self.__roles[endp+1:].strip()
-            if self.__roles.startswith('(TV)'):
-                tit += ' (TV)'
-                self.__roles = self.__roles[4:].strip()
-            elif self.__roles.startswith('TV Series'):
-                self.__roles = self.__roles[10:].strip()
-            elif self.__roles.startswith('(V)'):
-                tit += ' (V)'
-                self.__roles = self.__roles[3:].strip()
-            elif self.__roles.startswith('(mini)'):
-                tit += ' (mini)'
-                self.__roles = self.__roles[6:].strip()
-            elif self.__roles.startswith('(VG)'):
-                tit += ' (VG)'
-                self.__roles = self.__roles[4:].strip()
-            sp = self.__roles.find('(')
-            if sp != -1:
-                ep = self.__roles.rfind(')')
-                if ep != -1:
-                    notes = self.__roles[sp:ep+1]
-                    self.__roles = self.__roles[ep+1:].strip()
-            if self.__roles.startswith('.... '):
-                self.__roles = self.__roles[5:]
-            movie = Movie(movieID=self.__last_imdbID, title=tit,
-                            accessSystem='http')
-            if notes: movie.notes = notes
-            movie.currentRole = self.__roles
-            sect = self.__sect_name.strip().lower()
-            if not self.__person_data.has_key(sect):
-                self.__person_data[sect] = []
-            self.__person_data[sect].append(movie)
-        self.__title = ''
-        self.__roles = ''
-        self.__in_list = 0
-
-    def start_dd(self, attrs): pass
-
-    def end_dd(self):
-        self.__in_birth = 0
-        self.__in_death = 0
-
-    def start_a(self, attrs):
-        href = self.get_attr_value(attrs, 'href')
-        # A movie title.
-        if href and href.find('/title/tt') != -1:
-            self.__in_title = 1
-            imdbID = self.re_imdbID.findall(href)
-            if imdbID:
-                self.__last_imdbID = imdbID[-1]
-        elif self.__in_b:
-            name = self.get_attr_value(attrs, 'name')
-            if name: self.__in_sect = 1
-
-    def end_a(self):
-        self.__in_title = 0
-        self.__in_sect = 0
-
-    def _handle_data(self, data):
-        sdata = data.strip()
-        sldata = sdata.lower()
-        if self.__in_name:
-            self.__name += data
-        elif self.__in_birth:
-            if self.__birth and not self.__birth[-1].isspace():
-                self.__birth += ' '
-            self.__birth += sdata
-        elif self.__in_death:
-            if self.__death and not self.__death[-1].isspace():
-                self.__death += ' '
-            self.__death += sdata
-        elif sldata.startswith('date of death'):
-            self.__in_death = 1
-        elif sldata.startswith('date of birth'):
-            self.__in_birth = 1
-        elif self.__in_sect:
-            self.__sect_name += sldata
-        elif self.__in_title:
-            self.__title += data
-        elif self.__in_list:
-            if self.__roles and not self.__roles[-1].isspace():
-                self.__roles += ' '
-            self.__roles += data.strip()
-
-
-class HTMLBioParser(ParserBase):
+class DOMHTMLBioParser(DOMParserBase):
     """Parser for the "biography" page of a given person.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
-        bioparser = HTMLBioParser()
+        bioparser = DOMHTMLBioParser()
         result = bioparser.parse(biography_html_string)
     """
-    def _init(self):
-        # This is the dictionary that will be returned by the parse() method.
-        self.__bio_data = {}
+    _defGetRefs = True
 
-    def _reset(self):
-        """Reset the parser."""
-        self.__bio_data.clear()
-        self.__sect_name = ''
-        self.__sect_data = ''
-        self.__in_sect = 0
-        self.__in_sect_name = 0
+    _birth_attrs = [Attribute(key='birth date',
+                        path={
+                            'day': "./a[starts-with(@href, " \
+                                    "'/date/')]/text()",
+                            'year': "./a[starts-with(@href, " \
+                                    "'/search/name?birth_year=')]/text()"
+                            },
+                        postprocess=build_date),
+                    Attribute(key='birth notes',
+                        path="./a[starts-with(@href, " \
+                                "'/search/name?birth_place=')]/text()")]
+    _death_attrs = [Attribute(key='death date',
+                        path={
+                            'day': "./a[starts-with(@href, " \
+                                    "'/date/')]/text()",
+                            'year': "./a[starts-with(@href, " \
+                                    "'/search/name?death_date=')]/text()"
+                            },
+                        postprocess=build_date),
+                    Attribute(key='death notes',
+                        path="./text()",
+                        # TODO: check if this slicing is always correct
+                        postprocess=lambda x: u''.join(x).strip()[2:])]
+    extractors = [
+            Extractor(label='birth info',
+                        path="//div[h5='Date of Birth']",
+                        attrs=_birth_attrs),
+            Extractor(label='death info',
+                        path="//div[h5='Date of Death']",
+                        attrs=_death_attrs),
+            Extractor(label='nick names',
+                        path="//div[h5='Nickname']",
+                        attrs=Attribute(key='nick names',
+                            path="./text()",
+                            joiner='|',
+                            postprocess=lambda x: [n.strip().replace(' (',
+                                    '::(', 1) for n in x.split('|')
+                                    if n.strip()])),
+            Extractor(label='birth name',
+                        path="//div[h5='Birth Name']",
+                        attrs=Attribute(key='birth name',
+                            path="./text()",
+                            postprocess=lambda x: canonicalName(x.strip()))),
+            Extractor(label='height',
+                        path="//div[h5='Height']",
+                        attrs=Attribute(key='height',
+                            path="./text()",
+                            postprocess=lambda x: x.strip())),
+            Extractor(label='mini biography',
+                        path="//div[h5='Mini Biography']",
+                        attrs=Attribute(key='mini biography',
+                            multi=True,
+                            path={
+                                'bio': "./p//text()",
+                                'by': "./b/following-sibling::a/text()"
+                                },
+                            postprocess=lambda x: "%s::%s" % \
+                                (x.get('bio').strip(),
+                                (x.get('by') or u'').strip() or u'Anonymous'))),
+            Extractor(label='spouse',
+                        path="//div[h5='Spouse']/table/tr",
+                        attrs=Attribute(key='spouse',
+                            multi=True,
+                            path={
+                                'name': "./td[1]//text()",
+                                'info': "./td[2]//text()"
+                                },
+                            postprocess=lambda x: ("%s::%s" % \
+                                (x.get('name').strip(),
+                                (x.get('info') or u'').strip())).strip(':'))),
+            Extractor(label='trade mark',
+                        path="//div[h5='Trade Mark']/p",
+                        attrs=Attribute(key='trade mark',
+                            multi=True,
+                            path=".//text()",
+                            postprocess=lambda x: x.strip())),
+            Extractor(label='trivia',
+                        path="//div[h5='Trivia']/p",
+                        attrs=Attribute(key='trivia',
+                            multi=True,
+                            path=".//text()",
+                            postprocess=lambda x: x.strip())),
+            Extractor(label='quotes',
+                        path="//div[h5='Personal Quotes']/p",
+                        attrs=Attribute(key='quotes',
+                            multi=True,
+                            path=".//text()",
+                            postprocess=lambda x: x.strip())),
+            Extractor(label='salary',
+                        path="//div[h5='Salary']/table/tr",
+                        attrs=Attribute(key='salary history',
+                            multi=True,
+                            path={
+                                'title': "./td[1]//text()",
+                                'info': "./td[2]/text()",
+                                },
+                            postprocess=lambda x: "%s::%s" % \
+                                    (x.get('title').strip(),
+                                        x.get('info').strip()))),
+            Extractor(label='where now',
+                        path="//div[h5='Where Are They Now']/p",
+                        attrs=Attribute(key='where now',
+                            multi=True,
+                            path=".//text()",
+                            postprocess=lambda x: x.strip())),
+            ]
 
-    def get_data(self):
-        """Return the dictionary."""
-        return self.__bio_data
+    preprocessors = [
+        (re.compile('(<h5>)', re.I), r'</div><div class="_imdbpy">\1'),
+        (re.compile('(</table>\n</div>\s+)</div>', re.I + re.DOTALL), r'\1'),
+        (re.compile('(<div id="tn15bot">)'), r'</div>\1'),
+        (re.compile('\.<br><br>([^\s])', re.I), r'. \1')
+        ]
 
-    def do_br(self, attrs):
-        if self.__sect_name.lower() == 'mini biography' and self.__sect_data \
-                and  not self.__sect_data[-1].isspace():
-            self.__sect_data += ' '
-
-    def start_a(self, attrs): pass
-
-    def end_a(self): pass
-
-    def start_dt(self, attrs):
-        self.__in_sect = 1
-        self.__in_sect_name = 1
-
-    def end_dt(self):
-        self.__in_sect_name = 0
-
-    def start_dd(self, attrs): pass
-
-    def end_dd(self):
-        # Add a new section in the biography.
-        if self.__sect_name and self.__sect_data:
-            sect = self.__sect_name.strip().lower()
-            # XXX: to get rid of the last colons.
-            if sect[-1] == ':':
-                sect = sect[:-1]
-            data = self.__sect_data.strip()
-            d_split = data.split('::')
-            if len(d_split) == 1:
-                self.__bio_data[sect] = data
-            # Multiple items are added separately (e.g.: 'trivia' is
-            # a list of strings).
-            else:
-                if not self.__bio_data.has_key(sect):
-                    self.__bio_data[sect] = []
-                for d in [x.strip() for x in d_split]:
-                    if not d:
-                        continue
-                    self.__bio_data[sect].append(d)
-        self.__sect_name = ''
-        self.__sect_data = ''
-        self.__in_sect = 0
-
-    def start_p(self, attrs):
-        if self.__in_sect:
-            if self.__sect_data:
-                self.__sect_data += '::'
-
-    def end_p(self): pass
-
-    def start_tr(self, attrs):
-        if self.__in_sect:
-            if self.__sect_data:
-                if self.__sect_data[-1].isspace():
-                    self.__sect_data = self.__sect_data.strip()
-                self.__sect_data += '::'
-
-    def end_tr(self): pass
-    
-    def _handle_data(self, data):
-        if self.__in_sect_name:
-            self.__sect_name += data
-        elif self.__in_sect:
-            if not data.isspace() and self.__sect_data \
-                    and self.__sect_data[-1].isspace():
-                data = data.strip()
-            self.__sect_data += data.replace('\n', ' ')
+    def postprocess_data(self, data):
+        for what in 'birth date', 'death date':
+            if what in data and not data[what]:
+                del data[what]
+        return data
 
 
-class HTMLOtherWorksParser(ParserBase):
-    """Parser for the "other works" page of a given person.
+class DOMHTMLOtherWorksParser(DOMParserBase):
+    """Parser for the "other works" and "agent" pages of a given person.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
-        owparser = HTMLOtherWorksParser()
+        owparser = DOMHTMLOtherWorksParser()
         result = owparser.parse(otherworks_html_string)
     """
-    def _reset(self):
-        """Reset the parser."""
-        self.__in_ow = 0
-        self.__ow = []
-        self.__cow = ''
+    _defGetRefs = True
+    kind = 'other works'
 
-    def get_data(self):
-        """Return the dictionary."""
-        if not self.__ow: return {}
-        return {'other works': self.__ow}
+    # XXX: looks like the 'agent' page is no more public.
+    extractors = [
+            Extractor(label='other works',
+                        path="//h5[text()='Other works']/" \
+                                "following-sibling::div[1]",
+                        attrs=Attribute(key='self.kind',
+                            path=".//text()",
+                            postprocess=lambda x: x.strip().split('\n\n')))
+            ]
 
-    def start_dd(self, attrs):
-        self.__in_ow = 1
-
-    def end_dd(self): pass
-
-    def do_br(self, attrs):
-        if self.__in_ow and self.__cow:
-            self.__ow.append(self.__cow.strip())
-            self.__cow = ''
-
-    def start_dl(self, attrs): pass
-
-    def end_dl(self):
-        self.do_br([])
-        self.__in_ow = 0
-    
-    def _handle_data(self, data):
-        if self.__in_ow:
-            self.__cow += data
+    preprocessors = [
+        (re.compile('(<h5>[^<]+</h5>)', re.I),
+            r'</div>\1<div class="_imdbpy">'),
+        (re.compile('(</table>\n</div>\s+)</div>', re.I), r'\1'),
+        (re.compile('(<div id="tn15bot">)'), r'</div>\1'),
+        (re.compile('<br/><br/>', re.I), r'\n\n')
+        ]
 
 
-# The used instances.
-maindetails_parser = HTMLMaindetailsParser()
-bio_parser = HTMLBioParser()
-otherworks_parser = HTMLOtherWorksParser()
-from movieParser import HTMLOfficialsitesParser
-person_officialsites_parser = HTMLOfficialsitesParser()
-from movieParser import HTMLAwardsParser
-person_awards_parser = HTMLAwardsParser()
-person_awards_parser.subject = 'name'
+def _build_episode(link, title, minfo, role, roleA, roleAID):
+    """Build an Movie object for a given episode of a series."""
+    episode_id = analyze_imdbid(link)
+    notes = u''
+    minidx = minfo.find(' -')
+    # Sometimes, for some unknown reason, the role is left in minfo.
+    if minidx != -1:
+        slfRole = minfo[minidx+3:].lstrip()
+        minfo = minfo[:minidx].rstrip()
+        if slfRole.endswith(')'):
+            commidx = slfRole.rfind('(')
+            if commidx != -1:
+                notes = slfRole[commidx:]
+                slfRole = slfRole[:commidx]
+        if slfRole and role is None and roleA is None:
+            role = slfRole
+    eps_data = analyze_title(title)
+    eps_data['kind'] = u'episode'
+    # FIXME: it's wrong for multiple characters (very rare on tv series?).
+    if role is None:
+        role = roleA # At worse, it's None.
+    if role is None:
+        roleAID = None
+    if roleAID is not None:
+        roleAID = analyze_imdbid(roleAID)
+    e = Movie(movieID=episode_id, data=eps_data, currentRole=role,
+            roleID=roleAID, notes=notes)
+    # XXX: are we missing some notes?
+    # XXX: does it parse things as "Episode dated 12 May 2005 (12 May 2005)"?
+    if minfo.startswith('('):
+        pe = minfo.find(')')
+        if pe != -1:
+            date = minfo[1:pe]
+            if date != '????':
+                e['original air date'] = date
+                if eps_data.get('year', '????') == '????':
+                    syear = date.split()[-1]
+                    if syear.isdigit():
+                        e['year'] = int(syear)
+    return e
+
+
+class DOMHTMLSeriesParser(DOMParserBase):
+    """Parser for the "by TV series" page of a given person.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        sparser = DOMHTMLSeriesParser()
+        result = sparser.parse(filmoseries_html_string)
+    """
+    _containsObjects = True
+
+    extractors = [
+            Extractor(label='series',
+                        group="//div[@class='filmo']/span[1]",
+                        group_key="./a[1]",
+                        path="./following-sibling::ol[1]/li/a[1]",
+                        attrs=Attribute(key=None,
+                            multi=True,
+                            path={
+                                'link': "./@href",
+                                'title': "./text()",
+                                'info': "./following-sibling::text()",
+                                'role': "./following-sibling::i[1]/text()",
+                                'roleA': "./following-sibling::a[1]/text()",
+                                'roleAID': "./following-sibling::a[1]/@href"
+                                },
+                            postprocess=lambda x: _build_episode(x.get('link'),
+                                x.get('title'),
+                                (x.get('info') or u'').strip(),
+                                x.get('role'),
+                                x.get('roleA'),
+                                x.get('roleAID'))))
+            ]
+
+    def postprocess_data(self, data):
+        if len(data) == 0:
+            return {}
+        nd = {}
+        for key in data.keys():
+            dom = self.get_dom(key)
+            link = self.xpath(dom, "//a/@href")[0]
+            title = self.xpath(dom, "//a/text()")[0][1:-1]
+            series = Movie(movieID=analyze_imdbid(link),
+                           data=analyze_title(title),
+                           accessSystem=self._as, modFunct=self._modFunct)
+            nd[series] = []
+            for episode in data[key]:
+                # XXX: should we create a copy of 'series', to avoid
+                #      circular references?
+                episode['episode of'] = series
+                nd[series].append(episode)
+        return {'episodes': nd}
+
+
+class DOMHTMLPersonGenresParser(DOMParserBase):
+    """Parser for the "by genre" and "by keywords" pages of a given person.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        gparser = DOMHTMLPersonGenresParser()
+        result = gparser.parse(bygenre_html_string)
+    """
+    kind = 'genres'
+    _containsObjects = True
+
+    extractors = [
+            Extractor(label='genres',
+                        group="//b/a[@name]/following-sibling::a[1]",
+                        group_key="./text()",
+                        group_key_normalize=lambda x: x.lower(),
+                        path="../../following-sibling::ol[1]/li//a[1]",
+                        attrs=Attribute(key=None,
+                            multi=True,
+                            path={
+                                'link': "./@href",
+                                'title': "./text()",
+                                'info': "./following-sibling::text()"
+                                },
+                            postprocess=lambda x: \
+                                    build_movie(x.get('title') + \
+                                    x.get('info').split('[')[0],
+                                    analyze_imdbid(x.get('link')))))
+            ]
+
+    def postprocess_data(self, data):
+        if len(data) == 0:
+            return {}
+        return {self.kind: data}
+
+
+from movieParser import _parse_merchandising_link
+
+class DOMHTMLPersonSalesParser(DOMParserBase):
+    """Parser for the "merchandising links" page of a given person.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        sparser = DOMHTMLPersonSalesParser()
+        result = sparser.parse(sales_html_string)
+    """
+    extractors = [
+        Extractor(label='merchandising links',
+                    group="//span[@class='merch_title']",
+                    group_key=".//text()",
+                    path="./following-sibling::table[1]/" \
+                            "/td[@class='w_rowtable_colshop']//tr[1]",
+                    attrs=Attribute(key=None,
+                        multi=True,
+                        path={
+                            'link': "./td[2]/a[1]/@href",
+                            'text': "./td[1]/img[1]/@alt",
+                            'cover': "./ancestor::td[1]/../" \
+                                    "td[1]/a[1]/img[1]/@src",
+                            },
+                        postprocess=_parse_merchandising_link)),
+    ]
+
+    preprocessors = [
+        (re.compile('(<a name="[^"]+" )/>', re.I), r'\1></a>')
+        ]
+
+    def postprocess_data(self, data):
+        if len(data) == 0:
+            return {}
+        return {'merchandising links': data}
+
+
+from movieParser import DOMHTMLTechParser
+from movieParser import DOMHTMLOfficialsitesParser
+from movieParser import DOMHTMLAwardsParser
+from movieParser import DOMHTMLNewsParser
+
+
+_OBJECTS = {
+    'maindetails_parser': ((DOMHTMLMaindetailsParser,), None),
+    'bio_parser': ((DOMHTMLBioParser,), None),
+    'otherworks_parser': ((DOMHTMLOtherWorksParser,), None),
+    #'agent_parser': ((DOMHTMLOtherWorksParser,), {'kind': 'agent'}),
+    'person_officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
+    'person_awards_parser': ((DOMHTMLAwardsParser,), {'subject': 'name'}),
+    'publicity_parser': ((DOMHTMLTechParser,), {'kind': 'publicity'}),
+    'person_series_parser': ((DOMHTMLSeriesParser,), None),
+    'person_contacts_parser': ((DOMHTMLTechParser,), {'kind': 'contacts'}),
+    'person_genres_parser': ((DOMHTMLPersonGenresParser,), None),
+    'person_keywords_parser': ((DOMHTMLPersonGenresParser,),
+                                {'kind': 'keywords'}),
+    'news_parser': ((DOMHTMLNewsParser,), None),
+    'sales_parser': ((DOMHTMLPersonSalesParser,), None)
+}
 

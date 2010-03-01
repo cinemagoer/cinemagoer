@@ -2,8 +2,16 @@ IMDbPY
 
 NOTE: see also the recommendations in the "DISCLAIMER.txt" file.
 
+NOTE: for a list of other persons who share with me the copyright over
+      specific portions of code, see the "CONTRIBUTORS.txt" file.
 
-  Copyright 2004, 2005 Davide Alberani <da@erlug.linux.it>
+NOTE: IMDbPY includes an unmodified version of BeautifulSoup,
+      renamed _bsoup.py; that code is copyrighted by its author,
+      Leonard Richardson <leonardr at segfault.org> and is released
+      under a New-style BSD license.
+
+
+  Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -1,0 +1,14 @@
+
+  IMDb's web site redesign
+  ========================
+
+On 19 February 2007, IMDb introduced a complete redesign of their
+web site.
+
+Since release 3.0, IMDbPY uses a new account to access the IMDb
+web site, parsing the new layout.
+
+Older version still access the old layout, so they are still (more
+or less) working; obviously only the new layout is supported by
+now on.
+

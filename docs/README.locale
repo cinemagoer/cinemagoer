@@ -1,0 +1,68 @@
+
+  LOCALIZATION FOR IMDbPY
+  =======================
+
+Since version 4.1 it's easy to translate the labels that describe
+sets of information.
+
+
+  LIMITATION
+  ==========
+
+So far no internal message or exception is translated, the
+internationalization is limited to the "tags" returned
+by the getAsXML and asXML methods of the Movie, Person, Character
+or Company classes.  Beware that in many cases these "tags" are not
+the same as the "keys" used to access information in the same
+classes, as if they are dictionaries.
+E.g.: you can translate "long-imdb-name" - the tag returned by
+the call person.getAsXML('long imdb name') - but not "long imdb name"
+directly.
+To translate keys, you can use the helpers.translateKey function in
+the 'helpers' module.
+
+
+  USAGE
+  =====
+
+If you want to add i18n to your IMDbPY-based application, all you need
+to do is to switch to the 'imdbpy' text domain.
+
+E.g.:
+  import imdb.locale
+
+  # Standard gettext stuff.
+  import gettext
+  from gettext import gettext as _
+
+  # Switch to the imdbpy domain.
+  gettext.textdomain('imdbpy')
+
+  # Request a translation.
+  print _(u'long-imdb-name')
+
+
+  ADD A NEW LANGUAGE
+  ==================
+
+In the imdb.locale package, you'll find some scripts useful to build
+your own internationalization files.
+If you create a new translation or update an existing one, you can send
+it to the <imdbpy-devel@lists.sourceforge.net> mailing list, for
+inclusion in the next releases.
+
+- the generatepot.py should be used only when the DTD is changed; it's
+  used to create the imdbpy.pot file (the one shipped is always
+  up-to-date).
+- you can copy the imdbpy.pot file to your language's .po file (e.g.
+  imdbpy-fr.po for French) and modify it accordingly to your needs.
+- then you must run rebuildmo.py (which is automatically called
+  at install time, by the setup.py script) to create the .mo files.
+
+If you need to upgrade an existing .po file, after changes to the .pot
+file (usually because the DTD was changed), you can use the msgmerge
+tool, part of the GNU gettext suite.
+E.g.:
+  msgmerge -N imdbpy-fr.po imdbpy.pot > new-imdbpy-fr.po
+
+

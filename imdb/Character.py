@@ -4,7 +4,7 @@ Character module (imdb package).
 This module provides the Character class, used to store information about
 a given character.
 
-Copyright 2007-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2007-2010 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -91,9 +91,12 @@ class Character(_Container):
 
     def _additional_keys(self):
         """Valid keys to append to the data.keys() list."""
+        addkeys = []
         if self.data.has_key('name'):
-            return ['long imdb name']
-        return []
+            addkeys += ['long imdb name']
+        if self.data.has_key('headshot'):
+            addkeys += ['full-size headshot']
+        return addkeys
 
     def _getitem(self, key):
         """Handle special keys."""
@@ -101,6 +104,8 @@ class Character(_Container):
         if self.data.has_key('name'):
             if key == 'long imdb name':
                 return build_name(self.data)
+        if key == 'full-size headshot' and self.data.has_key('headshot'):
+            return self._re_fullsizeURL.sub('', self.data.get('headshot', ''))
         return None
 
     def getID(self):

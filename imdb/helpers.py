@@ -4,7 +4,7 @@ helpers module (imdb package).
 This module provides functions not used directly by the imdb package,
 but useful for IMDbPY-based programs.
 
-Copyright 2006-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2006-2010 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ gettext.textdomain('imdbpy')
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
 from imdb.utils import modClearRefs, re_titleRef, re_nameRef, \
-                    re_characterRef, _tagAttr
+                    re_characterRef, _tagAttr, _Container
 from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base, \
                     imdbURL_character_base
 import imdb.locale
@@ -338,7 +338,6 @@ def get_byURL(url, info=None, args=None, kwds=None):
 
 
 # Idea and portions of code courtesy of Basil Shubin.
-_re_clearURL = re.compile(r'\._V1\._SX(\d+)_SY(\d+)_')
 def fullSizeCoverURL(obj):
     """Given an URL string or a Movie, Person or Character instance,
     returns an URL to the full-size version of the cover/headshot,
@@ -351,7 +350,7 @@ def fullSizeCoverURL(obj):
         coverUrl = obj
     if not coverUrl:
         return None
-    return _re_clearURL.sub('', coverUrl)
+    return _Container._re_fullsizeURL.sub('', coverUrl)
 
 
 def keyToXML(key):

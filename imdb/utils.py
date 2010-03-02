@@ -1049,6 +1049,9 @@ class _Container(object):
     # Function used to compare two instances of this class.
     cmpFunct = None
 
+    # Regular expression used to build the 'full-size (headshot|cover url)'.
+    _re_fullsizeURL = re.compile(r'\._V1\._SX(\d+)_SY(\d+)_')
+
     def __init__(self, myID=None, data=None, notes=u'',
                 currentRole=u'', roleID=None, roleIsPerson=False,
                 accessSystem=None, titlesRefs=None, namesRefs=None,
@@ -1480,7 +1483,6 @@ def flatten(seq, toDescend=(list, dict, tuple), yieldDictKeys=0,
     items of the given type(s) are yielded."""
     if scalar is None or isinstance(seq, scalar):
         yield seq
-    #else:
     if isinstance(seq, toDescend):
         if isinstance(seq, (dict, _Container)):
             if yieldDictKeys:

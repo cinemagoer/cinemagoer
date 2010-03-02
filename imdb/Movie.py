@@ -4,7 +4,7 @@ Movie module (imdb package).
 This module provides the Movie class, used to store information about
 a given movie.
 
-Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -101,6 +101,7 @@ class Movie(_Container):
                 'lang': 'languages',
                 'color': 'color info',
                 'cover': 'cover url',
+                'full-size cover': 'full-size cover url',
                 'seasons': 'number of seasons',
                 'language': 'languages',
                 'certificate':  'certificates',
@@ -192,6 +193,8 @@ class Movie(_Container):
                         'canonical episode title',
                         'smart canonical series title',
                         'smart canonical episode title']
+        if self.data.has_key('cover url'):
+            addkeys += ['full-size cover url']
         return addkeys
 
     def guessLanguage(self):
@@ -250,6 +253,8 @@ class Movie(_Container):
             elif key == 'smart long imdb canonical title':
                 return build_title(self.data, canonical=1,
                                     lang=self.guessLanguage())
+        if key == 'full-size cover url' and self.data.has_key('cover url'):
+            return self._re_fullsizeURL.sub('', self.data.get('cover url', ''))
         return None
 
     def getID(self):

@@ -1,8 +1,8 @@
 <!--
 
-     XML Document Type Definition for IMDbPY 4.5.
+     XML Document Type Definition for IMDbPY 4.6.
 
-     http://imdbpy.sf.net/dtd/imdbpy45.dtd
+     http://imdbpy.sf.net/dtd/imdbpy46.dtd
 
      Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
                2009-2010 Davide Alberani <da@erlug.linux.it>
@@ -60,6 +60,7 @@
   | external-reviews
   | faqs
   | film-negative-format
+  | full-size-cover-url
   | genres
   | goofs
   | item
@@ -185,6 +186,7 @@
   | director
   | editor
   | episodes
+  | full-size-headshot
   | genres
   | headshot
   | height
@@ -233,6 +235,7 @@
   | episodes
   | feature
   | filmography
+  | full-size-headshot
   | headshot
   | introduction
   | long-imdb-name
@@ -685,6 +688,8 @@
 <!ELEMENT episode-title (#PCDATA)>
 <!ELEMENT external-reviews (item)*>
 <!ELEMENT feature (movie)*>
+<!ELEMENT full-size-cover-url (#PCDATA)>
+<!ELEMENT full-size-headshot (#PCDATA)>
 <!ELEMENT headshot (#PCDATA)>
 <!ELEMENT height (#PCDATA)>
 <!ELEMENT imdbindex (#PCDATA)>

@@ -1,6 +1,12 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.6dev20100302 "A Clockwork Orange" (02 Mar 2010)
+  [general]
+  - introduced the 'full-size cover url' and 'full-size headshot'
+    keys for Movie, Person and Character instances.
+
+
 * What's the new in release 4.5.1 "Dollhouse" (01 Mar 2010)
   [general]
   - reintroduced the ez_setup.py file.

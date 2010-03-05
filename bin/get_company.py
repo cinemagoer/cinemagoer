@@ -4,8 +4,9 @@ get_company.py
 
 Usage: get_company "companyID"
 
-Show some info about the company with the given imdbID (e.g. '0071509'
-for "Columbia Pictures [us]".
+Show some info about the company with the given companyID (e.g. '0071509'
+for "Columbia Pictures [us]", using 'http' or 'mobile').
+Notice that companyID, using 'sql', are not the same IDs used on the web.
 """
 
 import sys
@@ -20,10 +21,10 @@ except ImportError:
 
 if len(sys.argv) != 2:
     print 'Only one argument is required:'
-    print '  %s "imdbID"' % sys.argv[0]
+    print '  %s "companyID"' % sys.argv[0]
     sys.exit(2)
 
-imdbID = sys.argv[1]
+companyID = sys.argv[1]
 
 i = imdb.IMDb()
 
@@ -31,8 +32,8 @@ out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
 try:
     # Get a company object with the data about the company identified by
-    # the given imdbID.
-    company = i.get_company(imdbID)
+    # the given companyID.
+    company = i.get_company(companyID)
 except imdb.IMDbError, e:
     print "Probably you're not connected to Internet.  Complete error report:"
     print e
@@ -40,7 +41,7 @@ except imdb.IMDbError, e:
 
 
 if not company:
-    print 'It seems that there\'s no company with imdbID "%s"' % imdbID
+    print 'It seems that there\'s no company with companyID "%s"' % companyID
     sys.exit(4)
 
 # XXX: this is the easier way to print the main info about a company;

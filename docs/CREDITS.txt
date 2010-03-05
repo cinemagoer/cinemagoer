@@ -37,6 +37,10 @@ I'd like to thank the following people for their help:
 
 * Andre LeBlanc for a bug report about airing date of tv series episodes.
 
+* aow for a note about some misleading descriptions.
+
+* Sébastien Ragons for tests and reports.
+
 * neonrush for a bug parsing Malcolm McDowell filmography!
 
 * Alen Ribic for some bug reports and hints.

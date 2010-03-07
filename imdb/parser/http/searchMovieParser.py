@@ -101,8 +101,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                         path={
                             'link': "./a[1]/@href",
                             'info': ".//text()",
-                            #'akas': ".//div[@class='_imdbpyAKA']//text()"
-                            'akas': ".//p[@class='find-aka']//text()"
+                            'akas': ".//div[@class='_imdbpyAKA']//text()"
+                            #'akas': ".//p[@class='find-aka']//text()"
                             },
                         postprocess=lambda x: (
                             analyze_imdbid(x.get('link') or u''),
@@ -125,8 +125,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                 html_string = html_string.replace('(TV mini-series)', '(mini)')
                 html_string = html_string.replace('<p class="find-aka">',
                         '<p class="find-aka">::')
-                #html_string = _reAKAStitles.sub(
-                #        r'<div class="_imdbpyAKA">\1::</div>\2', html_string)
+                html_string = _reAKAStitles.sub(
+                        r'<div class="_imdbpyAKA">\1::</div>\2', html_string)
             return html_string
         # Direct hit!
         dbme = self._BaseParser(useModule=self._useModule)

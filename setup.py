@@ -6,8 +6,8 @@ ez_setup.use_setuptools()
 
 import setuptools
 
-# version of the software; in SVN this represents the _next_ release.
-# setuptools will automatically add 'dev-rREVISION'.
+# version of the software; in the code repository this represents
+# the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
 version = '4.6'
 
 home_page = 'http://imdbpy.sf.net/'
@@ -51,7 +51,7 @@ Topic :: Software Development :: Libraries :: Python Modules
 
 keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
             'cast', 'actor', 'actress', 'director', 'sql', 'character',
-            'company', 'svn', 'package', 'plain text data files',
+            'company', 'package', 'plain text data files',
             'keywords', 'top250', 'bottom100', 'xml']
 
 

@@ -1,10 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.6dev20100305 "A Clockwork Orange" (05 Mar 2010)
+* What's the new in release 4.6dev20100308 "7eventy 5ive" (08 Mar 2010)
   [general]
   - introduced the 'full-size cover url' and 'full-size headshot'
     keys for Movie, Person and Character instances.
+  - moved the development to a Mercurial repository.
 
 
 * What's the new in release 4.5.1 "Dollhouse" (01 Mar 2010)

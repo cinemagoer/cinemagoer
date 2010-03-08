@@ -75,15 +75,15 @@ You can exclude the unwanted one with:
 If you specify both, --without-sql is implied.
 
 
-  SVN VERSION
-  ===========
+  Mercurial VERSION
+  =================
 
 The best thing is always to use a package for your distribution,
 or use easy_install or pip to install the latest release, but it
 goes without saying that sometimes you need the very latest version
 (keep in mind that the IMDb site is a moving target...).
-In this case, you can always use the SVN version, available here:
-  http://imdbpy.sourceforge.net/?page=download#svn
+In this case, you can always use the Mercurial version, available here:
+  http://imdbpy.sourceforge.net/?page=download#hg
 
 
   HELP

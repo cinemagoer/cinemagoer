@@ -11,6 +11,7 @@ recursive-include imdb/locale *
 global-exclude *~
 prune CVS
 prune .svn
+prune .hg
 global-exclude CVS
 global-exclude .svn
 

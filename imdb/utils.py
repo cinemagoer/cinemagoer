@@ -24,12 +24,17 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 from __future__ import generators
 import re
 import string
+import logging
 from copy import copy, deepcopy
 from time import strptime, strftime
 
 from imdb import VERSION
 from imdb import articles
 from imdb._exceptions import IMDbParserError
+
+
+# Logger for imdb.utils module.
+_utils_logger = logging.getLogger('imdbpy.utils')
 
 # The regular expression for the "long" year format of IMDb, like
 # "(1998)" and "(1986/II)", where the optional roman number (that I call
@@ -959,6 +964,8 @@ def _tagAttr(key, fullpath):
         # This will break the DTD/schema, but at least it will produce a
         # valid XML.
         #print 'ERROR - INVALID TAG: %s [%s]' % (escape4xml(key), fullpath)
+        _utils_logger.error('invalid tag: %s [%s]' % (escape4xml(key),
+                            fullpath))
         tagName = 'item'
         value_attr = 'key'
     if value_attr is not None:

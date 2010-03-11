@@ -1,0 +1,10 @@
+syntax: glob
+bin
+build
+dist
+*.egg-info
+*.mo
+*.pyc
+*.pyo
+*.so
+*~

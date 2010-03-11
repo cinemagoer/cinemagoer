@@ -131,6 +131,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
     def _clean_html(self, html):
         """Normalize the retrieve html."""
         html = re_spaces.sub(' ', html)
+        # Remove silly &nbsp;&raquo; chars.
+        html = html.replace('&nbsp;&raquo;', '')
         return subXMLRefs(html)
 
     def _mretrieve(self, url, size=-1):
@@ -397,7 +399,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             # For some reason, here <br> is still used in place of <br/>.
             akas[:] = [x for x in akas[0].split('<br>') if x.strip()]
             akas = [_unHtml(x).replace(' (','::(', 1) for x in akas]
-            if 'more' in akas: akas.remove('more')
+            if 'See more' in akas: akas.remove('See more')
             d['akas'] = akas
         mpaa = _findBetween(cont, 'MPAA</a>:', '</div>', maxRes=1)
         if mpaa: d['mpaa'] = _unHtml(mpaa[0])

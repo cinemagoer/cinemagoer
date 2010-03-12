@@ -1,5 +1,4 @@
 syntax: glob
-bin
 build
 dist
 *.egg-info
@@ -8,3 +7,6 @@ dist
 *.pyo
 *.so
 *~
+*.swp
+setuptools-*.egg
+

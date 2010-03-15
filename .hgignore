@@ -6,7 +6,7 @@ dist
 *.pyc
 *.pyo
 *.so
+*.pyd
 *~
 *.swp
 setuptools-*.egg
-

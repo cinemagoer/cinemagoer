@@ -7,8 +7,10 @@ were finite-states machines, being SGMLParser a SAX parser) to
 a set of parsers based on the libxml2 library or on the BeautifulSoup
 module (and so, using a DOM/XPath-based approach).
 The idea and the implementation of these new parsers is mostly a
-work of H. Turgut Uyar, and can bring to parsers shorter, easier
-to write and maybe even faster.
+work of H. Turgut Uyar, and can bring to parsers that are shorter,
+easier to write and maybe even faster.
+
+The old set of parsers was removed since IMDbYP 4.0.
 
 
   LIBXML AND/OR BEAUTIFULSOUP
@@ -53,31 +55,14 @@ You can also get the latest version of BeautifulSoup from here:
   http://www.crummy.com/software/BeautifulSoup/
 but since it's distributed with IMDbPY, you don't need it (or
 you have to override the '_bsoup.py' file in the imdb/parser/http
-directory).
+directory), and this is probably not a good idea, since newer versions
+of BeautifulSoup behave in new and unexpected ways.
 
 
   USING THE OLD PARSERS
   =====================
 
-The old set of parsers is still around, even if it can have many
-bugs.
-You can force the use of the old parsers setting the 'oldParsers'
-parameter to True.  E.g.:
-    from imdb import IMDb
-    ia = IMDb('http', oldParsers=True)
-    ...
-
-The path to remove the old parsers is set; right now they'll
-remain until some major parser will not be definitely outdated.
-Secondary parsers will be removed as they'll become useless; by
-default they will return an empty result (issuing a warning), but
-they can be replaced with a call to the corresponding new parser,
-if you want: all you need to do is to set to True the "fallBackToNew"
-parameter.
-E.g.:
-  from imdb import IMDb
-  ia = IMDb('http', oldParsers=True, fallBackToNew=True)
-  ...
+The old set of parsers was removed since IMDbYP 4.0.
 
 
   FORCING LXML OR BEAUTIFULSOUP

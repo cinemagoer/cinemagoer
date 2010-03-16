@@ -28,11 +28,11 @@ a 'item' tag.  E.g.:
   <keywords>
     <item>a keyword</item>
     <item>another keyword</item>
-  <keywords>
+  </keywords>
 
 Except when keys are known to be not fixed (e.g.: a list of keywords),
 in which case this schema is used:
-  <item title="EscapedKeyword">
+  <item key="EscapedKeyword">
      ...
   </item>
 

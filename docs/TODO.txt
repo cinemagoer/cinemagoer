@@ -8,6 +8,7 @@ NOTE: it's always time to clean the code! <g>
 
 [general]
 * improve the logging facility.
+* create mobile versions for smart phones (with GUI).
 * Write better summary() methods for Movie, Person, Character
   and Company classes.
 * Some portions of code are poorly commented.
@@ -113,8 +114,6 @@ Again: if there's something that bother you, write some code.
 It's free software, after all.
 
 Things to do:
-* command line options to only populate the CSV files and to only
-  upload the CSV files.
 * The imdbpy2sql.py script MUST be run on a database with empty tables;
   unfortunately so far a SQL installation can't be "updated" without
   recreating the database from scratch.

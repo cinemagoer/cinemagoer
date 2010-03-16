@@ -69,8 +69,7 @@ scripts = ['./bin/get_first_movie.py',
 
 # XXX: I'm not sure that 'etc' is a good idea.  Making it an absolute
 #      path seems a recipe for a disaster (with bdist_egg, at least).
-data_files = [('doc', [f for f in setuptools.findall('docs')
-                if '.svn' not in f]), ('etc', ['docs/imdbpy.cfg'])]
+data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
 
 
 # Defining these 'features', it's possible to run commands like:
@@ -208,8 +207,7 @@ try:
     if languages:
         data_files.append(('imdb/locale', ['imdb/locale/imdbpy.pot']))
     for lang in languages:
-        files_found = [f for f in setuptools.findall('imdb/locale/%s' % lang)
-                        if '.svn' not in f]
+        files_found = setuptools.findall('imdb/locale/%s' % lang)
         if not files_found:
             continue
         base_dir = os.path.dirname(files_found[0])

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import ez_setup
 ez_setup.use_setuptools()
 
@@ -202,8 +203,25 @@ def runRebuildmo():
     os.chdir(cwd)
     return languages
 
+
+def hasCommand():
+    """Return true if at least one command is found on the command line."""
+    args = sys.argv[1:]
+    if '--help' in args:
+        return False
+    if '-h' in args:
+        return False
+    for arg in args:
+        if arg and not arg.startswith('-'):
+            return True
+    return False
+
+
 try:
-    languages = runRebuildmo()
+    if hasCommand():
+        languages = runRebuildmo()
+    else:
+        languages = []
     if languages:
         data_files.append(('imdb/locale', ['imdb/locale/imdbpy.pot']))
     for lang in languages:

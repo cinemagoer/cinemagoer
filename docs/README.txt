@@ -159,7 +159,7 @@ access systems are 'http' (i.e.: the data are fetched through the IMDb's
 web server http://akas.imdb.com) and 'sql', meaning that the data are
 taken from a SQL database, populated (using the imdbpy2sql.py script) with
 data taken from the plain text data files; see
-http://www.imdb.com/interfaces.html for more information.
+http://www.imdb.com/interfaces/ for more information.
 For mobile systems there's the 'mobile' data access system, useful
 for PDA, hand-held devices and smart phones.
 Another data access system is 'httpThin', which is equal to 'http'

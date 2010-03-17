@@ -52,7 +52,7 @@ The IMDb function can be called with a 'accessSystem' keyword argument,
 that must be a string representing the type of data access you want
 to use.  That's because different systems to access the IMDb data are
 available: you can directly fetch data from the web server, you can
-have a local copy of the database (see http://www.imdb.com/interfaces.html),
+have a local copy of the database (see http://www.imdb.com/interfaces/),
 you can access movie data through the e-mail interface, etc. etc.
 
 

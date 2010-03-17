@@ -76,7 +76,7 @@ specific modules/packages, that you need to have installed (e.g.:
   =========================
 
 Select a mirror of the "The Plain Text Data Files" from
-the http://www.imdb.com/interfaces.html page and download
+the http://www.imdb.com/interfaces/ page and download
 every file in the main directory (beware that the "diffs"
 subdirectory contains _a lot_ of files you _don't_ need,
 so don't start mirroring everything!).

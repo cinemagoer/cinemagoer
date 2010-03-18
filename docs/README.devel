@@ -15,9 +15,10 @@ Sections in this file:
 
 imdb (package)
  |
- +-> _articles
  +-> _compat
  +-> _exceptions
+ +-> _logging
+ +-> articles
  +-> Movie
  +-> Person
  +-> Character
@@ -49,21 +50,22 @@ imdb (package)
        +-> mobile (package)
        |
        +-> sql (package)
-       |    |
-       |    +-> dbschema
-       |    +-> alchemyadapter
-       |    +-> objectadapter
+            |
+            +-> dbschema
+            +-> alchemyadapter
+            +-> objectadapter
             +-> cutils (C module)
 
 
 Description:
 imdb (package): contains the IMDb function, the IMDbBase class and imports
                 the IMDbError exception class.
-_articles: defines some functions and data useful to smartly guess the
-           language of a movie title (internally used).
 _compat: compatibility functions and class for some strange environments
          (internally used).
 _exceptions: defines the exceptions internally used.
+_logging: provides the logging facility used by IMDbPY.
+articles: defines some functions and data useful to smartly guess the
+           language of a movie title (internally used).
 Movie: contains the Movie class, used to describe and manage a movie.
 Person: contains the Person class, used to describe and manage a person.
 Character: contains the Character class, used to describe and manage

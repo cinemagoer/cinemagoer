@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # situations we have to choose if we want to interpret this little word
 # as an article or not (remember that we don't know what the original language
 # of the title was).
-# Example: 'da' is an article in (I think) Dutch and it's used as an article
+# Example: 'da' is an article in (I think) German and it's used as an article
 # even in some American slangs.  Unfortunately it's also a preposition in
 # Italian, and it's widely used in Mandarin (for whatever it means!).
 # Running a script over the whole list of titles (and aliases), I've found

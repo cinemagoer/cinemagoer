@@ -1208,9 +1208,6 @@ class IMDbSqlAccessSystem(IMDbBase):
     get_movie_technical = get_movie_main
     get_movie_trivia = get_movie_main
     get_movie_vote_details = get_movie_main
-    # XXX: is 'guest' still needed?  I think every GA reference in
-    #      the biographies.list file was removed.
-    #get_movie_guests = get_movie_main
     get_movie_episodes = get_movie_main
 
     def _search_person(self, name, results):

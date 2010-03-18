@@ -280,7 +280,11 @@ distributors.
 
 Converting a title to its 'Title, The' canonical format, IMDbPY does
 some assumptions about what is an article and what not, and this could
-lead to some wrong canonical titles.  E.g.: "Hard, Die" instead of
+lead to some wrong canonical titles.
+For more information on this subject, see the "ARTICLES IN TITLES"
+section of the README.locale file.
+
+E.g.: "Hard, Die" instead of
 "Die Hard", since 'Die' is guessed as an article (and it is, in Germany...)
 To solve this problem, there are other keys, "smart canonical title",
 "smart long imdb canonical title", "smart canonical series title",

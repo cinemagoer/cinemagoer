@@ -2,14 +2,14 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: imdbpy\n"
-"POT-Creation-Date: 2009-04-16 10:37+0000\n"
+"POT-Creation-Date: 2010-03-18 14:35+0000\n"
 "PO-Revision-Date: 2009-07-03 13:00+0000\n"
 "Last-Translator: Davide Alberani <da@erlug.linux.it>\n"
 "Language-Team: Davide Alberani <da@erlug.linux.it>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Language-Code: it\n"
 "Language-Name: Italian\n"
 "Preferred-Encodings: utf-8\n"
@@ -46,6 +46,10 @@ msgstr "In onda"
 # Default: Akas
 msgid "akas"
 msgstr "Alias"
+
+# Default: Akas from release info
+msgid "akas-from-release-info"
+msgstr "Alias dalle informazioni di rilascio"
 
 # Default: All products
 msgid "all-products"
@@ -101,7 +105,7 @@ msgstr "Articolo"
 
 # Default: Asin
 msgid "asin"
-msgstr ""
+msgstr "Asin"
 
 # Default: Aspect ratio
 msgid "aspect-ratio"
@@ -177,11 +181,11 @@ msgstr "Posizione nella bottom 100"
 
 # Default: Budget
 msgid "budget"
-msgstr ""
+msgstr "Bilancio"
 
 # Default: Business
 msgid "business"
-msgstr ""
+msgstr "Affari"
 
 # Default: By arrangement with
 msgid "by-arrangement-with"
@@ -189,27 +193,27 @@ msgstr "Arrangiamento con"
 
 # Default: Camera
 msgid "camera"
-msgstr ""
+msgstr "Cinepresa"
 
 # Default: Camera and electrical department
 msgid "camera-and-electrical-department"
-msgstr ""
+msgstr "Cinepresa e dipartimento elettrico"
 
 # Default: Canonical episode title
 msgid "canonical-episode-title"
-msgstr ""
+msgstr "Titolo dell'episodio in forma canonica"
 
 # Default: Canonical name
 msgid "canonical-name"
-msgstr ""
+msgstr "Nome in forma canonica"
 
 # Default: Canonical series title
 msgid "canonical-series-title"
-msgstr ""
+msgstr "Titolo della serie in forma canonica"
 
 # Default: Canonical title
 msgid "canonical-title"
-msgstr ""
+msgstr "Titolo in forma canonica"
 
 # Default: Cast
 msgid "cast"
@@ -345,7 +349,7 @@ msgstr "Ruolo"
 
 # Default: Database
 msgid "database"
-msgstr ""
+msgstr "Database"
 
 # Default: Date
 msgid "date"
@@ -369,7 +373,7 @@ msgstr "Descrizione"
 
 # Default: Dialogue intellegibility
 msgid "dialogue-intellegibility"
-msgstr ""
+msgstr "Comprensibilità dei dialoghi"
 
 # Default: Digital sound
 msgid "digital-sound"
@@ -393,7 +397,7 @@ msgstr "Distributori"
 
 # Default: Dvd
 msgid "dvd"
-msgstr ""
+msgstr "Dvd"
 
 # Default: Dvd features
 msgid "dvd-features"
@@ -405,7 +409,7 @@ msgstr "Formato del DVD"
 
 # Default: Dvds
 msgid "dvds"
-msgstr ""
+msgstr "Dvd"
 
 # Default: Dynamic range
 msgid "dynamic-range"
@@ -449,7 +453,7 @@ msgstr "Voto degli episodi"
 
 # Default: Essays
 msgid "essays"
-msgstr ""
+msgstr "Saggi"
 
 # Default: External reviews
 msgid "external-reviews"
@@ -458,6 +462,10 @@ msgstr "Recensioni esterne"
 # Default: Faqs
 msgid "faqs"
 msgstr "Domande ricorrenti"
+
+# Default: Feature
+msgid "feature"
+msgstr "Caratteristica"
 
 # Default: Featured in
 msgid "featured-in"
@@ -493,7 +501,7 @@ msgstr "Per"
 
 # Default: Frequency response
 msgid "frequency-response"
-msgstr ""
+msgstr "Frequenze di risposta"
 
 # Default: From
 msgid "from"
@@ -502,6 +510,14 @@ msgstr "Da"
 # Default: Full article link
 msgid "full-article-link"
 msgstr "Collegamento all'articolo completo"
+
+# Default: Full size cover url
+msgid "full-size-cover-url"
+msgstr "URL della copertina nelle dimensioni originali"
+
+# Default: Full size headshot
+msgid "full-size-headshot"
+msgstr "Ritratto nelle dimensioni originali"
 
 # Default: Genres
 msgid "genres"
@@ -531,6 +547,10 @@ msgstr "Altezza"
 msgid "imdbindex"
 msgstr ""
 
+# Default: In development
+msgid "in-development"
+msgstr "In sviluppo"
+
 # Default: Interview
 msgid "interview"
 msgstr "Intervista"
@@ -545,7 +565,7 @@ msgstr "Introduzione"
 
 # Default: Item
 msgid "item"
-msgstr ""
+msgstr "Elemento"
 
 # Default: Keywords
 msgid "keywords"
@@ -573,7 +593,7 @@ msgstr "Lingue"
 
 # Default: Laserdisc
 msgid "laserdisc"
-msgstr ""
+msgstr "Laserdisc"
 
 # Default: Laserdisc title
 msgid "laserdisc-title"
@@ -605,31 +625,31 @@ msgstr "Luoghi"
 
 # Default: Long imdb canonical name
 msgid "long-imdb-canonical-name"
-msgstr ""
+msgstr "Nome canonico IMDb lungo"
 
 # Default: Long imdb canonical title
 msgid "long-imdb-canonical-title"
-msgstr ""
+msgstr "Titolo canonico IMDb lungo"
 
 # Default: Long imdb episode title
 msgid "long-imdb-episode-title"
-msgstr ""
+msgstr "Titolo dell'episodio canonico IMDb lungo"
 
 # Default: Long imdb name
 msgid "long-imdb-name"
-msgstr ""
+msgstr "Nome IMDb lungo"
 
 # Default: Long imdb title
 msgid "long-imdb-title"
-msgstr ""
+msgstr "Titolo IMDb lungo"
 
 # Default: Magazine cover photo
 msgid "magazine-cover-photo"
-msgstr ""
+msgstr "Foto di copertina"
 
 # Default: Make up
 msgid "make-up"
-msgstr ""
+msgstr "Trucco"
 
 # Default: Master format
 msgid "master-format"
@@ -641,7 +661,7 @@ msgstr "Mediana"
 
 # Default: Merchandising links
 msgid "merchandising-links"
-msgstr ""
+msgstr "Collegamenti al merchandising"
 
 # Default: Mini biography
 msgid "mini-biography"
@@ -665,7 +685,7 @@ msgstr "Film"
 
 # Default: Mpaa
 msgid "mpaa"
-msgstr ""
+msgstr "Visto MPAA"
 
 # Default: Music department
 msgid "music-department"
@@ -745,7 +765,7 @@ msgstr "Titolo originale"
 
 # Default: Other literature
 msgid "other-literature"
-msgstr ""
+msgstr "Altre opere letterarie"
 
 # Default: Other works
 msgid "other-works"
@@ -753,7 +773,7 @@ msgstr "Altri lavori"
 
 # Default: Parents guide
 msgid "parents-guide"
-msgstr ""
+msgstr "Guida per i genitori"
 
 # Default: Performed by
 msgid "performed-by"
@@ -765,11 +785,11 @@ msgstr "Persona"
 
 # Default: Photo sites
 msgid "photo-sites"
-msgstr ""
+msgstr "Siti con fotografie"
 
 # Default: Pictorial
 msgid "pictorial"
-msgstr ""
+msgstr "Ritratto"
 
 # Default: Picture format
 msgid "picture-format"
@@ -789,15 +809,15 @@ msgstr "Rappresentato in"
 
 # Default: Pressing plant
 msgid "pressing-plant"
-msgstr ""
+msgstr "Impianto di stampa"
 
 # Default: Printed film format
 msgid "printed-film-format"
-msgstr ""
+msgstr "Formato della pellicola"
 
 # Default: Printed media reviews
 msgid "printed-media-reviews"
-msgstr ""
+msgstr "Recensioni su carta stampata"
 
 # Default: Producer
 msgid "producer"
@@ -829,7 +849,7 @@ msgstr "Manager di produzione"
 
 # Default: Production process protocol
 msgid "production-process-protocol"
-msgstr ""
+msgstr "Controllo del processo di produzione"
 
 # Default: Quality of source
 msgid "quality-of-source"
@@ -837,7 +857,7 @@ msgstr "Qualità dell'originale"
 
 # Default: Quality program
 msgid "quality-program"
-msgstr ""
+msgstr "Programma di Qualità"
 
 # Default: Quote
 msgid "quote"
@@ -937,15 +957,15 @@ msgstr "Se stesso"
 
 # Default: Series animation department
 msgid "series-animation-department"
-msgstr ""
+msgstr "Dipartimento animazione della serie"
 
 # Default: Series art department
 msgid "series-art-department"
-msgstr ""
+msgstr "Dipartimento artistico della serie"
 
 # Default: Series assistant directors
 msgid "series-assistant-directors"
-msgstr ""
+msgstr "Assistenti registi della serie"
 
 # Default: Series camera department
 msgid "series-camera-department"
@@ -997,19 +1017,19 @@ msgstr ""
 
 # Default: Series sound department
 msgid "series-sound-department"
-msgstr ""
+msgstr "Dipartimento sonoro della serie"
 
 # Default: Series special effects department
 msgid "series-special-effects-department"
-msgstr ""
+msgstr "Dipartimento effetti speciali della serie"
 
 # Default: Series stunts
 msgid "series-stunts"
-msgstr ""
+msgstr "Controfigure della serie"
 
 # Default: Series title
 msgid "series-title"
-msgstr ""
+msgstr "Titolo della serie"
 
 # Default: Series transportation department
 msgid "series-transportation-department"
@@ -1021,7 +1041,7 @@ msgstr ""
 
 # Default: Series writers
 msgid "series-writers"
-msgstr ""
+msgstr "Scrittori della serie"
 
 # Default: Series years
 msgid "series-years"
@@ -1029,7 +1049,7 @@ msgstr "Anni della serie"
 
 # Default: Set decoration
 msgid "set-decoration"
-msgstr ""
+msgstr "Decorazione del set"
 
 # Default: Sharpness
 msgid "sharpness"
@@ -1038,6 +1058,22 @@ msgstr ""
 # Default: Similar to
 msgid "similar-to"
 msgstr "Simile a"
+
+# Default: Smart canonical episode title
+msgid "smart-canonical-episode-title"
+msgstr "Titolo canonico intelligente dell'episodio"
+
+# Default: Smart canonical series title
+msgid "smart-canonical-series-title"
+msgstr "Titolo canonico intelligente della serie"
+
+# Default: Smart canonical title
+msgid "smart-canonical-title"
+msgstr "Titolo canonico intelligente"
+
+# Default: Smart long imdb canonical title
+msgid "smart-long-imdb-canonical-title"
+msgstr "Titolo canonico lungo intelligente"
 
 # Default: Sound clips
 msgid "sound-clips"
@@ -1077,7 +1113,7 @@ msgstr "Dipartimento effetti speciali"
 
 # Default: Spin off
 msgid "spin-off"
-msgstr ""
+msgstr "Derivati"
 
 # Default: Spin off from
 msgid "spin-off-from"
@@ -1101,11 +1137,11 @@ msgstr "Disponibilità"
 
 # Default: Studio
 msgid "studio"
-msgstr ""
+msgstr "Studio"
 
 # Default: Studios
 msgid "studios"
-msgstr ""
+msgstr "Studi"
 
 # Default: Stunt performer
 msgid "stunt-performer"
@@ -1153,7 +1189,7 @@ msgstr "Titolo"
 
 # Default: Titles in this product
 msgid "titles-in-this-product"
-msgstr ""
+msgstr "Titoli in questo prodotto"
 
 # Default: To
 msgid "to"
@@ -1165,7 +1201,7 @@ msgstr "Posizione nella top 250"
 
 # Default: Trade mark
 msgid "trade-mark"
-msgstr ""
+msgstr "Marchio registrato"
 
 # Default: Transportation department
 msgid "transportation-department"
@@ -1175,13 +1211,17 @@ msgstr "Dipartimento trasporti"
 msgid "trivia"
 msgstr "Frivolezze"
 
+# Default: Tv
+msgid "tv"
+msgstr "Tv"
+
 # Default: Under license from
 msgid "under-license-from"
 msgstr "Sotto licenza da"
 
 # Default: Unknown link
 msgid "unknown-link"
-msgstr ""
+msgstr "Collegamento sconosciuto"
 
 # Default: Upc
 msgid "upc"
@@ -1193,15 +1233,19 @@ msgstr "Versione di"
 
 # Default: Vhs
 msgid "vhs"
-msgstr ""
+msgstr "VHS"
+
+# Default: Video
+msgid "video"
+msgstr "Video"
 
 # Default: Video artifacts
 msgid "video-artifacts"
-msgstr ""
+msgstr "Imperfezioni video"
 
 # Default: Video clips
 msgid "video-clips"
-msgstr ""
+msgstr "Video clips"
 
 # Default: Video noise
 msgid "video-noise"
@@ -1254,4 +1298,3 @@ msgstr "Anno"
 # Default: Zshops
 msgid "zshops"
 msgstr ""
-

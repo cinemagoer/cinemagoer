@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: imdbpy\n"
-"POT-Creation-Date: 2009-04-16 10:37+0000\n"
+"POT-Creation-Date: 2010-03-18 14:35+0000\n"
 "PO-Revision-Date: 2009-04-21 19:04+0200\n"
 "Last-Translator: H. Turgut Uyar <uyar@itu.edu.tr>\n"
 "Language-Team: IMDbPY Türkçe <uyar@itu.edu.tr>\n"
@@ -46,6 +46,10 @@ msgstr "Yayımlanma"
 # Default: Akas
 msgid "akas"
 msgstr "Diğer başlıklar"
+
+# Default: Akas from release info
+msgid "akas-from-release-info"
+msgstr ""
 
 # Default: All products
 msgid "all-products"
@@ -459,6 +463,10 @@ msgstr "Harici eleştiriler"
 msgid "faqs"
 msgstr "SSS"
 
+# Default: Feature
+msgid "feature"
+msgstr ""
+
 # Default: Featured in
 msgid "featured-in"
 msgstr ""
@@ -503,6 +511,14 @@ msgstr ""
 msgid "full-article-link"
 msgstr ""
 
+# Default: Full size cover url
+msgid "full-size-cover-url"
+msgstr ""
+
+# Default: Full size headshot
+msgid "full-size-headshot"
+msgstr ""
+
 # Default: Genres
 msgid "genres"
 msgstr "Türler"
@@ -529,6 +545,10 @@ msgstr "Boy"
 
 # Default: Imdbindex
 msgid "imdbindex"
+msgstr ""
+
+# Default: In development
+msgid "in-development"
 msgstr ""
 
 # Default: Interview
@@ -1039,6 +1059,22 @@ msgstr "Keskinlik"
 msgid "similar-to"
 msgstr "Benzer"
 
+# Default: Smart canonical episode title
+msgid "smart-canonical-episode-title"
+msgstr ""
+
+# Default: Smart canonical series title
+msgid "smart-canonical-series-title"
+msgstr ""
+
+# Default: Smart canonical title
+msgid "smart-canonical-title"
+msgstr ""
+
+# Default: Smart long imdb canonical title
+msgid "smart-long-imdb-canonical-title"
+msgstr ""
+
 # Default: Sound clips
 msgid "sound-clips"
 msgstr "Ses klipleri"
@@ -1175,6 +1211,10 @@ msgstr "Ulaşım departmanı"
 msgid "trivia"
 msgstr "İlginç notlar"
 
+# Default: Tv
+msgid "tv"
+msgstr ""
+
 # Default: Under license from
 msgid "under-license-from"
 msgstr ""
@@ -1194,6 +1234,10 @@ msgstr ""
 # Default: Vhs
 msgid "vhs"
 msgstr "VHS"
+
+# Default: Video
+msgid "video"
+msgstr ""
 
 # Default: Video artifacts
 msgid "video-artifacts"

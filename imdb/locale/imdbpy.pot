@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: imdbpy\n"
-"POT-Creation-Date: 2009-04-16 12:02+0000\n"
+"POT-Creation-Date: 2010-03-18 14:35+0000\n"
 "PO-Revision-Date: YYYY-MM-DD HH:MM+0000\n"
 "Last-Translator: YOUR NAME <YOUR@EMAIL>\n"
 "Language-Team: TEAM NAME <TEAM@EMAIL>\n"
@@ -45,6 +45,10 @@ msgstr ""
 
 # Default: Akas
 msgid "akas"
+msgstr ""
+
+# Default: Akas from release info
+msgid "akas-from-release-info"
 msgstr ""
 
 # Default: All products
@@ -459,6 +463,10 @@ msgstr ""
 msgid "faqs"
 msgstr ""
 
+# Default: Feature
+msgid "feature"
+msgstr ""
+
 # Default: Featured in
 msgid "featured-in"
 msgstr ""
@@ -503,6 +511,14 @@ msgstr ""
 msgid "full-article-link"
 msgstr ""
 
+# Default: Full size cover url
+msgid "full-size-cover-url"
+msgstr ""
+
+# Default: Full size headshot
+msgid "full-size-headshot"
+msgstr ""
+
 # Default: Genres
 msgid "genres"
 msgstr ""
@@ -529,6 +545,10 @@ msgstr ""
 
 # Default: Imdbindex
 msgid "imdbindex"
+msgstr ""
+
+# Default: In development
+msgid "in-development"
 msgstr ""
 
 # Default: Interview
@@ -1039,6 +1059,22 @@ msgstr ""
 msgid "similar-to"
 msgstr ""
 
+# Default: Smart canonical episode title
+msgid "smart-canonical-episode-title"
+msgstr ""
+
+# Default: Smart canonical series title
+msgid "smart-canonical-series-title"
+msgstr ""
+
+# Default: Smart canonical title
+msgid "smart-canonical-title"
+msgstr ""
+
+# Default: Smart long imdb canonical title
+msgid "smart-long-imdb-canonical-title"
+msgstr ""
+
 # Default: Sound clips
 msgid "sound-clips"
 msgstr ""
@@ -1175,6 +1211,10 @@ msgstr ""
 msgid "trivia"
 msgstr ""
 
+# Default: Tv
+msgid "tv"
+msgstr ""
+
 # Default: Under license from
 msgid "under-license-from"
 msgstr ""
@@ -1193,6 +1233,10 @@ msgstr ""
 
 # Default: Vhs
 msgid "vhs"
+msgstr ""
+
+# Default: Video
+msgid "video"
 msgstr ""
 
 # Default: Video artifacts

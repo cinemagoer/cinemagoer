@@ -22,19 +22,19 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-# List of generic articles in many languages.
+# List of generic articles used when the language of the title is unknown (or
+# we don't have information about articles in that language).
 # XXX: Managing titles in a lot of different languages, a function to recognize
 # an initial article can't be perfect; sometimes we'll stumble upon a short
 # word that is an article in some language, but it's not in another; in these
 # situations we have to choose if we want to interpret this little word
 # as an article or not (remember that we don't know what the original language
 # of the title was).
-# Example: 'da' is an article in (I think) German and it's used as an article
-# even in some American slangs.  Unfortunately it's also a preposition in
-# Italian, and it's widely used in Mandarin (for whatever it means!).
+# Example: 'en' is (I suppose) an article in Some Language.  Unfortunately it
+# seems also to be a preposition in other languages (French?).
 # Running a script over the whole list of titles (and aliases), I've found
-# that 'da' is used as an article only 23 times, and as another thing 298
-# times, so I've decided to _always_ consider 'da' as a non article.
+# that 'en' is used as an article only 376 times, and as another thing 594
+# times, so I've decided to _always_ consider 'en' as a non article.
 #
 # Here is a list of words that are _never_ considered as articles, complete
 # with the cound of times they are used in a way or another:

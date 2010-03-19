@@ -338,10 +338,14 @@ def get_byURL(url, info=None, args=None, kwds=None):
 
 
 # Idea and portions of code courtesy of Basil Shubin.
+# Beware that these information are now available directly by
+# the Movie/Person/Character instances.
 def fullSizeCoverURL(obj):
     """Given an URL string or a Movie, Person or Character instance,
     returns an URL to the full-size version of the cover/headshot,
-    or None otherwise."""
+    or None otherwise.  This function is obsolete: the same information
+    are available as keys: 'full-size cover url' and 'full-size headshot',
+    respectively for movies and persons/characters."""
     if isinstance(obj, Movie):
         coverUrl = obj.get('cover url')
     elif isinstance(obj, (Person, Character)):

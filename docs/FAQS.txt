@@ -107,3 +107,26 @@ A6: various functions can be used to convert a movieID (or personID or
     In case of problems, these methods will return None.
 
 
+Q7: I have a movie title (in the format used by the plain text data files)
+    or other kind of data (like a person/character/company name) and I want
+    to get its imdbID.  How can I do?
+
+A7: the safest thing, is probably to do a normal search on IMDb (using the
+    'http' or 'mobile' data access system of IMDbPY) and see if the first
+    item is the correct one.
+    You can also try the 'title2imdbID' method (and similar) of the IMDb
+    instance (no matter if you're using 'http', 'mobile' or 'sql'), but
+    expect some failures - it returns None in this case.
+
+
+Q8: I have an URL (of a movie, person or something else); how can I
+    get a Movie/Person/... instance?
+
+A8: import the imdb.helpers module and use the get_byURL function.
+
+
+Q9: I'm writing an interface based on IMDbPY and I have problems handling
+    encoding, chars conversions, replacements of references and so on.
+
+A9: see the many functions in the imdb.helpers module.
+

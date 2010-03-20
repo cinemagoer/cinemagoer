@@ -378,12 +378,21 @@ _MAP_TOP_OBJ = {
 }
 
 
-def parseTags(tag, _topLevel=True, _as=None):
+def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
+            _key2infoset=None):
     item = None
+    if _infoset2keys is None:
+        _infoset2keys = {}
+    if _key2infoset is None:
+        _key2infoset = {}
     #_adder=lambda key, value: None
     name = tag.name
     tagStr = tag.string
     firstChild = tag.find(recursive=False)
+    infoset = tag.get('infoset')
+    if infoset:
+        _key2infoset[name] = infoset
+        _infoset2keys.setdefault(infoset, []).append(name)
     if name in _MAP_TOP_OBJ:
         item = _MAP_TOP_OBJ[name]()
         itemAs = tag.get('access-system')
@@ -409,7 +418,8 @@ def parseTags(tag, _topLevel=True, _as=None):
             item.notes = tag.notes.string
         cRole = tag.find('current-role', recursive=False)
         if cRole:
-            cr = parseTags(cRole, _topLevel=False, _as=_as)
+            cr = parseTags(cRole, _topLevel=False, _as=_as,
+                        _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
             item.currentRole = cr
             cRole.extract()
         _adder = lambda key, value: item.data.update({key: value})
@@ -428,9 +438,14 @@ def parseTags(tag, _topLevel=True, _as=None):
         item = {}
         _adder = lambda key, value: item.update({tag.name: value})
     for subTag in tag(recursive=False):
-        subItem = parseTags(subTag, _topLevel=False, _as=_as)
+        subItem = parseTags(subTag, _topLevel=False, _as=_as,
+                        _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
         if subItem:
             _adder(subTag.name, subItem)
+    if _topLevel and name in ('movie', 'person', 'character', 'company'):
+        item.infoset2keys = _infoset2keys
+        item.key2infoset = _key2infoset
+        item.current_info = _infoset2keys.keys()
     return item
 
 

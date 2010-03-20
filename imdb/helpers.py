@@ -42,6 +42,7 @@ from imdb.Character import Character
 from imdb.Company import Company
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
                                     subXMLRefs, subSGMLRefs
+from imdb.parser.http.bsouplxml._bsoup import BeautifulStoneSoup
 
 
 # An URL, more or less.
@@ -366,4 +367,75 @@ def keyToXML(key):
 def translateKey(key):
     """Translate a given key."""
     return _(keyToXML(key))
+
+
+# Maps tags to classes.
+_MAP_TOP_OBJ = {
+    'person': Person,
+    'movie': Movie,
+    'character': Character,
+    'company': Company
+}
+
+
+def parseTags(tag, _topLevel=True, _as=None):
+    item = None
+    #_adder=lambda key, value: None
+    name = tag.name
+    tagStr = tag.string
+    firstChild = tag.find(recursive=False)
+    if name in _MAP_TOP_OBJ:
+        item = _MAP_TOP_OBJ[name]()
+        itemAs = tag.get('access-system')
+        if itemAs:
+            if not _as:
+                _as = itemAs
+        else:
+            itemAs = _as
+        item.accessSystem = itemAs
+        if isinstance(item, Movie):
+            item.movieID = tag['id']
+            if tag.title:
+                item.set_title(tag.title.string)
+                tag.title.extract()
+        elif isinstance(item, Person):
+            item.personID = tag['id']
+            pName = tag.find('name', recursive=False)
+            item.set_name(pName.string)
+            pName.extract()
+        elif isinstance(item, Character):
+            item.characterID = tag['id']
+        if tag.notes:
+            item.notes = tag.notes.string
+        cRole = tag.find('current-role', recursive=False)
+        if cRole:
+            cr = parseTags(cRole, _topLevel=False, _as=_as)
+            item.currentRole = cr
+            cRole.extract()
+        _adder = lambda key, value: item.data.update({key: value})
+        if not _topLevel:
+            return item
+    elif firstChild:
+        if firstChild.name in ('item', 'movie', 'person', 'character', 'company'):
+            item = []
+            _adder = lambda key, value: item.append(value)
+        else:
+            item = {}
+            _adder = lambda key, value: item.update({firstChild.name: value})
+    elif tag.string:
+        return tag.string
+    else:
+        item = {}
+        _adder = lambda key, value: item.update({tag.name: value})
+    for subTag in tag(recursive=False):
+        subItem = parseTags(subTag, _topLevel=False, _as=_as)
+        if subItem:
+            _adder(subTag.name, subItem)
+    return item
+
+
+def parseXML(xml):
+    return parseTags(BeautifulStoneSoup(xml).find())
+
+
 

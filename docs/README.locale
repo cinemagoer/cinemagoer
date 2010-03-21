@@ -45,6 +45,10 @@ E.g.:
   ADD A NEW LANGUAGE
   ==================
 
+You can (but you're not forced to) use Transifex to manage/coordinate
+your translations; see: http://www.transifex.net/projects/p/imdbpy/c/default/
+Below, the generic instruction about how translation works.
+
 In the imdb.locale package, you'll find some scripts useful to build
 your own internationalization files.
 If you create a new translation or update an existing one, you can send

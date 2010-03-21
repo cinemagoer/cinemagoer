@@ -50,8 +50,7 @@ re_unhtmlsub = re_unhtml.sub
 re_imdbID = re.compile(r'(?<=nm|tt|ch)([0-9]{7})\b')
 
 # movie AKAs.
-#re_makas = re.compile('(<p class="find-aka">.*?</p>)')
-re_makas = re.compile(r'<em>".*?(?:<br>|</td>|$)', re.I | re.M)
+re_makas = re.compile('(<p class="find-aka">.*?</p>)')
 
 
 def _unHtml(s):
@@ -214,18 +213,16 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             for li in lis:
                 akas = re_makas.findall(li)
                 for idx, aka in enumerate(akas):
-                    aka = _unHtml(aka)
                     aka = aka.replace('" - ', '::', 1)
-                    if aka.startswith('"'):
-                        aka = aka[1:].strip()
+                    aka = _unHtml(aka)
+                    if aka.startswith('aka "'):
+                        aka = aka[5:].strip()
                     if aka[-1] == '"':
                         aka = aka[:-1]
                     akas[idx] = aka
                 imdbid = re_imdbID.findall(li)
                 li = re_makas.sub('', li)
                 mtitle = _unHtml(li)
-                if mtitle.endswith(' aka'):
-                    mtitle = mtitle[:-4]
                 if not (imdbid and mtitle):
                     self._mobile_logger.debug('no title/movieID parsing' \
                                             ' %s searching for title %s', li,

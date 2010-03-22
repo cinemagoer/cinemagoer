@@ -426,7 +426,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         if not _topLevel:
             return item
     elif firstChild:
-        if firstChild.name in ('item', 'movie', 'person', 'character', 'company'):
+        if firstChild.name in ('item', 'movie', 'quote', 'person', 'character', 'company'):
             item = []
             _adder = lambda key, value: item.append(value)
         else:
@@ -450,7 +450,13 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
 
 
 def parseXML(xml):
-    return parseTags(BeautifulStoneSoup(xml).find())
+    xmlObj = BeautifulStoneSoup(xml,
+                            convertEntities=BeautifulStoneSoup.XHTML_ENTITIES)
+    if xmlObj:
+        mainTag = xmlObj.find()
+        if mainTag:
+            return parseTags(mainTag)
+    return None
 
 
 

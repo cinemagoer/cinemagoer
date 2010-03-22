@@ -945,8 +945,11 @@ def _tagAttr(key, fullpath):
     that the tag is safe for a XML document."""
     value_attr = None
     attrs = u''
+    _escapedKey = escape4xml(key)
     if fullpath in TAGS_TO_MODIFY:
         tagName, value_attr = TAGS_TO_MODIFY[fullpath]
+        if value_attr:
+            attrs = u'%s="%s"' % (value_attr, _escapedKey)
     elif not isinstance(key, unicode):
         if isinstance(key, str):
             tagName = unicode(key, 'ascii', 'ignore')
@@ -954,22 +957,27 @@ def _tagAttr(key, fullpath):
             tagName = unicode(key)
     else:
         tagName = key
-    tagName = tagName.lower().replace(' ', '-')
     origTagName = tagName
+    tagName = tagName.lower().replace(' ', '-')
+    _spaceReplaced = origTagName != tagName
+    if _spaceReplaced:
+        if attrs:
+            attrs += u' '
+        attrs += u'key="%s"' % _escapedKey
     tagName = str(tagName).translate(_allchars, _keepchars)
-    if (not tagName) or tagName[0].isdigit() or tagName[0] == '-' or \
-            origTagName != tagName:
+    if (not tagName) or tagName[0].isdigit() or tagName[0] == '-':
         # This is a fail-safe: we should never be here, since unpredictable
         # keys must be listed in TAGS_TO_MODIFY.
         # This will break the DTD/schema, but at least it will produce a
         # valid XML.
-        #print 'ERROR - INVALID TAG: %s [%s]' % (escape4xml(key), fullpath)
-        _utils_logger.error('invalid tag: %s [%s]' % (escape4xml(key),
-                            fullpath))
         tagName = 'item'
-        value_attr = 'key'
-    if value_attr is not None:
-        attrs = u'%s="%s"' % (value_attr, escape4xml(key))
+        _utils_logger.error('invalid tag: %s [%s]' % (_escapedKey,
+                                                        fullpath))
+        # If _spaceReplaced is True, we already have a 'key' attribute.
+        if not _spaceReplaced:
+            if attrs:
+                attrs += u' '
+            attrs += u'key="%s"' % _escapedKey
     return tagName, attrs
 
 

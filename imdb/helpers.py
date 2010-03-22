@@ -381,6 +381,15 @@ _MAP_TOP_OBJ = {
 _TAGS_TO_LIST = dict([(x[0], None) for x in TAGS_TO_MODIFY.values()])
 _TAGS_TO_LIST.update(_MAP_TOP_OBJ)
 
+def tagToKey(tag):
+    """Return the name of the tag, taking it from the 'key' attribute,
+    if present."""
+    keyAttr = tag.get('key')
+    if keyAttr:
+        return keyAttr
+    return tag.name
+
+
 def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             _key2infoset=None):
     """Recursively parse a tree of tags."""
@@ -391,8 +400,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         _infoset2keys = {}
     if _key2infoset is None:
         _key2infoset = {}
-    name = tag.name
-    if name == 'connections': pass
+    name = tagToKey(tag)
     firstChild = tag.find(recursive=False)
     tagStr = (tag.string or u'').strip()
     if not tagStr and name == 'item':
@@ -454,7 +462,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
                 tagStr += u'::%s' % notes
         return tagStr
     elif firstChild:
-        firstChildName = firstChild.name
+        firstChildName = tagToKey(firstChild)
         if firstChildName in _TAGS_TO_LIST:
             item = []
             _adder = lambda key, value: item.append(value)
@@ -468,7 +476,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         subItem = parseTags(subTag, _topLevel=False, _as=_as,
                         _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
         if subItem:
-            _adder(subTag.name, subItem)
+            _adder(tagToKey(subTag), subItem)
     if _topLevel and name in _MAP_TOP_OBJ:
         # Add information about 'info sets', but only to the top-level object.
         item.infoset2keys = _infoset2keys
@@ -487,6 +495,5 @@ def parseXML(xml):
         if mainTag:
             return parseTags(mainTag)
     return None
-
 
 

@@ -408,6 +408,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         tagContent = tag.contents[0]
         if isinstance(tagContent, BeautifulSoup.NavigableString):
             tagStr = (unicode(tagContent) or u'').strip()
+    tagType = tag.get('type')
     infoset = tag.get('infoset')
     if infoset:
         _key2infoset[name] = infoset
@@ -460,6 +461,11 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             notes = (tag.notes.string or u'').strip()
             if notes:
                 tagStr += u'::%s' % notes
+        elif tagType:
+            if tagType == 'int':
+                return int(tagStr)
+            elif tagType == 'float':
+                return float(tagStr)
         return tagStr
     elif firstChild:
         firstChildName = tagToKey(firstChild)

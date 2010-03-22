@@ -990,6 +990,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
         _l = []
     if isinstance(seq, dict):
         for key in seq:
+            value = seq[key]
             if isinstance(key, _Container):
                 # Here we're assuming that a _Container is never a top-level
                 # key (otherwise we should handle key2infoset).
@@ -1003,10 +1004,14 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                     openTag += ' %s' % attrs
                 if _topLevel and key2infoset and key in key2infoset:
                     openTag += u' infoset="%s"' % key2infoset[key]
+                if isinstance(value, int):
+                    openTag += ' type="int"'
+                elif isinstance(value, float):
+                    openTag += ' type="float"'
                 openTag += u'>'
                 closeTag = u'</%s>' % tagName
             _l.append(openTag)
-            _seq2xml(seq[key], _l, withRefs, modFunct, titlesRefs,
+            _seq2xml(value, _l, withRefs, modFunct, titlesRefs,
                     namesRefs, charactersRefs, _topLevel=False,
                     fullpath='%s.%s' % (fullpath, tagName))
             _l.append(closeTag)

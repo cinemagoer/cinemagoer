@@ -408,18 +408,27 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         else:
             itemAs = _as
         item.accessSystem = itemAs
+        theID = tag.get('id')
         if isinstance(item, Movie):
-            item.movieID = tag['id']
+            item.movieID = theID
             if tag.title:
                 item.set_title(tag.title.string)
                 tag.title.extract()
         elif isinstance(item, Person):
-            item.personID = tag['id']
+            item.personID = theID
             pName = tag.find('name', recursive=False)
             item.set_name(pName.string)
             pName.extract()
         elif isinstance(item, Character):
-            item.characterID = tag['id']
+            item.characterID = theID
+            cName = tag.find('name', recursive=False)
+            item.set_name(cName.string)
+            cName.extract()
+        elif isinstance(item, Company):
+            item.companyID = theID
+            cName = tag.find('name', recursive=False)
+            item.set_name(cName.string)
+            cName.extract()
         if tag.notes:
             item.notes = tag.notes.string
         cRole = tag.find('current-role', recursive=False)

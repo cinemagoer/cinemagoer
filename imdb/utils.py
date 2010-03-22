@@ -1324,7 +1324,7 @@ class _Container(object):
         """Number of items in the data dictionary."""
         return len(self.data)
 
-    def getAsXML(self, key):
+    def getAsXML(self, key, _with_add_keys=True):
         """Return a XML representation of the specified key, or None
         if empty."""
         # Prevent modifyStrings in __getitem__ to be called; if needed,
@@ -1336,6 +1336,9 @@ class _Container(object):
         #      a DTD valid tag, and not something that can be only in
         #      the keys_alias map).
         key = self.keys_alias.get(key, key)
+        if (not _with_add_keys) and  (key in self._additional_keys()):
+            self.modFunct = origModFunct
+            return None
         try:
             withRefs = False
             if key in self.keys_tomodify and \
@@ -1355,13 +1358,13 @@ class _Container(object):
         finally:
             self.modFunct = origModFunct
 
-    def asXML(self):
+    def asXML(self, _with_add_keys=True):
         """Return a XML representation of the whole object."""
         beginTag, endTag = _tag4TON(self, addAccessSystem=True,
                                     _containerOnly=True)
         resList = [beginTag]
         for key in self.keys():
-            value = self.getAsXML(key)
+            value = self.getAsXML(key, _with_add_keys=_with_add_keys)
             if not value:
                 continue
             resList.append(value)

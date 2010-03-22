@@ -42,8 +42,7 @@ from imdb.Character import Character
 from imdb.Company import Company
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
                                     subXMLRefs, subSGMLRefs
-from imdb.parser.http.bsouplxml._bsoup import BeautifulStoneSoup, \
-                                                NavigableString
+from imdb.parser.http.bsouplxml.etree import BeautifulSoup
 
 
 # An URL, more or less.
@@ -382,7 +381,6 @@ _MAP_TOP_OBJ = {
 _TAGS_TO_LIST = dict([(x[0], None) for x in TAGS_TO_MODIFY.values()])
 _TAGS_TO_LIST.update(_MAP_TOP_OBJ)
 
-
 def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             _key2infoset=None):
     """Recursively parse a tree of tags."""
@@ -394,12 +392,13 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
     if _key2infoset is None:
         _key2infoset = {}
     name = tag.name
+    if name == 'connections': pass
     firstChild = tag.find(recursive=False)
     tagStr = (tag.string or u'').strip()
     if not tagStr and name == 'item':
         # Handles 'item' tags containing text and a 'notes' sub-tag.
         tagContent = tag.contents[0]
-        if isinstance(tagContent, NavigableString):
+        if isinstance(tagContent, BeautifulSoup.NavigableString):
             tagStr = (unicode(tagContent) or u'').strip()
     infoset = tag.get('infoset')
     if infoset:
@@ -418,15 +417,16 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         theID = tag.get('id')
         if isinstance(item, Movie):
             item.movieID = theID
+            theTitle = tag.find('title', recursive=False)
             if tag.title:
                 item.set_title(tag.title.string)
                 tag.title.extract()
         else:
-            if isinstance(item, Person):
+            if name == 'person':
                 item.personID = theID
-            elif isinstance(item, Character):
+            elif name == 'character':
                 item.characterID = theID
-            elif isinstance(item, Company):
+            elif name == 'company':
                 item.companyID = theID
             theName = tag.find('name', recursive=False)
             if theName:
@@ -441,11 +441,12 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
                         _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
             item.currentRole = cr
             cRole.extract()
-        _adder = lambda key, value: item.data.update({key: value})
         # XXX: big assumption, here.  What about Movie instances used
         #      as keys in dictionaries?
         if not _topLevel:
+            #tag.extract()
             return item
+        _adder = lambda key, value: item.data.update({key: value})
     elif tagStr:
         if tag.notes:
             notes = (tag.notes.string or u'').strip()
@@ -459,7 +460,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             _adder = lambda key, value: item.append(value)
         else:
             item = {}
-            _adder = lambda key, value: item.update({firstChildName: value})
+            _adder = lambda key, value: item.update({key: value})
     else:
         item = {}
         _adder = lambda key, value: item.update({name: value})
@@ -479,8 +480,8 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
 def parseXML(xml):
     """Parse a XML string, returning an appropriate object (usually an
     instance of a subclass of _Container."""
-    xmlObj = BeautifulStoneSoup(xml,
-                            convertEntities=BeautifulStoneSoup.XHTML_ENTITIES)
+    xmlObj = BeautifulSoup.BeautifulStoneSoup(xml,
+                convertEntities=BeautifulSoup.BeautifulStoneSoup.XHTML_ENTITIES)
     if xmlObj:
         mainTag = xmlObj.find()
         if mainTag:

@@ -378,20 +378,26 @@ _MAP_TOP_OBJ = {
     'company': Company
 }
 
+# Tags to be converted to lists.
 _TAGS_TO_LIST = dict([(x[0], None) for x in TAGS_TO_MODIFY.values()])
 _TAGS_TO_LIST.update(_MAP_TOP_OBJ)
 
+
 def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             _key2infoset=None):
+    """Recursively parse a tree of tags."""
+    # The returned object (usually a _Container subclass, but it can
+    # be a string, a list or a dictionary).
     item = None
     if _infoset2keys is None:
         _infoset2keys = {}
     if _key2infoset is None:
         _key2infoset = {}
     name = tag.name
-    tagStr = (tag.string or u'').strip()
     firstChild = tag.find(recursive=False)
+    tagStr = (tag.string or u'').strip()
     if not tagStr and name == 'item':
+        # Handles 'item' tags containing text and a 'notes' sub-tag.
         tagContent = tag.contents[0]
         if isinstance(tagContent, NavigableString):
             tagStr = (unicode(tagContent) or u'').strip()
@@ -400,6 +406,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         _key2infoset[name] = infoset
         _infoset2keys.setdefault(infoset, []).append(name)
     if name in _MAP_TOP_OBJ:
+        # One of the subclasses of _Container.
         item = _MAP_TOP_OBJ[name]()
         itemAs = tag.get('access-system')
         if itemAs:
@@ -414,23 +421,20 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             if tag.title:
                 item.set_title(tag.title.string)
                 tag.title.extract()
-        elif isinstance(item, Person):
-            item.personID = theID
-            pName = tag.find('name', recursive=False)
-            item.set_name(pName.string)
-            pName.extract()
-        elif isinstance(item, Character):
-            item.characterID = theID
-            cName = tag.find('name', recursive=False)
-            item.set_name(cName.string)
-            cName.extract()
-        elif isinstance(item, Company):
-            item.companyID = theID
-            cName = tag.find('name', recursive=False)
-            item.set_name(cName.string)
-            cName.extract()
+        else:
+            if isinstance(item, Person):
+                item.personID = theID
+            elif isinstance(item, Character):
+                item.characterID = theID
+            elif isinstance(item, Company):
+                item.companyID = theID
+            theName = tag.find('name', recursive=False)
+            if theName:
+                item.set_name(theName.string)
+            theName.extract()
         if tag.notes:
             item.notes = tag.notes.string
+            tag.notes.extract()
         cRole = tag.find('current-role', recursive=False)
         if cRole:
             cr = parseTags(cRole, _topLevel=False, _as=_as,
@@ -438,6 +442,8 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             item.currentRole = cr
             cRole.extract()
         _adder = lambda key, value: item.data.update({key: value})
+        # XXX: big assumption, here.  What about Movie instances used
+        #      as keys in dictionaries?
         if not _topLevel:
             return item
     elif tagStr:
@@ -447,21 +453,23 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
                 tagStr += u'::%s' % notes
         return tagStr
     elif firstChild:
-        if firstChild.name in _TAGS_TO_LIST:
+        firstChildName = firstChild.name
+        if firstChildName in _TAGS_TO_LIST:
             item = []
             _adder = lambda key, value: item.append(value)
         else:
             item = {}
-            _adder = lambda key, value: item.update({firstChild.name: value})
+            _adder = lambda key, value: item.update({firstChildName: value})
     else:
         item = {}
-        _adder = lambda key, value: item.update({tag.name: value})
+        _adder = lambda key, value: item.update({name: value})
     for subTag in tag(recursive=False):
         subItem = parseTags(subTag, _topLevel=False, _as=_as,
                         _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
         if subItem:
             _adder(subTag.name, subItem)
     if _topLevel and name in _MAP_TOP_OBJ:
+        # Add information about 'info sets', but only to the top-level object.
         item.infoset2keys = _infoset2keys
         item.key2infoset = _key2infoset
         item.current_info = _infoset2keys.keys()
@@ -469,6 +477,8 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
 
 
 def parseXML(xml):
+    """Parse a XML string, returning an appropriate object (usually an
+    instance of a subclass of _Container."""
     xmlObj = BeautifulStoneSoup(xml,
                             convertEntities=BeautifulStoneSoup.XHTML_ENTITIES)
     if xmlObj:

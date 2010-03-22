@@ -1326,7 +1326,8 @@ class _Container(object):
 
     def getAsXML(self, key, _with_add_keys=True):
         """Return a XML representation of the specified key, or None
-        if empty."""
+        if empty.  If _with_add_keys is False, dinamically generated
+        keys are excluded."""
         # Prevent modifyStrings in __getitem__ to be called; if needed,
         # it will be called by the _normalizeValue function.
         origModFunct = self.modFunct
@@ -1359,7 +1360,8 @@ class _Container(object):
             self.modFunct = origModFunct
 
     def asXML(self, _with_add_keys=True):
-        """Return a XML representation of the whole object."""
+        """Return a XML representation of the whole object.
+        If _with_add_keys is False, dinamically generated keys are excluded."""
         beginTag, endTag = _tag4TON(self, addAccessSystem=True,
                                     _containerOnly=True)
         resList = [beginTag]

@@ -473,10 +473,14 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         item = {}
         _adder = lambda key, value: item.update({name: value})
     for subTag in tag(recursive=False):
+        subTagKey = tagToKey(subTag)
+        # Exclude dinamically generated keys.
+        if name in _MAP_TOP_OBJ and subTagKey in item._additional_keys():
+            continue
         subItem = parseTags(subTag, _topLevel=False, _as=_as,
                         _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
         if subItem:
-            _adder(tagToKey(subTag), subItem)
+            _adder(subTagKey, subItem)
     if _topLevel and name in _MAP_TOP_OBJ:
         # Add information about 'info sets', but only to the top-level object.
         item.infoset2keys = _infoset2keys

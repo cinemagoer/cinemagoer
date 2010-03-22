@@ -32,7 +32,7 @@ gettext.textdomain('imdbpy')
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
 from imdb.utils import modClearRefs, re_titleRef, re_nameRef, \
-                    re_characterRef, _tagAttr, _Container
+                    re_characterRef, _tagAttr, _Container, TAGS_TO_MODIFY
 from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base, \
                     imdbURL_character_base
 import imdb.locale
@@ -42,7 +42,8 @@ from imdb.Character import Character
 from imdb.Company import Company
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
                                     subXMLRefs, subSGMLRefs
-from imdb.parser.http.bsouplxml._bsoup import BeautifulStoneSoup
+from imdb.parser.http.bsouplxml._bsoup import BeautifulStoneSoup, \
+                                                NavigableString
 
 
 # An URL, more or less.
@@ -377,6 +378,8 @@ _MAP_TOP_OBJ = {
     'company': Company
 }
 
+_TAGS_TO_LIST = dict([(x[0], None) for x in TAGS_TO_MODIFY.values()])
+_TAGS_TO_LIST.update(_MAP_TOP_OBJ)
 
 def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             _key2infoset=None):
@@ -385,10 +388,13 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         _infoset2keys = {}
     if _key2infoset is None:
         _key2infoset = {}
-    #_adder=lambda key, value: None
     name = tag.name
-    tagStr = tag.string
+    tagStr = (tag.string or u'').strip()
     firstChild = tag.find(recursive=False)
+    if not tagStr and name == 'item':
+        tagContent = tag.contents[0]
+        if isinstance(tagContent, NavigableString):
+            tagStr = (unicode(tagContent) or u'').strip()
     infoset = tag.get('infoset')
     if infoset:
         _key2infoset[name] = infoset
@@ -425,15 +431,19 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         _adder = lambda key, value: item.data.update({key: value})
         if not _topLevel:
             return item
+    elif tagStr:
+        if tag.notes:
+            notes = (tag.notes.string or u'').strip()
+            if notes:
+                tagStr += u'::%s' % notes
+        return tagStr
     elif firstChild:
-        if firstChild.name in ('item', 'movie', 'quote', 'person', 'character', 'company'):
+        if firstChild.name in _TAGS_TO_LIST:
             item = []
             _adder = lambda key, value: item.append(value)
         else:
             item = {}
             _adder = lambda key, value: item.update({firstChild.name: value})
-    elif tag.string:
-        return tag.string
     else:
         item = {}
         _adder = lambda key, value: item.update({tag.name: value})
@@ -442,7 +452,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
                         _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
         if subItem:
             _adder(subTag.name, subItem)
-    if _topLevel and name in ('movie', 'person', 'character', 'company'):
+    if _topLevel and name in _MAP_TOP_OBJ:
         item.infoset2keys = _infoset2keys
         item.key2infoset = _key2infoset
         item.current_info = _infoset2keys.keys()

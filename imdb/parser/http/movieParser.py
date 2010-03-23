@@ -123,7 +123,8 @@ def _replaceBR(mo):
 
 _reAkas = re.compile(r'<h5>also known as:</h5>.*?</div>', re.I | re.M | re.S)
 
-def makeSplitter(lstrip=None, sep='|', comments=True):
+def makeSplitter(lstrip=None, sep='|', comments=True,
+                origNotesSep=' (', newNotesSep='::(', strip=None):
     """Return a splitter function suitable for a given set of data."""
     def splitter(x):
         if not x: return x
@@ -134,7 +135,9 @@ def makeSplitter(lstrip=None, sep='|', comments=True):
         lx = x.split(sep)
         lx[:] = filter(None, [j.strip() for j in lx])
         if comments:
-            lx[:] = [j.replace(' (', '::(', 1) for j in lx]
+            lx[:] = [j.replace(origNotesSep, newNotesSep, 1) for j in lx]
+        if strip:
+            lx[:] = [j.strip(strip) for j in lx]
         return lx
     return splitter
 
@@ -239,8 +242,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                             # Collects akas not encosed in <i> tags.
                             Attribute(key='other akas',
                                 path="./h5[starts-with(text(), " \
-                                        "'Also Known As')]/../div/text()",
-                                postprocess=makeSplitter(sep='::')),
+                                        "'Also Known As')]/../div//text()",
+                                postprocess=makeSplitter(sep='::',
+                                                origNotesSep='" - ',
+                                                newNotesSep='::',
+                                                strip='"')),
                             Attribute(key='runtimes',
                                 path="./h5[starts-with(text(), " \
                                         "'Runtime')]/../div/text()",
@@ -319,8 +325,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                         path="//i[@class='transl']",
                         attrs=Attribute(key='akas', multi=True, path='text()',
                                 postprocess=lambda x:
-                                x.replace('  ', ' ').replace(' (',
-                                    '::(', 1).replace('  ', ' '))),
+                                x.replace('  ', ' ').rstrip('-').replace('" - ',
+                                    '"::', 1).strip('"').replace('  ', ' '))),
 
                 Extractor(label='production notes/status',
                         path="//div[@class='info inprod']",

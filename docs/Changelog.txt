@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.6dev20100311 "7eventy 5ive" (11 Mar 2010)
+* What's the new in release 4.6dev20100323 "12 Rounds" (23 Mar 2010)
   [general]
   - introduced the 'full-size cover url' and 'full-size headshot'
     keys for Movie, Person and Character instances.
@@ -9,6 +9,7 @@
 
   [http/mobile]
   - removed new garbage from the imdb pages.
+  - support new style of akas.
 
 
 * What's the new in release 4.5.1 "Dollhouse" (01 Mar 2010)

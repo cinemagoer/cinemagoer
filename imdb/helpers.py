@@ -394,7 +394,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             _key2infoset=None):
     """Recursively parse a tree of tags."""
     # The returned object (usually a _Container subclass, but it can
-    # be a string, a list or a dictionary).
+    # be a string, an int, a float, a list or a dictionary).
     item = None
     if _infoset2keys is None:
         _infoset2keys = {}

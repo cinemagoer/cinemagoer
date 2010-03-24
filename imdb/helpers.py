@@ -384,8 +384,11 @@ _TAGS_TO_LIST.update(_MAP_TOP_OBJ)
 def tagToKey(tag):
     """Return the name of the tag, taking it from the 'key' attribute,
     if present."""
-    keyAttr = tag.get('key')
+    keyAttr = tag.get('title')
+    keyType = tag.get('keytype')
     if keyAttr:
+        if keyType == 'int':
+            keyAttr = int(keyAttr)
         return keyAttr
     return tag.name
 

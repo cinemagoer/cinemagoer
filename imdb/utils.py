@@ -918,21 +918,21 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
 
 
 TAGS_TO_MODIFY = {
-    'movie.parents-guide': ('item', 'title'),
-    'movie.number-of-votes': ('item', 'title'),
-    'movie.soundtrack.item': ('item', 'title'),
-    'movie.quotes': ('quote', None),
-    'movie.quotes.quote': ('line', None),
-    'movie.demographic': ('item', 'title'),
-    'movie.episodes': ('season', 'number'),
-    'movie.episodes.season': ('episode', 'number'),
-    'person.merchandising-links':  ('item', 'title'),
-    'person.genres':  ('item', 'title'),
-    'person.quotes':  ('quote', None),
-    'person.keywords':  ('item', 'title'),
-    'character.quotes': ('item', 'title'),
-    'character.quotes.item': ('quote', None),
-    'character.quotes.item.quote': ('line', None)
+    'movie.parents-guide': ('item', True),
+    'movie.number-of-votes': ('item', True),
+    'movie.soundtrack.item': ('item', True),
+    'movie.quotes': ('quote', False),
+    'movie.quotes.quote': ('line', False),
+    'movie.demographic': ('item', True),
+    'movie.episodes': ('season', True),
+    'movie.episodes.season': ('episode', True),
+    'person.merchandising-links':  ('item', True),
+    'person.genres':  ('item', True),
+    'person.quotes':  ('quote', False),
+    'person.keywords':  ('item', True),
+    'character.quotes': ('item', True),
+    'character.quotes.item': ('quote', False),
+    'character.quotes.item.quote': ('line', False)
     }
 
 _allchars = string.maketrans('', '')
@@ -943,42 +943,38 @@ def _tagAttr(key, fullpath):
     """Return a tuple with a tag name and a (possibly empty) attribute,
     applying the conversions specified in TAGS_TO_MODIFY and checking
     that the tag is safe for a XML document."""
-    value_attr = None
-    attrs = u''
+    attrs = {}
     _escapedKey = escape4xml(key)
     if fullpath in TAGS_TO_MODIFY:
-        tagName, value_attr = TAGS_TO_MODIFY[fullpath]
-        if value_attr:
-            attrs = u'%s="%s"' % (value_attr, _escapedKey)
+        tagName, useTitle = TAGS_TO_MODIFY[fullpath]
+        if useTitle:
+            attrs['title'] = _escapedKey
     elif not isinstance(key, unicode):
         if isinstance(key, str):
             tagName = unicode(key, 'ascii', 'ignore')
         else:
+            strType = str(type(key)).replace("<type '", "").replace("'>", "")
+            attrs['keytype'] = strType
             tagName = unicode(key)
     else:
         tagName = key
+    if isinstance(key, int):
+        attrs['keytype'] = 'int'
     origTagName = tagName
     tagName = tagName.lower().replace(' ', '-')
-    _spaceReplaced = origTagName != tagName
-    if _spaceReplaced:
-        if attrs:
-            attrs += u' '
-        attrs += u'key="%s"' % _escapedKey
     tagName = str(tagName).translate(_allchars, _keepchars)
+    if origTagName != tagName:
+        if 'title' not in attrs:
+            attrs['title'] = _escapedKey
     if (not tagName) or tagName[0].isdigit() or tagName[0] == '-':
         # This is a fail-safe: we should never be here, since unpredictable
         # keys must be listed in TAGS_TO_MODIFY.
-        # This will break the DTD/schema, but at least it will produce a
-        # valid XML.
+        # This will proably break the DTD/schema, but at least it will
+        # produce a valid XML.
         tagName = 'item'
-        _utils_logger.error('invalid tag: %s [%s]' % (_escapedKey,
-                                                        fullpath))
-        # If _spaceReplaced is True, we already have a 'key' attribute.
-        if not _spaceReplaced:
-            if attrs:
-                attrs += u' '
-            attrs += u'key="%s"' % _escapedKey
-    return tagName, attrs
+        _utils_logger.error('invalid tag: %s [%s]' % (_escapedKey, fullpath))
+        attrs['title'] = _escapedKey
+    return tagName, u' '.join([u'%s="%s"' % i for i in attrs.items()])
 
 
 def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
@@ -1020,7 +1016,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
         beginTag = u'<%s' % tagName
         if attrs:
             beginTag += u' %s' % attrs
-        beginTag += u'>'
+        #beginTag += u'>'
         closeTag = u'</%s>' % tagName
         for item in seq:
             if isinstance(item, _Container):
@@ -1029,7 +1025,13 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                          fullpath='%s.%s' % (fullpath,
                                     item.__class__.__name__.lower()))
             else:
-                _l.append(beginTag)
+                openTag = beginTag
+                if isinstance(item, int):
+                    openTag += ' type="int"'
+                elif isinstance(item, float):
+                    openTag += ' type="float"'
+                openTag += u'>'
+                _l.append(openTag)
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
                         namesRefs, charactersRefs, _topLevel=False,
                         fullpath='%s.%s' % (fullpath, tagName))

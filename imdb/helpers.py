@@ -385,13 +385,27 @@ def tagToKey(tag):
     """Return the name of the tag, taking it from the 'key' attribute,
     if present."""
     keyAttr = tag.get('title')
-    keyType = tag.get('keytype')
     if keyAttr:
-        if keyType == 'int':
+        if tag.get('keytype') == 'int':
             keyAttr = int(keyAttr)
         return keyAttr
     return tag.name
 
+
+def _valueWithType(tag, tagValue):
+    """Return tagValue, handling some type conversions."""
+    tagType = tag.get('type')
+    if tagType == 'int':
+        tagValue = int(tagValue)
+    elif tagType == 'float':
+        tagValue = float(tagValue)
+    return tagValue
+
+
+# Extra tags to get (if values were not already read from title/name).
+_titleTags = ('imdbindex', 'kind', 'year')
+_nameTags = ('imdbindex')
+_companyTags = ('imdbindex', 'country')
 
 def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             _key2infoset=None):
@@ -426,9 +440,11 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         else:
             itemAs = _as
         item.accessSystem = itemAs
+        tagsToGet = []
         theID = tag.get('id')
-        if isinstance(item, Movie):
+        if name == 'movie':
             item.movieID = theID
+            tagsToGet = _titleTags
             theTitle = tag.find('title', recursive=False)
             if tag.title:
                 item.set_title(tag.title.string)
@@ -436,17 +452,37 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         else:
             if name == 'person':
                 item.personID = theID
+                tagsToGet = _nameTags
+                theName = tag.find('long imdb canonical name', recursive=False)
+                if not theName:
+                    theName = tag.find('name', recursive=False)
             elif name == 'character':
                 item.characterID = theID
+                tagsToGet = _nameTags
+                theName = tag.find('name', recursive=False)
             elif name == 'company':
                 item.companyID = theID
-            theName = tag.find('name', recursive=False)
+                tagsToGet = _companyTags
+                theName = tag.find('name', recursive=False)
             if theName:
                 item.set_name(theName.string)
             theName.extract()
+        for t in tagsToGet:
+            if t in item.data:
+                continue
+            dataTag = tag.find(t, recursive=False)
+            if dataTag:
+                item.data[tagToKey(dataTag)] = _valueWithType(dataTag,
+                                                            dataTag.string)
         if tag.notes:
             item.notes = tag.notes.string
             tag.notes.extract()
+        episodeOf = tag.find('episode-of', recursive=False)
+        if episodeOf:
+            item.data['episode of'] = parseTags(episodeOf, _topLevel=False,
+                                        _as=_as, _infoset2keys=_infoset2keys,
+                                        _key2infoset=_key2infoset)
+            episodeOf.extract()
         cRole = tag.find('current-role', recursive=False)
         if cRole:
             cr = parseTags(cRole, _topLevel=False, _as=_as,
@@ -464,11 +500,8 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             notes = (tag.notes.string or u'').strip()
             if notes:
                 tagStr += u'::%s' % notes
-        elif tagType:
-            if tagType == 'int':
-                return int(tagStr)
-            elif tagType == 'float':
-                return float(tagStr)
+        else:
+            tagStr = _valueWithType(tag, tagStr)
         return tagStr
     elif firstChild:
         firstChildName = tagToKey(firstChild)

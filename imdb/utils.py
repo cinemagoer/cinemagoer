@@ -918,21 +918,21 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
 
 
 TAGS_TO_MODIFY = {
-    'movie.parents-guide': ('item', 'title'),
-    'movie.number-of-votes': ('item', 'title'),
-    'movie.soundtrack.item': ('item', 'title'),
-    'movie.quotes': ('quote', None),
-    'movie.quotes.quote': ('line', None),
-    'movie.demographic': ('item', 'title'),
-    'movie.episodes': ('season', 'number'),
-    'movie.episodes.season': ('episode', 'number'),
-    'person.merchandising-links':  ('item', 'title'),
-    'person.genres':  ('item', 'title'),
-    'person.quotes':  ('quote', None),
-    'person.keywords':  ('item', 'title'),
-    'character.quotes': ('item', 'title'),
-    'character.quotes.item': ('quote', None),
-    'character.quotes.item.quote': ('line', None)
+    'movie.parents-guide': ('item', True),
+    'movie.number-of-votes': ('item', True),
+    'movie.soundtrack.item': ('item', True),
+    'movie.quotes': ('quote', False),
+    'movie.quotes.quote': ('line', False),
+    'movie.demographic': ('item', True),
+    'movie.episodes': ('season', True),
+    'movie.episodes.season': ('episode', True),
+    'person.merchandising-links':  ('item', True),
+    'person.genres':  ('item', True),
+    'person.quotes':  ('quote', False),
+    'person.keywords':  ('item', True),
+    'character.quotes': ('item', True),
+    'character.quotes.item': ('quote', False),
+    'character.quotes.item.quote': ('line', False)
     }
 
 _allchars = string.maketrans('', '')
@@ -943,34 +943,38 @@ def _tagAttr(key, fullpath):
     """Return a tuple with a tag name and a (possibly empty) attribute,
     applying the conversions specified in TAGS_TO_MODIFY and checking
     that the tag is safe for a XML document."""
-    value_attr = None
-    attrs = u''
+    attrs = {}
+    _escapedKey = escape4xml(key)
     if fullpath in TAGS_TO_MODIFY:
-        tagName, value_attr = TAGS_TO_MODIFY[fullpath]
+        tagName, useTitle = TAGS_TO_MODIFY[fullpath]
+        if useTitle:
+            attrs['key'] = _escapedKey
     elif not isinstance(key, unicode):
         if isinstance(key, str):
             tagName = unicode(key, 'ascii', 'ignore')
         else:
+            strType = str(type(key)).replace("<type '", "").replace("'>", "")
+            attrs['keytype'] = strType
             tagName = unicode(key)
     else:
         tagName = key
-    tagName = tagName.lower().replace(' ', '-')
+    if isinstance(key, int):
+        attrs['keytype'] = 'int'
     origTagName = tagName
+    tagName = tagName.lower().replace(' ', '-')
     tagName = str(tagName).translate(_allchars, _keepchars)
-    if (not tagName) or tagName[0].isdigit() or tagName[0] == '-' or \
-            origTagName != tagName:
+    if origTagName != tagName:
+        if 'key' not in attrs:
+            attrs['key'] = _escapedKey
+    if (not tagName) or tagName[0].isdigit() or tagName[0] == '-':
         # This is a fail-safe: we should never be here, since unpredictable
         # keys must be listed in TAGS_TO_MODIFY.
-        # This will break the DTD/schema, but at least it will produce a
-        # valid XML.
-        #print 'ERROR - INVALID TAG: %s [%s]' % (escape4xml(key), fullpath)
-        _utils_logger.error('invalid tag: %s [%s]' % (escape4xml(key),
-                            fullpath))
+        # This will proably break the DTD/schema, but at least it will
+        # produce a valid XML.
         tagName = 'item'
-        value_attr = 'key'
-    if value_attr is not None:
-        attrs = u'%s="%s"' % (value_attr, escape4xml(key))
-    return tagName, attrs
+        _utils_logger.error('invalid tag: %s [%s]' % (_escapedKey, fullpath))
+        attrs['key'] = _escapedKey
+    return tagName, u' '.join([u'%s="%s"' % i for i in attrs.items()])
 
 
 def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
@@ -982,6 +986,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
         _l = []
     if isinstance(seq, dict):
         for key in seq:
+            value = seq[key]
             if isinstance(key, _Container):
                 # Here we're assuming that a _Container is never a top-level
                 # key (otherwise we should handle key2infoset).
@@ -995,10 +1000,14 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                     openTag += ' %s' % attrs
                 if _topLevel and key2infoset and key in key2infoset:
                     openTag += u' infoset="%s"' % key2infoset[key]
+                if isinstance(value, int):
+                    openTag += ' type="int"'
+                elif isinstance(value, float):
+                    openTag += ' type="float"'
                 openTag += u'>'
                 closeTag = u'</%s>' % tagName
             _l.append(openTag)
-            _seq2xml(seq[key], _l, withRefs, modFunct, titlesRefs,
+            _seq2xml(value, _l, withRefs, modFunct, titlesRefs,
                     namesRefs, charactersRefs, _topLevel=False,
                     fullpath='%s.%s' % (fullpath, tagName))
             _l.append(closeTag)
@@ -1007,7 +1016,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
         beginTag = u'<%s' % tagName
         if attrs:
             beginTag += u' %s' % attrs
-        beginTag += u'>'
+        #beginTag += u'>'
         closeTag = u'</%s>' % tagName
         for item in seq:
             if isinstance(item, _Container):
@@ -1016,7 +1025,13 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                          fullpath='%s.%s' % (fullpath,
                                     item.__class__.__name__.lower()))
             else:
-                _l.append(beginTag)
+                openTag = beginTag
+                if isinstance(item, int):
+                    openTag += ' type="int"'
+                elif isinstance(item, float):
+                    openTag += ' type="float"'
+                openTag += u'>'
+                _l.append(openTag)
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
                         namesRefs, charactersRefs, _topLevel=False,
                         fullpath='%s.%s' % (fullpath, tagName))
@@ -1316,9 +1331,10 @@ class _Container(object):
         """Number of items in the data dictionary."""
         return len(self.data)
 
-    def getAsXML(self, key):
+    def getAsXML(self, key, _with_add_keys=True):
         """Return a XML representation of the specified key, or None
-        if empty."""
+        if empty.  If _with_add_keys is False, dinamically generated
+        keys are excluded."""
         # Prevent modifyStrings in __getitem__ to be called; if needed,
         # it will be called by the _normalizeValue function.
         origModFunct = self.modFunct
@@ -1328,6 +1344,9 @@ class _Container(object):
         #      a DTD valid tag, and not something that can be only in
         #      the keys_alias map).
         key = self.keys_alias.get(key, key)
+        if (not _with_add_keys) and  (key in self._additional_keys()):
+            self.modFunct = origModFunct
+            return None
         try:
             withRefs = False
             if key in self.keys_tomodify and \
@@ -1347,13 +1366,14 @@ class _Container(object):
         finally:
             self.modFunct = origModFunct
 
-    def asXML(self):
-        """Return a XML representation of the whole object."""
+    def asXML(self, _with_add_keys=True):
+        """Return a XML representation of the whole object.
+        If _with_add_keys is False, dinamically generated keys are excluded."""
         beginTag, endTag = _tag4TON(self, addAccessSystem=True,
                                     _containerOnly=True)
         resList = [beginTag]
         for key in self.keys():
-            value = self.getAsXML(key)
+            value = self.getAsXML(key, _with_add_keys=_with_add_keys)
             if not value:
                 continue
             resList.append(value)

@@ -32,7 +32,7 @@ gettext.textdomain('imdbpy')
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
 from imdb.utils import modClearRefs, re_titleRef, re_nameRef, \
-                    re_characterRef, _tagAttr, _Container
+                    re_characterRef, _tagAttr, _Container, TAGS_TO_MODIFY
 from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base, \
                     imdbURL_character_base
 import imdb.locale
@@ -42,6 +42,7 @@ from imdb.Character import Character
 from imdb.Company import Company
 from imdb.parser.http.utils import re_entcharrefssub, entcharrefs, \
                                     subXMLRefs, subSGMLRefs
+from imdb.parser.http.bsouplxml.etree import BeautifulSoup
 
 
 # An URL, more or less.
@@ -366,4 +367,182 @@ def keyToXML(key):
 def translateKey(key):
     """Translate a given key."""
     return _(keyToXML(key))
+
+
+# Maps tags to classes.
+_MAP_TOP_OBJ = {
+    'person': Person,
+    'movie': Movie,
+    'character': Character,
+    'company': Company
+}
+
+# Tags to be converted to lists.
+_TAGS_TO_LIST = dict([(x[0], None) for x in TAGS_TO_MODIFY.values()])
+_TAGS_TO_LIST.update(_MAP_TOP_OBJ)
+
+def tagToKey(tag):
+    """Return the name of the tag, taking it from the 'key' attribute,
+    if present."""
+    keyAttr = tag.get('key')
+    if keyAttr:
+        if tag.get('keytype') == 'int':
+            keyAttr = int(keyAttr)
+        return keyAttr
+    return tag.name
+
+
+def _valueWithType(tag, tagValue):
+    """Return tagValue, handling some type conversions."""
+    tagType = tag.get('type')
+    if tagType == 'int':
+        tagValue = int(tagValue)
+    elif tagType == 'float':
+        tagValue = float(tagValue)
+    return tagValue
+
+
+# Extra tags to get (if values were not already read from title/name).
+_titleTags = ('imdbindex', 'kind', 'year')
+_nameTags = ('imdbindex')
+_companyTags = ('imdbindex', 'country')
+
+def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
+            _key2infoset=None):
+    """Recursively parse a tree of tags."""
+    # The returned object (usually a _Container subclass, but it can
+    # be a string, an int, a float, a list or a dictionary).
+    item = None
+    if _infoset2keys is None:
+        _infoset2keys = {}
+    if _key2infoset is None:
+        _key2infoset = {}
+    name = tagToKey(tag)
+    firstChild = tag.find(recursive=False)
+    tagStr = (tag.string or u'').strip()
+    if not tagStr and name == 'item':
+        # Handles 'item' tags containing text and a 'notes' sub-tag.
+        tagContent = tag.contents[0]
+        if isinstance(tagContent, BeautifulSoup.NavigableString):
+            tagStr = (unicode(tagContent) or u'').strip()
+    tagType = tag.get('type')
+    infoset = tag.get('infoset')
+    if infoset:
+        _key2infoset[name] = infoset
+        _infoset2keys.setdefault(infoset, []).append(name)
+    # Here we use tag.name to avoid tags like <item title="company">
+    if tag.name in _MAP_TOP_OBJ:
+        # One of the subclasses of _Container.
+        item = _MAP_TOP_OBJ[name]()
+        itemAs = tag.get('access-system')
+        if itemAs:
+            if not _as:
+                _as = itemAs
+        else:
+            itemAs = _as
+        item.accessSystem = itemAs
+        tagsToGet = []
+        theID = tag.get('id')
+        if name == 'movie':
+            item.movieID = theID
+            tagsToGet = _titleTags
+            theTitle = tag.find('title', recursive=False)
+            if tag.title:
+                item.set_title(tag.title.string)
+                tag.title.extract()
+        else:
+            if name == 'person':
+                item.personID = theID
+                tagsToGet = _nameTags
+                theName = tag.find('long imdb canonical name', recursive=False)
+                if not theName:
+                    theName = tag.find('name', recursive=False)
+            elif name == 'character':
+                item.characterID = theID
+                tagsToGet = _nameTags
+                theName = tag.find('name', recursive=False)
+            elif name == 'company':
+                item.companyID = theID
+                tagsToGet = _companyTags
+                theName = tag.find('name', recursive=False)
+            if theName:
+                item.set_name(theName.string)
+            if theName:
+                theName.extract()
+        for t in tagsToGet:
+            if t in item.data:
+                continue
+            dataTag = tag.find(t, recursive=False)
+            if dataTag:
+                item.data[tagToKey(dataTag)] = _valueWithType(dataTag,
+                                                            dataTag.string)
+        if tag.notes:
+            item.notes = tag.notes.string
+            tag.notes.extract()
+        episodeOf = tag.find('episode-of', recursive=False)
+        if episodeOf:
+            item.data['episode of'] = parseTags(episodeOf, _topLevel=False,
+                                        _as=_as, _infoset2keys=_infoset2keys,
+                                        _key2infoset=_key2infoset)
+            episodeOf.extract()
+        cRole = tag.find('current-role', recursive=False)
+        if cRole:
+            cr = parseTags(cRole, _topLevel=False, _as=_as,
+                        _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
+            item.currentRole = cr
+            cRole.extract()
+        # XXX: big assumption, here.  What about Movie instances used
+        #      as keys in dictionaries?  What about other keys (season and
+        #      episode number, for example?)
+        if not _topLevel:
+            #tag.extract()
+            return item
+        _adder = lambda key, value: item.data.update({key: value})
+    elif tagStr:
+        if tag.notes:
+            notes = (tag.notes.string or u'').strip()
+            if notes:
+                tagStr += u'::%s' % notes
+        else:
+            tagStr = _valueWithType(tag, tagStr)
+        return tagStr
+    elif firstChild:
+        firstChildName = tagToKey(firstChild)
+        if firstChildName in _TAGS_TO_LIST:
+            item = []
+            _adder = lambda key, value: item.append(value)
+        else:
+            item = {}
+            _adder = lambda key, value: item.update({key: value})
+    else:
+        item = {}
+        _adder = lambda key, value: item.update({name: value})
+    for subTag in tag(recursive=False):
+        subTagKey = tagToKey(subTag)
+        # Exclude dinamically generated keys.
+        if tag.name in _MAP_TOP_OBJ and subTagKey in item._additional_keys():
+            continue
+        subItem = parseTags(subTag, _topLevel=False, _as=_as,
+                        _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
+        if subItem:
+            _adder(subTagKey, subItem)
+    if _topLevel and name in _MAP_TOP_OBJ:
+        # Add information about 'info sets', but only to the top-level object.
+        item.infoset2keys = _infoset2keys
+        item.key2infoset = _key2infoset
+        item.current_info = _infoset2keys.keys()
+    return item
+
+
+def parseXML(xml):
+    """Parse a XML string, returning an appropriate object (usually an
+    instance of a subclass of _Container."""
+    xmlObj = BeautifulSoup.BeautifulStoneSoup(xml,
+                convertEntities=BeautifulSoup.BeautifulStoneSoup.XHTML_ENTITIES)
+    if xmlObj:
+        mainTag = xmlObj.find()
+        if mainTag:
+            return parseTags(mainTag)
+    return None
+
 

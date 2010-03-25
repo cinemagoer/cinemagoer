@@ -29,6 +29,15 @@ NOTE: it's always time to clean the code! <g>
   if possible this should be available in every data access systems.
 
 
+[xml]
+* bugs of the helpers.parseXML function:
+  * doesn't handle Movie instances as keys of a dictionary; person->episodes,
+    character->episodes, character->quotes.
+  * changes tuples to lists (not a big deal).
+  * person/movieRefs are lost.
+  * uses only BeautifulSoup; maybe it can work with lxml, too.
+
+
 [Movie objects]
 * Define invariable names for the sections (the keys you use to access
   info stored in a Movie object).

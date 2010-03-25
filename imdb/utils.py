@@ -948,7 +948,7 @@ def _tagAttr(key, fullpath):
     if fullpath in TAGS_TO_MODIFY:
         tagName, useTitle = TAGS_TO_MODIFY[fullpath]
         if useTitle:
-            attrs['title'] = _escapedKey
+            attrs['key'] = _escapedKey
     elif not isinstance(key, unicode):
         if isinstance(key, str):
             tagName = unicode(key, 'ascii', 'ignore')
@@ -964,8 +964,8 @@ def _tagAttr(key, fullpath):
     tagName = tagName.lower().replace(' ', '-')
     tagName = str(tagName).translate(_allchars, _keepchars)
     if origTagName != tagName:
-        if 'title' not in attrs:
-            attrs['title'] = _escapedKey
+        if 'key' not in attrs:
+            attrs['key'] = _escapedKey
     if (not tagName) or tagName[0].isdigit() or tagName[0] == '-':
         # This is a fail-safe: we should never be here, since unpredictable
         # keys must be listed in TAGS_TO_MODIFY.
@@ -973,7 +973,7 @@ def _tagAttr(key, fullpath):
         # produce a valid XML.
         tagName = 'item'
         _utils_logger.error('invalid tag: %s [%s]' % (_escapedKey, fullpath))
-        attrs['title'] = _escapedKey
+        attrs['key'] = _escapedKey
     return tagName, u' '.join([u'%s="%s"' % i for i in attrs.items()])
 
 

@@ -430,7 +430,8 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
     if infoset:
         _key2infoset[name] = infoset
         _infoset2keys.setdefault(infoset, []).append(name)
-    if name in _MAP_TOP_OBJ:
+    # Here we use tag.name to avoid tags like <item title="company">
+    if tag.name in _MAP_TOP_OBJ:
         # One of the subclasses of _Container.
         item = _MAP_TOP_OBJ[name]()
         itemAs = tag.get('access-system')
@@ -466,7 +467,8 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
                 theName = tag.find('name', recursive=False)
             if theName:
                 item.set_name(theName.string)
-            theName.extract()
+            if theName:
+                theName.extract()
         for t in tagsToGet:
             if t in item.data:
                 continue
@@ -490,7 +492,8 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
             item.currentRole = cr
             cRole.extract()
         # XXX: big assumption, here.  What about Movie instances used
-        #      as keys in dictionaries?
+        #      as keys in dictionaries?  What about other keys (season and
+        #      episode number, for example?)
         if not _topLevel:
             #tag.extract()
             return item
@@ -517,7 +520,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
     for subTag in tag(recursive=False):
         subTagKey = tagToKey(subTag)
         # Exclude dinamically generated keys.
-        if name in _MAP_TOP_OBJ and subTagKey in item._additional_keys():
+        if tag.name in _MAP_TOP_OBJ and subTagKey in item._additional_keys():
             continue
         subItem = parseTags(subTag, _topLevel=False, _as=_as,
                         _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)

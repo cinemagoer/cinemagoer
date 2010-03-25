@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.6dev20100323 "12 Rounds" (23 Mar 2010)
+* What's the new in release 4.6dev20100325 "12 Rounds" (25 Mar 2010)
   [general]
   - introduced the 'full-size cover url' and 'full-size headshot'
     keys for Movie, Person and Character instances.

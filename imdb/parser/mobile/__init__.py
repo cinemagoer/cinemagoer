@@ -395,9 +395,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if akas:
             # For some reason, here <br> is still used in place of <br/>.
             akas[:] = [x for x in akas[0].split('<br>') if x.strip()]
-            akas = [_unHtml(x).replace('" - ','::', 1).lstrip('"')
+            akas = [_unHtml(x).replace('" - ','::', 1).lstrip('"').strip()
                     for x in akas]
             if 'See more' in akas: akas.remove('See more')
+            akas[:] = [x for x in akas if x]
             if akas:
                 d['akas'] = akas
         mpaa = _findBetween(cont, 'MPAA</a>:', '</div>', maxRes=1)

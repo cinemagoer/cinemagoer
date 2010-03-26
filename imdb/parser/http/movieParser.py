@@ -506,13 +506,14 @@ class DOMHTMLMovieParser(DOMParserBase):
 
 def _process_plotsummary(x):
     """Process a plot (contributed by Rdian06)."""
-    if x.get('author') is None:
-        xauthor = u'Anonymous'
-    else:
-        xauthor = x.get('author').replace('{', '<').replace('}',
-                        '>').replace('(','<').replace(')', '>')
-    xplot = x.get('plot', '').strip()
-    return u'%s::%s' % (xplot, xauthor)
+    xauthor = x.get('author')
+    if xauthor:
+        xauthor = xauthor.replace('{', '<').replace('}', '>').replace('(',
+                                    '<').replace(')', '>').strip()
+    xplot = x.get('plot', u'').strip()
+    if xauthor:
+        xplot += u'::%s' % xauthor
+    return xplot
 
 class DOMHTMLPlotParser(DOMParserBase):
     """Parser for the "plot summary" page of a given movie.
@@ -527,6 +528,8 @@ class DOMHTMLPlotParser(DOMParserBase):
     """
     _defGetRefs = True
 
+    # Notice that recently IMDb started to put the email of the
+    # author only in the link, that we're not collecting, here.
     extractors = [Extractor(label='plot',
                     path="//p[@class='plotpar']",
                     attrs=Attribute(key='plot',

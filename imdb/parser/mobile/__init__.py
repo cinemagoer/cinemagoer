@@ -475,8 +475,6 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 plot[i] = '%s::%s' % \
                         (p[:wbyidx].rstrip(),
                     p[wbyidx+12:].rstrip().replace('{','<').replace('}','>'))
-            else:
-                plot[i] = '%s::Anonymous' % p
         if plot: return {'data': {'plot': plot}}
         return {'data': {}}
 

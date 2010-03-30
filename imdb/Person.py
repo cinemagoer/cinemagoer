@@ -69,16 +69,25 @@ class Person(_Container):
                   'mini-biography author': 'imdb mini-biography by',
                   'biography author': 'imdb mini-biography by',
                   'genre': 'genres',
+                  'portrayed': 'portrayed in',
                   'keys': 'keywords',
+                  'trademarks': 'trade mark',
+                  'trade mark': 'trade mark',
+                  'trade marks': 'trade mark',
+                  'trademark': 'trade mark',
+                  'pictorials': 'pictorial',
+                  'magazine covers': 'magazine cover photo',
+                  'magazine-covers': 'magazine cover photo',
                   'tv series episodes': 'episodes',
                   'tv-series episodes': 'episodes',
+                  'articles': 'article',
                   'keyword': 'keywords'}
 
     # 'nick names'???
     keys_tomodify_list = ('mini biography', 'spouse', 'quotes', 'other works',
-                        'salary history', 'trivia', 'trademarks', 'news',
-                        'books', 'biographical movies', 'portrayed',
-                        'where now', 'interviews', 'articles',
+                        'salary history', 'trivia', 'trade mark', 'news',
+                        'books', 'biographical movies', 'portrayed in',
+                        'where now', 'interviews', 'article',
                         "biography from leonard maltin's movie encyclopedia")
 
     cmpFunct = cmpPeople

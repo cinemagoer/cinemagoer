@@ -956,6 +956,8 @@
 <!ATTLIST birth-notes %common.attrs;>
 <!ELEMENT bottom-100-rank (#PCDATA)>
 <!ATTLIST bottom-100-rank %common.attrs;>
+<!ELEMENT bottom-10-rank (#PCDATA)>
+<!ATTLIST bottom-10-rank %common.attrs;>
 <!ELEMENT canonical-name (#PCDATA)>
 <!ATTLIST canonical-name %common.attrs;>
 <!ELEMENT canonical-episode-title (#PCDATA)>

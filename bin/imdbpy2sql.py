@@ -2199,17 +2199,17 @@ def _parseBiography(biol):
             rn = build_name(analyze_name(n, canonical=1), canonical=1)
             res['birth name'] = rn
         elif x6 == 'AT: * ':
-            res.setdefault('articles', []).append(x[6:].strip())
+            res.setdefault('article', []).append(x[6:].strip())
         elif x4 == 'HT: ':
             res['height'] = x[4:].strip()
         elif x6 == 'PT: * ':
-            res.setdefault('pictorials', []).append(x[6:].strip())
+            res.setdefault('pictorial', []).append(x[6:].strip())
         elif x6 == 'CV: * ':
-            res.setdefault('magazine covers', []).append(x[6:].strip())
+            res.setdefault('magazine cover photo', []).append(x[6:].strip())
         elif x4 == 'NK: ':
             res.setdefault('nick names', []).append(normalizeName(x[4:]))
         elif x6 == 'PI: * ':
-            res.setdefault('portrayed', []).append(x[6:].strip())
+            res.setdefault('portrayed in', []).append(x[6:].strip())
         elif x6 == 'SA: * ':
             sal = x[6:].strip().replace(' -> ', '::')
             res.setdefault('salary history', []).append(sal)
@@ -2229,7 +2229,7 @@ def _parseBiography(biol):
     biomovies = _parseList(biol, 'BT')
     if biomovies: res['biographical movies'] = biomovies
     tm = _parseList(biol, 'TM')
-    if tm: res['trademarks'] = tm
+    if tm: res['trade mark'] = tm
     interv = _parseList(biol, 'IT')
     if interv: res['interviews'] = interv
     return res

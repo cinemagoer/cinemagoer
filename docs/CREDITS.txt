@@ -16,6 +16,8 @@ I'd like to thank the following people for their help:
 
 * Josh Harding for a bug report about the new imdb.com layout.
 
+* Julian Scheid for a bug report about crap in the ptdf.
+
 * Xavier Naidoo for a bug report about top250 and BeautifulSoup.
 
 * Basil Shubin for hints about a new helper function.
@@ -40,6 +42,8 @@ I'd like to thank the following people for their help:
 * aow for a note about some misleading descriptions.
 
 * Sébastien Ragons for tests and reports.
+
+* Sridhar Ratnakumar for info about PKG-INF.
 
 * neonrush for a bug parsing Malcolm McDowell filmography!
 

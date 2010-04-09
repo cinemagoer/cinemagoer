@@ -358,7 +358,8 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
                 try: epn = int(epn)
                 except: pass
                 episode_d['season'] = seas
-                episode_d['episode'] = epn
+                if epn:
+                    episode_d['episode'] = epn
         return episode_d
     # First of all, search for the kind of show.
     # XXX: Number of entries at 17 Apr 2008:

@@ -1597,7 +1597,7 @@ def doAkaNames():
             try:
                 name_dict = analyze_name(line)
             except IMDbParserError:
-                if line: print 'WARNING: wrong name:', _(line)
+                if line: print 'WARNING doAkaNames wrong name:', _(line)
                 continue
             name = name_dict.get('name')
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name)
@@ -2220,8 +2220,12 @@ def _parseBiography(biol):
         elif x4 == 'RN: ':
             n = x[4:].strip()
             if not n: continue
-            rn = build_name(analyze_name(n, canonical=1), canonical=1)
-            res['birth name'] = rn
+            try:
+                rn = build_name(analyze_name(n, canonical=1), canonical=1)
+                res['birth name'] = rn
+            except IMDbParserError:
+                if line: print 'WARNING _parseBiography wrong name:', _(n)
+                continue
         elif x6 == 'AT: * ':
             res.setdefault('article', []).append(x[6:].strip())
         elif x4 == 'HT: ':
@@ -2237,7 +2241,6 @@ def _parseBiography(biol):
         elif x6 == 'SA: * ':
             sal = x[6:].strip().replace(' -> ', '::')
             res.setdefault('salary history', []).append(sal)
-
     trl = _parseList(biol, 'TR')
     if trl: res['trivia'] = trl
     quotes = _parseList(biol, 'QU')

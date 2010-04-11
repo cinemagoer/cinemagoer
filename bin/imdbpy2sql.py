@@ -1692,7 +1692,13 @@ def doAkaTitles():
                 if line[0] == '\n': continue
                 line = line.strip()
                 if obsolete:
-                    tonD = analyze_title(line, _emptyString='')
+                    try:
+                        tonD = analyze_title(line, _emptyString='')
+                    except IMDbParserError:
+                        if line:
+                            print 'WARNING doAkaTitles(obsol O) invalid title:',
+                            print _(line)
+                        continue
                     tonD['title'] = normalizeTitle(tonD['title'])
                     line = build_title(tonD, ptdf=1, _emptyString='')
                     # Aka information for titles in obsolete files are
@@ -1702,7 +1708,13 @@ def doAkaTitles():
                         continue
                 mid = CACHE_MID.addUnique(line)
                 if line[0] == '"':
-                    titleDict = analyze_title(line, _emptyString='')
+                    try:
+                        titleDict = analyze_title(line, _emptyString='')
+                    except IMDbParserError:
+                        if line:
+                            print 'WARNING doAkaTitles (O) invalid title:',
+                            print _(line)
+                        continue
                     if 'episode of' in titleDict:
                         if obsolete:
                             titleDict['episode of']['title'] = \
@@ -1735,7 +1747,13 @@ def doAkaTitles():
                 if not akat:
                     continue
                 if obsolete:
-                    akatD = analyze_title(akat, _emptyString='')
+                    try:
+                        akatD = analyze_title(akat, _emptyString='')
+                    except IMDbParserError:
+                        if line:
+                            print 'WARNING doAkaTitles(obsol) invalid title:',
+                            print _(akat)
+                        continue
                     akatD['title'] = normalizeTitle(akatD['title'])
                     akat = build_title(akatD, ptdf=1, _emptyString='')
                 if count % 10000 == 0:
@@ -1744,7 +1762,13 @@ def doAkaTitles():
                 if isEpisode and seriesID is not None:
                     # Handle series for which only single episodes have
                     # aliases.
-                    akaDict = analyze_title(akat, _emptyString='')
+                    try:
+                        akaDict = analyze_title(akat, _emptyString='')
+                    except IMDbParserError:
+                        if line:
+                            print 'WARNING doAkaTitles (epis) invalid title:',
+                            print _(akat)
+                        continue
                     if 'episode of' in akaDict:
                         if obsolete:
                             akaDict['episode of']['title'] = normalizeTitle(

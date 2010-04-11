@@ -705,6 +705,7 @@ class IMDbBase:
                 continue
             if not i:
                 continue
+            self._imdb_logger.debug('retrieving "%s" info set', i)
             try:
                 method = getattr(aSystem, 'get_%s_%s' %
                                     (prefix, i.replace(' ', '_')))

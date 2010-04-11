@@ -1,22 +1,31 @@
 
+  CREDITS
+  =======
+
 See also CONTRIBUTORS.txt for a list of the most important developers
 who share the copyright on some portions of the code.
 
+First of all, I want to thank all the maintainers of the
+packages, listed on http://imdbpy.sf.net/?page=download#otherpkg,
+and especially Ana Guerrero.
+Another big thank to the developers who used IMDbPY for their
+projects and researches; they can be found here:
+  http://imdbpy.sf.net/?page=programs
 
-I'd like to thank the following people for their help:
+Other very special thanks go to some people who followed very
+closely the development of IMDbPY, providing hints and insights:
+Ori Cohen, James Rubino, Tero Saarni and Jesper Noer (for a lot
+of help, and also for the wonderful http://bitbucket.org)
 
-* Ana Guerrero, for maintaining the official debian package.
 
-* H. Turgut Uyar for a number of bug reports and a lot of work on
-  the test-suite.
+Below, a list of persons who contributed with bug reports, small
+patches and hints (kept in a reverse order since IMDbPY 4.5):
 
-* Ori Cohen for some code and various hints.
+* Julian Scheid for bug reports about garbage in the ptdf.
 
 * Adeodato Simó for a bug report about the new imdb.com layout.
 
 * Josh Harding for a bug report about the new imdb.com layout.
-
-* Julian Scheid for a bug report about crap in the ptdf.
 
 * Xavier Naidoo for a bug report about top250 and BeautifulSoup.
 
@@ -24,12 +33,19 @@ I'd like to thank the following people for their help:
 
 * Mark Jeffery, for some help debugging a lxml bug.
 
-* Tero Saarni, for the series 60 GUI and a lot of testing and
-  debugging.
-
 * Hieu Nguyen for a bug report about fetching real imdbIDs.
 
 * Rdian06 for a patch for movies without plot authors.
+
+* Tero Saarni, for the series 60 GUI and a lot of testing and
+  debugging.
+
+* Ana Guerrero, for maintaining the official debian package.
+
+* H. Turgut Uyar for a number of bug reports and a lot of work on
+  the test-suite.
+
+* Ori Cohen for some code and various hints.
 
 * Jesper Nøhr for a lot of testing, especially on 'sql'.
 

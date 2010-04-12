@@ -705,8 +705,7 @@ class DOMHTMLKeywordsParser(DOMParserBase):
 
 
 class DOMHTMLAlternateVersionsParser(DOMParserBase):
-    """Parser for the "alternate versions" and "trivia" pages of a
-    given movie.
+    """Parser for the "alternate versions" page of a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -716,10 +715,28 @@ class DOMHTMLAlternateVersionsParser(DOMParserBase):
         result = avparser.parse(alternateversions_html_string)
     """
     _defGetRefs = True
-    kind = 'alternate versions'
     extractors = [Extractor(label='alternate versions',
                             path="//ul[@class='trivia']/li",
-                            attrs=Attribute(key='self.kind',
+                            attrs=Attribute(key='alternate versions',
+                                            multi=True,
+                                            path=".//text()",
+                                            postprocess=lambda x: x.strip()))]
+
+
+class DOMHTMLTriviaParser(DOMParserBase):
+    """Parser for the "trivia" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        avparser = HTMLAlternateVersionsParser()
+        result = avparser.parse(alternateversions_html_string)
+    """
+    _defGetRefs = True
+    extractors = [Extractor(label='alternate versions',
+                            path="//div[@class='sodatext']",
+                            attrs=Attribute(key='trivia',
                                             multi=True,
                                             path=".//text()",
                                             postprocess=lambda x: x.strip()))]
@@ -1891,7 +1908,7 @@ _OBJECTS = {
     'crazycredits_parser':  ((DOMHTMLCrazyCreditsParser,), None),
     'goofs_parser':  ((DOMHTMLGoofsParser,), None),
     'alternateversions_parser':  ((DOMHTMLAlternateVersionsParser,), None),
-    'trivia_parser':  ((DOMHTMLAlternateVersionsParser,), {'kind': 'trivia'}),
+    'trivia_parser':  ((DOMHTMLTriviaParser,), None),
     'soundtrack_parser':  ((DOMHTMLSoundtrackParser,), {'kind': 'soundtrack'}),
     'quotes_parser':  ((DOMHTMLQuotesParser,), None),
     'releasedates_parser':  ((DOMHTMLReleaseinfoParser,), None),

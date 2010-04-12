@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.6dev20100411 "Gamer" (11 Apr 2010)
+* What's the new in release 4.6dev20100412 "Gamer" (12 Apr 2010)
   [general]
   - introduced the 'full-size cover url' and 'full-size headshot'
     keys for Movie, Person and Character instances.
@@ -12,6 +12,7 @@
   [http/mobile]
   - removed new garbage from the imdb pages.
   - support new style of akas.
+  - fix for the "trivia" page.
 
   [sql]
   - fixes for garbage in the plain text data files.

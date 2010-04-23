@@ -3,7 +3,7 @@ parser.sql.alchemyadapter module (imdb.parser.sql package).
 
 This module adapts the SQLAlchemy ORM to the internal mechanism.
 
-Copyright 2008-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2010 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,19 +21,21 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-import warnings
+import logging
 from sqlalchemy import *
 from sqlalchemy import schema
 try: from sqlalchemy import exc # 0.5
 except ImportError: from sqlalchemy import exceptions as exc # 0.4
+
+_alchemy_logger = logging.getLogger('imdbpy.parser.sql.alchemy')
 
 try:
     import migrate.changeset
     HAS_MC = True
 except ImportError:
     HAS_MC = False
-    warnings.warn('Unable to import migrate.changeset: Foreign Keys will ' \
-                    'not be created.')
+    _alchemy_logger.warn('Unable to import migrate.changeset: Foreign ' \
+                         'Keys will not be created.')
 
 from imdb._exceptions import IMDbDataAccessError
 from dbschema import *
@@ -337,8 +339,8 @@ class TableAdapter(object):
         try:
             idx.create()
         except exc.OperationalError, e:
-            warnings.warn('Skipping creation of the %s.%s index: %s' %
-                            (self.sqlmeta.table, col.name, e))
+            _alchemy_logger.warn('Skipping creation of the %s.%s index: %s' %
+                                (self.sqlmeta.table, col.name, e))
 
     def addIndexes(self, ifNotExists=True):
         """Create all required indexes."""

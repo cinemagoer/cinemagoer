@@ -1,13 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.6dev20100412 "Gamer" (12 Apr 2010)
+* What's the new in release 4.6dev20100423 "Ghost Writer" (23 Apr 2010)
   [general]
   - introduced the 'full-size cover url' and 'full-size headshot'
     keys for Movie, Person and Character instances.
   - moved the development to a Mercurial repository.
   - introduced the parseXML function in the imdb.helpers module.
   - now the asXML method can exclude dynamically generated keys.
+  - rationalized the use of the 'logging' and 'warnings' modules.
 
   [http/mobile]
   - removed new garbage from the imdb pages.

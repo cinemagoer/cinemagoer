@@ -695,7 +695,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             import warnings
             warnings.warn('RuntimeError in '
                     "imdb.parser.sql.IMDbSqlAccessSystem; "
-                    "if it's not a recursion limit exceeded or we're not "
+                    "if it's not a recursion limit exceeded and we're not "
                     "running in a Symbian environment, it's a bug:\n%s" % e)
             return (trefs, nrefs)
 

@@ -4,7 +4,7 @@ _compat module (imdb package).
 This module provides compatibility functions used by the imdb package
 to deal with unusual environments.
 
-Copyright 2008 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2010 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,6 +20,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
+
+# TODO: now we're heavily using the 'logging' module, which was not
+#       present in Python 2.2.  To work in a Symbian environment, we
+#       need to create a fake 'logging' module (its functions may call
+#       the 'warnings' module, or do nothing at all).
+
 
 import os
 # If true, we're working on a Symbian device.

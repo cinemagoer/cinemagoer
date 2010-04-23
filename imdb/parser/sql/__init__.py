@@ -29,7 +29,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 import logging
-import warnings
 from difflib import SequenceMatcher
 from codecs import lookup
 
@@ -123,9 +122,7 @@ try:
         return _ratcliff(s1.encode('latin_1', 'replace'),
                         s2.encode('latin_1', 'replace'))
 except ImportError:
-    _aux_logger.warn('unable to import cutils.ratcliff')
-    import warnings
-    warnings.warn('Unable to import the cutils.ratcliff function.'
+    _aux_logger.warn('Unable to import the cutils.ratcliff function.'
                     '  Searching names and titles using the "sql"'
                     ' data access system will be slower.')
 
@@ -332,8 +329,7 @@ def scan_company_names(name_list, name1, results=0, ro_thresold=None):
 try:
     from cutils import soundex
 except ImportError:
-    _aux_logger.warn('unable to import cutils.soundex')
-    warnings.warn('Unable to import the cutils.soundex function.'
+    _aux_logger.warn('Unable to import the cutils.soundex function.'
                     '  Searches of movie titles and person names will be'
                     ' a bit slower.')
 
@@ -564,7 +560,7 @@ class IMDbSqlAccessSystem(IMDbBase):
                                                 setConnection, AND, OR, IN, \
                                                 ISNULL, CONTAINSSTRING, toUTF8
                 else:
-                    warnings.warn('unknown module "%s"' % mod)
+                    self._sql_logger.warn('unknown module "%s"' % mod)
                     continue
                 self._sql_logger.info('using %s ORM', mod)
                 # XXX: look ma'... black magic!  It's used to make
@@ -580,14 +576,15 @@ class IMDbSqlAccessSystem(IMDbBase):
                 for t in DB_TABLES:
                     globals()[t._imdbpyName] = t
                 if _gotError:
-                    warnings.warn('falling back to "%s"' % mod)
+                    self._sql_logger.warn('falling back to "%s"' % mod)
                 break
             except ImportError, e:
                 if idx+1 >= nrMods:
                     raise IMDbError, 'unable to use any ORM in %s: %s' % (
                                                     str(useORM), str(e))
                 else:
-                    warnings.warn('unable to use "%s": %s' % (mod, str(e)))
+                    self._sql_logger.warn('unable to use "%s": %s' % (mod,
+                                                                    str(e)))
                     _gotError = True
                 continue
         else:

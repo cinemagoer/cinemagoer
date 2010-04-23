@@ -3,7 +3,7 @@ parser.sql.objectadapter module (imdb.parser.sql package).
 
 This module adapts the SQLObject ORM to the internal mechanism.
 
-Copyright 2008-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2010 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,10 +20,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import logging
+
 from sqlobject import *
 from sqlobject.sqlbuilder import ISNULL, ISNOTNULL, AND, OR, IN, CONTAINSSTRING
 
 from dbschema import *
+
+_object_logger = logging.getLogger('imdbpy.parser.sql.object')
 
 
 # Maps our placeholders to SQLAlchemy's column types.
@@ -55,9 +59,8 @@ def addIndexes(cls, ifNotExists=True):
     try:
         cls.createIndexes(ifNotExists)
     except dberrors.OperationalError, e:
-        import warnings
-        warnings.warn('Skipping creation of the %s.%s index: %s' %
-                        (cls.sqlmeta.table, col.name, e))
+        _object_logger.warn('Skipping creation of the %s.%s index: %s' %
+                            (cls.sqlmeta.table, col.name, e))
 addIndexes = classmethod(addIndexes)
 
 

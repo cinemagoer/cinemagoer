@@ -27,7 +27,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import sys
 import logging
-import warnings
 from urllib import FancyURLopener, quote_plus
 from codecs import lookup
 
@@ -68,8 +67,8 @@ class _ModuleProxy:
         """Initialize a proxy for the given module; defaultKeys, if set,
         muste be a dictionary of values to set for instanced objects."""
         if oldParsers or fallBackToNew:
-            warnings.warn('The old set of parsers was removed; falling ' \
-                    'back to the new parsers.')
+            _aux_logger.warn('The old set of parsers was removed; falling ' \
+                            'back to the new parsers.')
         self.useModule = useModule
         if defaultKeys is None:
             defaultKeys = {}

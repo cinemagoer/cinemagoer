@@ -24,7 +24,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 import logging
-import warnings
 
 from imdb._exceptions import IMDbError
 
@@ -407,12 +406,12 @@ class DOMParserBase(object):
                     self._is_xml_unicode = True
                     self.usingModule = 'beautifulsoup'
                 else:
-                    warnings.warn('unknown module "%s"' % mod)
+                    self._logger.warn('unknown module "%s"' % mod)
                     continue
                 self.fromstring = fromstring
                 self._tostring = tostring
                 if _gotError:
-                    warnings.warn('falling back to "%s"' % mod)
+                    self._logger.warn('falling back to "%s"' % mod)
                 break
             except ImportError, e:
                 if idx+1 >= nrMods:
@@ -421,7 +420,7 @@ class DOMParserBase(object):
                     raise IMDbError, 'unable to use any parser in %s: %s' % \
                                     (str(useModule), str(e))
                 else:
-                    warnings.warn('unable to use "%s": %s' % (mod, str(e)))
+                    self._logger.warn('unable to use "%s": %s' % (mod, str(e)))
                     _gotError = True
                 continue
         else:

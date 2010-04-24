@@ -155,6 +155,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         if data and data['data'] and len(data['data'][0]) == 3 and \
                 isinstance(data['data'][0], tuple):
             for idx, datum in enumerate(data['data']):
+                if not isinstance(datum, tuple):
+                    continue
                 if datum[2] is not None:
                     akas = filter(None, datum[2].split('::'))
                     if self._linkPrefix == '/title/tt':

@@ -7,7 +7,7 @@ for a given person.
 E.g., when searching for the name "Mel Gibson", the parsed page would be:
     http://akas.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
 
-Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -69,7 +69,8 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
                             },
                         postprocess=lambda x: (
                             analyze_imdbid(x.get('link') or u''),
-                            analyze_name(x.get('name')+(x.get('index') or u''),
+                            analyze_name((x.get('name') or u'') + \
+                                        (x.get('index') or u''),
                                          canonical=1), x.get('akas')
                         ))]
     extractors = [Extractor(label='search',

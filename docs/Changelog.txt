@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.6dev20100423 "Ghost Writer" (23 Apr 2010)
+* What's the new in release 4.6dev20100424 "The Crazies" (24 Apr 2010)
   [general]
   - introduced the 'full-size cover url' and 'full-size headshot'
     keys for Movie, Person and Character instances.
@@ -14,6 +14,7 @@
   - removed new garbage from the imdb pages.
   - support new style of akas.
   - fix for the "trivia" page.
+  - fixes for searches with too many results.
 
   [sql]
   - fixes for garbage in the plain text data files.

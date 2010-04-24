@@ -425,11 +425,12 @@ class IMDbHTTPAccessSystem(IMDbBase):
             params = params.replace('s=ep;', 's=tt;ttype=ep;', 1)
         cont = self._retrieve(imdbURL_find % params)
         #print 'URL:', imdbURL_find % params
-        if cont.find('There were more than 500 partial matches') == -1:
+        if cont.find('Your search returned more than') == -1 or \
+                cont.find("displayed the exact matches") == -1:
             return cont
         # The retrieved page contains no results, because too many
         # titles or names contain the string we're looking for.
-        params = 'q=%s;more=%s' % (quote_plus(ton), kind)
+        params = 's=%s;q=%s;lm=0' % (kind, quote_plus(ton))
         size = 22528 + results * 512
         return self._retrieve(imdbURL_find % params, size=size)
 

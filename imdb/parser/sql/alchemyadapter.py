@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
+import sys
 import logging
 from sqlalchemy import *
 from sqlalchemy import schema
@@ -483,6 +484,8 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
     engine = create_engine(uri, **params)
     metadata.bind = engine
     eng_conn = engine.connect()
+    if sys.version_info[0] > 2 or sys.version_info[1] > 5:
+        eng_conn.connection.connection.text_factory = str
     # XXX: OH MY, THAT'S A MESS!
     #      We need to return a "connection" object, with the .dbName
     #      attribute set to the db engine name (e.g. "mysql"), .paramstyle

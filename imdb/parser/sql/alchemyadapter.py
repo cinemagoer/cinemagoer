@@ -484,8 +484,11 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
     engine = create_engine(uri, **params)
     metadata.bind = engine
     eng_conn = engine.connect()
-    if sys.version_info[0] > 2 or sys.version_info[1] > 5:
-        eng_conn.connection.connection.text_factory = str
+    if uri.startswith('sqlite'):
+        major = sys.version_info[0]
+        minor = sys.version_info[1]
+        if major > 2 or (major == 2 and minor > 5):
+            eng_conn.connection.connection.text_factory = str
     # XXX: OH MY, THAT'S A MESS!
     #      We need to return a "connection" object, with the .dbName
     #      attribute set to the db engine name (e.g. "mysql"), .paramstyle

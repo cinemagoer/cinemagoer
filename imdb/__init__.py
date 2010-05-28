@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.6dev20100522'
+__version__ = VERSION = '4.6dev20100528'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -710,7 +710,9 @@ class IMDbBase:
                 method = getattr(aSystem, 'get_%s_%s' %
                                     (prefix, i.replace(' ', '_')))
             except AttributeError:
-                raise IMDbDataAccessError, 'unknown information set "%s"' % i
+                self._imdb_logger.error('unknown information set "%s"', i)
+                # Keeps going.
+                method = lambda *x: {}
             try:
                 ret = method(mopID)
             except Exception, e:

@@ -1060,7 +1060,7 @@ _xmlHead = _xmlHead.replace('{VERSION}',
 
 class _Container(object):
     """Base class for Movie, Person, Character and Company classes."""
-     # The default sets of information retrieved.
+    # The default sets of information retrieved.
     default_info = ()
 
     # Aliases for some not-so-intuitive keys.

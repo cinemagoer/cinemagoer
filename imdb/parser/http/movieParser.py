@@ -741,6 +741,13 @@ class DOMHTMLTriviaParser(DOMParserBase):
                                             path=".//text()",
                                             postprocess=lambda x: x.strip()))]
 
+    def preprocess_dom(self, dom):
+        # Remove "link this quote" links.
+        for qLink in self.xpath(dom, "//span[@class='linksoda']"):
+            qLink.drop_tree()
+        return dom
+
+
 
 class DOMHTMLSoundtrackParser(DOMHTMLAlternateVersionsParser):
     kind = 'soundtrack'

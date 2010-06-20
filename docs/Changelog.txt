@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.6dev20100528 "Full Metal Jacket" (28 May 2010)
+* What's the new in release 4.6 "The Road" (19 Jun 2010)
   [general]
   - introduced the 'full-size cover url' and 'full-size headshot'
     keys for Movie, Person and Character instances.

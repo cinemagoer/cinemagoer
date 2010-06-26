@@ -1699,10 +1699,14 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                 try: season_key = int(season_key)
                 except: pass
                 nd[season_key] = {}
+                ep_counter = 1
                 for episode in data[key]:
                     if not episode: continue
                     episode_key = episode.get('episode')
                     if episode_key is None: continue
+                    if not isinstance(episode_key, int):
+                        episode_key = ep_counter
+                        ep_counter += 1
                     cast_key = 'Season %s, Episode %s:' % (season_key,
                                                             episode_key)
                     if data.has_key(cast_key):

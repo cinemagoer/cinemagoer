@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.7 "The A-Team" (26 Jun 2010)
+ [http]
+ - fix for lists of uncategorized episodes.
+
+
 * What's the new in release 4.6 "The Road" (19 Jun 2010)
   [general]
   - introduced the 'full-size cover url' and 'full-size headshot'

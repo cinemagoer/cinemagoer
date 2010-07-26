@@ -225,8 +225,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 postprocess=lambda x: x.strip()),
                             Attribute(key="countries",
                                 path="./h5[starts-with(text(), " \
-                                        "'Countr')]/..//a/text()",
-                                    postprocess=makeSplitter(sep='\n')),
+                            "'Countr')]/../div[@class='info-content']//text()",
+                            postprocess=makeSplitter('|')),
                             Attribute(key="language",
                                 path="./h5[starts-with(text(), " \
                                         "'Language')]/..//text()",

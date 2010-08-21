@@ -1,6 +1,13 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 4.8dev20100821 "Splice" (21 Aug 2010)
+  [sql]
+  - the tables containing titles and names (and akas) now
+    include a 'md5sum' column calculated on the
+    "long imdb canonical title/name".
+
+
 * What's the new in release 4.7 "Halloween II" (26 Jul 2010)
  [http]
  - fix for lists of uncategorized episodes.

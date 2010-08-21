@@ -193,7 +193,8 @@ DB_SCHEMA = [
         DBCol('namePcodeNf', STRINGCOL, length=5, default=None,
                 index='idx_pcodenf'),
         DBCol('surnamePcode', STRINGCOL, length=5, default=None,
-                index='idx_pcode')
+                index='idx_pcode'),
+        DBCol('md5sum', STRINGCOL, length=32, default=None, index='idx_md5')
     ),
 
     DBTable('CharName',
@@ -207,7 +208,8 @@ DB_SCHEMA = [
         DBCol('namePcodeNf', STRINGCOL, length=5, default=None,
                 index='idx_pcodenf'),
         DBCol('surnamePcode', STRINGCOL, length=5, default=None,
-                index='idx_pcode')
+                index='idx_pcode'),
+        DBCol('md5sum', STRINGCOL, length=32, default=None, index='idx_md5')
     ),
 
     DBTable('CompanyName',
@@ -220,7 +222,8 @@ DB_SCHEMA = [
         DBCol('namePcodeNf', STRINGCOL, length=5, default=None,
                 index='idx_pcodenf'),
         DBCol('namePcodeSf', STRINGCOL, length=5, default=None,
-                index='idx_pcodesf')
+                index='idx_pcodesf'),
+        DBCol('md5sum', STRINGCOL, length=32, default=None, index='idx_md5')
     ),
 
     DBTable('KindType',
@@ -245,7 +248,8 @@ DB_SCHEMA = [
         DBCol('episodeNr', INTCOL, default=None),
         # Maximum observed length is 44; 49 can store 5 comma-separated
         # year-year pairs.
-        DBCol('seriesYears', STRINGCOL, length=49, default=None)
+        DBCol('seriesYears', STRINGCOL, length=49, default=None),
+        DBCol('md5sum', STRINGCOL, length=32, default=None, index='idx_md5')
     ),
 
     DBTable('CompanyType',
@@ -265,7 +269,8 @@ DB_SCHEMA = [
         DBCol('namePcodeNf',  STRINGCOL, length=5, default=None,
                 index='idx_pcodenf'),
         DBCol('surnamePcode',  STRINGCOL, length=5, default=None,
-                index='idx_pcode')
+                index='idx_pcode'),
+        DBCol('md5sum', STRINGCOL, length=32, default=None, index='idx_md5')
     ),
 
     DBTable('AkaTitle',
@@ -294,7 +299,8 @@ DB_SCHEMA = [
                 foreignKey='AkaTitle'),
         DBCol('seasonNr', INTCOL, default=None),
         DBCol('episodeNr', INTCOL, default=None),
-        DBCol('note', UNICODECOL, default=None)
+        DBCol('note', UNICODECOL, default=None),
+        DBCol('md5sum', STRINGCOL, length=32, default=None, index='idx_md5')
     ),
 
     DBTable('RoleType',

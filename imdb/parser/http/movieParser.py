@@ -996,8 +996,10 @@ class DOMHTMLRatingsParser(DOMParserBase):
         if votes:
             nd['number of votes'] = {}
             for i in xrange(1, 11):
-                nd['number of votes'][int(votes[i]['ordinal'])] = \
-                        int(votes[i]['votes'].replace(',', ''))
+                _ordinal = int(votes[i]['ordinal'])
+                _strvts = votes[i]['votes'] or '0'
+                nd['number of votes'][_ordinal] = \
+                        int(_strvts.replace(',', ''))
         mean = data.get('mean and median', '')
         if mean:
             means = self.re_means.findall(mean)

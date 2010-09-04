@@ -1,10 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.7 "Halloween II" (26 Jul 2010)
+* What's the new in release 4.7dev20100904 "The Expendables" (04 Sept 2010)
  [http]
  - fix for lists of uncategorized episodes.
  - fix for movies with multiple countries.
+ - more robust handling for vote details.
 
 
 * What's the new in release 4.6 "The Road" (19 Jun 2010)

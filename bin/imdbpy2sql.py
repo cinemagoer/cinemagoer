@@ -26,10 +26,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import os, sys, getopt, time, re, warnings
 try: import cPickle as pickle
 except ImportError: import pickle
+try: from hashlib import md5
+except ImportError: from md5 import md5
 from gzip import GzipFile
 from types import UnicodeType
-from imdb.parser.sql.dbschema import *
 
+from imdb.parser.sql.dbschema import *
 from imdb.parser.sql import get_movie_data, soundex
 from imdb.utils import analyze_title, analyze_name, date_and_notes, \
         build_name, build_title, normalizeName, normalizeTitle, _articles, \
@@ -975,7 +977,8 @@ class MoviesCache(_BaseCache):
         self.sqlstr, self.converter = createSQLstr(Title, ('id', 'title',
                                     'imdbIndex', 'kindID', 'productionYear',
                                     'imdbID', 'phoneticCode', 'episodeOfID',
-                                    'seasonNr', 'episodeNr', 'seriesYears'))
+                                    'seasonNr', 'episodeNr', 'seriesYears',
+                                    'md5sum'))
 
     def populate(self):
         print ' * POPULATING %s...' % self.className
@@ -1048,7 +1051,8 @@ class MoviesCache(_BaseCache):
             soundex = title_soundex(title)
             lapp((v, title, tget('imdbIndex'), KIND_IDS[kind],
                     tget('year'), None, soundex, episodeOf,
-                    tget('season'), tget('episode'), tget('series years')))
+                    tget('season'), tget('episode'), tget('series years'),
+                    md5(k).hexdigest()))
         self._runCommand(l)
 
     def _runCommand(self, dataList):
@@ -1079,7 +1083,7 @@ class PersonsCache(_BaseCache):
         self._id_for_custom_q = 'PERSONS'
         self.sqlstr, self.converter = createSQLstr(Name, ['id', 'name',
                                 'imdbIndex', 'imdbID', 'namePcodeCf',
-                                'namePcodeNf', 'surnamePcode'])
+                                'namePcodeNf', 'surnamePcode', 'md5sum'])
 
     def populate(self):
         print ' * POPULATING PersonsCache...'
@@ -1117,7 +1121,8 @@ class PersonsCache(_BaseCache):
             name = tget('name')
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name)
             lapp((v, name, tget('imdbIndex'), None,
-                namePcodeCf, namePcodeNf, surnamePcode))
+                namePcodeCf, namePcodeNf, surnamePcode,
+                md5(k).hexdigest()))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
         else:
@@ -1135,7 +1140,7 @@ class CharactersCache(_BaseCache):
         self._id_for_custom_q = 'CHARACTERS'
         self.sqlstr, self.converter = createSQLstr(CharName, ['id', 'name',
                                 'imdbIndex', 'imdbID', 'namePcodeNf',
-                                'surnamePcode'])
+                                'surnamePcode', 'md5sum'])
 
     def populate(self):
         print ' * POPULATING CharactersCache...'
@@ -1174,7 +1179,7 @@ class CharactersCache(_BaseCache):
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name,
                                                                 character=True)
             lapp((v, name, tget('imdbIndex'), None,
-                namePcodeCf, surnamePcode))
+                namePcodeCf, surnamePcode, md5(k).hexdigest()))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
         else:
@@ -1192,7 +1197,7 @@ class CompaniesCache(_BaseCache):
         self._id_for_custom_q = 'COMPANIES'
         self.sqlstr, self.converter = createSQLstr(CompanyName, ['id', 'name',
                                 'countryCode', 'imdbID', 'namePcodeNf',
-                                'namePcodeSf'])
+                                'namePcodeSf', 'md5sum'])
 
     def populate(self):
         print ' * POPULATING CharactersCache...'
@@ -1233,7 +1238,8 @@ class CompaniesCache(_BaseCache):
             country = tget('country')
             if k != name:
                 namePcodeSf = soundex(k)
-            lapp((v, name, country, None, namePcodeNf, namePcodeSf))
+            lapp((v, name, country, None, namePcodeNf, namePcodeSf,
+                    md5(k).hexdigest()))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
         else:
@@ -1585,7 +1591,8 @@ def doAkaNames():
     try: fp = SourceFile('aka-names.list.gz', start=AKAN_START)
     except IOError: return
     sqldata = SQLData(table=AkaName, cols=['personID', 'name', 'imdbIndex',
-                            'namePcodeCf', 'namePcodeNf', 'surnamePcode'])
+                            'namePcodeCf', 'namePcodeNf', 'surnamePcode',
+                            'md5sum'])
     for line in fp:
         if line and line[0] != ' ':
             if line[0] == '\n': continue
@@ -1602,7 +1609,8 @@ def doAkaNames():
             name = name_dict.get('name')
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name)
             sqldata.add((pid, name, name_dict.get('imdbIndex'),
-                        namePcodeCf, namePcodeNf, surnamePcode))
+                        namePcodeCf, namePcodeNf, surnamePcode,
+                        md5(line).hexdigest()))
             if count % 10000 == 0:
                 print 'SCANNING akanames:', _(line)
             count += 1
@@ -1618,6 +1626,7 @@ class AkasMoviesCache(MoviesCache):
     def __init__(self, *args, **kdws):
         MoviesCache.__init__(self, *args, **kdws)
         self.flushEvery = 50000
+        self._mapsIDsToTitles = True
         self.notes = {}
         self.ids = {}
         self._table_name = tableName(AkaTitle)
@@ -1625,7 +1634,7 @@ class AkasMoviesCache(MoviesCache):
         self.sqlstr, self.converter = createSQLstr(AkaTitle, ('id', 'movieID',
                             'title', 'imdbIndex', 'kindID', 'productionYear',
                             'phoneticCode', 'episodeOfID', 'seasonNr',
-                            'episodeNr', 'note'))
+                            'episodeNr', 'note', 'md5sum'))
 
     def flush(self, *args, **kwds):
         # Preserve consistency of ForeignKey.
@@ -1644,8 +1653,10 @@ class AkasMoviesCache(MoviesCache):
             # id of the referred title.
             original_title_id = self.ids.get(the_id) or 0
             new_item = [the_id, original_title_id]
-            new_item += item[1:-1]
+            md5sum = item[-1]
+            new_item += item[1:-2]
             new_item.append(self.notes.get(the_id))
+            new_item.append(md5sum)
             new_dataListapp(tuple(new_item))
         new_dataList.reverse()
         if not CSV_DIR:

@@ -7,6 +7,10 @@
  - fix for movies with multiple countries.
  - more robust handling for vote details.
 
+ [sql]
+ - the tables containing titles and names (and akas) now
+   include a 'md5sum' column calculated on the "long imdb canonical title/name".
+
 
 * What's the new in release 4.6 "The Road" (19 Jun 2010)
   [general]

@@ -99,12 +99,11 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                               status=x.get('status') or None))]
 
     extractors = [
-            Extractor(label='page title',
-                        path="//title",
+            Extractor(label='name',
+                        path="//h1[@class='header']",
                         attrs=Attribute(key='name',
                             path="./text()",
-                            postprocess=lambda x: analyze_name(x,
-                                                            canonical=1))),
+                            postprocess=lambda x: x.strip())),
 
             Extractor(label='birth info',
                         path="//div[h5='Date of Birth:']",
@@ -113,11 +112,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             Extractor(label='death info',
                         path="//div[h5='Date of Death:']",
                         attrs=_death_attrs),
-
-            Extractor(label='headshot',
-                        path="//a[@name='headshot']",
-                        attrs=Attribute(key='headshot',
-                            path="./img/@src")),
 
             Extractor(label='akas',
                         path="//div[h5='Alternate Names:']",
@@ -181,6 +175,10 @@ class DOMHTMLBioParser(DOMParserBase):
                         # TODO: check if this slicing is always correct
                         postprocess=lambda x: u''.join(x).strip()[2:])]
     extractors = [
+            Extractor(label='headshot',
+                        path="//a[@name='headshot']",
+                        attrs=Attribute(key='headshot',
+                            path="./img/@src")),
             Extractor(label='birth info',
                         path="//div[h5='Date of Birth']",
                         attrs=_birth_attrs),
@@ -200,7 +198,8 @@ class DOMHTMLBioParser(DOMParserBase):
                         attrs=Attribute(key='birth name',
                             path="./text()",
                             postprocess=lambda x: canonicalName(x.strip()))),
-            Extractor(label='height',
+            
+                     Extractor(label='height',
                         path="//div[h5='Height']",
                         attrs=Attribute(key='height',
                             path="./text()",

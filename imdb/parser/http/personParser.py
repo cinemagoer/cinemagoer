@@ -130,7 +130,21 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                         group_key_normalize=lambda x: x.lower().replace(': ', ' '),
                         path="./following-sibling::div[1]" \
                                 "/div[starts-with(@class, 'filmo-row')]",
-                        attrs=_film_attrs)
+                        attrs=_film_attrs),
+
+            Extractor(label='indevelopment',
+                        path="//div[starts-with(@class,'devitem')]",
+                        attrs=Attribute(key='in development',
+                            multi=True,
+                            path={
+                                'link': './a/@href',
+                                'title': './a/text()'
+                                },
+                                postprocess=lambda x:
+                                    build_movie(x.get('title') or u'',
+                                        movieID=analyze_imdbid(x.get('link') or u''),
+                                        roleID=(x.get('roleID') or u'').split('/'),
+                                        status=x.get('status') or None)))
             ]
     #preprocessors = [
             ## XXX: check that this doesn't cut "status" or other info...

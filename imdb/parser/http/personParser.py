@@ -63,32 +63,31 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
 
     _birth_attrs = [Attribute(key='birth date',
                         path={
-                            'day': "./div/a[starts-with(@href, " \
+                            'day': ".//a[starts-with(@href, " \
                                     "'/date/')]/text()",
-                            'year': "./div/a[starts-with(@href, " \
+                            'year': ".//a[starts-with(@href, " \
                                     "'/search/name?birth_year=')]/text()"
                             },
                         postprocess=build_date),
-                    Attribute(key='birth notes',
-                        path="./div/a[starts-with(@href, " \
+                    Attribute(key='birth place',
+                        path=".//a[starts-with(@href, " \
                                 "'/search/name?birth_place=')]/text()")]
     _death_attrs = [Attribute(key='death date',
                         path={
-                            'day': "./div/a[starts-with(@href, " \
+                            'day': ".//a[starts-with(@href, " \
                                     "'/date/')]/text()",
-                            'year': "./div/a[starts-with(@href, " \
-                                    "'/search/name?death_date=')]/text()"
+                            'year': ".//a[starts-with(@href, " \
+                                    "'/search/name?death_year=')]/text()"
                             },
                         postprocess=build_date),
-                    Attribute(key='death notes',
-                        path="./div/text()",
-                        # TODO: check if this slicing is always correct
-                        postprocess=lambda x: x.strip()[2:])]
+                    Attribute(key='death place',
+                        path=".//a[starts-with(@href, " \
+                                "'/search/name?death_place=')]/text()")]
     _film_attrs = [Attribute(key=None,
                       multi=True,
                       path={
-                          'link': "./a[1]/@href",
-                          'title': ".//text()",
+                          'link': "./b/a[1]/@href",
+                          'title': "./b/a[1]/text()",
                           'status': "./i/a//text()",
                           'roleID': "./div[@class='_imdbpyrole']/@roleid"
                           },
@@ -102,40 +101,76 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             Extractor(label='name',
                         path="//h1[@class='header']",
                         attrs=Attribute(key='name',
-                            path="./text()",
-                            postprocess=lambda x: x.strip())),
+                            path=".//text()",
+                            postprocess=lambda x: analyze_name(x,
+                                                               canonical=1))),
 
             Extractor(label='birth info',
-                        path="//div[h5='Date of Birth:']",
+                        path="//div[h4='Born:']",
                         attrs=_birth_attrs),
 
             Extractor(label='death info',
-                        path="//div[h5='Date of Death:']",
+                        path="//div[h4='Died:']",
                         attrs=_death_attrs),
 
+            Extractor(label='headshot',
+                        path="//td[@id='img_primary']/a",
+                        attrs=Attribute(key='primary image',
+                            path="./img/@src")),
+
             Extractor(label='akas',
-                        path="//div[h5='Alternate Names:']",
+                        path="//div[h4='Alternate Names:']",
                         attrs=Attribute(key='akas',
-                            path="./div/text()",
-                            postprocess=lambda x: x.strip().split(' | '))),
+                            path="./text()",
+                            postprocess=lambda x: x.strip().split('  '))),
 
             Extractor(label='filmography',
-                        group="//div[@class='filmo'][h5]",
-                        group_key="./h5/a[@name]/text()",
-                        group_key_normalize=lambda x: x.lower()[:-1],
-                        path="./ol/li",
+                        group="//div[@id='filmography']/div[@class='head']",
+                        group_key="./a[@name]/text()",
+                        group_key_normalize=lambda x: x.lower().replace(': ', ' '),
+                        path="./following-sibling::div[1]/div",
                         attrs=_film_attrs)
             ]
-    preprocessors = [
-            # XXX: check that this doesn't cut "status" or other info...
-            (re.compile(r'<br>(\.\.\.|    ?).+?</li>', re.I | re.M | re.S),
-                '</li>'),
-            (_reRoles, _manageRoles)]
+    #preprocessors = [
+            ## XXX: check that this doesn't cut "status" or other info...
+            #(re.compile(r'<br>(\.\.\.|    ?).+?</li>', re.I | re.M | re.S),
+                #'</li>'),
+            #(_reRoles, _manageRoles)]
 
     def postprocess_data(self, data):
         for what in 'birth date', 'death date':
             if what in data and not data[what]:
                 del data[what]
+        # XXX: the code below is for backwards compatibility
+        # probably could be removed
+        for key in data.keys():
+            if key.startswith('actor '):
+                if not data.has_key('actor'):
+                    data['actor'] = []
+                data['actor'].extend(data[key])
+                del data[key]
+            if key.startswith('actress '):
+                if not data.has_key('actress'):
+                    data['actress'] = []
+                data['actress'].extend(data[key])
+                del data[key]
+            if key.startswith('self '):
+                if not data.has_key('self'):
+                    data['self'] = []
+                data['self'].extend(data[key])
+                del data[key]
+            if key == 'birth place':
+                data['birth notes'] = data[key]
+                del data[key]
+            if key == 'death place':
+                data['death notes'] = data[key]
+                del data[key]
+            if key == 'birth date':
+                m, d, y = data[key].split(' ')
+                data['birth date'] = "%s %s %s" % (d, m, y)
+            if key == 'death date':
+                m, d, y = data[key].split(' ')
+                data['death date'] = "%s %s %s" % (d, m, y)
         return data
 
 
@@ -198,8 +233,7 @@ class DOMHTMLBioParser(DOMParserBase):
                         attrs=Attribute(key='birth name',
                             path="./text()",
                             postprocess=lambda x: canonicalName(x.strip()))),
-            
-                     Extractor(label='height',
+            Extractor(label='height',
                         path="//div[h5='Height']",
                         attrs=Attribute(key='height',
                             path="./text()",

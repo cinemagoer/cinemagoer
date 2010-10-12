@@ -128,7 +128,8 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                         group="//div[@id='filmography']/div[@class='head']",
                         group_key="./a[@name]/text()",
                         group_key_normalize=lambda x: x.lower().replace(': ', ' '),
-                        path="./following-sibling::div[1]/div",
+                        path="./following-sibling::div[1]" \
+                                "/div[starts-with(@class, 'filmo-row')]",
                         attrs=_film_attrs)
             ]
     #preprocessors = [

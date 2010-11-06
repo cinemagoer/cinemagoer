@@ -541,11 +541,13 @@ class DOMHTMLPlotParser(DOMParserBase):
 
 def _process_award(x):
     award = {}
+    award['award'] = x.get('award').strip()
+    if not award['award']:
+        return {}
     award['year'] = x.get('year').strip()
     if award['year'] and award['year'].isdigit():
         award['year'] = int(award['year'])
     award['result'] = x.get('result').strip()
-    award['award'] = x.get('award').strip()
     category = x.get('category').strip()
     if category:
         award['category'] = category
@@ -649,6 +651,8 @@ class DOMHTMLAwardsParser(DOMParserBase):
             assigner = self.xpath(dom, "//a/text()")[0]
             for entry in data[key]:
                 if not entry.has_key('name'):
+                    if not entry:
+                        continue
                     # this is an award, not a recipient
                     entry['assigner'] = assigner.strip()
                     # find the recipients

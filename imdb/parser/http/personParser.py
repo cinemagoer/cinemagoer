@@ -180,12 +180,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             if key == 'death place':
                 data['death notes'] = data[key]
                 del data[key]
-            if key == 'birth date':
-                m, d, y = data[key].split(' ')
-                data['birth date'] = "%s %s %s" % (d, m, y)
-            if key == 'death date':
-                m, d, y = data[key].split(' ')
-                data['death date'] = "%s %s %s" % (d, m, y)
         return data
 
 

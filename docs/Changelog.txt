@@ -1,9 +1,9 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.7dev20100930 "Inception" (30 Sept 2010)
+* What's the new in release 4.7dev20101106 "Dollhouse" (11 Nov 2010)
  [http]
- - first fixes for the new set of parsers.
+ - first fixes for the new set of parsers (still not working with lxml!)
  - first changes to support the new set of web pages.
  - fix for lists of uncategorized episodes.
  - fix for movies with multiple countries.

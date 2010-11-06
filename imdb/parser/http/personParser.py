@@ -88,11 +88,13 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                       path={
                           'link': "./b/a[1]/@href",
                           'title': "./b/a[1]/text()",
-                          'status': "./i/a//text()",
+                          'year': "./span[@class='year_column']/text()",
+                          'status': "./a[@class='in_production']/text()",
                           'roleID': "./div[@class='_imdbpyrole']/@roleid"
                           },
                       postprocess=lambda x:
                           build_movie(x.get('title') or u'',
+                              year=x.get('year'),
                               movieID=analyze_imdbid(x.get('link') or u''),
                               roleID=(x.get('roleID') or u'').split('/'),
                               status=x.get('status') or None))]

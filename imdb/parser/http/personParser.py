@@ -127,7 +127,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                             postprocess=lambda x: x.strip().split('  '))),
 
             Extractor(label='filmography',
-                        group="//div[@id='filmography']/div[@class='head']",
+                        group="//div[starts-with(@id, 'filmo-head-')]",
                         group_key="./a[@name]/text()",
                         group_key_normalize=lambda x: x.lower().replace(': ', ' '),
                         path="./following-sibling::div[1]" \
@@ -148,11 +148,8 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                                         roleID=(x.get('roleID') or u'').split('/'),
                                         status=x.get('status') or None)))
             ]
-    #preprocessors = [
-            ## XXX: check that this doesn't cut "status" or other info...
-            #(re.compile(r'<br>(\.\.\.|    ?).+?</li>', re.I | re.M | re.S),
-                #'</li>'),
-            #(_reRoles, _manageRoles)]
+
+    preprocessors = [('<div class="clear"/> </div>', '')]
 
     def postprocess_data(self, data):
         for what in 'birth date', 'death date':

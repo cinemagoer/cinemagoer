@@ -471,8 +471,10 @@ class DOMParserBase(object):
         # converted to title=""Family Guy"" and this confuses BeautifulSoup.
         if self.usingModule == 'beautifulsoup':
             html_string = html_string.replace('""', '"')
+        #print html_string.encode('utf8')
         if html_string:
             dom = self.get_dom(html_string)
+            #print self.tostring(dom).encode('utf8')
             try:
                 dom = self.preprocess_dom(dom)
             except Exception, e:

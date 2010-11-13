@@ -537,24 +537,31 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if _parseChr: w = 'characterID'
             else: w = 'personID'
             raise IMDbDataAccessError, 'unable to get %s "%s"' % (w, personID)
-        name = _unHtml(name[0])
+        name = _unHtml(name[0].replace(' - IMDb', ''))
         if _parseChr:
             name = name.replace('(Character)', '').strip()
             name = name.replace('- Filmography by type', '').strip()
         else:
             name = name.replace('- Filmography by', '').strip()
         r = analyze_name(name, canonical=not _parseChr)
-        for dKind in ('birth', 'death'):
-            date = _findBetween(s, '<h5>Date of %s:</h5>' % dKind.capitalize(),
-                                ('<a class', '</div>', '<br/><br/>'), maxRes=1)
+        for dKind in ('Born', 'Died'):
+            date = _findBetween(s, '%s:</h4>' % dKind.capitalize(),
+                                ('<div class', '</div>', '<br/><br/>'), maxRes=1)
             if date:
                 date = _unHtml(date[0])
                 if date:
-                    date, notes = date_and_notes(date)
+                    #date, notes = date_and_notes(date)
+                    # TODO: fix to handle real names.
+                    date_notes = date.split(' in ', 1)
+                    notes = u''
+                    date = date_notes[0]
+                    if len(date_notes) == 2:
+                        notes = date_notes[1]
+                    dtitle = 'birth' if dKind == 'Born' else 'death'
                     if date:
-                        r['%s date' % dKind] = date
+                        r['%s date' % dtitle] = date
                     if notes:
-                        r['%s notes' % dKind] = notes
+                        r['%s notes' % dtitle] = notes
         akas = _findBetween(s, 'Alternate Names:</h5>', ('</div>',
                             '<br/><br/>'), maxRes=1)
         if akas:

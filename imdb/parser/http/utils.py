@@ -267,7 +267,7 @@ _b_m_logger = logging.getLogger('imdbpy.parser.http.build_movie')
 re_spaces = re.compile(r'\s+')
 def build_movie(txt, movieID=None, roleID=None, status=None,
                 accessSystem='http', modFunct=None, _parsingCharacter=False,
-                _parsingCompany=False):
+                _parsingCompany=False, year=None):
     """Given a string as normally seen on the "categorized" page of
     a person on the IMDb's web site, returns a Movie instance."""
     if _parsingCharacter:
@@ -319,6 +319,9 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         if notes: notes = '%s %s' % (title[nidx:], notes)
         else: notes = title[nidx:]
         title = title[:nidx].rstrip()
+    if year:
+        year = year.strip()
+        title = u'%s (%s)' % (title, year)
     if _parsingCharacter and roleID and not role:
         roleID = None
     if not roleID:
@@ -468,8 +471,10 @@ class DOMParserBase(object):
         # converted to title=""Family Guy"" and this confuses BeautifulSoup.
         if self.usingModule == 'beautifulsoup':
             html_string = html_string.replace('""', '"')
+        #print html_string.encode('utf8')
         if html_string:
             dom = self.get_dom(html_string)
+            #print self.tostring(dom).encode('utf8')
             try:
                 dom = self.preprocess_dom(dom)
             except Exception, e:

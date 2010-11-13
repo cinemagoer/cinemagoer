@@ -117,7 +117,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
 
             Extractor(label='headshot',
                         path="//td[@id='img_primary']/a",
-                        attrs=Attribute(key='primary image',
+                        attrs=Attribute(key='headshot',
                             path="./img/@src")),
 
             Extractor(label='akas',

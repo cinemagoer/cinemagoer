@@ -576,18 +576,11 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             hs[:] = _findBetween(hs[0], 'src="', '"', maxRes=1)
             if hs: r['headshot'] = hs[0]
         # Build a list of tuples such [('hrefLink', 'section name')]
-        workkind = _findBetween(s, '<div class="strip jump">', '</div>',
-                                maxRes=1)
-        if workkind:
-            workkind[:] = _findBetween(workkind[0], 'href="#', '</a>')
-        else:
-            # Assume there's only one section and/or there are no
-            # section links, for some reason.
-            workkind[:] = _findBetween(s, '<h5><a name=', '</a></h5>')
-            workkind[:] = [x.lstrip('"').rstrip(':').lower() for x in workkind]
+        workkind = _findBetween(s, 'id="jumpto_', '</a>')
         ws = []
         for work in workkind:
-            wsplit = work.split('">', 1)
+            sep = '">' if '">' in work else '" >'
+            wsplit = work.split(sep, 1)
             if len(wsplit) == 2:
                 sect = wsplit[0]
                 if '"' in sect:
@@ -607,11 +600,15 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             else:
                 inisect = s.find('<a name="%s' % sect)
             if inisect != -1:
-                endsect = s[inisect:].find('</ol>')
+                endsect = s[inisect:].find('<div id="filmo-head-')
                 if endsect != -1: raws = s[inisect:inisect+endsect]
             if not raws: continue
-            mlist = _findBetween(raws, '<li>', ('</li>', '<br>', '<br/>'))
+            mlist = _findBetween(raws, '<div class="filmo-row',
+                    ('<div class="clear"/>',))
             for m in mlist:
+                fCB = m.find('>')
+                if fCB != -1:
+                    m = m[fCB+1:].lstrip()
                 # For every movie in the current section.
                 movieID = re_imdbID.findall(m)
                 if not movieID:
@@ -645,14 +642,21 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     if stendidx != -1:
                         status = _unHtml(m[stidx+3:stendidx])
                         m = m.replace(m[stidx+3:stendidx], '')
+                year = _findBetween(m, 'year_column">', '</span>', maxRes=1)
+                if year:
+                    year = year[0]
+                    m = m.replace('<span class="year_column">%s</span>' % year,
+                            '')
+                else:
+                    year = None
                 m = _unHtml(m)
                 if not m:
-                    self._mobile_logger.warn('no title fo rmovieID %s', movieID)
+                    self._mobile_logger.warn('no title for movieID %s', movieID)
                     continue
                 movie = build_movie(m, movieID=movieID, status=status,
                                     roleID=chids, modFunct=self._defModFunct,
                                     accessSystem=self.accessSystem,
-                                    _parsingCharacter=_parseChr)
+                                    _parsingCharacter=_parseChr, year=year)
                 r.setdefault(sectName, []).append(movie)
         # If available, take the always correct name from a form.
         itag = _getTagsWith(s, 'NAME="primary"', maxRes=1)

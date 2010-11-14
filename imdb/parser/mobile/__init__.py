@@ -557,7 +557,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     date = date_notes[0]
                     if len(date_notes) == 2:
                         notes = date_notes[1]
-                    dtitle = 'birth' if dKind == 'Born' else 'death'
+                    dtitle = 'birth'
+                    if dKind == 'Died':
+                        dtitle = 'death'
                     if date:
                         r['%s date' % dtitle] = date
                     if notes:
@@ -579,7 +581,9 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         workkind = _findBetween(s, 'id="jumpto_', '</a>')
         ws = []
         for work in workkind:
-            sep = '">' if '">' in work else '" >'
+            sep = '" >'
+            if '">' in work:
+                sep = '">'
             wsplit = work.split(sep, 1)
             if len(wsplit) == 2:
                 sect = wsplit[0]

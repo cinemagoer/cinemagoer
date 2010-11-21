@@ -291,6 +291,8 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         title = title[:-14] + ' (mini)'
     # Try to understand where the movie title ends.
     while True:
+        if year:
+            break
         if title[-1:] != ')':
             # Ignore the silly "TV Series" notice.
             if title[-9:] == 'TV Series':
@@ -321,6 +323,12 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         title = title[:nidx].rstrip()
     if year:
         year = year.strip()
+        if title[-1] == ')':
+            fpIdx = title.rfind('(')
+            if fpIdx != -1:
+                if notes: notes = '%s %s' % (title[fpIdx:], notes)
+                else: notes = title[fpIdx:]
+                title = title[:fpIdx].rstrip()
         title = u'%s (%s)' % (title, year)
     if _parsingCharacter and roleID and not role:
         roleID = None

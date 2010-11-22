@@ -9,6 +9,9 @@
  - fix for movies with multiple countries.
  - more robust handling for vote details.
 
+ [mobile]
+ - first fixes for the new set of parsers.
+
  [sql]
  - the tables containing titles and names (and akas) now
    include a 'md5sum' column calculated on the "long imdb canonical title/name".

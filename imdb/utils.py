@@ -380,6 +380,9 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
     elif title.endswith('(V)'):
         kind = u'video movie'
         title = title[:-3].rstrip()
+    elif title.endswith('(video)'):
+        kind = u'video movie'
+        title = title[:-7].rstrip()
     elif title.endswith('(mini)'):
         kind = u'tv mini series'
         title = title[:-6].rstrip()
@@ -403,6 +406,9 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
         if not kind:
             kind = u'tv series'
         title = title[1:-1].strip()
+    elif title.endswith('(TV series)'):
+        kind = u'tv series'
+        title = title[:-11].rstrip()
     if not title:
         raise IMDbParserError, 'invalid title: "%s"' % original_t
     if canonical is not None:

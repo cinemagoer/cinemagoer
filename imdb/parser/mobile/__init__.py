@@ -52,6 +52,10 @@ re_imdbID = re.compile(r'(?<=nm|tt|ch)([0-9]{7})\b')
 # movie AKAs.
 re_makas = re.compile('(<p class="find-aka">.*?</p>)')
 
+# Remove episode numbers.
+re_filmo_episodes = re.compile('<div class="filmo-episodes">.*?</div>',
+        re.M | re.I)
+
 
 def _unHtml(s):
     """Return a string without tags and no multiple spaces."""
@@ -613,6 +617,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 fCB = m.find('>')
                 if fCB != -1:
                     m = m[fCB+1:].lstrip()
+                m = re_filmo_episodes.sub('', m)
                 # For every movie in the current section.
                 movieID = re_imdbID.findall(m)
                 if not movieID:

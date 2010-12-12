@@ -262,14 +262,20 @@ def build_person(txt, personID=None, billingPos=None,
     return person
 
 
+_re_chrIDs = re.compile('[0-9]{7}')
+
 _b_m_logger = logging.getLogger('imdbpy.parser.http.build_movie')
 # To shrink spaces.
 re_spaces = re.compile(r'\s+')
 def build_movie(txt, movieID=None, roleID=None, status=None,
                 accessSystem='http', modFunct=None, _parsingCharacter=False,
-                _parsingCompany=False, year=None):
+                _parsingCompany=False, year=None, chrRoles=None,
+                rolesNoChar=None):
     """Given a string as normally seen on the "categorized" page of
     a person on the IMDb's web site, returns a Movie instance."""
+    # FIXME: Oook, lets face it: build_movie and build_person are now
+    # two horrible sets of patches to support the new IMDb design.  They
+    # must be rewritten from scratch.
     if _parsingCharacter:
         _defSep = ' Played by '
     elif _parsingCompany:
@@ -336,6 +342,9 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         roleID = None
     elif len(roleID) == 1:
         roleID = roleID[0]
+    if not role and chrRoles and isinstance(roleID, (str, unicode)):
+        roleID = _re_chrIDs.findall(roleID)
+        role = ' / '.join(filter(None, chrRoles.split('@@')))
     # Manages multiple roleIDs.
     if isinstance(roleID, list):
         tmprole = role.split('/')
@@ -366,13 +375,23 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         movieID = str(movieID)
     if (not title) or (movieID is None):
         _b_m_logger.error('empty title or movieID for "%s"', txt)
+    if rolesNoChar:
+        rolesNoChar = filter(None, [x.strip() for x in rolesNoChar.split('/')])
+        if not role:
+            role = []
+        elif not isinstance(role, list):
+            role = [role]
+        role += rolesNoChar
     m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
                 roleID=roleID, roleIsPerson=_parsingCharacter,
                 modFunct=modFunct, accessSystem=accessSystem)
     if roleNotes and len(roleNotes) == len(roleID):
         for idx, role in enumerate(m.currentRole):
-            if roleNotes[idx]:
-                role.notes = roleNotes[idx]
+            try:
+                if roleNotes[idx]:
+                    role.notes = roleNotes[idx]
+            except IndexError:
+                break
     # Status can't be checked here, and must be detected by the parser.
     if status:
         m['status'] = status

@@ -90,13 +90,17 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                           'title': "./b/a[1]/text()",
                           'year': "./span[@class='year_column']/text()",
                           'status': "./a[@class='in_production']/text()",
-                          'roleID': "./div[@class='_imdbpyrole']/@roleid"
+                          'rolesNoChar': './/br/following-sibling::text()',
+                          'chrRoles': "./a[@imdbpyname]/@imdbpyname",
+                          'roleID': "./a[starts-with(@href, '/character/')]/@href"
                           },
                       postprocess=lambda x:
                           build_movie(x.get('title') or u'',
                               year=x.get('year'),
                               movieID=analyze_imdbid(x.get('link') or u''),
-                              roleID=(x.get('roleID') or u'').split('/'),
+                              rolesNoChar=(x.get('rolesNoChar') or u'').strip(),
+                              chrRoles=(x.get('chrRoles') or u'').strip(),
+                              roleID=(x.get('roleID') or u''),
                               status=x.get('status') or None))]
 
     extractors = [
@@ -149,7 +153,10 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                                         status=x.get('status') or None)))
             ]
 
-    preprocessors = [('<div class="clear"/> </div>', '')]
+    preprocessors = [('<div class="clear"/> </div>', ''),
+            ('<br/>', '<br />'),
+            (re.compile(r'(<a href="/character/ch[0-9]{7}")>(.*?)</a>'),
+                r'\1 imdbpyname="\2@@">\2</a>')]
 
     def postprocess_data(self, data):
         for what in 'birth date', 'death date':

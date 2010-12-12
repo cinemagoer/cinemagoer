@@ -1,12 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.7dev20101122 "Clash of the Titans" (22 Nov 2010)
+* What's the new in release 4.7dev20101212 "Evangelion 2.22" (12 Dec 2010)
  [http]
  - first fixes for the new set of parsers.
  - first changes to support the new set of web pages.
  - fix for lists of uncategorized episodes.
  - fix for movies with multiple countries.
+ - fix for the currentRole property.
  - more robust handling for vote details.
 
  [mobile]

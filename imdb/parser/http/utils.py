@@ -270,7 +270,7 @@ re_spaces = re.compile(r'\s+')
 def build_movie(txt, movieID=None, roleID=None, status=None,
                 accessSystem='http', modFunct=None, _parsingCharacter=False,
                 _parsingCompany=False, year=None, chrRoles=None,
-                rolesNoChar=None):
+                rolesNoChar=None, additionalNotes=None):
     """Given a string as normally seen on the "categorized" page of
     a person on the IMDb's web site, returns a Movie instance."""
     # FIXME: Oook, lets face it: build_movie and build_person are now
@@ -382,6 +382,12 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         elif not isinstance(role, list):
             role = [role]
         role += rolesNoChar
+    notes = notes.strip()
+    if additionalNotes:
+        additionalNotes = additionalNotes.strip()
+        if notes:
+            notes += u' '
+        notes += additionalNotes
     m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
                 roleID=roleID, roleIsPerson=_parsingCharacter,
                 modFunct=modFunct, accessSystem=accessSystem)

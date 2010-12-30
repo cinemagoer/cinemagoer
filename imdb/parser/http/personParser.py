@@ -88,6 +88,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                       path={
                           'link': "./b/a[1]/@href",
                           'title': "./b/a[1]/text()",
+                          'notes': "./b/following-sibling::text()",
                           'year': "./span[@class='year_column']/text()",
                           'status': "./a[@class='in_production']/text()",
                           'rolesNoChar': './/br/following-sibling::text()',
@@ -100,6 +101,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                               movieID=analyze_imdbid(x.get('link') or u''),
                               rolesNoChar=(x.get('rolesNoChar') or u'').strip(),
                               chrRoles=(x.get('chrRoles') or u'').strip(),
+                              additionalNotes=x.get('notes'),
                               roleID=(x.get('roleID') or u''),
                               status=x.get('status') or None))]
 

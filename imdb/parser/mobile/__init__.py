@@ -623,6 +623,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 if not movieID:
                     self._mobile_logger.debug('no movieID in %s', m)
                     continue
+                m = m.replace('<br/>', ' .... ', 1)
                 if not _parseChr:
                     chrIndx = m.find(' .... ')
                 else:

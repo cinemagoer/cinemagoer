@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.7dev20101230 "Le Chevalier D'Eon" (30 Dec 2010)
+* What's the new in release 4.7dev20101231 "Fringe" (31 Dec 2010)
  [http]
  - first fixes for the new set of parsers (still not working with lxml!)
  - first changes to support the new set of web pages.

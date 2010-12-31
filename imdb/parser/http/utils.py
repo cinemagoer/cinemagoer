@@ -384,7 +384,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         role += rolesNoChar
     notes = notes.strip()
     if additionalNotes:
-        additionalNotes = additionalNotes.strip()
+        additionalNotes = re_spaces.sub(' ', additionalNotes).strip()
         if notes:
             notes += u' '
         notes += additionalNotes

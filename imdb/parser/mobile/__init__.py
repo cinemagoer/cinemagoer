@@ -667,6 +667,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                                     roleID=chids, modFunct=self._defModFunct,
                                     accessSystem=self.accessSystem,
                                     _parsingCharacter=_parseChr, year=year)
+                sectName = sectName.split(':')[0]
                 r.setdefault(sectName, []).append(movie)
         # If available, take the always correct name from a form.
         itag = _getTagsWith(s, 'NAME="primary"', maxRes=1)

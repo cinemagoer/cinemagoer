@@ -66,6 +66,7 @@
   | episode-title
   | external-reviews
   | faqs
+  | film-length
   | film-negative-format
   | full-size-cover-url
   | genres
@@ -451,6 +452,8 @@
 <!ATTLIST demographic %common.attrs;>
 <!ELEMENT episodes-rating (item)*>
 <!ATTLIST episodes-rating %common.attrs;>
+<!ELEMENT film-length (item)*>
+<!ATTLIST film-length %common.attrs;>
 <!ELEMENT film-negative-format (item)*>
 <!ATTLIST film-negative-format %common.attrs;>
 <!ELEMENT genres (item)*>

@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.7dev20100904'
+__version__ = VERSION = '4.7'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -179,6 +179,10 @@ def IMDb(accessSystem=None, *arguments, **keywords):
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
     elif accessSystem in ('httpThin', 'webThin', 'htmlThin'):
+        import logging
+        logging.warn('httpThin is badly broken and' \
+                                        ' will not be fixed; please switch' \
+                                        ' to "http" or "mobile"')
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(isThin=1, *arguments, **keywords)
     elif accessSystem in ('mobile',):

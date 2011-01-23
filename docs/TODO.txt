@@ -8,6 +8,7 @@ NOTE: it's always time to clean the code! <g>
 
 [general]
 * improve the logging facility.
+* ability to silent warnings/logging.
 * create mobile versions for smart phones (with GUI).
 * Write better summary() methods for Movie, Person, Character
   and Company classes.

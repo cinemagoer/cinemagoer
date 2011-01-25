@@ -9,7 +9,7 @@ import setuptools
 
 # version of the software; in the code repository this represents
 # the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
-version = '4.7'
+version = '4.8'
 
 home_page = 'http://imdbpy.sf.net/'
 

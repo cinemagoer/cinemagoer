@@ -1,9 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110125 "The Big Bang Theory" (25 Jan 2011)
+* What's the new in release 4.8dev20110213 "Death Race 2" (13 Feb 2011)
   [sql]
   - fixes for SQLite with SQLOjbect.
+
+  [http]
+  - potential fix for GAE environment.
 
 
 * What's the new in release 4.7 "Saw VI" (23 Jan 2011)

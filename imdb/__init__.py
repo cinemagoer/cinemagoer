@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.7'
+__version__ = VERSION = '4.8dev20110213'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -156,6 +156,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             kwds.update(keywords)
             keywords = kwds
         except Exception, e:
+            import logging
             logging.getLogger('imdbpy').warn('Unable to read configuration' \
                                             ' file; complete error: %s' % e)
             # It just LOOKS LIKE a bad habit: we tried to read config

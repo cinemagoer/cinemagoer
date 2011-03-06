@@ -1,15 +1,16 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110303 "Scott Pilgrim vs. the World" (03 Mar 2011)
+* What's the new in release 4.8dev20110306 "Caprica" (06 Mar 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
 
-  [sql]
-  - fixes for SQLite with SQLOjbect.
-
   [http]
   - potential fix for GAE environment.
+  - fix for 'episodes' list.
+
+  [sql]
+  - fixes for SQLite with SQLOjbect.
 
 
 * What's the new in release 4.7 "Saw VI" (23 Jan 2011)

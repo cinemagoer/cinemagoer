@@ -72,8 +72,9 @@ HELP = """imdbpy2sql.py usage:
 IMDB_PTDF_DIR = None
 # URI used to connect to the database.
 URI = None
-# ORM to use.
+# ORM to use (list of options) and actually used (string).
 USE_ORM = None
+USED_ORM = None
 # List of tables of the database.
 DB_TABLES = []
 # Max allowed recursion, inserting data.
@@ -292,6 +293,7 @@ for idx, mod in enumerate(USE_ORM):
             globals()[t._imdbpyName] = t
         if _gotError:
             warnings.warn('falling back to "%s".' % mod)
+        USED_ORM = mod
         break
     except ImportError, e:
         if idx+1 >= nrMods:
@@ -515,6 +517,13 @@ except AttributeError, e:
     IntegrityError = Exception
 
 connectObject = conn.getConnection()
+# XXX: fix for a problem that should be fixed in objectadapter.py (see it).
+if URI and URI.startswith('sqlite') and USED_ORM == 'sqlobject':
+    major = sys.version_info[0]
+    minor = sys.version_info[1]
+    if major > 2 or (major == 2 and minor > 5):
+        connectObject.text_factory = str
+
 # Cursor object.
 CURS = connectObject.cursor()
 
@@ -2743,7 +2752,7 @@ def restoreCSV():
 
 # begin the iterations...
 def run():
-    print 'RUNNING imdbpy2sql.py'
+    print 'RUNNING imdbpy2sql.py using the %s ORM' % USED_ORM
 
     executeCustomQueries('BEGIN')
 

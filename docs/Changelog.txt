@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110306 "Caprica" (06 Mar 2011)
+* What's the new in release 4.8dev20110306b "Caprica" (06 Mar 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
 

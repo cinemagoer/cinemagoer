@@ -577,10 +577,14 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             else:
                 akas = _unHtml(akas).split(' / ')
             if akas: r['akas'] = akas
-        hs = _findBetween(s, 'name="headshot"', '</a>', maxRes=1)
+        hs = _findBetween(s, "rel='image_src'", '>', maxRes=1)
+        if not hs:
+            hs = _findBetween(s, 'rel="image_src"', '>', maxRes=1)
         if hs:
-            hs[:] = _findBetween(hs[0], 'src="', '"', maxRes=1)
-            if hs: r['headshot'] = hs[0]
+            hsl = _findBetween(hs[0], "href='", "'", maxRes=1)
+            if not hsl:
+                hsl = _findBetween(hs[0], 'href="', '"', maxRes=1)
+            if hsl: r['headshot'] = hsl[0]
         # Build a list of tuples such [('hrefLink', 'section name')]
         workkind = _findBetween(s, 'id="jumpto_', '</a>')
         ws = []

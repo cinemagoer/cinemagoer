@@ -1,13 +1,16 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110306b "Caprica" (06 Mar 2011)
+* What's the new in release 4.8dev20110317 "Blood: The Last Vampire" (17 Mar 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
 
   [http]
   - potential fix for GAE environment.
   - fix for 'episodes' list.
+
+  [http]
+  - fix for missing headshots.
 
   [sql]
   - fixes for SQLite with SQLOjbect.

@@ -86,7 +86,7 @@ Q6: using a sql database, how can I convert a movieID (whose value
     is valid only locally) to an imdbID (the ID used by the imdb.com site)?
 
 A6: various functions can be used to convert a movieID (or personID or
-    other IDs) to the imdbID used by the seb site.
+    other IDs) to the imdbID used by the web site.
     Example of code:
 
       from imdb import IMDb
@@ -98,7 +98,7 @@ A6: various functions can be used to convert a movieID (or personID or
 
     It goes without saying that get_imdbMovieID has some sibling
     methods: get_imdbPersonID, get_imdbCompanyID and get_imdbCharacterID.
-    Also notice that the get_imdbID method is smater, and takes any kind
+    Also notice that the get_imdbID method is smarter, and takes any kind
     of instance (the other functions need a movieID, personID, ...)
 
     Another method that will try to retrieve the imdbID is get_imdbURL,

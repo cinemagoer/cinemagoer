@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # reduce.sh: Bash script useful to create a "slimmed down" version of the
 #            IMDb's plain text data files.
@@ -90,7 +90,7 @@ do
 	else
 		MIN_TOP_LINES="`expr $MIN_TOP_LINES + 60`"
 	fi
-	if test $MIN_TOP_LINES -gt $CONSIDER ; then
+	if test "$MIN_TOP_LINES" -gt "$CONSIDER" ; then
 		TOP_CONSIDER=$MIN_TOP_LINES
 	else
 		TOP_CONSIDER=$CONSIDER

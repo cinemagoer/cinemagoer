@@ -1,9 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110317 "Blood: The Last Vampire" (17 Mar 2011)
+* What's the new in release 4.8dev20110425 "Misfits" (25 Apr 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
+  - enanchements for the reduce.sh script.
 
   [http]
   - potential fix for GAE environment.

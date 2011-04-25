@@ -11,6 +11,10 @@
 # This program is released under the terms of the GNU GPL 2 or later license.
 #
 
+# Cygwin packages to install (Windows):
+#  - util-unix for rev
+#  - gzip for gzip, zcat, zgrep
+
 # Directory with the plain text data file.
 ORIG_DIR="."
 # Directory where "reduced" files will be stored; it will be create if needed.
@@ -38,10 +42,10 @@ do
 	CONSIDER="`expr $LINES / $DIV_BY`"
 	FULL_CONS="$CONSIDER"
 	CONSIDER="`expr $CONSIDER / 2`"
-	NEWNAME="`echo "$file" | rev | cut -c 4- | rev`"
+	NEWNAME="`echo "$file" | rev | cut -c 4- | rev `"
 
 	# Tries to keep enough lines from the top of the file.
-	MIN_TOP_LINES="`zgrep -m 1 "^-----------------------------------------" -n "$file" | cut -d : -f 1`"
+	MIN_TOP_LINES="`zgrep -n -m 1 "^-----------------------------------------" "$file" | cut -d : -f 1`"
 	if test -z "$MIN_TOP_LINES" ; then
 		MIN_TOP_LINES=0
 	fi

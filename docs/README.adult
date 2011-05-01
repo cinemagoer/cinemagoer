@@ -50,7 +50,9 @@ E.g.:
 
 The do_adult_search() method of the http and mobile data access system
 also takes another couple of arguments: "cookie_id" and "cookie_uu", so
-that you can select _your own_ IMDb's account.
+that you can select _your own_ IMDb's account; if cookie_id is set to
+None, no cookies are sent.  These parameters can also be set in
+the imdbpy.cfg configuration file.
 For the strings to use, see your "cookie" or "cookie.txt" file.
 Obviously you need to activate the "adult movies" option for
 your account; see http://imdb.com/find/preferences?_adult=1

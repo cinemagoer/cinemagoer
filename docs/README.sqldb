@@ -164,9 +164,14 @@ complete plain text data files set (as of 11 Apr 2008, with more than
                        |  Timed with the "--sqlite-transactions" command
                        |  line option; otherwise it's _really_ slow: even
                        |  35 hours or more.
+   SQLite 3.7          |  65/13 - with --sqlite-transactions and using a SSD hard disk
    SQL Server          |  about 3 or 4 hours.
 
 If you have different experiences, please tell me!
+As expected, the most important things that you can do to improve performances are:
+1. use an in-memory filesystem or an SSD disk.
+2. use the -c /path/to/empty/dir argument to use CSV files.
+3. follow the specific notes about your database server.
 
 
   NOTES

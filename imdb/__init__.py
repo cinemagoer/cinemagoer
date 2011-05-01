@@ -6,7 +6,7 @@ a person from the IMDb database.
 It can fetch data through different media (e.g.: the IMDb web pages,
 a SQL database, etc.)
 
-Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2011 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.8dev20110425'
+__version__ = VERSION = '4.8dev20110501'
 
 # Import compatibility module (importing it is enough).
 import _compat

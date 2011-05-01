@@ -136,7 +136,8 @@ def analyze_name(name, canonical=None):
     res = {}
     imdbIndex = ''
     opi = name.rfind('(')
-    if opi != -1:
+    # Strip  notes (but not if the name starts with a parenthesis).
+    if opi not in (-1, 0):
         cpi = name.rfind(')')
         if cpi > opi and re_index.match(name[opi:cpi+1]):
             imdbIndex = name[opi+1:cpi]

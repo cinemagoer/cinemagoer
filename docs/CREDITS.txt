@@ -21,11 +21,16 @@ of help, and also for the wonderful http://bitbucket.org)
 Below, a list of persons who contributed with bug reports, small
 patches and hints (kept in a reverse order since IMDbPY 4.5):
 
+* Olav Kolbu for tests and report about how the IMDb.com servers
+  reply to queries made with and without cookies.
+
 * Jef "ofthelit", for a patch for the reduce.sh script bug
   reports for Windows.
 
-* "Darklow" for some tests and reports about a bug
-  with charset in the plain text data files.
+* "Darklow" for an impressive amount of tests and reports about
+  a bug about data parsing in the plain text data files.
+
+* Reiner Herrmann for benchmarks using SSD hard drives.
 
 * Thomas Stewart for some tests and reports about a bug
   with charset in the plain text data files.

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110501 "Skyline" (01 May 2011)
+* What's the new in release 4.8dev20110522 "Cronocrimes" (22 May 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
   - enanchements for the reduce.sh script.
@@ -10,6 +10,7 @@
   [http]
   - potential fix for GAE environment.
   - fix for 'episodes' list.
+  - fix for queries that returned too many results.
 
   [http]
   - fix for missing headshots.

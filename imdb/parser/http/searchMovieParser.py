@@ -154,8 +154,11 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         # Horrible hack to support AKAs.
         if data and data['data'] and len(data['data'][0]) == 3 and \
                 isinstance(data['data'][0], tuple):
+            data['data'] = [x for x in data['data'] if x[0] and x[1]]
             for idx, datum in enumerate(data['data']):
                 if not isinstance(datum, tuple):
+                    continue
+                if not datum[0] and datum[1]:
                     continue
                 if datum[2] is not None:
                     akas = filter(None, datum[2].split('::'))

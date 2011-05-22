@@ -435,7 +435,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # The retrieved page contains no results, because too many
         # titles or names contain the string we're looking for.
         params = 's=%s;q=%s;lm=0' % (kind, quote_plus(ton))
-        size = 22528 + results * 512
+        size = 131072 + results * 512
         return self._retrieve(imdbURL_find % params, size=size)
 
     def _search_movie(self, title, results):

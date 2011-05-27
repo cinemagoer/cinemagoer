@@ -6,7 +6,7 @@ IMDb's data for mobile systems.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "mobile".
 
-Copyright 2005-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2011 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -338,26 +338,23 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         genres = _findBetween(cont, 'href="/Sections/Genres/', '/')
         if genres:
             d['genres'] = list(set(genres))
-        ur = _findBetween(cont, '<div class="starbar-meta">', '</div>',
+        ur = _findBetween(cont, 'id="star-bar-user-rate">', '</div>',
                             maxRes=1)
         if ur:
             rat = _findBetween(ur[0], '<b>', '</b>', maxRes=1)
             if rat:
-                teni = rat[0].find('/10')
-                if teni != -1:
-                    rat = rat[0][:teni]
-                    try:
-                        rat = float(rat.strip())
-                        d['rating'] = rat
-                    except ValueError:
-                        self._mobile_logger.warn('wrong rating: %s', rat)
-            vi = ur[0].rfind('tn15more">')
+                if rat:
+                    d['rating'] = rat[0].strip()
+                else:
+                    self._mobile_logger.warn('wrong rating: %s', rat)
+            vi = ur[0].rfind('href="ratings"')
             if vi != -1 and ur[0][vi+10:].find('await') == -1:
                 try:
-                    votes = _unHtml(ur[0][vi+10:]).replace('votes', '').strip()
-                    votes = int(votes.replace(',', ''))
+                    votes = _findBetween(ur[0][vi:], "title='",
+                                        " IMDb", maxRes=1)
+                    votes = int(votes[0].replace(',', ''))
                     d['votes'] = votes
-                except ValueError:
+                except (ValueError, IndexError):
                     self._mobile_logger.warn('wrong votes: %s', ur)
         top250 = _findBetween(cont, 'href="/chart/top?', '</a>', maxRes=1)
         if top250:

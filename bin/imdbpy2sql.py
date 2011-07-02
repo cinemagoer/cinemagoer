@@ -297,14 +297,14 @@ for idx, mod in enumerate(USE_ORM):
         break
     except ImportError, e:
         if idx+1 >= nrMods:
-            raise IMDbError, 'unable to use any ORM in %s: %s' % (
-                                            str(USE_ORM), str(e))
+            raise IMDbError('unable to use any ORM in %s: %s' % (
+                                            str(USE_ORM), str(e)))
         else:
             warnings.warn('unable to use "%s": %s' % (mod, str(e)))
             _gotError = True
         continue
 else:
-    raise IMDbError, 'unable to use any ORM in %s' % str(USE_ORM)
+    raise IMDbError('unable to use any ORM in %s' % str(USE_ORM))
 
 
 #-----------------------
@@ -1306,10 +1306,10 @@ class SQLData(dict):
                 d={}, flushEvery=20000, counterInit=1):
         if not sqlString:
             if not (table and cols):
-                raise TypeError, '"table" or "cols" unspecified'
+                raise TypeError('"table" or "cols" unspecified')
             sqlString, converter = createSQLstr(table, cols)
         elif converter is None:
-            raise TypeError, '"sqlString" or "converter" unspecified'
+            raise TypeError('"sqlString" or "converter" unspecified')
         dict.__init__(self)
         self.counterInit = counterInit
         self.counter = counterInit

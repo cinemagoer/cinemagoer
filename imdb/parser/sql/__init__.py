@@ -580,23 +580,23 @@ class IMDbSqlAccessSystem(IMDbBase):
                 break
             except ImportError, e:
                 if idx+1 >= nrMods:
-                    raise IMDbError, 'unable to use any ORM in %s: %s' % (
-                                                    str(useORM), str(e))
+                    raise IMDbError('unable to use any ORM in %s: %s' % (
+                                                    str(useORM), str(e)))
                 else:
                     self._sql_logger.warn('unable to use "%s": %s' % (mod,
                                                                     str(e)))
                     _gotError = True
                 continue
         else:
-            raise IMDbError, 'unable to use any ORM in %s' % str(useORM)
+            raise IMDbError('unable to use any ORM in %s' % str(useORM))
         # Set the connection to the database.
         self._sql_logger.debug('connecting to %s', uri)
         try:
             self._connection = setConnection(uri, DB_TABLES)
         except AssertionError, e:
-            raise IMDbDataAccessError, \
+            raise IMDbDataAccessError( \
                     'unable to connect to the database server; ' + \
-                    'complete message: "%s"' % str(e)
+                    'complete message: "%s"' % str(e))
         self.Error = self._connection.module.Error
         # Maps some IDs to the corresponding strings.
         self._kind = {}
@@ -610,8 +610,8 @@ class IMDbSqlAccessSystem(IMDbBase):
             # NOTE: you can also get the error, but - at least with
             #       MySQL - it also contains the password, and I don't
             #       like the idea to print it out.
-            raise IMDbDataAccessError, \
-                    'unable to connect to the database server'
+            raise IMDbDataAccessError( \
+                    'unable to connect to the database server')
         self._role = {}
         for rl in RoleType.select():
             self._role[rl.id] = str(rl.role)
@@ -788,32 +788,32 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             return int(movieID)
         except (ValueError, OverflowError):
-            raise IMDbError, 'movieID "%s" can\'t be converted to integer' % \
-                            movieID
+            raise IMDbError('movieID "%s" can\'t be converted to integer' % \
+                            movieID)
 
     def _normalize_personID(self, personID):
         """Normalize the given personID."""
         try:
             return int(personID)
         except (ValueError, OverflowError):
-            raise IMDbError, 'personID "%s" can\'t be converted to integer' % \
-                            personID
+            raise IMDbError('personID "%s" can\'t be converted to integer' % \
+                            personID)
 
     def _normalize_characterID(self, characterID):
         """Normalize the given characterID."""
         try:
             return int(characterID)
         except (ValueError, OverflowError):
-            raise IMDbError, 'characterID "%s" can\'t be converted to integer' \
-                            % characterID
+            raise IMDbError('characterID "%s" can\'t be converted to integer' \
+                            % characterID)
 
     def _normalize_companyID(self, companyID):
         """Normalize the given companyID."""
         try:
             return int(companyID)
         except (ValueError, OverflowError):
-            raise IMDbError, 'companyID "%s" can\'t be converted to integer' \
-                            % companyID
+            raise IMDbError('companyID "%s" can\'t be converted to integer' \
+                            % companyID)
 
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID.
@@ -979,8 +979,8 @@ class IMDbSqlAccessSystem(IMDbBase):
                     for q in AkaTitle.select(conditionAka)]
             qr += q2
         except NotFoundError, e:
-            raise IMDbDataAccessError, \
-                    'unable to search the database: "%s"' % str(e)
+            raise IMDbDataAccessError( \
+                    'unable to search the database: "%s"' % str(e))
 
         resultsST = results * 3
         res = scan_titles(qr, title1, title2, title3, resultsST,
@@ -1026,10 +1026,10 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             res = get_movie_data(movieID, self._kind)
         except NotFoundError, e:
-            raise IMDbDataAccessError, \
-                    'unable to get movieID "%s": "%s"' % (movieID, str(e))
+            raise IMDbDataAccessError( \
+                    'unable to get movieID "%s": "%s"' % (movieID, str(e)))
         if not res:
-            raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
+            raise IMDbDataAccessError('unable to get movieID "%s"' % movieID)
         # Collect cast information.
         castdata = [[cd.personID, cd.personRoleID, cd.note, cd.nrOrder,
                     self._role[cd.roleID]]
@@ -1238,8 +1238,8 @@ class IMDbSqlAccessSystem(IMDbBase):
                     for q in AkaName.select(conditionAka)]
             qr += q2
         except NotFoundError, e:
-            raise IMDbDataAccessError, \
-                    'unable to search the database: "%s"' % str(e)
+            raise IMDbDataAccessError( \
+                    'unable to search the database: "%s"' % str(e))
 
         res = scan_names(qr, name1, name2, name3, results)
         res[:] = [x[1] for x in res]
@@ -1279,12 +1279,12 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             p = Name.get(personID)
         except NotFoundError, e:
-            raise IMDbDataAccessError, \
-                    'unable to get personID "%s": "%s"' % (personID, str(e))
+            raise IMDbDataAccessError( \
+                    'unable to get personID "%s": "%s"' % (personID, str(e)))
         res = {'name': p.name, 'imdbIndex': p.imdbIndex}
         if res['imdbIndex'] is None: del res['imdbIndex']
         if not res:
-            raise IMDbDataAccessError, 'unable to get personID "%s"' % personID
+            raise IMDbDataAccessError('unable to get personID "%s"' % personID)
         # Collect cast information.
         castdata = [(cd.movieID, cd.personRoleID, cd.note,
                     self._role[cd.roleID],
@@ -1414,8 +1414,8 @@ class IMDbSqlAccessSystem(IMDbBase):
             qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
                     for q in CharName.select(condition)]
         except NotFoundError, e:
-            raise IMDbDataAccessError, \
-                    'unable to search the database: "%s"' % str(e)
+            raise IMDbDataAccessError( \
+                    'unable to search the database: "%s"' % str(e))
         res = scan_names(qr, s_name, name2, '', results,
                         _scan_character=True)
         res[:] = [x[1] for x in res]
@@ -1434,13 +1434,13 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             c = CharName.get(characterID)
         except NotFoundError, e:
-            raise IMDbDataAccessError, \
-                    'unable to get characterID "%s": "%s"' % (characterID, e)
+            raise IMDbDataAccessError( \
+                    'unable to get characterID "%s": "%s"' % (characterID, e))
         res = {'name': c.name, 'imdbIndex': c.imdbIndex}
         if res['imdbIndex'] is None: del res['imdbIndex']
         if not res:
-            raise IMDbDataAccessError, 'unable to get characterID "%s"' % \
-                                        characterID
+            raise IMDbDataAccessError('unable to get characterID "%s"' % \
+                                        characterID)
         # Collect filmography information.
         items = CastInfo.select(CastInfo.q.personRoleID == characterID)
         if results > 0:
@@ -1489,8 +1489,8 @@ class IMDbSqlAccessSystem(IMDbBase):
             qr = [(q.id, {'name': q.name, 'country': q.countryCode})
                     for q in CompanyName.select(condition)]
         except NotFoundError, e:
-            raise IMDbDataAccessError, \
-                    'unable to search the database: "%s"' % str(e)
+            raise IMDbDataAccessError( \
+                    'unable to search the database: "%s"' % str(e))
         qr[:] = [(x[0], build_company_name(x[1])) for x in qr]
         res = scan_company_names(qr, name, results)
         res[:] = [x[1] for x in res]
@@ -1510,13 +1510,13 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             c = CompanyName.get(companyID)
         except NotFoundError, e:
-            raise IMDbDataAccessError, \
-                    'unable to get companyID "%s": "%s"' % (companyID, e)
+            raise IMDbDataAccessError( \
+                    'unable to get companyID "%s": "%s"' % (companyID, e))
         res = {'name': c.name, 'country': c.countryCode}
         if res['country'] is None: del res['country']
         if not res:
-            raise IMDbDataAccessError, 'unable to get companyID "%s"' % \
-                                        companyID
+            raise IMDbDataAccessError('unable to get companyID "%s"' % \
+                                        companyID)
         # Collect filmography information.
         items = MovieCompanies.select(MovieCompanies.q.companyID == companyID)
         if results > 0:

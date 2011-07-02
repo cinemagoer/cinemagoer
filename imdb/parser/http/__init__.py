@@ -210,12 +210,12 @@ class IMDbURLopener(FancyURLopener):
             if size != -1:
                 # Ensure that the Range header is removed.
                 self.del_header('Range')
-            raise IMDbDataAccessError, {'errcode': e.errno,
+            raise IMDbDataAccessError({'errcode': e.errno,
                                         'errmsg': str(e.strerror),
                                         'url': url,
                                         'proxy': self.get_proxy(),
                                         'exception type': 'IOError',
-                                        'original exception': e}
+                                        'original exception': e})
         if encode is None:
             encode = 'latin_1'
             # The detection of the encoding is error prone...
@@ -229,24 +229,24 @@ class IMDbURLopener(FancyURLopener):
             self._logger.warn('404 code returned for %s: %s (headers: %s)',
                                 url, errmsg, headers)
             return _FakeURLOpener(url, headers)
-        raise IMDbDataAccessError, {'url': 'http:%s' % url,
+        raise IMDbDataAccessError({'url': 'http:%s' % url,
                                     'errcode': errcode,
                                     'errmsg': errmsg,
                                     'headers': headers,
                                     'error type': 'http_error_default',
-                                    'proxy': self.get_proxy()}
+                                    'proxy': self.get_proxy()})
 
     def open_unknown(self, fullurl, data=None):
-        raise IMDbDataAccessError, {'fullurl': fullurl,
+        raise IMDbDataAccessError({'fullurl': fullurl,
                                     'data': str(data),
                                     'error type': 'open_unknown',
-                                    'proxy': self.get_proxy()}
+                                    'proxy': self.get_proxy()})
 
     def open_unknown_proxy(self, proxy, fullurl, data=None):
-        raise IMDbDataAccessError, {'proxy': str(proxy),
+        raise IMDbDataAccessError({'proxy': str(proxy),
                                     'fullurl': fullurl,
                                     'error type': 'open_unknown_proxy',
-                                    'data': str(data)}
+                                    'data': str(data)})
 
 
 class IMDbHTTPAccessSystem(IMDbBase):
@@ -324,30 +324,30 @@ class IMDbHTTPAccessSystem(IMDbBase):
         try:
             return '%07d' % int(movieID)
         except ValueError, e:
-            raise IMDbParserError, 'invalid movieID "%s": %s' % (movieID, e)
+            raise IMDbParserError('invalid movieID "%s": %s' % (movieID, e))
 
     def _normalize_personID(self, personID):
         """Normalize the given personID."""
         try:
             return '%07d' % int(personID)
         except ValueError, e:
-            raise IMDbParserError, 'invalid personID "%s": %s' % (personID, e)
+            raise IMDbParserError('invalid personID "%s": %s' % (personID, e))
 
     def _normalize_characterID(self, characterID):
         """Normalize the given characterID."""
         try:
             return '%07d' % int(characterID)
         except ValueError, e:
-            raise IMDbParserError, 'invalid characterID "%s": %s' % \
-                    (characterID, e)
+            raise IMDbParserError('invalid characterID "%s": %s' % \
+                    (characterID, e))
 
     def _normalize_companyID(self, companyID):
         """Normalize the given companyID."""
         try:
             return '%07d' % int(companyID)
         except ValueError, e:
-            raise IMDbParserError, 'invalid companyID "%s": %s' % \
-                    (companyID, e)
+            raise IMDbParserError('invalid companyID "%s": %s' % \
+                    (companyID, e))
 
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID; in this implementation

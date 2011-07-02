@@ -39,6 +39,11 @@ with - respectively - these commands (as root):
   easy_install IMDbPY
   pip install IMDbPY
 
+Using easy_install and pip, the dependencies will be automatically
+satisfied.  Third-party packages may be downloaded, and if not
+otherwise specified (see below), C extensions compiled (this means
+that you need the python-dev package installed).
+
 If, for some reason, it doesn't work, you can copy the "./imdb"
 directory in the local site-packages directory of the python
 major version you're using, but remember that you'll not satisfy
@@ -106,6 +111,7 @@ package may be required for certain functionality:
 
 All of them should probably be "recommended" (or at least "suggested")
 dependencies.
+To compile the C module, you also need the python-dev package.
 
 As of IMDbPY 4.0, the installer is based on setuptools.
 

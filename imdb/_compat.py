@@ -67,6 +67,6 @@ if os.name == 'e32':
                     return (int(res[0]), int(res[1]), int(res[2]),
                             0, 0, 0, 0, 1, 0)
             except:
-                raise ValueError, u'error in IMDbPY\'s ad-hoc strptime!'
+                raise ValueError('error in IMDbPY\'s ad-hoc strptime!')
         time.strptime = strptime
 

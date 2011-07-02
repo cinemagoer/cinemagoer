@@ -128,7 +128,7 @@ class QAdapter(object):
 
     def __getattr__(self, name):
         try: return getattr(self.table.c, self.colMap[name])
-        except KeyError, e: raise AttributeError, "unable to get '%s'" % name
+        except KeyError, e: raise AttributeError("unable to get '%s'" % name)
 
     def __repr__(self):
         return '<QAdapter(table=%s, colMap=%s) [id=%s]>' % \
@@ -150,7 +150,7 @@ class RowAdapter(object):
 
     def __getattr__(self, name):
         try: return getattr(self.row, self.colMap[name])
-        except KeyError, e: raise AttributeError, "unable to get '%s'" % name
+        except KeyError, e: raise AttributeError("unable to get '%s'" % name)
 
     def __setattr__(self, name, value):
         # FIXME: I can't even think about how much performances suffer,
@@ -294,7 +294,7 @@ class TableAdapter(object):
         try:
             return result[0]
         except KeyError:
-            raise NotFoundError, 'no data for ID %s' % theID
+            raise NotFoundError('no data for ID %s' % theID)
 
     def dropTable(self, checkfirst=True):
         """Drop the table."""

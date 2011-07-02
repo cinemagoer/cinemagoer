@@ -243,7 +243,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         cont = self._mretrieve(imdbURL_movie_main % movieID + 'maindetails')
         title = _findBetween(cont, '<title>', '</title>', maxRes=1)
         if not title:
-            raise IMDbDataAccessError, 'unable to get movieID "%s"' % movieID
+            raise IMDbDataAccessError('unable to get movieID "%s"' % movieID)
         title = _unHtml(title[0])
         if cont.find('<span class="tv-extra">TV mini-series</span>') != -1:
             title += ' (mini)'
@@ -537,7 +537,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not name:
             if _parseChr: w = 'characterID'
             else: w = 'personID'
-            raise IMDbDataAccessError, 'unable to get %s "%s"' % (w, personID)
+            raise IMDbDataAccessError('unable to get %s "%s"' % (w, personID))
         name = _unHtml(name[0].replace(' - IMDb', ''))
         if _parseChr:
             name = name.replace('(Character)', '').strip()

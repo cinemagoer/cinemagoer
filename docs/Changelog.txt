@@ -1,9 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110527 "Faster" (27 May 2011)
+* What's the new in release 4.8dev20110702 "Cars 2" (02 Jul 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
+  - converted old-style exceptions to instances.
   - enanchements for the reduce.sh script.
   - added notes about problems connecting to IMDb's web servers.
 

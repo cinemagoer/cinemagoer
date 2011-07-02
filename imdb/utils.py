@@ -146,7 +146,7 @@ def analyze_name(name, canonical=None):
             # XXX: for the birth and death dates case like " (1926-2004)"
             name = name[:opi-1]
     if not name:
-        raise IMDbParserError, 'invalid name: "%s"' % original_n
+        raise IMDbParserError('invalid name: "%s"' % original_n)
     if canonical is not None:
         if canonical:
             name = canonicalName(name)
@@ -411,7 +411,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
         kind = u'tv series'
         title = title[:-11].rstrip()
     if not title:
-        raise IMDbParserError, 'invalid title: "%s"' % original_t
+        raise IMDbParserError('invalid title: "%s"' % original_t)
     if canonical is not None:
         if canonical:
             title = canonicalTitle(title)
@@ -583,7 +583,7 @@ def analyze_company_name(name, stripNotes=False):
             country = name[idx:]
             name = name[:idx].rstrip()
     if not name:
-        raise IMDbParserError, 'invalid name: "%s"' % o_name
+        raise IMDbParserError('invalid name: "%s"' % o_name)
     result = {'name': name}
     if country:
         result['country'] = country
@@ -1308,7 +1308,7 @@ class _Container(object):
 
     def getID(self):
         """Return movieID, personID, characterID or companyID."""
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def __cmp__(self, other):
         """Compare two Movie, Person, Character or Company objects."""
@@ -1483,14 +1483,14 @@ class _Container(object):
 
     def __repr__(self):
         """String representation of an object."""
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def __str__(self):
         """Movie title or person name."""
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def __contains__(self, key):
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def append_item(self, key, item):
         """The item is appended to the list identified by the given key."""
@@ -1506,7 +1506,7 @@ class _Container(object):
         return 0
 
     def __deepcopy__(self, memo):
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def copy(self):
         """Return a deep copy of the object itself."""

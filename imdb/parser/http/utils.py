@@ -453,14 +453,14 @@ class DOMParserBase(object):
                 if idx+1 >= nrMods:
                     # Raise the exception, if we don't have any more
                     # options to try.
-                    raise IMDbError, 'unable to use any parser in %s: %s' % \
-                                    (str(useModule), str(e))
+                    raise IMDbError('unable to use any parser in %s: %s' % \
+                                    (str(useModule), str(e)))
                 else:
                     self._logger.warn('unable to use "%s": %s' % (mod, str(e)))
                     _gotError = True
                 continue
         else:
-            raise IMDbError, 'unable to use parsers in %s' % str(useModule)
+            raise IMDbError('unable to use parsers in %s' % str(useModule))
         # Fall-back defaults.
         self._modFunct = None
         self._as = 'http'

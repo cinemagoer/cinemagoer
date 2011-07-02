@@ -191,16 +191,16 @@ def IMDb(accessSystem=None, *arguments, **keywords):
         return IMDbMobileAccessSystem(*arguments, **keywords)
     elif accessSystem in ('local', 'files'):
         # The local access system was removed since IMDbPY 4.2.
-        raise IMDbError, 'the local access system was removed since IMDbPY 4.2'
+        raise IMDbError('the local access system was removed since IMDbPY 4.2')
     elif accessSystem in ('sql', 'db', 'database'):
         try:
             from parser.sql import IMDbSqlAccessSystem
         except ImportError:
-            raise IMDbError, 'the sql access system is not installed'
+            raise IMDbError('the sql access system is not installed')
         return IMDbSqlAccessSystem(*arguments, **keywords)
     else:
-        raise IMDbError, 'unknown kind of data access system: "%s"' \
-                            % accessSystem
+        raise IMDbError('unknown kind of data access system: "%s"' \
+                            % accessSystem)
 
 
 def available_access_systems():
@@ -367,7 +367,7 @@ class IMDbBase:
         """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def search_movie(self, title, results=None, _episodes=False):
         """Return a list of Movie objects for a query for the given title.
@@ -394,7 +394,7 @@ class IMDbBase:
         """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def search_episode(self, title, results=None):
         """Return a list of Movie objects for a query for the given title.
@@ -428,7 +428,7 @@ class IMDbBase:
         """Return a list of tuples (personID, {personData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def search_person(self, name, results=None):
         """Return a list of Person objects for a query for the given name.
@@ -473,7 +473,7 @@ class IMDbBase:
         """Return a list of tuples (characterID, {characterData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def search_character(self, name, results=None):
         """Return a list of Character objects for a query for the given name.
@@ -518,7 +518,7 @@ class IMDbBase:
         """Return a list of tuples (companyID, {companyData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def search_company(self, name, results=None):
         """Return a list of Company objects for a query for the given name.
@@ -541,7 +541,7 @@ class IMDbBase:
         """Return a list of 'keyword' strings."""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def search_keyword(self, keyword, results=None):
         """Search for existing keywords, similar to the given one."""
@@ -559,7 +559,7 @@ class IMDbBase:
         """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def get_keyword(self, keyword, results=None):
         """Return a list of movies for the given keyword."""
@@ -584,7 +584,7 @@ class IMDbBase:
         #      subclass, somewhere under the imdb.parser package.
         #      This method must return a list of (movieID, {movieDict})
         #      tuples.  The kind parameter can be 'top' or 'bottom'.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def get_top250_movies(self):
         """Return the list of the top 250 movies."""
@@ -677,16 +677,16 @@ class IMDbBase:
             mopID = mop.companyID
             prefix = 'company'
         else:
-            raise IMDbError, 'object ' + repr(mop) + \
-                    ' is not a Movie, Person, Character or Company instance'
+            raise IMDbError('object ' + repr(mop) + \
+                    ' is not a Movie, Person, Character or Company instance')
         if mopID is None:
             # XXX: enough?  It's obvious that there are Characters
             #      objects without characterID, so I think they should
             #      just do nothing, when an i.update(character) is tried.
             if prefix == 'character':
                 return
-            raise IMDbDataAccessError, \
-                'the supplied object has null movieID, personID or companyID'
+            raise IMDbDataAccessError( \
+                'the supplied object has null movieID, personID or companyID')
         if mop.accessSystem == self.accessSystem:
             aSystem = self
         else:
@@ -749,28 +749,28 @@ class IMDbBase:
         web server); must be overridden by the subclass."""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def get_imdbPersonID(self, personID):
         """Translate a personID in a imdbID (the ID used by the IMDb
         web server); must be overridden by the subclass."""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def get_imdbCharacterID(self, characterID):
         """Translate a characterID in a imdbID (the ID used by the IMDb
         web server); must be overridden by the subclass."""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def get_imdbCompanyID(self, companyID):
         """Translate a companyID in a imdbID (the ID used by the IMDb
         web server); must be overridden by the subclass."""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError, 'override this method'
+        raise NotImplementedError('override this method')
 
     def _searchIMDb(self, kind, ton):
         """Search the IMDb akas server for the given title or name."""
@@ -862,8 +862,8 @@ class IMDbBase:
             else:
                 imdbID = aSystem.company2imdbID(build_company_name(mop))
         else:
-            raise IMDbError, 'object ' + repr(mop) + \
-                        ' is not a Movie, Person or Character instance'
+            raise IMDbError('object ' + repr(mop) + \
+                        ' is not a Movie, Person or Character instance')
         return imdbID
 
     def get_imdbURL(self, mop):
@@ -881,8 +881,8 @@ class IMDbBase:
         elif isinstance(mop, Company.Company):
             url_firstPart = imdbURL_company_main
         else:
-            raise IMDbError, 'object ' + repr(mop) + \
-                        ' is not a Movie, Person, Character or Company instance'
+            raise IMDbError('object ' + repr(mop) + \
+                        ' is not a Movie, Person, Character or Company instance')
         return url_firstPart % imdbID
 
     def get_special_methods(self):

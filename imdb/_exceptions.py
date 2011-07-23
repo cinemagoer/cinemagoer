@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import logging
 
 
-class IMDbError(Exception, object):
+class IMDbError(Exception):
     """Base class for every exception raised by the imdb package."""
     _logger = logging.getLogger('imdbpy')
 
@@ -33,7 +33,7 @@ class IMDbError(Exception, object):
         self._logger.critical('%s exception raised; args: %s; kwds: %s',
                                 self.__class__.__name__, args, kwargs,
                                 exc_info=True)
-        super(IMDbError, self).__init__(*args, **kwargs)
+        Exception.__init__(self, *args, **kwargs)
 
 class IMDbDataAccessError(IMDbError):
     """Exception raised when is not possible to access needed data."""
@@ -42,5 +42,4 @@ class IMDbDataAccessError(IMDbError):
 class IMDbParserError(IMDbError):
     """Exception raised when an error occurred parsing the data."""
     pass
-
 

@@ -86,7 +86,7 @@ featLxml = setuptools.dist.Feature('add lxml dependency', standard=True,
 # XXX: it seems there's no way to specify that we need EITHER
 #      SQLObject OR SQLAlchemy.
 featSQLObject = setuptools.dist.Feature('add SQLObject dependency',
-        standard=True, install_requires=['SQLObject'],
+        standard=True, install_requires=['SQLObject', 'FormEncode'],
         require_features='sql')
 
 featSQLAlchemy = setuptools.dist.Feature('add SQLAlchemy dependency',

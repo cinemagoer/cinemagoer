@@ -810,7 +810,7 @@ class GatherRefs(DOMParserBase):
                             'link': './@href',
                             'info': './following::text()[1]'
                             },
-        postprocess=lambda x: _parse_ref(x.get('text'), x.get('link'),
+        postprocess=lambda x: _parse_ref(x.get('text') or u'', x.get('link') or '',
                                          (x.get('info') or u'').strip()))]
     extractors = [
         Extractor(label='names refs',

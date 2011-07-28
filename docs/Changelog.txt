@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110726 "Captain America: The First Avenger" (26 Jul 2011)
+* What's the new in release 4.8dev20110728 "Sucker Punch" (28 Jul 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
   - converted old-style exceptions to instances.
@@ -12,6 +12,7 @@
   - potential fix for GAE environment.
   - fix for 'episodes' list.
   - fix for queries that returned too many results.
+  - fix for wrong/missing references.
 
   [mobile]
   - fix for missing headshots.

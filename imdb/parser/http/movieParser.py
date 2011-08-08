@@ -329,8 +329,26 @@ class DOMHTMLMovieParser(DOMParserBase):
                                     '"::', 1).strip('"').replace('  ', ' '))),
 
                 Extractor(label='production notes/status',
-                        path="//div[@class='info inprod']",
-                        attrs=Attribute(key='production notes',
+                        path="//h5[starts-with(text(), 'Status:')]/..//div[@class='info-content']",
+                        attrs=Attribute(key='production status',
+                                path=".//text()",
+                                postprocess=lambda x: x.strip().split('|')[0].strip().lower())),
+
+                Extractor(label='production notes/status updated',
+                        path="//h5[starts-with(text(), 'Status Updated:')]/..//div[@class='info-content']",
+                        attrs=Attribute(key='production status updated',
+                                path=".//text()",
+                                postprocess=lambda x: x.strip())),
+
+                Extractor(label='production notes/comments',
+                        path="//h5[starts-with(text(), 'Comments:')]/..//div[@class='info-content']",
+                        attrs=Attribute(key='production comments',
+                                path=".//text()",
+                                postprocess=lambda x: x.strip())),
+
+                Extractor(label='production notes/note',
+                        path="//h5[starts-with(text(), 'Note:')]/..//div[@class='info-content']",
+                        attrs=Attribute(key='production note',
                                 path=".//text()",
                                 postprocess=lambda x: x.strip())),
 
@@ -427,20 +445,6 @@ class DOMHTMLMovieParser(DOMParserBase):
         if 'runtimes' in data:
             data['runtimes'] = [x.replace(' min', u'')
                                 for x in data['runtimes']]
-        if 'production notes' in data:
-            pn = data['production notes'].replace('\n\nComments:',
-                                '\nComments:').replace('\n\nNote:',
-                                '\nNote:').replace('Note:\n\n',
-                                'Note:\n').split('\n')
-            for k, v in zip(pn[::2], pn[1::2]):
-                v = v.strip()
-                if not v:
-                    continue
-                k = k.lower().strip(':')
-                if k == 'note':
-                    k = 'status note'
-                data[k] = v
-            del data['production notes']
         if 'original air date' in data:
             oid = self.re_space.sub(' ', data['original air date']).strip()
             data['original air date'] = oid

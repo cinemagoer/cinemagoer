@@ -270,6 +270,20 @@ class DOMHTMLMovieParser(DOMParserBase):
                                         "'TV Series')]/..//a/text()")
                             ]),
 
+                Extractor(label='language codes',
+                            path="//h5[starts-with(text(), 'Language')]/..//a[starts-with(@href, '/language/')]",
+                            attrs=Attribute(key='language codes', multi=True,
+                                    path="./@href",
+                                    postprocess=lambda x: x.split('/')[2].strip()
+                                    )),
+
+                Extractor(label='country codes',
+                            path="//h5[starts-with(text(), 'Country')]/..//a[starts-with(@href, '/country/')]",
+                            attrs=Attribute(key='country codes', multi=True,
+                                    path="./@href",
+                                    postprocess=lambda x: x.split('/')[2].strip()
+                                    )),
+
                 Extractor(label='creator',
                             path="//h5[starts-with(text(), 'Creator')]/..//a",
                             attrs=Attribute(key='creator', multi=True,

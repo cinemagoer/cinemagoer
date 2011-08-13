@@ -244,6 +244,7 @@ def build_person(txt, personID=None, billingPos=None,
         if lr == 1:
             role = role[0]
             roleID = roleID[0]
+            notes = roleNotes[0] or u''
     elif roleID is not None:
         roleID = str(roleID)
     if personID is not None:

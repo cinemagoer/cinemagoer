@@ -268,13 +268,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self._getRefs = True
         self._mdparse = False
         if isThin:
-            if self.accessSystem == 'http':
-                self.accessSystem = 'httpThin'
-            self._mdparse = True
-            if self._defModFunct is None:
-                self._getRefs = False
-                from imdb.utils import modNull
-                self._defModFunct = modNull
+            self._http_logger.warn('"httpThin" access system no longer ' +
+                    'supported; "http" used automatically', exc_info=False)
+            isThin = 0
+            if self.accessSystem == 'httpThin':
+                self.accessSystem = 'http'
         self.do_adult_search(adultSearch)
         if cookie_id != -1:
             if cookie_id is None:
@@ -456,10 +454,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.smProxy.search_movie_parser.parse(cont, results=results)['data']
 
     def get_movie_main(self, movieID):
-        if not self.isThin:
-            cont = self._retrieve(imdbURL_movie_main % movieID + 'combined')
-        else:
-            cont = self._retrieve(imdbURL_movie_main % movieID + 'maindetails')
+        cont = self._retrieve(imdbURL_movie_main % movieID + 'combined')
         return self.mProxy.movie_parser.parse(cont, mdparse=self._mdparse)
 
     def get_movie_full_credits(self, movieID):

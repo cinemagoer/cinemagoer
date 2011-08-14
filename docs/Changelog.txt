@@ -19,6 +19,9 @@
   - fix for cast of tv series.
   - fix for title of tv series.
 
+  [httpThin]
+  - removed "httpThin", falling back to "http".
+
   [mobile]
   - fix for missing headshots.
   - fix for rating and number of votes.

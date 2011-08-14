@@ -270,7 +270,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         if isThin:
             self._http_logger.warn('"httpThin" access system no longer ' +
                     'supported; "http" used automatically', exc_info=False)
-            isThin = 0
+            self.isThin = 0
             if self.accessSystem == 'httpThin':
                 self.accessSystem = 'http'
         self.do_adult_search(adultSearch)

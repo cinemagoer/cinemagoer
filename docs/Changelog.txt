@@ -17,6 +17,7 @@
   - removed no more available information set "amazon
     reviews" and "dvd".
   - fix for cast of tv series.
+  - fix for title of tv series.
 
   [mobile]
   - fix for missing headshots.

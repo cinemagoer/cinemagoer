@@ -401,7 +401,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     preprocessors = [
         (re.compile(r'(<b class="blackcatheader">.+?</b>)', re.I),
             r'</div><div>\1'),
-        ('<small>Full cast and crew for<br></small>', ''),
+        ('<small>Full cast and crew for<br>', ''),
         ('<td> </td>', '<td>...</td>'),
         ('<span class="tv-extra">TV mini-series</span>',
             '<span class="tv-extra">(mini)</span>'),

@@ -14,6 +14,9 @@
   - fix for 'episodes' list.
   - fix for queries that returned too many results.
   - fix for wrong/missing references.
+  - removed no more available information set "amazon
+    reviews" and "dvd".
+  - fix for cast of tv series.
 
   [mobile]
   - fix for missing headshots.

@@ -1595,8 +1595,8 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                         accessSystem=self._as, modFunct=self._modFunct)
         nd = {}
         for key in data.keys():
-            if key.startswith('filter-season-'):
-                season_key = key[14:]
+            if key.startswith('filter-season-') or key.startswith('season-'):
+                season_key = key.replace('filter-season-', '').replace('season-', '')
                 try: season_key = int(season_key)
                 except: pass
                 nd[season_key] = {}

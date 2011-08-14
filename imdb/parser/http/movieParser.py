@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2011 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -1287,84 +1287,6 @@ class DOMHTMLTechParser(DOMParserBase):
         return data
 
 
-class DOMHTMLDvdParser(DOMParserBase):
-    """Parser for the "dvd" page of a given movie.
-    The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        dparser = DOMHTMLDvdParser()
-        result = dparser.parse(dvd_html_string)
-    """
-    _defGetRefs = True
-    extractors = [Extractor(label='dvd',
-            path="//div[@class='base_layer']",
-            attrs=[Attribute(key=None,
-                multi=True,
-                path={
-                    'title': "../table[1]//h3/text()",
-                    'cover': "../table[1]//img/@src",
-                    'region': ".//p[b='Region:']/text()",
-                    'asin': ".//p[b='ASIN:']/text()",
-                    'upc': ".//p[b='UPC:']/text()",
-                    'rating': ".//p/b[starts-with(text(), 'Rating:')]/../img/@alt",
-                    'certificate': ".//p[b='Certificate:']/text()",
-                    'runtime': ".//p[b='Runtime:']/text()",
-                    'label': ".//p[b='Label:']/text()",
-                    'studio': ".//p[b='Studio:']/text()",
-                    'release date': ".//p[b='Release Date:']/text()",
-                    'dvd format': ".//p[b='DVD Format:']/text()",
-                    'dvd features': ".//p[b='DVD Features: ']//text()",
-                    'supplements': "..//div[span='Supplements']" \
-                            "/following-sibling::div[1]//text()",
-                    'review': "..//div[span='Review']/following-sibling::div[1]//text()",
-                    'titles':  "..//div[starts-with(text(), 'Titles in this Product')]" \
-                            "/..//text()",
-                },
-                postprocess=lambda x: {
-                'title': (x.get('title') or u'').strip(),
-                'cover': (x.get('cover') or u'').strip(),
-                'region': (x.get('region') or u'').strip(),
-                'asin': (x.get('asin') or u'').strip(),
-                'upc': (x.get('upc') or u'').strip(),
-                'rating': (x.get('rating') or u'Not Rated').strip().replace('Rating: ', ''),
-                'certificate': (x.get('certificate') or u'').strip(),
-                'runtime': (x.get('runtime') or u'').strip(),
-                'label': (x.get('label') or u'').strip(),
-                'studio': (x.get('studio') or u'').strip(),
-                'release date': (x.get('release date') or u'').strip(),
-                'dvd format': (x.get('dvd format') or u'').strip(),
-                'dvd features': (x.get('dvd features') or u'').strip().replace('DVD Features: ', ''),
-                'supplements': (x.get('supplements') or u'').strip(),
-                'review': (x.get('review') or u'').strip(),
-                'titles in this product': (x.get('titles') or u'').strip().replace('Titles in this Product::', ''),
-                }
-                 )])]
-
-    preprocessors = [
-        (re.compile('<p>(<table class="dvd_section" .*)</p>\s*<hr\s*/>', re.I),
-         r'<div class="_imdbpy">\1</div>'),
-        (re.compile('<p>(<div class\s*=\s*"base_layer")', re.I), r'\1'),
-        (re.compile('</p>\s*<p>(<div class="dvd_section")', re.I), r'\1'),
-        (re.compile('</div><div class="dvd_row(_alt)?">', re.I), r'::')
-    ]
-
-    def postprocess_data(self, data):
-        if not data:
-            return data
-        dvds = data['dvd']
-        for dvd in dvds:
-            if dvd['cover'].find('noposter') != -1:
-                del dvd['cover']
-            for key in dvd.keys():
-                if not dvd[key]:
-                    del dvd[key]
-            if 'supplements' in dvd:
-                dvd['supplements'] = dvd['supplements'].split('::')
-        return data
-
-
 class DOMHTMLRecParser(DOMParserBase):
     """Parser for the "recommendations" page of a given movie.
     The page should be provided as a string, as taken from
@@ -1475,51 +1397,6 @@ def _parse_review(x):
         review = "%s: %s" % (item, review)
     result['review'] = review
     return result
-
-
-class DOMHTMLAmazonReviewsParser(DOMParserBase):
-    """Parser for the "amazon reviews" page of a given movie.
-    The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        arparser = DOMHTMLAmazonReviewsParser()
-        result = arparser.parse(amazonreviews_html_string)
-    """
-    extractors = [
-        Extractor(label='amazon reviews',
-            group="//h3",
-            group_key="./a/text()",
-            group_key_normalize=lambda x: x[:-1],
-            path="./following-sibling::p[1]/span[@class='_review']",
-            attrs=Attribute(key=None,
-                multi=True,
-                path={
-                    'title': "../preceding-sibling::h3[1]/a[1]/text()",
-                    'link': "../preceding-sibling::h3[1]/a[1]/@href",
-                    'kind': "./preceding-sibling::b[1]/text()",
-                    'item': "./i/b/text()",
-                    'review': ".//text()",
-                    'author': "./i[starts-with(text(), '--')]/text()"
-                    },
-                postprocess=_parse_review))
-        ]
-
-    preprocessors = [
-        (re.compile('<p>\n(?!<b>)', re.I), r'\n'),
-        (re.compile('(\n</b>\n)', re.I), r'\1<span class="_review">'),
-        (re.compile('(</p>\n\n)', re.I), r'</span>\1'),
-        (re.compile('(\s\n)(<i><b>)', re.I), r'</span>\1<span class="_review">\2')
-        ]
-
-    def postprocess_data(self, data):
-        if len(data) == 0:
-            return {}
-        nd = []
-        for item in data.keys():
-            nd = nd + data[item]
-        return {'amazon reviews': nd}
 
 
 def _parse_merchandising_link(x):
@@ -1967,10 +1844,8 @@ _OBJECTS = {
                             {'kind': 'business', '_defGetRefs': 1}),
     'literature_parser':  ((DOMHTMLTechParser,), {'kind': 'literature'}),
     'locations_parser':  ((DOMHTMLLocationsParser,), None),
-    'dvd_parser':  ((DOMHTMLDvdParser,), None),
     'rec_parser':  ((DOMHTMLRecParser,), None),
     'news_parser':  ((DOMHTMLNewsParser,), None),
-    'amazonrev_parser':  ((DOMHTMLAmazonReviewsParser,), None),
     'sales_parser':  ((DOMHTMLSalesParser,), None),
     'episodes_parser':  ((DOMHTMLEpisodesParser,), None),
     'episodes_cast_parser':  ((DOMHTMLEpisodesCastParser,), None),

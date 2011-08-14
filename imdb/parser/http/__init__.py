@@ -7,7 +7,7 @@ the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "http" or "web"
 or "html" (this is the default).
 
-Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2011 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -544,8 +544,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.mProxy.soundtrack_parser.parse(cont)
 
     def get_movie_dvd(self, movieID):
-        cont = self._retrieve(imdbURL_movie_main % movieID + 'dvd')
-        return self.mProxy.dvd_parser.parse(cont, getRefs=self._getRefs)
+        self._http_logger.warn('dvd information no longer available', exc_info=False)
+        return {}
 
     def get_movie_recommendations(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'recommendations')
@@ -580,8 +580,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.mProxy.news_parser.parse(cont, getRefs=self._getRefs)
 
     def get_movie_amazon_reviews(self, movieID):
-        cont = self._retrieve(imdbURL_movie_main % movieID + 'amazon')
-        return self.mProxy.amazonrev_parser.parse(cont)
+        self._http_logger.warn('amazon review no longer available', exc_info=False)
+        return {}
 
     def get_movie_guests(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'epcast')

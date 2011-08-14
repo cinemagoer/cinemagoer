@@ -584,8 +584,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
     get_movie_episodes_cast = get_movie_guests
 
     def get_movie_merchandising_links(self, movieID):
-        cont = self._retrieve(imdbURL_movie_main % movieID + 'sales')
-        return self.mProxy.sales_parser.parse(cont)
+        self._http_logger.warn('merchandising links no longer available',
+                exc_info=False)
+        return {}
 
     def get_movie_episodes(self, movieID):
         cont = self._retrieve(imdbURL_movie_main % movieID + 'episodes')

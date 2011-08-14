@@ -1399,82 +1399,6 @@ def _parse_review(x):
     return result
 
 
-def _parse_merchandising_link(x):
-    result = {}
-    link = x.get('link')
-    result['link'] = _normalize_href(link)
-    text = x.get('text')
-    if text is not None:
-        result['link-text'] = text.strip()
-    cover = x.get('cover')
-    if cover is not None:
-        result['cover'] = cover
-    description = x.get('description')
-    if description is not None:
-        shop = x.get('shop')
-        if shop is not None:
-            result['description'] = u'%s::%s' % (shop, description.strip())
-        else:
-            result['description'] = description.strip()
-    return result
-
-
-class DOMHTMLSalesParser(DOMParserBase):
-    """Parser for the "merchandising links" page of a given movie.
-    The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        sparser = DOMHTMLSalesParser()
-        result = sparser.parse(sales_html_string)
-    """
-    extractors = [
-        Extractor(label='shops',
-                    group="//h5/a[@name]/..",
-                    group_key="./a[1]/text()",
-                    group_key_normalize=lambda x: x.lower(),
-                    path=".//following-sibling::table[1]/" \
-                            "/td[@class='w_rowtable_colshop']//tr[1]",
-                    attrs=Attribute(key=None,
-                        multi=True,
-                        path={
-                            'link': "./td[2]/a[1]/@href",
-                            'text': "./td[1]/img[1]/@alt",
-                            'cover': "./ancestor::td[1]/../td[1]"\
-                                    "/a[1]/img[1]/@src",
-                            },
-                        postprocess=_parse_merchandising_link)),
-        Extractor(label='others',
-                    group="//span[@class='_info']/..",
-                    group_key="./h5/a[1]/text()",
-                    group_key_normalize=lambda x: x.lower(),
-                    path="./span[@class='_info']",
-                    attrs=Attribute(key=None,
-                        multi=True,
-                        path={
-                            'link': "./preceding-sibling::a[1]/@href",
-                            'shop': "./preceding-sibling::a[1]/text()",
-                            'description': ".//text()",
-                            },
-                        postprocess=_parse_merchandising_link))
-    ]
-
-    preprocessors = [
-        (re.compile('(<h5><a name=)', re.I), r'</div><div class="_imdbpy">\1'),
-        (re.compile('(</h5>\n<br/>\n)</div>', re.I), r'\1'),
-        (re.compile('(<br/><br/>\n)(\n)', re.I), r'\1</div>\2'),
-        (re.compile('(\n)(Search.*?)(</a>)(\n)', re.I), r'\3\1\2\4'),
-        (re.compile('(\n)(Search.*?)(\n)', re.I),
-            r'\1<span class="_info">\2</span>\3')
-        ]
-
-    def postprocess_data(self, data):
-        if len(data) == 0:
-            return {}
-        return {'merchandising links': data}
-
-
 def _build_episode(x):
     """Create a Movie object for a given series' episode."""
     episode_id = analyze_imdbid(x.get('link'))
@@ -1846,7 +1770,6 @@ _OBJECTS = {
     'locations_parser':  ((DOMHTMLLocationsParser,), None),
     'rec_parser':  ((DOMHTMLRecParser,), None),
     'news_parser':  ((DOMHTMLNewsParser,), None),
-    'sales_parser':  ((DOMHTMLSalesParser,), None),
     'episodes_parser':  ((DOMHTMLEpisodesParser,), None),
     'episodes_cast_parser':  ((DOMHTMLEpisodesCastParser,), None),
     'eprating_parser':  ((DOMHTMLEpisodesRatings,), None),

@@ -8,7 +8,7 @@ E.g., for "Mel Gibson" the referred pages would be:
     biography:      http://akas.imdb.com/name/nm0000154/bio
     ...and so on...
 
-Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-20101 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -495,45 +495,6 @@ class DOMHTMLPersonGenresParser(DOMParserBase):
         return {self.kind: data}
 
 
-from movieParser import _parse_merchandising_link
-
-class DOMHTMLPersonSalesParser(DOMParserBase):
-    """Parser for the "merchandising links" page of a given person.
-    The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        sparser = DOMHTMLPersonSalesParser()
-        result = sparser.parse(sales_html_string)
-    """
-    extractors = [
-        Extractor(label='merchandising links',
-                    group="//span[@class='merch_title']",
-                    group_key=".//text()",
-                    path="./following-sibling::table[1]/" \
-                            "/td[@class='w_rowtable_colshop']//tr[1]",
-                    attrs=Attribute(key=None,
-                        multi=True,
-                        path={
-                            'link': "./td[2]/a[1]/@href",
-                            'text': "./td[1]/img[1]/@alt",
-                            'cover': "./ancestor::td[1]/../" \
-                                    "td[1]/a[1]/img[1]/@src",
-                            },
-                        postprocess=_parse_merchandising_link)),
-    ]
-
-    preprocessors = [
-        (re.compile('(<a name="[^"]+" )/>', re.I), r'\1></a>')
-        ]
-
-    def postprocess_data(self, data):
-        if len(data) == 0:
-            return {}
-        return {'merchandising links': data}
-
-
 from movieParser import DOMHTMLTechParser
 from movieParser import DOMHTMLOfficialsitesParser
 from movieParser import DOMHTMLAwardsParser
@@ -554,6 +515,5 @@ _OBJECTS = {
     'person_keywords_parser': ((DOMHTMLPersonGenresParser,),
                                 {'kind': 'keywords'}),
     'news_parser': ((DOMHTMLNewsParser,), None),
-    'sales_parser': ((DOMHTMLPersonSalesParser,), None)
 }
 

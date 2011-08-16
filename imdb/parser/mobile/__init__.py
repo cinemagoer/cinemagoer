@@ -569,14 +569,18 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                             '<br/><br/>'), maxRes=1)
         if akas:
             akas = akas[0]
+            if akas:
+                akas = _unHtml(akas)
             if akas.find(' | ') != -1:
-                akas = _unHtml(akas).split(' | ')
+                akas = akas.split(' | ')
             else:
-                akas = _unHtml(akas).split(' / ')
-            if akas: r['akas'] = akas
+                akas = akas.split(' / ')
+            if akas: r['akas'] = filter(None, [x.strip() for x in akas])
         hs = _findBetween(s, "rel='image_src'", '>', maxRes=1)
         if not hs:
             hs = _findBetween(s, 'rel="image_src"', '>', maxRes=1)
+        if not hs:
+            hs = _findBetween(s, '<a name="headshot"', '</a>', maxRes=1)
         if hs:
             hsl = _findBetween(hs[0], "href='", "'", maxRes=1)
             if not hsl:

@@ -26,6 +26,7 @@
   - fix for missing headshots.
   - fix for rating and number of votes.
   - fix for missing genres.
+  - many other fixes to keep up-to-date with the IMDb site.
 
   [sql]
   - fix for a nasty bug parsing notes about character names.

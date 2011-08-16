@@ -823,10 +823,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             intro = _unHtml(intro[0]).strip()
             if intro:
                 d['introduction'] = intro
-        bios = _findBetween(cont, '<div class="display">',
-                            '<div class="history">')
-        if bios:
-            bios = _findBetween(bios[0], '<h4>', ('<h4>', '</div>'))
+        tocidx = cont.find('<table id="toc..')
+        if tocidx != -1:
+            cont = cont[tocidx:]
+        bios = _findBetween(cont, '<h4>', ('<h4>', '</div>'))
         if bios:
             for bio in bios:
                 bio = bio.replace('</h4>', '::')

@@ -296,6 +296,8 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         title = title[:-9].rstrip()
     elif title[-14:] == 'TV mini-series':
         title = title[:-14] + ' (mini)'
+    if title and title.endswith(_defSep.rstrip()):
+        title = title[:-len(_defSep)+1]
     # Try to understand where the movie title ends.
     while True:
         if year:

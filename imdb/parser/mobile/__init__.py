@@ -565,7 +565,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                         r['%s date' % dtitle] = date
                     if notes:
                         r['%s notes' % dtitle] = notes
-        akas = _findBetween(s, 'Alternate Names:</h5>', ('</div>',
+        akas = _findBetween(s, 'Alternate Names:</h4>', ('</div>',
                             '<br/><br/>'), maxRes=1)
         if akas:
             akas = akas[0]
@@ -603,6 +603,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         #    ws.append(('filmography', 'filmography'))
         for sect, sectName in ws:
             raws = u''
+            if sectName == 'self':
+                sect = 'Self'
             # Everything between the current section link and the end
             # of the <ol> tag.
             if _parseChr and sect == 'filmography':
@@ -611,8 +613,10 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 inisect = s.find('<a name="%s' % sect)
             if inisect != -1:
                 endsect = s[inisect:].find('<div id="filmo-head-')
+                if endsect == -1:
+                    endsect = s[inisect:].find('<div class="article"')
                 if endsect != -1: raws = s[inisect:inisect+endsect]
-            if not raws: continue
+            #if not raws: continue
             mlist = _findBetween(raws, '<div class="filmo-row',
                     ('<div class="clear"/>',))
             for m in mlist:

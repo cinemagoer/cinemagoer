@@ -164,7 +164,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                     akas = filter(None, datum[2].split('::'))
                     if self._linkPrefix == '/title/tt':
                         akas = [a.replace('" - ', '::').rstrip() for a in akas]
-                        akas = [a.replace('aka "', '', 1).lstrip() for a in akas]
+                        akas = [a.replace('aka "', '', 1).replace('aka  "',
+                                '', 1).lstrip() for a in akas]
                     datum[1]['akas'] = akas
                     data['data'][idx] = (datum[0], datum[1])
                 else:

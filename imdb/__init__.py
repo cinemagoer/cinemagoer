@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.8dev20110527'
+__version__ = VERSION = '4.8dev20110816'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -156,7 +156,6 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             kwds.update(keywords)
             keywords = kwds
         except Exception, e:
-            import logging
             logging.getLogger('imdbpy').warn('Unable to read configuration' \
                                             ' file; complete error: %s' % e)
             # It just LOOKS LIKE a bad habit: we tried to read config
@@ -176,16 +175,12 @@ def IMDb(accessSystem=None, *arguments, **keywords):
         except Exception, e:
             logging.getLogger('imdbpy').warn('unable to read logger ' \
                                             'config: %s' % e)
+    if accessSystem in ('httpThin', 'webThin', 'htmlThin'):
+        logging.warn('httpThin was removed since IMDbPY 4.8')
+        accessSystem = 'http'
     if accessSystem in ('http', 'web', 'html'):
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
-    elif accessSystem in ('httpThin', 'webThin', 'htmlThin'):
-        import logging
-        logging.warn('httpThin is badly broken and' \
-                                        ' will not be fixed; please switch' \
-                                        ' to "http" or "mobile"')
-        from parser.http import IMDbHTTPAccessSystem
-        return IMDbHTTPAccessSystem(isThin=1, *arguments, **keywords)
     elif accessSystem in ('mobile',):
         from parser.mobile import IMDbMobileAccessSystem
         return IMDbMobileAccessSystem(*arguments, **keywords)
@@ -209,7 +204,7 @@ def available_access_systems():
     # XXX: trying to import modules is a good thing?
     try:
         from parser.http import IMDbHTTPAccessSystem
-        asList += ['http', 'httpThin']
+        asList.append('http')
     except ImportError:
         pass
     try:

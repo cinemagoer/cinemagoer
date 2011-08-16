@@ -264,6 +264,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         # When isThin is set, we're parsing the "maindetails" page
         # of a movie (instead of the "combined" page) and movie/person
         # references are not collected if no defaultModFunct is provided.
+        #
+        # NOTE: httpThin was removed since IMDbPY 4.8.
         self.isThin = isThin
         self._getRefs = True
         self._mdparse = False
@@ -271,7 +273,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
             self._http_logger.warn('"httpThin" access system no longer ' +
                     'supported; "http" used automatically', exc_info=False)
             self.isThin = 0
-            if self.accessSystem == 'httpThin':
+            if self.accessSystem in ('httpThin', 'webThin', 'htmlThin'):
                 self.accessSystem = 'http'
         self.do_adult_search(adultSearch)
         if cookie_id != -1:

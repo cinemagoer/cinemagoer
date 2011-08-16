@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110809 "Captain America" (08 Aug 2011)
+* What's the new in release 4.8dev20110816 "Hanna" (16 Aug 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
   - converted old-style exceptions to instances.

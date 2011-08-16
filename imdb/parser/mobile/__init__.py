@@ -127,7 +127,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
     accessSystem = 'mobile'
     _mobile_logger = logging.getLogger('imdbpy.parser.mobile')
 
-    def __init__(self, isThin=1, *arguments, **keywords):
+    def __init__(self, isThin=0, *arguments, **keywords):
         self.accessSystem = 'mobile'
         IMDbHTTPAccessSystem.__init__(self, isThin, *arguments, **keywords)
 

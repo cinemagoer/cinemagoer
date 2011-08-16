@@ -581,7 +581,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             hsl = _findBetween(hs[0], "href='", "'", maxRes=1)
             if not hsl:
                 hsl = _findBetween(hs[0], 'href="', '"', maxRes=1)
-            if hsl: r['headshot'] = hsl[0]
+            if hsl and 'imdb-share-logo' not in hsl[0]:
+                r['headshot'] = hsl[0]
         # Build a list of tuples such [('hrefLink', 'section name')]
         workkind = _findBetween(s, 'id="jumpto_', '</a>')
         ws = []

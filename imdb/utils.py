@@ -42,6 +42,8 @@ _utils_logger = logging.getLogger('imdbpy.utils')
 # and year of release.
 # XXX: probably L, C, D and M are far too much! ;-)
 re_year_index = re.compile(r'\(([0-9\?]{4}(/[IVXLCDM]+)?)\)')
+re_extended_year_index = re.compile(r'\((TV Series|TV mini-series|TV|Video|Video Game)? ?((?:[0-9\?]{4})-(?:[0-9\?]{4})?)(?:/([IVXLCDM]+)?)?\)')
+re_remove_kind = re.compile(r'\((TV Series|TV mini-series|TV|Video|Video Game)? ?')
 
 # Match only the imdbIndex (for name strings).
 re_index = re.compile(r'^\(([IVXLCDM]+)\)$')
@@ -375,10 +377,6 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
     #      tv mini series: 5,497
     #      video game:     5,490
     #      More up-to-date statistics: http://us.imdb.com/database_statistics
-    tvser_idx = title.find('(TV Series')
-    if tvser_idx != -1:
-        kind = u'tv series'
-        title = title.replace('(TV Series', '(').replace('( ', '(')
     if title.endswith('(TV)'):
         kind = u'tv movie'
         title = title[:-4].rstrip()
@@ -396,6 +394,22 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
         title = title[:-4].rstrip()
     # Search for the year and the optional imdbIndex (a roman number).
     yi = re_year_index.findall(title)
+    if not yi:
+        yi = re_extended_year_index.findall(title)
+        if yi:
+            yk, yiy, yii = yi[-1]
+            yi = [(yiy, yii)]
+            if yk == 'TV':
+                kind = u'tv movie'
+            elif yk == 'TV Series':
+                kind = u'tv series'
+            elif yk == 'Video':
+                kind = u'video movie'
+            elif yk == 'TV mini-series':
+                kind = u'tv mini series'
+            elif yk == 'Video Game':
+                kind = u'video game'
+            title = re_remove_kind.sub('(', title)
     if yi:
         last_yi = yi[-1]
         year = last_yi[0]
@@ -426,6 +440,9 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
     result['title'] = title
     result['kind'] = kind or u'movie'
     if year and year != '????':
+        if '-' in year:
+            result['series years'] = year
+            year = year[:4]
         try:
             result['year'] = int(year)
         except (TypeError, ValueError):

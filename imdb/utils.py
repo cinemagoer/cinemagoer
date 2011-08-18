@@ -42,8 +42,8 @@ _utils_logger = logging.getLogger('imdbpy.utils')
 # and year of release.
 # XXX: probably L, C, D and M are far too much! ;-)
 re_year_index = re.compile(r'\(([0-9\?]{4}(/[IVXLCDM]+)?)\)')
-re_extended_year_index = re.compile(r'\((TV Series|TV mini-series|TV|Video|Video Game)? ?((?:[0-9\?]{4})-(?:[0-9\?]{4})?)(?:/([IVXLCDM]+)?)?\)')
-re_remove_kind = re.compile(r'\((TV Series|TV mini-series|TV|Video|Video Game)? ?')
+re_extended_year_index = re.compile(r'\((TV episode|TV Series|TV mini-series|TV|Video|Video Game)? ?((?:[0-9\?]{4})(?:-[0-9\?]{4})?)(?:/([IVXLCDM]+)?)?\)')
+re_remove_kind = re.compile(r'\((TV episode|TV Series|TV mini-series|TV|Video|Video Game)? ?')
 
 # Match only the imdbIndex (for name strings).
 re_index = re.compile(r'^\(([IVXLCDM]+)\)$')
@@ -399,7 +399,9 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
         if yi:
             yk, yiy, yii = yi[-1]
             yi = [(yiy, yii)]
-            if yk == 'TV':
+            if yk == 'TV episode':
+                kind = u'episode'
+            elif yk == 'TV':
                 kind = u'tv movie'
             elif yk == 'TV Series':
                 kind = u'tv series'

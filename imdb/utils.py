@@ -3,7 +3,7 @@ utils module (imdb package).
 
 This module provides basic utilities for the imdb package.
 
-Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2011 Davide Alberani <da@erlug.linux.it>
                2009 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -375,6 +375,10 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
     #      tv mini series: 5,497
     #      video game:     5,490
     #      More up-to-date statistics: http://us.imdb.com/database_statistics
+    tvser_idx = title.find('(TV Series')
+    if tvser_idx != -1:
+        kind = u'tv series'
+        title = title.replace('(TV Series', '(').replace('( ', '(')
     if title.endswith('(TV)'):
         kind = u'tv movie'
         title = title[:-4].rstrip()

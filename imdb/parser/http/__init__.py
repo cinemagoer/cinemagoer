@@ -165,6 +165,14 @@ class IMDbURLopener(FancyURLopener):
             self.del_header(header)
         self.addheaders.append((header, value))
 
+    def get_header(self, header):
+        """Return the first value of a header, or None
+        if not present."""
+        for index in xrange(len(self.addheaders)):
+            if self.addheaders[index][0] == header:
+                return self.addheaders[index][1]
+        return None
+
     def del_header(self, header):
         """Remove a default header."""
         for index in xrange(len(self.addheaders)):
@@ -409,11 +417,23 @@ class IMDbHTTPAccessSystem(IMDbBase):
         else:
             self.urlOpener.del_header('Cookie')
 
-    def _retrieve(self, url, size=-1):
+    def _retrieve(self, url, size=-1, _noCookies=False):
         """Retrieve the given URL."""
         ##print url
+        _cookies = None
+        # XXX: quite obscene, but in some very limited
+        #      cases (/ttXXXXXXX/epdate) if the cookies
+        #      are set, a 500 error is returned.
+        if _noCookies:
+            _cookies = self.urlOpener.get_header('Cookie')
+            self.del_cookies()
         self._http_logger.debug('fetching url %s (size: %d)', url, size)
-        return self.urlOpener.retrieve_unicode(url, size=size)
+        try:
+            ret = self.urlOpener.retrieve_unicode(url, size=size)
+        finally:
+            if _noCookies and _cookies:
+                self.urlOpener.set_header('Cookie', _cookies)
+        return ret
 
     def _get_search_content(self, kind, ton, results):
         """Retrieve the web page for a given search.
@@ -606,7 +626,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return data_d
 
     def get_movie_episodes_rating(self, movieID):
-        cont = self._retrieve(imdbURL_movie_main % movieID + 'epdate')
+        cont = self._retrieve(imdbURL_movie_main % movieID + 'epdate', _noCookies=True)
         data_d = self.mProxy.eprating_parser.parse(cont)
         # set movie['episode of'].movieID for every episode.
         if data_d.get('data', {}).has_key('episodes rating'):

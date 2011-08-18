@@ -245,6 +245,8 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         if not title:
             raise IMDbDataAccessError('unable to get movieID "%s"' % movieID)
         title = _unHtml(title[0])
+        if title.endswith(' - IMDb'):
+            title = title[:-7]
         if cont.find('<span class="tv-extra">TV mini-series</span>') != -1:
             title += ' (mini)'
         d = analyze_title(title)

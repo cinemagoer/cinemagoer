@@ -1,11 +1,11 @@
 <!--
 
-     XML Document Type Definition for IMDbPY 4.6.
+     XML Document Type Definition for IMDbPY 4.8.
 
-     http://imdbpy.sf.net/dtd/imdbpy46.dtd
+     http://imdbpy.sf.net/dtd/imdbpy48.dtd
 
      Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
-          2009-2010 Davide Alberani <da@erlug.linux.it>
+          2009-2011 Davide Alberani <da@erlug.linux.it>
 
  -->
 
@@ -49,6 +49,7 @@
   | costume-department
   | costume-designer
   | countries
+  | country-codes
   | cover-url
   | crazy-credits
   | creator
@@ -76,6 +77,7 @@
   | kind
   | laboratory
   | languages
+  | language-codes
   | laserdisc
   | literature
   | locations
@@ -446,6 +448,8 @@
 <!ATTLIST complete-crew %common.attrs;>
 <!ELEMENT countries (item)*>
 <!ATTLIST countries %common.attrs;>
+<!ELEMENT country-codes (item)*>
+<!ATTLIST country-codes %common.attrs;>
 <!ELEMENT crazy-credits (item)*>
 <!ATTLIST crazy-credits %common.attrs;>
 <!ELEMENT demographic (item)*>
@@ -470,6 +474,8 @@
 <!ATTLIST laboratory %common.attrs;>
 <!ELEMENT languages (item)*>
 <!ATTLIST languages %common.attrs;>
+<!ELEMENT language-codes (item)*>
+<!ATTLIST language-codes %common.attrs;>
 <!ELEMENT locations (item)*>
 <!ATTLIST locations %common.attrs;>
 <!ELEMENT magazine-cover-photo (item)*>

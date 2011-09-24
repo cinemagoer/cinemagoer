@@ -5,7 +5,7 @@ imdbpy2sql.py script.
 This script puts the data of the plain text data files into a
 SQL database.
 
-Copyright 2005-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2011 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -927,7 +927,6 @@ class _BaseCache(dict):
             except Exception, e:
                 if isinstance(e, KeyboardInterrupt):
                     raise
-                raise
                 print 'WARNING: unknown exception caught committing the data'
                 print 'WARNING: to the database; report this as a bug, since'
                 print 'WARNING: many data (%d items) were lost: %s' % \

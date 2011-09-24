@@ -1,13 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110818 "Hanna" (18 Aug 2011)
+* What's the new in release 4.8dev20110924 "Rise of the Planet of the Apes" (24 Sept 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
   - converted old-style exceptions to instances.
   - enanchements for the reduce.sh script.
   - added notes about problems connecting to IMDb's web servers.
   - improvements in the parsers of movie titles.
+  - improvements in the parser of person names.
 
   [http]
   - potential fix for GAE environment.

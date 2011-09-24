@@ -48,6 +48,9 @@ re_remove_kind = re.compile(r'\((TV episode|TV Series|TV mini-series|TV|Video|Vi
 # Match only the imdbIndex (for name strings).
 re_index = re.compile(r'^\(([IVXLCDM]+)\)$')
 
+# Match things inside parentheses.
+re_parentheses = re.compile(r'(\(.*\))')
+
 # Match the number of episodes.
 re_episodes = re.compile('\s?\((\d+) episodes\)', re.I)
 re_episode_info = re.compile(r'{\s*(.+?)?\s?(\([0-9\?]{4}-[0-9\?]{1,2}-[0-9\?]{1,2}\))?\s?(\(#[0-9]+\.[0-9]+\))?}')
@@ -138,15 +141,15 @@ def analyze_name(name, canonical=None):
     res = {}
     imdbIndex = ''
     opi = name.rfind('(')
+    cpi = name.rfind(')')
     # Strip  notes (but not if the name starts with a parenthesis).
-    if opi not in (-1, 0):
-        cpi = name.rfind(')')
-        if cpi > opi and re_index.match(name[opi:cpi+1]):
+    if opi not in (-1, 0) and cpi > opi:
+        if re_index.match(name[opi:cpi+1]):
             imdbIndex = name[opi+1:cpi]
             name = name[:opi].rstrip()
         else:
             # XXX: for the birth and death dates case like " (1926-2004)"
-            name = name[:opi-1]
+            name = re_parentheses.sub('', name)
     if not name:
         raise IMDbParserError('invalid name: "%s"' % original_n)
     if canonical is not None:

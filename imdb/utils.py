@@ -149,7 +149,7 @@ def analyze_name(name, canonical=None):
             name = name[:opi].rstrip()
         else:
             # XXX: for the birth and death dates case like " (1926-2004)"
-            name = re_parentheses.sub('', name)
+            name = re_parentheses.sub('', name).strip()
     if not name:
         raise IMDbParserError('invalid name: "%s"' % original_n)
     if canonical is not None:

@@ -503,10 +503,13 @@ class DOMParserBase(object):
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
         html_string = html_string.strip()
-        # tag attributes like title="&#x22;Family Guy&#x22;" will be
-        # converted to title=""Family Guy"" and this confuses BeautifulSoup.
         if self.usingModule == 'beautifulsoup':
+            # tag attributes like title="&#x22;Family Guy&#x22;" will be
+            # converted to title=""Family Guy"" and this confuses BeautifulSoup.
             html_string = html_string.replace('""', '"')
+            # Browser-specific escapes create problems to BeautifulSoup.
+            html_string = html_string.replace('<!--[if IE]>', '"')
+            html_string = html_string.replace('<![endif]-->', '"')
         #print html_string.encode('utf8')
         if html_string:
             dom = self.get_dom(html_string)

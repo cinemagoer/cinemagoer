@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8dev20110928 "Rise of the Planet of the Apes" (28 Sept 2011)
+* What's the new in release 4.8dev20111030 "The Rite" (30 Oct 2011)
   [general]
   - fix for a problem managing exceptions with Python 2.4.
   - converted old-style exceptions to instances.
@@ -21,6 +21,7 @@
     reviews" and "dvd".
   - fix for cast of tv series.
   - fix for title of tv series.
+  - now the beautiful parses work again.
 
   [httpThin]
   - removed "httpThin", falling back to "http".

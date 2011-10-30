@@ -62,24 +62,12 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
     _containsObjects = True
 
     _birth_attrs = [Attribute(key='birth date',
-                        path={
-                            'day': ".//a[starts-with(@href, " \
-                                    "'/date/')]/text()",
-                            'year': ".//a[starts-with(@href, " \
-                                    "'/search/name?birth_year=')]/text()"
-                            },
-                        postprocess=build_date),
+                        path='.//time[@itemprop="birthDate"]/@datetime'),
                     Attribute(key='birth place',
                         path=".//a[starts-with(@href, " \
                                 "'/search/name?birth_place=')]/text()")]
     _death_attrs = [Attribute(key='death date',
-                        path={
-                            'day': ".//a[starts-with(@href, " \
-                                    "'/date/')]/text()",
-                            'year': ".//a[starts-with(@href, " \
-                                    "'/search/name?death_year=')]/text()"
-                            },
-                        postprocess=build_date),
+                        path='.//time[@itemprop="deathDate"]/@datetime'),
                     Attribute(key='death place',
                         path=".//a[starts-with(@href, " \
                                 "'/search/name?death_place=')]/text()")]

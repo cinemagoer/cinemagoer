@@ -357,7 +357,7 @@ class PredicateFilter:
                 first = node[attribute_name]
                 return first.startswith(self.arguments[2])
         elif self.arguments[1] == 'text()':
-            first = node.contents[0]
+            first = node.contents and node.contents[0]
             if isinstance(first, BeautifulSoup.NavigableString):
                 return first.startswith(self.arguments[2])
         return False

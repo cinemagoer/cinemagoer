@@ -295,6 +295,12 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         role = tsplit[1].lstrip()
     if title[-9:] == 'TV Series':
         title = title[:-9].rstrip()
+    #elif title[-7:] == '(short)':
+    #    title = title[:-7].rstrip()
+    #elif title[-11:] == '(TV series)':
+    #    title = title[:-11].rstrip()
+    #elif title[-10:] == '(TV movie)':
+    #    title = title[:-10].rstrip()
     elif title[-14:] == 'TV mini-series':
         title = title[:-14] + ' (mini)'
     if title and title.endswith(_defSep.rstrip()):
@@ -324,7 +330,8 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         if (first4.isdigit() or first4 == '????') and \
                 title[nidx+5:nidx+6] in (')', '/'): break
         # The last item in parentheses is a known kind: stop here.
-        if title[nidx+1:-1] in ('TV', 'V', 'mini', 'VG'): break
+        if title[nidx+1:-1] in ('TV', 'V', 'mini', 'VG', 'TV movie',
+                'TV series', 'short'): break
         # Else, in parentheses there are some notes.
         # XXX: should the notes in the role half be kept separated
         #      from the notes in the movie title half?
@@ -392,6 +399,10 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         if notes:
             notes += u' '
         notes += additionalNotes
+    if role and isinstance(role, list) and notes.endswith(role[-1].replace('\n', ' ')):
+        role = role[:-1]
+    if isinstance(role, list): print 'R', [r.encode('ascii', 'ignore') for r in role]
+    else: role.encode('ascii', 'ignore')
     m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
                 roleID=roleID, roleIsPerson=_parsingCharacter,
                 modFunct=modFunct, accessSystem=accessSystem)

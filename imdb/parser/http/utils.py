@@ -401,7 +401,6 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         notes += additionalNotes
     if role and isinstance(role, list) and notes.endswith(role[-1].replace('\n', ' ')):
         role = role[:-1]
-    if isinstance(role, list): print 'R', [r.encode('ascii', 'ignore') for r in role]
     else: role.encode('ascii', 'ignore')
     m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
                 roleID=roleID, roleIsPerson=_parsingCharacter,

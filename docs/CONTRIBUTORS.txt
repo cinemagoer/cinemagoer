@@ -21,6 +21,10 @@ Actually, besides Turgut, Giuseppe and me, these other people are
 listed as developers for the IMDbPY project on sourceforge and may
 share copyright on some (minor) portions of the code:
 
+NAME: Alberto Malagoli
+CONTRIBUTION: developed the new web site, and detain the copyright of it.
+
+
 NAME: Martin Kirst
 EMAIL: <martin.kirst --> s1998.tu-chemnitz.de>
 CONTRIBUTION: has done an important refactoring of the imdbpyweb

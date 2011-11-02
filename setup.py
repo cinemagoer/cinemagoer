@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import distutils.sysconfig
 import os
 import sys
 import ez_setup
@@ -223,16 +224,16 @@ try:
     else:
         languages = []
     if languages:
-        data_files.append(('imdb/locale', ['imdb/locale/imdbpy.pot']))
+        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), 'imdb/locale'), ['imdb/locale/imdbpy.pot']))
     for lang in languages:
         files_found = setuptools.findall('imdb/locale/%s' % lang)
         if not files_found:
             continue
         base_dir = os.path.dirname(files_found[0])
-        data_files.append(('imdb/locale', ['imdb/locale/imdbpy-%s.po' % lang]))
+        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), 'imdb/locale'), ['imdb/locale/imdbpy-%s.po' % lang]))
         if not base_dir:
             continue
-        data_files.append((base_dir, files_found))
+        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), base_dir), files_found))
     setuptools.setup(**params)
 except SystemExit:
     print ERR_MSG

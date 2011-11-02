@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.8.1 "The Big Bang Theory" (02 Nov 2011)
+* What's the new in release 4.8.2 "The Big Bang Theory" (02 Nov 2011)
   [general]
   - fixed install path of locales.
   

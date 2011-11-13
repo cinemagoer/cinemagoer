@@ -952,10 +952,10 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         akas = data.get('akas') or []
         nakas = []
         for aka in akas:
-            title = aka.get('title', '').strip()
+            title = (aka.get('title') or '').strip()
             if not title:
                 continue
-            countries = aka.get('countries', '').split('/')
+            countries = (aka.get('countries') or '').split('/')
             if not countries:
                 nakas.append(title)
             else:

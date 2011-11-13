@@ -1252,7 +1252,7 @@ class DOMHTMLTechParser(DOMParserBase):
                                         for t in x.split('\n') if t.strip()]))]
 
     preprocessors = [
-        (re.compile('(<h5>.*?</h5>)', re.I), r'\1<div class="_imdbpy">'),
+        (re.compile('(<h5>.*?</h5>)', re.I), r'</div>\1<div class="_imdbpy">'),
         (re.compile('((<br/>|</p>|</table>))\n?<br/>(?!<a)', re.I),
             r'\1</div>'),
         # the ones below are for the publicity parser

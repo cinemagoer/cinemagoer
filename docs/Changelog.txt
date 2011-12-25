@@ -7,6 +7,7 @@
 
   [sql]
   - fix for nicknames.
+  - fix for missing titles in the crazy credits file.
 
 
 * What's the new in release 4.8.2 "The Big Bang Theory" (02 Nov 2011)

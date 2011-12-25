@@ -1853,6 +1853,14 @@ def minusHashFiles(fp, funct, defaultid, descr):
     for title, text in fp.getByHashSections():
         title = title.strip()
         d = funct(text.split('\n'))
+        if not d:
+            print 'WARNING skipping empty information about title:',
+            print _(title)
+            continue
+        if not title:
+            print 'WARNING skipping information associated to empty title:',
+            print _(d[0][:40])
+            continue
         mid = CACHE_MID.addUnique(title)
         if count % 5000 == 0:
             print 'SCANNING %s:' % descr,

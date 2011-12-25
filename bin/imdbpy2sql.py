@@ -2053,7 +2053,8 @@ def nmmvFiles(fp, funct, fname):
                 cols=['personID', 'movieID', 'personRoleID', 'note',
                 RawValue('roleID', roleid)], flushEvery=10000)
         akanamesdata = SQLData(table=AkaName, cols=['personID', 'name',
-                'imdbIndex', 'namePcodeCf', 'namePcodeNf', 'surnamePcode'])
+                'imdbIndex', 'namePcodeCf', 'namePcodeNf', 'surnamePcode',
+                'md5sum'])
     else:
         datakind = 'movie'
         sqls = sqlsM
@@ -2145,7 +2146,8 @@ def nmmvFiles(fp, funct, fname):
                         namePcodeCf, namePcodeNf, surnamePcode = \
                                     name_soundexes(realname)
                         akanamesdata.add((mopid, realname, imdbIndex,
-                                    namePcodeCf, namePcodeNf, surnamePcode))
+                                    namePcodeCf, namePcodeNf, surnamePcode,
+                                    md5(realname).hexdigest()))
         count += 1
     if guestdata is not None: guestdata.flush()
     if akanamesdata is not None: akanamesdata.flush()

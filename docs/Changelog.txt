@@ -1,9 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20111113 "6 Giorni sulla Terra" (13 Nov 2011)
+* What's the new in release 4.9dev20111225 "Star Wars Holiday Special" (25 Dec 2011)
   [http]
   - fix for business information.
+
+  [sql]
+  - fix for nicknames.
 
 
 * What's the new in release 4.8.2 "The Big Bang Theory" (02 Nov 2011)

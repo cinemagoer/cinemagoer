@@ -1,13 +1,15 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20111225 "Star Wars Holiday Special" (25 Dec 2011)
+* What's the new in release 4.9dev20111226 "Star Wars Holiday Special" (26 Dec 2011)
   [http]
   - fix for business information.
 
   [sql]
   - fix for nicknames.
   - fix for missing titles in the crazy credits file.
+  - handled exceptions creating indexes, foreign keys and
+    executing custom queries.
 
 
 * What's the new in release 4.8.2 "The Big Bang Theory" (02 Nov 2011)

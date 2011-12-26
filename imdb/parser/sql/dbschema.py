@@ -443,19 +443,33 @@ def createTables(tables, ifNotExists=True):
                     table(**{key: unicode(value)})
 
 def createIndexes(tables, ifNotExists=True):
-    """Create the indexes in the database."""
+    """Create the indexes in the database.
+    Return a list of errors, if any."""
+    errors = []
     for table in tables:
         _dbschema_logger.info('creating indexes for table %s',
                                 table._imdbpyName)
-        table.addIndexes(ifNotExists)
+        try:
+            table.addIndexes(ifNotExists)
+        except Exception, e:
+            errors.append(e)
+            continue
+    return errors
 
 def createForeignKeys(tables, ifNotExists=True):
-    """Create Foreign Keys."""
+    """Create Foreign Keys.
+    Return a list of errors, if any."""
+    errors = []
     mapTables = {}
     for table in tables:
         mapTables[table._imdbpyName] = table
     for table in tables:
         _dbschema_logger.info('creating foreign keys for table %s',
                                 table._imdbpyName)
-        table.addForeignKeys(mapTables, ifNotExists)
+        try:
+            table.addForeignKeys(mapTables, ifNotExists)
+        except Exception, e:
+            errors.append(e)
+            continue
+    return errors
 

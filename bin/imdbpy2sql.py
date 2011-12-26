@@ -2729,12 +2729,16 @@ def buildIndexesAndFK():
     print 'building database indexes (this may take a while)'
     sys.stdout.flush()
     # Build database indexes.
-    createIndexes(DB_TABLES)
+    idx_errors = createIndexes(DB_TABLES)
+    for idx_error in idx_errors:
+        print 'ERROR caught exception creating an index: %s' % idx_error
     t('createIndexes()')
     print 'adding foreign keys (this may take a while)'
     sys.stdout.flush()
     # Add FK.
-    createForeignKeys(DB_TABLES)
+    fk_errors = createForeignKeys(DB_TABLES)
+    for fk_error in fk_errors:
+        print 'ERROR caught exception creating a foreign key: %s' % fk_error
     t('createForeignKeys()')
 
 

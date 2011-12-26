@@ -2691,8 +2691,13 @@ def executeCustomQueries(when, _keys=None, _timeit=True):
                         t('%s command' % when)
                 except Exception, e:
                     print 'FAILED (%s)!' % e
+                    continue
         else:
-            _executeQuery(query % _keys)
+            try:
+                _executeQuery(query % _keys)
+            except Exception, e:
+                print 'FAILED (%s)!' % e
+                continue
             if _timeit:
                 t('%s command' % when)
 

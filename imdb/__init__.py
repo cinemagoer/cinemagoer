@@ -6,7 +6,7 @@ a person from the IMDb database.
 It can fetch data through different media (e.g.: the IMDb web pages,
 a SQL database, etc.)
 
-Copyright 2004-2011 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2012 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.9dev20111226'
+__version__ = VERSION = '4.9dev20120114'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -43,6 +43,10 @@ _aux_logger = logging.getLogger('imdbpy.aux')
 
 # URLs of the main pages for movies, persons, characters and queries.
 imdbURL_base = 'http://akas.imdb.com/'
+
+# NOTE: the urls below will be removed in a future version.
+#       please use the values in the 'urls' attribute
+#       of the IMDbBase subclass instance.
 # http://akas.imdb.com/title/
 imdbURL_movie_base = '%stitle/' % imdbURL_base
 # http://akas.imdb.com/title/tt%s/
@@ -267,6 +271,52 @@ class IMDbBase:
         if keywordsResults < 1:
             keywordsResults = 100
         self._keywordsResults = keywordsResults
+        self.set_imdb_urls(keywords.get('imdbURL_base') or imdbURL_base)
+
+    def set_imdb_urls(self, imdbURL_base):
+        """Set the urls used accessing the IMDb site."""
+        imdbURL_base = imdbURL_base.strip().strip('"\'')
+        if not imdbURL_base.startswith('http://'):
+            imdbURL_base = 'http://%s' % imdbURL_base
+        if not imdbURL_base.endswith('/'):
+            imdbURL_base = '%s/' % imdbURL_base
+        # http://akas.imdb.com/title/
+        imdbURL_movie_base='%stitle/' % imdbURL_base
+        # http://akas.imdb.com/title/tt%s/
+        imdbURL_movie_main=imdbURL_movie_base + 'tt%s/'
+        # http://akas.imdb.com/name/
+        imdbURL_person_base='%sname/' % imdbURL_base
+        # http://akas.imdb.com/name/nm%s/
+        imdbURL_person_main=imdbURL_person_base + 'nm%s/'
+        # http://akas.imdb.com/character/
+        imdbURL_character_base='%scharacter/' % imdbURL_base
+        # http://akas.imdb.com/character/ch%s/
+        imdbURL_character_main=imdbURL_character_base + 'ch%s/'
+        # http://akas.imdb.com/company/
+        imdbURL_company_base='%scompany/' % imdbURL_base
+        # http://akas.imdb.com/company/co%s/
+        imdbURL_company_main=imdbURL_company_base + 'co%s/'
+        # http://akas.imdb.com/keyword/%s/
+        imdbURL_keyword_main=imdbURL_base + 'keyword/%s/'
+        # http://akas.imdb.com/chart/top
+        imdbURL_top250=imdbURL_base + 'chart/top',
+        # http://akas.imdb.com/chart/bottom
+        imdbURL_bottom100=imdbURL_base + 'chart/bottom'
+        # http://akas.imdb.com/find?%s
+        imdbURL_find=imdbURL_base + 'find?%s'
+        self.urls = dict(
+            movie_base=imdbURL_movie_base,
+            movie_main=imdbURL_movie_main,
+            person_base=imdbURL_person_base,
+            person_main=imdbURL_person_main,
+            character_base=imdbURL_character_base,
+            character_main=imdbURL_character_main,
+            company_base=imdbURL_company_base,
+            company_main=imdbURL_company_main,
+            keyword_main=imdbURL_keyword_main,
+            top250=imdbURL_top250,
+            bottom100=imdbURL_bottom100,
+            find=imdbURL_find)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""

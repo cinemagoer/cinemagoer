@@ -1125,6 +1125,7 @@ class DOMHTMLEpisodesRatings(DOMParserBase):
 def _normalize_href(href):
     if (href is not None) and (not href.lower().startswith('http://')):
         if href.startswith('/'): href = href[1:]
+        # TODO: imdbURL_base may be set by the user!
         href = '%s%s' % (imdbURL_base, href)
     return href
 

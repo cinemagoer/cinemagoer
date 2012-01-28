@@ -442,7 +442,13 @@ class IMDbHTTPAccessSystem(IMDbBase):
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
         if isinstance(ton, unicode):
-            ton = ton.encode('utf-8')
+            try:
+                ton = ton.encode('iso8859-1')
+            except Exception, e:
+                try:
+                    ton = ton.encode('utf-8')
+                except Exception, e:
+                    pass
         ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
         params = 's=%s;mx=%s;q=%s' % (kind, str(results), quote_plus(ton))
         if kind == 'ep':

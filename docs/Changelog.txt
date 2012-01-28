@@ -1,12 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20120114 "Tinker Tailor Soldier Spy" (14 Jan 2012)
+* What's the new in release 4.9dev20120128 "Mission Impossible - Ghost Protocol" (28 Jan 2012)
   [general]
   - urls used to access the IMDb site can be configured.
 
   [http]
   - fix for business information.
+  - unicode searches handled as iso8859-1.
 
   [sql]
   - fix for nicknames.

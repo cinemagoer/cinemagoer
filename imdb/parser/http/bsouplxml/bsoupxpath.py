@@ -42,7 +42,7 @@ AXIS_PRECEDING_SIBLING = 'preceding-sibling'
 AXES = (AXIS_ANCESTOR, AXIS_ATTRIBUTE, AXIS_CHILD, AXIS_DESCENDANT,
         AXIS_FOLLOWING, AXIS_FOLLOWING_SIBLING, AXIS_PRECEDING_SIBLING)
 
-XPATH_FUNCTIONS = ('starts-with', 'string-length')
+XPATH_FUNCTIONS = ('starts-with', 'string-length', 'contains')
 
 
 def tokenize_path(path):
@@ -306,8 +306,11 @@ class PredicateFilter:
             self.__filter = self.__axis
             self.node_test = arguments
             self.value = value
-        elif name == 'starts-with':
-            self.__filter = self.__starts_with
+        elif name in ('starts-with', 'contains'):
+            if name == 'starts-with':
+                self.__filter = self.__starts_with
+            else:
+                self.__filter = self.__contains
             args = map(string.strip, arguments.split(','))
             if args[0][0] == '@':
                 self.arguments = (True, args[0][1:], args[1][1:-1])
@@ -360,6 +363,19 @@ class PredicateFilter:
             first = node.contents and node.contents[0]
             if isinstance(first, BeautifulSoup.NavigableString):
                 return first.startswith(self.arguments[2])
+        return False
+
+    def __contains(self, node):
+        if self.arguments[0]:
+            # this is an attribute
+            attribute_name = self.arguments[1]
+            if node.has_key(attribute_name):
+                first = node[attribute_name]
+                return self.arguments[2] in first
+        elif self.arguments[1] == 'text()':
+            first = node.contents and node.contents[0]
+            if isinstance(first, BeautifulSoup.NavigableString):
+                return self.arguments[2] in first
         return False
 
     def __string_length(self, node):

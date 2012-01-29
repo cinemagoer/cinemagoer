@@ -4,7 +4,7 @@ parser.http.utils module (imdb package).
 This module provides miscellaneous utilities used by
 the imdb.parser.http classes.
 
-Copyright 2004-2011 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2012 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -602,8 +602,9 @@ class DOMParserBase(object):
         """Here we can modify the text, before it's parsed."""
         if not html_string:
             return html_string
-        # Remove silly &nbsp;&raquo; chars.
+        # Remove silly &nbsp;&raquo; and &ndash; chars.
         html_string = html_string.replace(u' \xbb', u'')
+        html_string = html_string.replace(u'&ndash;', u'-')
         try:
             preprocessors = self.preprocessors
         except AttributeError:

@@ -7,7 +7,7 @@ the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "http" or "web"
 or "html" (this is the default).
 
-Copyright 2004-2011 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2012 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -616,19 +616,37 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 exc_info=False)
         return {}
 
+    def _purge_seasons_data(self, data_d):
+        if '_current_season' in data_d['data']:
+            del data_d['data']['_current_season']
+        if '_seasons' in data_d['data']:
+            del data_d['data']['_seasons']
+        return data_d
+
     def get_movie_episodes(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'episodes')
-        data_d = self.mProxy.episodes_parser.parse(cont)
-        # set movie['episode of'].movieID for every episode of the series.
-        if data_d.get('data', {}).has_key('episodes'):
-            nr_eps = 0
-            for season in data_d['data']['episodes'].values():
-                for episode in season.values():
-                    episode['episode of'].movieID = movieID
-                    nr_eps += 1
-            # Number of episodes.
-            if nr_eps:
-                data_d['data']['number of episodes'] = nr_eps
+        data_d = self.mProxy.season_episodes_parser.parse(cont)
+        if not data_d and 'data' in data_d:
+            return {}
+        _current_season = data_d['data'].get('_current_season', '')
+        _seasons = data_d['data'].get('_seasons') or []
+        data_d = self._purge_seasons_data(data_d)
+        data_d['data'].setdefault('episodes', {})
+
+        nr_eps = len(data_d['data']['episodes'].get(_current_season) or [])
+
+        for season in _seasons:
+            if season == _current_season:
+                continue
+            other_cont = self._retrieve(self.urls['movie_main'] % movieID + 'episodes?season=' + season)
+            other_d = self.mProxy.season_episodes_parser.parse(other_cont)
+            other_d = self._purge_seasons_data(other_d)
+            other_d['data'].setdefault('episodes', {})
+            if not (other_d and other_d['data'] and other_d['data']['episodes'][season]):
+                continue
+            nr_eps += len(other_d['data']['episodes'].get(season) or [])
+            data_d['data']['episodes'][season] = other_d['data']['episodes'][season]
+        data_d['data']['number of episodes'] = nr_eps
         return data_d
 
     def get_movie_episodes_rating(self, movieID):

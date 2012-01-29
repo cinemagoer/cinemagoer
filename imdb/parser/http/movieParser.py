@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2011 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2012 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -1400,6 +1400,99 @@ def _parse_review(x):
     return result
 
 
+class DOMHTMLSeasonEpisodesParser(DOMParserBase):
+    """Parser for the "episode list" page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        sparser = DOMHTMLSeasonEpisodesParser()
+        result = sparser.parse(episodes_html_string)
+    """
+    extractors = [
+            Extractor(label='series link',
+                path="//div[@class='parent']",
+                attrs=[Attribute(key='series link',
+                            path=".//a/@href")]
+            ),
+
+            Extractor(label='series title',
+                path="//head/meta[@property='og:title']",
+                attrs=[Attribute(key='series title',
+                            path="./@content")]
+            ),
+
+            Extractor(label='seasons list',
+                path="//select[@id='bySeason']//option",
+                attrs=[Attribute(key='_seasons',
+                            multi=True,
+                            path="./@value")]),
+
+            Extractor(label='selected season',
+                path="//select[@id='bySeason']//option[@selected]",
+                attrs=[Attribute(key='_current_season',
+                            path='./@value')]),
+
+            Extractor(label='episodes',
+                path=".",
+                group="//div[@class='info']",
+                group_key=".//meta/@content",
+                group_key_normalize=lambda x: 'episode %s' % x,
+                attrs=[Attribute(key=None,
+                            multi=True,
+                            path={
+                                "link": ".//strong//a[@href][1]/@href",
+                                "original air date": ".//div[@class='airdate']/text()",
+                                "title": ".//strong//text()",
+                                "plot": ".//div[@class='item_description']//text()"
+                            }
+                        )]
+                )
+            ]
+
+    def postprocess_data(self, data):
+        series_id = analyze_imdbid(data.get('series link'))
+        series_title = data.get('series title', '').strip()
+        selected_season = data.get('_current_season',
+                                    'unknown season').strip()
+        if not (series_id and series_title):
+            return {}
+        series = Movie(title=series_title, movieID=str(series_id),
+                        accessSystem=self._as, modFunct=self._modFunct)
+        if series.get('kind') == 'movie':
+            series['kind'] = u'tv series'
+        nd = {selected_season: {}}
+        for episode_nr, episode in data.iteritems():
+            if not (episode and episode[0] and
+                    episode_nr.startswith('episode ')):
+                continue
+            episode = episode[0]
+            episode_nr = episode_nr[8:].rstrip()
+            episode_id = analyze_imdbid(episode.get('link' ''))
+            episode_air_date = episode.get('original air date',
+                                            '').strip()
+            episode_title = episode.get('title', '').strip()
+            episode_plot = episode.get('plot', '')
+            if not (episode_nr and episode_id and episode_title):
+                continue
+            ep_obj = Movie(movieID=episode_id, title=episode_title,
+                        accessSystem=self._as, modFunct=self._modFunct)
+            ep_obj['kind'] = u'episode'
+            ep_obj['episode of'] = series
+            ep_obj['season'] = selected_season
+            ep_obj['episode'] = episode_nr
+            if episode_air_date:
+                ep_obj['original air date'] = episode_air_date
+                if episode_air_date[-4:].isdigit():
+                    ep_obj['year'] = episode_air_date[-4:]
+            if episode_plot:
+                ep_obj['plot'] = episode_plot
+            nd[selected_season][episode_nr] = ep_obj
+        return {'episodes': nd, '_seasons': data.get('_seasons'),
+                '_current_season': data.get('_current_season')}
+
+
 def _build_episode(x):
     """Create a Movie object for a given series' episode."""
     episode_id = analyze_imdbid(x.get('link'))
@@ -1443,6 +1536,8 @@ class DOMHTMLEpisodesParser(DOMParserBase):
         eparser = DOMHTMLEpisodesParser()
         result = eparser.parse(episodes_html_string)
     """
+    # XXX: no more used for the list of episodes parser,
+    #      but only for the episodes cast parser (see below).
     _containsObjects = True
 
     kind = 'episodes list'
@@ -1772,6 +1867,7 @@ _OBJECTS = {
     'rec_parser':  ((DOMHTMLRecParser,), None),
     'news_parser':  ((DOMHTMLNewsParser,), None),
     'episodes_parser':  ((DOMHTMLEpisodesParser,), None),
+    'season_episodes_parser':  ((DOMHTMLSeasonEpisodesParser,), None),
     'episodes_cast_parser':  ((DOMHTMLEpisodesCastParser,), None),
     'eprating_parser':  ((DOMHTMLEpisodesRatings,), None),
     'movie_faqs_parser':  ((DOMHTMLFaqsParser,), None),

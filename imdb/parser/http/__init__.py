@@ -638,7 +638,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         for season in _seasons:
             if season == _current_season:
                 continue
-            other_cont = self._retrieve(self.urls['movie_main'] % movieID + 'episodes?season=' + season)
+            other_cont = self._retrieve(self.urls['movie_main'] % movieID + 'episodes?season=' + str(season))
             other_d = self.mProxy.season_episodes_parser.parse(other_cont)
             other_d = self._purge_seasons_data(other_d)
             other_d['data'].setdefault('episodes', {})

@@ -1462,6 +1462,8 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                         accessSystem=self._as, modFunct=self._modFunct)
         if series.get('kind') == 'movie':
             series['kind'] = u'tv series'
+        try: selected_season = int(selected_season)
+        except: pass
         nd = {selected_season: {}}
         for episode_nr, episode in data.iteritems():
             if not (episode and episode[0] and
@@ -1469,6 +1471,8 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                 continue
             episode = episode[0]
             episode_nr = episode_nr[8:].rstrip()
+            try: episode_nr = int(episode_nr)
+            except: pass
             episode_id = analyze_imdbid(episode.get('link' ''))
             episode_air_date = episode.get('original air date',
                                             '').strip()
@@ -1489,8 +1493,12 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             if episode_plot:
                 ep_obj['plot'] = episode_plot
             nd[selected_season][episode_nr] = ep_obj
-        return {'episodes': nd, '_seasons': data.get('_seasons'),
-                '_current_season': data.get('_current_season')}
+        _seasons = data.get('_seasons') or []
+        for idx, season in enumerate(_seasons):
+            try: _seasons[idx] = int(season)
+            except: pass
+        return {'episodes': nd, '_seasons': _seasons,
+                '_current_season': selected_season}
 
 
 def _build_episode(x):

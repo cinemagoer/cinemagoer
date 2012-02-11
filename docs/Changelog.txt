@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20120129 "Thor" (29 Jan 2012)
+* What's the new in release 4.9dev20120211 "The Hitchhiker's Guide to the Galaxy" (11 Feb 2012)
   [general]
   - urls used to access the IMDb site can be configured.
 
@@ -11,6 +11,8 @@
   - unicode searches handled as iso8859-1.
 
   [sql]
+  - vastly improved the store/restore of imdbIDs; now it should be faster
+    and more accurate.
   - fix for nicknames.
   - fix for missing titles in the crazy credits file.
   - handled exceptions creating indexes, foreign keys and

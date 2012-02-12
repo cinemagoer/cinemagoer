@@ -621,10 +621,13 @@ def createSQLstr(table, cols, command='INSERT'):
         converter = lambda x: x
     return sqlstr, converter
 
-def _(s):
-    """Nicely print a string to sys.stdout."""
+def _(s, truncateAt=None):
+    """Nicely print a string to sys.stdout, optionally
+    truncating it a the given char."""
     if not isinstance(s, UnicodeType):
         s = unicode(s, 'utf_8')
+    if truncateAt is not None:
+        s = s[:truncateAt]
     s = s.encode(sys.stdout.encoding or 'utf_8', 'replace')
     return s
 
@@ -1858,7 +1861,7 @@ def minusHashFiles(fp, funct, defaultid, descr):
             continue
         if not title:
             print 'WARNING skipping information associated to empty title:',
-            print _(d[0][:40])
+            print _(d[0], truncateAt=40)
             continue
         mid = CACHE_MID.addUnique(title)
         if count % 5000 == 0:

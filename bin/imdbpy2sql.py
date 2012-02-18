@@ -86,8 +86,6 @@ USED_ORM = None
 DB_TABLES = []
 # Max allowed recursion, inserting data.
 MAX_RECURSION = 10
-# Directory for temporary files.
-TMP_DIR = None
 # If set, this directory is used to output CSV files.
 CSV_DIR = None
 CSV_CURS = None
@@ -149,7 +147,7 @@ if '--sqlite-transactions' in sys.argv[1:]:
 
 # Manage arguments list.
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:o:c:t:h',
+    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:o:c:h',
                                                 ['uri=', 'data=', 'execute=',
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
@@ -158,7 +156,7 @@ try:
                                                 'csv-only-write',
                                                 'csv-only-load',
                                                 'csv=', 'csv-ext=',
-                                                'tmp-dir=', 'help'])
+                                                'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
     print HELP
@@ -173,8 +171,6 @@ for opt in optlist:
         CSV_DIR = opt[1]
     elif opt[0] == '--csv-ext':
         CSV_EXT = opt[1]
-    elif opt[0] in ('-t', '--tmp-dir'):
-        TMP_DIR = opt[1]
     elif opt[0] in ('-e', '--execute'):
         if opt[1].find(':') == -1:
             print 'WARNING: wrong command syntax: "%s"' % opt[1]
@@ -2561,10 +2557,20 @@ def readConstants():
         COMP_TYPES[x.kind] = x.id
 
 
-def _tmpFileName(fname):
-    """Return a file rename, adding the optional
-    temporary directory."""
-    return os.path.join(*(filter(None, [TMP_DIR, fname])))
+def _imdbIDsFileName(fname):
+    """Return a file name, adding the optional
+    CSV_DIR directory."""
+    return os.path.join(*(filter(None, [CSV_DIR, fname])))
+
+
+def _countRows(tableName):
+    """Return the number of rows in a table."""
+    try:
+        CURS.execute('SELECT COUNT(*) FROM %s' % tableName)
+        return (CURS.fetchone() or [0])[0]
+    except Exception, e:
+        print 'WARNING: unable to count rows of table %s: %s' % (tableName, e)
+        return 0
 
 
 def storeNotNULLimdbIDs(cls):
@@ -2575,24 +2581,42 @@ def storeNotNULLimdbIDs(cls):
     elif cls is Name: cname = 'people'
     elif cls is CompanyName: cname = 'companies'
     else: cname = 'characters'
+    table_name = tableName(cls)
+    md5sum_col = colName(cls, 'md5sum')
+    imdbID_col = colName(cls, 'imdbID')
+
     print 'SAVING imdbID values for %s...' % cname,
     sys.stdout.flush()
+    if not CSV_DIR:
+        try:
+            try: CURS.execute('DROP TABLE %s_extract' % table_name)
+            except: pass
+            query = 'CREATE TABLE %s_extract SELECT %s, %s FROM %s WHERE %s IS NOT NULL' % \
+                    (table_name, md5sum_col, imdbID_col,
+                    table_name, imdbID_col)
+            CURS.execute(query)
+            CURS.execute('ALTER TABLE %s_extract ADD INDEX md5sum_idx (%s)' % (table_name, md5sum_col))
+            CURS.execute('ALTER TABLE %s_extract ADD INDEX imdbid_idx (%s)' % (table_name, imdbID_col))
+            rows = _countRows('%s_extract' % table_name)
+            print 'DONE! (%d entries using a temporary table)' % rows
+            return
+        except Exception, e:
+            print 'WARNING: unable to store imdbDIs in a temporary table (falling back to dbm): %s' % e
     try:
-        tons = cls.select(ISNOTNULL(cls.q.imdbID))
-    except:
-        print 'SKIPPING: no data.'
-        return
-    try:
-        db = anydbm.open(_tmpFileName('%s_imdbIDs.db' % cname), 'c')
+        db = anydbm.open(_imdbIDsFileName('%s_imdbIDs.db' % cname), 'c')
     except Exception, e:
         print 'WARNING: unable to store imdbIDs: %s' % str(e)
         return
-    for t in tons:
-        md5sum = t.md5sum
-        imdbID = t.imdbID
-        if not (md5sum and imdbID):
-            continue
-        db[md5sum] = str(imdbID)
+    try:
+        CURS.execute('SELECT %s, %s FROM %s WHERE %s IS NOT NULL' %
+                    (md5sum_col, imdbID_col, table_name, imdbID_col))
+        res = CURS.fetchmany(10000)
+        while res:
+            db.update(dict((str(x[0]), str(x[1])) for x in res))
+            res = CURS.fetchmany(10000)
+    except Exception, e:
+        print 'SKIPPING: unable to retrieve data: %s' % e
+        return
     print 'DONE! (%d entries)' % len(db)
     db.close()
     return
@@ -2622,13 +2646,40 @@ def restoreImdbIDs(cls):
         cname = 'characters'
     print 'RESTORING imdbIDs values for %s...' % cname,
     sys.stdout.flush()
+    table_name = tableName(cls)
+    md5sum_col = colName(cls, 'md5sum')
+    imdbID_col = colName(cls, 'imdbID')
+
+    if not CSV_DIR:
+        try:
+            query = 'UPDATE %s INNER JOIN %s_extract USING (%s) SET %s.%s = %s_extract.%s' % \
+                    (table_name, table_name, md5sum_col,
+                    table_name, imdbID_col, table_name, imdbID_col)
+            CURS.execute(query)
+            affected_rows = 'an unknown number of'
+            try:
+                CURS.execute('SELECT COUNT(*) FROM %s WHERE %s IS NOT NULL' %
+                        (table_name, imdbID_col))
+                affected_rows = (CURS.fetchone() or [0])[0]
+            except Exception, e:
+                pass
+            rows = _countRows('%s_extract' % table_name)
+            print 'DONE! (restored %s entries out of %d)' % (affected_rows, rows)
+            t('restore %s' % cname)
+            try: CURS.execute('DROP TABLE %s_extract' % table_name)
+            except: pass
+            return
+        except Exception, e:
+            print 'WARNING: unable to restore imdbIDs using the temporary table (falling back to dbm): %s' % e
     try:
-        db = anydbm.open(_tmpFileName('%s_imdbIDs.db' % cname), 'r')
+        db = anydbm.open(_imdbIDsFileName('%s_imdbIDs.db' % cname), 'r')
     except Exception, e:
         print 'WARNING: unable to restore imdbIDs: %s' % str(e)
         return
     count = 0
-    sql = "UPDATE " + tableName(cls) + " SET imdb_id = CASE md5sum %s END WHERE md5sum IN (%s)"
+    sql = "UPDATE " + table_name + " SET " + imdbID_col + \
+            " = CASE " + md5sum_col + " %s END WHERE " + \
+            md5sum_col + " IN (%s)"
     def _restore(query, batch):
         """Execute a query to restore a batch of imdbIDs"""
         items = list(batch)

@@ -2574,7 +2574,7 @@ def _countRows(tableName):
 
 
 def storeNotNULLimdbIDs(cls):
-    """Store in a dbm database a mapping between
+    """Store in a temporary table or in a dbm database a mapping between
     md5sum (of title or name) and imdbID, when the latter
     is present in the database."""
     if cls is Title: cname = 'movies'
@@ -2601,7 +2601,7 @@ def storeNotNULLimdbIDs(cls):
             print 'DONE! (%d entries using a temporary table)' % rows
             return
         except Exception, e:
-            print 'WARNING: unable to store imdbDIs in a temporary table (falling back to dbm): %s' % e
+            print 'WARNING: unable to store imdbIDs in a temporary table (falling back to dbm): %s' % e
     try:
         db = anydbm.open(_imdbIDsFileName('%s_imdbIDs.db' % cname), 'c')
     except Exception, e:
@@ -2631,7 +2631,7 @@ def iterbatch(iterable, size):
 
 
 def restoreImdbIDs(cls):
-    """Restore imdbID for movies, people, companies and characters."""
+    """Restore imdbIDs for movies, people, companies and characters."""
     if cls is Title:
         CACHE = CACHE_MID
         cname = 'movies'

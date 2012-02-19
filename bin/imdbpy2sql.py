@@ -47,7 +47,7 @@ from imdb._exceptions import IMDbParserError, IMDbError
 
 
 HELP = """imdbpy2sql.py usage:
-    %s -d /directory/with/PlainTextDataFiles/ -u URI [-c /directory/for/CSV_files] [-o sqlobject,sqlalchemy] [--CSV-OPTIONS] [--COMPATIBILITY-OPTIONS]
+    %s -d /directory/with/PlainTextDataFiles/ -u URI [-c /directory/for/CSV_files] [-o sqlobject,sqlalchemy] [-i table,dbm] [--CSV-OPTIONS] [--COMPATIBILITY-OPTIONS]
 
         # NOTE: URI is something along the line:
                 scheme://[user[:password]@]host[:port]/database[?parameters]
@@ -57,6 +57,19 @@ HELP = """imdbpy2sql.py usage:
                 postgres://user:password@host/database
                 sqlite:/tmp/imdb.db
                 sqlite:/C|/full/path/to/database
+
+        # NOTE: CSV mode (-c path):
+                A directory is used to store CSV files; on supported
+                database servers it should be really fast.
+
+        # NOTE: ORMs (-o orm):
+                Valid options are 'sqlobject', 'sqlalchemy' or the
+                preferred order separating the voices with a comma.
+
+        # NOTE: imdbIDs store/restore (-i method):
+                Valid options are 'table' (imdbIDs stored in a temporary
+                table of the database) or 'dbm' (imdbIDs stored on a dbm
+                file - this is the default if CSV is used).
 
         # NOTE: --CSV-OPTIONS can be:
             --csv-ext STRING        files extension (.csv)
@@ -86,6 +99,8 @@ USED_ORM = None
 DB_TABLES = []
 # Max allowed recursion, inserting data.
 MAX_RECURSION = 10
+# Method used to (re)store imdbIDs.
+IMDBIDS_METHOD = None
 # If set, this directory is used to output CSV files.
 CSV_DIR = None
 CSV_CURS = None
@@ -147,7 +162,7 @@ if '--sqlite-transactions' in sys.argv[1:]:
 
 # Manage arguments list.
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:o:c:h',
+    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:o:c:i:h',
                                                 ['uri=', 'data=', 'execute=',
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
@@ -156,7 +171,7 @@ try:
                                                 'csv-only-write',
                                                 'csv-only-load',
                                                 'csv=', 'csv-ext=',
-                                                'help'])
+                                                'imdbids=', 'help'])
 except getopt.error, e:
     print 'Troubles with arguments.'
     print HELP
@@ -171,6 +186,8 @@ for opt in optlist:
         CSV_DIR = opt[1]
     elif opt[0] == '--csv-ext':
         CSV_EXT = opt[1]
+    elif opt[0] in ('-i', '--imdbids'):
+        IMDBIDS_METHOD = opt[1]
     elif opt[0] in ('-e', '--execute'):
         if opt[1].find(':') == -1:
             print 'WARNING: wrong command syntax: "%s"' % opt[1]
@@ -210,6 +227,11 @@ if IMDB_PTDF_DIR is None:
 
 if URI is None:
     print 'You must supply the URI for the database connection'
+    print HELP
+    sys.exit(2)
+
+if IMDBIDS_METHOD not in (None, 'dbm', 'table'):
+    print 'the method to (re)store imdbIDs must be one of "dbm" or "table"'
     print HELP
     sys.exit(2)
 
@@ -538,6 +560,16 @@ CURS = connectObject.cursor()
 # Name of the database and style of the parameters.
 DB_NAME = conn.dbName
 PARAM_STYLE = conn.paramstyle
+
+
+def _get_imdbids_method():
+    """Return the method to be used to (re)store
+    imdbIDs (one of 'dbm' or 'table')."""
+    if IMDBIDS_METHOD:
+        return IMDBIDS_METHOD
+    if CSV_DIR:
+        return 'dbm'
+    return 'table'
 
 
 def tableName(table):
@@ -2587,7 +2619,7 @@ def storeNotNULLimdbIDs(cls):
 
     print 'SAVING imdbID values for %s...' % cname,
     sys.stdout.flush()
-    if not CSV_DIR:
+    if _get_imdbids_method() == 'table':
         try:
             try: CURS.execute('DROP TABLE %s_extract' % table_name)
             except: pass
@@ -2633,16 +2665,12 @@ def iterbatch(iterable, size):
 def restoreImdbIDs(cls):
     """Restore imdbIDs for movies, people, companies and characters."""
     if cls is Title:
-        CACHE = CACHE_MID
         cname = 'movies'
     elif cls is Name:
-        CACHE = CACHE_PID
         cname = 'people'
     elif cls is CompanyName:
-        CACHE = CACHE_COMPID
         cname = 'companies'
     else:
-        CACHE = CACHE_CID
         cname = 'characters'
     print 'RESTORING imdbIDs values for %s...' % cname,
     sys.stdout.flush()
@@ -2650,7 +2678,7 @@ def restoreImdbIDs(cls):
     md5sum_col = colName(cls, 'md5sum')
     imdbID_col = colName(cls, 'imdbID')
 
-    if not CSV_DIR:
+    if _get_imdbids_method() == 'table':
         try:
             query = 'UPDATE %s INNER JOIN %s_extract USING (%s) SET %s.%s = %s_extract.%s' % \
                     (table_name, table_name, md5sum_col,
@@ -2695,6 +2723,19 @@ def restoreImdbIDs(cls):
     t('restore %s' % cname)
     db.close()
     return
+
+def restoreAll_imdbIDs():
+    """Restore imdbIDs for movies, persons, companies and characters."""
+    # Restoring imdbIDs for movies and persons (moved after the
+    # built of indexes, so that it can take advantage of them).
+    runSafely(restoreImdbIDs, 'failed to restore imdbIDs for movies',
+            None, Title)
+    runSafely(restoreImdbIDs, 'failed to restore imdbIDs for people',
+            None, Name)
+    runSafely(restoreImdbIDs, 'failed to restore imdbIDs for characters',
+            None, CharName)
+    runSafely(restoreImdbIDs, 'failed to restore imdbIDs for companies',
+            None, CompanyName)
 
 
 def runSafely(funct, fmsg, default, *args, **kwds):
@@ -2785,6 +2826,7 @@ def restoreCSV():
     executeCustomQueries('BEFORE_RESTORE')
     t('TOTAL TIME TO LOAD CSV FILES', sinceBegin=True)
     buildIndexesAndFK()
+    restoreAll_imdbIDs()
     executeCustomQueries('END')
     t('FINAL', sinceBegin=True)
 
@@ -2838,8 +2880,7 @@ def run():
     doMovieCompaniesInfo()
     # Do this now, and free some memory.
     CACHE_COMPID.flush()
-    if not CSV_DIR:
-        CACHE_COMPID.clear()
+    CACHE_COMPID.clear()
 
     executeCustomQueries('BEFORE_CAST')
 
@@ -2890,10 +2931,9 @@ def run():
     CACHE_MID.flush()
     CACHE_PID.flush()
     CACHE_CID.flush()
-    if not CSV_DIR:
-        CACHE_MID.clear()
-        CACHE_PID.clear()
-        CACHE_CID.clear()
+    CACHE_MID.clear()
+    CACHE_PID.clear()
+    CACHE_CID.clear()
     t('fushing caches...')
 
     if CSV_ONLY_WRITE:
@@ -2913,16 +2953,7 @@ def run():
 
     buildIndexesAndFK()
 
-    # Restoring imdbIDs for movies and persons (moved after the
-    # built of indexes, so that it can take advantage of them).
-    runSafely(restoreImdbIDs, 'failed to restore imdbIDs for movies',
-            None, Title)
-    runSafely(restoreImdbIDs, 'failed to restore imdbIDs for people',
-            None, Name)
-    runSafely(restoreImdbIDs, 'failed to restore imdbIDs for characters',
-            None, CharName)
-    runSafely(restoreImdbIDs, 'failed to restore imdbIDs for companies',
-            None, CompanyName)
+    restoreAll_imdbIDs()
 
     executeCustomQueries('END')
 

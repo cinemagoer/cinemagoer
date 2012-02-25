@@ -529,6 +529,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         ret['info sets'] = ('release dates', 'akas')
         return ret
     get_movie_akas = get_movie_release_dates
+    get_movie_release_info = get_movie_release_dates
 
     def get_movie_vote_details(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'ratings')

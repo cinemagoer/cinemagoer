@@ -1,9 +1,11 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20120218 "In Time" (18 Feb 2012)
+* What's the new in release 4.9dev20120225 "Kick-Ass" (25 Feb 2012)
   [general]
   - urls used to access the IMDb site can be configured.
+  - helpers function to handle movie AKAs in various
+    languages (code by Alberto Malagoli).
 
   [http]
   - fix for business information.

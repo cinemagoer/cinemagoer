@@ -4,7 +4,8 @@ helpers module (imdb package).
 This module provides functions not used directly by the imdb package,
 but useful for IMDbPY-based programs.
 
-Copyright 2006-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2006-2012 Davide Alberani <da@erlug.linux.it>
+               2012 Alberto Malagoli <albemala AT gmail.com>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,6 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # XXX: find better names for the functions in this modules.
 
 import re
+import difflib
 from cgi import escape
 import gettext
 from gettext import gettext as _
@@ -35,7 +37,9 @@ from imdb.utils import modClearRefs, re_titleRef, re_nameRef, \
                     re_characterRef, _tagAttr, _Container, TAGS_TO_MODIFY
 from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base, \
                     imdbURL_character_base
+
 import imdb.locale
+from imdb.articles import COUNTRY_LANG
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.Character import Character
@@ -545,4 +549,92 @@ def parseXML(xml):
             return parseTags(mainTag)
     return None
 
+
+_re_akas_lang = re.compile('(?:[(])([a-zA-Z]+?)(?: title[)])')
+_re_akas_country = re.compile('\(.*?\)')
+
+# akasLanguages, sortAKAsBySimilarity and getAKAsInLanguage code
+# copyright of Alberto Malagoli (refactoring by Davide Alberani).
+def akasLanguages(movie):
+    """Given a movie, return a list of tuples in (lang, AKA) format;
+    lang can be None, if unable to detect."""
+    lang_and_aka = []
+    akas = set((movie.get('akas') or []) +
+                (movie.get('akas from release info') or []))
+    for aka in akas:
+        # split aka
+        aka = aka.encode('utf8').split('::')
+        # sometimes there is no countries information
+        if len(aka) == 2:
+            # search for something like "(... title)" where ... is a language
+            language = _re_akas_lang.search(aka[1])
+            if language:
+                language = language.groups()[0]
+            else:
+                # split countries using , and keep only the first one (it's sufficient)
+                country = aka[1].split(',')[0]
+                # remove parenthesis
+                country = _re_akas_country.sub('', country).strip()
+                # given the country, get corresponding language from dictionary
+                language = COUNTRY_LANG.get(country)
+        else:
+            language = None
+        lang_and_aka.append((language, aka[0].decode('utf8')))
+    return lang_and_aka
+
+
+def sortAKAsBySimilarity(movie, title, _titlesOnly=True, _preferredLang=None):
+    """Return a list of movie AKAs, sorted by their similarity to
+    the given title.
+    If _titlesOnly is not True, similarity information are returned.
+    If _preferredLang is specified, AKAs in the given language will get
+    a higher score.
+    The return is a list of title, or a list of tuples if _titlesOnly is False."""
+    language = movie.guessLanguage()
+    # estimate string distance between current title and given title
+    m_title = movie['title'].lower()
+    l_title = title.lower()
+    if isinstance(l_title, unicode):
+        l_title = l_title.encode('utf8')
+    scores = []
+    score = difflib.SequenceMatcher(None, m_title.encode('utf8'), l_title).ratio()
+    # set original title and corresponding score as the best match for given title
+    scores.append((score, movie['title'], None))
+    for language, aka in akasLanguages(movie):
+        # estimate string distance between current title and given title
+        m_title = aka.lower()
+        if isinstance(m_title, unicode):
+            m_title = m_title.encode('utf8')
+        score = difflib.SequenceMatcher(None, m_title, l_title).ratio()
+        # if current language is the same as the given one, increase score
+        if _preferredLang and _preferredLang == language:
+            score += 1
+        scores.append((score, aka, language))
+    scores.sort(reverse=True)
+    if _titlesOnly:
+        return [x[1] for x in scores]
+    return scores
+
+
+def getAKAsInLanguage(movie, lang, _searchedTitle=None):
+    """Return a list of AKAs of a movie, in the specified language.
+    If _searchedTitle is given, the AKAs are sorted by their similarity
+    to it."""
+    akas = []
+    for language, aka in akasLanguages(movie):
+        if lang == language:
+            akas.append(aka)
+    if _searchedTitle:
+        scores = []
+        if isinstance(_searchedTitle, unicode):
+            _searchedTitle = _searchedTitle.encode('utf8')
+        for aka in akas:
+            m_aka = aka
+            if isinstance(m_aka):
+                m_aka = m_aka.encode('utf8')
+            scores.append(difflib.SequenceMatcher(None, m_aka.lower(),
+                            _searchedTitle.lower()), aka)
+        scores.sort(reverse=True)
+        akas = [x[1] for x in scores]
+    return akas
 

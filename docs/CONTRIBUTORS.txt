@@ -22,7 +22,8 @@ listed as developers for the IMDbPY project on sourceforge and may
 share copyright on some (minor) portions of the code:
 
 NAME: Alberto Malagoli
-CONTRIBUTION: developed the new web site, and detain the copyright of it.
+CONTRIBUTION: developed the new web site, and detains the copyright of it,
+and provided helper functions and other code.
 
 
 NAME: Martin Kirst

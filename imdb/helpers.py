@@ -39,7 +39,7 @@ from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base, \
                     imdbURL_character_base
 
 import imdb.locale
-from imdb.articles import COUNTRY_LANG
+from imdb.linguistics import COUNTRY_LANG
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.Character import Character

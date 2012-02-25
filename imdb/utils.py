@@ -3,7 +3,7 @@ utils module (imdb package).
 
 This module provides basic utilities for the imdb package.
 
-Copyright 2004-2011 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2012 Davide Alberani <da@erlug.linux.it>
                2009 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ from copy import copy, deepcopy
 from time import strptime, strftime
 
 from imdb import VERSION
-from imdb import articles
+from imdb import linguistics
 from imdb._exceptions import IMDbParserError
 
 
@@ -184,10 +184,10 @@ def build_name(name_dict, canonical=None):
 
 
 # XXX: here only for backward compatibility.  Find and remove any dependency.
-_articles = articles.GENERIC_ARTICLES
-_unicodeArticles = articles.toUnicode(_articles)
-articlesDicts = articles.articlesDictsForLang(None)
-spArticles = articles.spArticlesForLang(None)
+_articles = linguistics.GENERIC_ARTICLES
+_unicodeArticles = linguistics.toUnicode(_articles)
+articlesDicts = linguistics.articlesDictsForLang(None)
+spArticles = linguistics.spArticlesForLang(None)
 
 def canonicalTitle(title, lang=None):
     """Return the title in the canonic format 'Movie Title, The';
@@ -196,7 +196,7 @@ def canonicalTitle(title, lang=None):
     The 'lang' argument can be used to specify the language of the title.
     """
     isUnicode = isinstance(title, unicode)
-    articlesDicts = articles.articlesDictsForLang(lang)
+    articlesDicts = linguistics.articlesDictsForLang(lang)
     try:
         if title.split(', ')[-1].lower() in articlesDicts[isUnicode]:
             return title
@@ -207,7 +207,7 @@ def canonicalTitle(title, lang=None):
     else:
         _format = '%s, %s'
     ltitle = title.lower()
-    spArticles = articles.spArticlesForLang(lang)
+    spArticles = linguistics.spArticlesForLang(lang)
     for article in spArticles[isUnicode]:
         if ltitle.startswith(article):
             lart = len(article)
@@ -236,7 +236,7 @@ def normalizeTitle(title, lang=None):
     """
     isUnicode = isinstance(title, unicode)
     stitle = title.split(', ')
-    articlesDicts = articles.articlesDictsForLang(lang)
+    articlesDicts = linguistics.articlesDictsForLang(lang)
     if len(stitle) > 1 and stitle[-1].lower() in articlesDicts[isUnicode]:
         sep = ' '
         if stitle[-1][-1] in ("'", '-'):

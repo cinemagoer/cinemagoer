@@ -84,12 +84,26 @@ To solve this problem, there are other keys: "smart canonical title",
 converting a title into its canonical format.
 
 It works, but it needs to know something about articles in various
-languages: if you want to help, see the LANG_ARTICLES and _LANG_COUNTRIES
-dictionaries in the 'articles' module.
+languages: if you want to help, see the LANG_ARTICLES and LANG_COUNTRIES
+dictionaries in the 'linguistics' module.
 
 To know what the language in which a movie title is assumed to be,
 call its 'guessLanguage' method (it will return None, if unable to guess).
 If you want to force a given language instead of the guessed one, you
 can call its 'smartCanonicalTitle' method, setting the 'lang' argument
 appropriately.
+
+
+  TITLE AKAS
+  ==========
+
+Sometimes it's useful to manage title's AKAs knowing their languages.
+In the 'helpers' module there are some (hopefully) useful functions:
+akasLanguages(movie) - given a movie, return a list of tuples
+                       in (lang, AKA) format (lang can be None, if unable to detect).
+sortAKAsBySimilarity(movie, title) - sorts the AKAs on a movie considering
+                                     how much they are similar to a given title (see
+                                     the code for more options).
+getAKAsInLanguage(movie, lang) - return a list of AKAs of the movie in the given
+                                 language (see the code for more options).
 

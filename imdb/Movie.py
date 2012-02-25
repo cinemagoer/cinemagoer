@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from copy import deepcopy
 
-from imdb import articles
+from imdb import linguistics
 from imdb.utils import analyze_title, build_title, canonicalTitle, \
                         flatten, _Container, cmpMovies
 
@@ -206,7 +206,7 @@ class Movie(_Container):
         else:
             country = self.get('countries')
             if country:
-                lang = articles.COUNTRY_LANG.get(country[0])
+                lang = linguistics.COUNTRY_LANG.get(country[0])
         return lang
 
     def smartCanonicalTitle(self, title=None, lang=None):

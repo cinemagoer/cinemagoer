@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import sys
+import socket
 import logging
 from urllib import FancyURLopener, quote_plus
 from codecs import lookup
@@ -265,7 +266,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def __init__(self, isThin=0, adultSearch=1, proxy=-1, oldParsers=False,
                 fallBackToNew=False, useModule=None, cookie_id=-1,
-                cookie_uu=None, *arguments, **keywords):
+                timeout=30, cookie_uu=None, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         self.urlOpener =  IMDbURLopener()
@@ -283,6 +284,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
             self.isThin = 0
             if self.accessSystem in ('httpThin', 'webThin', 'htmlThin'):
                 self.accessSystem = 'http'
+        self.set_timeout(timeout)
         self.do_adult_search(adultSearch)
         if cookie_id != -1:
             if cookie_id is None:
@@ -394,6 +396,16 @@ class IMDbHTTPAccessSystem(IMDbBase):
         automatically used.
         """
         self.urlOpener.set_proxy(proxy)
+
+    def set_timeout(self, timeout):
+        """Set the default timeout, in seconds, of the connection."""
+        try:
+            timeout = int(timeout)
+        except Exception:
+            timeout = 0
+        if timeout <= 0:
+            timeout = None
+        socket.setdefaulttimeout(timeout)
 
     def set_cookies(self, cookie_id, cookie_uu):
         """Set a cookie to access an IMDb's account."""

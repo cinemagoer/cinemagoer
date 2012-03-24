@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20120324b "Majocco Club" (24 mar 2012)
+* What's the new in release 4.9dev20120324c "Majocco Club" (24 mar 2012)
   [general]
   - urls used to access the IMDb site can be configured.
   - helpers function to handle movie AKAs in various
@@ -11,6 +11,7 @@
     evey caught exception.
 
   [http]
+  - introduced a 'timeout' parameter for connections to the web server.
   - fix for business information.
   - parser for the new style of episodes list.
   - unicode searches handled as iso8859-1.

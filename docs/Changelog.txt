@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20120324 "Majocco Club" (24 mar 2012)
+* What's the new in release 4.9dev20120324b "Majocco Club" (24 mar 2012)
   [general]
   - urls used to access the IMDb site can be configured.
   - helpers function to handle movie AKAs in various

@@ -2621,14 +2621,21 @@ def storeNotNULLimdbIDs(cls):
     sys.stdout.flush()
     if _get_imdbids_method() == 'table':
         try:
-            try: CURS.execute('DROP TABLE %s_extract' % table_name)
-            except: pass
-            query = 'CREATE TABLE %s_extract SELECT %s, %s FROM %s WHERE %s IS NOT NULL' % \
+            try:
+                CURS.execute('DROP TABLE %s_extract' % table_name)
+            except:
+                pass
+            try:
+                CURS.execute('SELECT * FROM %s LIMIT 1' % table_name)
+            except Exception, e:
+                print 'missing "%s" table (ok if this is the first run)' % table_name
+                return
+            query = 'CREATE TEMPORARY TABLE %s_extract AS SELECT %s, %s FROM %s WHERE %s IS NOT NULL' % \
                     (table_name, md5sum_col, imdbID_col,
                     table_name, imdbID_col)
             CURS.execute(query)
-            CURS.execute('ALTER TABLE %s_extract ADD INDEX md5sum_idx (%s)' % (table_name, md5sum_col))
-            CURS.execute('ALTER TABLE %s_extract ADD INDEX imdbid_idx (%s)' % (table_name, imdbID_col))
+            CURS.execute('CREATE INDEX %s_md5sum_idx ON %s_extract (%s)' % (table_name, table_name, md5sum_col))
+            CURS.execute('CREATE INDEX %s_imdbid_idx ON %s_extract (%s)' % (table_name, table_name, imdbID_col))
             rows = _countRows('%s_extract' % table_name)
             print 'DONE! (%d entries using a temporary table)' % rows
             return
@@ -2702,7 +2709,7 @@ def restoreImdbIDs(cls):
     try:
         db = anydbm.open(_imdbIDsFileName('%s_imdbIDs.db' % cname), 'r')
     except Exception, e:
-        print 'WARNING: unable to restore imdbIDs: %s' % str(e)
+        print 'WARNING: unable to restore imdbIDs (ok if this is the first run): %s' % str(e)
         return
     count = 0
     sql = "UPDATE " + table_name + " SET " + imdbID_col + \

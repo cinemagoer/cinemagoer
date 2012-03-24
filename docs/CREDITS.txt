@@ -21,6 +21,8 @@ of help, and also for the wonderful http://bitbucket.org)
 Below, a list of persons who contributed with bug reports, small
 patches and hints (kept in a reverse order since IMDbPY 4.5):
 
+* Tomáš Hnyk for the idea of an option to reraise caught exceptions.
+
 * Emmanuel Tabard for ideas, code and testing on restoring imdbIDs.
 
 * Fabian Roth for a bug report about the new style of episodes list.

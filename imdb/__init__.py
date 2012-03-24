@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.9dev20120225'
+__version__ = VERSION = '4.9dev20120324'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -246,6 +246,9 @@ class IMDbBase:
     # Top-level logger for IMDbPY.
     _imdb_logger = logging.getLogger('imdbpy')
 
+    # Whether to re-raise caught exceptions or not.
+    _reraise_exceptions = False
+
     def __init__(self, defaultModFunct=None, results=20, keywordsResults=100,
                 *arguments, **keywords):
         """Initialize the access system.
@@ -271,6 +274,7 @@ class IMDbBase:
         if keywordsResults < 1:
             keywordsResults = 100
         self._keywordsResults = keywordsResults
+        self._reraise_exceptions = keywords.get('reraiseExceptions') or False
         self.set_imdb_urls(keywords.get('imdbURL_base') or imdbURL_base)
 
     def set_imdb_urls(self, imdbURL_base):
@@ -771,6 +775,9 @@ class IMDbBase:
                                     '"%s" (accessSystem: %s)',
                                     i, mopID, mop.accessSystem, exc_info=True)
                 ret = {}
+                # If requested by the user, reraise the exception.
+                if self._reraise_exceptions:
+                    raise
             keys = None
             if 'data' in ret:
                 res.update(ret['data'])

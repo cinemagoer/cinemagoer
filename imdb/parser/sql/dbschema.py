@@ -6,7 +6,7 @@ This module provides the schema used to describe the layout of the
 database used by the imdb.parser.sql package; functions to create/drop
 tables and indexes are also provided.
 
-Copyright 2005-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2012 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -188,6 +188,7 @@ DB_SCHEMA = [
         DBCol('name', UNICODECOL, notNone=True, index='idx_name', indexLen=6),
         DBCol('imdbIndex', UNICODECOL, length=12, default=None),
         DBCol('imdbID', INTCOL, default=None, index='idx_imdb_id'),
+        DBCol('genre', STRINGCOL, length=1, default=None),
         DBCol('namePcodeCf', STRINGCOL, length=5, default=None,
                 index='idx_pcodecf'),
         DBCol('namePcodeNf', STRINGCOL, length=5, default=None,

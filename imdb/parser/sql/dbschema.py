@@ -188,7 +188,7 @@ DB_SCHEMA = [
         DBCol('name', UNICODECOL, notNone=True, index='idx_name', indexLen=6),
         DBCol('imdbIndex', UNICODECOL, length=12, default=None),
         DBCol('imdbID', INTCOL, default=None, index='idx_imdb_id'),
-        DBCol('genre', STRINGCOL, length=1, default=None),
+        DBCol('gender', STRINGCOL, length=1, default=None),
         DBCol('namePcodeCf', STRINGCOL, length=5, default=None,
                 index='idx_pcodecf'),
         DBCol('namePcodeNf', STRINGCOL, length=5, default=None,

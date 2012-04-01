@@ -1131,11 +1131,11 @@ class PersonsCache(_BaseCache):
 
     def __init__(self, *args, **kwds):
         _BaseCache.__init__(self, *args, **kwds)
-        self.personGenre = {}
+        self.personGender = {}
         self._table_name = tableName(Name)
         self._id_for_custom_q = 'PERSONS'
         self.sqlstr, self.converter = createSQLstr(Name, ['id', 'name',
-                                'imdbIndex', 'imdbID', 'genre', 'namePcodeCf',
+                                'imdbIndex', 'imdbID', 'gender', 'namePcodeCf',
                                 'namePcodeNf', 'surnamePcode', 'md5sum'])
 
     def populate(self):
@@ -1173,8 +1173,8 @@ class PersonsCache(_BaseCache):
             tget = t.get
             name = tget('name')
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name)
-            genre = self.personGenre.get(v)
-            lapp((v, name, tget('imdbIndex'), None, genre,
+            gender = self.personGender.get(v)
+            lapp((v, name, tget('imdbIndex'), None, gender,
                 namePcodeCf, namePcodeNf, surnamePcode,
                 md5(k).hexdigest()))
         if not CSV_DIR:
@@ -1544,9 +1544,9 @@ def doCast(fp, roleid, rolename):
             name, line = sl
             miscData = None
             if rolename == 'actor':
-                miscData = [('personGenre', 'm')]
+                miscData = [('personGender', 'm')]
             elif rolename == 'actress':
-                miscData = [('personGenre', 'f')]
+                miscData = [('personGender', 'f')]
             pid = CACHE_PID.addUnique(name.strip(), miscData)
         line = line.strip()
         ll = line.split('  ')
@@ -1599,7 +1599,7 @@ def doCast(fp, roleid, rolename):
         count += 1
     sqldata.flush()
     CACHE_PID.flush()
-    CACHE_PID.personGenre.clear()
+    CACHE_PID.personGender.clear()
     print 'CLOSING %s...' % rolename
 
 

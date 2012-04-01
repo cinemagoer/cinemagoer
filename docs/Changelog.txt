@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20120401 "Sherlock - Season 2" (01 Apr 2012)
+* What's the new in release 4.9dev20120401b "Sherlock - Season 2" (01 Apr 2012)
   [general]
   - urls used to access the IMDb site can be configured.
   - helpers function to handle movie AKAs in various
@@ -19,7 +19,7 @@
   [sql]
   - vastly improved the store/restore of imdbIDs; now it should be faster
     and more accurate.
-  - now the 'name' table contains a 'genre' field that can be 'm', 'f' or NULL.
+  - now the 'name' table contains a 'gender' field that can be 'm', 'f' or NULL.
   - fix for nicknames.
   - fix for missing titles in the crazy credits file.
   - handled exceptions creating indexes, foreign keys and

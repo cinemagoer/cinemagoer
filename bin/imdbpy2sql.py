@@ -2696,9 +2696,15 @@ def restoreImdbIDs(cls):
 
     if _get_imdbids_method() == 'table':
         try:
-            query = 'UPDATE %s INNER JOIN %s_extract USING (%s) SET %s.%s = %s_extract.%s' % \
-                    (table_name, table_name, md5sum_col,
-                    table_name, imdbID_col, table_name, imdbID_col)
+            if DB_NAME == 'mysql':
+                query = 'UPDATE %s INNER JOIN %s_extract USING (%s) SET %s.%s = %s_extract.%s' % \
+                        (table_name, table_name, md5sum_col,
+                        table_name, imdbID_col, table_name, imdbID_col)
+            else:
+                query = 'UPDATE %s SET %s = %s_extract.%s FROM %s_extract WHERE %s.%s = %s_extract.%s' % \
+                        (table_name, imdbID_col, table_name,
+                        imdbID_col, table_name, table_name,
+                        md5sum_col, table_name, md5sum_col)
             CURS.execute(query)
             affected_rows = 'an unknown number of'
             try:

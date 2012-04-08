@@ -2696,6 +2696,11 @@ def restoreImdbIDs(cls):
 
     if _get_imdbids_method() == 'table':
         try:
+            try:
+                CURS.execute('SELECT * FROM %s_extract LIMIT 1' % table_name)
+            except Exception, e:
+                raise Exception('missing "%s_extract" table (ok if this is the first run)' % table_name)
+
             if DB_NAME == 'mysql':
                 query = 'UPDATE %s INNER JOIN %s_extract USING (%s) SET %s.%s = %s_extract.%s' % \
                         (table_name, table_name, md5sum_col,
@@ -2724,7 +2729,7 @@ def restoreImdbIDs(cls):
     try:
         db = anydbm.open(_imdbIDsFileName('%s_imdbIDs.db' % cname), 'r')
     except Exception, e:
-        print 'WARNING: unable to restore imdbIDs (ok if this is the first run): %s' % str(e)
+        print 'WARNING: unable to restore imdbIDs (ok if this is the first run)'
         return
     count = 0
     sql = "UPDATE " + table_name + " SET " + imdbID_col + \

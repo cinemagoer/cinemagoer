@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20120408 "The Fury" (08 Apr 2012)
+* What's the new in release 4.9dev20120609 "The IT crowd" (09 May 2012)
   [general]
   - urls used to access the IMDb site can be configured.
   - helpers function to handle movie AKAs in various
@@ -24,6 +24,8 @@
   - fix for missing titles in the crazy credits file.
   - handled exceptions creating indexes, foreign keys and
     executing custom queries.
+  - fixed creation on index for keywords.
+  - excluded {{SUSPENDED}} titles.
 
 
 * What's the new in release 4.8.2 "The Big Bang Theory" (02 Nov 2011)

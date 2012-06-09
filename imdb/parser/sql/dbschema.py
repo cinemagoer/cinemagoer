@@ -355,7 +355,7 @@ DB_SCHEMA = [
         #      collation like utf8_unicode_ci) MySQL will consider
         #      some different keywords identical - like
         #      "fiancée" and "fiancee".
-        DBCol('keyword', UNICODECOL, length=255, notNone=True,
+        DBCol('keyword', UNICODECOL, notNone=True,
                 index='idx_keyword', indexLen=5),
         DBCol('phoneticCode', STRINGCOL, length=5, default=None,
                 index='idx_pcode')

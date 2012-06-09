@@ -21,8 +21,6 @@ NOTE: it's always time to clean the code! <g>
   at least for 'http' and 'mobile', since they are used by mobile devices.
 * The analyze_title/build_title functions are grown too complex and
   beyond their initial goals.
-* for the  sql data access system: some episode titles are
-  marked as {{SUSPENDED}}; they should probably be ignored.
 
 
 [searches]

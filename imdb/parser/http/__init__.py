@@ -462,7 +462,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 except Exception, e:
                     pass
         ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
-        params = 's=%s;mx=%s;q=%s' % (kind, str(results), quote_plus(ton))
+        params = 'q=%s;s=%s;mx=%s' % (quote_plus(ton), kind, str(results))
         if kind == 'ep':
             params = params.replace('s=ep;', 's=tt;ttype=ep;', 1)
         cont = self._retrieve(self.urls['find'] % params)
@@ -472,7 +472,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
             return cont
         # The retrieved page contains no results, because too many
         # titles or names contain the string we're looking for.
-        params = 's=%s;q=%s;lm=0' % (kind, quote_plus(ton))
+        params = 'q=%s;ls=%s;lm=0' % (quote_plus(ton), kind)
         size = 131072 + results * 512
         return self._retrieve(self.urls['find'] % params, size=size)
 

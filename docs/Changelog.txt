@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 4.9dev20120609 "The IT crowd" (09 May 2012)
+* What's the new in release 4.9dev20120609b "The IT crowd" (09 May 2012)
   [general]
   - urls used to access the IMDb site can be configured.
   - helpers function to handle movie AKAs in various
@@ -11,6 +11,7 @@
     evey caught exception.
 
   [http]
+  - fix for changed search parameters.
   - introduced a 'timeout' parameter for connections to the web server.
   - fix for business information.
   - parser for the new style of episodes list.

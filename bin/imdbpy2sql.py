@@ -1116,6 +1116,8 @@ class MoviesCache(_BaseCache):
     def addUnique(self, key, miscData=None):
         """Insert a new key and return its value; if the key is already
         in the dictionary, its previous  value is returned."""
+        if key.endswith('{{SUSPENDED}}'):
+            return None
         # DONE: to be removed when it will be no more needed!
         #if FIX_OLD_STYLE_TITLES:
         #    key = build_title(analyze_title(key, canonical=False,
@@ -1518,6 +1520,8 @@ def readMovieList():
         if title[0] == '"':
             yearData = [('movieYear', line_d['year'])]
         mid = CACHE_MID.addUnique(title, yearData)
+        if mid is None:
+            continue
         if count % 10000 == 0:
             print 'SCANNING movies:', _(title),
             print '(movieID: %s)' % mid
@@ -1586,6 +1590,8 @@ def doCast(fp, roleid, rolename):
                         except ValueError:
                             pass
         movieid = CACHE_MID.addUnique(title)
+        if movieid is None:
+            continue
         if role is not None:
             roles = filter(None, [x.strip() for x in role.split('/')])
             for role in roles:
@@ -1766,6 +1772,8 @@ def doAkaTitles():
                         doNotAdd = True
                         continue
                 mid = CACHE_MID.addUnique(line)
+                if mid is None:
+                    continue
                 if line[0] == '"':
                     try:
                         titleDict = analyze_title(line, _emptyString='')
@@ -1781,6 +1789,8 @@ def doAkaTitles():
                         series = build_title(titleDict['episode of'],
                                             ptdf=1, _emptyString='')
                         seriesID = CACHE_MID.addUnique(series)
+                        if seriesID is None:
+                            continue
                         isEpisode = True
                     else:
                         seriesID = None
@@ -1860,6 +1870,8 @@ def doMovieLinks():
             if line[0] == '\n': continue
             title = line.strip()
             mid = CACHE_MID.addUnique(title)
+            if mid is None:
+                continue
             if count % 10000 == 0:
                 print 'SCANNING movielinks:', _(title)
         else:
@@ -1874,6 +1886,8 @@ def doMovieLinks():
             if theid is None: continue
             totitle = line[lenkp1+2:-1].strip()
             totitleid = CACHE_MID.addUnique(totitle)
+            if totitleid is None:
+                continue
             sqldata.add((mid, totitleid, theid))
         count += 1
     sqldata.flush()
@@ -1901,6 +1915,8 @@ def minusHashFiles(fp, funct, defaultid, descr):
             print _(d[0], truncateAt=40)
             continue
         mid = CACHE_MID.addUnique(title)
+        if mid is None:
+            continue
         if count % 5000 == 0:
             print 'SCANNING %s:' % descr,
             print _(title)
@@ -1941,6 +1957,8 @@ def getTaglines():
     for title, text in fp.getByHashSections():
         title = title.strip()
         mid = CACHE_MID.addUnique(title)
+        if mid is None:
+            continue
         for tag in text.split('\n'):
             tag = tag.strip()
             if not tag: continue
@@ -2130,6 +2148,8 @@ def nmmvFiles(fp, funct, fname):
                 if ton not in CACHE_MID:
                     continue
             mopid = CACHE_MID.addUnique(ton)
+            if mopid is None:
+                continue
         else: mopid = CACHE_PID.addUnique(ton)
         if count % 6000 == 0:
             print 'SCANNING %s:' % fname[:-8].replace('-', ' '),
@@ -2152,6 +2172,8 @@ def nmmvFiles(fp, funct, fname):
                         title = i.get('long imdb canonical title')
                         if not title: continue
                         movieid = CACHE_MID.addUnique(title)
+                        if movieid is None:
+                            continue
                         crole = i.currentRole
                         if isinstance(crole, list):
                             crole = ' / '.join([x.get('long imdb name', u'')
@@ -2377,6 +2399,8 @@ def doMovieCompaniesInfo():
             title = data['title']
             company = data['company']
             mid = CACHE_MID.addUnique(title)
+            if mid is None:
+                continue
             cid = CACHE_COMPID.addUnique(company)
             note = None
             if 'note' in data:
@@ -2431,6 +2455,8 @@ def doMiscMovieInfo():
             if 'info' not in data: continue
             title = data['title']
             mid = CACHE_MID.addUnique(title)
+            if mid is None:
+                continue
             note = None
             if 'note' in data:
                 note = data['note']
@@ -2465,6 +2491,8 @@ def getRating():
         if 'title' not in data: continue
         title = data['title'].strip()
         mid = CACHE_MID.addUnique(title)
+        if mid is None:
+            continue
         if count % 10000 == 0:
             print 'SCANNING rating:', _(title)
         sqldata.add((mid, INFO_TYPES['votes distribution'],
@@ -2495,6 +2523,8 @@ def getTopBottomRating():
             if 'title' not in data: continue
             title = data['title'].strip()
             mid = CACHE_MID.addUnique(title)
+            if mid is None:
+                continue
             if what == 'top 250 rank': rank = count
             else: rank = 11 - count
             sqldata.add((mid, str(rank), None))
@@ -2543,6 +2573,8 @@ def completeCast():
             if len(ll) != 2: continue
             title = ll[0]
             mid = CACHE_MID.addUnique(title)
+            if mid is None:
+                continue
             if count % 10000 == 0:
                 print 'SCANNING %s:' % fname[:-8].replace('-', ' '),
                 print _(title)

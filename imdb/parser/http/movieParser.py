@@ -450,12 +450,18 @@ class DOMHTMLMovieParser(DOMParserBase):
             akas = data.get('akas') or []
             other_akas = data.get('other akas') or []
             akas += other_akas
+            nakas = []
+            for aka in akas:
+                aka = aka.strip()
+                if aka.endswith('" -'):
+                    aka = aka[:-3].rstrip()
+                nakas.append(aka)
             if 'akas' in data:
                 del data['akas']
             if 'other akas' in data:
                 del data['other akas']
-            if akas:
-                data['akas'] = akas
+            if nakas:
+                data['akas'] = nakas
         if 'runtimes' in data:
             data['runtimes'] = [x.replace(' min', u'')
                                 for x in data['runtimes']]

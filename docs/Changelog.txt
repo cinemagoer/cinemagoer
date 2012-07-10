@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 5.0dev20120710 "Iron Sky" (10 Jul 2012)
+  [http]
+  - fixed url for top250.
+
+
 * What's the new in release 4.9 "Iron Sky" (15 Jun 2012)
   [general]
   - urls used to access the IMDb site can be configured.

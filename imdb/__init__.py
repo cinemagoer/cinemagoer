@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
             'available_access_systems']
-__version__ = VERSION = '4.9'
+__version__ = VERSION = '5.0dev20120710'
 
 # Import compatibility module (importing it is enough).
 import _compat
@@ -303,7 +303,7 @@ class IMDbBase:
         # http://akas.imdb.com/keyword/%s/
         imdbURL_keyword_main=imdbURL_base + 'keyword/%s/'
         # http://akas.imdb.com/chart/top
-        imdbURL_top250=imdbURL_base + 'chart/top',
+        imdbURL_top250=imdbURL_base + 'chart/top'
         # http://akas.imdb.com/chart/bottom
         imdbURL_bottom100=imdbURL_base + 'chart/bottom'
         # http://akas.imdb.com/find?%s

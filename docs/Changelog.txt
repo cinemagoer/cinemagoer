@@ -1,7 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20120710 "Iron Sky" (10 Jul 2012)
+* What's the new in release 5.0dev20120804 "Sleep Tight" (04 Aug 2012)
+  [general]
+  - Introduced the list of French articles.
+
   [http]
   - fixed url for top250.
 

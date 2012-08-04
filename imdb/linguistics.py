@@ -66,6 +66,8 @@ LANG_ARTICLES = {
                 'uno'),
     'Spanish': ('la', 'le', 'el', 'les', 'un', 'los', 'una', 'uno', 'unos',
                 'unas'),
+    'French': ('le', "l'", 'la', 'les', 'un', 'une', 'des', 'au', 'du', '\xc3\xa0 la',
+                'de la', 'aux'),
     'Portuguese': ('a', 'as', 'o', 'os', 'um', 'uns', 'uma', 'umas'),
     'Turkish': (), # Some languages doesn't have articles.
 }

@@ -464,7 +464,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
         params = 'q=%s&s=%s&mx=%s' % (quote_plus(ton), kind, str(results))
         if kind == 'ep':
-            params = params.replace('s=ep;', 's=tt;ttype=ep;', 1)
+            params = params.replace('s=ep&', 's=tt&ttype=ep&', 1)
         cont = self._retrieve(self.urls['find'] % params)
         #print 'URL:', imdbURL_find % params
         if cont.find('Your search returned more than') == -1 or \

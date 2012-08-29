@@ -1,12 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20120804 "Sleep Tight" (04 Aug 2012)
+* What's the new in release 5.0dev20120829 "Misfits Season 3" (29 Aug 2012)
   [general]
   - Introduced the list of French articles.
 
   [http]
   - fixed url for top250.
+  - changed query separators from ; to &.
 
 
 * What's the new in release 4.9 "Iron Sky" (15 Jun 2012)

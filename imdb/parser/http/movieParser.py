@@ -565,7 +565,10 @@ class DOMHTMLPlotParser(DOMParserBase):
 
 def _process_award(x):
     award = {}
-    award['award'] = x.get('award').strip()
+    _award = x.get('award')
+    if _award is not None:
+        _award = _award.strip()
+    award['award'] = _award
     if not award['award']:
         return {}
     award['year'] = x.get('year').strip()

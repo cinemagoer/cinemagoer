@@ -383,18 +383,39 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
     if title.endswith('(TV)'):
         kind = u'tv movie'
         title = title[:-4].rstrip()
+    elif title.endswith('(TV Movie)'):
+        kind = u'tv movie'
+        title = title[:-10].rstrip()
     elif title.endswith('(V)'):
         kind = u'video movie'
         title = title[:-3].rstrip()
-    elif title.endswith('(video)'):
+    elif title.lower().endswith('(video)'):
         kind = u'video movie'
         title = title[:-7].rstrip()
+    elif title.endswith('(TV Short)'):
+        kind = u'tv short'
+        title = title[:-10].rstrip()
     elif title.endswith('(mini)'):
         kind = u'tv mini series'
         title = title[:-6].rstrip()
     elif title.endswith('(VG)'):
         kind = u'video game'
         title = title[:-4].rstrip()
+    elif title.endswith('(Video Game)'):
+        kind = u'video game'
+        title = title[:-12].rstrip()
+    elif title.endswith('(TV Series)'):
+        epindex = title.find('(TV Episode) - ')
+        if epindex >= 0:
+            # It's an episode of a series.
+            kind = u'tv episode'
+            series_info = analyze_title(title[epindex + 15:])
+            result['series title'] = series_info.get('title')
+            result['series year'] = series_info.get('year')
+            title = title[:epindex]
+        else:
+            kind = u'tv series'
+            title = title[:-11].rstrip()
     # Search for the year and the optional imdbIndex (a roman number).
     yi = re_year_index.findall(title)
     if not yi:
@@ -430,9 +451,6 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
         if not kind:
             kind = u'tv series'
         title = title[1:-1].strip()
-    elif title.endswith('(TV series)'):
-        kind = u'tv series'
-        title = title[:-11].rstrip()
     if not title:
         raise IMDbParserError('invalid title: "%s"' % original_t)
     if canonical is not None:

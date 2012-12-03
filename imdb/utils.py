@@ -408,9 +408,9 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
         epindex = title.find('(TV Episode) - ')
         if epindex >= 0:
             # It's an episode of a series.
-            kind = u'tv episode'
+            kind = u'episode'
             series_info = analyze_title(title[epindex + 15:])
-            result['series title'] = series_info.get('title')
+            result['episode of'] = series_info.get('title')
             result['series year'] = series_info.get('year')
             title = title[:epindex]
         else:

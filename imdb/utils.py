@@ -529,6 +529,11 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
         doYear = 0
         if ptdf:
             doYear = 1
+        # XXX: for results coming from the new search page.
+        if not isinstance(episode_of, dict):
+            episode_of = {'title': episode_of, 'kind': 'tv series'}
+            if 'series year' in title_dict:
+                episode_of['year'] = title_dict['series year']
         pre_title = build_title(episode_of, canonical=canonicalSeries,
                                 ptdf=0, _doYear=doYear,
                                 _emptyString=_emptyString)

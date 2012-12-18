@@ -452,7 +452,11 @@ def get_movie_data(movieID, kindDict, fromAka=0, _table=None):
     else:
         if not fromAka: Table = Title
         else: Table = AkaTitle
-    m = Table.get(movieID)
+    try:
+        m = Table.get(movieID)
+    except:
+        mdict = {}
+        return mdict
     mdict = {'title': m.title, 'kind': kindDict[m.kindID],
             'year': m.productionYear, 'imdbIndex': m.imdbIndex,
             'season': m.seasonNr, 'episode': m.episodeNr}
@@ -1116,8 +1120,9 @@ class IMDbSqlAccessSystem(IMDbBase):
         if mlinks:
             for ml in mlinks:
                 lmovieData = get_movie_data(ml[0], self._kind)
-                m = Movie(movieID=ml[0], data=lmovieData, accessSystem='sql')
-                ml[0] = m
+                if (len(lmovieData)>0):
+                    m = Movie(movieID=ml[0], data=lmovieData, accessSystem='sql')
+                    ml[0] = m
             res['connections'] = {}
             mlinks[:] = _groupListBy(mlinks, 1)
             for group in mlinks:

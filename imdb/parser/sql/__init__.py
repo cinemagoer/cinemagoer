@@ -7,7 +7,7 @@ the SQLObject _AND_ SQLAlchemy Object Relational Managers is available.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "sql", "database" or "db".
 
-Copyright 2005-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2012 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -454,7 +454,8 @@ def get_movie_data(movieID, kindDict, fromAka=0, _table=None):
         else: Table = AkaTitle
     try:
         m = Table.get(movieID)
-    except:
+    except Exception, e:
+        _aux_logger.warn('Unable to fetch information for movieID %s: %s', movieID, e)
         mdict = {}
         return mdict
     mdict = {'title': m.title, 'kind': kindDict[m.kindID],
@@ -1120,7 +1121,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         if mlinks:
             for ml in mlinks:
                 lmovieData = get_movie_data(ml[0], self._kind)
-                if (len(lmovieData)>0):
+                if lmovieData:
                     m = Movie(movieID=ml[0], data=lmovieData, accessSystem='sql')
                     ml[0] = m
             res['connections'] = {}

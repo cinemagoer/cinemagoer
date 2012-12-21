@@ -160,6 +160,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             kwds.update(keywords)
             keywords = kwds
         except Exception, e:
+            import logging
             logging.getLogger('imdbpy').warn('Unable to read configuration' \
                                             ' file; complete error: %s' % e)
             # It just LOOKS LIKE a bad habit: we tried to read config

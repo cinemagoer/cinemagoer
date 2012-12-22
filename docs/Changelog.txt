@@ -1,9 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20121210 "Trouble with the Curve" (10 Dec 2012)
+* What's the new in release 5.0dev20121221 "Wreck-It Ralph" (21 Dec 2012)
   [general]
   - Introduced the list of French articles.
+  - fix for GAE.
 
   [http]
   - first fixes for new result pages.

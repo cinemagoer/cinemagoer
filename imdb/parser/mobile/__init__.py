@@ -193,7 +193,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                                     title)
             return res
         tl = title[0].lower()
-        if not tl.startswith('imdb title'):
+        if not tl.startswith('find - imdb'):
             # a direct hit!
             title = _unHtml(title[0])
             mid = None
@@ -211,7 +211,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             # XXX: this results*3 prevents some recursion errors, but...
             #      it's not exactly understandable (i.e.: why 'results' is
             #      not enough to get all the results?)
-            lis = _findBetween(cont, 'td valign="top">', '</td>',
+            lis = _findBetween(cont, 'td class="result_text">', '</td>',
                                 maxRes=results*3)
             for li in lis:
                 akas = re_makas.findall(li)

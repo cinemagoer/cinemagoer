@@ -109,6 +109,9 @@ _old_cookie_uu = '3M3AXsquTU5Gur/Svik+ewflPm5Rk2ieY3BIPlLjyK3C0Dp9F8UoPgbTyKiGtZ
 # New 'IMDbPYweb' account.
 _cookie_id = 'rH1jNAkjTlNXvHolvBVBsgaPICNZbNdjVjzFwzas9JRmusdjVoqBs/Hs12NR+1WFxEoR9bGKEDUg6sNlADqXwkas12N131Rwdb+UQNGKN8PWrNdjcdqBQVLq8mbGDHP3hqzxhbD692NQi9D0JjpBtRaPIbP1zNdjUOqENQYv1ADWrNcT9vyXU1'
 _cookie_uu = 'su4/m8cho4c6HP+W1qgq6wchOmhnF0w+lIWvHjRUPJ6nRA9sccEafjGADJ6hQGrMd4GKqLcz2X4z5+w+M4OIKnRn7FpENH7dxDQu3bQEHyx0ZEyeRFTPHfQEX03XF+yeN1dsPpcXaqjUZAw+lGRfXRQEfz3RIX9IgVEffdBAHw2wQXyf9xdMPrQELw0QNB8dsffsqcdQemjPB0w+moLcPh0JrKrHJ9hjBzdMPpcXTH7XRwwOk='
+# New 'IMDbPYweb' account values (as of 2012-12-30)
+_cookie_id = 'BCYjtpb46Go0cMHAMewWZEauhwqPL7ASCPpPVNutu6BuayHZd0U6Dk3UAqVlEM8DHLDsSr02RGQn5ff3245-R4A130NAWJ_5yqXx7X-zJey8vQM8JKdv3rTUSEJznJQlojUW1Bije-Q0FXAixs4I0sePWhd_tA41i-9AF2q3lPmaksram6ilMhN9i3IPESW1PMbk'
+_cookie_uu = 'BCYttQjEMc-NyUdFUGxThidAnBo7wwalEzj4un9uzf2XoEjtqDhNfrH7bOSuwlRkMEQ11SNyTajl-b9Q-21m4HwYu0e3jXZrjYLXLYzFkrEroCDyUREqaTwPJPSjGtFmvlaVBZEZmsWpaxe18DT5KiygKyGPZKH78Xu4im6ba-Sd31WvbXHzP8KGXPpGjhhVuv7Dcv314HCWkE832Srf9ya-Uv0FdGAmYyLbIAXuxnvpYQd6oZ8-CYkSGLIqcKWdrf5S'
 
 # imdbpy2010 account.
 #_cookie_id = 'QrCdxVi+L+WgqOLrQJJgBgRRXGInphxiBPU/YXSFDyExMFzCp6YcYgSVXyEUhS/xMID8wqemHGID4DlntwZ49vemP5UXsAxiJ4D6goSmHGIgNT9hMXBaRSF2vMS3phxB0bVfQiQlP1RxdrzhB6YcRHFASyIhQVowwXCKtDSlD2YhgRvxBsCKtGemHBKH9mxSI='
@@ -141,9 +144,10 @@ class IMDbURLopener(FancyURLopener):
         for header in ('User-Agent', 'User-agent', 'user-agent'):
             self.del_header(header)
         self.set_header('User-Agent', 'Mozilla/5.0')
+        self.set_header('Accept-Language', 'en-us,en;q=0.5')
         # XXX: This class is used also to perform "Exact Primary
         #      [Title|Name]" searches, and so by default the cookie is set.
-        c_header = 'id=%s; uu=%s' % (_cookie_id, _cookie_uu)
+        c_header = 'uu=%s; id=%s' % (_cookie_uu, _cookie_id)
         self.set_header('Cookie', c_header)
 
     def get_proxy(self):

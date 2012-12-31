@@ -6,7 +6,7 @@ IMDb's data for mobile systems.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "mobile".
 
-Copyright 2005-2011 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2012 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -492,7 +492,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             self._mobile_logger.warn('no title tag searching for name %s', name)
             return res
         nl = name[0].lower()
-        if not nl.startswith('imdb name'):
+        if not nl.startswith('find - imdb'):
             # a direct hit!
             name = _unHtml(name[0])
             name = name.replace('- Filmography by type' , '').strip()
@@ -506,7 +506,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 return res
             res[:] = [(str(pid[0]), analyze_name(name, canonical=1))]
         else:
-            lis = _findBetween(cont, 'td valign="top">', '</td>',
+            lis = _findBetween(cont, 'td class="result_text">', '</td>',
                                 maxRes=results*3)
             for li in lis:
                 akas = _findBetween(li, '<em>"', '"</em>')

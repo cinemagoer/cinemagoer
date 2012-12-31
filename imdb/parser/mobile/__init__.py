@@ -771,7 +771,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         return {'data': d}
 
     def _search_character(self, name, results):
-        cont = subXMLRefs(self._get_search_content('char', name, results))
+        cont = subXMLRefs(self._get_search_content('ch', name, results))
         name = _findBetween(cont, '<title>', '</title>', maxRes=1)
         res = []
         if not name:
@@ -779,8 +779,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                                     name)
             return res
         nl = name[0].lower()
-        if not (nl.startswith('imdb search') or nl.startswith('imdb  search') \
-                or nl.startswith('imdb character')):
+        if not nl.startswith('find - imdb'):
             # a direct hit!
             name = _unHtml(name[0]).replace('(Character)', '').strip()
             pid = None
@@ -793,23 +792,18 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 return res
             res[:] = [(str(pid[0]), analyze_name(name))]
         else:
-            sects = _findBetween(cont, '<b>Popular Characters</b>', '</table>',
-                                maxRes=results*3)
-            sects += _findBetween(cont, '<b>Characters', '</table>',
-                                maxRes=results*3)
-            for sect in sects:
-                lis = _findBetween(sect, '<a href="/character/',
-                                    ['<small', '</td>', '<br'])
-                for li in lis:
-                    li = '<%s' % li
-                    pid = re_imdbID.findall(li)
-                    pname = _unHtml(li)
-                    if not (pid and pname):
-                        self._mobile_logger.debug('no name/characterID' \
-                                                ' parsing %s searching for' \
-                                                ' character %s', li, name)
-                        continue
-                    res.append((str(pid[0]), analyze_name(pname)))
+            lis = _findBetween(cont, '<td class="result_text"',
+                                ['<small', '</td>', '<br'])
+            for li in lis:
+                li = '<%s' % li
+                pid = re_imdbID.findall(li)
+                pname = _unHtml(li)
+                if not (pid and pname):
+                    self._mobile_logger.debug('no name/characterID' \
+                                            ' parsing %s searching for' \
+                                            ' character %s', li, name)
+                    continue
+                res.append((str(pid[0]), analyze_name(pname)))
         return res
 
     def get_character_main(self, characterID):

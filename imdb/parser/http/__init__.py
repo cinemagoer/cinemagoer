@@ -758,7 +758,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.pProxy.person_keywords_parser.parse(cont)
 
     def _search_character(self, name, results):
-        cont = self._get_search_content('char', name, results)
+        cont = self._get_search_content('ch', name, results)
         return self.scProxy.search_character_parser.parse(cont, results=results)['data']
 
     def get_character_main(self, characterID):

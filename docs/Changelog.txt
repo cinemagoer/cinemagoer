@@ -10,6 +10,7 @@
   - fixed searches.
   - search results are always in English.
   - updated the cookies.
+  - fixed goofs parser.
   - fixed url for top250.
   - changed query separators from ; to &.
 

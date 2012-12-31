@@ -861,8 +861,8 @@ class DOMHTMLGoofsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [Extractor(label='goofs', path="//ul[@class='trivia']/li",
-                    attrs=Attribute(key='goofs', multi=True, path=".//text()",
+    extractors = [Extractor(label='goofs', path="//div[@class='soda odd']",
+                    attrs=Attribute(key='goofs', multi=True, path="./text()",
                         postprocess=lambda x: (x or u'').strip()))]
 
 

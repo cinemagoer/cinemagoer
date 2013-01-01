@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20121231 "Shocking Dark" (31 Dec 2012)
+* What's the new in release 5.0dev20130101 "Shocking Dark" (01 Jan 2013)
   [general]
   - Introduced the list of French articles.
   - fix for GAE.
@@ -12,6 +12,7 @@
   - updated the cookies.
   - fixed goofs parser.
   - fixed url for top250.
+  - better charset identification.
   - changed query separators from ; to &.
 
   [mobile]

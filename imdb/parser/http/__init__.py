@@ -203,12 +203,11 @@ class IMDbURLopener(FancyURLopener):
             server_encode = uopener.info().getparam('charset')
             # Otherwise, look at the content-type HTML meta tag.
             if server_encode is None and content:
-                first_bytes = content[:512]
-                begin_h = first_bytes.find('text/html; charset=')
+                begin_h = content.find('text/html; charset=')
                 if begin_h != -1:
-                    end_h = first_bytes[19+begin_h:].find('"')
+                    end_h = content[19+begin_h:].find('"')
                     if end_h != -1:
-                        server_encode = first_bytes[19+begin_h:19+begin_h+end_h]
+                        server_encode = content[19+begin_h:19+begin_h+end_h]
             if server_encode:
                 try:
                     if lookup(server_encode):

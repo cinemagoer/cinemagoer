@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -849,6 +849,13 @@ class DOMHTMLCrazyCreditsParser(DOMParserBase):
                                     x.replace('\n', ' ').replace('  ', ' ')))]
 
 
+def _process_goof(x):
+    if x['spoiler_category']:
+        return x['spoiler_category'].strip() + ': SPOILER: ' + x['text'].strip()
+    else:
+        return x['category'].strip() + ': ' + x['text'].strip()
+
+
 class DOMHTMLGoofsParser(DOMParserBase):
     """Parser for the "goofs" page of a given movie.
     The page should be provided as a string, as taken from
@@ -862,8 +869,13 @@ class DOMHTMLGoofsParser(DOMParserBase):
     _defGetRefs = True
 
     extractors = [Extractor(label='goofs', path="//div[@class='soda odd']",
-                    attrs=Attribute(key='goofs', multi=True, path="./text()",
-                        postprocess=lambda x: (x or u'').strip()))]
+                    attrs=Attribute(key='goofs', multi=True,
+                        path={
+                              'text':"./text()",
+                              'category':'./preceding-sibling::h4[1]/text()',
+                              'spoiler_category': './h4/text()'
+                        },
+                        postprocess=_process_goof))]
 
 
 class DOMHTMLQuotesParser(DOMParserBase):

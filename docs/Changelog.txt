@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20130124 "Django Unchained" (23 Jan 2013)
+* What's the new in release 5.0dev20130209 "Looper" (09 Feb 2013)
   [general]
   - Introduced the list of French articles.
   - fix for GAE.
@@ -15,6 +15,7 @@
   - better charset identification.
   - category and spoiler status for goofs.
   - changed query separators from ; to &.
+  - fix for episodes of unknown seasons.
 
   [mobile]
   - fixed searches.

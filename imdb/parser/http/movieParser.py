@@ -1486,6 +1486,14 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
         try: selected_season = int(selected_season)
         except: pass
         nd = {selected_season: {}}
+        if 'episode -1' in data:
+          counter = 1
+          for episode in data['episode -1']:
+            while 'episode %d' % counter in data:
+              counter += 1
+            k = 'episode %d' % counter
+            data[k] = [episode]
+          del data['episode -1']
         for episode_nr, episode in data.iteritems():
             if not (episode and episode[0] and
                     episode_nr.startswith('episode ')):

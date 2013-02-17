@@ -48,3 +48,7 @@ EMAIL: <gnuknight --> users.sourceforge.net>
 CONTRIBUTION: did a lot of work 'sql', DB2 and CSV support and
 extensive analysis aimed at diff files support.
 
+NAME: Roy Stead
+EMAIL: <roystead247 --> gmail.com>
+CONTRIBUTION: provided the download_applydiffs.py script.
+

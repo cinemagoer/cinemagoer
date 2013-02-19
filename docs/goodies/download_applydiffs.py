@@ -168,7 +168,7 @@ def applyDiffs():
                 subprocess.call(cmdUnGzip , shell=True)
             except Exception, e:
                 print "Unable to uncompress imdb list file using: %s\n\t%e" % (cmdUnGzip, str(e))
-            numListFiles++;
+            numListFiles += 1
 
     if numListFiles == 0:
         print "No imdb list files found in %s." % ImdbListsPath

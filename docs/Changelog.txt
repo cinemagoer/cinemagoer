@@ -1,11 +1,12 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20130217 "The Return of the Living Dead" (17 Feb 2013)
+* What's the new in release 5.0dev20130223 "First Orbit" (23 Feb 2013)
   [general]
   - Introduced the list of French articles.
   - fix for GAE.
   - download_applydiffs.py script.
+  - fixed wrong handling of encoding in episode titles
 
   [http]
   - fixed searches.

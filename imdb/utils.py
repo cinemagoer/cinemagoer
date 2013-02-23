@@ -3,7 +3,7 @@ utils module (imdb package).
 
 This module provides basic utilities for the imdb package.
 
-Copyright 2004-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
                2009 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -530,7 +530,7 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
         if ptdf:
             doYear = 1
         # XXX: for results coming from the new search page.
-        if not isinstance(episode_of, dict):
+        if not isinstance(episode_of, (dict, _Container)):
             episode_of = {'title': episode_of, 'kind': 'tv series'}
             if 'series year' in title_dict:
                 episode_of['year'] = title_dict['series year']
@@ -568,7 +568,8 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
                     episode_title += '.%s' % episode
                 episode_title += ')'
             episode_title = '{%s}' % episode_title
-        return '%s %s' % (pre_title, episode_title)
+        return _emptyString + '%s %s' % (_emptyString + pre_title,
+                            _emptyString + episode_title)
     title = title_dict.get('title', '')
     if not title: return _emptyString
     if canonical is not None:

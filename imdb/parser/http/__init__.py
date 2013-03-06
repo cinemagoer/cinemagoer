@@ -464,10 +464,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
         results is the maximum number of results to be retrieved."""
         if isinstance(ton, unicode):
             try:
-                ton = ton.encode('iso8859-1')
+                ton = ton.encode('utf-8')
             except Exception, e:
                 try:
-                    ton = ton.encode('utf-8')
+                    ton = ton.encode('iso8859-1')
                 except Exception, e:
                     pass
         ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))

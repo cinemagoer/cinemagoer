@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20130223 "First Orbit" (23 Feb 2013)
+* What's the new in release 5.0dev20130306 "Zero Dark Thirty" (06 Mar 2013)
   [general]
   - Introduced the list of French articles.
   - fix for GAE.

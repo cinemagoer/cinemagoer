@@ -788,9 +788,9 @@ class DOMHTMLSoundtrackParser(DOMHTMLAlternateVersionsParser):
         ]
 
     def postprocess_data(self, data):
-        if 'soundtrack' in data:
+        if 'alternate versions' in data:
             nd = []
-            for x in data['soundtrack']:
+            for x in data['alternate versions']:
                 ds = x.split('\n')
                 title = ds[0]
                 if title[0] == '"' and title[-1] == '"':

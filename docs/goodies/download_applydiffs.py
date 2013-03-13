@@ -39,6 +39,8 @@ import subprocess
 import re
 import datetime
 import time
+import MySQLdb
+import logging
 
 from datetime import timedelta,datetime
 from ftplib import FTP
@@ -52,8 +54,11 @@ from random import choice
 #
 # If ImdbDiffsPath is set to None then a working folder, "diffs" will be created as a sub-folder of ImdbListsPath
 # and will be cleaned up afterwards if you also set keepDiffFiles to False
-ImdbListsPath = None #"Z:\\MovieDB\\data\\lists"
+ImdbListsPath = "Z:\\MovieDB\\data\\lists"
 ImdbDiffsPath = None
+
+# The path to the logfile, if desired
+logfile = 'Z:\\MovieDB\\data\\logs\\update.log'
 
 # Define the system commands to unZip, unTar, Patch and Gzip a file
 # Values are substituted into these template strings at runtime, in the order indicated
@@ -69,13 +74,13 @@ progGZip="\"Z:/MovieDB/Scripts/gzip.exe\" %s"                                   
 # such as a command line to execute imdbPy to rebuild the db from the updated imdb list files
 #
 # Set to None if no such program should be run
-RunAfterSuccessfulUpdate=None #"\"Z:\\MovieDB\\Scripts\\Update db from imdb lists.bat\""
+RunAfterSuccessfulUpdate="\"Z:\\MovieDB\\Scripts\\Update db from imdb lists.bat\""
 
 # Folder to copy downloaded imdb diff files to once they have been successfully applied
 # Note that ONLY diff files which are successfully applied will be backed up.
 #
 # Set to None if no such folder
-diffFilesBackupFolder=None #"T:\\Backups\\MovieDB\\data\\lists\\diffs"
+diffFilesBackupFolder=None
 
 # Set keepDiffFiles to false if the script is to delete ImdbDiffsPath and all its files when it's finished
 #
@@ -94,6 +99,7 @@ ImdbDiffsFtpServers = [ \
 #                Script Code                #
 #############################################
 
+logger = None
 
 # Returns the date of the most recent Friday
 # The returned datetime object contains ONLY date information, all time data is set to zero
@@ -103,7 +109,7 @@ def previousFriday(day):
 
     # Saturday and Sunday are a special case since Python's day of the week numbering starts at Monday = 0
     # Note that if day falls on a Friday then the "previous friday" for that date is the same date
-    if day.weekday() > 4:
+    if day.weekday() <= 4:
         friday -= timedelta(weeks=1)
 
     return friday
@@ -132,7 +138,7 @@ def mktree(path):
         try:
             os.mkdir(path)
         except Exception, e:
-            print "Error trying to create %p\n\t%s" % (path, str(e))
+            logger.exception("Error trying to create %p" % path)
             return -1
     return 0
 
@@ -143,7 +149,7 @@ def applyDiffs():
     global unGzip, unTar, applyPatch, progGZip, RunAfterSuccessfulUpdate, ImdbDiffsFtpServers
 
     if not os.path.exists(ImdbListsPath):
-        print "Please edit this script file and set ImdbListsPath to the current location of your imdb list files"
+        logger.critical("Please edit this script file and set ImdbListsPath to the current location of your imdb list files")
         return
 
     # If no ImdbDiffsPath is specified, create a working folder for the diffs file as a sub-folder of the imdb lists repository
@@ -173,24 +179,28 @@ def applyDiffs():
             try:
                 t = os.path.getmtime(os.path.join(ImdbListsPath,f))
                 d = datetime.fromtimestamp(t)
+
                 if day == None:
                     day = d
                 elif d > day:
                     day = d
             except Exception, e:
-                print "Unable to read last modified date for file %s\n\t%s" % (f, str(e))
+                logger.exception("Unable to read last modified date for file %s" % f)
 
     if day is None:
 
         # No diff files found and unable to read imdb list files
-        print "Problem: Unable to check imdb lists in folder %s\nSolutions: Download imdb lists, change ImdbListsPath value in this script or change access settings for that folder." % ImdbListsPath
+        logger.critical("Problem: Unable to check imdb lists in folder %s" % ImdbListsPath)
+        logger.critical("Solutions: Download imdb lists, change ImdbListsPath value in this script or change access settings for that folder.")
         return
 
     # Last update date for imdb list files is the Friday before they were downloaded
     imdbListsDate =  previousFriday(day)
 
-    if imdbListsDate > mostrecentfriday:
-        print "imdb database is already up to date\n"
+    logger.debug("imdb lists updated up to %s" % imdbListsDate)
+
+    if imdbListsDate >= mostrecentfriday:
+        logger.info("imdb database is already up to date")
         return
 
     # Create diffs file folder if it does not already exist
@@ -198,7 +208,8 @@ def applyDiffs():
         try:
             os.mkdir(ImdbDiffsPath)
         except Exception, e:
-            print "Unable to create folder for imdb diff files (%s)\n\t%s" % (ImdbDiffsPath, str(e))
+            logger.exception("Unable to create folder for imdb diff files (%s)" % ImdbDiffsPath)
+            return
 
     # Next we check for the imdb diff files and download any which we need to apply but which are not already downloaded
     diffFileDate = imdbListsDate
@@ -211,7 +222,7 @@ def applyDiffs():
         diff = "diffs-%s.tar.gz" % diffFileDate.strftime("%y%m%d")
         diffFilePath = os.path.join(ImdbDiffsPath, diff)
 
-#        print "Need diff file %s" % diff
+        logger.debug("Need diff file %s" % diff)
 
         if not os.path.isfile(diffFilePath):
             
@@ -232,11 +243,11 @@ def applyDiffs():
 
                     haveFTPConnection = True
                 except Exception, e:
-                    print str(e)
+                    logger.exception("Unable to connect to FTP server %s" % ImdbDiffsFtp)
                     return
 
             # Now download the diffs file
-            print "Downloading ftp://%s%s/%s" % ( ImdbDiffsFtp, ImdbDiffsFtpPath, diff )
+            logger.info("Downloading ftp://%s%s/%s" % ( ImdbDiffsFtp, ImdbDiffsFtpPath, diff ))
             diffFile = open(diffFilePath, 'wb');
             try:
                 ftp.retrbinary("RETR " + diff, diffFile.write)
@@ -246,9 +257,9 @@ def applyDiffs():
                 # Unable to download diff file. This may be because it's not yet available but is due for release today
                 code, message = e.message.split(' ', 1)
                 if code == '550' and diffFileDate == imdbListsDate:
-                    print "Diff file %s not yet available on the imdb diffs server: try again later" % diff
+                    logger.info("Diff file %s not yet available on the imdb diffs server: try again later" % diff)
                 else:
-                    print "Unable to download %s:\n\t%s\n" % (diff, str(e))
+                    logger.exception("Unable to download %s" % diff)
 
                 # Delete the diffs file placeholder since the file did not download
                 diffFile.close()
@@ -258,7 +269,7 @@ def applyDiffs():
 
                 return
 
-            print "\tSuccessfully downloaded %s\n" % (diffFilePath)
+            logger.info("Successfully downloaded %s" % diffFilePath)
 
         # Check for the following week's diff file
         diffFileDate += timedelta(weeks=1)
@@ -282,11 +293,10 @@ def applyDiffs():
     try:
         os.mkdir(tmpListsPath)
     except Exception, e:
-        print "Unable to create temporary folder for imdb lists\n\t%s" % str(e)
+        logger.exception("Unable to create temporary folder for imdb lists")
         return
 
-    print "Uncompressing imdb list files"
-
+    logger.info("Uncompressing imdb list files")
 
     # Uncompress list files in ImdbListsPath to our temporary folder tmpListsPath
     numListFiles = 0;
@@ -296,16 +306,17 @@ def applyDiffs():
                 cmdUnGzip = unGzip % (os.path.join(ImdbListsPath,f), tmpListsPath)
                 subprocess.call(cmdUnGzip , shell=True)
             except Exception, e:
-                print "Unable to uncompress imdb list file using: %s\n\t%e" % (cmdUnGzip, str(e))
+                logger.exception("Unable to uncompress imdb list file using: %s" % cmdUnGzip)
             numListFiles += 1
 
     if numListFiles == 0:
         # Somebody has deleted or moved the list files since we checked their datetime stamps earlier(!)
-        print "No imdb list files found in %s." % ImdbListsPath
+        logger.critical("No imdb list files found in %s." % ImdbListsPath)
         return
 
 
     # Now we loop through the diff files and apply each one in turn to the uncompressed list files
+    patchedOKWith = None
     while 1:
 
         if imdbListsDate >= mostrecentfriday:
@@ -314,7 +325,7 @@ def applyDiffs():
         diff = "diffs-%s.tar.gz" % imdbListsDate.strftime("%y%m%d")
         diffFilePath = os.path.join(ImdbDiffsPath, diff)
 
-        print "Applying imdb diff file %s" % diff
+        logger.info("Applying imdb diff file %s" % diff)
 
         # First uncompress the diffs file to a subdirectory.
         #
@@ -330,7 +341,7 @@ def applyDiffs():
             cmdUnGzip = unGzip % (diffFilePath, tmpDiffsPath)
             subprocess.call(cmdUnGzip, shell=True)
         except Exception, e:
-            print "Unable to unzip imdb diffs file using: %s\n\t%s" % (cmdUnGzip, str(e))
+            logger.exception("Unable to unzip imdb diffs file using: %s" % cmdUnGzip)
             return
 
         # unTar the file diffs.tar
@@ -341,7 +352,7 @@ def applyDiffs():
                 cmdUnTar = unTar % (tarFile, tmpDiffsPath)
                 subprocess.call(cmdUnTar, shell=True)
             except Exception, e:
-                print "Unable to untar imdb diffs file using: %s\n\t%s" % (cmdUnTar, str(e))
+                logger.exception("Unable to untar imdb diffs file using: %s" % cmdUnTar)
                 return
 
             # Clean up tar file and the sub-folder which 7z may have (weirdly) created while unTarring it
@@ -353,18 +364,18 @@ def applyDiffs():
             isFirstPatchFile = True
             for f in os.listdir(tmpDiffsPath):
                 if re.match(".*\.list",f):
-                    print "Patching imdb list file %s\n" % f
+                    logger.info("Patching imdb list file %s" % f)
                     try:
                         cmdApplyPatch = applyPatch % (os.path.join(tmpListsPath,f), os.path.join(tmpDiffsPath,f))
                         patchStatus = subprocess.call(cmdApplyPatch, shell=True)
                     except Exception, e:
-                        print "Unable to patch imdb list file using: %s\n\t%s" % (cmdApplyPatch, str(e))
+                        logger.exception("Unable to patch imdb list file using: %s" % cmdApplyPatch)
                         patchStatus=-1
 
                     if patchStatus <> 0:
 
                         # Patch failed so...
-                        print "Patch status %s: Wrong diff file for these imdb lists (%s)\n" % (patchStatus, diff)
+                        logger.critical("Patch status %s: Wrong diff file for these imdb lists (%s)" % (patchStatus, diff))
 
                         # Delete the erroneous imdb diff file
                         os.remove(diffFilePath)
@@ -376,14 +387,14 @@ def applyDiffs():
 
                             # The previous imdb diffs file succeeded and the current diffs file failed with the
                             # first attempted patch, so we can keep our updated list files up to this point
-                            print "\tPatched OK up to and including imdb diff file %s ONLY" % patchedOKWith
+                            logger.warning("Patched OK up to and including imdb diff file %s ONLY" % patchedOKWith)
                             break
 
                         else:
                             # We've not managed to successfully apply any imdb diff files and this was not the
                             # first patch attempt from a diff file from this imdb diffs file so we cannot rely
                             # on the updated imdb lists being accurate, in which case delete them and abandon
-                            print "\tAbandoning update: original imdb lists are unchanged\n"
+                            logger.critical("Abandoning update: original imdb lists are unchanged")
                             deleteFolder(tmpListsPath)
                             return
 
@@ -406,7 +417,7 @@ def applyDiffs():
                     if mktree(diffFilesBackupFolder) == -1:
                         if not keepDiffFiles:
                             keepDiffFiles = True
-                            print "diff files will NOT be deleted but may be backed up manually"
+                            logger.warning("diff files will NOT be deleted but may be backed up manually")
 
                 # Backup this imdb diff file to the backup folder if that folder exists and this diff file doesn't already exist there
                 if os.path.isdir(diffFilesBackupFolder):
@@ -414,10 +425,10 @@ def applyDiffs():
                         try:
                             shutil.copy(diffFilePath,diffFilesBackupFolder)
                         except Exception, e:
-                            print "Unable to copy %s to backup folder %s\n\t%s" % (diffFilePath, diffFilesBackupFolder, str(e))
+                            logger.exception("Unable to copy %s to backup folder %s" % (diffFilePath, diffFilesBackupFolder))
                             if not keepDiffFiles:
                                 keepDiffFiles = True
-                                print "diff files will NOT be deleted but may be backed up manually"
+                                logger.warning("diff files will NOT be deleted but may be backed up manually")
 
             # Clean up imdb diff file if required
             if not keepDiffFiles:
@@ -434,7 +445,7 @@ def applyDiffs():
                 cmdGZip = progGZip % os.path.join(tmpListsPath,f)
                 subprocess.call(cmdGZip, shell=True)
             except Exception, e:
-                print "Unable to Gzip imdb list file using: %s\n\t%s" % (cmdGZip, str(e))
+                logger.exception("Unable to Gzip imdb list file using: %s" % cmdGZip)
                 break
             if os.path.isfile(os.path.join(tmpListsPath,f)):
                 os.remove(os.path.join(tmpListsPath,f))
@@ -466,9 +477,33 @@ def applyDiffs():
     # DOS batch file "Update db from imdb lists.bat" to rebuild the imdbPy database
     # and relink and reintegrate my shadow tables data into it
     if patchedOKWith <> None:
-        print "imdb lists are updated up to imdb diffs file %s\n" % patchedOKWith
+        logger.info("imdb lists are updated up to imdb diffs file %s" % patchedOKWith)
         if RunAfterSuccessfulUpdate <> None:
-            print "Now running %s" % RunAfterSuccessfulUpdate
+            logger.info("Now running %s" % RunAfterSuccessfulUpdate)
             subprocess.call(RunAfterSuccessfulUpdate, shell=True)
+
+
+# Set up logging
+def initLogging(loggerName, logfilename):
+
+    global logger
+
+    logger = logging.getLogger(loggerName)
+    logger.setLevel(logging.DEBUG)
+
+    # Logger for file, if logfilename supplied
+    if logfilename is not None:
+        fh = logging.FileHandler(logfilename)
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(logging.Formatter('%(name)s %(levelname)s %(asctime)s %(message)s\t\t\t[%(module)s line %(lineno)d: %(funcName)s%(args)s]', datefmt='%Y-%m-%d %H:%M:%S'))
+        logger.addHandler(fh)
+
+    # Logger for stdout
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(logging.Formatter('%(message)s'))
+    logger.addHandler(ch)
+
+initLogging('__applydiffs__', logfile)
 
 applyDiffs()

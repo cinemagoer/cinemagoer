@@ -8,7 +8,7 @@ E.g., for "Mel Gibson" the referred pages would be:
     biography:      http://akas.imdb.com/name/nm0000154/bio
     ...and so on...
 
-Copyright 2004-20101 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -60,6 +60,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         result = cparser.parse(categorized_html_string)
     """
     _containsObjects = True
+    _name_imdb_index = re.compile(r'\([IVXLCDM]+\)')
 
     _birth_attrs = [Attribute(key='birth date',
                         path='.//time[@itemprop="birthDate"]/@datetime'),
@@ -100,6 +101,10 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                             path=".//text()",
                             postprocess=lambda x: analyze_name(x,
                                                                canonical=1))),
+            Extractor(label='name_index',
+                        path="//h1[@class='header']/span[1]",
+                        attrs=Attribute(key='name_index',
+                            path="./text()")),
 
             Extractor(label='birth info',
                         path="//div[h4='Born:']",
@@ -152,6 +157,11 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         for what in 'birth date', 'death date':
             if what in data and not data[what]:
                 del data[what]
+        name_index = (data.get('name_index') or '').strip()
+        if name_index:
+            if self._name_imdb_index.match(name_index):
+                data['imdbIndex'] = name_index[1:-1]
+            del data['name_index']
         # XXX: the code below is for backwards compatibility
         # probably could be removed
         for key in data.keys():

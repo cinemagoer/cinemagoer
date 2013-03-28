@@ -870,7 +870,7 @@ class IMDbBase:
         """Translate a person name in an imdbID.
         Try an Exact Primary Name search on IMDb;
         return None if it's unable to get the imdbID."""
-        return self._searchIMDb('tt', name)
+        return self._searchIMDb('nm', name)
 
     def character2imdbID(self, name):
         """Translate a character name in an imdbID.

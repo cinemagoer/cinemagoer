@@ -189,10 +189,9 @@ _unicodeArticles = linguistics.toUnicode(_articles)
 articlesDicts = linguistics.articlesDictsForLang(None)
 spArticles = linguistics.spArticlesForLang(None)
 
-def canonicalTitle(title, lang=None):
+def canonicalTitle(title, lang=None, imdbIndex=None):
     """Return the title in the canonic format 'Movie Title, The';
-    beware that it doesn't handle long imdb titles, but only the
-    title portion, without year[/imdbIndex] or special markup.
+    beware that it doesn't handle long imdb titles.
     The 'lang' argument can be used to specify the language of the title.
     """
     isUnicode = isinstance(title, unicode)
@@ -203,15 +202,16 @@ def canonicalTitle(title, lang=None):
     except IndexError:
         pass
     if isUnicode:
-        _format = u'%s, %s'
+        _format = u'%s%s, %s'
     else:
-        _format = '%s, %s'
+        _format = '%s%s, %s'
     ltitle = title.lower()
+    imdbIndex = ' (%s)' % imdbIndex if imdbIndex else ''
     spArticles = linguistics.spArticlesForLang(lang)
     for article in spArticles[isUnicode]:
         if ltitle.startswith(article):
             lart = len(article)
-            title = _format % (title[lart:], title[:lart])
+            title = _format % (title[lart:], imdbIndex, title[:lart])
             if article[-1] == ' ':
                 title = title[:-1]
             break
@@ -571,10 +571,11 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
         return _emptyString + '%s %s' % (_emptyString + pre_title,
                             _emptyString + episode_title)
     title = title_dict.get('title', '')
+    imdbIndex = title_dict.get('imdbIndex', '')
     if not title: return _emptyString
     if canonical is not None:
         if canonical:
-            title = canonicalTitle(title, lang=lang)
+            title = canonicalTitle(title, lang=lang, imdbIndex=imdbIndex)
         else:
             title = normalizeTitle(title, lang=lang)
     if pre_title:
@@ -583,12 +584,12 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
         title = '"%s"' % title
     if _doYear:
         imdbIndex = title_dict.get('imdbIndex')
+        if imdbIndex and canonical is None:
+            title += ' (%s)' % imdbIndex
         year = title_dict.get('year') or u'????'
         if isinstance(_emptyString, str):
             year = str(year)
         title += ' (%s' % year
-        if imdbIndex:
-            title += '/%s' % imdbIndex
         title += ')'
     if kind:
         if kind == 'tv movie':

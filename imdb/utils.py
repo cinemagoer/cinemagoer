@@ -206,7 +206,10 @@ def canonicalTitle(title, lang=None, imdbIndex=None):
     else:
         _format = '%s%s, %s'
     ltitle = title.lower()
-    imdbIndex = ' (%s)' % imdbIndex if imdbIndex else ''
+    if imdbIndex:
+        imdbIndex = ' (%s)' % imdbIndex
+    else:
+        imdbIndex = ''
     spArticles = linguistics.spArticlesForLang(lang)
     for article in spArticles[isUnicode]:
         if ltitle.startswith(article):

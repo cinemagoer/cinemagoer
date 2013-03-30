@@ -398,7 +398,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
     elif title.endswith('(TV Short)'):
         kind = u'tv short'
         title = title[:-10].rstrip()
-    elif title.endswith('(mini)'):
+    elif title.endswith('(TV Mini-Series)'):
         kind = u'tv mini series'
         title = title[:-6].rstrip()
     elif title.endswith('(VG)'):
@@ -510,7 +510,7 @@ def _convertTime(title, fromPTDFtoWEB=1, _emptyString=u''):
 
 def build_title(title_dict, canonical=None, canonicalSeries=None,
                 canonicalEpisode=None, ptdf=0, lang=None, _doYear=1,
-                _emptyString=u''):
+                _emptyString=u'', appendKind=False):
     """Given a dictionary that represents a "long" IMDb title,
     return a string.
 
@@ -592,7 +592,7 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
             year = str(year)
         title += ' (%s' % year
         title += ')'
-    if kind:
+    if appendKind and kind:
         if kind == 'tv movie':
             title += ' (TV)'
         elif kind == 'video movie':

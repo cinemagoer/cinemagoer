@@ -834,7 +834,7 @@ class IMDbBase:
         aSystem = IMDb('mobile')
         if kind == 'tt':
             searchFunct = aSystem.search_movie
-            check = 'long imdb canonical title'
+            check = 'long imdb title'
         elif kind == 'nm':
             searchFunct = aSystem.search_person
             check = 'long imdb canonical name'

@@ -830,8 +830,8 @@ class IMDbSqlAccessSystem(IMDbBase):
         imdbID = movie.imdbID
         if imdbID is not None: return '%07d' % imdbID
         m_dict = get_movie_data(movie.id, self._kind)
-        titline = build_title(m_dict, ptdf=1)
-        imdbID = self.title2imdbID(titline)
+        titline = build_title(m_dict, ptdf=0)
+        imdbID = self.title2imdbID(titline, m_dict['kind'])
         # If the imdbID was retrieved from the web and was not in the
         # database, update the database (ignoring errors, because it's
         # possibile that the current user has not update privileges).

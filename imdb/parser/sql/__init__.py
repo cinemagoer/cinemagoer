@@ -837,7 +837,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         # possibile that the current user has not update privileges).
         # There're times when I think I'm a genius; this one of
         # those times... <g>
-        if imdbID is not None:
+        if imdbID is not None and not isinstance(imdbID, list):
             try: movie.imdbID = int(imdbID)
             except: pass
         return imdbID
@@ -852,9 +852,9 @@ class IMDbSqlAccessSystem(IMDbBase):
         imdbID = person.imdbID
         if imdbID is not None: return '%07d' % imdbID
         n_dict = {'name': person.name, 'imdbIndex': person.imdbIndex}
-        namline = build_name(n_dict, canonical=1)
+        namline = build_name(n_dict, canonical=False)
         imdbID = self.name2imdbID(namline)
-        if imdbID is not None:
+        if imdbID is not None and not isinstance(imdbID, list):
             try: person.imdbID = int(imdbID)
             except: pass
         return imdbID
@@ -869,9 +869,9 @@ class IMDbSqlAccessSystem(IMDbBase):
         imdbID = character.imdbID
         if imdbID is not None: return '%07d' % imdbID
         n_dict = {'name': character.name, 'imdbIndex': character.imdbIndex}
-        namline = build_name(n_dict, canonical=1)
+        namline = build_name(n_dict, canonical=False)
         imdbID = self.character2imdbID(namline)
-        if imdbID is not None:
+        if imdbID is not None and not isinstance(imdbID, list):
             try: character.imdbID = int(imdbID)
             except: pass
         return imdbID
@@ -888,7 +888,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         n_dict = {'name': company.name, 'country': company.countryCode}
         namline = build_company_name(n_dict)
         imdbID = self.company2imdbID(namline)
-        if imdbID is not None:
+        if imdbID is not None and not isinstance(imdbID, list):
             try: company.imdbID = int(imdbID)
             except: pass
         return imdbID

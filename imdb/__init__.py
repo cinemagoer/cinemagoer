@@ -837,10 +837,10 @@ class IMDbBase:
             check = 'long imdb title'
         elif kind == 'nm':
             searchFunct = aSystem.search_person
-            check = 'long imdb canonical name'
+            check = 'long imdb name'
         elif kind == 'char':
             searchFunct = aSystem.search_character
-            check = 'long imdb canonical name'
+            check = 'long imdb name'
         elif kind == 'co':
             # XXX: are [COUNTRY] codes included in the results?
             searchFunct = aSystem.search_company

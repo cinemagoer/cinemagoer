@@ -125,7 +125,7 @@ params = {
         'platforms': 'any',
         'keywords': keywords,
         'classifiers': filter(None, classifiers.split("\n")),
-        'zip_safe': False, # XXX: I guess, at least...
+        #'zip_safe': False, # XXX: I guess, at least...
         # Download URLs.
         'url': home_page,
         'download_url': dwnl_url,

@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20130306 "Zero Dark Thirty" (06 Mar 2013)
+* What's the new in release 5.0dev20130414 "Oblivion" (14 Apr 2013)
   [general]
   - Introduced the list of French articles.
   - fix for GAE.
@@ -14,6 +14,7 @@
   - updated the cookies.
   - fixed goofs parser.
   - fixed url for top250.
+  - fix for quotes.
   - better charset identification.
   - category and spoiler status for goofs.
   - changed query separators from ; to &.

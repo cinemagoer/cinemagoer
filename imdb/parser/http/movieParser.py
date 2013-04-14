@@ -891,9 +891,16 @@ class DOMHTMLQuotesParser(DOMParserBase):
     _defGetRefs = True
 
     extractors = [
-        Extractor(label='quotes',
-            path="//div[@class='_imdbpy']",
-            attrs=Attribute(key='quotes',
+        Extractor(label='quotes_odd',
+            path="//div[@class='quote soda odd']",
+            attrs=Attribute(key='quotes_odd',
+                multi=True,
+                path=".//text()",
+                postprocess=lambda x: x.strip().replace(' \n',
+                            '::').replace('::\n', '::').replace('\n', ' '))),
+        Extractor(label='quotes_even',
+            path="//div[@class='quote soda even']",
+            attrs=Attribute(key='quotes_even',
                 multi=True,
                 path=".//text()",
                 postprocess=lambda x: x.strip().replace(' \n',
@@ -901,27 +908,24 @@ class DOMHTMLQuotesParser(DOMParserBase):
         ]
 
     preprocessors = [
-        (re.compile('(<a name="?qt[0-9]{7}"?></a>)', re.I),
-            r'\1<div class="_imdbpy">'),
-        (re.compile('<hr width="30%">', re.I), '</div>'),
-        (re.compile('<hr/>', re.I), '</div>'),
-        (re.compile('<script.*?</script>', re.I|re.S), ''),
-        # For BeautifulSoup.
-        (re.compile('<!-- sid: t-channel : MIDDLE_CENTER -->', re.I), '</div>')
-        ]
+        (re.compile('<a href="#" class="hidesoda hidden">Hide options</a><br>', re.I), '')
+    ]
 
     def preprocess_dom(self, dom):
         # Remove "link this quote" links.
-        for qLink in self.xpath(dom, "//p[@class='linksoda']"):
+        for qLink in self.xpath(dom, "//span[@class='linksoda']"):
+            qLink.drop_tree()
+        for qLink in self.xpath(dom, "//div[@class='sharesoda_pre']"):
             qLink.drop_tree()
         return dom
 
     def postprocess_data(self, data):
-        if 'quotes' not in data:
+        print data.keys()
+        quotes = data.get('quotes_odd', []) + data.get('quotes_even', [])
+        if not quotes:
             return {}
-        for idx, quote in enumerate(data['quotes']):
-            data['quotes'][idx] = quote.split('::')
-        return data
+        quotes = [q.split('::') for q in quotes]
+        return {'quotes': quotes}
 
 
 class DOMHTMLReleaseinfoParser(DOMParserBase):

@@ -920,7 +920,6 @@ class DOMHTMLQuotesParser(DOMParserBase):
         return dom
 
     def postprocess_data(self, data):
-        print data.keys()
         quotes = data.get('quotes_odd', []) + data.get('quotes_even', [])
         if not quotes:
             return {}

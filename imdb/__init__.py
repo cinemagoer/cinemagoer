@@ -856,7 +856,7 @@ class IMDbBase:
         title_only_matches = []
         for item in searchRes:
             # Return the first perfect match.
-            if item[check] == ton:
+            if item[check].strip('"') == ton.strip('"'):
                 # For titles do additional check for kind
                 if kind != 'tt' or title_kind == item['kind']:
                     return item.getID()

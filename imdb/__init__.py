@@ -831,6 +831,7 @@ class IMDbBase:
         # to the mobile search. :-/
         if not ton:
             return None
+        ton = ton.strip('"')
         aSystem = IMDb('mobile')
         if kind == 'tt':
             searchFunct = aSystem.search_movie
@@ -856,7 +857,7 @@ class IMDbBase:
         title_only_matches = []
         for item in searchRes:
             # Return the first perfect match.
-            if item[check].strip('"') == ton.strip('"'):
+            if item[check].strip('"') == ton:
                 # For titles do additional check for kind
                 if kind != 'tt' or title_kind == item['kind']:
                     return item.getID()

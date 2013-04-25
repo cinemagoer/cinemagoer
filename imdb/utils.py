@@ -583,6 +583,8 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
             title = normalizeTitle(title, lang=lang)
     if pre_title:
         title = '%s %s' % (pre_title, title)
+    if kind in (u'tv series', u'tv mini series'):
+        title = '"%s"' % title
     if _doYear:
         imdbIndex = title_dict.get('imdbIndex')
         if imdbIndex and canonical is None:

@@ -400,6 +400,9 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
         title = title[:-10].rstrip()
     elif title.endswith('(TV Mini-Series)'):
         kind = u'tv mini series'
+        title = title[:-16].rstrip()
+    elif title.endswith('(mini)'):
+        kind = u'tv mini series'
         title = title[:-6].rstrip()
     elif title.endswith('(VG)'):
         kind = u'video game'
@@ -587,7 +590,7 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
         title = '"%s"' % title
     if _doYear:
         imdbIndex = title_dict.get('imdbIndex')
-        if imdbIndex and canonical is None:
+        if imdbIndex and (canonical is None or canonical):
             title += ' (%s)' % imdbIndex
         year = title_dict.get('year') or u'????'
         if isinstance(_emptyString, str):

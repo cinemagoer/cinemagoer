@@ -513,7 +513,7 @@ def _convertTime(title, fromPTDFtoWEB=1, _emptyString=u''):
 
 def build_title(title_dict, canonical=None, canonicalSeries=None,
                 canonicalEpisode=None, ptdf=0, lang=None, _doYear=1,
-                _emptyString=u'', appendKind=False):
+                _emptyString=u'', appendKind=True):
     """Given a dictionary that represents a "long" IMDb title,
     return a string.
 
@@ -592,7 +592,7 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
         imdbIndex = title_dict.get('imdbIndex')
         if imdbIndex and (canonical is None or canonical):
             title += ' (%s)' % imdbIndex
-        year = title_dict.get('year') or u'????'
+        year = title_dict.get('year') or '????'
         if isinstance(_emptyString, str):
             year = str(year)
         title += ' (%s' % year

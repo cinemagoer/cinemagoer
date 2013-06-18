@@ -938,13 +938,13 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         result = rdparser.parse(releaseinfo_html_string)
     """
     extractors = [Extractor(label='release dates',
-                    path="//th[@class='xxxx']/../../tr",
+                    path="//table[@id='release_dates']//tr",
                     attrs=Attribute(key='release dates', multi=True,
                         path={'country': ".//td[1]//text()",
                             'date': ".//td[2]//text()",
                             'notes': ".//td[3]//text()"})),
                 Extractor(label='akas',
-                    path="//div[@class='_imdbpy_akas']/table/tr",
+                    path="//table[@id='akas']//tr",
                     attrs=Attribute(key='akas', multi=True,
                         path={'title': "./td[1]/text()",
                             'countries': "./td[2]/text()"}))]
@@ -979,7 +979,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
             title = (aka.get('title') or '').strip()
             if not title:
                 continue
-            countries = (aka.get('countries') or '').split('/')
+            countries = (aka.get('countries') or '').split(',')
             if not countries:
                 nakas.append(title)
             else:

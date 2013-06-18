@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20130414 "Oblivion" (14 Apr 2013)
+* What's the new in release 5.0dev20130618 "Star Trek Into Darkness" (18 Jun 2013)
   [general]
   - Introduced the list of French articles.
   - fix for GAE.

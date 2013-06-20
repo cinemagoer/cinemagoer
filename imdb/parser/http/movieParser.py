@@ -712,9 +712,15 @@ class DOMHTMLTaglinesParser(DOMParserBase):
         result = tparser.parse(taglines_html_string)
     """
     extractors = [Extractor(label='taglines',
-                            path="//div[@id='tn15content']/p",
-                            attrs=Attribute(key='taglines', multi=True,
+                            path='//*[contains(concat(" ", normalize-space(@class), " "), " soda ")]',
+                            attrs=Attribute(key='taglines',
+                                            multi=True,
                                             path="./text()"))]
+
+    def postprocess_data(self, data):
+        if 'taglines' in data:
+            data['taglines'] = [tagline.strip() for tagline in data['taglines']]
+        return data
 
 
 class DOMHTMLKeywordsParser(DOMParserBase):

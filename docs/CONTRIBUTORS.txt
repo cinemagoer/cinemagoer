@@ -1,3 +1,5 @@
+  OTHER AUTHORS
+  =============
 
 People who contributed with a substantial amount of work and that
 share the copyright over some portions of the code:
@@ -51,4 +53,12 @@ extensive analysis aimed at diff files support.
 NAME: Roy Stead
 EMAIL: <roystead247 --> gmail.com>
 CONTRIBUTION: provided the download_applydiffs.py script.
+
+
+  DONATIONS
+  =========
+
+We'd like to thank these persons for their donations:
+ - Fabian Winter
+ - Diego Sarmentero
 

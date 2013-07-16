@@ -534,6 +534,8 @@ def _process_plotsummary(x):
     if xauthor:
         xauthor = xauthor.replace('{', '<').replace('}', '>').replace('(',
                                     '<').replace(')', '>').strip()
+    if 'plot' in x and 'author_str' in x:
+        x['plot'] = x['plot'].replace(x['author_str'], '')
     xplot = x.get('plot', u'').strip()
     if xauthor:
         xplot += u'::%s' % xauthor
@@ -555,12 +557,13 @@ class DOMHTMLPlotParser(DOMParserBase):
     # Notice that recently IMDb started to put the email of the
     # author only in the link, that we're not collecting, here.
     extractors = [Extractor(label='plot',
-                    path="//p[@class='plotpar']",
-                    attrs=Attribute(key='plot',
-                            multi=True,
-                            path={'plot': './text()',
-                                'author': './i/a/text()'},
-                            postprocess=_process_plotsummary))]
+                            path="//p[@class='plotpar']",
+                            attrs=Attribute(key='plot',
+                                            multi=True,
+                                            path={'plot': 'string(.)',
+                                                  'author': './i/a/text()',
+                                                  'author_str': 'string(./i)'},
+                                            postprocess=_process_plotsummary))]
 
 
 def _process_award(x):

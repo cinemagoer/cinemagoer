@@ -9,7 +9,7 @@
   - fixed wrong handling of encoding in episode titles
 
   [http]
-  - fixed searches.
+  - fixed searches (again).
   - search results are always in English.
   - updated the cookies.
   - fixed goofs parser.

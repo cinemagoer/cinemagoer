@@ -7,7 +7,7 @@ for a given person.
 E.g., when searching for the name "Mel Gibson", the parsed page would be:
     http://akas.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
 
-Copyright 2004-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -78,7 +78,7 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
                             attrs=_attrs)]
 
     def preprocess_string(self, html_string):
-        if self._notDirectHitTitle in html_string[:1024].lower():
+        if self._notDirectHitTitle in html_string[:10240].lower():
             html_string = _reAKASp.sub(
                                     r'\1<div class="_imdbpyAKA">\2::</div>\3',
                                     html_string)

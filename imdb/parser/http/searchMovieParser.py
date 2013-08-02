@@ -8,7 +8,7 @@ E.g., for when searching for the title "the passion", the parsed
 page would be:
     http://akas.imdb.com/find?q=the+passion&tt=on&mx=20
 
-Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -118,7 +118,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         self.url = u''
 
     def preprocess_string(self, html_string):
-        if self._notDirectHitTitle in html_string[:1024].lower():
+        if self._notDirectHitTitle in html_string[:10240].lower():
             if self._linkPrefix == '/title/tt':
                 # Only for movies.
                 # XXX (HTU): does this still apply?

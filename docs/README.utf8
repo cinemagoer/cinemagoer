@@ -41,20 +41,29 @@ The ugly: converting to unicode a program so huge, born without unicode
   =====
 
 Searching for a movie title or a person name, you (or another program)
-should pass a unicode string, encoded specifying your local charset.
+should pass a unicode string. Since input and output are always
+encoded (using some scheme for representing characters using bytes),
+you'll typically need to decode the input into a Python unicode
+string.
+
+The Python builtin function 'unicode' takes an encoded string and the
+name of the charset it's encoded in and returns a Python unicode
+string.
+
 E.g., you're writing on a terminal with iso-8859-1 charset (aka latin-1):
  >>> from imdb import IMDb
  >>> ia = IMDb()
  >>>
  >>> lat1_str = 'Lina Wertm�ler' # written on a latin-1 terminal
- >>> utf8_str = unicode(lat1_str, 'iso-8859-1')
+ >>> unicode_str = unicode(lat1_str, 'iso-8859-1')
  >>>
- >>> results = ia.search_person(utf8_str)
+ >>> results = ia.search_person(unicode_str)
 
-If you pass a string to search_person(), search_movie() or search_episode()
-functions, IMDbPY attempts to guess the encoding, using the sys.stdin.encoding
-or the value returned from the sys.getdefaultencoding function.
-Trust me: you want to provide an unicode string...
+If you pass a non-Unicode string to search_person(), search_movie() or
+search_episode() functions, IMDbPY attempts to guess the encoding,
+using the sys.stdin.encoding or the value returned from the
+sys.getdefaultencoding function.  Trust me: you want to provide a
+Unicode string...
 
 Maybe in a future release the IMDb() function can take a "defaultInputEncoding"
 argument or something.
@@ -67,7 +76,7 @@ You've searched for a person or a movie, you've retrieved the information you
 wanted.  Cool.  Now you're about to print these information to the screen,
 or send it to a file or over a network socket.  Ok, wait a minute.
 
-Before you proceed, you need to revert back the unicode chars to strings
+Before you proceed, you need to encode the unicode chars to strings
 in the charset you will use to display/save/send it:
  >>> from imdb import IMDb
  >>> ia = IMDb()
@@ -103,6 +112,10 @@ Other values are 'ignore' to skip these chars, 'replace' to substitute
 these chars with question marks ('?'), 'xmlcharrefreplace' to replace
 the chars with XML references (e.g.: "&#233;" for "é").
 
+If at all possible, you're much better off using an encoding like 'utf-8',
+that can handle any unicode char, than older encodings like ASCII
+and Latin-1.
+
 
   WRITING IMDbPY-based PROGRAMS
   =============================
@@ -123,11 +136,11 @@ Whenever you're outputting information about movies or persons,
 convert these unicode string to bytecode strings using the encoding
 of your output channel (terminal, net, web pages, ...)
 
-Remember: "u = unicode(string, inputEncoding)" convert your input
+Remember: "u = unicode(string, inputEncoding)" convert your encoded input
           string to unicode,
 
           "s = u.encode(outputEncoding, manageErrors)" convert unicode
-          strings to your local environment.
+          strings to strings encoded for your local environment.
 
 
   LINKS

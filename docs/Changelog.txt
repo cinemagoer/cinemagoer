@@ -1,12 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20130618 "Star Trek Into Darkness" (18 Jun 2013)
+* What's the new in release 5.0dev20130810 "The Purge" (10 Aug 2013)
   [general]
   - Introduced the list of French articles.
   - fix for GAE.
   - download_applydiffs.py script.
   - fixed wrong handling of encoding in episode titles
+  - renamed README.utf8 to README.unicode
 
   [http]
   - fixed searches (again).
@@ -23,6 +24,9 @@
 
   [mobile]
   - fixed searches.
+
+  [sql]
+  - fix for MSSQL
 
 
 * What's the new in release 4.9 "Iron Sky" (15 Jun 2012)

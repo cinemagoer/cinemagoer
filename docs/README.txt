@@ -120,7 +120,7 @@ As of IMDbPY 4.0, the installer is based on setuptools.
   ========================
 
 Since release 2.4, IMDbPY internally manages every information about
-movies and people using unicode strings.  Please read the README.utf8 file.
+movies and people using unicode strings.  Please read the README.unicode file.
 
 Since release 3.3, IMDbPY supports IMDb's character pages; see the
 README.currentRole file for more information.

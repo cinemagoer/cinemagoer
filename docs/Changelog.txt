@@ -1,8 +1,9 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20130810 "The Purge" (10 Aug 2013)
+* What's the new in release 5.0dev20130826 "Robot Jox" (26 Aug 2013)
   [general]
+  - Spanish and French translations.
   - Introduced the list of French articles.
   - fix for GAE.
   - download_applydiffs.py script.

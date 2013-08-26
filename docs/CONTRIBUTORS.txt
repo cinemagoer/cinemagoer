@@ -55,6 +55,14 @@ EMAIL: <roystead247 --> gmail.com>
 CONTRIBUTION: provided the download_applydiffs.py script.
 
 
+  TRANSLATORS
+  ===========
+
+Additional translations were provided by:
+- strel (Spanish)
+- Stéphane Aulery (French)
+
+
   DONATIONS
   =========
 

@@ -1099,7 +1099,7 @@ class MoviesCache(_BaseCache):
             kind = tget('kind')
             if kind == 'episode':
                 # Series title.
-                stitle = build_title(tget('episode of'), _emptyString='')
+                stitle = build_title(tget('episode of'), _emptyString='', ptdf=1)
                 episodeOf = self.addUnique(stitle)
                 del t['episode of']
                 year = self.movieYear.get(v)

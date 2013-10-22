@@ -262,7 +262,7 @@ class DOMHTMLBioParser(DOMParserBase):
                                 'by': "./b/following-sibling::a/text()"
                                 },
                             postprocess=lambda x: "%s::%s" % \
-                                (x.get('bio').strip(),
+                                ((x.get('bio') or u'').strip(),
                                 (x.get('by') or u'').strip() or u'Anonymous'))),
             Extractor(label='spouse',
                         path="//div[h5='Spouse']/table/tr",

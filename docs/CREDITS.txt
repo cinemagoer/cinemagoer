@@ -21,6 +21,8 @@ of help, and also for the wonderful http://bitbucket.org)
 Below, a list of persons who contributed with bug reports, small
 patches and hints (kept in a reverse order since IMDbPY 4.5):
 
+* Shobhit Singhal for fixes in parsing biographies and plots.
+
 * Dan Poirier for documentation improvements.
 
 * Frank Braam for a fix for MSSQL.

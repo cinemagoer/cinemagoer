@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20131023 "The Woman" (23 Oct 2013)
+* What's the new in release 5.0dev20131115 "Prisoners" (15 Nov 2013)
   [general]
   - Spanish and French translations.
   - Introduced the list of French articles.

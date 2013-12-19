@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20131218 "JSA" (12 Dec 2013)
+* What's the new in release 5.0dev20131219 "JSA" (19 Dec 2013)
   [general]
   - Spanish and French translations.
   - Introduced the list of French articles.
@@ -16,6 +16,7 @@
   - updated the cookies.
   - fixed goofs parser.
   - fixed url for top250.
+  - fixes for biography page.
   - fix for quotes.
   - better charset identification.
   - category and spoiler status for goofs.

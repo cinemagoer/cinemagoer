@@ -115,7 +115,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                         attrs=_death_attrs),
 
             Extractor(label='headshot',
-                        path="//td[@id='img_primary']/a",
+                        path="//td[@id='img_primary']/div[@class='image']/a",
                         attrs=Attribute(key='headshot',
                             path="./img/@src")),
 
@@ -254,16 +254,15 @@ class DOMHTMLBioParser(DOMParserBase):
                             path="./text()",
                             postprocess=lambda x: x.strip())),
             Extractor(label='mini biography',
-                # FIXME: doesn't work
-                        path="//h4[starts-with(text(), 'Mini Bio')]",
+                        path="//a[@name='mini_bio']/following-sibling::div[1 = count(preceding-sibling::a[1] | ../a[@name='mini_bio'])]",
                         attrs=Attribute(key='mini biography',
                             multi=True,
                             path={
                                 'bio': ".//text()",
-                                'by': ".//div//a/text()"
+                                'by': ".//a[@name='ba']//text()"
                                 },
                             postprocess=lambda x: "%s::%s" % \
-                                ((x.get('bio') or u'').strip(),
+                                ((x.get('bio') or u'').split('- IMDb Mini Biography By:')[0].strip(),
                                 (x.get('by') or u'').strip() or u'Anonymous'))),
             Extractor(label='spouse',
                         path="//div[h5='Spouse']/table/tr",

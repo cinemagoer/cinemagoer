@@ -596,6 +596,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'recommendations')
         return self.mProxy.rec_parser.parse(cont)
 
+    def get_movie_critic_reviews(self, movieID):
+        cont = self._retrieve(self.urls['movie_main'] % movieID + 'criticreviews')
+        return self.mProxy.criticrev_parser.parse(cont)
+
     def get_movie_external_reviews(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'externalreviews')
         return self.mProxy.externalrev_parser.parse(cont)

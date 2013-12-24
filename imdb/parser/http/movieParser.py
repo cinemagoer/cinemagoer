@@ -1156,7 +1156,28 @@ def _normalize_href(href):
         href = '%s%s' % (imdbURL_base, href)
     return href
 
+class DOMHTMLCriticReviewsParser(DOMParserBase):
+    """Parser for the "critic reviews" pages of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
 
+    Example:
+        osparser = DOMHTMLCriticReviewsParser()
+        result = osparser.parse(officialsites_html_string)
+    """
+    kind = 'critic reviews'
+
+    extractors = [
+        Extractor(label='metascore',
+                path="//div[@class='metascore score_favorable']/span",
+                attrs=Attribute(key='metascore',
+                                path=".//text()")),
+        Extractor(label='metacritic url',
+                path="//div[@class='article']/div[@class='see-more']/a",
+                attrs=Attribute(key='metacritic url',
+                                path="./@href")) ]
+    
 class DOMHTMLOfficialsitesParser(DOMParserBase):
     """Parser for the "official sites", "external reviews", "newsgroup
     reviews", "miscellaneous links", "sound clips", "video clips" and
@@ -1889,6 +1910,8 @@ _OBJECTS = {
     'releasedates_parser':  ((DOMHTMLReleaseinfoParser,), None),
     'ratings_parser':  ((DOMHTMLRatingsParser,), None),
     'officialsites_parser':  ((DOMHTMLOfficialsitesParser,), None),
+    'criticrev_parser':  ((DOMHTMLCriticReviewsParser,),
+                            {'kind': 'critic reviews'}),
     'externalrev_parser':  ((DOMHTMLOfficialsitesParser,),
                             {'kind': 'external reviews'}),
     'newsgrouprev_parser':  ((DOMHTMLOfficialsitesParser,),

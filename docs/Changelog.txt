@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20131224 "The Colony" (24 Dec 2013)
+* What's the new in release 5.0dev20140119 "Ghost in the Shell: Arise" (19 Jan 2014)
   [general]
   - Spanish and French translations.
   - Introduced the list of French articles.

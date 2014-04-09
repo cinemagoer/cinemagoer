@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20140119 "Ghost in the Shell: Arise" (19 Jan 2014)
+* What's the new in release 5.0dev20140409 "Sharknado" (09 Apr 2014)
   [general]
   - Spanish and French translations.
   - Introduced the list of French articles.
@@ -30,6 +30,7 @@
 
   [sql]
   - fix for MSSQL
+  - fix for MySQL
 
 
 * What's the new in release 4.9 "Iron Sky" (15 Jun 2012)

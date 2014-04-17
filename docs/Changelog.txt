@@ -1,9 +1,9 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20140409 "Sharknado" (09 Apr 2014)
+* What's the new in release 5.0dev20140417 "Captain America: The Winter Soldier" (17 Apr 2014)
   [general]
-  - Spanish and French translations.
+  - Spanish, French, Arabic, Bulgarian and German translations.
   - Introduced the list of French articles.
   - fix for GAE.
   - download_applydiffs.py script.

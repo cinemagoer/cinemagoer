@@ -21,6 +21,8 @@ of help, and also for the wonderful http://bitbucket.org)
 Below, a list of persons who contributed with bug reports, small
 patches and hints (kept in a reverse order since IMDbPY 4.5):
 
+* all the translators on transifex.
+
 * Troy Deck for a path for MySQL.
 
 * miles82 for a patch on metascore parsing.

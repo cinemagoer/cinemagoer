@@ -1,39 +1,38 @@
 # Gettext message file for imdbpy
 # Translators:
-# RainDropR <rajaa@hilltx.com>, 2013
-# Stéphane Aulery, 2012
+# Niko Kovach <crashdeburn@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: IMDbPY\n"
 "POT-Creation-Date: 2010-03-18 14:35+0000\n"
-"PO-Revision-Date: 2013-11-20 11:07+0000\n"
-"Last-Translator: RainDropR <rajaa@hilltx.com>\n"
-"Language-Team: French (http://www.transifex.com/projects/p/imdbpy/language/fr/)\n"
+"PO-Revision-Date: 2014-03-16 10:46+0000\n"
+"Last-Translator: Niko Kovach <crashdeburn@gmail.com>\n"
+"Language-Team: Bulgarian (http://www.transifex.com/projects/p/imdbpy/language/bg/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Domain: imdbpy\n"
-"Language: fr\n"
+"Language: bg\n"
 "Language-Code: en\n"
 "Language-Name: English\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Preferred-Encodings: utf-8\n"
 
 # Default: Actor
 msgid "actor"
-msgstr "acteur"
+msgstr "актьор"
 
 # Default: Actress
 msgid "actress"
-msgstr "actrice"
+msgstr "актриса"
 
 # Default: Adaption
 msgid "adaption"
-msgstr "adaptation"
+msgstr "адаптация"
 
 # Default: Additional information
 msgid "additional-information"
-msgstr ""
+msgstr "допълнителна информация"
 
 # Default: Admissions
 msgid "admissions"
@@ -57,7 +56,7 @@ msgstr ""
 
 # Default: All products
 msgid "all-products"
-msgstr ""
+msgstr "всички продукти"
 
 # Default: Alternate language version of
 msgid "alternate-language-version-of"
@@ -101,15 +100,15 @@ msgstr ""
 
 # Default: Art director
 msgid "art-director"
-msgstr ""
+msgstr "арт директор"
 
 # Default: Article
 msgid "article"
-msgstr "article"
+msgstr ""
 
 # Default: Asin
 msgid "asin"
-msgstr "asin"
+msgstr ""
 
 # Default: Aspect ratio
 msgid "aspect-ratio"
@@ -137,11 +136,11 @@ msgstr ""
 
 # Default: Award
 msgid "award"
-msgstr "récompense"
+msgstr "награда"
 
 # Default: Awards
 msgid "awards"
-msgstr "récompenses"
+msgstr "награди"
 
 # Default: Biographical movies
 msgid "biographical-movies"
@@ -149,7 +148,7 @@ msgstr ""
 
 # Default: Biography
 msgid "biography"
-msgstr "biographie"
+msgstr "биография"
 
 # Default: Biography print
 msgid "biography-print"
@@ -157,7 +156,7 @@ msgstr ""
 
 # Default: Birth date
 msgid "birth-date"
-msgstr ""
+msgstr "рождена дата"
 
 # Default: Birth name
 msgid "birth-name"
@@ -169,15 +168,15 @@ msgstr ""
 
 # Default: Body
 msgid "body"
-msgstr "Corps"
+msgstr ""
 
 # Default: Book
 msgid "book"
-msgstr "livre"
+msgstr "книга"
 
 # Default: Books
 msgid "books"
-msgstr "vres"
+msgstr "книги"
 
 # Default: Bottom 100 rank
 msgid "bottom-100-rank"
@@ -185,7 +184,7 @@ msgstr ""
 
 # Default: Budget
 msgid "budget"
-msgstr "budget"
+msgstr "бюджет"
 
 # Default: Business
 msgid "business"
@@ -197,7 +196,7 @@ msgstr ""
 
 # Default: Camera
 msgid "camera"
-msgstr "camera"
+msgstr "камера"
 
 # Default: Camera and electrical department
 msgid "camera-and-electrical-department"
@@ -229,7 +228,7 @@ msgstr ""
 
 # Default: Casting director
 msgid "casting-director"
-msgstr ""
+msgstr "кастинг директор"
 
 # Default: Catalog number
 msgid "catalog-number"
@@ -237,31 +236,31 @@ msgstr ""
 
 # Default: Category
 msgid "category"
-msgstr "catégorie"
+msgstr "категория"
 
 # Default: Certificate
 msgid "certificate"
-msgstr "certificat"
+msgstr "сертификат"
 
 # Default: Certificates
 msgid "certificates"
-msgstr ""
+msgstr "сертификати"
 
 # Default: Certification
 msgid "certification"
-msgstr ""
+msgstr "сертифициране"
 
 # Default: Channel
 msgid "channel"
-msgstr "chaîne"
+msgstr "канал"
 
 # Default: Character
 msgid "character"
-msgstr ""
+msgstr "характер"
 
 # Default: Cinematographer
 msgid "cinematographer"
-msgstr ""
+msgstr "кинематограф"
 
 # Default: Cinematographic process
 msgid "cinematographic-process"
@@ -285,7 +284,7 @@ msgstr ""
 
 # Default: Company
 msgid "company"
-msgstr "société"
+msgstr "компания"
 
 # Default: Complete cast
 msgid "complete-cast"
@@ -297,15 +296,15 @@ msgstr ""
 
 # Default: Composer
 msgid "composer"
-msgstr ""
+msgstr "композитор"
 
 # Default: Connections
 msgid "connections"
-msgstr ""
+msgstr "връзки"
 
 # Default: Contrast
 msgid "contrast"
-msgstr ""
+msgstr "контраст"
 
 # Default: Copyright holder
 msgid "copyright-holder"
@@ -321,11 +320,11 @@ msgstr ""
 
 # Default: Countries
 msgid "countries"
-msgstr "pays"
+msgstr "страни"
 
 # Default: Country
 msgid "country"
-msgstr "pays"
+msgstr "страна"
 
 # Default: Courtesy of
 msgid "courtesy-of"
@@ -333,7 +332,7 @@ msgstr ""
 
 # Default: Cover
 msgid "cover"
-msgstr "couverture"
+msgstr ""
 
 # Default: Cover url
 msgid "cover-url"
@@ -345,7 +344,7 @@ msgstr ""
 
 # Default: Creator
 msgid "creator"
-msgstr "créateur"
+msgstr "създател"
 
 # Default: Current role
 msgid "current-role"
@@ -353,15 +352,15 @@ msgstr ""
 
 # Default: Database
 msgid "database"
-msgstr "base de données"
+msgstr "база данни"
 
 # Default: Date
 msgid "date"
-msgstr "date"
+msgstr "дата"
 
 # Default: Death date
 msgid "death-date"
-msgstr ""
+msgstr "дата на смъртта"
 
 # Default: Death notes
 msgid "death-notes"
@@ -373,7 +372,7 @@ msgstr ""
 
 # Default: Description
 msgid "description"
-msgstr "description"
+msgstr "описание"
 
 # Default: Dialogue intellegibility
 msgid "dialogue-intellegibility"
@@ -385,19 +384,19 @@ msgstr ""
 
 # Default: Director
 msgid "director"
-msgstr "directeur"
+msgstr "директор"
 
 # Default: Disc format
 msgid "disc-format"
-msgstr ""
+msgstr "формат на диска"
 
 # Default: Disc size
 msgid "disc-size"
-msgstr ""
+msgstr "размер на диска"
 
 # Default: Distributors
 msgid "distributors"
-msgstr "distributeurs"
+msgstr "дистрибутори"
 
 # Default: Dvd
 msgid "dvd"
@@ -405,19 +404,19 @@ msgstr "dvd"
 
 # Default: Dvd features
 msgid "dvd-features"
-msgstr ""
+msgstr "dvd характеристики"
 
 # Default: Dvd format
 msgid "dvd-format"
-msgstr ""
+msgstr "dvd формат"
 
 # Default: Dvds
 msgid "dvds"
-msgstr "dvds"
+msgstr "dvd-та"
 
 # Default: Dynamic range
 msgid "dynamic-range"
-msgstr ""
+msgstr "динамичен обхват"
 
 # Default: Edited from
 msgid "edited-from"
@@ -429,7 +428,7 @@ msgstr ""
 
 # Default: Editor
 msgid "editor"
-msgstr "éditeur"
+msgstr "редактор"
 
 # Default: Editorial department
 msgid "editorial-department"
@@ -437,23 +436,23 @@ msgstr ""
 
 # Default: Episode
 msgid "episode"
-msgstr "épisode"
+msgstr "епизод"
 
 # Default: Episode of
 msgid "episode-of"
-msgstr ""
+msgstr "епизод от"
 
 # Default: Episode title
 msgid "episode-title"
-msgstr ""
+msgstr "име на епизода"
 
 # Default: Episodes
 msgid "episodes"
-msgstr "épisodes"
+msgstr "епизоди"
 
 # Default: Episodes rating
 msgid "episodes-rating"
-msgstr ""
+msgstr "рейтинг на епизодите"
 
 # Default: Essays
 msgid "essays"
@@ -461,15 +460,15 @@ msgstr ""
 
 # Default: External reviews
 msgid "external-reviews"
-msgstr ""
+msgstr "външни рецензии"
 
 # Default: Faqs
 msgid "faqs"
-msgstr "faqs"
+msgstr ""
 
 # Default: Feature
 msgid "feature"
-msgstr "Caractéristique"
+msgstr ""
 
 # Default: Featured in
 msgid "featured-in"
@@ -477,7 +476,7 @@ msgstr ""
 
 # Default: Features
 msgid "features"
-msgstr "caractéristiques"
+msgstr ""
 
 # Default: Film negative format
 msgid "film-negative-format"
@@ -489,19 +488,19 @@ msgstr ""
 
 # Default: Filmography
 msgid "filmography"
-msgstr ""
+msgstr "филмография"
 
 # Default: Followed by
 msgid "followed-by"
-msgstr ""
+msgstr "последван от"
 
 # Default: Follows
 msgid "follows"
-msgstr ""
+msgstr "последователи"
 
 # Default: For
 msgid "for"
-msgstr "pour"
+msgstr ""
 
 # Default: Frequency response
 msgid "frequency-response"
@@ -509,7 +508,7 @@ msgstr ""
 
 # Default: From
 msgid "from"
-msgstr "de"
+msgstr ""
 
 # Default: Full article link
 msgid "full-article-link"
@@ -525,7 +524,7 @@ msgstr ""
 
 # Default: Genres
 msgid "genres"
-msgstr "genres"
+msgstr "жанрове"
 
 # Default: Goofs
 msgid "goofs"
@@ -545,11 +544,11 @@ msgstr ""
 
 # Default: Height
 msgid "height"
-msgstr "hauteur"
+msgstr ""
 
 # Default: Imdbindex
 msgid "imdbindex"
-msgstr ""
+msgstr "imdb индекс"
 
 # Default: In development
 msgid "in-development"
@@ -557,23 +556,23 @@ msgstr ""
 
 # Default: Interview
 msgid "interview"
-msgstr "interview"
+msgstr "интервю"
 
 # Default: Interviews
 msgid "interviews"
-msgstr ""
+msgstr "интервюта"
 
 # Default: Introduction
 msgid "introduction"
-msgstr "introduction"
+msgstr "въведение"
 
 # Default: Item
 msgid "item"
-msgstr "élément"
+msgstr "елемент"
 
 # Default: Keywords
 msgid "keywords"
-msgstr ""
+msgstr "ключови думи"
 
 # Default: Kind
 msgid "kind"
@@ -581,51 +580,51 @@ msgstr ""
 
 # Default: Label
 msgid "label"
-msgstr ""
+msgstr "етикет"
 
 # Default: Laboratory
 msgid "laboratory"
-msgstr "laboratoire"
+msgstr "лаборатория"
 
 # Default: Language
 msgid "language"
-msgstr "langue"
+msgstr "език"
 
 # Default: Languages
 msgid "languages"
-msgstr "langues"
+msgstr "езици"
 
 # Default: Laserdisc
 msgid "laserdisc"
-msgstr ""
+msgstr "лазерен диск"
 
 # Default: Laserdisc title
 msgid "laserdisc-title"
-msgstr ""
+msgstr "име на лазерения диск"
 
 # Default: Length
 msgid "length"
-msgstr ""
+msgstr "продължителност"
 
 # Default: Line
 msgid "line"
-msgstr "ligne"
+msgstr ""
 
 # Default: Link
 msgid "link"
-msgstr "lien"
+msgstr "връзка"
 
 # Default: Link text
 msgid "link-text"
-msgstr ""
+msgstr "текст за връзката"
 
 # Default: Literature
 msgid "literature"
-msgstr ""
+msgstr "литература"
 
 # Default: Locations
 msgid "locations"
-msgstr ""
+msgstr "местоположения"
 
 # Default: Long imdb canonical name
 msgid "long-imdb-canonical-name"
@@ -685,7 +684,7 @@ msgstr ""
 
 # Default: Movie
 msgid "movie"
-msgstr "film"
+msgstr "филм"
 
 # Default: Mpaa
 msgid "mpaa"
@@ -693,15 +692,15 @@ msgstr "mpaa"
 
 # Default: Music department
 msgid "music-department"
-msgstr ""
+msgstr "музикален департамент"
 
 # Default: Name
 msgid "name"
-msgstr "nom"
+msgstr "име"
 
 # Default: News
 msgid "news"
-msgstr "actualisé"
+msgstr "новини"
 
 # Default: Newsgroup reviews
 msgid "newsgroup-reviews"
@@ -713,15 +712,15 @@ msgstr ""
 
 # Default: Notes
 msgid "notes"
-msgstr "notesnouvelle"
+msgstr "бележки"
 
 # Default: Novel
 msgid "novel"
-msgstr "nouvelle"
+msgstr "роман"
 
 # Default: Number
 msgid "number"
-msgstr "numéro"
+msgstr "номер"
 
 # Default: Number of chapter stops
 msgid "number-of-chapter-stops"
@@ -749,7 +748,7 @@ msgstr ""
 
 # Default: Official sites
 msgid "official-sites"
-msgstr ""
+msgstr "официалени сайтове"
 
 # Default: Opening weekend
 msgid "opening-weekend"
@@ -785,7 +784,7 @@ msgstr ""
 
 # Default: Person
 msgid "person"
-msgstr ""
+msgstr "персона"
 
 # Default: Photo sites
 msgid "photo-sites"
@@ -825,15 +824,15 @@ msgstr ""
 
 # Default: Producer
 msgid "producer"
-msgstr "producteur"
+msgstr "продуцент"
 
 # Default: Production companies
 msgid "production-companies"
-msgstr ""
+msgstr "производствени компании"
 
 # Default: Production country
 msgid "production-country"
-msgstr ""
+msgstr "производствена страна"
 
 # Default: Production dates
 msgid "production-dates"
@@ -865,19 +864,19 @@ msgstr ""
 
 # Default: Quote
 msgid "quote"
-msgstr "citation"
+msgstr "цитат"
 
 # Default: Quotes
 msgid "quotes"
-msgstr "citations"
+msgstr "цитати"
 
 # Default: Rating
 msgid "rating"
-msgstr ""
+msgstr "рейтинг"
 
 # Default: Recommendations
 msgid "recommendations"
-msgstr ""
+msgstr "препоръки"
 
 # Default: Referenced in
 msgid "referenced-in"
@@ -885,11 +884,11 @@ msgstr ""
 
 # Default: References
 msgid "references"
-msgstr "références"
+msgstr "референции"
 
 # Default: Region
 msgid "region"
-msgstr ""
+msgstr "регион"
 
 # Default: Release country
 msgid "release-country"
@@ -917,15 +916,15 @@ msgstr ""
 
 # Default: Result
 msgid "result"
-msgstr "résultat"
+msgstr "резултат"
 
 # Default: Review
 msgid "review"
-msgstr "revue"
+msgstr "рецензия"
 
 # Default: Review author
 msgid "review-author"
-msgstr ""
+msgstr "автор на рецензията"
 
 # Default: Review kind
 msgid "review-kind"
@@ -933,7 +932,7 @@ msgstr ""
 
 # Default: Runtime
 msgid "runtime"
-msgstr ""
+msgstr "времетраене"
 
 # Default: Runtimes
 msgid "runtimes"
@@ -949,7 +948,7 @@ msgstr ""
 
 # Default: Season
 msgid "season"
-msgstr "saison"
+msgstr "сезон"
 
 # Default: Second unit director or assistant director
 msgid "second-unit-director-or-assistant-director"
@@ -1033,7 +1032,7 @@ msgstr ""
 
 # Default: Series title
 msgid "series-title"
-msgstr ""
+msgstr "име на серията"
 
 # Default: Series transportation department
 msgid "series-transportation-department"
@@ -1097,7 +1096,7 @@ msgstr ""
 
 # Default: Soundtrack
 msgid "soundtrack"
-msgstr ""
+msgstr "саундтрак"
 
 # Default: Spaciality
 msgid "spaciality"
@@ -1105,7 +1104,7 @@ msgstr ""
 
 # Default: Special effects
 msgid "special-effects"
-msgstr ""
+msgstr "специални ефекти"
 
 # Default: Special effects companies
 msgid "special-effects-companies"
@@ -1133,7 +1132,7 @@ msgstr ""
 
 # Default: Spouse
 msgid "spouse"
-msgstr "époux"
+msgstr ""
 
 # Default: Status of availablility
 msgid "status-of-availablility"
@@ -1141,11 +1140,11 @@ msgstr ""
 
 # Default: Studio
 msgid "studio"
-msgstr "studio"
+msgstr "студио"
 
 # Default: Studios
 msgid "studios"
-msgstr "studios"
+msgstr "студиа"
 
 # Default: Stunt performer
 msgid "stunt-performer"
@@ -1157,23 +1156,23 @@ msgstr ""
 
 # Default: Subtitles
 msgid "subtitles"
-msgstr "sous-titres"
+msgstr "субтитри"
 
 # Default: Supplement
 msgid "supplement"
-msgstr "bonus"
+msgstr "допълнение"
 
 # Default: Supplements
 msgid "supplements"
-msgstr "bonus"
+msgstr "допълнения"
 
 # Default: Synopsis
 msgid "synopsis"
-msgstr "synopsis"
+msgstr "синопсис"
 
 # Default: Taglines
 msgid "taglines"
-msgstr ""
+msgstr "подзаглавия"
 
 # Default: Tech info
 msgid "tech-info"
@@ -1185,11 +1184,11 @@ msgstr ""
 
 # Default: Time
 msgid "time"
-msgstr "temps"
+msgstr "време"
 
 # Default: Title
 msgid "title"
-msgstr "titre"
+msgstr "име"
 
 # Default: Titles in this product
 msgid "titles-in-this-product"
@@ -1205,7 +1204,7 @@ msgstr ""
 
 # Default: Trade mark
 msgid "trade-mark"
-msgstr ""
+msgstr "търговска марка"
 
 # Default: Transportation department
 msgid "transportation-department"
@@ -1213,11 +1212,11 @@ msgstr ""
 
 # Default: Trivia
 msgid "trivia"
-msgstr ""
+msgstr "любопитно"
 
 # Default: Tv
 msgid "tv"
-msgstr "tv"
+msgstr "тв"
 
 # Default: Under license from
 msgid "under-license-from"
@@ -1229,7 +1228,7 @@ msgstr ""
 
 # Default: Upc
 msgid "upc"
-msgstr "upc"
+msgstr ""
 
 # Default: Version of
 msgid "version-of"
@@ -1241,7 +1240,7 @@ msgstr ""
 
 # Default: Video
 msgid "video"
-msgstr "video"
+msgstr "видео"
 
 # Default: Video artifacts
 msgid "video-artifacts"
@@ -1269,7 +1268,7 @@ msgstr ""
 
 # Default: Votes
 msgid "votes"
-msgstr ""
+msgstr "гласа"
 
 # Default: Votes distribution
 msgid "votes-distribution"
@@ -1285,11 +1284,11 @@ msgstr ""
 
 # Default: With
 msgid "with"
-msgstr "avec"
+msgstr ""
 
 # Default: Writer
 msgid "writer"
-msgstr "auteur"
+msgstr "сценарист"
 
 # Default: Written by
 msgid "written-by"
@@ -1297,7 +1296,7 @@ msgstr ""
 
 # Default: Year
 msgid "year"
-msgstr "année"
+msgstr "година"
 
 # Default: Zshops
 msgid "zshops"

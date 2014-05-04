@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20140417 "Captain America: The Winter Soldier" (17 Apr 2014)
+* What's the new in release 5.0 "House of Cards" (02 May 2014)
   [general]
   - Spanish, French, Arabic, Bulgarian and German translations.
   - Introduced the list of French articles.
@@ -30,7 +30,6 @@
 
   [sql]
   - fix for MSSQL
-  - fix for MySQL
 
 
 * What's the new in release 4.9 "Iron Sky" (15 Jun 2012)

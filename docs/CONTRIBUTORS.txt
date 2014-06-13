@@ -67,6 +67,7 @@ Additional translations were provided by:
   =========
 
 We'd like to thank these persons for their donations:
- - Fabian Winter
+ - Oleg Peil
  - Diego Sarmentero
+ - Fabian Winter
 

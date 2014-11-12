@@ -1,9 +1,9 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.0dev20131224 "The Colony" (24 Dec 2013)
+* What's the new in release 5.0 "House of Cards" (02 May 2014)
   [general]
-  - Spanish and French translations.
+  - Spanish, French, Arabic, Bulgarian and German translations.
   - Introduced the list of French articles.
   - fix for GAE.
   - download_applydiffs.py script.

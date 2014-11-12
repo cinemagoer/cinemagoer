@@ -1,39 +1,38 @@
 # Gettext message file for imdbpy
 # Translators:
 # RainDropR <rajaa@hilltx.com>, 2013
-# Stéphane Aulery, 2012
 msgid ""
 msgstr ""
 "Project-Id-Version: IMDbPY\n"
 "POT-Creation-Date: 2010-03-18 14:35+0000\n"
 "PO-Revision-Date: 2013-11-20 11:07+0000\n"
 "Last-Translator: RainDropR <rajaa@hilltx.com>\n"
-"Language-Team: French (http://www.transifex.com/projects/p/imdbpy/language/fr/)\n"
+"Language-Team: Arabic (http://www.transifex.com/projects/p/imdbpy/language/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Domain: imdbpy\n"
-"Language: fr\n"
+"Language: ar\n"
 "Language-Code: en\n"
 "Language-Name: English\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 "Preferred-Encodings: utf-8\n"
 
 # Default: Actor
 msgid "actor"
-msgstr "acteur"
+msgstr "ممثل"
 
 # Default: Actress
 msgid "actress"
-msgstr "actrice"
+msgstr "ممثلة"
 
 # Default: Adaption
 msgid "adaption"
-msgstr "adaptation"
+msgstr "إقتباس"
 
 # Default: Additional information
 msgid "additional-information"
-msgstr ""
+msgstr "معلومات إضافية"
 
 # Default: Admissions
 msgid "admissions"
@@ -105,11 +104,11 @@ msgstr ""
 
 # Default: Article
 msgid "article"
-msgstr "article"
+msgstr "مقال"
 
 # Default: Asin
 msgid "asin"
-msgstr "asin"
+msgstr ""
 
 # Default: Aspect ratio
 msgid "aspect-ratio"
@@ -133,15 +132,15 @@ msgstr ""
 
 # Default: Audio quality
 msgid "audio-quality"
-msgstr ""
+msgstr "جودة الصوت"
 
 # Default: Award
 msgid "award"
-msgstr "récompense"
+msgstr "جائزة"
 
 # Default: Awards
 msgid "awards"
-msgstr "récompenses"
+msgstr "جوائز"
 
 # Default: Biographical movies
 msgid "biographical-movies"
@@ -149,7 +148,7 @@ msgstr ""
 
 # Default: Biography
 msgid "biography"
-msgstr "biographie"
+msgstr ""
 
 # Default: Biography print
 msgid "biography-print"
@@ -157,7 +156,7 @@ msgstr ""
 
 # Default: Birth date
 msgid "birth-date"
-msgstr ""
+msgstr "تاريخ الميلاد"
 
 # Default: Birth name
 msgid "birth-name"
@@ -169,15 +168,15 @@ msgstr ""
 
 # Default: Body
 msgid "body"
-msgstr "Corps"
+msgstr "جسد"
 
 # Default: Book
 msgid "book"
-msgstr "livre"
+msgstr "كتاب"
 
 # Default: Books
 msgid "books"
-msgstr "vres"
+msgstr "كتب"
 
 # Default: Bottom 100 rank
 msgid "bottom-100-rank"
@@ -185,7 +184,7 @@ msgstr ""
 
 # Default: Budget
 msgid "budget"
-msgstr "budget"
+msgstr ""
 
 # Default: Business
 msgid "business"
@@ -197,7 +196,7 @@ msgstr ""
 
 # Default: Camera
 msgid "camera"
-msgstr "camera"
+msgstr "كاميرا"
 
 # Default: Camera and electrical department
 msgid "camera-and-electrical-department"
@@ -237,15 +236,15 @@ msgstr ""
 
 # Default: Category
 msgid "category"
-msgstr "catégorie"
+msgstr "فئة"
 
 # Default: Certificate
 msgid "certificate"
-msgstr "certificat"
+msgstr "شهادة"
 
 # Default: Certificates
 msgid "certificates"
-msgstr ""
+msgstr "شهادات"
 
 # Default: Certification
 msgid "certification"
@@ -253,11 +252,11 @@ msgstr ""
 
 # Default: Channel
 msgid "channel"
-msgstr "chaîne"
+msgstr "قناة"
 
 # Default: Character
 msgid "character"
-msgstr ""
+msgstr "شخصية"
 
 # Default: Cinematographer
 msgid "cinematographer"
@@ -285,7 +284,7 @@ msgstr ""
 
 # Default: Company
 msgid "company"
-msgstr "société"
+msgstr "شركة"
 
 # Default: Complete cast
 msgid "complete-cast"
@@ -297,7 +296,7 @@ msgstr ""
 
 # Default: Composer
 msgid "composer"
-msgstr ""
+msgstr "مؤلف"
 
 # Default: Connections
 msgid "connections"
@@ -321,11 +320,11 @@ msgstr ""
 
 # Default: Countries
 msgid "countries"
-msgstr "pays"
+msgstr "بلدان"
 
 # Default: Country
 msgid "country"
-msgstr "pays"
+msgstr "بلد"
 
 # Default: Courtesy of
 msgid "courtesy-of"
@@ -333,7 +332,7 @@ msgstr ""
 
 # Default: Cover
 msgid "cover"
-msgstr "couverture"
+msgstr ""
 
 # Default: Cover url
 msgid "cover-url"
@@ -345,7 +344,7 @@ msgstr ""
 
 # Default: Creator
 msgid "creator"
-msgstr "créateur"
+msgstr ""
 
 # Default: Current role
 msgid "current-role"
@@ -353,11 +352,11 @@ msgstr ""
 
 # Default: Database
 msgid "database"
-msgstr "base de données"
+msgstr "قاعدة البيانات"
 
 # Default: Date
 msgid "date"
-msgstr "date"
+msgstr "تاريخ"
 
 # Default: Death date
 msgid "death-date"
@@ -369,11 +368,11 @@ msgstr ""
 
 # Default: Demographic
 msgid "demographic"
-msgstr ""
+msgstr "ديموغرافي"
 
 # Default: Description
 msgid "description"
-msgstr "description"
+msgstr "وصف"
 
 # Default: Dialogue intellegibility
 msgid "dialogue-intellegibility"
@@ -385,7 +384,7 @@ msgstr ""
 
 # Default: Director
 msgid "director"
-msgstr "directeur"
+msgstr "مخرج"
 
 # Default: Disc format
 msgid "disc-format"
@@ -397,7 +396,7 @@ msgstr ""
 
 # Default: Distributors
 msgid "distributors"
-msgstr "distributeurs"
+msgstr "موزعون"
 
 # Default: Dvd
 msgid "dvd"
@@ -413,7 +412,7 @@ msgstr ""
 
 # Default: Dvds
 msgid "dvds"
-msgstr "dvds"
+msgstr ""
 
 # Default: Dynamic range
 msgid "dynamic-range"
@@ -429,7 +428,7 @@ msgstr ""
 
 # Default: Editor
 msgid "editor"
-msgstr "éditeur"
+msgstr "محرر"
 
 # Default: Editorial department
 msgid "editorial-department"
@@ -437,7 +436,7 @@ msgstr ""
 
 # Default: Episode
 msgid "episode"
-msgstr "épisode"
+msgstr "حلقة"
 
 # Default: Episode of
 msgid "episode-of"
@@ -449,7 +448,7 @@ msgstr ""
 
 # Default: Episodes
 msgid "episodes"
-msgstr "épisodes"
+msgstr "حلقات"
 
 # Default: Episodes rating
 msgid "episodes-rating"
@@ -465,11 +464,11 @@ msgstr ""
 
 # Default: Faqs
 msgid "faqs"
-msgstr "faqs"
+msgstr ""
 
 # Default: Feature
 msgid "feature"
-msgstr "Caractéristique"
+msgstr ""
 
 # Default: Featured in
 msgid "featured-in"
@@ -477,7 +476,7 @@ msgstr ""
 
 # Default: Features
 msgid "features"
-msgstr "caractéristiques"
+msgstr ""
 
 # Default: Film negative format
 msgid "film-negative-format"
@@ -501,7 +500,7 @@ msgstr ""
 
 # Default: For
 msgid "for"
-msgstr "pour"
+msgstr "ل"
 
 # Default: Frequency response
 msgid "frequency-response"
@@ -509,7 +508,7 @@ msgstr ""
 
 # Default: From
 msgid "from"
-msgstr "de"
+msgstr "من"
 
 # Default: Full article link
 msgid "full-article-link"
@@ -525,7 +524,7 @@ msgstr ""
 
 # Default: Genres
 msgid "genres"
-msgstr "genres"
+msgstr "أنواع"
 
 # Default: Goofs
 msgid "goofs"
@@ -545,7 +544,7 @@ msgstr ""
 
 # Default: Height
 msgid "height"
-msgstr "hauteur"
+msgstr ""
 
 # Default: Imdbindex
 msgid "imdbindex"
@@ -557,7 +556,7 @@ msgstr ""
 
 # Default: Interview
 msgid "interview"
-msgstr "interview"
+msgstr "حوار"
 
 # Default: Interviews
 msgid "interviews"
@@ -565,11 +564,11 @@ msgstr ""
 
 # Default: Introduction
 msgid "introduction"
-msgstr "introduction"
+msgstr "مقدمة"
 
 # Default: Item
 msgid "item"
-msgstr "élément"
+msgstr ""
 
 # Default: Keywords
 msgid "keywords"
@@ -585,15 +584,15 @@ msgstr ""
 
 # Default: Laboratory
 msgid "laboratory"
-msgstr "laboratoire"
+msgstr "مختبر"
 
 # Default: Language
 msgid "language"
-msgstr "langue"
+msgstr "لغة"
 
 # Default: Languages
 msgid "languages"
-msgstr "langues"
+msgstr "لغات"
 
 # Default: Laserdisc
 msgid "laserdisc"
@@ -609,11 +608,11 @@ msgstr ""
 
 # Default: Line
 msgid "line"
-msgstr "ligne"
+msgstr ""
 
 # Default: Link
 msgid "link"
-msgstr "lien"
+msgstr "رابط"
 
 # Default: Link text
 msgid "link-text"
@@ -625,7 +624,7 @@ msgstr ""
 
 # Default: Locations
 msgid "locations"
-msgstr ""
+msgstr "مواقع"
 
 # Default: Long imdb canonical name
 msgid "long-imdb-canonical-name"
@@ -685,11 +684,11 @@ msgstr ""
 
 # Default: Movie
 msgid "movie"
-msgstr "film"
+msgstr "فيلم"
 
 # Default: Mpaa
 msgid "mpaa"
-msgstr "mpaa"
+msgstr ""
 
 # Default: Music department
 msgid "music-department"
@@ -697,11 +696,11 @@ msgstr ""
 
 # Default: Name
 msgid "name"
-msgstr "nom"
+msgstr "إسم"
 
 # Default: News
 msgid "news"
-msgstr "actualisé"
+msgstr "أخبار"
 
 # Default: Newsgroup reviews
 msgid "newsgroup-reviews"
@@ -713,15 +712,15 @@ msgstr ""
 
 # Default: Notes
 msgid "notes"
-msgstr "notesnouvelle"
+msgstr ""
 
 # Default: Novel
 msgid "novel"
-msgstr "nouvelle"
+msgstr "رواية"
 
 # Default: Number
 msgid "number"
-msgstr "numéro"
+msgstr "رقم"
 
 # Default: Number of chapter stops
 msgid "number-of-chapter-stops"
@@ -785,7 +784,7 @@ msgstr ""
 
 # Default: Person
 msgid "person"
-msgstr ""
+msgstr "شخص"
 
 # Default: Photo sites
 msgid "photo-sites"
@@ -801,7 +800,7 @@ msgstr ""
 
 # Default: Plot
 msgid "plot"
-msgstr ""
+msgstr "حبكة"
 
 # Default: Plot outline
 msgid "plot-outline"
@@ -825,7 +824,7 @@ msgstr ""
 
 # Default: Producer
 msgid "producer"
-msgstr "producteur"
+msgstr "منتج"
 
 # Default: Production companies
 msgid "production-companies"
@@ -865,15 +864,15 @@ msgstr ""
 
 # Default: Quote
 msgid "quote"
-msgstr "citation"
+msgstr "مقتبس"
 
 # Default: Quotes
 msgid "quotes"
-msgstr "citations"
+msgstr "مقتبسات"
 
 # Default: Rating
 msgid "rating"
-msgstr ""
+msgstr "تقييم"
 
 # Default: Recommendations
 msgid "recommendations"
@@ -885,7 +884,7 @@ msgstr ""
 
 # Default: References
 msgid "references"
-msgstr "références"
+msgstr ""
 
 # Default: Region
 msgid "region"
@@ -917,11 +916,11 @@ msgstr ""
 
 # Default: Result
 msgid "result"
-msgstr "résultat"
+msgstr "نتيجة"
 
 # Default: Review
 msgid "review"
-msgstr "revue"
+msgstr ""
 
 # Default: Review author
 msgid "review-author"
@@ -949,7 +948,7 @@ msgstr ""
 
 # Default: Season
 msgid "season"
-msgstr "saison"
+msgstr "موسم"
 
 # Default: Second unit director or assistant director
 msgid "second-unit-director-or-assistant-director"
@@ -1101,7 +1100,7 @@ msgstr ""
 
 # Default: Spaciality
 msgid "spaciality"
-msgstr ""
+msgstr "إختصاص"
 
 # Default: Special effects
 msgid "special-effects"
@@ -1133,7 +1132,7 @@ msgstr ""
 
 # Default: Spouse
 msgid "spouse"
-msgstr "époux"
+msgstr "زوج"
 
 # Default: Status of availablility
 msgid "status-of-availablility"
@@ -1141,11 +1140,11 @@ msgstr ""
 
 # Default: Studio
 msgid "studio"
-msgstr "studio"
+msgstr "استوديو"
 
 # Default: Studios
 msgid "studios"
-msgstr "studios"
+msgstr "استوديوهات"
 
 # Default: Stunt performer
 msgid "stunt-performer"
@@ -1157,19 +1156,19 @@ msgstr ""
 
 # Default: Subtitles
 msgid "subtitles"
-msgstr "sous-titres"
+msgstr ""
 
 # Default: Supplement
 msgid "supplement"
-msgstr "bonus"
+msgstr ""
 
 # Default: Supplements
 msgid "supplements"
-msgstr "bonus"
+msgstr ""
 
 # Default: Synopsis
 msgid "synopsis"
-msgstr "synopsis"
+msgstr ""
 
 # Default: Taglines
 msgid "taglines"
@@ -1181,15 +1180,15 @@ msgstr ""
 
 # Default: Thanks
 msgid "thanks"
-msgstr ""
+msgstr "بفضل"
 
 # Default: Time
 msgid "time"
-msgstr "temps"
+msgstr "وقت"
 
 # Default: Title
 msgid "title"
-msgstr "titre"
+msgstr "عنوان"
 
 # Default: Titles in this product
 msgid "titles-in-this-product"
@@ -1197,7 +1196,7 @@ msgstr ""
 
 # Default: To
 msgid "to"
-msgstr ""
+msgstr "إلى"
 
 # Default: Top 250 rank
 msgid "top-250-rank"
@@ -1217,7 +1216,7 @@ msgstr ""
 
 # Default: Tv
 msgid "tv"
-msgstr "tv"
+msgstr "تلفزيون"
 
 # Default: Under license from
 msgid "under-license-from"
@@ -1237,11 +1236,11 @@ msgstr ""
 
 # Default: Vhs
 msgid "vhs"
-msgstr ""
+msgstr "vhs"
 
 # Default: Video
 msgid "video"
-msgstr "video"
+msgstr "فيديو"
 
 # Default: Video artifacts
 msgid "video-artifacts"
@@ -1269,7 +1268,7 @@ msgstr ""
 
 # Default: Votes
 msgid "votes"
-msgstr ""
+msgstr "أصوات"
 
 # Default: Votes distribution
 msgid "votes-distribution"
@@ -1285,11 +1284,11 @@ msgstr ""
 
 # Default: With
 msgid "with"
-msgstr "avec"
+msgstr "مع"
 
 # Default: Writer
 msgid "writer"
-msgstr "auteur"
+msgstr "كاتب"
 
 # Default: Written by
 msgid "written-by"
@@ -1297,7 +1296,7 @@ msgstr ""
 
 # Default: Year
 msgid "year"
-msgstr "année"
+msgstr "سنة"
 
 # Default: Zshops
 msgid "zshops"

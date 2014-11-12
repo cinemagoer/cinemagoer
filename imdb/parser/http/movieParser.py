@@ -1170,7 +1170,7 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
 
     extractors = [
         Extractor(label='metascore',
-                path="//div[@class='metascore score_favorable']/span",
+                path="//div[@class='metascore_wrap']/div/span",
                 attrs=Attribute(key='metascore',
                                 path=".//text()")),
         Extractor(label='metacritic url',

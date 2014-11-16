@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 5.1dev20141116 "Interstellar" (16 Nov 2014)
+  [general]
+  - fix for company names containing square brackets.
+
+
 * What's the new in release 5.0 "House of Cards" (02 May 2014)
   [general]
   - Spanish, French, Arabic, Bulgarian and German translations.

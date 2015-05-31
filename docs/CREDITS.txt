@@ -23,6 +23,8 @@ patches and hints (kept in a reverse order since IMDbPY 4.5):
 
 * all the translators on transifex.
 
+* Mystfit for a fix handling company names.
+
 * Troy Deck for a path for MySQL.
 
 * miles82 for a patch on metascore parsing.

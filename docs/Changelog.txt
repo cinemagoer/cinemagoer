@@ -1,9 +1,10 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.1dev20141116 "Interstellar" (16 Nov 2014)
+* What's the new in release 5.1dev20150705 "Mr. Robot" (05 Jul 2015)
   [general]
   - fix for company names containing square brackets.
+  - Persons's resume page parser (courtesy of codynhat)
 
 
 * What's the new in release 5.0 "House of Cards" (02 May 2014)

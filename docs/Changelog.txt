@@ -4,6 +4,8 @@
 * What's the new in release 5.1dev20141116 "Interstellar" (16 Nov 2014)
   [general]
   - fix for company names containing square brackets.
+  - fix XML output when imdb long name is missing.
+  - fix birth/death dates parsing.
 
 
 * What's the new in release 5.0 "House of Cards" (02 May 2014)

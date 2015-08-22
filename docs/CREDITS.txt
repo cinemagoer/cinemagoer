@@ -29,6 +29,8 @@ patches and hints (kept in a reverse order since IMDbPY 4.5):
 
 * Derek Duoba for a bug report about XML output.
 
+* Cody Hatfield for a parser for the Persons's resume page
+
 * Mystfit for a fix handling company names.
 
 * Troy Deck for a path for MySQL.

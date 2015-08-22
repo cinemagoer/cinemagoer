@@ -9,6 +9,7 @@
   [http]
   - fix birth/death dates parsing.
   - fix top/bottom lists.
+  - Persons's resume page parser (courtesy of codynhat)
 
   [sql]
   - sound track list correctly identified.

@@ -5,7 +5,7 @@ imdbpy2sql.py script.
 This script puts the data of the plain text data files into a
 SQL database.
 
-Copyright 2005-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2015 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -793,7 +793,7 @@ LINK_START = ('MOVIE LINKS LIST', '================', '')
 MPAA_START = ('MPAA RATINGS REASONS LIST', '=========================')
 PLOT_START = ('PLOT SUMMARIES LIST', '===================', '')
 RELDATE_START = ('RELEASE DATES LIST', '==================')
-SNDT_START = ('SOUNDTRACKS LIST', '================', '', '', '')
+SNDT_START = ('SOUNDTRACKS', '=============', '', '', '')
 TAGL_START = ('TAG LINES LIST', '==============', '', '')
 TAGL_STOP = '-----------------------------------------'
 TRIV_START = ('FILM TRIVIA', '===========', '')

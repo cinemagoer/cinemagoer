@@ -23,6 +23,12 @@ patches and hints (kept in a reverse order since IMDbPY 4.5):
 
 * all the translators on transifex.
 
+* Tool Man, for a fix on sound track parsing.
+
+* Rafael Lopez for a series of fixes on top/bottom lists.
+
+* Derek Duoba for a bug report about XML output.
+
 * Mystfit for a fix handling company names.
 
 * Troy Deck for a path for MySQL.

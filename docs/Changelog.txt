@@ -6,6 +6,7 @@
   - fix for company names containing square brackets.
   - fix XML output when imdb long name is missing.
   - fix birth/death dates parsing.
+  - fix top/bottom lists.
 
 
 * What's the new in release 5.0 "House of Cards" (02 May 2014)

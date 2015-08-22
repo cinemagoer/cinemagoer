@@ -960,7 +960,7 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
             crl = [crl]
         for cr in crl:
             crTag = cr.__class__.__name__.lower()
-            crValue = cr['long imdb name']
+            crValue = cr.get('long imdb name') or u''
             crValue = _normalizeValue(crValue)
             crID = cr.getID()
             if crID is not None:

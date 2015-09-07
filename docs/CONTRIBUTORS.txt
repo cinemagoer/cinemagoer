@@ -59,8 +59,12 @@ CONTRIBUTION: provided the download_applydiffs.py script.
   ===========
 
 Additional translations were provided by:
-- strel (Spanish)
-- Stéphane Aulery (French)
+ - strel (Spanish)
+ - Stéphane Aulery (French)
+ - RainDropR (Arabic)
+ - Atanas Kovachki (Bulgarian)
+ - lukophron (French)
+ - Raphael (German)
 
 
   DONATIONS
@@ -70,4 +74,5 @@ We'd like to thank these persons for their donations:
  - Oleg Peil
  - Diego Sarmentero
  - Fabian Winter
+ - Lacroix Scott
 

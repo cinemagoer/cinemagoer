@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function, unicode_literals
 import distutils.sysconfig
 import os
 import sys
@@ -197,9 +198,9 @@ def runRebuildmo():
         rebuildmo = imp.load_module('rebuildmo', *modInfo)
         os.chdir(modulePath)
         languages = rebuildmo.rebuildmo()
-        print 'Created locale for: %s.' % ' '.join(languages)
-    except Exception, e:
-        print 'ERROR: unable to rebuild .mo files; caught exception %s' % e
+        print('Created locale for: {}'.format(languages))
+    except Exception as e:
+        print('ERROR: unable to rebuild .mo files; caught exception {}'.format(e))
     sys.path = path
     os.chdir(cwd)
     return languages
@@ -236,6 +237,6 @@ try:
         data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), base_dir), files_found))
     setuptools.setup(**params)
 except SystemExit:
-    print ERR_MSG
+    print(ERR_MSG)
     raise
 

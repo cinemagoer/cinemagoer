@@ -31,12 +31,9 @@ import re
 import urllib
 
 from imdb import imdbURL_base
-from imdb.Person import Person
 from imdb.Movie import Movie
-from imdb.Company import Company
 from imdb.utils import analyze_title, split_company_name_notes, _Container
-from utils import build_person, DOMParserBase, Attribute, Extractor, \
-                    analyze_imdbid
+from imdb.parser.http.utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
 
 
 # Dictionary used to convert some section's names.
@@ -181,9 +178,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                             multi=True,
                             path={'person': ".//text()",
                                     'link': "./td[1]/a[@href]/@href"},
-                            postprocess=lambda x: \
-                                    build_person(x.get('person') or u'',
-                                        personID=analyze_imdbid(x.get('link')))
                                 )),
 
                 Extractor(label='cast',
@@ -194,10 +188,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 'link': "td[2]/a/@href",
                                 'roleID': \
                                     "td[4]/div[@class='_imdbpyrole']/@roleid"},
-                            postprocess=lambda x: \
-                                    build_person(x.get('person') or u'',
-                                    personID=analyze_imdbid(x.get('link')),
-                                    roleID=(x.get('roleID') or u'').split('/'))
                                 )),
 
                 Extractor(label='genres',
@@ -215,10 +205,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                                         "'Plot:')]/../div/text()",
                                 postprocess=lambda x: \
                                         x.strip().rstrip('|').rstrip()),
-                            Attribute(key="aspect ratio",
-                                path="./h5[starts-with(text()," \
-                                        " 'Aspect')]/../div/text()",
-                                postprocess=lambda x: x.strip()),
                             Attribute(key="mpaa",
                                 path="./h5/a[starts-with(text()," \
                                         " 'MPAA')]/../../div/text()",
@@ -231,14 +217,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 path="./h5[starts-with(text(), " \
                                         "'Language')]/..//text()",
                                     postprocess=makeSplitter('Language:')),
-                            Attribute(key='color info',
-                                path="./h5[starts-with(text(), " \
-                                        "'Color')]/..//text()",
-                                postprocess=makeSplitter('Color:')),
-                            Attribute(key='sound mix',
-                                path="./h5[starts-with(text(), " \
-                                        "'Sound Mix')]/..//text()",
-                                postprocess=makeSplitter('Sound Mix:')),
                             # Collects akas not encosed in <i> tags.
                             Attribute(key='other akas',
                                 path="./h5[starts-with(text(), " \
@@ -255,19 +233,9 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 path="./h5[starts-with(text(), " \
                                         "'Certificat')]/..//text()",
                                 postprocess=makeSplitter('Certification:')),
-                            Attribute(key='number of seasons',
-                                path="./h5[starts-with(text(), " \
-                                        "'Seasons')]/..//text()",
-                                postprocess=lambda x: x.count('|') + 1),
                             Attribute(key='original air date',
                                 path="./h5[starts-with(text(), " \
                                         "'Original Air Date')]/../div/text()"),
-                            Attribute(key='tv series link',
-                                path="./h5[starts-with(text(), " \
-                                        "'TV Series')]/..//a/@href"),
-                            Attribute(key='tv series title',
-                                path="./h5[starts-with(text(), " \
-                                        "'TV Series')]/..//a/text()")
                             ]),
 
                 Extractor(label='language codes',
@@ -289,9 +257,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                             attrs=Attribute(key='creator', multi=True,
                                     path={'name': "./text()",
                                         'link': "./@href"},
-                                    postprocess=lambda x: \
-                                        build_person(x.get('name') or u'',
-                                        personID=analyze_imdbid(x.get('link')))
                                     )),
 
                 Extractor(label='thin writer',
@@ -299,9 +264,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                             attrs=Attribute(key='thin writer', multi=True,
                                     path={'name': "./text()",
                                         'link': "./@href"},
-                                    postprocess=lambda x: \
-                                        build_person(x.get('name') or u'',
-                                        personID=analyze_imdbid(x.get('link')))
                                     )),
 
                 Extractor(label='thin director',
@@ -309,9 +271,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                             attrs=Attribute(key='thin director', multi=True,
                                     path={'name': "./text()",
                                         'link': "@href"},
-                                    postprocess=lambda x: \
-                                        build_person(x.get('name') or u'',
-                                        personID=analyze_imdbid(x.get('link')))
                                     )),
 
                 Extractor(label='top 250/bottom 100',
@@ -341,46 +300,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 postprocess=lambda x:
                                 x.replace('  ', ' ').rstrip('-').replace('" - ',
                                     '"::', 1).strip('"').replace('  ', ' '))),
-
-                Extractor(label='production notes/status',
-                        path="//h5[starts-with(text(), 'Status:')]/..//div[@class='info-content']",
-                        attrs=Attribute(key='production status',
-                                path=".//text()",
-                                postprocess=lambda x: x.strip().split('|')[0].strip().lower())),
-
-                Extractor(label='production notes/status updated',
-                        path="//h5[starts-with(text(), 'Status Updated:')]/..//div[@class='info-content']",
-                        attrs=Attribute(key='production status updated',
-                                path=".//text()",
-                                postprocess=lambda x: x.strip())),
-
-                Extractor(label='production notes/comments',
-                        path="//h5[starts-with(text(), 'Comments:')]/..//div[@class='info-content']",
-                        attrs=Attribute(key='production comments',
-                                path=".//text()",
-                                postprocess=lambda x: x.strip())),
-
-                Extractor(label='production notes/note',
-                        path="//h5[starts-with(text(), 'Note:')]/..//div[@class='info-content']",
-                        attrs=Attribute(key='production note',
-                                path=".//text()",
-                                postprocess=lambda x: x.strip())),
-
-                Extractor(label='blackcatheader',
-                        group="//b[@class='blackcatheader']",
-                        group_key="./text()",
-                        group_key_normalize=lambda x: x.lower(),
-                        path="../ul/li",
-                        attrs=Attribute(key=None,
-                                multi=True,
-                                path={'name': "./a//text()",
-                                        'comp-link': "./a/@href",
-                                        'notes': "./text()"},
-                                postprocess=lambda x: \
-                                        Company(name=x.get('name') or u'',
-                                companyID=analyze_imdbid(x.get('comp-link')),
-                                notes=(x.get('notes') or u'').strip())
-                            )),
 
                 Extractor(label='rating',
                         path="//div[@class='starbar-meta']/b",
@@ -440,8 +359,6 @@ class DOMHTMLMovieParser(DOMParserBase):
         for key in data:
             value = data[key]
             if isinstance(value, list) and value:
-                if isinstance(value[0], Person):
-                    data[key] = filter(lambda x: x.personID is not None, value)
                 if isinstance(value[0], _Container):
                     for obj in data[key]:
                         obj.accessSystem = self._as
@@ -670,18 +587,18 @@ class DOMHTMLAwardsParser(DOMParserBase):
         if len(data) == 0:
             return {}
         nd = []
-        for key in data.keys():
+        for key in data:
             dom = self.get_dom(key)
             assigner = self.xpath(dom, "//a/text()")[0]
             for entry in data[key]:
-                if not entry.has_key('name'):
+                if not 'name' in entry:
                     if not entry:
                         continue
                     # this is an award, not a recipient
                     entry['assigner'] = assigner.strip()
                     # find the recipients
                     matches = [p for p in data[key]
-                               if p.has_key('name') and (entry['anchor'] ==
+                               if 'name' in p and (entry['anchor'] ==
                                    p['anchor'])]
                     if self.subject == 'title':
                         recipients = [Person(name=recipient['name'],
@@ -1416,10 +1333,10 @@ class DOMHTMLNewsParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
-        if not data.has_key('news'):
+        if not 'news' in data:
             return {}
         for news in data['news']:
-            if news.has_key('full article link'):
+            if 'full article link' in news:
                 if news['full article link'] is None:
                     del news['full article link']
         return data
@@ -1696,7 +1613,7 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                                                             episode_key)
                     if data.has_key(cast_key):
                         cast = data[cast_key]
-                        for i in xrange(len(cast)):
+                        for i in range(len(cast)):
                             cast[i].billingPos = i + 1
                         episode['cast'] = cast
                     episode['episode of'] = series

@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from imdb.utils import analyze_title, build_title
-from utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
+from imdb.parser.http.utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
 
 
 class DOMBasicMovieParser(DOMParserBase):
@@ -142,7 +142,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         return new_html
 
     def postprocess_data(self, data):
-        if not data.has_key('data'):
+        if not 'data' in data:
             data['data'] = []
         results = getattr(self, 'results', None)
         if results is not None:

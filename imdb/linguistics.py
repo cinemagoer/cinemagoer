@@ -156,7 +156,8 @@ for lang in LANG_COUNTRIES:
 
 def toUnicode(articles):
     """Convert a list of articles utf-8 encoded to unicode strings."""
-    return tuple([art.decode('utf_8') for art in articles])
+    #string are by default unicode in python3
+    return tuple([art for art in articles])
 
 
 def toDicts(articles):
@@ -176,7 +177,8 @@ def addTrailingSpace(articles):
         if article[-1] not in ("'", '-'):
             article += ' '
         _spArticles.append(article)
-        _spUnicodeArticles.append(article.decode('utf_8'))
+        #strings are by default unicode in python3
+        _spUnicodeArticles.append(article)
     return _spArticles, _spUnicodeArticles
 
 

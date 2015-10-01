@@ -28,26 +28,19 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import sys
 import socket
 import logging
-from urllib import FancyURLopener, quote_plus
+
+from urllib.parse import quote_plus
+from urllib.request import FancyURLopener
 from codecs import lookup
 
-from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, \
-                imdbURL_character_main, imdbURL_company_main, \
-                imdbURL_keyword_main, imdbURL_find, imdbURL_top250, \
-                imdbURL_bottom100
+from imdb import IMDbBase
 from imdb.utils import analyze_title
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 
-import searchMovieParser
-import searchPersonParser
-import searchCharacterParser
-import searchCompanyParser
-import searchKeywordParser
-import movieParser
-import personParser
-import characterParser
-import companyParser
-import topBottomParser
+from imdb.parser.http import searchMovieParser
+from imdb.parser.http import searchKeywordParser
+from imdb.parser.http import movieParser
+from imdb.parser.http import topBottomParser
 
 # Logger for miscellaneous functions.
 _aux_logger = logging.getLogger('imdbpy.parser.http.aux')
@@ -100,7 +93,6 @@ class _ModuleProxy:
 
 PY_VERSION = sys.version_info[:2]
 
-
 # The cookies for the "adult" search.
 # Please don't mess with these account.
 # Old 'IMDbPY' account.
@@ -125,9 +117,7 @@ _cookie_uu = _IMDbPY2013_cookie_uu
 
 
 class _FakeURLOpener(object):
-    """Fake URLOpener object, used to return empty strings instead of
-    errors.
-    """
+    """Fake URLOpener object, used to return empty strings instead of errors. """
     def __init__(self, url, headers):
         self.url = url
         self.headers = headers
@@ -179,14 +169,14 @@ class IMDbURLopener(FancyURLopener):
     def get_header(self, header):
         """Return the first value of a header, or None
         if not present."""
-        for index in xrange(len(self.addheaders)):
+        for index in range(len(self.addheaders)):
             if self.addheaders[index][0] == header:
                 return self.addheaders[index][1]
         return None
 
     def del_header(self, header):
         """Remove a default header."""
-        for index in xrange(len(self.addheaders)):
+        for index in range(len(self.addheaders)):
             if self.addheaders[index][0] == header:
                 del self.addheaders[index]
                 break
@@ -201,21 +191,21 @@ class IMDbURLopener(FancyURLopener):
                 self.set_header('Range', 'bytes=0-%d' % size)
             uopener = self.open(url)
             kwds = {}
-            if PY_VERSION > (2, 3) and not IN_GAE:
-                kwds['size'] = size
             content = uopener.read(**kwds)
             self._last_url = uopener.url
             # Maybe the server is so nice to tell us the charset...
-            server_encode = uopener.info().getparam('charset')
+            server_encode = uopener.info()['_charset']
             # Otherwise, look at the content-type HTML meta tag.
             if server_encode is None and content:
-                begin_h = content.find('text/html; charset=')
+                begin_h = content.find(b'text/html; charset=')
                 if begin_h != -1:
-                    end_h = content[19+begin_h:].find('"')
+                    end_h = content[19+begin_h:].find(b'"')
                     if end_h != -1:
                         server_encode = content[19+begin_h:19+begin_h+end_h]
+
             if server_encode:
                 try:
+                    server_encode = server_encode.decode('utf-8')
                     if lookup(server_encode):
                         encode = server_encode
                 except (LookupError, ValueError, TypeError):
@@ -224,7 +214,7 @@ class IMDbURLopener(FancyURLopener):
             if size != -1:
                 self.del_header('Range')
             self.close()
-        except IOError, e:
+        except IOError as e:
             if size != -1:
                 # Ensure that the Range header is removed.
                 self.del_header('Range')
@@ -239,8 +229,7 @@ class IMDbURLopener(FancyURLopener):
             # The detection of the encoding is error prone...
             self._logger.warn('Unable to detect the encoding of the retrieved '
                         'page [%s]; falling back to default latin1.', encode)
-        ##print unicode(content, encode, 'replace').encode('utf8')
-        return unicode(content, encode, 'replace')
+        return content.decode('utf-8')
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
         if errcode == 404:
@@ -265,7 +254,6 @@ class IMDbURLopener(FancyURLopener):
                                     'fullurl': fullurl,
                                     'error type': 'open_unknown_proxy',
                                     'data': str(data)})
-
 
 class IMDbHTTPAccessSystem(IMDbBase):
     """The class used to access IMDb's data through the web."""
@@ -310,28 +298,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self.smProxy = _ModuleProxy(searchMovieParser, defaultKeys=_def,
                                     oldParsers=oldParsers, useModule=useModule,
                                     fallBackToNew=fallBackToNew)
-        self.spProxy = _ModuleProxy(searchPersonParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule,
-                                    fallBackToNew=fallBackToNew)
-        self.scProxy = _ModuleProxy(searchCharacterParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule,
-                                    fallBackToNew=fallBackToNew)
-        self.scompProxy = _ModuleProxy(searchCompanyParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule,
-                                    fallBackToNew=fallBackToNew)
         self.skProxy = _ModuleProxy(searchKeywordParser, defaultKeys=_def,
                                     oldParsers=oldParsers, useModule=useModule,
                                     fallBackToNew=fallBackToNew)
         self.mProxy = _ModuleProxy(movieParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule,
-                                    fallBackToNew=fallBackToNew)
-        self.pProxy = _ModuleProxy(personParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule,
-                                    fallBackToNew=fallBackToNew)
-        self.cProxy = _ModuleProxy(characterParser, defaultKeys=_def,
-                                    oldParsers=oldParsers, useModule=useModule,
-                                    fallBackToNew=fallBackToNew)
-        self.compProxy = _ModuleProxy(companyParser, defaultKeys=_def,
                                     oldParsers=oldParsers, useModule=useModule,
                                     fallBackToNew=fallBackToNew)
         self.topBottomProxy = _ModuleProxy(topBottomParser, defaultKeys=_def,
@@ -342,21 +312,21 @@ class IMDbHTTPAccessSystem(IMDbBase):
         """Normalize the given movieID."""
         try:
             return '%07d' % int(movieID)
-        except ValueError, e:
+        except ValueError as e:
             raise IMDbParserError('invalid movieID "%s": %s' % (movieID, e))
 
     def _normalize_personID(self, personID):
         """Normalize the given personID."""
         try:
             return '%07d' % int(personID)
-        except ValueError, e:
+        except ValueError as e:
             raise IMDbParserError('invalid personID "%s": %s' % (personID, e))
 
     def _normalize_characterID(self, characterID):
         """Normalize the given characterID."""
         try:
             return '%07d' % int(characterID)
-        except ValueError, e:
+        except ValueError as e:
             raise IMDbParserError('invalid characterID "%s": %s' % \
                     (characterID, e))
 
@@ -364,7 +334,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         """Normalize the given companyID."""
         try:
             return '%07d' % int(companyID)
-        except ValueError, e:
+        except ValueError as e:
             raise IMDbParserError('invalid companyID "%s": %s' % \
                     (companyID, e))
 
@@ -462,16 +432,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         'char' (for characters) or 'co' (for companies).
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
-        if isinstance(ton, unicode):
-            try:
-                ton = ton.encode('utf-8')
-            except Exception, e:
-                try:
-                    ton = ton.encode('iso8859-1')
-                except Exception, e:
-                    pass
-        ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
-        params = 'q=%s&s=%s&mx=%s' % (quote_plus(ton), kind, str(results))
+
+        params = 'q={:s}&s={:s}&mx={!s:s}'.format(quote_plus(ton), kind, results)
         if kind == 'ep':
             params = params.replace('s=ep&', 's=tt&ttype=ep&', 1)
         cont = self._retrieve(self.urls['find'] % params)
@@ -702,111 +664,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_parents_guide(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'parentalguide')
         return self.mProxy.parentsguide_parser.parse(cont)
-
-    def _search_person(self, name, results):
-        # The URL of the query.
-        # XXX: To retrieve the complete results list:
-        #      params = urllib.urlencode({'more': 'nm', 'q': name})
-        ##params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
-        #params = 'q=%s&nm=on&mx=%s' % (quote_plus(name), str(results))
-        #cont = self._retrieve(imdbURL_find % params)
-        cont = self._get_search_content('nm', name, results)
-        return self.spProxy.search_person_parser.parse(cont, results=results)['data']
-
-    def get_person_main(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'maindetails')
-        ret = self.pProxy.maindetails_parser.parse(cont)
-        ret['info sets'] = ('main', 'filmography')
-        return ret
-
-    def get_person_filmography(self, personID):
-        return self.get_person_main(personID)
-
-    def get_person_biography(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'bio')
-        return self.pProxy.bio_parser.parse(cont, getRefs=self._getRefs)
-
-    def get_person_resume(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'resume')
-        return self.pProxy.resume_parser.parse(cont, getRefs=self._getRefs)
-
-    def get_person_awards(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'awards')
-        return self.pProxy.person_awards_parser.parse(cont)
-
-    def get_person_other_works(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'otherworks')
-        return self.pProxy.otherworks_parser.parse(cont, getRefs=self._getRefs)
-
-    #def get_person_agent(self, personID):
-    #    cont = self._retrieve(self.urls['person_main'] % personID + 'agent')
-    #    return self.pProxy.agent_parser.parse(cont)
-
-    def get_person_publicity(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'publicity')
-        return self.pProxy.publicity_parser.parse(cont)
-
-    def get_person_official_sites(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'officialsites')
-        return self.pProxy.person_officialsites_parser.parse(cont)
-
-    def get_person_news(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'news')
-        return self.pProxy.news_parser.parse(cont)
-
-    def get_person_episodes(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'filmoseries')
-        return self.pProxy.person_series_parser.parse(cont)
-
-    def get_person_merchandising_links(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'forsale')
-        return self.pProxy.sales_parser.parse(cont)
-
-    def get_person_genres_links(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'filmogenre')
-        return self.pProxy.person_genres_parser.parse(cont)
-
-    def get_person_keywords_links(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'filmokey')
-        return self.pProxy.person_keywords_parser.parse(cont)
-
-    def _search_character(self, name, results):
-        cont = self._get_search_content('ch', name, results)
-        return self.scProxy.search_character_parser.parse(cont, results=results)['data']
-
-    def get_character_main(self, characterID):
-        cont = self._retrieve(self.urls['character_main'] % characterID)
-        ret = self.cProxy.character_main_parser.parse(cont)
-        ret['info sets'] = ('main', 'filmography')
-        return ret
-
-    get_character_filmography = get_character_main
-
-    def get_character_biography(self, characterID):
-        cont = self._retrieve(self.urls['character_main'] % characterID + 'bio')
-        return self.cProxy.character_bio_parser.parse(cont,
-                                                    getRefs=self._getRefs)
-
-    def get_character_episodes(self, characterID):
-        cont = self._retrieve(self.urls['character_main'] % characterID +
-                                'filmoseries')
-        return self.cProxy.character_series_parser.parse(cont)
-
-    def get_character_quotes(self, characterID):
-        cont = self._retrieve(self.urls['character_main'] % characterID + 'quotes')
-        return self.cProxy.character_quotes_parser.parse(cont,
-                                                    getRefs=self._getRefs)
-
-    def _search_company(self, name, results):
-        cont = self._get_search_content('co', name, results)
-        url = self.urlOpener._last_url
-        return self.scompProxy.search_company_parser.parse(cont, url=url,
-                                                    results=results)['data']
-
-    def get_company_main(self, companyID):
-        cont = self._retrieve(self.urls['company_main'] % companyID)
-        ret = self.compProxy.company_main_parser.parse(cont)
-        return ret
 
     def _search_keyword(self, keyword, results):
         # XXX: the IMDb web server seems to have some serious problem with

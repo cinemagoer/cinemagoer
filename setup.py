@@ -11,30 +11,18 @@ import setuptools
 
 # version of the software; in the code repository this represents
 # the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
-version = '5.1'
+version = '0.1'
 
-home_page = 'http://imdbpy.sf.net/'
+home_page = 'https://github.com/abhiravk/imdbpy3'
 
 long_desc = """IMDbPY is a Python package useful to retrieve and
-manage the data of the IMDb movie database about movies, people,
-characters and companies.
+manage the data of the IMDb movie database about movies.
+"""
 
-Platform-independent and written in pure Python (and few C lines),
-it can retrieve data from both the IMDb's web server and a local copy
-of the whole database.
-
-IMDbPY package can be very easily used by programmers and developers
-to provide access to the IMDb's data to their programs.
-
-Some simple example scripts - useful for the end users - are included
-in this package; other IMDbPY-based programs are available at the
-home page: %s
-""" % home_page
-
-dwnl_url = 'http://imdbpy.sf.net/?page=download'
+dwnl_url = 'https://github.com/abhiravk/imdbpy3'
 
 classifiers = """\
-Development Status :: 5 - Production/Stable
+Development Status :: 1 - Development
 Environment :: Console
 Environment :: Web Environment
 Environment :: Handhelds/PDA's
@@ -45,7 +33,6 @@ Natural Language :: English
 Natural Language :: Italian
 Natural Language :: Turkish
 Programming Language :: Python
-Programming Language :: C
 Operating System :: OS Independent
 Topic :: Database :: Front-Ends
 Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries
@@ -58,18 +45,6 @@ keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
             'keywords', 'top250', 'bottom100', 'xml']
 
 
-cutils = setuptools.Extension('imdb.parser.sql.cutils',
-                                ['imdb/parser/sql/cutils.c'])
-
-scripts = ['./bin/get_first_movie.py',
-            './bin/get_movie.py', './bin/search_movie.py',
-            './bin/get_first_person.py', './bin/get_person.py',
-            './bin/search_person.py', './bin/get_character.py',
-            './bin/get_first_character.py', './bin/get_company.py',
-            './bin/search_character.py', './bin/search_company.py',
-            './bin/get_first_company.py', './bin/get_keyword.py',
-            './bin/search_keyword.py', './bin/get_top_bottom_movies.py']
-
 # XXX: I'm not sure that 'etc' is a good idea.  Making it an absolute
 #      path seems a recipe for a disaster (with bdist_egg, at least).
 data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
@@ -79,40 +54,23 @@ data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
 # python ./setup.py --without-sql bdist
 # having (in this example) imdb.parser.sql removed.
 
-featCutils = setuptools.dist.Feature('compile the C module', standard=True,
-        ext_modules=[cutils])
-
 featLxml = setuptools.dist.Feature('add lxml dependency', standard=True,
         install_requires=['lxml'])
 
 # XXX: it seems there's no way to specify that we need EITHER
 #      SQLObject OR SQLAlchemy.
-featSQLObject = setuptools.dist.Feature('add SQLObject dependency',
-        standard=True, install_requires=['SQLObject', 'FormEncode'],
-        require_features='sql')
-
 featSQLAlchemy = setuptools.dist.Feature('add SQLAlchemy dependency',
         standard=True, install_requires=['SQLAlchemy', 'sqlalchemy-migrate'],
         require_features='sql')
 
-sqlScripts = ['./bin/imdbpy2sql.py']
-# standard=False so that it's not installed if both --without-sqlobject
-# and --without-sqlalchemy are specified.
-featSQL = setuptools.dist.Feature('access to SQL databases', standard=False,
-                                remove='imdb.parser.sql', scripts=sqlScripts)
-
 features = {
-    'cutils': featCutils,
-    'sql': featSQL,
     'lxml': featLxml,
-    'sqlobject': featSQLObject,
     'sqlalchemy': featSQLAlchemy
 }
 
-
 params = {
         # Meta-information.
-        'name': 'IMDbPY',
+        'name': 'IMDbPY3',
         'version': version,
         'description': 'Python package to access the IMDb\'s database',
         'long_description': long_desc,
@@ -130,20 +88,12 @@ params = {
         # Download URLs.
         'url': home_page,
         'download_url': dwnl_url,
-        # Scripts.
-        'scripts': scripts,
         # Documentation files.
         'data_files': data_files,
-        # C extensions.
-        #'ext_modules': [cutils],
-        # Requirements.  XXX: maybe we can use extras_require?
-        #'install_requires': install_requires,
-        #'extras_require': extras_require,
         'features': features,
         # Packages.
         'packages': setuptools.find_packages()
 }
-
 
 ERR_MSG = """
 ====================================================================
@@ -164,21 +114,14 @@ ERR_MSG = """
   try re-running this script with the corresponding optional argument:
 
       --without-lxml        exclude lxml (speeds up 'http')
-      --without-cutils      don't compile the C module (speeds up 'sql')
-      --without-sqlobject   exclude SQLObject  (you need at least one of)
       --without-sqlalchemy  exclude SQLAlchemy (SQLObject or SQLAlchemy,)
                                                (if you want to access a )
                                                (local SQL database      )
-      --without-sql         no access to SQL databases (implied if both
-                            --without-sqlobject and --without-sqlalchemy
-                            are used)
-
   Example:
-      python ./setup.py --without-lxml --without-sql install
+      python ./setup.py --without-lxml install
 
   The caught exception, is re-raise below:
 """
-
 
 REBUILDMO_DIR = os.path.join('imdb', 'locale')
 REBUILDMO_NAME = 'rebuildmo'
@@ -239,4 +182,3 @@ try:
 except SystemExit:
     print(ERR_MSG)
     raise
-

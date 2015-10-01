@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.utils import analyze_title
-from utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
+from imdb.parser.http.utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
 
 
 class DOMHTMLTop250Parser(DOMParserBase):

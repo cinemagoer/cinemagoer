@@ -222,7 +222,7 @@ class Movie(_Container):
 
     def _getitem(self, key):
         """Handle special keys."""
-        if self.data.has_key('episode of'):
+        if 'episode of' in self.data:
             if key == 'long imdb episode title':
                 return build_title(self.data)
             elif key == 'series title':
@@ -239,7 +239,7 @@ class Movie(_Container):
                 return canonicalTitle(self.data.get('title', u''))
             elif key == 'smart canonical episode title':
                 return self.smartCanonicalTitle(self.data.get('title', u''))
-        if self.data.has_key('title'):
+        if 'title' in self.data:
             if key == 'title':
                 return self.data['title']
             elif key == 'long imdb title':
@@ -253,7 +253,7 @@ class Movie(_Container):
             elif key == 'smart long imdb canonical title':
                 return build_title(self.data, canonical=1,
                                     lang=self.guessLanguage())
-        if key == 'full-size cover url' and self.data.has_key('cover url'):
+        if key == 'full-size cover url' and ('cover url') in self.data:
             return self._re_fullsizeURL.sub('', self.data.get('cover url', ''))
         return None
 
@@ -284,29 +284,6 @@ class Movie(_Container):
         return 0
     isSameMovie = isSameTitle # XXX: just for backward compatiblity.
 
-    def __contains__(self, item):
-        """Return true if the given Person object is listed in this Movie,
-        or if the the given Character is represented in this Movie."""
-        from Person import Person
-        from Character import Character
-        from Company import Company
-        if isinstance(item, Person):
-            for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
-                            toDescend=(list, dict, tuple, Movie)):
-                if item.isSame(p):
-                    return 1
-        elif isinstance(item, Character):
-            for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
-                            toDescend=(list, dict, tuple, Movie)):
-                if item.isSame(p.currentRole):
-                    return 1
-        elif isinstance(item, Company):
-            for c in flatten(self.data, yieldDictKeys=1, scalar=Company,
-                            toDescend=(list, dict, tuple, Movie)):
-                if item.isSame(c):
-                    return 1
-        return 0
-
     def __deepcopy__(self, memo):
         """Return a deep copy of a Movie instance."""
         m = Movie(title=u'', movieID=self.movieID, myTitle=self.myTitle,
@@ -328,14 +305,12 @@ class Movie(_Container):
             title = self.get('long imdb episode title')
         else:
             title = self.get('long imdb title')
-        r = '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
-                                                title)
-        if isinstance(r, unicode): r = r.encode('utf_8', 'replace')
+        r = '<Movie id:{0}[{1}] title:_{2}_>'.format(self.movieID, self.accessSystem, title)
         return r
 
     def __str__(self):
         """Simply print the short title."""
-        return self.get('title', u'').encode('utf_8', 'replace')
+        return self.get('title', u'')
 
     def __unicode__(self):
         """Simply print the short title."""
@@ -394,5 +369,3 @@ class Movie(_Container):
                 plot = plot[:i]
             s += u'Plot: %s' % plot
         return s
-
-

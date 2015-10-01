@@ -73,16 +73,10 @@ def canonicalName(name):
     #      - Jr.: 8025
     # Don't convert names already in the canonical format.
     if name.find(', ') != -1: return name
-    if isinstance(name, unicode):
-        joiner = u'%s, %s'
-        sur_joiner = u'%s %s'
-        sur_space = u' %s'
-        space = u' '
-    else:
-        joiner = '%s, %s'
-        sur_joiner = '%s %s'
-        sur_space = ' %s'
-        space = ' '
+    joiner = '%s, %s'
+    sur_joiner = '%s %s'
+    sur_space = ' %s'
+    space = ' '
     sname = name.split(' ')
     snl = len(sname)
     if snl == 2:
@@ -117,10 +111,8 @@ def canonicalName(name):
 
 def normalizeName(name):
     """Return a name in the normal "Name Surname" format."""
-    if isinstance(name, unicode):
-        joiner = u'%s %s'
-    else:
-        joiner = '%s %s'
+
+    joiner = '%s %s'
     sname = name.split(', ')
     if len(sname) == 2:
         name = joiner % (sname[1], sname[0])
@@ -194,17 +186,15 @@ def canonicalTitle(title, lang=None, imdbIndex=None):
     beware that it doesn't handle long imdb titles.
     The 'lang' argument can be used to specify the language of the title.
     """
-    isUnicode = isinstance(title, unicode)
+    isUnicode = True
     articlesDicts = linguistics.articlesDictsForLang(lang)
     try:
         if title.split(', ')[-1].lower() in articlesDicts[isUnicode]:
             return title
     except IndexError:
         pass
-    if isUnicode:
-        _format = u'%s%s, %s'
-    else:
-        _format = '%s%s, %s'
+
+    _format = u'%s%s, %s'
     ltitle = title.lower()
     if imdbIndex:
         imdbIndex = ' (%s)' % imdbIndex
@@ -218,17 +208,6 @@ def canonicalTitle(title, lang=None, imdbIndex=None):
             if article[-1] == ' ':
                 title = title[:-1]
             break
-    ## XXX: an attempt using a dictionary lookup.
-    ##for artSeparator in (' ', "'", '-'):
-    ##    article = _articlesDict.get(ltitle.split(artSeparator)[0])
-    ##    if article is not None:
-    ##        lart = len(article)
-    ##        # check titles like "una", "I'm Mad" and "L'abbacchio".
-    ##        if title[lart:] == '' or (artSeparator != ' ' and
-    ##                                title[lart:][1] != artSeparator): continue
-    ##        title = '%s, %s' % (title[lart:], title[:lart])
-    ##        if artSeparator == ' ': title = title[1:]
-    ##        break
     return title
 
 def normalizeTitle(title, lang=None):
@@ -237,19 +216,16 @@ def normalizeTitle(title, lang=None):
     title portion, without year[/imdbIndex] or special markup.
     The 'lang' argument can be used to specify the language of the title.
     """
-    isUnicode = isinstance(title, unicode)
+    isUnicode = True
     stitle = title.split(', ')
     articlesDicts = linguistics.articlesDictsForLang(lang)
     if len(stitle) > 1 and stitle[-1].lower() in articlesDicts[isUnicode]:
         sep = ' '
         if stitle[-1][-1] in ("'", '-'):
             sep = ''
-        if isUnicode:
-            _format = u'%s%s%s'
-            _joiner = u', '
-        else:
-            _format = '%s%s%s'
-            _joiner = ', '
+
+        _format = u'%s%s%s'
+        _joiner = u', '
         title = _format % (stitle[-1], sep, _joiner.join(stitle[:-1]))
     return title
 
@@ -809,15 +785,15 @@ def modifyStrings(o, modFunct, titlesRefs, namesRefs, charactersRefs):
     in a list), using the provided modFunct function and titlesRefs
     namesRefs and charactersRefs references dictionaries."""
     # Notice that it doesn't go any deeper than the first two levels in a list.
-    if isinstance(o, (unicode, str)):
+    if isinstance(o, str):
         return modFunct(o, titlesRefs, namesRefs, charactersRefs)
     elif isinstance(o, (list, tuple, dict)):
         _stillorig = 1
-        if isinstance(o, (list, tuple)): keys = xrange(len(o))
+        if isinstance(o, (list, tuple)): keys = range(len(o))
         else: keys = o.keys()
         for i in keys:
             v = o[i]
-            if isinstance(v, (unicode, str)):
+            if isinstance(v, str):
                 if _stillorig:
                     o = copy(o)
                     _stillorig = 0
@@ -850,149 +826,6 @@ def date_and_notes(s):
     if s == '????': s = u''
     return s, notes
 
-
-class RolesList(list):
-    """A list of Person or Character instances, used for the currentRole
-    property."""
-    def __unicode__(self):
-        return u' / '.join([unicode(x) for x in self])
-
-    def __str__(self):
-        # FIXME: does it make sense at all?  Return a unicode doesn't
-        #        seem right, in __str__.
-        return u' / '.join([unicode(x).encode('utf8') for x in self])
-
-
-# Replace & with &amp;, but only if it's not already part of a charref.
-#_re_amp = re.compile(r'(&)(?!\w+;)', re.I)
-#_re_amp = re.compile(r'(?<=\W)&(?=[^a-zA-Z0-9_#])')
-_re_amp = re.compile(r'&(?![^a-zA-Z0-9_#]{1,5};)')
-
-def escape4xml(value):
-    """Escape some chars that can't be present in a XML value."""
-    if isinstance(value, int):
-        value = str(value)
-    value = _re_amp.sub('&amp;', value)
-    value = value.replace('"', '&quot;').replace("'", '&apos;')
-    value = value.replace('<', '&lt;').replace('>', '&gt;')
-    if isinstance(value, unicode):
-        value = value.encode('ascii', 'xmlcharrefreplace')
-    return value
-
-
-def _refsToReplace(value, modFunct, titlesRefs, namesRefs, charactersRefs):
-    """Return three lists - for movie titles, persons and characters names -
-    with two items tuples: the first item is the reference once escaped
-    by the user-provided modFunct function, the second is the same
-    reference un-escaped."""
-    mRefs = []
-    for refRe, refTemplate in [(re_titleRef, u'_%s_ (qv)'),
-                                (re_nameRef, u"'%s' (qv)"),
-                                (re_characterRef, u'#%s# (qv)')]:
-        theseRefs = []
-        for theRef in refRe.findall(value):
-            # refTemplate % theRef values don't change for a single
-            # _Container instance, so this is a good candidate for a
-            # cache or something - even if it's so rarely used that...
-            # Moreover, it can grow - ia.update(...) - and change if
-            # modFunct is modified.
-            goodValue = modFunct(refTemplate % theRef, titlesRefs, namesRefs,
-                                charactersRefs)
-            # Prevents problems with crap in plain text data files.
-            # We should probably exclude invalid chars and string that
-            # are too long in the re_*Ref expressions.
-            if '_' in goodValue or len(goodValue) > 128:
-                continue
-            toReplace = escape4xml(goodValue)
-            # Only the 'value' portion is replaced.
-            replaceWith = goodValue.replace(theRef, escape4xml(theRef))
-            theseRefs.append((toReplace, replaceWith))
-        mRefs.append(theseRefs)
-    return mRefs
-
-
-def _handleTextNotes(s):
-    """Split text::notes strings."""
-    ssplit = s.split('::', 1)
-    if len(ssplit) == 1:
-        return s
-    return u'%s<notes>%s</notes>' % (ssplit[0], ssplit[1])
-
-
-def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
-                    namesRefs=None, charactersRefs=None):
-    """Replace some chars that can't be present in a XML text."""
-    # XXX: use s.encode(encoding, 'xmlcharrefreplace') ?  Probably not
-    #      a great idea: after all, returning a unicode is safe.
-    if isinstance(value, (unicode, str)):
-        if not withRefs:
-            value = _handleTextNotes(escape4xml(value))
-        else:
-            # Replace references that were accidentally escaped.
-            replaceLists = _refsToReplace(value, modFunct, titlesRefs,
-                                        namesRefs, charactersRefs)
-            value = modFunct(value, titlesRefs or {}, namesRefs or {},
-                            charactersRefs or {})
-            value = _handleTextNotes(escape4xml(value))
-            for replaceList in replaceLists:
-                for toReplace, replaceWith in replaceList:
-                    value = value.replace(toReplace, replaceWith)
-    else:
-        value = unicode(value)
-    return value
-
-
-def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
-    """Build a tag for the given _Container instance;
-    both open and close tags are returned."""
-    tag = ton.__class__.__name__.lower()
-    what = 'name'
-    if tag == 'movie':
-        value = ton.get('long imdb title') or ton.get('title', '')
-        what = 'title'
-    else:
-        value = ton.get('long imdb name') or ton.get('name', '')
-    value = _normalizeValue(value)
-    extras = u''
-    crl = ton.currentRole
-    if crl:
-        if not isinstance(crl, list):
-            crl = [crl]
-        for cr in crl:
-            crTag = cr.__class__.__name__.lower()
-            crValue = cr['long imdb name']
-            crValue = _normalizeValue(crValue)
-            crID = cr.getID()
-            if crID is not None:
-                extras += u'<current-role><%s id="%s">' \
-                            u'<name>%s</name></%s>' % (crTag, crID,
-                                                        crValue, crTag)
-            else:
-                extras += u'<current-role><%s><name>%s</name></%s>' % \
-                               (crTag, crValue, crTag)
-            if cr.notes:
-                extras += u'<notes>%s</notes>' % _normalizeValue(cr.notes)
-            extras += u'</current-role>'
-    theID = ton.getID()
-    if theID is not None:
-        beginTag = u'<%s id="%s"' % (tag, theID)
-        if addAccessSystem and ton.accessSystem:
-            beginTag += ' access-system="%s"' % ton.accessSystem
-        if not _containerOnly:
-            beginTag += u'><%s>%s</%s>' % (what, value, what)
-        else:
-            beginTag += u'>'
-    else:
-        if not _containerOnly:
-            beginTag = u'<%s><%s>%s</%s>' % (tag, what, value, what)
-        else:
-            beginTag = u'<%s>' % tag
-    beginTag += extras
-    if ton.notes:
-        beginTag += u'<notes>%s</notes>' % _normalizeValue(ton.notes)
-    return (beginTag, u'</%s>' % tag)
-
-
 TAGS_TO_MODIFY = {
     'movie.parents-guide': ('item', True),
     'movie.number-of-votes': ('item', True),
@@ -1010,128 +843,6 @@ TAGS_TO_MODIFY = {
     'character.quotes.item': ('quote', False),
     'character.quotes.item.quote': ('line', False)
     }
-
-_allchars = string.maketrans('', '')
-_keepchars = _allchars.translate(_allchars, string.ascii_lowercase + '-' +
-                                 string.digits)
-
-def _tagAttr(key, fullpath):
-    """Return a tuple with a tag name and a (possibly empty) attribute,
-    applying the conversions specified in TAGS_TO_MODIFY and checking
-    that the tag is safe for a XML document."""
-    attrs = {}
-    _escapedKey = escape4xml(key)
-    if fullpath in TAGS_TO_MODIFY:
-        tagName, useTitle = TAGS_TO_MODIFY[fullpath]
-        if useTitle:
-            attrs['key'] = _escapedKey
-    elif not isinstance(key, unicode):
-        if isinstance(key, str):
-            tagName = unicode(key, 'ascii', 'ignore')
-        else:
-            strType = str(type(key)).replace("<type '", "").replace("'>", "")
-            attrs['keytype'] = strType
-            tagName = unicode(key)
-    else:
-        tagName = key
-    if isinstance(key, int):
-        attrs['keytype'] = 'int'
-    origTagName = tagName
-    tagName = tagName.lower().replace(' ', '-')
-    tagName = str(tagName).translate(_allchars, _keepchars)
-    if origTagName != tagName:
-        if 'key' not in attrs:
-            attrs['key'] = _escapedKey
-    if (not tagName) or tagName[0].isdigit() or tagName[0] == '-':
-        # This is a fail-safe: we should never be here, since unpredictable
-        # keys must be listed in TAGS_TO_MODIFY.
-        # This will proably break the DTD/schema, but at least it will
-        # produce a valid XML.
-        tagName = 'item'
-        _utils_logger.error('invalid tag: %s [%s]' % (_escapedKey, fullpath))
-        attrs['key'] = _escapedKey
-    return tagName, u' '.join([u'%s="%s"' % i for i in attrs.items()])
-
-
-def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
-            titlesRefs=None, namesRefs=None, charactersRefs=None,
-            _topLevel=True, key2infoset=None, fullpath=''):
-    """Convert a sequence or a dictionary to a list of XML
-    unicode strings."""
-    if _l is None:
-        _l = []
-    if isinstance(seq, dict):
-        for key in seq:
-            value = seq[key]
-            if isinstance(key, _Container):
-                # Here we're assuming that a _Container is never a top-level
-                # key (otherwise we should handle key2infoset).
-                openTag, closeTag = _tag4TON(key)
-                # So that fullpath will contains something meaningful.
-                tagName = key.__class__.__name__.lower()
-            else:
-                tagName, attrs = _tagAttr(key, fullpath)
-                openTag = u'<%s' % tagName
-                if attrs:
-                    openTag += ' %s' % attrs
-                if _topLevel and key2infoset and key in key2infoset:
-                    openTag += u' infoset="%s"' % key2infoset[key]
-                if isinstance(value, int):
-                    openTag += ' type="int"'
-                elif isinstance(value, float):
-                    openTag += ' type="float"'
-                openTag += u'>'
-                closeTag = u'</%s>' % tagName
-            _l.append(openTag)
-            _seq2xml(value, _l, withRefs, modFunct, titlesRefs,
-                    namesRefs, charactersRefs, _topLevel=False,
-                    fullpath='%s.%s' % (fullpath, tagName))
-            _l.append(closeTag)
-    elif isinstance(seq, (list, tuple)):
-        tagName, attrs = _tagAttr('item', fullpath)
-        beginTag = u'<%s' % tagName
-        if attrs:
-            beginTag += u' %s' % attrs
-        #beginTag += u'>'
-        closeTag = u'</%s>' % tagName
-        for item in seq:
-            if isinstance(item, _Container):
-                _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
-                         namesRefs, charactersRefs, _topLevel=False,
-                         fullpath='%s.%s' % (fullpath,
-                                    item.__class__.__name__.lower()))
-            else:
-                openTag = beginTag
-                if isinstance(item, int):
-                    openTag += ' type="int"'
-                elif isinstance(item, float):
-                    openTag += ' type="float"'
-                openTag += u'>'
-                _l.append(openTag)
-                _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
-                        namesRefs, charactersRefs, _topLevel=False,
-                        fullpath='%s.%s' % (fullpath, tagName))
-                _l.append(closeTag)
-    else:
-        if isinstance(seq, _Container):
-            _l.extend(_tag4TON(seq))
-        else:
-            # Text, ints, floats and the like.
-            _l.append(_normalizeValue(seq, withRefs=withRefs,
-                                        modFunct=modFunct,
-                                        titlesRefs=titlesRefs,
-                                        namesRefs=namesRefs,
-                                        charactersRefs=charactersRefs))
-    return _l
-
-
-_xmlHead = u"""<?xml version="1.0"?>
-<!DOCTYPE %s SYSTEM "http://imdbpy.sf.net/dtd/imdbpy{VERSION}.dtd">
-
-"""
-_xmlHead = _xmlHead.replace('{VERSION}',
-        VERSION.replace('.', '').split('dev')[0][:2])
-
 
 class _Container(object):
     """Base class for Movie, Person, Character and Company classes."""
@@ -1191,16 +902,6 @@ class _Container(object):
         self.keys_tomodify = {}
         for item in self.keys_tomodify_list:
             self.keys_tomodify[item] = None
-        self._roleIsPerson = roleIsPerson
-        if not roleIsPerson:
-            from imdb.Character import Character
-            self._roleClass = Character
-        else:
-            from imdb.Person import Person
-            self._roleClass = Person
-        self.currentRole = currentRole
-        if roleID:
-            self.roleID = roleID
         self._init(*args, **kwds)
 
     def _get_roleID(self):
@@ -1230,42 +931,6 @@ class _Container(object):
             else:
                 for index, item in enumerate(roleID):
                     self.__role[index].personID = item
-
-    roleID = property(_get_roleID, _set_roleID,
-                doc="the characterID or personID of the currentRole object.")
-
-    def _get_currentRole(self):
-        """Return a Character or Person instance."""
-        if self.__role:
-            return self.__role
-        return self._roleClass(name=u'', accessSystem=self.accessSystem,
-                                modFunct=self.modFunct)
-
-    def _set_currentRole(self, role):
-        """Set self.currentRole to a Character or Person instance."""
-        if isinstance(role, (unicode, str)):
-            if not role:
-                self.__role = None
-            else:
-                self.__role = self._roleClass(name=role, modFunct=self.modFunct,
-                                        accessSystem=self.accessSystem)
-        elif isinstance(role, (list, tuple)):
-            self.__role = RolesList()
-            for item in role:
-                if isinstance(item, (unicode, str)):
-                    self.__role.append(self._roleClass(name=item,
-                                        accessSystem=self.accessSystem,
-                                        modFunct=self.modFunct))
-                else:
-                    self.__role.append(item)
-            if not self.__role:
-                self.__role = None
-        else:
-            self.__role = role
-
-    currentRole = property(_get_currentRole, _set_currentRole,
-                            doc="The role of a Person in a Movie" + \
-                            " or the interpreter of a Character in a Movie.")
 
     def _init(self, **kwds): pass
 
@@ -1407,56 +1072,6 @@ class _Container(object):
         """Number of items in the data dictionary."""
         return len(self.data)
 
-    def getAsXML(self, key, _with_add_keys=True):
-        """Return a XML representation of the specified key, or None
-        if empty.  If _with_add_keys is False, dinamically generated
-        keys are excluded."""
-        # Prevent modifyStrings in __getitem__ to be called; if needed,
-        # it will be called by the _normalizeValue function.
-        origModFunct = self.modFunct
-        self.modFunct = modNull
-        # XXX: not totally sure it's a good idea, but could prevent
-        #      problems (i.e.: the returned string always contains
-        #      a DTD valid tag, and not something that can be only in
-        #      the keys_alias map).
-        key = self.keys_alias.get(key, key)
-        if (not _with_add_keys) and  (key in self._additional_keys()):
-            self.modFunct = origModFunct
-            return None
-        try:
-            withRefs = False
-            if key in self.keys_tomodify and \
-                    origModFunct not in (None, modNull):
-                withRefs = True
-            value = self.get(key)
-            if value is None:
-                return None
-            tag = self.__class__.__name__.lower()
-            return u''.join(_seq2xml({key: value}, withRefs=withRefs,
-                                        modFunct=origModFunct,
-                                        titlesRefs=self.titlesRefs,
-                                        namesRefs=self.namesRefs,
-                                        charactersRefs=self.charactersRefs,
-                                        key2infoset=self.key2infoset,
-                                        fullpath=tag))
-        finally:
-            self.modFunct = origModFunct
-
-    def asXML(self, _with_add_keys=True):
-        """Return a XML representation of the whole object.
-        If _with_add_keys is False, dinamically generated keys are excluded."""
-        beginTag, endTag = _tag4TON(self, addAccessSystem=True,
-                                    _containerOnly=True)
-        resList = [beginTag]
-        for key in self.keys():
-            value = self.getAsXML(key, _with_add_keys=_with_add_keys)
-            if not value:
-                continue
-            resList.append(value)
-        resList.append(endTag)
-        head = _xmlHead % self.__class__.__name__.lower()
-        return head + u''.join(resList)
-
     def _getitem(self, key):
         """Handle special keys."""
         return None
@@ -1475,7 +1090,7 @@ class _Container(object):
             try:
                 return modifyStrings(rawData, self.modFunct, self.titlesRefs,
                                     self.namesRefs, self.charactersRefs)
-            except RuntimeError, e:
+            except RuntimeError as e:
                 # Symbian/python 2.2 has a poor regexp implementation.
                 import warnings
                 warnings.warn('RuntimeError in '
@@ -1590,18 +1205,18 @@ def flatten(seq, toDescend=(list, dict, tuple), yieldDictKeys=0,
         if isinstance(seq, (dict, _Container)):
             if yieldDictKeys:
                 # Yield also the keys of the dictionary.
-                for key in seq.iterkeys():
+                for key in seq:
                     for k in flatten(key, toDescend=toDescend,
                                 yieldDictKeys=yieldDictKeys,
                                 onlyKeysType=onlyKeysType, scalar=scalar):
                         if onlyKeysType and isinstance(k, onlyKeysType):
                             yield k
-            for value in seq.itervalues():
+            for value in seq.values():
                 for v in flatten(value, toDescend=toDescend,
                                 yieldDictKeys=yieldDictKeys,
                                 onlyKeysType=onlyKeysType, scalar=scalar):
                     yield v
-        elif not isinstance(seq, (str, unicode, int, float)):
+        elif not isinstance(seq, (str, int, float)):
             for item in seq:
                 for i in flatten(item, toDescend=toDescend,
                                 yieldDictKeys=yieldDictKeys,

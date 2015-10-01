@@ -30,8 +30,6 @@ from imdb._exceptions import IMDbError
 
 from imdb.utils import flatten, _Container
 from imdb.Movie import Movie
-from imdb.Person import Person
-from imdb.Character import Character
 
 
 # Year, imdbIndex and kind.
@@ -49,220 +47,9 @@ def analyze_imdbid(href):
         return None
     return str(match.group(2))
 
-
-_modify_keys = list(Movie.keys_tomodify_list) + list(Person.keys_tomodify_list)
-def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
-    """Iterate over the strings inside list items or dictionary values,
-    substitutes movie titles and person names with the (qv) references."""
-    if isinstance(d, list):
-        for i in xrange(len(d)):
-            if isinstance(d[i], (unicode, str)):
-                if lastKey in _modify_keys:
-                    if re_names:
-                        d[i] = re_names.sub(ur"'\1' (qv)", d[i])
-                    if re_titles:
-                        d[i] = re_titles.sub(ur'_\1_ (qv)', d[i])
-                    if re_characters:
-                        d[i] = re_characters.sub(ur'#\1# (qv)', d[i])
-            elif isinstance(d[i], (list, dict)):
-                _putRefs(d[i], re_titles, re_names, re_characters,
-                        lastKey=lastKey)
-    elif isinstance(d, dict):
-        for k, v in d.items():
-            lastKey = k
-            if isinstance(v, (unicode, str)):
-                if lastKey in _modify_keys:
-                    if re_names:
-                        d[k] = re_names.sub(ur"'\1' (qv)", v)
-                    if re_titles:
-                        d[k] = re_titles.sub(ur'_\1_ (qv)', v)
-                    if re_characters:
-                        d[k] = re_characters.sub(ur'#\1# (qv)', v)
-            elif isinstance(v, (list, dict)):
-                _putRefs(d[k], re_titles, re_names, re_characters,
-                        lastKey=lastKey)
-
-
-# Handle HTML/XML/SGML entities.
-from htmlentitydefs import entitydefs
-entitydefs = entitydefs.copy()
-entitydefsget = entitydefs.get
-entitydefs['nbsp'] = ' '
-
-sgmlentity = {'lt': '<', 'gt': '>', 'amp': '&', 'quot': '"', 'apos': '\'', 'ndash': '-'}
-sgmlentityget = sgmlentity.get
-_sgmlentkeys = sgmlentity.keys()
-
-entcharrefs = {}
-entcharrefsget = entcharrefs.get
-for _k, _v in entitydefs.items():
-    if _k in _sgmlentkeys: continue
-    if _v[0:2] == '&#':
-        dec_code = _v[1:-1]
-        _v = unichr(int(_v[2:-1]))
-        entcharrefs[dec_code] = _v
-    else:
-        dec_code = '#' + str(ord(_v))
-        _v = unicode(_v, 'latin_1', 'replace')
-        entcharrefs[dec_code] = _v
-    entcharrefs[_k] = _v
-del _sgmlentkeys, _k, _v
-entcharrefs['#160'] = u' '
-entcharrefs['#xA0'] = u' '
-entcharrefs['#xa0'] = u' '
-entcharrefs['#XA0'] = u' '
-entcharrefs['#x22'] = u'"'
-entcharrefs['#X22'] = u'"'
-# convert &x26; to &amp;, to make BeautifulSoup happy; beware that this
-# leaves lone '&' in the html broken, but I assume this is better than
-# the contrary...
-entcharrefs['#38'] = u'&amp;'
-entcharrefs['#x26'] = u'&amp;'
-entcharrefs['#x26'] = u'&amp;'
-
-re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5}|\#x[0-9a-f]{1,4});' %
-                            '|'.join(map(re.escape, entcharrefs)), re.I)
-re_entcharrefssub = re_entcharrefs.sub
-
-sgmlentity.update(dict([('#34', u'"'), ('#38', u'&'),
-                        ('#60', u'<'), ('#62', u'>'), ('#39', u"'")]))
-re_sgmlref = re.compile('&(%s);' % '|'.join(map(re.escape, sgmlentity)))
-re_sgmlrefsub = re_sgmlref.sub
-
 # Matches XML-only single tags, like <br/> ; they are invalid in HTML,
 # but widely used by IMDb web site. :-/
 re_xmltags = re.compile('<([a-zA-Z]+)/>')
-
-
-def _replXMLRef(match):
-    """Replace the matched XML/HTML entities and references;
-    replace everything except sgml entities like &lt;, &gt;, ..."""
-    ref = match.group(1)
-    value = entcharrefsget(ref)
-    if value is None:
-        if ref[0] == '#':
-            ref_code = ref[1:]
-            if ref_code in ('34', '38', '60', '62', '39'):
-                return match.group(0)
-            elif ref_code[0].lower() == 'x':
-                #if ref[2:] == '26':
-                #    # Don't convert &x26; to &amp;, to make BeautifulSoup happy.
-                #    return '&amp;'
-                return unichr(int(ref[2:], 16))
-            else:
-                return unichr(int(ref[1:]))
-        else:
-            return ref
-    return value
-
-def subXMLRefs(s):
-    """Return the given html string with entity and char references
-    replaced."""
-    return re_entcharrefssub(_replXMLRef, s)
-
-# XXX: no more used here; move it to mobile (they are imported by helpers, too)?
-def _replSGMLRefs(match):
-    """Replace the matched SGML entity."""
-    ref = match.group(1)
-    return sgmlentityget(ref, ref)
-
-def subSGMLRefs(s):
-    """Return the given html string with sgml entity and char references
-    replaced."""
-    return re_sgmlrefsub(_replSGMLRefs, s)
-
-
-_b_p_logger = logging.getLogger('imdbpy.parser.http.build_person')
-def build_person(txt, personID=None, billingPos=None,
-                roleID=None, accessSystem='http', modFunct=None):
-    """Return a Person instance from the tipical <tr>...</tr> strings
-    found in the IMDb's web site."""
-    #if personID is None
-    #    _b_p_logger.debug('empty name or personID for "%s"', txt)
-    notes = u''
-    role = u''
-    # Search the (optional) separator between name and role/notes.
-    if txt.find('....') != -1:
-        sep = '....'
-    elif txt.find('...') != -1:
-        sep = '...'
-    else:
-        sep = '...'
-        # Replace the first parenthesis, assuming there are only
-        # notes, after.
-        # Rationale: no imdbIndex is (ever?) showed on the web site.
-        txt = txt.replace('(', '...(', 1)
-    txt_split = txt.split(sep, 1)
-    name = txt_split[0].strip()
-    if len(txt_split) == 2:
-        role_comment = txt_split[1].strip()
-        # Strip common endings.
-        if role_comment[-4:] == ' and':
-            role_comment = role_comment[:-4].rstrip()
-        elif role_comment[-2:] == ' &':
-            role_comment = role_comment[:-2].rstrip()
-        elif role_comment[-6:] == '& ....':
-            role_comment = role_comment[:-6].rstrip()
-        # Get the notes.
-        if roleID is not None:
-            if not isinstance(roleID, list):
-                cmt_idx = role_comment.find('(')
-                if cmt_idx != -1:
-                    role = role_comment[:cmt_idx].rstrip()
-                    notes = role_comment[cmt_idx:]
-                else:
-                    # Just a role, without notes.
-                    role = role_comment
-            else:
-                role = role_comment
-        else:
-            # We're managing something that doesn't have a 'role', so
-            # everything are notes.
-            notes = role_comment
-    if role == '....': role = u''
-    roleNotes = []
-    # Manages multiple roleIDs.
-    if isinstance(roleID, list):
-        rolesplit = role.split('/')
-        role = []
-        for r in rolesplit:
-            nidx = r.find('(')
-            if nidx != -1:
-                role.append(r[:nidx].rstrip())
-                roleNotes.append(r[nidx:])
-            else:
-                role.append(r)
-                roleNotes.append(None)
-        lr = len(role)
-        lrid = len(roleID)
-        if lr > lrid:
-            roleID += [None] * (lrid - lr)
-        elif lr < lrid:
-            roleID = roleID[:lr]
-        for i, rid in enumerate(roleID):
-            if rid is not None:
-                roleID[i] = str(rid)
-        if lr == 1:
-            role = role[0]
-            roleID = roleID[0]
-            notes = roleNotes[0] or u''
-    elif roleID is not None:
-        roleID = str(roleID)
-    if personID is not None:
-        personID = str(personID)
-    if (not name) or (personID is None):
-        # Set to 'debug', since build_person is expected to receive some crap.
-        _b_p_logger.debug('empty name or personID for "%s"', txt)
-    # XXX: return None if something strange is detected?
-    person = Person(name=name, personID=personID, currentRole=role,
-                    roleID=roleID, notes=notes, billingPos=billingPos,
-                    modFunct=modFunct, accessSystem=accessSystem)
-    if roleNotes and len(roleNotes) == len(roleID):
-        for idx, role in enumerate(person.currentRole):
-            if roleNotes[idx]:
-                role.notes = roleNotes[idx]
-    return person
-
 
 _re_chrIDs = re.compile('[0-9]{7}')
 
@@ -353,7 +140,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         roleID = None
     elif len(roleID) == 1:
         roleID = roleID[0]
-    if not role and chrRoles and isinstance(roleID, (str, unicode)):
+    if not role and chrRoles and isinstance(roleID, str):
         roleID = _re_chrIDs.findall(roleID)
         role = ' / '.join(filter(None, chrRoles.split('@@')))
     # Manages multiple roleIDs.
@@ -450,8 +237,8 @@ class DOMParserBase(object):
                     self._is_xml_unicode = False
                     self.usingModule = 'lxml'
                 elif mod == 'beautifulsoup':
-                    from bsouplxml.html import fromstring
-                    from bsouplxml.etree import tostring
+                    from lxml.html.soupparser import fromstring
+                    from lxml.etree import tostring
                     self._is_xml_unicode = True
                     self.usingModule = 'beautifulsoup'
                 else:
@@ -462,7 +249,7 @@ class DOMParserBase(object):
                 if _gotError:
                     warnings.warn('falling back to "%s"' % mod)
                 break
-            except ImportError, e:
+            except ImportError as e:
                 if idx+1 >= nrMods:
                     # Raise the exception, if we don't have any more
                     # options to try.
@@ -506,10 +293,6 @@ class DOMParserBase(object):
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
-        # Useful only for the testsuite.
-        if not isinstance(html_string, unicode):
-            html_string = unicode(html_string, 'latin_1', 'replace')
-        html_string = subXMLRefs(html_string)
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
         html_string = html_string.strip()
@@ -526,13 +309,13 @@ class DOMParserBase(object):
             #print self.tostring(dom).encode('utf8')
             try:
                 dom = self.preprocess_dom(dom)
-            except Exception, e:
+            except Exception as e:
                 self._logger.error('%s: caught exception preprocessing DOM',
                                     self._cname, exc_info=True)
             if self.getRefs:
                 try:
                     self.gather_refs(dom)
-                except Exception, e:
+                except Exception as e:
                     self._logger.warn('%s: unable to gather refs: %s',
                                     self._cname, exc_info=True)
             data = self.parse_dom(dom)
@@ -540,7 +323,7 @@ class DOMParserBase(object):
             data = {}
         try:
             data = self.postprocess_data(data)
-        except Exception, e:
+        except Exception as e:
             self._logger.error('%s: caught exception postprocessing data',
                                 self._cname, exc_info=True)
         if self._containsObjects:
@@ -549,8 +332,8 @@ class DOMParserBase(object):
         return data
 
     def _build_empty_dom(self):
-        from bsouplxml import _bsoup
-        return _bsoup.BeautifulSoup('')
+        from bs4 import BeautifulSoup
+        return BeautifulSoup.BeautifulSoup('')
 
     def get_dom(self, html_string):
         """Return a dom object, from the given string."""
@@ -560,7 +343,7 @@ class DOMParserBase(object):
                 dom = self._build_empty_dom()
                 self._logger.error('%s: using a fake empty DOM', self._cname)
             return dom
-        except Exception, e:
+        except Exception as e:
             self._logger.error('%s: caught exception parsing DOM',
                                 self._cname, exc_info=True)
             return self._build_empty_dom()
@@ -573,23 +356,21 @@ class DOMParserBase(object):
                 return xpath_result
             result = []
             for item in xpath_result:
-                if isinstance(item, str):
-                    item = unicode(item)
                 result.append(item)
             return result
-        except Exception, e:
+        except Exception as e:
             self._logger.error('%s: caught exception extracting XPath "%s"',
                                 self._cname, path, exc_info=True)
             return []
 
     def tostring(self, element):
         """Convert the element to a string."""
-        if isinstance(element, (unicode, str)):
-            return unicode(element)
+        if isinstance(element, str):
+            return element
         else:
             try:
-                return self._tostring(element, encoding=unicode)
-            except Exception, e:
+                return self._tostring(element, encoding='utf-8')
+            except Exception as e:
                 self._logger.error('%s: unable to convert to string',
                                     self._cname, exc_info=True)
                 return u''
@@ -618,7 +399,7 @@ class DOMParserBase(object):
             elif callable(src):
                 try:
                     html_string = src(html_string)
-                except Exception, e:
+                except Exception as e:
                     _msg = '%s: caught exception preprocessing html'
                     self._logger.error(_msg, self._cname, exc_info=True)
                     continue
@@ -666,7 +447,7 @@ class DOMParserBase(object):
                         if callable(normalizer):
                             try:
                                 group_key = normalizer(group_key)
-                            except Exception, e:
+                            except Exception as e:
                                 _m = '%s: unable to apply group_key normalizer'
                                 self._logger.error(_m, self._cname,
                                                     exc_info=True)
@@ -677,7 +458,7 @@ class DOMParserBase(object):
                 for attr in extractor.attrs:
                     if isinstance(attr.path, dict):
                         data = {}
-                        for field in attr.path.keys():
+                        for field in attr.path:
                             path = attr.path[field]
                             value = self.xpath(element, path)
                             if not value:
@@ -697,7 +478,7 @@ class DOMParserBase(object):
                     if callable(attr_postprocess):
                         try:
                             data = attr_postprocess(data)
-                        except Exception, e:
+                        except Exception as e:
                             _m = '%s: unable to apply attr postprocess'
                             self._logger.error(_m, self._cname, exc_info=True)
                     key = attr.key
@@ -737,19 +518,18 @@ class DOMParserBase(object):
     def add_refs(self, data):
         """Modify data according to the expected output."""
         if self.getRefs:
-            titl_re = ur'(%s)' % '|'.join([re.escape(x) for x
+            titl_re = r'(%s)' % '|'.join([re.escape(x) for x
                                             in self._titlesRefs.keys()])
-            if titl_re != ur'()': re_titles = re.compile(titl_re, re.U)
+            if titl_re != r'()': re_titles = re.compile(titl_re, re.U)
             else: re_titles = None
-            nam_re = ur'(%s)' % '|'.join([re.escape(x) for x
+            nam_re = r'(%s)' % '|'.join([re.escape(x) for x
                                             in self._namesRefs.keys()])
-            if nam_re != ur'()': re_names = re.compile(nam_re, re.U)
+            if nam_re != r'()': re_names = re.compile(nam_re, re.U)
             else: re_names = None
-            chr_re = ur'(%s)' % '|'.join([re.escape(x) for x
+            chr_re = r'(%s)' % '|'.join([re.escape(x) for x
                                             in self._charactersRefs.keys()])
-            if chr_re != ur'()': re_characters = re.compile(chr_re, re.U)
+            if chr_re != r'()': re_characters = re.compile(chr_re, re.U)
             else: re_characters = None
-            _putRefs(data, re_titles, re_names, re_characters)
         return {'data': data, 'titlesRefs': self._titlesRefs,
                 'namesRefs': self._namesRefs,
                 'charactersRefs': self._charactersRefs}
@@ -856,14 +636,8 @@ class GatherRefs(DOMParserBase):
                     continue
                 if not v.endswith('/'): continue
                 imdbID = analyze_imdbid(v)
-                if item == 'names refs':
-                    obj = Person(personID=imdbID, name=k,
-                                accessSystem=self._as, modFunct=self._modFunct)
-                elif item == 'titles refs':
+                if item == 'titles refs':
                     obj = Movie(movieID=imdbID, title=k,
-                                accessSystem=self._as, modFunct=self._modFunct)
-                else:
-                    obj = Character(characterID=imdbID, name=k,
                                 accessSystem=self._as, modFunct=self._modFunct)
                 # XXX: companies aren't handled: are they ever found in text,
                 #      as links to their page?
@@ -872,5 +646,3 @@ class GatherRefs(DOMParserBase):
 
     def add_refs(self, data):
         return data
-
-

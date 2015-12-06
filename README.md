@@ -1,4 +1,11 @@
-# imdbpy
-IMDbPY is a Python package useful to retrieve and manage the data of the IMDb movie database about movies, people, characters and companies.
+# imdbpy3
+This package is modified version of [imdbpy](https://github.com/alberanid/imdbpy).
 
-#Support for Python3
+Modifications
+- Removed person, character and company classes
+- Removed 'sql', 'mobile' and 'httpthin' access system
+- Support for python3
+
+I don't mean any disrespect to the original author by making these changes. Above changes were made because original package was too big for my requirement and I didn't want to port extra code to python3 which I never would be using.
+
+Credit goes to the [alberanid](https://github.com/alberanid) for creating such an excellent package for getting IMDB information via python.

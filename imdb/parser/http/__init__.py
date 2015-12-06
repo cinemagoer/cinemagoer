@@ -227,8 +227,8 @@ class IMDbURLopener(FancyURLopener):
         if encode is None:
             encode = 'latin_1'
             # The detection of the encoding is error prone...
-            self._logger.warn('Unable to detect the encoding of the retrieved '
-                        'page [%s]; falling back to default latin1.', encode)
+            #self._logger.warn('Unable to detect the encoding of the retrieved '
+            #            'page [%s]; falling back to default latin1.', encode)
         return content.decode('utf-8')
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):

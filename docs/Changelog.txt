@@ -1,7 +1,7 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 5.1dev20150822 "Mission: Impossible - Rogue Nation" (22 Aug 2015)
+* What's the new in release 5.1dev20160106 "The Man in the High Castle" (22 Aug 2016)
   [general]
   - fix for company names containing square brackets.
   - fix XML output when imdb long name is missing.
@@ -10,9 +10,11 @@
   - fix birth/death dates parsing.
   - fix top/bottom lists.
   - Persons's resume page parser (courtesy of codynhat)
+  - fixes #29: split color info
 
   [sql]
   - sound track list correctly identified.
+  - fixes #50: process splitted data in order
 
 
 * What's the new in release 5.0 "House of Cards" (02 May 2014)

@@ -961,9 +961,11 @@ class _BaseCache(dict):
                 firstHalf = {}
                 poptmpd = self._tmpDict.popitem
                 originalLength = len(self._tmpDict)
-                for x in xrange(1 + originalLength/2):
+                for x in xrange(1, 1 + originalLength/2):
                     k, v = poptmpd()
                     firstHalf[k] = v
+                self._secondHalf = self._tmpDict
+                self._tmpDict = firstHalf
                 print ' * TOO MANY DATA (%s items in %s), recursion: %s' % \
                                                         (originalLength,
                                                         self.className,
@@ -971,7 +973,7 @@ class _BaseCache(dict):
                 print '   * SPLITTING (run 1 of 2), recursion: %s' % \
                                                         _recursionLevel
                 self.flush(quiet=quiet, _recursionLevel=_recursionLevel)
-                self._tmpDict = firstHalf
+                self._tmpDict = secondHalf
                 print '   * SPLITTING (run 2 of 2), recursion: %s' % \
                                                         _recursionLevel
                 self.flush(quiet=quiet, _recursionLevel=_recursionLevel)

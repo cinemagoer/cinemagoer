@@ -23,6 +23,8 @@ patches and hints (kept in a reverse order since IMDbPY 4.5):
 
 * all the translators on transifex.
 
+* Wael Sinno for a patch for parsing movie-links.
+
 * Tool Man, for a fix on sound track parsing.
 
 * Rafael Lopez for a series of fixes on top/bottom lists.

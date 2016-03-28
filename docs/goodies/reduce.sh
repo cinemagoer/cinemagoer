@@ -45,7 +45,7 @@ do
 	NEWNAME="`echo "$file" | rev | cut -c 4- | rev `"
 
 	# Tries to keep enough lines from the top of the file.
-	MIN_TOP_LINES="`zgrep -n -m 1 "^-----------------------------------------" "$file" | cut -d : -f 1`"
+	MIN_TOP_LINES="`zgrep -a -n -m 1 "^-----------------------------------------" "$file" | cut -d : -f 1`"
 	if test -z "$MIN_TOP_LINES" ; then
 		MIN_TOP_LINES=0
 	fi

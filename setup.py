@@ -173,7 +173,7 @@ ERR_MSG = """
                             are used)
 
   Example:
-      python ./setup.py --without-lxml --without-sql install
+      python ./setup.py --without-lxml --without-sqlobject --without-sqlalchemy install
 
   The caught exception, is re-raise below:
 """

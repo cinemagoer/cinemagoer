@@ -5,6 +5,7 @@
   [general]
   - fix for company names containing square brackets.
   - fix XML output when imdb long name is missing.
+  - fixes #33: unable to use --without-sql
 
   [http]
   - fix birth/death dates parsing.

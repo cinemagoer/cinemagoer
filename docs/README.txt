@@ -69,15 +69,12 @@ The whole list of command line options of the setup.py script is:
   --without-lxml	exclude lxml (speeds up "http" considerably,
 					so try to fix it).
   --without-cutils	don't compile the C module (speeds up 'sql')
-  --without-sql		no access to SQL databases.
-
-If you're install 'sql', setup.py tries to install BOTH SQLObject
-and SQLAlchemy.  In fact, having one of them will be enough.
-You can exclude the unwanted one with:
   --without-sqlobject	exclude SQLObject
   --without-sqlalchemy	exclude SQLAlchemy
 
-If you specify both, --without-sql is implied.
+By default, setup.py tries to install BOTH SQLObject
+and SQLAlchemy.  In fact, having one of them will be enough:
+you can exclude the unwanted one.
 
 
   Mercurial VERSION

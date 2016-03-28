@@ -15,13 +15,14 @@ projects and researches; they can be found here:
 Other very special thanks go to some people who followed very
 closely the development of IMDbPY, providing hints and insights:
 Ori Cohen, James Rubino, Tero Saarni and Jesper Noer (for a lot
-of help, and also for the wonderful http://bitbucket.org)
+of help, and also for the wonderful http://bitbucket.org), and
+let's not forget all the translators on https://www.transifex.com/davide_alberani/imdbpy/
 
 
 Below, a list of persons who contributed with bug reports, small
 patches and hints (kept in a reverse order since IMDbPY 4.5):
 
-* all the translators on transifex.
+* Fabrice Laporte for a bug report on setup.py
 
 * Wael Sinno for a patch for parsing movie-links.
 

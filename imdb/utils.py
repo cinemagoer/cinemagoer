@@ -431,13 +431,13 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
             yi = [(yiy, yii)]
             if yk == 'TV episode':
                 kind = u'episode'
-            elif yk == 'TV':
+            elif yk in ('TV', 'TV Movie'):
                 kind = u'tv movie'
             elif yk == 'TV Series':
                 kind = u'tv series'
             elif yk == 'Video':
                 kind = u'video movie'
-            elif yk == 'TV mini-series':
+            elif yk in ('TV mini-series', 'TV Mini-Series'):
                 kind = u'tv mini series'
             elif yk == 'Video Game':
                 kind = u'video game'

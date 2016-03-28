@@ -396,7 +396,7 @@ class DOMHTMLResumeParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
-        
+
         for key in data.keys():
             if data[key] == '':
                 del data[key]

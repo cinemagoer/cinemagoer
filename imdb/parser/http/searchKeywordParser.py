@@ -47,7 +47,7 @@ class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
     the one given."""
 
     _BaseParser = DOMBasicKeywordParser
-    _notDirectHitTitle = '<title>imdb keyword'
+    _notDirectHitTitle = '<title>find - imdb'
     _titleBuilder = lambda self, x: x
     _linkPrefix = '/keyword/'
 
@@ -56,7 +56,7 @@ class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
                         path="./a[1]/text()"
                             )]
     extractors = [Extractor(label='search',
-                            path="//td[3]/a[starts-with(@href, " \
+                            path="//a[starts-with(@href, " \
                                     "'/keyword/')]/..",
                             attrs=_attrs)]
 

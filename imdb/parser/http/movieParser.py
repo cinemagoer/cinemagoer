@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2016 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -206,6 +206,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                         attrs=Attribute(key="genres",
                             multi=True,
                             path="./text()")),
+
+                Extractor(label='myrating',
+                        path="//span[@id='voteuser']",
+                        attrs=Attribute(key='myrating',
+                                        path=".//text()")),
 
                 Extractor(label='h5sections',
                         path="//div[@class='info']/h5/..",

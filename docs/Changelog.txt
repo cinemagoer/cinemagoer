@@ -12,6 +12,7 @@
   - fix top/bottom lists.
   - Persons's resume page parser (courtesy of codynhat)
   - fixes #29: split color info
+  - parser for "my rating" (you have to use your own cookies)
 
   [sql]
   - sound track list correctly identified.

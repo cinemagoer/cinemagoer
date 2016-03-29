@@ -5,7 +5,7 @@ imdbpy2sql.py script.
 This script puts the data of the plain text data files into a
 SQL database.
 
-Copyright 2005-2015 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2016 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify
@@ -31,15 +31,17 @@ import re
 import warnings
 import anydbm
 from itertools import islice, chain
-try: import cPickle as pickle
-except ImportError: import pickle
-try: from hashlib import md5
-except ImportError: from md5 import md5
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
 from gzip import GzipFile
 from types import UnicodeType
 
-from imdb.parser.sql.dbschema import *
-from imdb.parser.sql import get_movie_data, soundex
+#from imdb.parser.sql.dbschema import *
+from imdb.parser.sql.dbschema import DB_SCHEMA, dropTables, createTables, \
+    createIndexes, createForeignKeys
+from imdb.parser.sql import soundex
 from imdb.utils import analyze_title, analyze_name, date_and_notes, \
         build_name, build_title, normalizeName, normalizeTitle, _articles, \
         build_company_name, analyze_company_name, canonicalTitle
@@ -318,11 +320,9 @@ for idx, mod in enumerate(USE_ORM):
     mod = mod.lower()
     try:
         if mod == 'sqlalchemy':
-            from imdb.parser.sql.alchemyadapter import getDBTables, \
-                    NotFoundError, setConnection, ISNOTNULL, IN
+            from imdb.parser.sql.alchemyadapter import getDBTables, setConnection
         elif mod == 'sqlobject':
-            from imdb.parser.sql.objectadapter import getDBTables, \
-                    NotFoundError, setConnection, ISNOTNULL, IN
+            from imdb.parser.sql.objectadapter import getDBTables, setConnection
         else:
             warnings.warn('unknown module "%s".' % mod)
             continue
@@ -377,7 +377,6 @@ class CSVCursor(object):
         #        affects performances: management of LOB files, at least,
         #        must be moved away from here.
         quote = self.quote
-        escape = self.escape
         null = self.null
         escaped = self.escaped
         quoteInteger = self.quoteInteger
@@ -3074,4 +3073,3 @@ if __name__ == '__main__':
         restoreCSV()
     else:
         run()
-

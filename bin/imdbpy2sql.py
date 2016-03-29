@@ -972,7 +972,7 @@ class _BaseCache(dict):
                 print '   * SPLITTING (run 1 of 2), recursion: %s' % \
                                                         _recursionLevel
                 self.flush(quiet=quiet, _recursionLevel=_recursionLevel)
-                self._tmpDict = secondHalf
+                self._tmpDict = self._secondHalf
                 print '   * SPLITTING (run 2 of 2), recursion: %s' % \
                                                         _recursionLevel
                 self.flush(quiet=quiet, _recursionLevel=_recursionLevel)

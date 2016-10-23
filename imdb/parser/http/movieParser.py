@@ -1296,16 +1296,17 @@ class DOMHTMLTechParser(DOMParserBase):
         result = tparser.parse(technical_html_string)
     """
     kind = 'tech'
+    re_space = re.compile(r'\s+')
 
     extractors = [Extractor(label='tech',
-                        group="//h5",
+                        group="//table//tr/td[@class='label']",
                         group_key="./text()",
-                        group_key_normalize=lambda x: x.lower(),
-                        path="./following-sibling::div[1]",
+                        group_key_normalize=lambda x: x.lower().strip(),
+                        path=".",
                         attrs=Attribute(key=None,
-                                    path=".//text()",
+                                        path="..//td[2]//text()",
                                     postprocess=lambda x: [t.strip()
-                                        for t in x.split('\n') if t.strip()]))]
+                                                           for t in x.split(':::') if t.strip()]))]
 
     preprocessors = [
         (re.compile('(<h5>.*?</h5>)', re.I), r'</div>\1<div class="_imdbpy">'),
@@ -1315,12 +1316,15 @@ class DOMHTMLTechParser(DOMParserBase):
         (re.compile('<p>(.*?)</p>', re.I), r'\1<br/>'),
         (re.compile('(</td><td valign="top">)', re.I), r'\1::'),
         (re.compile('(</tr><tr>)', re.I), r'\n\1'),
+        (re.compile('<span class="ghost">\|</span>', re.I), r':::'),
+        (re.compile('<br/?>', re.I), r':::'),
         # this is for splitting individual entries
-        (re.compile('<br/>', re.I), r'\n'),
         ]
 
     def postprocess_data(self, data):
         for key in data:
+            data[key] = filter(lambda x: x != '|', data[key])
+            data[key] = [self.re_space.sub(' ', x).strip() for x in data[key]]
             data[key] = filter(None, data[key])
         if self.kind in ('literature', 'business', 'contacts') and data:
             if 'screenplay/teleplay' in data:

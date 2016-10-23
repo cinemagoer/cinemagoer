@@ -559,10 +559,10 @@ class DOMHTMLPlotParser(DOMParserBase):
     # Notice that recently IMDb started to put the email of the
     # author only in the link, that we're not collecting, here.
     extractors = [Extractor(label='plot',
-                            path="//ul[@class='zebraList']//p",
+                            path="//p[@class='plotSummary']",
                             attrs=Attribute(key='plot',
                                             multi=True,
-                                            path={'plot': './text()[1]',
+                                            path={'plot': './/text()',
                                                   'author': './span/em/a/text()'},
                                             postprocess=_process_plotsummary))]
 

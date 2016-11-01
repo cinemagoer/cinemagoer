@@ -790,17 +790,20 @@ class DOMHTMLTriviaParser(DOMParserBase):
 
 
 
-class DOMHTMLSoundtrackParser(DOMHTMLAlternateVersionsParser):
-    kind = 'soundtrack'
-
-    preprocessors = [
-        ('<br>', '\n')
-        ]
+class DOMHTMLSoundtrackParser(DOMParserBase):
+    _defGetRefs = True
+    preprocessors = [('<br />', '\n'), ('<br>', '\n')]
+    extractors = [Extractor(label='soundtrack',
+                            path="//div[@class='list']//div",
+                            attrs=Attribute(key='soundtrack',
+                                            multi=True,
+                                            path=".//text()",
+                                            postprocess=lambda x: x.strip()))]
 
     def postprocess_data(self, data):
-        if 'alternate versions' in data:
+        if 'soundtrack' in data:
             nd = []
-            for x in data['alternate versions']:
+            for x in data['soundtrack']:
                 ds = x.split('\n')
                 title = ds[0]
                 if title[0] == '"' and title[-1] == '"':
@@ -1916,7 +1919,7 @@ _OBJECTS = {
     'goofs_parser':  ((DOMHTMLGoofsParser,), None),
     'alternateversions_parser':  ((DOMHTMLAlternateVersionsParser,), None),
     'trivia_parser':  ((DOMHTMLTriviaParser,), None),
-    'soundtrack_parser':  ((DOMHTMLSoundtrackParser,), {'kind': 'soundtrack'}),
+    'soundtrack_parser':  ((DOMHTMLSoundtrackParser,), None),
     'quotes_parser':  ((DOMHTMLQuotesParser,), None),
     'releasedates_parser':  ((DOMHTMLReleaseinfoParser,), None),
     'ratings_parser':  ((DOMHTMLRatingsParser,), None),

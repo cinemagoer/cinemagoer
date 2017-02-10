@@ -508,7 +508,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_full_credits(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'fullcredits')
-        return self.mProxy.movie_parser.parse(cont)
+        return self.mProxy.full_credits_parser.parse(cont)
 
     def get_movie_plot(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'plotsummary')

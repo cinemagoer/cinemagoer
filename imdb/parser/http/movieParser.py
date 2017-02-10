@@ -1188,6 +1188,34 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
                 attrs=Attribute(key='metacritic url',
                                 path="./@href")) ]
 
+
+class DOMHTMLFullCreditsParser(DOMParserBase):
+    """Parser for the "full credits" (series cast section) page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        osparser = DOMHTMLFullCreditsParser()
+        result = osparser.parse(officialsites_html_string)
+    """
+    kind = 'full credits'
+    extractors = [
+        Extractor(label='cast',
+                  path="//table[@class='cast_list']/tr[@class='odd' or @class='even']",
+                  attrs=Attribute(key="cast",
+                                  multi=True,
+                                  path={'person': "td[2]/a/span/text()",
+                                        'link': "td[2]/a/@href",
+                                        'roleID': "td[4]/div/a/@href"},
+                                  postprocess=lambda x: \
+                                      build_person(x.get('person') or u'',
+                                                   personID=analyze_imdbid(x.get('link')),
+                                                   roleID=(x.get('roleID') or u'').split('/'))
+                                  )),
+    ]
+
+
 class DOMHTMLOfficialsitesParser(DOMParserBase):
     """Parser for the "official sites", "external reviews", "newsgroup
     reviews", "miscellaneous links", "sound clips", "video clips" and
@@ -1911,6 +1939,7 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
 
 _OBJECTS = {
     'movie_parser':  ((DOMHTMLMovieParser,), None),
+    'full_credits_parser':  ((DOMHTMLFullCreditsParser,), None),
     'plot_parser':  ((DOMHTMLPlotParser,), None),
     'movie_awards_parser': ((DOMHTMLAwardsParser,), None),
     'taglines_parser':  ((DOMHTMLTaglinesParser,), None),

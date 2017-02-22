@@ -1012,8 +1012,8 @@ TAGS_TO_MODIFY = {
     }
 
 _allchars = bytes.maketrans(b'', b'')
-_keepchars = _allchars.translate(_allchars, string.ascii_lowercase + '-' +
-                                 string.digits)
+_keepchars = _allchars.translate(_allchars, (string.ascii_lowercase + '-' +
+                                 string.digits).encode())
 
 def _tagAttr(key, fullpath):
     """Return a tuple with a tag name and a (possibly empty) attribute,

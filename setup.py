@@ -124,7 +124,7 @@ params = {
         'license': 'GPL',
         'platforms': 'any',
         'keywords': keywords,
-        'classifiers': filter(None, classifiers.split("\n")),
+        'classifiers': [_f for _f in classifiers.split("\n") if _f],
         #'zip_safe': False, # XXX: I guess, at least...
         # Download URLs.
         'url': home_page,
@@ -197,9 +197,9 @@ def runRebuildmo():
         rebuildmo = imp.load_module('rebuildmo', *modInfo)
         os.chdir(modulePath)
         languages = rebuildmo.rebuildmo()
-        print 'Created locale for: %s.' % ' '.join(languages)
-    except Exception, e:
-        print 'ERROR: unable to rebuild .mo files; caught exception %s' % e
+        print('Created locale for: %s.' % ' '.join(languages))
+    except Exception as e:
+        print('ERROR: unable to rebuild .mo files; caught exception %s' % e)
     sys.path = path
     os.chdir(cwd)
     return languages
@@ -236,6 +236,6 @@ try:
         data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), base_dir), files_found))
     setuptools.setup(**params)
 except SystemExit:
-    print ERR_MSG
+    print(ERR_MSG)
     raise
 

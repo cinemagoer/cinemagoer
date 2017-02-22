@@ -106,7 +106,7 @@ class MsgFmt(object):
 
     def generate_mo(self):
         """Return the generated output."""
-        keys = self.messages.keys()
+        keys = list(self.messages.keys())
         # the keys are sorted in the .mo file
         keys.sort()
         offsets = []
@@ -134,7 +134,7 @@ class MsgFmt(object):
             voffsets += [l2, o2 + valuestart]
         offsets = koffsets + voffsets
         output.append(struct.pack("Iiiiiii",
-                             0x950412deL,       # Magic
+                             0x950412de,       # Magic
                              0,                 # Version
                              len(keys),         # # of entries
                              7*4,               # start of key index
@@ -151,32 +151,32 @@ def make(filename, outfile):
     infile, outfile = mf.make_filenames(filename, outfile)
     try:
         lines = file(infile).readlines()
-    except IOError, msg:
-        print >> sys.stderr, msg
+    except IOError as msg:
+        print(msg, file=sys.stderr)
         sys.exit(1)
     try:
         mf.read_po(lines)
         output = mf.generate_mo()
-    except SyntaxErrorException, msg:
-        print >> sys.stderr, msg
+    except SyntaxErrorException as msg:
+        print(msg, file=sys.stderr)
 
     try:
         open(outfile, "wb").write(output)
-    except IOError, msg:
-        print >> sys.stderr, msg
+    except IOError as msg:
+        print(msg, file=sys.stderr)
 
 
 def usage(code, msg=''):
-    print >> sys.stderr, __doc__
+    print(__doc__, file=sys.stderr)
     if msg:
-        print >> sys.stderr, msg
+        print(msg, file=sys.stderr)
     sys.exit(code)
 
 
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hVo:', ['help', 'version', 'output-file='])
-    except getopt.error, msg:
+    except getopt.error as msg:
         usage(1, msg)
 
     outfile = None
@@ -185,14 +185,14 @@ def main():
         if opt in ('-h', '--help'):
             usage(0)
         elif opt in ('-V', '--version'):
-            print >> sys.stderr, "msgfmt.py", __version__
+            print("msgfmt.py", __version__, file=sys.stderr)
             sys.exit(0)
         elif opt in ('-o', '--output-file'):
             outfile = arg
     # do it
     if not args:
-        print >> sys.stderr, 'No input file given'
-        print >> sys.stderr, "Try `msgfmt --help' for more information."
+        print('No input file given', file=sys.stderr)
+        print("Try `msgfmt --help' for more information.", file=sys.stderr)
         return
 
     for filename in args:

@@ -29,7 +29,7 @@ import getopt
 import time
 import re
 import warnings
-import anydbm
+import dbm
 from itertools import islice, chain
 try:
     from hashlib import md5
@@ -182,9 +182,9 @@ try:
                                                 'csv-only-load',
                                                 'csv=', 'csv-ext=',
                                                 'imdbids=', 'help'])
-except getopt.error, e:
-    print 'Troubles with arguments.'
-    print HELP
+except getopt.error as e:
+    print('Troubles with arguments.')
+    print(HELP)
     sys.exit(2)
 
 for opt in optlist:
@@ -200,11 +200,11 @@ for opt in optlist:
         IMDBIDS_METHOD = opt[1]
     elif opt[0] in ('-e', '--execute'):
         if opt[1].find(':') == -1:
-            print 'WARNING: wrong command syntax: "%s"' % opt[1]
+            print('WARNING: wrong command syntax: "%s"' % opt[1])
             continue
         when, cmd = opt[1].split(':', 1)
         if when not in ALLOWED_TIMES:
-            print 'WARNING: unknown time: "%s"' % when
+            print('WARNING: unknown time: "%s"' % when)
             continue
         if when == 'BEFORE_EVERY_TODB':
             for nw in ('BEFORE_MOVIES_TODB', 'BEFORE_PERSONS_TODB',
@@ -227,27 +227,27 @@ for opt in optlist:
     elif opt[0] == '--csv-only-load':
         CSV_ONLY_LOAD = True
     elif opt[0] in ('-h', '--help'):
-        print HELP
+        print(HELP)
         sys.exit(0)
 
 if IMDB_PTDF_DIR is None:
-    print 'You must supply the directory with the plain text data files'
-    print HELP
+    print('You must supply the directory with the plain text data files')
+    print(HELP)
     sys.exit(2)
 
 if URI is None:
-    print 'You must supply the URI for the database connection'
-    print HELP
+    print('You must supply the URI for the database connection')
+    print(HELP)
     sys.exit(2)
 
 if IMDBIDS_METHOD not in (None, 'dbm', 'table'):
-    print 'the method to (re)store imdbIDs must be one of "dbm" or "table"'
-    print HELP
+    print('the method to (re)store imdbIDs must be one of "dbm" or "table"')
+    print(HELP)
     sys.exit(2)
 
 if (CSV_ONLY_WRITE or CSV_ONLY_LOAD) and not CSV_DIR:
-    print 'You must specify the CSV directory with the -c argument'
-    print HELP
+    print('You must specify the CSV directory with the -c argument')
+    print(HELP)
     sys.exit(3)
 
 
@@ -257,44 +257,44 @@ URIlower = URI.lower()
 if URIlower.startswith('mysql'):
     if '--mysql-force-myisam' in sys.argv[1:] and \
             '--mysql-innodb' in sys.argv[1:]:
-        print '\nWARNING: there is no sense in mixing the --mysql-innodb and\n'\
-                '--mysql-force-myisam command line options!\n'
+        print('\nWARNING: there is no sense in mixing the --mysql-innodb and\n'\
+                '--mysql-force-myisam command line options!\n')
     elif '--mysql-innodb' in sys.argv[1:]:
-        print "\nNOTICE: you've specified the --mysql-innodb command line\n"\
+        print("\nNOTICE: you've specified the --mysql-innodb command line\n"\
                 "option; you should do this ONLY IF your system uses InnoDB\n"\
                 "tables or you really want to use InnoDB; if you're running\n"\
                 "a MyISAM-based database, please omit any option; if you\n"\
                 "want to force MyISAM usage on a InnoDB-based database,\n"\
-                "try the --mysql-force-myisam command line option, instead.\n"
+                "try the --mysql-force-myisam command line option, instead.\n")
     elif '--mysql-force-myisam' in sys.argv[1:]:
-        print "\nNOTICE: you've specified the --mysql-force-myisam command\n"\
+        print("\nNOTICE: you've specified the --mysql-force-myisam command\n"\
                 "line option; you should do this ONLY IF your system uses\n"\
-                "InnoDB tables and you want to use MyISAM tables, instead.\n"
+                "InnoDB tables and you want to use MyISAM tables, instead.\n")
     else:
-        print "\nNOTICE: IF you're using InnoDB tables, data insertion can\n"\
+        print("\nNOTICE: IF you're using InnoDB tables, data insertion can\n"\
                 "be very slow; you can switch to MyISAM tables - forcing it\n"\
                 "with the --mysql-force-myisam option - OR use the\n"\
                 "--mysql-innodb command line option, but DON'T USE these if\n"\
                 "you're already working on MyISAM tables, because it will\n"\
-                "force MySQL to use InnoDB, and performances will be poor.\n"
+                "force MySQL to use InnoDB, and performances will be poor.\n")
 elif URIlower.startswith('mssql') and \
         '--ms-sqlserver' not in sys.argv[1:]:
-    print "\nWARNING: you're using MS SQLServer without the --ms-sqlserver\n"\
-            "command line option: if something goes wrong, try using it.\n"
+    print("\nWARNING: you're using MS SQLServer without the --ms-sqlserver\n"\
+            "command line option: if something goes wrong, try using it.\n")
 elif URIlower.startswith('sqlite') and \
         '--sqlite-transactions' not in sys.argv[1:]:
-    print "\nWARNING: you're using SQLite without the --sqlite-transactions\n"\
+    print("\nWARNING: you're using SQLite without the --sqlite-transactions\n"\
             "command line option: you'll have very poor performances!  Try\n"\
-            "using it.\n"
+            "using it.\n")
 if ('--mysql-force-myisam' in sys.argv[1:] and
         not URIlower.startswith('mysql')) or ('--mysql-innodb' in
         sys.argv[1:] and not URIlower.startswith('mysql')) or ('--ms-sqlserver'
         in sys.argv[1:] and not URIlower.startswith('mssql')) or \
         ('--sqlite-transactions' in sys.argv[1:] and
         not URIlower.startswith('sqlite')):
-    print "\nWARNING: you've specified command line options that don't\n"\
+    print("\nWARNING: you've specified command line options that don't\n"\
             "belong to the database server you're using: proceed at your\n"\
-            "own risk!\n"
+            "own risk!\n")
 
 
 if CSV_DIR:
@@ -306,7 +306,7 @@ if CSV_DIR:
         CSV_LOAD_SQL = CSV_DB2
         CSV_NULL = ''
     else:
-        print "\nERROR: importing CSV files is not supported for this database"
+        print("\nERROR: importing CSV files is not supported for this database")
         sys.exit(3)
 
 
@@ -333,7 +333,7 @@ for idx, mod in enumerate(USE_ORM):
             warnings.warn('falling back to "%s".' % mod)
         USED_ORM = mod
         break
-    except ImportError, e:
+    except ImportError as e:
         if idx+1 >= nrMods:
             raise IMDbError('unable to use any ORM in %s: %s' % (
                                             str(USE_ORM), str(e)))
@@ -391,7 +391,7 @@ class CSVCursor(object):
             if val is None:
                 r[idx] = null
                 continue
-            if (not quoteInteger) and isinstance(val, (int, long)):
+            if (not quoteInteger) and isinstance(val, int):
                 r[idx] = str(val)
                 continue
             if lobFD and idx == 3:
@@ -475,7 +475,7 @@ class CSVCursor(object):
 
     def fileNames(self):
         """Return the list of file names."""
-        return [fd.name for fd in self._fdPool.values()]
+        return [fd.name for fd in list(self._fdPool.values())]
 
     def buildFakeFileNames(self):
         """Populate the self._fdPool dictionary with fake objects
@@ -498,9 +498,9 @@ class CSVCursor(object):
 
     def closeAll(self):
         """Close all open file descriptors."""
-        for fd in self._fdPool.values():
+        for fd in list(self._fdPool.values()):
             fd.close()
-        for fd in self._lobFDPool.values():
+        for fd in list(self._lobFDPool.values()):
             fd.close()
 
 
@@ -515,7 +515,7 @@ def loadCSVFiles():
         CSV_REPL['file'] = cfName
         CSV_REPL['table'] = tName
         sqlStr = CSV_LOAD_SQL % CSV_REPL
-        print ' * LOADING CSV FILE %s...' % cfName
+        print(' * LOADING CSV FILE %s...' % cfName)
         sys.stdout.flush()
         executeCustomQueries('BEFORE_CSV_TODB')
         try:
@@ -523,11 +523,11 @@ def loadCSVFiles():
             try:
                 res = CURS.fetchall()
                 if res:
-                    print 'LOADING OUTPUT:', res
+                    print('LOADING OUTPUT:', res)
             except:
                 pass
-        except Exception, e:
-            print 'ERROR: unable to import CSV file %s: %s' % (cfName, str(e))
+        except Exception as e:
+            print('ERROR: unable to import CSV file %s: %s' % (cfName, str(e)))
             continue
         connectObject.commit()
         executeCustomQueries('AFTER_CSV_TODB')
@@ -543,13 +543,13 @@ if CSV_DIR:
 # Extract exceptions to trap.
 try:
     OperationalError = conn.module.OperationalError
-except AttributeError, e:
+except AttributeError as e:
     warnings.warn('Unable to import OperationalError; report this as a bug, ' \
             'since it will mask important exceptions: %s' % e)
     OperationalError = Exception
 try:
     IntegrityError = conn.module.IntegrityError
-except AttributeError, e:
+except AttributeError as e:
     warnings.warn('Unable to import IntegrityError')
     IntegrityError = Exception
 
@@ -608,7 +608,7 @@ def _makeConvNamed(cols):
     def _converter(params):
         for paramIndex, paramSet in enumerate(params):
             d = {}
-            for i in xrange(nrCols):
+            for i in range(nrCols):
                 d[cols[i]] = paramSet[i]
             params[paramIndex] = d
         return params
@@ -660,7 +660,7 @@ def _(s, truncateAt=None):
     """Nicely print a string to sys.stdout, optionally
     truncating it a the given char."""
     if not isinstance(s, UnicodeType):
-        s = unicode(s, 'utf_8')
+        s = str(s, 'utf_8')
     if truncateAt is not None:
         s = s[:truncateAt]
     s = s.encode(sys.stdout.encoding or 'utf_8', 'replace')
@@ -696,9 +696,9 @@ def t(s, sinceBegin=False):
     else:
         ct = BEGIN_TIME
         cts = BEGIN_TIMES
-    print '# TIME', s, \
+    print('# TIME', s, \
             ': %dmin, %dsec (wall) %dmin, %dsec (user) %dmin, %dsec (system)' \
-            % _minSec(nt-ct, ntimes[0]-cts[0], ntimes[1]-cts[1])
+            % _minSec(nt-ct, ntimes[0]-cts[0], ntimes[1]-cts[1]))
     if not sinceBegin:
         CTIME = nt
         CTIMES = ntimes
@@ -809,13 +809,13 @@ class SourceFile(GzipFile):
         filename = os.path.join(IMDB_PTDF_DIR, filename)
         try:
             GzipFile.__init__(self, filename, mode, *args, **kwds)
-        except IOError, e:
+        except IOError as e:
             if not pwarning: raise
-            print 'WARNING WARNING WARNING'
-            print 'WARNING unable to read the "%s" file.' % filename
-            print 'WARNING The file will be skipped, and the contained'
-            print 'WARNING information will NOT be stored in the database.'
-            print 'WARNING Complete error: ', e
+            print('WARNING WARNING WARNING')
+            print('WARNING unable to read the "%s" file.' % filename)
+            print('WARNING The file will be skipped, and the contained')
+            print('WARNING information will NOT be stored in the database.')
+            print('WARNING Complete error: ', e)
             # re-raise the exception.
             raise
         self.start = start
@@ -835,12 +835,12 @@ class SourceFile(GzipFile):
 
     def readline_NOcheckEnd(self, size=-1):
         line = GzipFile.readline(self, size)
-        return unicode(line, 'latin_1').encode('utf_8')
+        return str(line, 'latin_1').encode('utf_8')
 
     def readline_checkEnd(self, size=-1):
         line = GzipFile.readline(self, size)
         if self.stop is not None and line[:self.stoplen] == self.stop: return ''
-        return unicode(line, 'latin_1').encode('utf_8')
+        return str(line, 'latin_1').encode('utf_8')
 
     def getByHashSections(self):
         return getSectionHash(self)
@@ -910,7 +910,7 @@ class _BaseCache(dict):
         self._table_name = ''
         self._id_for_custom_q = ''
         if d is not None:
-            for k, v in d.iteritems(): self[k] = v
+            for k, v in d.items(): self[k] = v
 
     def __setitem__(self, key, counter):
         """Every time a key is set, its value is the counter;
@@ -929,8 +929,8 @@ class _BaseCache(dict):
         if self._flushing: return
         self._flushing = 1
         if _recursionLevel >= MAX_RECURSION:
-            print 'WARNING recursion level exceded trying to flush data'
-            print 'WARNING this batch of data is lost (%s).' % self.className
+            print('WARNING recursion level exceded trying to flush data')
+            print('WARNING this batch of data is lost (%s).' % self.className)
             self._tmpDict.clear()
             return
         if self._tmpDict:
@@ -945,7 +945,7 @@ class _BaseCache(dict):
                                     _keys=keys, _timeit=False)
                 _after_has_run = True
                 self._tmpDict.clear()
-            except OperationalError, e:
+            except OperationalError as e:
                 # XXX: I'm not sure this is the right thing (and way)
                 #      to proceed.
                 if not _after_has_run:
@@ -960,30 +960,30 @@ class _BaseCache(dict):
                 firstHalf = {}
                 poptmpd = self._tmpDict.popitem
                 originalLength = len(self._tmpDict)
-                for x in xrange(1, 1 + originalLength/2):
+                for x in range(1, 1 + originalLength/2):
                     k, v = poptmpd()
                     firstHalf[k] = v
                 self._secondHalf = self._tmpDict
                 self._tmpDict = firstHalf
-                print ' * TOO MANY DATA (%s items in %s), recursion: %s' % \
+                print(' * TOO MANY DATA (%s items in %s), recursion: %s' % \
                                                         (originalLength,
                                                         self.className,
+                                                        _recursionLevel))
+                print('   * SPLITTING (run 1 of 2), recursion: %s' % \
                                                         _recursionLevel)
-                print '   * SPLITTING (run 1 of 2), recursion: %s' % \
-                                                        _recursionLevel
                 self.flush(quiet=quiet, _recursionLevel=_recursionLevel)
                 self._tmpDict = self._secondHalf
-                print '   * SPLITTING (run 2 of 2), recursion: %s' % \
-                                                        _recursionLevel
+                print('   * SPLITTING (run 2 of 2), recursion: %s' % \
+                                                        _recursionLevel)
                 self.flush(quiet=quiet, _recursionLevel=_recursionLevel)
                 self._tmpDict.clear()
-            except Exception, e:
+            except Exception as e:
                 if isinstance(e, KeyboardInterrupt):
                     raise
-                print 'WARNING: unknown exception caught committing the data'
-                print 'WARNING: to the database; report this as a bug, since'
-                print 'WARNING: many data (%d items) were lost: %s' % \
-                        (len(self._tmpDict), e)
+                print('WARNING: unknown exception caught committing the data')
+                print('WARNING: to the database; report this as a bug, since')
+                print('WARNING: many data (%d items) were lost: %s' % \
+                        (len(self._tmpDict), e))
         self._flushing = 0
         # Flush also deferred data.
         if self._deferredData:
@@ -1002,7 +1002,7 @@ class _BaseCache(dict):
 
     def add(self, key, miscData=None):
         """Insert a new key and return its value."""
-        c = self.counter.next()
+        c = next(self.counter)
         # miscData=[('a_dict', 'value')] will set self.a_dict's c key
         # to 'value'.
         if miscData is not None:
@@ -1043,7 +1043,7 @@ class MoviesCache(_BaseCache):
                                     'md5sum'))
 
     def populate(self):
-        print ' * POPULATING %s...' % self.className
+        print(' * POPULATING %s...' % self.className)
         titleTbl = tableName(Title)
         movieidCol = colName(Title, 'id')
         titleCol = colName(Title, 'title')
@@ -1082,7 +1082,7 @@ class MoviesCache(_BaseCache):
 
     def _toDB(self, quiet=0):
         if not quiet:
-            print ' * FLUSHING %s...' % self.className
+            print(' * FLUSHING %s...' % self.className)
             sys.stdout.flush()
         l = []
         lapp = l.append
@@ -1092,8 +1092,8 @@ class MoviesCache(_BaseCache):
                 t = analyze_title(k, _emptyString='')
             except IMDbParserError:
                 if k and k.strip():
-                    print 'WARNING %s._toDB() invalid title:' % self.className,
-                    print _(k)
+                    print('WARNING %s._toDB() invalid title:' % self.className, end=' ')
+                    print(_(k))
                 continue
             tget = t.get
             episodeOf = None
@@ -1151,7 +1151,7 @@ class PersonsCache(_BaseCache):
                                 'namePcodeNf', 'surnamePcode', 'md5sum'])
 
     def populate(self):
-        print ' * POPULATING PersonsCache...'
+        print(' * POPULATING PersonsCache...')
         nameTbl = tableName(Name)
         personidCol = colName(Name, 'id')
         nameCol = colName(Name, 'name')
@@ -1170,7 +1170,7 @@ class PersonsCache(_BaseCache):
 
     def _toDB(self, quiet=0):
         if not quiet:
-            print ' * FLUSHING PersonsCache...'
+            print(' * FLUSHING PersonsCache...')
             sys.stdout.flush()
         l = []
         lapp = l.append
@@ -1180,7 +1180,7 @@ class PersonsCache(_BaseCache):
                 t = analyze_name(k)
             except IMDbParserError:
                 if k and k.strip():
-                    print 'WARNING PersonsCache._toDB() invalid name:', _(k)
+                    print('WARNING PersonsCache._toDB() invalid name:', _(k))
                 continue
             tget = t.get
             name = tget('name')
@@ -1209,7 +1209,7 @@ class CharactersCache(_BaseCache):
                                 'surnamePcode', 'md5sum'])
 
     def populate(self):
-        print ' * POPULATING CharactersCache...'
+        print(' * POPULATING CharactersCache...')
         nameTbl = tableName(CharName)
         personidCol = colName(CharName, 'id')
         nameCol = colName(CharName, 'name')
@@ -1228,7 +1228,7 @@ class CharactersCache(_BaseCache):
 
     def _toDB(self, quiet=0):
         if not quiet:
-            print ' * FLUSHING CharactersCache...'
+            print(' * FLUSHING CharactersCache...')
             sys.stdout.flush()
         l = []
         lapp = l.append
@@ -1238,7 +1238,7 @@ class CharactersCache(_BaseCache):
                 t = analyze_name(k)
             except IMDbParserError:
                 if k and k.strip():
-                    print 'WARNING CharactersCache._toDB() invalid name:', _(k)
+                    print('WARNING CharactersCache._toDB() invalid name:', _(k))
                 continue
             tget = t.get
             name = tget('name')
@@ -1266,7 +1266,7 @@ class CompaniesCache(_BaseCache):
                                 'namePcodeSf', 'md5sum'])
 
     def populate(self):
-        print ' * POPULATING CharactersCache...'
+        print(' * POPULATING CharactersCache...')
         nameTbl = tableName(CompanyName)
         companyidCol = colName(CompanyName, 'id')
         nameCol = colName(CompanyName, 'name')
@@ -1285,7 +1285,7 @@ class CompaniesCache(_BaseCache):
 
     def _toDB(self, quiet=0):
         if not quiet:
-            print ' * FLUSHING CompaniesCache...'
+            print(' * FLUSHING CompaniesCache...')
             sys.stdout.flush()
         l = []
         lapp = l.append
@@ -1295,7 +1295,7 @@ class CompaniesCache(_BaseCache):
                 t = analyze_company_name(k)
             except IMDbParserError:
                 if k and k.strip():
-                    print 'WARNING CompaniesCache._toDB() invalid name:', _(k)
+                    print('WARNING CompaniesCache._toDB() invalid name:', _(k))
                 continue
             tget = t.get
             name = tget('name')
@@ -1326,7 +1326,7 @@ class KeywordsCache(_BaseCache):
                                 'phoneticCode'])
 
     def populate(self):
-        print ' * POPULATING KeywordsCache...'
+        print(' * POPULATING KeywordsCache...')
         nameTbl = tableName(CompanyName)
         keywordidCol = colName(Keyword, 'id')
         keyCol = colName(Keyword, 'name')
@@ -1341,7 +1341,7 @@ class KeywordsCache(_BaseCache):
 
     def _toDB(self, quiet=0):
         if not quiet:
-            print ' * FLUSHING KeywordsCache...'
+            print(' * FLUSHING KeywordsCache...')
             sys.stdout.flush()
         l = []
         lapp = l.append
@@ -1375,7 +1375,7 @@ class SQLData(dict):
         self._recursionLevel = 1
         self._table = table
         self._table_name = tableName(table)
-        for k, v in d.items(): self[k] = v
+        for k, v in list(d.items()): self[k] = v
 
     def __setitem__(self, key, value):
         """The value is discarded, the counter is used as the 'real' key
@@ -1398,8 +1398,8 @@ class SQLData(dict):
         CACHE_PID.flush(quiet=1)
         if _resetRecursion: self._recursionLevel = 1
         if self._recursionLevel >= MAX_RECURSION:
-            print 'WARNING recursion level exceded trying to flush data'
-            print 'WARNING this batch of data is lost.'
+            print('WARNING recursion level exceded trying to flush data')
+            print('WARNING this batch of data is lost.')
             self.clear()
             self.counter = self.counterInit
             return
@@ -1414,12 +1414,12 @@ class SQLData(dict):
             _after_has_run = True
             self.clear()
             self.counter = self.counterInit
-        except OperationalError, e:
+        except OperationalError as e:
             if not _after_has_run:
                 executeCustomQueries('AFTER_SQLDATA_TODB', _keys=keys,
                                     _timeit=False)
-            print ' * TOO MANY DATA (%s items), SPLITTING (run #%d)...' % \
-                    (len(self), self._recursionLevel)
+            print(' * TOO MANY DATA (%s items), SPLITTING (run #%d)...' % \
+                    (len(self), self._recursionLevel))
             self._recursionLevel += 1
             newdata = self.__class__(table=self._table,
                                     sqlString=self.sqlString,
@@ -1427,8 +1427,8 @@ class SQLData(dict):
             newdata._recursionLevel = self._recursionLevel
             newflushEvery = self.flushEvery / 2
             if newflushEvery < 1:
-                print 'WARNING recursion level exceded trying to flush data'
-                print 'WARNING this batch of data is lost.'
+                print('WARNING recursion level exceded trying to flush data')
+                print('WARNING this batch of data is lost.')
                 self.clear()
                 self.counter = self.counterInit
                 return
@@ -1436,7 +1436,7 @@ class SQLData(dict):
             newdata.flushEvery = newflushEvery
             popitem = self.popitem
             dsi = dict.__setitem__
-            for x in xrange(len(self)/2):
+            for x in range(len(self)/2):
                 k, v = popitem()
                 dsi(newdata, k, v)
             newdata.flush(_resetRecursion=0)
@@ -1444,21 +1444,21 @@ class SQLData(dict):
             self.flush(_resetRecursion=0)
             self.clear()
             self.counter = self.counterInit
-        except Exception, e:
+        except Exception as e:
             if isinstance(e, KeyboardInterrupt):
                 raise
-            print 'WARNING: unknown exception caught committing the data'
-            print 'WARNING: to the database; report this as a bug, since'
-            print 'WARNING: many data (%d items) were lost: %s' % \
-                    (len(self), e)
+            print('WARNING: unknown exception caught committing the data')
+            print('WARNING: to the database; report this as a bug, since')
+            print('WARNING: many data (%d items) were lost: %s' % \
+                    (len(self), e))
         connectObject.commit()
 
     def _toDB(self):
-        print ' * FLUSHING SQLData...'
+        print(' * FLUSHING SQLData...')
         if not CSV_DIR:
-            CURS.executemany(self.sqlString, self.converter(self.values()))
+            CURS.executemany(self.sqlString, self.converter(list(self.values())))
         else:
-            CSV_CURS.executemany(self.sqlString, self.values())
+            CSV_CURS.executemany(self.sqlString, list(self.values()))
 
 
 # Miscellaneous functions.
@@ -1475,7 +1475,7 @@ def unpack(line, headers, sep='\t'):
                     'rating': '8.4', 'title': 'Incredibles, The (2004)'}
     """
     r = {}
-    ls1 = filter(None, line.split(sep))
+    ls1 = [_f for _f in line.split(sep) if _f]
     for index, item in enumerate(ls1):
         try: name = headers[index]
         except IndexError: name = 'item%s' % index
@@ -1533,8 +1533,8 @@ def readMovieList():
         if mid is None:
             continue
         if count % 10000 == 0:
-            print 'SCANNING movies:', _(title),
-            print '(movieID: %s)' % mid
+            print('SCANNING movies:', _(title), end=' ')
+            print('(movieID: %s)' % mid)
         count += 1
     CACHE_MID.flush()
     CACHE_MID.movieYear.clear()
@@ -1553,7 +1553,7 @@ def doCast(fp, roleid, rolename):
     for line in fp:
         if line and line[0] != '\t':
             if line[0] == '\n': continue
-            sl = filter(None, line.split('\t'))
+            sl = [_f for _f in line.split('\t') if _f]
             if len(sl) != 2: continue
             name, line = sl
             miscData = None
@@ -1590,33 +1590,33 @@ def doCast(fp, roleid, rolename):
             elif item[0] == '<':
                 textor = item[1:-1]
                 try:
-                    order = long(textor)
+                    order = int(textor)
                 except ValueError:
                     os = textor.split(',')
                     if len(os) == 3:
                         try:
-                            order = ((long(os[2])-1) * 1000) + \
-                                    ((long(os[1])-1) * 100) + (long(os[0])-1)
+                            order = ((int(os[2])-1) * 1000) + \
+                                    ((int(os[1])-1) * 100) + (int(os[0])-1)
                         except ValueError:
                             pass
         movieid = CACHE_MID.addUnique(title)
         if movieid is None:
             continue
         if role is not None:
-            roles = filter(None, [x.strip() for x in role.split('/')])
+            roles = [_f for _f in [x.strip() for x in role.split('/')] if _f]
             for role in roles:
                 cid = CACHE_CID.addUnique(role)
                 sqldata.add((pid, movieid, cid, note, order))
         else:
             sqldata.add((pid, movieid, None, note, order))
         if count % 10000 == 0:
-            print 'SCANNING %s:' % rolename,
-            print _(name)
+            print('SCANNING %s:' % rolename, end=' ')
+            print(_(name))
         count += 1
     sqldata.flush()
     CACHE_PID.flush()
     CACHE_PID.personGender.clear()
-    print 'CLOSING %s...' % rolename
+    print('CLOSING %s...' % rolename)
 
 
 def castLists():
@@ -1630,7 +1630,7 @@ def castLists():
         if fname == 'actress': fname = 'actresses.list.gz'
         elif fname == 'miscellaneous-crew': fname = 'miscellaneous.list.gz'
         else: fname = fname + 's.list.gz'
-        print 'DOING', fname
+        print('DOING', fname)
         try:
             f = SourceFile(fname, start=CAST_START, stop=CAST_STOP)
         except IOError:
@@ -1668,7 +1668,7 @@ def doAkaNames():
             try:
                 name_dict = analyze_name(line)
             except IMDbParserError:
-                if line: print 'WARNING doAkaNames wrong name:', _(line)
+                if line: print('WARNING doAkaNames wrong name:', _(line))
                 continue
             name = name_dict.get('name')
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name)
@@ -1676,7 +1676,7 @@ def doAkaNames():
                         namePcodeCf, namePcodeNf, surnamePcode,
                         md5(line).hexdigest()))
             if count % 10000 == 0:
-                print 'SCANNING akanames:', _(line)
+                print('SCANNING akanames:', _(line))
             count += 1
     sqldata.flush()
     fp.close()
@@ -1771,8 +1771,8 @@ def doAkaTitles():
                         tonD = analyze_title(line, _emptyString='')
                     except IMDbParserError:
                         if line:
-                            print 'WARNING doAkaTitles(obsol O) invalid title:',
-                            print _(line)
+                            print('WARNING doAkaTitles(obsol O) invalid title:', end=' ')
+                            print(_(line))
                         continue
                     tonD['title'] = normalizeTitle(tonD['title'])
                     line = build_title(tonD, ptdf=1, _emptyString='')
@@ -1789,8 +1789,8 @@ def doAkaTitles():
                         titleDict = analyze_title(line, _emptyString='')
                     except IMDbParserError:
                         if line:
-                            print 'WARNING doAkaTitles (O) invalid title:',
-                            print _(line)
+                            print('WARNING doAkaTitles (O) invalid title:', end=' ')
+                            print(_(line))
                         continue
                     if 'episode of' in titleDict:
                         if obsolete:
@@ -1830,14 +1830,14 @@ def doAkaTitles():
                         akatD = analyze_title(akat, _emptyString='')
                     except IMDbParserError:
                         if line:
-                            print 'WARNING doAkaTitles(obsol) invalid title:',
-                            print _(akat)
+                            print('WARNING doAkaTitles(obsol) invalid title:', end=' ')
+                            print(_(akat))
                         continue
                     akatD['title'] = normalizeTitle(akatD['title'])
                     akat = build_title(akatD, ptdf=1, _emptyString='')
                 if count % 10000 == 0:
-                    print 'SCANNING %s:' % fname[:-8].replace('-', ' '),
-                    print _(akat)
+                    print('SCANNING %s:' % fname[:-8].replace('-', ' '), end=' ')
+                    print(_(akat))
                 if isEpisode and seriesID is not None:
                     # Handle series for which only single episodes have
                     # aliases.
@@ -1845,8 +1845,8 @@ def doAkaTitles():
                         akaDict = analyze_title(akat, _emptyString='')
                     except IMDbParserError:
                         if line:
-                            print 'WARNING doAkaTitles (epis) invalid title:',
-                            print _(akat)
+                            print('WARNING doAkaTitles (epis) invalid title:', end=' ')
+                            print(_(akat))
                         continue
                     if 'episode of' in akaDict:
                         if obsolete:
@@ -1883,12 +1883,12 @@ def doMovieLinks():
             if mid is None:
                 continue
             if count % 10000 == 0:
-                print 'SCANNING movielinks:', _(title)
+                print('SCANNING movielinks:', _(title))
         else:
             if mid == None:
                continue
             line = line.strip()
-            link_txt = unicode(line, 'utf_8').encode('ascii', 'replace')
+            link_txt = str(line, 'utf_8').encode('ascii', 'replace')
             theid = None
             for k, lenkp1, v in MOVIELINK_IDS:
                 if link_txt and link_txt[0] == '(' \
@@ -1919,19 +1919,19 @@ def minusHashFiles(fp, funct, defaultid, descr):
         title = title.strip()
         d = funct(text.split('\n'))
         if not d:
-            print 'WARNING skipping empty information about title:',
-            print _(title)
+            print('WARNING skipping empty information about title:', end=' ')
+            print(_(title))
             continue
         if not title:
-            print 'WARNING skipping information associated to empty title:',
-            print _(d[0], truncateAt=40)
+            print('WARNING skipping information associated to empty title:', end=' ')
+            print(_(d[0], truncateAt=40))
             continue
         mid = CACHE_MID.addUnique(title)
         if mid is None:
             continue
         if count % 5000 == 0:
-            print 'SCANNING %s:' % descr,
-            print _(title)
+            print('SCANNING %s:' % descr, end=' ')
+            print(_(title))
         for data in d:
             sqldata.add((mid, defaultid, data, None))
         count += 1
@@ -1975,7 +1975,7 @@ def getTaglines():
             tag = tag.strip()
             if not tag: continue
             if count % 10000 == 0:
-                print 'SCANNING taglines:', _(title)
+                print('SCANNING taglines:', _(title))
             sqldata.add((mid, INFO_TYPES['taglines'], tag, None))
         count += 1
     sqldata.flush()
@@ -2013,12 +2013,12 @@ _bus = {'BT': 'budget',
         'CP': 'copyright holder'
 }
 _usd = '$'
-_gbp = unichr(0x00a3).encode('utf_8')
-_eur = unichr(0x20ac).encode('utf_8')
+_gbp = chr(0x00a3).encode('utf_8')
+_eur = chr(0x20ac).encode('utf_8')
 def getBusiness(lines):
     """Movie's business information."""
     bd = _parseColonList(lines, _bus)
-    for k in bd.keys():
+    for k in list(bd.keys()):
         nv = []
         for v in bd[k]:
             v = v.replace('USD ',_usd).replace('GBP ',_gbp).replace('EUR',_eur)
@@ -2078,13 +2078,13 @@ _ldk = {'OT': 'original title',
         'LT': 'laserdisc title'
 }
 # Handle laserdisc keys.
-for key, value in _ldk.items():
+for key, value in list(_ldk.items()):
     _ldk[key] = 'LD %s' % value
 
 def getLaserDisc(lines):
     """Laserdisc information."""
     d = _parseColonList(lines, _ldk)
-    for k, v in d.iteritems():
+    for k, v in d.items():
         d[k] = ' '.join(v)
     return d
 
@@ -2108,7 +2108,7 @@ _mpaa = {'RE': 'mpaa'}
 def getMPAA(lines):
     """Movie's mpaa information."""
     d = _parseColonList(lines, _mpaa)
-    for k, v in d.iteritems():
+    for k, v in d.items():
         d[k] = ' '.join(v)
     return d
 
@@ -2164,16 +2164,16 @@ def nmmvFiles(fp, funct, fname):
                 continue
         else: mopid = CACHE_PID.addUnique(ton)
         if count % 6000 == 0:
-            print 'SCANNING %s:' % fname[:-8].replace('-', ' '),
-            print _(ton)
+            print('SCANNING %s:' % fname[:-8].replace('-', ' '), end=' ')
+            print(_(ton))
         d = funct(text.split('\n'))
-        for k, v in d.iteritems():
+        for k, v in d.items():
             if k != 'notable tv guest appearances':
                 theid = INFO_TYPES.get(k)
                 if theid is None:
-                    print 'WARNING key "%s" of ToN' % k,
-                    print _(ton),
-                    print 'not in INFO_TYPES'
+                    print('WARNING key "%s" of ToN' % k, end=' ')
+                    print(_(ton), end=' ')
+                    print('not in INFO_TYPES')
                     continue
             if type(v) is _ltype:
                 for i in v:
@@ -2188,12 +2188,12 @@ def nmmvFiles(fp, funct, fname):
                             continue
                         crole = i.currentRole
                         if isinstance(crole, list):
-                            crole = ' / '.join([x.get('long imdb name', u'')
+                            crole = ' / '.join([x.get('long imdb name', '')
                                                 for x in crole])
                         if not crole:
                             crole = None
                         else:
-                            crole = unicode(crole).encode('utf_8')
+                            crole = str(crole).encode('utf_8')
                         guestdata.add((mopid, movieid, crole,
                                         i.notes or None))
                         continue
@@ -2327,7 +2327,7 @@ def _parseBiography(biol):
                 rn = build_name(analyze_name(n, canonical=1), canonical=1)
                 res['birth name'] = rn
             except IMDbParserError:
-                if line: print 'WARNING _parseBiography wrong name:', _(n)
+                if line: print('WARNING _parseBiography wrong name:', _(n))
                 continue
         elif x6 == 'AT: * ':
             res.setdefault('article', []).append(x[6:].strip())
@@ -2418,8 +2418,8 @@ def doMovieCompaniesInfo():
             if 'note' in data:
                 note = data['note']
             if count % 10000 == 0:
-                print 'SCANNING %s:' % dataf[0][:-8].replace('-', ' '),
-                print _(data['title'])
+                print('SCANNING %s:' % dataf[0][:-8].replace('-', ' '), end=' ')
+                print(_(data['title']))
             sqldata.add((mid, cid, infoid, note))
             count += 1
         sqldata.flush()
@@ -2473,8 +2473,8 @@ def doMiscMovieInfo():
             if 'note' in data:
                 note = data['note']
             if count % 10000 == 0:
-                print 'SCANNING %s:' % dataf[0][:-8].replace('-', ' '),
-                print _(data['title'])
+                print('SCANNING %s:' % dataf[0][:-8].replace('-', ' '), end=' ')
+                print(_(data['title']))
             info = data['info']
             if typeindex == 'keywords':
                 keywordID = CACHE_KWRDID.addUnique(info)
@@ -2506,7 +2506,7 @@ def getRating():
         if mid is None:
             continue
         if count % 10000 == 0:
-            print 'SCANNING rating:', _(title)
+            print('SCANNING rating:', _(title))
         sqldata.add((mid, INFO_TYPES['votes distribution'],
                     data.get('votes distribution'), None))
         sqldata.add((mid, INFO_TYPES['votes'], data.get('votes'), None))
@@ -2528,7 +2528,7 @@ def getTopBottomRating():
                         RawValue('infoTypeID', INFO_TYPES[what]),
                         'info', 'note'])
         count = 1
-        print 'SCANNING %s...' % what
+        print('SCANNING %s...' % what)
         for line in fp:
             data = unpack(line, ('votes distribution', 'votes', 'rank',
                                 'title'), sep='  ')
@@ -2588,8 +2588,8 @@ def completeCast():
             if mid is None:
                 continue
             if count % 10000 == 0:
-                print 'SCANNING %s:' % fname[:-8].replace('-', ' '),
-                print _(title)
+                print('SCANNING %s:' % fname[:-8].replace('-', ' '), end=' ')
+                print(_(title))
             sqldata.add((mid, CCKind[ll[1].lower().strip()]))
             count += 1
         fp.close()
@@ -2645,7 +2645,7 @@ def readConstants():
 def _imdbIDsFileName(fname):
     """Return a file name, adding the optional
     CSV_DIR directory."""
-    return os.path.join(*(filter(None, [CSV_DIR, fname])))
+    return os.path.join(*([_f for _f in [CSV_DIR, fname] if _f]))
 
 
 def _countRows(tableName):
@@ -2653,8 +2653,8 @@ def _countRows(tableName):
     try:
         CURS.execute('SELECT COUNT(*) FROM %s' % tableName)
         return (CURS.fetchone() or [0])[0]
-    except Exception, e:
-        print 'WARNING: unable to count rows of table %s: %s' % (tableName, e)
+    except Exception as e:
+        print('WARNING: unable to count rows of table %s: %s' % (tableName, e))
         return 0
 
 
@@ -2670,7 +2670,7 @@ def storeNotNULLimdbIDs(cls):
     md5sum_col = colName(cls, 'md5sum')
     imdbID_col = colName(cls, 'imdbID')
 
-    print 'SAVING imdbID values for %s...' % cname,
+    print('SAVING imdbID values for %s...' % cname, end=' ')
     sys.stdout.flush()
     if _get_imdbids_method() == 'table':
         try:
@@ -2680,8 +2680,8 @@ def storeNotNULLimdbIDs(cls):
                 pass
             try:
                 CURS.execute('SELECT * FROM %s LIMIT 1' % table_name)
-            except Exception, e:
-                print 'missing "%s" table (ok if this is the first run)' % table_name
+            except Exception as e:
+                print('missing "%s" table (ok if this is the first run)' % table_name)
                 return
             query = 'CREATE TEMPORARY TABLE %s_extract AS SELECT %s, %s FROM %s WHERE %s IS NOT NULL' % \
                     (table_name, md5sum_col, imdbID_col,
@@ -2690,14 +2690,14 @@ def storeNotNULLimdbIDs(cls):
             CURS.execute('CREATE INDEX %s_md5sum_idx ON %s_extract (%s)' % (table_name, table_name, md5sum_col))
             CURS.execute('CREATE INDEX %s_imdbid_idx ON %s_extract (%s)' % (table_name, table_name, imdbID_col))
             rows = _countRows('%s_extract' % table_name)
-            print 'DONE! (%d entries using a temporary table)' % rows
+            print('DONE! (%d entries using a temporary table)' % rows)
             return
-        except Exception, e:
-            print 'WARNING: unable to store imdbIDs in a temporary table (falling back to dbm): %s' % e
+        except Exception as e:
+            print('WARNING: unable to store imdbIDs in a temporary table (falling back to dbm): %s' % e)
     try:
-        db = anydbm.open(_imdbIDsFileName('%s_imdbIDs.db' % cname), 'c')
-    except Exception, e:
-        print 'WARNING: unable to store imdbIDs: %s' % str(e)
+        db = dbm.open(_imdbIDsFileName('%s_imdbIDs.db' % cname), 'c')
+    except Exception as e:
+        print('WARNING: unable to store imdbIDs: %s' % str(e))
         return
     try:
         CURS.execute('SELECT %s, %s FROM %s WHERE %s IS NOT NULL' %
@@ -2706,10 +2706,10 @@ def storeNotNULLimdbIDs(cls):
         while res:
             db.update(dict((str(x[0]), str(x[1])) for x in res))
             res = CURS.fetchmany(10000)
-    except Exception, e:
-        print 'SKIPPING: unable to retrieve data: %s' % e
+    except Exception as e:
+        print('SKIPPING: unable to retrieve data: %s' % e)
         return
-    print 'DONE! (%d entries)' % len(db)
+    print('DONE! (%d entries)' % len(db))
     db.close()
     return
 
@@ -2719,7 +2719,7 @@ def iterbatch(iterable, size):
     sourceiter = iter(iterable)
     while True:
         batchiter = islice(sourceiter, size)
-        yield chain([batchiter.next()], batchiter)
+        yield chain([next(batchiter)], batchiter)
 
 
 def restoreImdbIDs(cls):
@@ -2732,7 +2732,7 @@ def restoreImdbIDs(cls):
         cname = 'companies'
     else:
         cname = 'characters'
-    print 'RESTORING imdbIDs values for %s...' % cname,
+    print('RESTORING imdbIDs values for %s...' % cname, end=' ')
     sys.stdout.flush()
     table_name = tableName(cls)
     md5sum_col = colName(cls, 'md5sum')
@@ -2742,7 +2742,7 @@ def restoreImdbIDs(cls):
         try:
             try:
                 CURS.execute('SELECT * FROM %s_extract LIMIT 1' % table_name)
-            except Exception, e:
+            except Exception as e:
                 raise Exception('missing "%s_extract" table (ok if this is the first run)' % table_name)
 
             if DB_NAME == 'mysql':
@@ -2760,20 +2760,20 @@ def restoreImdbIDs(cls):
                 CURS.execute('SELECT COUNT(*) FROM %s WHERE %s IS NOT NULL' %
                         (table_name, imdbID_col))
                 affected_rows = (CURS.fetchone() or [0])[0]
-            except Exception, e:
+            except Exception as e:
                 pass
             rows = _countRows('%s_extract' % table_name)
-            print 'DONE! (restored %s entries out of %d)' % (affected_rows, rows)
+            print('DONE! (restored %s entries out of %d)' % (affected_rows, rows))
             t('restore %s' % cname)
             try: CURS.execute('DROP TABLE %s_extract' % table_name)
             except: pass
             return
-        except Exception, e:
-            print 'WARNING: unable to restore imdbIDs using the temporary table (falling back to dbm): %s' % e
+        except Exception as e:
+            print('WARNING: unable to restore imdbIDs using the temporary table (falling back to dbm): %s' % e)
     try:
-        db = anydbm.open(_imdbIDsFileName('%s_imdbIDs.db' % cname), 'r')
-    except Exception, e:
-        print 'WARNING: unable to restore imdbIDs (ok if this is the first run)'
+        db = dbm.open(_imdbIDsFileName('%s_imdbIDs.db' % cname), 'r')
+    except Exception as e:
+        print('WARNING: unable to restore imdbIDs (ok if this is the first run)')
         return
     count = 0
     sql = "UPDATE " + table_name + " SET " + imdbID_col + \
@@ -2788,9 +2788,9 @@ def restoreImdbIDs(cls):
         if success:
             return len(items)
         return 0
-    for batch in iterbatch(db.iteritems(), 10000):
+    for batch in iterbatch(iter(db.items()), 10000):
         count += _restore(sql, batch)
-    print 'DONE! (restored %d entries out of %d)' % (count, len(db))
+    print('DONE! (restored %d entries out of %d)' % (count, len(db)))
     t('restore %s' % cname)
     db.close()
     return
@@ -2816,8 +2816,8 @@ def runSafely(funct, fmsg, default, *args, **kwds):
     value of the function is returned (or 'default')."""
     try:
         return funct(*args, **kwds)
-    except Exception, e:
-        print 'WARNING: %s: %s' % (fmsg, e)
+    except Exception as e:
+        print('WARNING: %s: %s' % (fmsg, e))
     return default
 
 
@@ -2827,14 +2827,14 @@ def _executeQuery(query):
         s_query = query[:60] + '...'
     else:
         s_query = query
-    print 'EXECUTING "%s"...' % (s_query),
+    print('EXECUTING "%s"...' % (s_query), end=' ')
     sys.stdout.flush()
     try:
         CURS.execute(query)
-        print 'DONE!'
+        print('DONE!')
         return True
-    except Exception, e:
-        print 'FAILED (%s)!' % e
+    except Exception as e:
+        print('FAILED (%s)!' % e)
         return False
 
 
@@ -2842,7 +2842,7 @@ def executeCustomQueries(when, _keys=None, _timeit=True):
     """Run custom queries as specified on the command line."""
     if _keys is None: _keys = {}
     for query in CUSTOM_QUERIES.get(when, []):
-        print 'EXECUTING "%s:%s"...' % (when, query)
+        print('EXECUTING "%s:%s"...' % (when, query))
         sys.stdout.flush()
         if query.startswith('FOR_EVERY_TABLE:'):
             query = query[16:]
@@ -2855,14 +2855,14 @@ def executeCustomQueries(when, _keys=None, _timeit=True):
                     _executeQuery(query % keys)
                     if _timeit:
                         t('%s command' % when)
-                except Exception, e:
-                    print 'FAILED (%s)!' % e
+                except Exception as e:
+                    print('FAILED (%s)!' % e)
                     continue
         else:
             try:
                 _executeQuery(query % _keys)
-            except Exception, e:
-                print 'FAILED (%s)!' % e
+            except Exception as e:
+                print('FAILED (%s)!' % e)
                 continue
             if _timeit:
                 t('%s command' % when)
@@ -2871,26 +2871,26 @@ def executeCustomQueries(when, _keys=None, _timeit=True):
 def buildIndexesAndFK():
     """Build indexes and Foreign Keys."""
     executeCustomQueries('BEFORE_INDEXES')
-    print 'building database indexes (this may take a while)'
+    print('building database indexes (this may take a while)')
     sys.stdout.flush()
     # Build database indexes.
     idx_errors = createIndexes(DB_TABLES)
     for idx_error in idx_errors:
-        print 'ERROR caught exception creating an index: %s' % idx_error
+        print('ERROR caught exception creating an index: %s' % idx_error)
     t('createIndexes()')
-    print 'adding foreign keys (this may take a while)'
+    print('adding foreign keys (this may take a while)')
     sys.stdout.flush()
     # Add FK.
     fk_errors = createForeignKeys(DB_TABLES)
     for fk_error in fk_errors:
-        print 'ERROR caught exception creating a foreign key: %s' % fk_error
+        print('ERROR caught exception creating a foreign key: %s' % fk_error)
     t('createForeignKeys()')
 
 
 def restoreCSV():
     """Only restore data from a set of CSV files."""
     CSV_CURS.buildFakeFileNames()
-    print 'loading CSV files into the database'
+    print('loading CSV files into the database')
     executeCustomQueries('BEFORE_CSV_LOAD')
     loadCSVFiles()
     t('loadCSVFiles()')
@@ -2904,7 +2904,7 @@ def restoreCSV():
 
 # begin the iterations...
 def run():
-    print 'RUNNING imdbpy2sql.py using the %s ORM' % USED_ORM
+    print('RUNNING imdbpy2sql.py using the %s ORM' % USED_ORM)
 
     executeCustomQueries('BEGIN')
 
@@ -2919,17 +2919,17 @@ def run():
             None, CompanyName)
 
     # Truncate the current database.
-    print 'DROPPING current database...',
+    print('DROPPING current database...', end=' ')
     sys.stdout.flush()
     dropTables(DB_TABLES)
-    print 'DONE!'
+    print('DONE!')
 
     executeCustomQueries('BEFORE_CREATE')
     # Rebuild the database structure.
-    print 'CREATING new tables...',
+    print('CREATING new tables...', end=' ')
     sys.stdout.flush()
     createTables(DB_TABLES)
-    print 'DONE!'
+    print('DONE!')
     t('dropping and recreating the database')
     executeCustomQueries('AFTER_CREATE')
 
@@ -3014,7 +3014,7 @@ def run():
         return
 
     if CSV_DIR:
-        print 'loading CSV files into the database'
+        print('loading CSV files into the database')
         executeCustomQueries('BEFORE_CSV_LOAD')
         loadCSVFiles()
         t('loadCSVFiles()')
@@ -3036,9 +3036,9 @@ def _kdb_handler(signum, frame):
     """Die gracefully."""
     global _HEARD
     if _HEARD:
-        print "EHI!  DON'T PUSH ME!  I'VE HEARD YOU THE FIRST TIME! :-)"
+        print("EHI!  DON'T PUSH ME!  I'VE HEARD YOU THE FIRST TIME! :-)")
         return
-    print 'INTERRUPT REQUEST RECEIVED FROM USER.  FLUSHING CACHES...'
+    print('INTERRUPT REQUEST RECEIVED FROM USER.  FLUSHING CACHES...')
     _HEARD = 1
     # XXX: trap _every_ error?
     try: CACHE_MID.flush()
@@ -3049,24 +3049,24 @@ def _kdb_handler(signum, frame):
     except IntegrityError: pass
     try: CACHE_COMPID.flush()
     except IntegrityError: pass
-    print 'DONE! (in %d minutes, %d seconds)' % \
-            divmod(int(time.time())-BEGIN_TIME, 60)
+    print('DONE! (in %d minutes, %d seconds)' % \
+            divmod(int(time.time())-BEGIN_TIME, 60))
     sys.exit()
 
 
 if __name__ == '__main__':
     try:
-        print 'IMPORTING psyco...',
+        print('IMPORTING psyco...', end=' ')
         sys.stdout.flush()
         #import DONOTIMPORTPSYCO
         import psyco
         #psyco.log()
         psyco.profile()
-        print 'DONE!'
-        print ''
+        print('DONE!')
+        print('')
     except ImportError:
-        print 'FAILED (not a big deal, everything is alright...)'
-        print ''
+        print('FAILED (not a big deal, everything is alright...)')
+        print('')
     import signal
     signal.signal(signal.SIGINT, _kdb_handler)
     if CSV_ONLY_LOAD:

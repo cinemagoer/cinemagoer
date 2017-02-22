@@ -27,15 +27,15 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from imdb.utils import analyze_name, build_name
-from utils import Extractor, Attribute, analyze_imdbid
+from .utils import Extractor, Attribute, analyze_imdbid
 
-from searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
+from .searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
 
 
 def _cleanName(n):
     """Clean the name in a title tag."""
     if not n:
-        return u''
+        return ''
     n = n.replace('Filmography by type for', '') # FIXME: temporary.
     return n
 
@@ -68,9 +68,9 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
                             'akas': ".//div[@class='_imdbpyAKA']/text()"
                             },
                         postprocess=lambda x: (
-                            analyze_imdbid(x.get('link') or u''),
-                            analyze_name((x.get('name') or u'') + \
-                                        (x.get('index') or u''),
+                            analyze_imdbid(x.get('link') or ''),
+                            analyze_name((x.get('name') or '') + \
+                                        (x.get('index') or ''),
                                          canonical=1), x.get('akas')
                         ))]
     extractors = [Extractor(label='search',

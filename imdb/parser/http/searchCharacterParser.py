@@ -26,9 +26,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.utils import analyze_name, build_name
-from utils import Extractor, Attribute, analyze_imdbid
+from .utils import Extractor, Attribute, analyze_imdbid
 
-from searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
+from .searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
 
 
 class DOMBasicCharacterParser(DOMBasicMovieParser):
@@ -37,7 +37,7 @@ class DOMBasicCharacterParser(DOMBasicMovieParser):
     It's used by the DOMHTMLSearchCharacterParser class to return a result
     for a direct match (when a search on IMDb results in a single
     character, the web server sends directly the movie page."""
-    _titleFunct = lambda self, x: analyze_name(x or u'', canonical=False)
+    _titleFunct = lambda self, x: analyze_name(x or '', canonical=False)
 
 
 class DOMHTMLSearchCharacterParser(DOMHTMLSearchMovieParser):
@@ -53,7 +53,7 @@ class DOMHTMLSearchCharacterParser(DOMHTMLSearchMovieParser):
                             'name': "./a[1]/text()"
                             },
                         postprocess=lambda x: (
-                            analyze_imdbid(x.get('link') or u''),
+                            analyze_imdbid(x.get('link') or ''),
                             {'name': x.get('name')}
                         ))]
     extractors = [Extractor(label='search',

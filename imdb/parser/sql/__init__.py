@@ -53,9 +53,9 @@ _aux_logger = logging.getLogger('imdbpy.parser.sql.aux')
 def titleVariations(title, fromPtdf=0):
     """Build title variations useful for searches; if fromPtdf is true,
     the input is assumed to be in the plain text data files format."""
-    if fromPtdf: title1 = u''
+    if fromPtdf: title1 = ''
     else: title1 = title
-    title2 = title3 = u''
+    title2 = title3 = ''
     if fromPtdf or re_year_index.search(title):
         # If it appears to have a (year[/imdbIndex]) indication,
         # assume that a long imdb canonical name was provided.
@@ -73,13 +73,13 @@ def titleVariations(title, fromPtdf=0):
         # Just a title.
         # title1: the canonical title.
         title1 = canonicalTitle(title)
-        title3 = u''
+        title3 = ''
     # title2 is title1 without the article, or title1 unchanged.
     if title1:
         title2 = title1
-        t2s = title2.split(u', ')
+        t2s = title2.split(', ')
         if t2s[-1].lower() in _unicodeArticles:
-            title2 = u', '.join(t2s[:-1])
+            title2 = ', '.join(t2s[:-1])
     _aux_logger.debug('title variations: 1:[%s] 2:[%s] 3:[%s]',
                         title1, title2, title3)
     return title1, title2, title3
@@ -90,7 +90,7 @@ re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
 def nameVariations(name, fromPtdf=0):
     """Build name variations useful for searches; if fromPtdf is true,
     the input is assumed to be in the plain text data files format."""
-    name1 = name2 = name3 = u''
+    name1 = name2 = name3 = ''
     if fromPtdf or re_nameIndex.search(name):
         # We've a name with an (imdbIndex)
         namedict = analyze_name(name, canonical=1)
@@ -98,17 +98,17 @@ def nameVariations(name, fromPtdf=0):
         name1 = namedict['name']
         # name3 is the canonical name with the imdbIndex.
         if fromPtdf:
-            if namedict.has_key('imdbIndex'):
+            if 'imdbIndex' in namedict:
                 name3 = name
         else:
             name3 = build_name(namedict, canonical=1)
     else:
         # name1 is the name in the canonical format.
         name1 = canonicalName(name)
-        name3 = u''
+        name3 = ''
     # name2 is the name in the normal format, if it differs from name1.
     name2 = normalizeName(name1)
-    if name1 == name2: name2 = u''
+    if name1 == name2: name2 = ''
     _aux_logger.debug('name variations: 1:[%s] 2:[%s] 3:[%s]',
                         name1, name2, name3)
     return name1, name2, name3
@@ -173,10 +173,10 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
         # XXX: on Symbian, here we get a str; not sure this is the
         #      right place to fix it.
         if isinstance(nil, str):
-            nil = unicode(nil, 'latin1', 'ignore')
+            nil = str(nil, 'latin1', 'ignore')
         # Distance with the canonical name.
         ratios = [ratcliff(name1, nil, sm1) + 0.05]
-        namesurname = u''
+        namesurname = ''
         if not _scan_character:
             nils = nil.split(', ', 1)
             surname = nils[0]
@@ -201,10 +201,10 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
                         build_name(n_data, canonical=1), sm3) + 0.1)
         ratio = max(ratios)
         if ratio >= RO_THRESHOLD:
-            if resd.has_key(i):
+            if i in resd:
                 if ratio > resd[i][0]: resd[i] = (ratio, (i, n_data))
             else: resd[i] = (ratio, (i, n_data))
-    res = resd.values()
+    res = list(resd.values())
     res.sort()
     res.reverse()
     if results > 0: res[:] = res[:results]
@@ -250,7 +250,7 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
         # XXX: on Symbian, here we get a str; not sure this is the
         #      right place to fix it.
         if isinstance(til, str):
-            til = unicode(til, 'latin1', 'ignore')
+            til = str(til, 'latin1', 'ignore')
         # Distance with the canonical title (with or without article).
         #   titleS      -> titleR
         #   titleS, the -> titleR, the
@@ -278,11 +278,11 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
                         build_title(t_data, canonical=1, ptdf=1), sm3) + 0.1)
         ratio = max(ratios)
         if ratio >= RO_THRESHOLD:
-            if resd.has_key(i):
+            if i in resd:
                 if ratio > resd[i][0]:
                     resd[i] = (ratio, (i, t_data))
             else: resd[i] = (ratio, (i, t_data))
-    res = resd.values()
+    res = list(resd.values())
     res.sort()
     res.reverse()
     if results > 0: res[:] = res[:results]
@@ -303,7 +303,7 @@ def scan_company_names(name_list, name1, results=0, ro_thresold=None):
         # XXX: on Symbian, here we get a str; not sure this is the
         #      right place to fix it.
         if isinstance(n, str):
-            n = unicode(n, 'latin1', 'ignore')
+            n = str(n, 'latin1', 'ignore')
         o_name = n
         var = 0.0
         if withoutCountry and n.endswith(']'):
@@ -314,12 +314,12 @@ def scan_company_names(name_list, name1, results=0, ro_thresold=None):
         # Distance with the company name.
         ratio = ratcliff(name1, n, sm1) + var
         if ratio >= RO_THRESHOLD:
-            if resd.has_key(i):
+            if i in resd:
                 if ratio > resd[i][0]: resd[i] = (ratio,
                                             (i, analyze_company_name(o_name)))
             else:
                 resd[i] = (ratio, (i, analyze_company_name(o_name)))
-    res = resd.values()
+    res = list(resd.values())
     res.sort()
     res.reverse()
     if results > 0: res[:] = res[:results]
@@ -417,8 +417,8 @@ def _reGroupDict(d, newgr):
     and put it in the subsection (another dictionary) named
     'laserdisc', using the key 'label'."""
     r = {}
-    newgrks = newgr.keys()
-    for k, v in d.items():
+    newgrks = list(newgr.keys())
+    for k, v in list(d.items()):
         if k in newgrks:
             r.setdefault(newgr[k][0], {})[newgr[k][1]] = v
             # A not-so-clearer version:
@@ -434,7 +434,7 @@ def _groupListBy(l, index):
     tmpd = {}
     for item in l:
         tmpd.setdefault(item[index], []).append(item)
-    res = tmpd.values()
+    res = list(tmpd.values())
     return res
 
 
@@ -454,7 +454,7 @@ def get_movie_data(movieID, kindDict, fromAka=0, _table=None):
         else: Table = AkaTitle
     try:
         m = Table.get(movieID)
-    except Exception, e:
+    except Exception as e:
         _aux_logger.warn('Unable to fetch information for movieID %s: %s', movieID, e)
         mdict = {}
         return mdict
@@ -463,7 +463,7 @@ def get_movie_data(movieID, kindDict, fromAka=0, _table=None):
             'season': m.seasonNr, 'episode': m.episodeNr}
     if not fromAka:
         if m.seriesYears is not None:
-            mdict['series years'] = unicode(m.seriesYears)
+            mdict['series years'] = str(m.seriesYears)
     if mdict['imdbIndex'] is None: del mdict['imdbIndex']
     if mdict['year'] is None: del mdict['year']
     else:
@@ -512,7 +512,7 @@ def getSingleInfo(table, movieID, infoType, notAList=False):
         info = r.info
         note = r.note
         if note:
-            info += u'::%s' % note
+            info += '::%s' % note
         retList.append(info)
     if not retList:
         return {}
@@ -557,11 +557,11 @@ class IMDbSqlAccessSystem(IMDbBase):
             mod = mod.strip().lower()
             try:
                 if mod == 'sqlalchemy':
-                    from alchemyadapter import getDBTables, NotFoundError, \
+                    from .alchemyadapter import getDBTables, NotFoundError, \
                                                 setConnection, AND, OR, IN, \
                                                 ISNULL, CONTAINSSTRING, toUTF8
                 elif mod == 'sqlobject':
-                    from objectadapter import getDBTables, NotFoundError, \
+                    from .objectadapter import getDBTables, NotFoundError, \
                                                 setConnection, AND, OR, IN, \
                                                 ISNULL, CONTAINSSTRING, toUTF8
                 else:
@@ -583,7 +583,7 @@ class IMDbSqlAccessSystem(IMDbBase):
                 if _gotError:
                     self._sql_logger.warn('falling back to "%s"' % mod)
                 break
-            except ImportError, e:
+            except ImportError as e:
                 if idx+1 >= nrMods:
                     raise IMDbError('unable to use any ORM in %s: %s' % (
                                                     str(useORM), str(e)))
@@ -598,7 +598,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         self._sql_logger.debug('connecting to %s', uri)
         try:
             self._connection = setConnection(uri, DB_TABLES)
-        except AssertionError, e:
+        except AssertionError as e:
             raise IMDbDataAccessError( \
                     'unable to connect to the database server; ' + \
                     'complete message: "%s"' % str(e))
@@ -647,11 +647,11 @@ class IMDbSqlAccessSystem(IMDbBase):
 
     def _findRefs(self, o, trefs, nrefs):
         """Find titles or names references in strings."""
-        if isinstance(o, (unicode, str)):
+        if isinstance(o, str):
             for title in re_titleRef.findall(o):
                 a_title = analyze_title(title, canonical=0)
                 rtitle = build_title(a_title, ptdf=1)
-                if trefs.has_key(rtitle): continue
+                if rtitle in trefs: continue
                 movieID = self._getTitleID(rtitle)
                 if movieID is None:
                     movieID = self._getTitleID(title)
@@ -660,7 +660,7 @@ class IMDbSqlAccessSystem(IMDbBase):
                 m = Movie(title=rtitle, movieID=movieID,
                             accessSystem=self.accessSystem)
                 trefs[rtitle] = m
-                rtitle2 = canonicalTitle(a_title.get('title', u''))
+                rtitle2 = canonicalTitle(a_title.get('title', ''))
                 if rtitle2 and rtitle2 != rtitle and rtitle2 != title:
                     trefs[rtitle2] = m
                 if title != rtitle:
@@ -668,7 +668,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             for name in re_nameRef.findall(o):
                 a_name = analyze_name(name, canonical=1)
                 rname = build_name(a_name, canonical=1)
-                if nrefs.has_key(rname): continue
+                if rname in nrefs: continue
                 personID = self._getNameID(rname)
                 if personID is None:
                     personID = self._getNameID(name)
@@ -676,7 +676,7 @@ class IMDbSqlAccessSystem(IMDbBase):
                 p = Person(name=rname, personID=personID,
                             accessSystem=self.accessSystem)
                 nrefs[rname] = p
-                rname2 = normalizeName(a_name.get('name', u''))
+                rname2 = normalizeName(a_name.get('name', ''))
                 if rname2 and rname2 != rname:
                     nrefs[rname2] = p
                 if name != rname and name != rname2:
@@ -685,7 +685,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             for item in o:
                 self._findRefs(item, trefs, nrefs)
         elif isinstance(o, dict):
-            for value in o.values():
+            for value in list(o.values()):
                 self._findRefs(value, trefs, nrefs)
         return (trefs, nrefs)
 
@@ -695,7 +695,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         nrefs = {}
         try:
             return self._findRefs(o, trefs, nrefs)
-        except RuntimeError, e:
+        except RuntimeError as e:
             # Symbian/python 2.2 has a poor regexp implementation.
             import warnings
             warnings.warn('RuntimeError in '
@@ -721,7 +721,7 @@ class IMDbSqlAccessSystem(IMDbBase):
                 try:
                     lookup(e)
                     lat1 = akatitle.encode('latin_1', 'replace')
-                    return unicode(lat1, e, 'replace')
+                    return str(lat1, e, 'replace')
                 except (LookupError, ValueError, TypeError):
                     continue
         return None
@@ -731,7 +731,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         if val is None:
             return ISNULL(col)
         else:
-            if isinstance(val, (int, long)):
+            if isinstance(val, int):
                 return col == val
             else:
                 return col == self.toUTF8(val)
@@ -924,7 +924,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         #                s_title = s_title_rebuilt
         #else:
         #    _episodes = False
-        if isinstance(s_title, unicode):
+        if isinstance(s_title, str):
             s_title = s_title.encode('ascii', 'ignore')
 
         soundexCode = soundex(s_title)
@@ -983,7 +983,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             q2 = [(q.movieID, get_movie_data(q.id, self._kind, fromAka=1))
                     for q in AkaTitle.select(conditionAka)]
             qr += q2
-        except NotFoundError, e:
+        except NotFoundError as e:
             raise IMDbDataAccessError( \
                     'unable to search the database: "%s"' % str(e))
 
@@ -1030,7 +1030,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         infosets = self.get_movie_infoset()
         try:
             res = get_movie_data(movieID, self._kind)
-        except NotFoundError, e:
+        except NotFoundError as e:
             raise IMDbDataAccessError( \
                     'unable to get movieID "%s": "%s"' % (movieID, str(e)))
         if not res:
@@ -1056,9 +1056,9 @@ class IMDbSqlAccessSystem(IMDbBase):
                     curRole = robj.name
                     curRoleID = robj.id
                 p = Person(personID=pdata[0], name=pdata[5],
-                            currentRole=curRole or u'',
+                            currentRole=curRole or '',
                             roleID=curRoleID,
-                            notes=pdata[2] or u'',
+                            notes=pdata[2] or '',
                             accessSystem='sql')
                 if pdata[6]: p['imdbIndex'] = pdata[6]
                 p.billingPos = pdata[3]
@@ -1093,7 +1093,7 @@ class IMDbSqlAccessSystem(IMDbBase):
                     cDbTxt += ' %s' % cDb.countryCode
                 company = Company(name=cDbTxt,
                                 companyID=mdata[1],
-                                notes=mdata[2] or u'',
+                                notes=mdata[2] or '',
                                 accessSystem=self.accessSystem)
                 res.setdefault(sect, []).append(company)
         # AKA titles.
@@ -1113,8 +1113,8 @@ class IMDbSqlAccessSystem(IMDbBase):
             for cc in CompleteCast.select(CompleteCast.q.movieID == movieID)]
         if compcast:
             for entry in compcast:
-                val = unicode(entry[1])
-                res[u'complete %s' % entry[0]] = val
+                val = str(entry[1])
+                res['complete %s' % entry[0]] = val
         # Movie connections.
         mlinks = [[ml.linkedMovieID, self._link[ml.linkTypeID]]
                     for ml in MovieLink.select(MovieLink.q.movieID == movieID)]
@@ -1149,11 +1149,11 @@ class IMDbSqlAccessSystem(IMDbBase):
                 if season not in episodes: episodes[season] = {}
                 ep_number = episode_data.get('episode')
                 if ep_number is None:
-                    ep_number = max((episodes[season].keys() or [0])) + 1
+                    ep_number = max((list(episodes[season].keys()) or [0])) + 1
                 episodes[season][ep_number] = m
             res['episodes'] = episodes
-            res['number of episodes'] = sum([len(x) for x in episodes.values()])
-            res['number of seasons'] = len(episodes.keys())
+            res['number of episodes'] = sum([len(x) for x in list(episodes.values())])
+            res['number of seasons'] = len(list(episodes.keys()))
         # Regroup laserdisc information.
         res = _reGroupDict(res, self._moviesubs)
         # Do some transformation to preserve consistency with other
@@ -1218,7 +1218,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         if not name: return []
         s_name = analyze_name(name)['name']
         if not s_name: return []
-        if isinstance(s_name, unicode):
+        if isinstance(s_name, str):
             s_name = s_name.encode('ascii', 'ignore')
         soundexCode = soundex(s_name)
         name1, name2, name3 = nameVariations(name)
@@ -1243,7 +1243,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             q2 = [(q.personID, {'name': q.name, 'imdbIndex': q.imdbIndex})
                     for q in AkaName.select(conditionAka)]
             qr += q2
-        except NotFoundError, e:
+        except NotFoundError as e:
             raise IMDbDataAccessError( \
                     'unable to search the database: "%s"' % str(e))
 
@@ -1284,7 +1284,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         infosets = self.get_person_infoset()
         try:
             p = Name.get(personID)
-        except NotFoundError, e:
+        except NotFoundError as e:
             raise IMDbDataAccessError( \
                     'unable to get personID "%s": "%s"' % (personID, str(e)))
         res = {'name': p.name, 'imdbIndex': p.imdbIndex}
@@ -1304,7 +1304,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             for mdata in group:
                 duty = orig_duty = group[0][3]
                 if duty not in seenDuties: seenDuties.append(orig_duty)
-                note = mdata[2] or u''
+                note = mdata[2] or ''
                 if 'episode of' in mdata[4]:
                     duty = 'episodes'
                     if orig_duty not in ('actor', 'actress'):
@@ -1317,7 +1317,7 @@ class IMDbSqlAccessSystem(IMDbBase):
                     curRole = robj.name
                     curRoleID = robj.id
                 m = Movie(movieID=mdata[0], data=mdata[4],
-                            currentRole=curRole or u'',
+                            currentRole=curRole or '',
                             roleID=curRoleID,
                             notes=note, accessSystem='sql')
                 if duty != 'episodes':
@@ -1386,7 +1386,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         if not name: return []
         s_name = analyze_name(name)['name']
         if not s_name: return []
-        if isinstance(s_name, unicode):
+        if isinstance(s_name, str):
             s_name = s_name.encode('ascii', 'ignore')
         s_name = normalizeName(s_name)
         soundexCode = soundex(s_name)
@@ -1419,7 +1419,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
                     for q in CharName.select(condition)]
-        except NotFoundError, e:
+        except NotFoundError as e:
             raise IMDbDataAccessError( \
                     'unable to search the database: "%s"' % str(e))
         res = scan_names(qr, s_name, name2, '', results,
@@ -1439,7 +1439,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         infosets = self.get_character_infoset()
         try:
             c = CharName.get(characterID)
-        except NotFoundError, e:
+        except NotFoundError as e:
             raise IMDbDataAccessError( \
                     'unable to get characterID "%s": "%s"' % (characterID, e))
         res = {'name': c.name, 'imdbIndex': c.imdbIndex}
@@ -1458,12 +1458,12 @@ class IMDbSqlAccessSystem(IMDbBase):
         for f in filmodata:
             curRole = None
             curRoleID = f[1]
-            note = f[2] or u''
+            note = f[2] or ''
             if curRoleID is not None:
                 robj = Name.get(curRoleID)
                 curRole = robj.name
             m = Movie(movieID=f[0], data=f[3],
-                        currentRole=curRole or u'',
+                        currentRole=curRole or '',
                         roleID=curRoleID, roleIsPerson=True,
                         notes=note, accessSystem='sql')
             fdata.append(m)
@@ -1479,7 +1479,7 @@ class IMDbSqlAccessSystem(IMDbBase):
     def _search_company(self, name, results):
         name = name.strip()
         if not name: return []
-        if isinstance(name, unicode):
+        if isinstance(name, str):
             name = name.encode('ascii', 'ignore')
         soundexCode = soundex(name)
         # If the soundex is None, compare only with the first
@@ -1494,7 +1494,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             qr = [(q.id, {'name': q.name, 'country': q.countryCode})
                     for q in CompanyName.select(condition)]
-        except NotFoundError, e:
+        except NotFoundError as e:
             raise IMDbDataAccessError( \
                     'unable to search the database: "%s"' % str(e))
         qr[:] = [(x[0], build_company_name(x[1])) for x in qr]
@@ -1515,7 +1515,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         infosets = self.get_company_infoset()
         try:
             c = CompanyName.get(companyID)
-        except NotFoundError, e:
+        except NotFoundError as e:
             raise IMDbDataAccessError( \
                     'unable to get companyID "%s": "%s"' % (companyID, e))
         res = {'name': c.name, 'country': c.countryCode}
@@ -1535,7 +1535,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             ctype = group[0][2]
             for movieID, companyID, ctype, note, movieData in group:
                 movie = Movie(data=movieData, movieID=movieID,
-                            notes=note or u'', accessSystem=self.accessSystem)
+                            notes=note or '', accessSystem=self.accessSystem)
                 res.setdefault(ctype, []).append(movie)
             res.get(ctype, []).sort()
         return {'data': res, 'info sets': infosets}

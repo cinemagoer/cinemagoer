@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 import logging
-from urllib import unquote
+from urllib.parse import unquote
 
 from imdb.Movie import Movie
 from imdb.utils import analyze_title, analyze_name, canonicalName, \
@@ -259,7 +259,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             m = Movie(movieID=str(mid[0]), data=s_data,
                         accessSystem=self.accessSystem,
                         modFunct=self._defModFunct)
-            d['kind'] = kind = u'episode'
+            d['kind'] = kind = 'episode'
             d['episode of'] = m
         if kind in ('tv series', 'tv mini series'):
             years = _findBetween(cont, '<h1>', '</h1>', maxRes=1)
@@ -471,7 +471,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         cont = self._mretrieve(self.urls['movie_main'] % movieID + 'plotsummary')
         plot = _findBetween(cont, '<p class="plotpar">', '</p>')
         plot[:] = [_unHtml(x) for x in plot]
-        for i in xrange(len(plot)):
+        for i in range(len(plot)):
             p = plot[i]
             wbyidx = p.rfind(' Written by ')
             if wbyidx != -1:
@@ -555,7 +555,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                     #date, notes = date_and_notes(date)
                     # TODO: fix to handle real names.
                     date_notes = date.split(' in ', 1)
-                    notes = u''
+                    notes = ''
                     date = date_notes[0]
                     if len(date_notes) == 2:
                         notes = date_notes[1]
@@ -576,7 +576,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 akas = akas.split(' | ')
             else:
                 akas = akas.split(' / ')
-            if akas: r['akas'] = filter(None, [x.strip() for x in akas])
+            if akas: r['akas'] = [_f for _f in [x.strip() for x in akas] if _f]
         hs = _findBetween(s, "rel='image_src'", '>', maxRes=1)
         if not hs:
             hs = _findBetween(s, 'rel="image_src"', '>', maxRes=1)
@@ -607,7 +607,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         #if _parseChr:
         #    ws.append(('filmography', 'filmography'))
         for sect, sectName in ws:
-            raws = u''
+            raws = ''
             if sectName == 'self':
                 sect = 'Self'
             # Everything between the current section link and the end
@@ -657,7 +657,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                 movieID = str(movieID[0])
                 # Search the status.
                 stidx = m.find('<i>')
-                status = u''
+                status = ''
                 if stidx != -1:
                     stendidx = m.rfind('</i>')
                     if stendidx != -1:
@@ -691,7 +691,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
             if vtag:
                 try:
                     vtag = unquote(str(vtag[0]))
-                    vtag = unicode(vtag, 'latin_1')
+                    vtag = str(vtag, 'latin_1')
                     r.update(analyze_name(vtag))
                 except UnicodeEncodeError:
                     pass
@@ -725,7 +725,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
         misc_sects[:] = [x for x in misc_sects if len(x) == 2]
         for sect, data in misc_sects:
             sect = sect.lower().replace(':', '').strip()
-            if d.has_key(sect) and sect != 'mini biography': continue
+            if sect in d and sect != 'mini biography': continue
             elif sect in ('spouse', 'nickname'): continue
             if sect == 'salary': sect = 'salary history'
             elif sect == 'where are they now': sect = 'where now'
@@ -761,7 +761,7 @@ class IMDbMobileAccessSystem(IMDbHTTPAccessSystem):
                         bioAuth = bio[:byidx].rstrip()
                     else:
                         bioAuth = 'Anonymous'
-                    bio = u'%s::%s' % (bioAuth, bio[byidx+23:].lstrip())
+                    bio = '%s::%s' % (bioAuth, bio[byidx+23:].lstrip())
                     ndata.append(bio)
                 data[:] = ndata
                 if 'mini biography' in d:

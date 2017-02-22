@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from utils import build_movie, Attribute, Extractor, DOMParserBase, \
+from .utils import build_movie, Attribute, Extractor, DOMParserBase, \
                     analyze_imdbid
 
 from imdb.utils import analyze_company_name
@@ -64,9 +64,9 @@ class DOMCompanyParser(DOMParserBase):
                                 'year': "./text()[1]"
                                 },
                             postprocess=lambda x:
-                                build_movie(u'%s %s' % \
+                                build_movie('%s %s' % \
                                 (x.get('title'), x.get('year').strip()),
-                                movieID=analyze_imdbid(x.get('link') or u''),
+                                movieID=analyze_imdbid(x.get('link') or ''),
                                 _parsingCompany=True))),
             ]
 
@@ -75,7 +75,7 @@ class DOMCompanyParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
-        for key in data.keys():
+        for key in list(data.keys()):
             new_key = key.replace('company', 'companies')
             new_key = new_key.replace('other', 'miscellaneous')
             new_key = new_key.replace('distributor', 'distributors')

@@ -1011,7 +1011,7 @@ TAGS_TO_MODIFY = {
     'character.quotes.item.quote': ('line', False)
     }
 
-_allchars = string.maketrans('', '')
+_allchars = bytes.maketrans(b'', b'')
 _keepchars = _allchars.translate(_allchars, string.ascii_lowercase + '-' +
                                  string.digits)
 

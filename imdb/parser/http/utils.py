@@ -104,7 +104,6 @@ for _k, _v in list(entitydefs.items()):
         entcharrefs[dec_code] = _v
     else:
         dec_code = '#' + str(ord(_v))
-        _v = str(_v, 'latin_1', 'replace')
         entcharrefs[dec_code] = _v
     entcharrefs[_k] = _v
 del _sgmlentkeys, _k, _v

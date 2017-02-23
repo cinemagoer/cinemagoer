@@ -81,7 +81,7 @@ data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
 featCutils = setuptools.dist.Feature('compile the C module', standard=True,
         ext_modules=[cutils])
 
-featLxml = setuptools.dist.Feature('add lxml dependency', standard=False,
+featLxml = setuptools.dist.Feature('add lxml dependency', standard=True,
         install_requires=['lxml'])
 
 # XXX: it seems there's no way to specify that we need EITHER

@@ -172,8 +172,8 @@ class Person(_Container):
     def __bool__(self):
         """The Person is "false" if the self.data does not contain a name."""
         # XXX: check the name and the personID?
-        if 'name' in self.data: return 1
-        return 0
+        if 'name' in self.data: return True
+        return False
 
     def __contains__(self, item):
         """Return true if this Person has worked in the given Movie,
@@ -225,17 +225,12 @@ class Person(_Container):
     def __repr__(self):
         """String representation of a Person object."""
         # XXX: add also currentRole and notes, if present?
-        r = '<Person id:%s[%s] name:_%s_>' % (self.personID, self.accessSystem,
+        r = '<Person id:%s[%s] name: %s >' % (self.personID, self.accessSystem,
                                         self.get('long imdb canonical name'))
-        if isinstance(r, str): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):
         """Simply print the short name."""
-        return self.get('name', '').encode('utf_8', 'replace')
-
-    def __unicode__(self):
-        """Simply print the short title."""
         return self.get('name', '')
 
     def summary(self):

@@ -119,8 +119,8 @@ class Character(_Container):
     def __bool__(self):
         """The Character is "false" if the self.data does not contain a name."""
         # XXX: check the name and the characterID?
-        if self.data.get('name'): return 1
-        return 0
+        if self.data.get('name'): return True
+        return False
 
     def __contains__(self, item):
         """Return true if this Character was portrayed in the given Movie
@@ -169,18 +169,13 @@ class Character(_Container):
 
     def __repr__(self):
         """String representation of a Character object."""
-        r = '<Character id:%s[%s] name:_%s_>' % (self.characterID,
+        r = '<Character id:%s[%s] name: %s >' % (self.characterID,
                                         self.accessSystem,
                                         self.get('name'))
-        if isinstance(r, str): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):
         """Simply print the short name."""
-        return self.get('name', '').encode('utf_8', 'replace')
-
-    def __unicode__(self):
-        """Simply print the short title."""
         return self.get('name', '')
 
     def summary(self):

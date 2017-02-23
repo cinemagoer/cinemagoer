@@ -202,12 +202,10 @@ class IMDbURLopener(FancyURLopener):
                 self.set_header('Range', 'bytes=0-%d' % size)
             uopener = self.open(url)
             kwds = {}
-            if PY_VERSION > (2, 3) and not IN_GAE:
-                kwds['size'] = size
-            content = uopener.read(**kwds)
+            content = uopener.read(**kwds).decode()
             self._last_url = uopener.url
             # Maybe the server is so nice to tell us the charset...
-            server_encode = uopener.info().getparam('charset')
+            server_encode = uopener.info().get_charset()
             # Otherwise, look at the content-type HTML meta tag.
             if server_encode is None and content:
                 begin_h = content.find('text/html; charset=')
@@ -238,10 +236,10 @@ class IMDbURLopener(FancyURLopener):
         if encode is None:
             encode = 'latin_1'
             # The detection of the encoding is error prone...
-            self._logger.warn('Unable to detect the encoding of the retrieved '
-                        'page [%s]; falling back to default latin1.', encode)
+            # self._logger.warn('Unable to detect the encoding of the retrieved '
+            #             'page [%s]; falling back to default latin1.', encode)
         ##print unicode(content, encode, 'replace').encode('utf8')
-        return str(content, encode, 'replace')
+        return content
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
         if errcode == 404:

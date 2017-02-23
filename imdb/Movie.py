@@ -264,8 +264,8 @@ class Movie(_Container):
     def __bool__(self):
         """The Movie is "false" if the self.data does not contain a title."""
         # XXX: check the title and the movieID?
-        if 'title' in self.data: return 1
-        return 0
+        if 'title' in self.data: return True
+        return False
 
     def isSameTitle(self, other):
         """Return true if this and the compared object have the same
@@ -328,16 +328,11 @@ class Movie(_Container):
             title = self.get('long imdb episode title')
         else:
             title = self.get('long imdb title')
-        r = '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
+        r = '<Movie id:%s[%s] title: %s >' % (self.movieID, self.accessSystem,
                                                 title)
-        if isinstance(r, str): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):
-        """Simply print the short title."""
-        return self.get('title', '').encode('utf_8', 'replace')
-
-    def __unicode__(self):
         """Simply print the short title."""
         return self.get('title', '')
 

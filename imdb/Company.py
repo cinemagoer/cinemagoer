@@ -121,8 +121,8 @@ class Company(_Container):
     def __bool__(self):
         """The company is "false" if the self.data does not contain a name."""
         # XXX: check the name and the companyID?
-        if self.data.get('name'): return 1
-        return 0
+        if self.data.get('name'): return True
+        return False
 
     def __contains__(self, item):
         """Return true if this company and the given Movie are related."""
@@ -168,15 +168,10 @@ class Company(_Container):
         r = '<Company id:%s[%s] name:_%s_>' % (self.companyID,
                                         self.accessSystem,
                                         self.get('long imdb name'))
-        if isinstance(r, str): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):
         """Simply print the short name."""
-        return self.get('name', '').encode('utf_8', 'replace')
-
-    def __unicode__(self):
-        """Simply print the short title."""
         return self.get('name', '')
 
     def summary(self):

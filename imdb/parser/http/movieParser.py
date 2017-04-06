@@ -242,8 +242,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 postprocess=makeSplitter('|')),
                             Attribute(key='sound mix',
                                 path="./h5[starts-with(text(), " \
-                                        "'Sound Mix')]/..//text()",
-                                postprocess=makeSplitter('Sound Mix:')),
+                                        "'Sound Mix')]/../div[@class='info-content']//text()",
+                                postprocess=makeSplitter()),
                             # Collects akas not encosed in <i> tags.
                             Attribute(key='other akas',
                                 path="./h5[starts-with(text(), " \

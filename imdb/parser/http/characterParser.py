@@ -103,7 +103,12 @@ class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
                   attrs=Attribute(key="actor_mapping",
                                   multi=True,
                                   path={'movie': './a[1]/@href',
-                                        'actor': './a[starts-with(@href, "/name/")]/@href'}))
+                                        'actor': './a[starts-with(@href, "/name/")][1]/@href'},
+                                  # The DOM in the browser is different to the DOM seen here
+                                  # (we haven't figured out why yet).
+                                  # Sometimes the actor does not appear in the DOM for some reason.
+                                  # Do not add the match if that is the case.
+                                  ignore={'actor': None}))
     ]
 
     preprocessors = [

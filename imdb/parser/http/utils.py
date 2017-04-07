@@ -692,11 +692,11 @@ class DOMParserBase(object):
                                 # XXX: use u'' , to join?
                                 data[field] = ''.join(value)
 
-                        # The DOM in the browser is different to the DOM seen here (we haven't figured out why yet).
-                        # Sometimes the actor does not appear in the DOM for some reason.
-                        # Do not add the match if that is the case.
-                        if attr.key == 'actor_mapping' and data['actor'] is None:
-                            continue
+                        # If the value is to be ignored, set data to empty dict.
+                        # It will be skipped later.
+                        for key, value in attr.ignore.items():
+                            if data[key] == value:
+                                data = {}
                     else:
                         data = self.xpath(element, attr.path)
                         if not data:
@@ -799,7 +799,7 @@ class Extractor(object):
 class Attribute(object):
     """The attribute to consider, for a given node."""
     def __init__(self, key, multi=False, path=None, joiner=None,
-                 postprocess=None):
+                 postprocess=None, ignore=None):
         """Initialize an Attribute object, used to specify the
         attribute to consider, for a given node."""
         # The key under which information will be saved; can be a string or an
@@ -812,6 +812,14 @@ class Attribute(object):
         self.joiner = joiner
         # Post-process this set of information.
         self.postprocess = postprocess
+
+        if ignore is not None:
+            # If there is no explicit mapping for values to ignore for particular fields, use the value for all fields.
+            if not isinstance(ignore, dict):
+                ignore = {k: ignore for k in self.path}
+        else:
+            ignore = {}
+        self.ignore = ignore
 
     def __repr__(self):
         """String representation of an Attribute object."""

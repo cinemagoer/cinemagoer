@@ -103,7 +103,7 @@ class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
                   attrs=Attribute(key="actor_mapping",
                                   multi=True,
                                   path={'movie': './a[1]/@href',
-                                        'actor': './a[starts-with(@href, "/name/")]/@href'}))
+                                        'actor': './a[starts-with(@href, "/name/")][1]/@href'}))
     ]
 
     preprocessors = [

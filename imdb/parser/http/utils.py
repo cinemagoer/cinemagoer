@@ -691,6 +691,12 @@ class DOMParserBase(object):
                             else:
                                 # XXX: use u'' , to join?
                                 data[field] = ''.join(value)
+
+                        # The DOM in the browser is different to the DOM seen here (we haven't figured out why yet).
+                        # Sometimes the actor does not appear in the DOM for some reason.
+                        # Do not add the match if that is the case.
+                        if attr.key == 'actor_mapping' and data['actor'] is None:
+                            continue
                     else:
                         data = self.xpath(element, attr.path)
                         if not data:

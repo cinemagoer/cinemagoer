@@ -242,8 +242,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 postprocess=makeSplitter('|')),
                             Attribute(key='sound mix',
                                 path="./h5[starts-with(text(), " \
-                                        "'Sound Mix')]/..//text()",
-                                postprocess=makeSplitter('Sound Mix:')),
+                                        "'Sound Mix')]/../div[@class='info-content']//text()",
+                                postprocess=makeSplitter()),
                             # Collects akas not encosed in <i> tags.
                             Attribute(key='other akas',
                                 path="./h5[starts-with(text(), " \
@@ -559,11 +559,11 @@ class DOMHTMLPlotParser(DOMParserBase):
     # Notice that recently IMDb started to put the email of the
     # author only in the link, that we're not collecting, here.
     extractors = [Extractor(label='plot',
-                            path="//p[@class='plotSummary']",
+                            path="//ul[@class='zebraList']/li",
                             attrs=Attribute(key='plot',
                                             multi=True,
-                                            path={'plot': './/text()',
-                                                  'author': './span/em/a/text()'},
+                                            path={'plot': './/p[@class="plotSummary"]//text()',
+                                                  'author': './/span/em/a/text()'},
                                             postprocess=_process_plotsummary))]
 
 

@@ -26,7 +26,7 @@ __docformat__ = 'restructuredtext'
 
 import re
 import string
-import _bsoup as BeautifulSoup
+from . import _bsoup as BeautifulSoup
 
 
 # XPath related enumerations and constants
@@ -226,7 +226,7 @@ class PathStep:
                     attribute_value = True
                 else:
                     attribute_value = None
-                if not self.soup_args.has_key('attrs'):
+                if 'attrs' not in self.soup_args:
                     self.soup_args['attrs'] = {}
                 self.soup_args['attrs'][attribute_name] = attribute_value
                 return None
@@ -284,7 +284,7 @@ class PathStep:
 
             if found:
                 for checker in self.checkers:
-                    found = filter(checker, found)
+                    found = list(filter(checker, found))
                 result.extend(found)
 
         return result
@@ -311,14 +311,14 @@ class PredicateFilter:
                 self.__filter = self.__starts_with
             else:
                 self.__filter = self.__contains
-            args = map(string.strip, arguments.split(','))
+            args = list(map(string.strip, arguments.split(',')))
             if args[0][0] == '@':
                 self.arguments = (True, args[0][1:], args[1][1:-1])
             else:
                 self.arguments = (False, args[0], args[1][1:-1])
         elif name == 'string-length':
             self.__filter = self.__string_length
-            args = map(string.strip, arguments.split(','))
+            args = list(map(string.strip, arguments.split(',')))
             if args[0][0] == '@':
                 self.arguments = (True, args[0][1:])
             else:
@@ -356,7 +356,7 @@ class PredicateFilter:
         if self.arguments[0]:
             # this is an attribute
             attribute_name = self.arguments[1]
-            if node.has_key(attribute_name):
+            if attribute_name in node:
                 first = node[attribute_name]
                 return first.startswith(self.arguments[2])
         elif self.arguments[1] == 'text()':
@@ -369,7 +369,7 @@ class PredicateFilter:
         if self.arguments[0]:
             # this is an attribute
             attribute_name = self.arguments[1]
-            if node.has_key(attribute_name):
+            if attribute_name in node:
                 first = node[attribute_name]
                 return self.arguments[2] in first
         elif self.arguments[1] == 'text()':
@@ -382,7 +382,7 @@ class PredicateFilter:
         if self.arguments[0]:
             # this is an attribute
             attribute_name = self.arguments[1]
-            if node.has_key(attribute_name):
+            if attribute_name in node:
                 value = node[attribute_name]
             else:
                 value = None
@@ -399,11 +399,11 @@ _steps = {}
 def get_path(path):
     """Utility for eliminating repeated parsings of the same paths and steps.
     """
-    if not _paths.has_key(path):
+    if path not in _paths:
         p = Path(path, parse=False)
         steps = tokenize_path(path)
         for step in steps:
-            if not _steps.has_key(step):
+            if step not in _steps:
                 _steps[step] = PathStep(step)
             p.steps.append(_steps[step])
         _paths[path] = p

@@ -28,9 +28,9 @@ __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
 __version__ = VERSION = '5.2dev20161118'
 
 # Import compatibility module (importing it is enough).
-import _compat
+from . import _compat
 
-import sys, os, ConfigParser, logging
+import sys, os, configparser, logging
 from types import MethodType
 
 from imdb import Movie, Person, Character, Company
@@ -75,14 +75,14 @@ imdbURL_find = imdbURL_base + 'find?%s'
 # Name of the configuration file.
 confFileName = 'imdbpy.cfg'
 
-class ConfigParserWithCase(ConfigParser.ConfigParser):
+class ConfigParserWithCase(configparser.ConfigParser):
     """A case-sensitive parser for configuration files."""
     def __init__(self, defaults=None, confFile=None, *args, **kwds):
         """Initialize the parser.
 
         *defaults* -- defaults values.
         *confFile* -- the file (or list of files) to parse."""
-        ConfigParser.ConfigParser.__init__(self, defaults=defaults)
+        configparser.ConfigParser.__init__(self, defaults=defaults)
         if confFile is None:
             dotFileName = '.' + confFileName
             # Current and home directory.
@@ -102,8 +102,8 @@ class ConfigParserWithCase(ConfigParser.ConfigParser):
         for fname in confFile:
             try:
                 self.read(fname)
-            except (ConfigParser.MissingSectionHeaderError,
-                    ConfigParser.ParsingError), e:
+            except (configparser.MissingSectionHeaderError,
+                    configparser.ParsingError) as e:
                 _aux_logger.warn('Troubles reading config file: %s' % e)
             # Stop at the first valid file.
             if self.has_section('imdbpy'):
@@ -115,7 +115,7 @@ class ConfigParserWithCase(ConfigParser.ConfigParser):
 
     def _manageValue(self, value):
         """Custom substitutions for values."""
-        if not isinstance(value, (str, unicode)):
+        if not isinstance(value, str):
             return value
         vlower = value.lower()
         if vlower in self._boolean_states:
@@ -126,7 +126,7 @@ class ConfigParserWithCase(ConfigParser.ConfigParser):
 
     def get(self, section, option, *args, **kwds):
         """Return the value of an option from a given section."""
-        value = ConfigParser.ConfigParser.get(self, section, option,
+        value = configparser.ConfigParser.get(self, section, option,
                                             *args, **kwds)
         return self._manageValue(value)
 
@@ -135,7 +135,7 @@ class ConfigParserWithCase(ConfigParser.ConfigParser):
         given section."""
         if section != 'DEFAULT' and not self.has_section(section):
             return []
-        keys = ConfigParser.ConfigParser.options(self, section)
+        keys = configparser.ConfigParser.options(self, section)
         return [(k, self.get(section, k, *args, **kwds)) for k in keys]
 
     def getDict(self, section):
@@ -159,7 +159,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
                 accessSystem = 'http'
             kwds.update(keywords)
             keywords = kwds
-        except Exception, e:
+        except Exception as e:
             import logging
             logging.getLogger('imdbpy').warn('Unable to read configuration' \
                                             ' file; complete error: %s' % e)
@@ -177,24 +177,24 @@ def IMDb(accessSystem=None, *arguments, **keywords):
         try:
             import logging.config
             logging.config.fileConfig(os.path.expanduser(logCfg))
-        except Exception, e:
+        except Exception as e:
             logging.getLogger('imdbpy').warn('unable to read logger ' \
                                             'config: %s' % e)
     if accessSystem in ('httpThin', 'webThin', 'htmlThin'):
         logging.warn('httpThin was removed since IMDbPY 4.8')
         accessSystem = 'http'
     if accessSystem in ('http', 'web', 'html'):
-        from parser.http import IMDbHTTPAccessSystem
+        from .parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
     elif accessSystem in ('mobile',):
-        from parser.mobile import IMDbMobileAccessSystem
+        from .parser.mobile import IMDbMobileAccessSystem
         return IMDbMobileAccessSystem(*arguments, **keywords)
     elif accessSystem in ('local', 'files'):
         # The local access system was removed since IMDbPY 4.2.
         raise IMDbError('the local access system was removed since IMDbPY 4.2')
     elif accessSystem in ('sql', 'db', 'database'):
         try:
-            from parser.sql import IMDbSqlAccessSystem
+            from .parser.sql import IMDbSqlAccessSystem
         except ImportError:
             raise IMDbError('the sql access system is not installed')
         return IMDbSqlAccessSystem(*arguments, **keywords)
@@ -208,17 +208,17 @@ def available_access_systems():
     asList = []
     # XXX: trying to import modules is a good thing?
     try:
-        from parser.http import IMDbHTTPAccessSystem
+        from .parser.http import IMDbHTTPAccessSystem
         asList.append('http')
     except ImportError:
         pass
     try:
-        from parser.mobile import IMDbMobileAccessSystem
+        from .parser.mobile import IMDbMobileAccessSystem
         asList.append('mobile')
     except ImportError:
         pass
     try:
-        from parser.sql import IMDbSqlAccessSystem
+        from .parser.sql import IMDbSqlAccessSystem
         asList.append('sql')
     except ImportError:
         pass
@@ -430,8 +430,8 @@ class IMDbBase:
             results = 20
         # XXX: I suppose it will be much safer if the user provides
         #      an unicode string... this is just a guess.
-        if not isinstance(title, unicode):
-            title = unicode(title, encoding, 'replace')
+        if not isinstance(title, str):
+            title = str(title, encoding, 'replace')
         if not _episodes:
             res = self._search_movie(title, results)
         else:
@@ -490,8 +490,8 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if not isinstance(name, unicode):
-            name = unicode(name, encoding, 'replace')
+        if not isinstance(name, str):
+            name = str(name, encoding, 'replace')
         res = self._search_person(name, results)
         return [Person.Person(personID=self._get_real_personID(pi),
                 data=pd, modFunct=self._defModFunct,
@@ -535,8 +535,8 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if not isinstance(name, unicode):
-            name = unicode(name, encoding, 'replace')
+        if not isinstance(name, str):
+            name = str(name, encoding, 'replace')
         res = self._search_character(name, results)
         return [Character.Character(characterID=self._get_real_characterID(pi),
                 data=pd, modFunct=self._defModFunct,
@@ -580,8 +580,8 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if not isinstance(name, unicode):
-            name = unicode(name, encoding, 'replace')
+        if not isinstance(name, str):
+            name = str(name, encoding, 'replace')
         res = self._search_company(name, results)
         return [Company.Company(companyID=self._get_real_companyID(pi),
                 data=pd, modFunct=self._defModFunct,
@@ -601,8 +601,8 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 100
-        if not isinstance(keyword, unicode):
-            keyword = unicode(keyword, encoding, 'replace')
+        if not isinstance(keyword, str):
+            keyword = str(keyword, encoding, 'replace')
         return self._search_keyword(keyword, results)
 
     def _get_keyword(self, keyword, results):
@@ -621,8 +621,8 @@ class IMDbBase:
             results = 100
         # XXX: I suppose it will be much safer if the user provides
         #      an unicode string... this is just a guess.
-        if not isinstance(keyword, unicode):
-            keyword = unicode(keyword, encoding, 'replace')
+        if not isinstance(keyword, str):
+            keyword = str(keyword, encoding, 'replace')
         res = self._get_keyword(keyword, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
@@ -654,12 +654,12 @@ class IMDbBase:
         """Return a Movie object."""
         # XXX: not really useful...
         if 'title' in keywords:
-            if not isinstance(keywords['title'], unicode):
-                keywords['title'] = unicode(keywords['title'],
+            if not isinstance(keywords['title'], str):
+                keywords['title'] = str(keywords['title'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if not isinstance(arguments[1], unicode):
-                arguments[1] = unicode(arguments[1], encoding, 'replace')
+            if not isinstance(arguments[1], str):
+                arguments[1] = str(arguments[1], encoding, 'replace')
         return Movie.Movie(accessSystem=self.accessSystem,
                             *arguments, **keywords)
 
@@ -667,12 +667,12 @@ class IMDbBase:
         """Return a Person object."""
         # XXX: not really useful...
         if 'name' in keywords:
-            if not isinstance(keywords['name'], unicode):
-                keywords['name'] = unicode(keywords['name'],
+            if not isinstance(keywords['name'], str):
+                keywords['name'] = str(keywords['name'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if not isinstance(arguments[1], unicode):
-                arguments[1] = unicode(arguments[1], encoding, 'replace')
+            if not isinstance(arguments[1], str):
+                arguments[1] = str(arguments[1], encoding, 'replace')
         return Person.Person(accessSystem=self.accessSystem,
                                 *arguments, **keywords)
 
@@ -680,12 +680,12 @@ class IMDbBase:
         """Return a Character object."""
         # XXX: not really useful...
         if 'name' in keywords:
-            if not isinstance(keywords['name'], unicode):
-                keywords['name'] = unicode(keywords['name'],
+            if not isinstance(keywords['name'], str):
+                keywords['name'] = str(keywords['name'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if not isinstance(arguments[1], unicode):
-                arguments[1] = unicode(arguments[1], encoding, 'replace')
+            if not isinstance(arguments[1], str):
+                arguments[1] = str(arguments[1], encoding, 'replace')
         return Character.Character(accessSystem=self.accessSystem,
                                     *arguments, **keywords)
 
@@ -693,12 +693,12 @@ class IMDbBase:
         """Return a Company object."""
         # XXX: not really useful...
         if 'name' in keywords:
-            if not isinstance(keywords['name'], unicode):
-                keywords['name'] = unicode(keywords['name'],
+            if not isinstance(keywords['name'], str):
+                keywords['name'] = str(keywords['name'],
                                             encoding, 'replace')
         elif len(arguments) > 1:
-            if not isinstance(arguments[1], unicode):
-                arguments[1] = unicode(arguments[1], encoding, 'replace')
+            if not isinstance(arguments[1], str):
+                arguments[1] = str(arguments[1], encoding, 'replace')
         return Company.Company(accessSystem=self.accessSystem,
                                     *arguments, **keywords)
 
@@ -770,7 +770,7 @@ class IMDbBase:
                 method = lambda *x: {}
             try:
                 ret = method(mopID)
-            except Exception, e:
+            except Exception as e:
                 self._imdb_logger.critical('caught an exception retrieving ' \
                                     'or parsing "%s" info set for mopID ' \
                                     '"%s" (accessSystem: %s)',
@@ -783,7 +783,7 @@ class IMDbBase:
             if 'data' in ret:
                 res.update(ret['data'])
                 if isinstance(ret['data'], dict):
-                    keys = ret['data'].keys()
+                    keys = list(ret['data'].keys())
             if 'info sets' in ret:
                 for ri in ret['info sets']:
                     mop.add_to_current_info(ri, keys, mainInfoset=i)

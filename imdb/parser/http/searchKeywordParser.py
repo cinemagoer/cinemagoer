@@ -24,10 +24,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from utils import Extractor, Attribute, analyze_imdbid
+from .utils import Extractor, Attribute, analyze_imdbid
 from imdb.utils import analyze_title, analyze_company_name
 
-from searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
+from .searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
 
 class DOMBasicKeywordParser(DOMBasicMovieParser):
     """Simply get the name of a keyword.
@@ -38,7 +38,7 @@ class DOMBasicKeywordParser(DOMBasicMovieParser):
     """
     # XXX: it's still to be tested!
     # I'm not even sure there can be a direct hit, searching for keywords.
-    _titleFunct = lambda self, x: analyze_company_name(x or u'')
+    _titleFunct = lambda self, x: analyze_company_name(x or '')
 
 
 class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
@@ -91,10 +91,10 @@ class DOMHTMLSearchMovieKeywordParser(DOMHTMLSearchMovieParser):
                             'outline': "./span[@class='outline']//text()"
                             },
                         postprocess=lambda x: (
-                            analyze_imdbid(x.get('link') or u''),
-                            custom_analyze_title4kwd(x.get('info') or u'',
-                                                    x.get('ynote') or u'',
-                                                    x.get('outline') or u'')
+                            analyze_imdbid(x.get('link') or ''),
+                            custom_analyze_title4kwd(x.get('info') or '',
+                                                    x.get('ynote') or '',
+                                                    x.get('outline') or '')
                         ))]
 
     extractors = [Extractor(label='search',

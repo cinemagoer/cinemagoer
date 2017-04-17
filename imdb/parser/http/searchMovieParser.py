@@ -28,7 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from imdb.utils import analyze_title, build_title
-from utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
+from .utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
 
 
 class DOMBasicMovieParser(DOMParserBase):
@@ -40,7 +40,7 @@ class DOMBasicMovieParser(DOMParserBase):
     # Stay generic enough to be used also for other DOMBasic*Parser classes.
     _titleAttrPath = ".//text()"
     _linkPath = "//link[@rel='canonical']"
-    _titleFunct = lambda self, x: analyze_title(x or u'')
+    _titleFunct = lambda self, x: analyze_title(x or '')
 
     def _init(self):
         self.preprocessors += [('<span class="tv-extra">TV mini-series</span>',
@@ -54,7 +54,7 @@ class DOMBasicMovieParser(DOMParserBase):
                                 path=self._linkPath,
                                 attrs=Attribute(key='link', path="./@href",
                                 postprocess=lambda x: \
-                                        analyze_imdbid((x or u'').replace(
+                                        analyze_imdbid((x or '').replace(
                                             'http://pro.imdb.com', ''))
                                     ))]
 
@@ -104,18 +104,18 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                             'akas': "./i//text()"
                             },
                         postprocess=lambda x: (
-                            analyze_imdbid(x.get('link') or u''),
-                            custom_analyze_title(x.get('info') or u''),
+                            analyze_imdbid(x.get('link') or ''),
+                            custom_analyze_title(x.get('info') or ''),
                             x.get('akas')
                         ))]
     extractors = [Extractor(label='search',
                         path="//td[@class='result_text']",
                         attrs=_attrs)]
     def _init(self):
-        self.url = u''
+        self.url = ''
 
     def _reset(self):
-        self.url = u''
+        self.url = ''
 
     def preprocess_string(self, html_string):
 
@@ -128,22 +128,22 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         # Direct hit!
         dbme = self._BaseParser(useModule=self._useModule)
         res = dbme.parse(html_string, url=self.url)
-        if not res: return u''
+        if not res: return ''
         res = res['data']
-        if not (res and res[0]): return u''
+        if not (res and res[0]): return ''
         link = '%s%s' % (self._linkPrefix, res[0][0])
         #    # Tries to cope with companies for which links to pro.imdb.com
         #    # are missing.
         #    link = self.url.replace(imdbURL_base[:-1], '')
         title = self._titleBuilder(res[0][1])
-        if not (link and title): return u''
+        if not (link and title): return ''
         link = link.replace('http://pro.imdb.com', '')
         new_html = '<td class="result_text"><a href="%s">%s</a></td>' % (link,
                                                                     title)
         return new_html
 
     def postprocess_data(self, data):
-        if not data.has_key('data'):
+        if 'data' not in data:
             data['data'] = []
         results = getattr(self, 'results', None)
         if results is not None:

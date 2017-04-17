@@ -30,11 +30,11 @@ import re
 from imdb.Movie import Movie
 from imdb.utils import analyze_name, canonicalName, normalizeName, \
                         analyze_title, date_and_notes
-from utils import build_movie, DOMParserBase, Attribute, Extractor, \
+from .utils import build_movie, DOMParserBase, Attribute, Extractor, \
                         analyze_imdbid
 
 
-from movieParser import _manageRoles
+from .movieParser import _manageRoles
 _reRoles = re.compile(r'(<li>.*? \.\.\.\. )(.*?)(</li>|<br>)',
                         re.I | re.M | re.S)
 
@@ -85,13 +85,13 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                           'roleID': "./a[starts-with(@href, '/character/')]/@href"
                           },
                       postprocess=lambda x:
-                          build_movie(x.get('title') or u'',
+                          build_movie(x.get('title') or '',
                               year=x.get('year'),
-                              movieID=analyze_imdbid(x.get('link') or u''),
-                              rolesNoChar=(x.get('rolesNoChar') or u'').strip(),
-                              chrRoles=(x.get('chrRoles') or u'').strip(),
+                              movieID=analyze_imdbid(x.get('link') or ''),
+                              rolesNoChar=(x.get('rolesNoChar') or '').strip(),
+                              chrRoles=(x.get('chrRoles') or '').strip(),
                               additionalNotes=x.get('notes'),
-                              roleID=(x.get('roleID') or u''),
+                              roleID=(x.get('roleID') or ''),
                               status=x.get('status') or None))]
 
     extractors = [
@@ -142,9 +142,9 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                                 'title': './a/text()'
                                 },
                                 postprocess=lambda x:
-                                    build_movie(x.get('title') or u'',
-                                        movieID=analyze_imdbid(x.get('link') or u''),
-                                        roleID=(x.get('roleID') or u'').split('/'),
+                                    build_movie(x.get('title') or '',
+                                        movieID=analyze_imdbid(x.get('link') or ''),
+                                        roleID=(x.get('roleID') or '').split('/'),
                                         status=x.get('status') or None)))
             ]
 
@@ -164,19 +164,19 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             del data['name_index']
         # XXX: the code below is for backwards compatibility
         # probably could be removed
-        for key in data.keys():
+        for key in list(data.keys()):
             if key.startswith('actor '):
-                if not data.has_key('actor'):
+                if 'actor' not in data:
                     data['actor'] = []
                 data['actor'].extend(data[key])
                 del data[key]
             if key.startswith('actress '):
-                if not data.has_key('actress'):
+                if 'actress' not in data:
                     data['actress'] = []
                 data['actress'].extend(data[key])
                 del data[key]
             if key.startswith('self '):
-                if not data.has_key('self'):
+                if 'self' not in data:
                     data['self'] = []
                 data['self'].extend(data[key])
                 del data[key]
@@ -223,7 +223,7 @@ class DOMHTMLBioParser(DOMParserBase):
                     Attribute(key='death notes',
                         path="./text()",
                         # TODO: check if this slicing is always correct
-                        postprocess=lambda x: u''.join(x).strip()[2:])]
+                        postprocess=lambda x: ''.join(x).strip()[2:])]
     extractors = [
             Extractor(label='headshot',
                         path="//a[@name='headshot']",
@@ -262,8 +262,8 @@ class DOMHTMLBioParser(DOMParserBase):
                                 'by': ".//a[@name='ba']//text()"
                                 },
                             postprocess=lambda x: "%s::%s" % \
-                                ((x.get('bio') or u'').split('- IMDb Mini Biography By:')[0].strip(),
-                                (x.get('by') or u'').strip() or u'Anonymous'))),
+                                ((x.get('bio') or '').split('- IMDb Mini Biography By:')[0].strip(),
+                                (x.get('by') or '').strip() or 'Anonymous'))),
             Extractor(label='spouse',
                         path="//div[h5='Spouse']/table/tr",
                         attrs=Attribute(key='spouse',
@@ -274,7 +274,7 @@ class DOMHTMLBioParser(DOMParserBase):
                                 },
                             postprocess=lambda x: ("%s::%s" % \
                                 (x.get('name').strip(),
-                                (x.get('info') or u'').strip())).strip(':'))),
+                                (x.get('info') or '').strip())).strip(':'))),
             Extractor(label='trade mark',
                         path="//div[h5='Trade Mark']/p",
                         attrs=Attribute(key='trade mark',
@@ -397,7 +397,7 @@ class DOMHTMLResumeParser(DOMParserBase):
 
     def postprocess_data(self, data):
 
-        for key in data.keys():
+        for key in list(data.keys()):
             if data[key] == '':
                 del data[key]
             if key in ('mini_info', 'name', 'resume_bio'):
@@ -462,7 +462,7 @@ class DOMHTMLOtherWorksParser(DOMParserBase):
 def _build_episode(link, title, minfo, role, roleA, roleAID):
     """Build an Movie object for a given episode of a series."""
     episode_id = analyze_imdbid(link)
-    notes = u''
+    notes = ''
     minidx = minfo.find(' -')
     # Sometimes, for some unknown reason, the role is left in minfo.
     if minidx != -1:
@@ -476,7 +476,7 @@ def _build_episode(link, title, minfo, role, roleA, roleAID):
         if slfRole and role is None and roleA is None:
             role = slfRole
     eps_data = analyze_title(title)
-    eps_data['kind'] = u'episode'
+    eps_data['kind'] = 'episode'
     # FIXME: it's wrong for multiple characters (very rare on tv series?).
     if role is None:
         role = roleA # At worse, it's None.
@@ -530,7 +530,7 @@ class DOMHTMLSeriesParser(DOMParserBase):
                                 },
                             postprocess=lambda x: _build_episode(x.get('link'),
                                 x.get('title'),
-                                (x.get('info') or u'').strip(),
+                                (x.get('info') or '').strip(),
                                 x.get('role'),
                                 x.get('roleA'),
                                 x.get('roleAID'))))
@@ -540,7 +540,7 @@ class DOMHTMLSeriesParser(DOMParserBase):
         if len(data) == 0:
             return {}
         nd = {}
-        for key in data.keys():
+        for key in list(data.keys()):
             dom = self.get_dom(key)
             link = self.xpath(dom, "//a/@href")[0]
             title = self.xpath(dom, "//a/text()")[0][1:-1]
@@ -594,10 +594,10 @@ class DOMHTMLPersonGenresParser(DOMParserBase):
         return {self.kind: data}
 
 
-from movieParser import DOMHTMLTechParser
-from movieParser import DOMHTMLOfficialsitesParser
-from movieParser import DOMHTMLAwardsParser
-from movieParser import DOMHTMLNewsParser
+from .movieParser import DOMHTMLTechParser
+from .movieParser import DOMHTMLOfficialsitesParser
+from .movieParser import DOMHTMLAwardsParser
+from .movieParser import DOMHTMLNewsParser
 
 
 _OBJECTS = {

@@ -15,13 +15,13 @@ import sys
 try:
     import imdb
 except ImportError:
-    print 'You bad boy!  You need to install the IMDbPY package!'
+    print('You bad boy!  You need to install the IMDbPY package!')
     sys.exit(1)
 
 
 if len(sys.argv) != 2:
-    print 'Only one argument is required:'
-    print '  %s "personID"' % sys.argv[0]
+    print('Only one argument is required:')
+    print('  %s "personID"' % sys.argv[0])
     sys.exit(2)
 
 personID = sys.argv[1]
@@ -34,14 +34,14 @@ try:
     # Get a Person object with the data about the person identified by
     # the given personID.
     person = i.get_person(personID)
-except imdb.IMDbError, e:
-    print "Probably you're not connected to Internet.  Complete error report:"
-    print e
+except imdb.IMDbError as e:
+    print("Probably you're not connected to Internet.  Complete error report:")
+    print(e)
     sys.exit(3)
 
 
 if not person:
-    print 'It seems that there\'s no person with personID "%s"' % personID
+    print('It seems that there\'s no person with personID "%s"' % personID)
     sys.exit(4)
 
 # XXX: this is the easier way to print the main info about a person;
@@ -51,7 +51,7 @@ if not person:
 # to access the data stored in a Person object, so look below; the
 # commented lines show some ways to retrieve information from a
 # Person object.
-print person.summary().encode(out_encoding, 'replace')
+print(person.summary().encode(out_encoding, 'replace'))
 
 # Show some info about the person.
 # This is only a short example; you can get a longer summary using

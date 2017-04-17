@@ -26,7 +26,7 @@ import logging
 from sqlobject import *
 from sqlobject.sqlbuilder import ISNULL, ISNOTNULL, AND, OR, IN, CONTAINSSTRING
 
-from dbschema import *
+from .dbschema import *
 
 _object_logger = logging.getLogger('imdbpy.parser.sql.object')
 
@@ -59,7 +59,7 @@ def addIndexes(cls, ifNotExists=True):
             cls.sqlmeta.addIndex(idx)
     try:
         cls.createIndexes(ifNotExists)
-    except dberrors.OperationalError, e:
+    except dberrors.OperationalError as e:
         _object_logger.warn('Skipping creation of the %s.%s index: %s' %
                             (cls.sqlmeta.table, col.name, e))
 addIndexes = classmethod(addIndexes)
@@ -105,7 +105,7 @@ def _buildFakeFKTable(cls, fakeTableName):
 def addForeignKeys(cls, mapTables, ifNotExists=True):
     """Create all required foreign keys."""
     # Do not even try, if there are no FK, in this table.
-    if not filter(None, [col.foreignKey for col in cls._imdbpySchema.cols]):
+    if not [_f for _f in [col.foreignKey for col in cls._imdbpySchema.cols] if _f]:
         return
     fakeTableName = 'myfaketable%s' % cls.sqlmeta.table
     if fakeTableName in FAKE_TABLES_REPOSITORY:

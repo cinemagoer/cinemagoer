@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import glob
-import msgfmt
+from . import msgfmt
 import os
 
 #LOCALE_DIR = os.path.dirname(__file__)
@@ -45,5 +45,5 @@ def rebuildmo():
 
 if __name__ == '__main__':
     languages = rebuildmo()
-    print 'Created locale for: %s.' % ' '.join(languages)
+    print('Created locale for: %s.' % ' '.join(languages))
 

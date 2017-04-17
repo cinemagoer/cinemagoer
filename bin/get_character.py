@@ -15,13 +15,13 @@ import sys
 try:
     import imdb
 except ImportError:
-    print 'You bad boy!  You need to install the IMDbPY package!'
+    print('You bad boy!  You need to install the IMDbPY package!')
     sys.exit(1)
 
 
 if len(sys.argv) != 2:
-    print 'Only one argument is required:'
-    print '  %s "characterID"' % sys.argv[0]
+    print('Only one argument is required:')
+    print('  %s "characterID"' % sys.argv[0])
     sys.exit(2)
 
 characterID = sys.argv[1]
@@ -34,14 +34,14 @@ try:
     # Get a character object with the data about the character identified by
     # the given characterID.
     character = i.get_character(characterID)
-except imdb.IMDbError, e:
-    print "Probably you're not connected to Internet.  Complete error report:"
-    print e
+except imdb.IMDbError as e:
+    print("Probably you're not connected to Internet.  Complete error report:")
+    print(e)
     sys.exit(3)
 
 
 if not character:
-    print 'It seems that there\'s no character with characterID "%s"' % characterID
+    print('It seems that there\'s no character with characterID "%s"' % characterID)
     sys.exit(4)
 
 # XXX: this is the easier way to print the main info about a character;
@@ -51,6 +51,6 @@ if not character:
 # to access the data stored in a character object, so look below; the
 # commented lines show some ways to retrieve information from a
 # character object.
-print character.summary().encode(out_encoding, 'replace')
+print(character.summary().encode(out_encoding, 'replace'))
 
 

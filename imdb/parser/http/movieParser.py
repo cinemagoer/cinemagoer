@@ -716,10 +716,17 @@ class DOMHTMLTaglinesParser(DOMParserBase):
         result = tparser.parse(taglines_html_string)
     """
     extractors = [Extractor(label='taglines',
-                            path='//*[contains(concat(" ", normalize-space(@class), " "), " soda ")]',
+                            path="//div[@id='taglines_content']/div",
                             attrs=Attribute(key='taglines',
                                             multi=True,
-                                            path="./text()"))]
+                                            path=".//text()"))]
+
+    def preprocess_dom(self, dom):
+        for node in self.xpath(dom, "//div[@id='taglines_content']/div[@class='header']"):
+            node.drop_tree()
+        for node in self.xpath(dom, "//div[@id='taglines_content']/div[@id='no_content']"):
+            node.drop_tree()
+        return dom
 
     def postprocess_data(self, data):
         if 'taglines' in data:

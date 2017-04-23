@@ -3,3 +3,4 @@
 *.mo
 *.so
 build/
+dist/

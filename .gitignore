@@ -3,4 +3,5 @@
 *.mo
 *.so
 build/
+__pycache__
 dist/

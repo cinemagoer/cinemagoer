@@ -60,7 +60,7 @@ def makeCgiPrintEncoding(encoding):
         """Encode the given string using the %s encoding, and replace
         chars outside the given charset with XML char references.""" % encoding
         s = escape(s, quote=1)
-        if isinstance(s, unicode):
+        if isinstance(s, str):
             s = s.encode(encoding, 'xmlcharrefreplace')
         return s
     return cgiPrint
@@ -85,7 +85,7 @@ def makeTextNotes(replaceTxtNotes):
     of the makeObject2Txt function."""
     def _replacer(s):
         outS = replaceTxtNotes
-        if not isinstance(s, (unicode, str)):
+        if not isinstance(s, str):
             return s
         ssplit = s.split('::', 1)
         text = ssplit[0]
@@ -98,12 +98,12 @@ def makeTextNotes(replaceTxtNotes):
             keysDict['notes'] = True
             outS = outS.replace('%(notes)s', ssplit[1])
         else:
-            outS = outS.replace('%(notes)s', u'')
+            outS = outS.replace('%(notes)s', '')
         def _excludeFalseConditionals(matchobj):
             # Return an empty string if the conditional is false/empty.
             if matchobj.group(1) in keysDict:
                 return matchobj.group(2)
-            return u''
+            return ''
         while re_conditional.search(outS):
             outS = re_conditional.sub(_excludeFalseConditionals, outS)
         return outS
@@ -139,17 +139,17 @@ def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
         if _limitRecursion is None:
             _limitRecursion = 0
         elif _limitRecursion > 5:
-            return u''
+            return ''
         _limitRecursion += 1
         if isinstance(obj, (list, tuple)):
             return joiner.join([object2txt(o, _limitRecursion=_limitRecursion)
                                 for o in obj])
         elif isinstance(obj, dict):
             # XXX: not exactly nice, neither useful, I fear.
-            return joiner.join([u'%s::%s' %
+            return joiner.join(['%s::%s' %
                             (object2txt(k, _limitRecursion=_limitRecursion),
                             object2txt(v, _limitRecursion=_limitRecursion))
-                            for k, v in obj.items()])
+                            for k, v in list(obj.items())])
         objData = {}
         if isinstance(obj, Movie):
             objData['movieID'] = obj.movieID
@@ -172,25 +172,25 @@ def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
             if proceed:
                 return matchobj.group(2)
             else:
-                return u''
+                return ''
             return matchobj.group(2)
         while re_conditional.search(outs):
             outs = re_conditional.sub(_excludeFalseConditionals, outs)
         for key in re_subst.findall(outs):
             value = obj.get(key) or getattr(obj, key, None)
-            if not isinstance(value, (unicode, str)):
+            if not isinstance(value, str):
                 if not _recurse:
                     if value:
-                        value =  unicode(value)
+                        value =  str(value)
                 if value:
                     value = object2txt(value, _limitRecursion=_limitRecursion)
             elif value:
-                value = applyToValues(unicode(value))
+                value = applyToValues(str(value))
             if not value:
-                value = u''
-            elif not isinstance(value, (unicode, str)):
-                value = unicode(value)
-            outs = outs.replace(u'%(' + key + u')s', value)
+                value = ''
+            elif not isinstance(value, str):
+                value = str(value)
+            outs = outs.replace('%(' + key + ')s', value)
         return outs
     return object2txt
 
@@ -213,7 +213,7 @@ def makeModCGILinks(movieTxt, personTxt, characterTxt=None,
             if item:
                 movieID = item.movieID
                 to_replace = movieTxt % {'movieID': movieID,
-                                        'title': unicode(_cgiPrint(to_replace),
+                                        'title': str(_cgiPrint(to_replace),
                                                         encoding,
                                                         'xmlcharrefreplace')}
             return to_replace
@@ -223,7 +223,7 @@ def makeModCGILinks(movieTxt, personTxt, characterTxt=None,
             if item:
                 personID = item.personID
                 to_replace = personTxt % {'personID': personID,
-                                        'name': unicode(_cgiPrint(to_replace),
+                                        'name': str(_cgiPrint(to_replace),
                                                         encoding,
                                                         'xmlcharrefreplace')}
             return to_replace
@@ -237,7 +237,7 @@ def makeModCGILinks(movieTxt, personTxt, characterTxt=None,
                 if characterID is None:
                     return to_replace
                 to_replace = characterTxt % {'characterID': characterID,
-                                        'name': unicode(_cgiPrint(to_replace),
+                                        'name': str(_cgiPrint(to_replace),
                                                         encoding,
                                                         'xmlcharrefreplace')}
             return to_replace
@@ -265,7 +265,7 @@ modHtmlLinksASCII = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt,
 
 
 everyentcharrefs = entcharrefs.copy()
-for k, v in {'lt':u'<','gt':u'>','amp':u'&','quot':u'"','apos':u'\''}.items():
+for k, v in list({'lt':'<','gt':'>','amp':'&','quot':'"','apos':'\''}.items()):
     everyentcharrefs[k] = v
     everyentcharrefs['#%s' % ord(v)] = v
 everyentcharrefsget = everyentcharrefs.get
@@ -279,7 +279,7 @@ def _replAllXMLRef(match):
     value = everyentcharrefsget(ref)
     if value is None:
         if ref[0] == '#':
-            return unichr(int(ref[1:]))
+            return chr(int(ref[1:]))
         else:
             return ref
     return value
@@ -292,7 +292,7 @@ def subXMLHTMLSGMLRefs(s):
 
 def sortedSeasons(m):
     """Return a sorted list of seasons of the given series."""
-    seasons = m.get('episodes', {}).keys()
+    seasons = list(m.get('episodes', {}).keys())
     seasons.sort()
     return seasons
 
@@ -308,7 +308,7 @@ def sortedEpisodes(m, season=None):
         if not isinstance(season, (tuple, list)):
             seasons = [season]
     for s in seasons:
-        eps_indx = m.get('episodes', {}).get(s, {}).keys()
+        eps_indx = list(m.get('episodes', {}).get(s, {}).keys())
         eps_indx.sort()
         for e in eps_indx:
             episodes.append(m['episodes'][s][e])
@@ -382,7 +382,7 @@ _MAP_TOP_OBJ = {
 }
 
 # Tags to be converted to lists.
-_TAGS_TO_LIST = dict([(x[0], None) for x in TAGS_TO_MODIFY.values()])
+_TAGS_TO_LIST = dict([(x[0], None) for x in list(TAGS_TO_MODIFY.values())])
 _TAGS_TO_LIST.update(_MAP_TOP_OBJ)
 
 def tagToKey(tag):
@@ -423,12 +423,12 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         _key2infoset = {}
     name = tagToKey(tag)
     firstChild = tag.find(recursive=False)
-    tagStr = (tag.string or u'').strip()
+    tagStr = (tag.string or '').strip()
     if not tagStr and name == 'item':
         # Handles 'item' tags containing text and a 'notes' sub-tag.
         tagContent = tag.contents[0]
         if isinstance(tagContent, BeautifulSoup.NavigableString):
-            tagStr = (unicode(tagContent) or u'').strip()
+            tagStr = (str(tagContent) or '').strip()
     tagType = tag.get('type')
     infoset = tag.get('infoset')
     if infoset:
@@ -504,9 +504,9 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         _adder = lambda key, value: item.data.update({key: value})
     elif tagStr:
         if tag.notes:
-            notes = (tag.notes.string or u'').strip()
+            notes = (tag.notes.string or '').strip()
             if notes:
-                tagStr += u'::%s' % notes
+                tagStr += '::%s' % notes
         else:
             tagStr = _valueWithType(tag, tagStr)
         return tagStr
@@ -534,7 +534,7 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         # Add information about 'info sets', but only to the top-level object.
         item.infoset2keys = _infoset2keys
         item.key2infoset = _key2infoset
-        item.current_info = _infoset2keys.keys()
+        item.current_info = list(_infoset2keys.keys())
     return item
 
 
@@ -594,7 +594,7 @@ def sortAKAsBySimilarity(movie, title, _titlesOnly=True, _preferredLang=None):
     # estimate string distance between current title and given title
     m_title = movie['title'].lower()
     l_title = title.lower()
-    if isinstance(l_title, unicode):
+    if isinstance(l_title, str):
         l_title = l_title.encode('utf8')
     scores = []
     score = difflib.SequenceMatcher(None, m_title.encode('utf8'), l_title).ratio()
@@ -603,7 +603,7 @@ def sortAKAsBySimilarity(movie, title, _titlesOnly=True, _preferredLang=None):
     for language, aka in akasLanguages(movie):
         # estimate string distance between current title and given title
         m_title = aka.lower()
-        if isinstance(m_title, unicode):
+        if isinstance(m_title, str):
             m_title = m_title.encode('utf8')
         score = difflib.SequenceMatcher(None, m_title, l_title).ratio()
         # if current language is the same as the given one, increase score
@@ -626,7 +626,7 @@ def getAKAsInLanguage(movie, lang, _searchedTitle=None):
             akas.append(aka)
     if _searchedTitle:
         scores = []
-        if isinstance(_searchedTitle, unicode):
+        if isinstance(_searchedTitle, str):
             _searchedTitle = _searchedTitle.encode('utf8')
         for aka in akas:
             m_aka = aka

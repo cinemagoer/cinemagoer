@@ -21,7 +21,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from __future__ import generators
+
 import re
 import string
 import logging
@@ -73,11 +73,11 @@ def canonicalName(name):
     #      - Jr.: 8025
     # Don't convert names already in the canonical format.
     if name.find(', ') != -1: return name
-    if isinstance(name, unicode):
-        joiner = u'%s, %s'
-        sur_joiner = u'%s %s'
-        sur_space = u' %s'
-        space = u' '
+    if isinstance(name, str):
+        joiner = '%s, %s'
+        sur_joiner = '%s %s'
+        sur_space = ' %s'
+        space = ' '
     else:
         joiner = '%s, %s'
         sur_joiner = '%s %s'
@@ -117,8 +117,8 @@ def canonicalName(name):
 
 def normalizeName(name):
     """Return a name in the normal "Name Surname" format."""
-    if isinstance(name, unicode):
-        joiner = u'%s %s'
+    if isinstance(name, str):
+        joiner = '%s %s'
     else:
         joiner = '%s %s'
     sname = name.split(', ')
@@ -194,7 +194,7 @@ def canonicalTitle(title, lang=None, imdbIndex=None):
     beware that it doesn't handle long imdb titles.
     The 'lang' argument can be used to specify the language of the title.
     """
-    isUnicode = isinstance(title, unicode)
+    isUnicode = isinstance(title, str)
     articlesDicts = linguistics.articlesDictsForLang(lang)
     try:
         if title.split(', ')[-1].lower() in articlesDicts[isUnicode]:
@@ -202,7 +202,7 @@ def canonicalTitle(title, lang=None, imdbIndex=None):
     except IndexError:
         pass
     if isUnicode:
-        _format = u'%s%s, %s'
+        _format = '%s%s, %s'
     else:
         _format = '%s%s, %s'
     ltitle = title.lower()
@@ -237,7 +237,7 @@ def normalizeTitle(title, lang=None):
     title portion, without year[/imdbIndex] or special markup.
     The 'lang' argument can be used to specify the language of the title.
     """
-    isUnicode = isinstance(title, unicode)
+    isUnicode = isinstance(title, str)
     stitle = title.split(', ')
     articlesDicts = linguistics.articlesDictsForLang(lang)
     if len(stitle) > 1 and stitle[-1].lower() in articlesDicts[isUnicode]:
@@ -245,8 +245,8 @@ def normalizeTitle(title, lang=None):
         if stitle[-1][-1] in ("'", '-'):
             sep = ''
         if isUnicode:
-            _format = u'%s%s%s'
-            _joiner = u', '
+            _format = '%s%s%s'
+            _joiner = ', '
         else:
             _format = '%s%s%s'
             _joiner = ', '
@@ -301,7 +301,7 @@ def is_series_episode(title):
 
 
 def analyze_title(title, canonical=None, canonicalSeries=None,
-                    canonicalEpisode=None, _emptyString=u''):
+                    canonicalEpisode=None, _emptyString=''):
     """Analyze the given title and return a dictionary with the
     "stripped" title, the kind of the show ("movie", "tv series", etc.),
     the year of production and the optional imdbIndex (a roman number
@@ -355,7 +355,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
                 except (TypeError, ValueError):
                     pass
         episode_d = analyze_title(episode_or_year, canonical=canonicalEpisode)
-        episode_d['kind'] = u'episode'
+        episode_d['kind'] = 'episode'
         episode_d['episode of'] = series_d
         if oad:
             episode_d['original air date'] = oad[1:-1]
@@ -384,43 +384,43 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
     #      video game:     5,490
     #      More up-to-date statistics: http://us.imdb.com/database_statistics
     if title.endswith('(TV)'):
-        kind = u'tv movie'
+        kind = 'tv movie'
         title = title[:-4].rstrip()
     elif title.endswith('(TV Movie)'):
-        kind = u'tv movie'
+        kind = 'tv movie'
         title = title[:-10].rstrip()
     elif title.endswith('(V)'):
-        kind = u'video movie'
+        kind = 'video movie'
         title = title[:-3].rstrip()
     elif title.lower().endswith('(video)'):
-        kind = u'video movie'
+        kind = 'video movie'
         title = title[:-7].rstrip()
     elif title.endswith('(TV Short)'):
-        kind = u'tv short'
+        kind = 'tv short'
         title = title[:-10].rstrip()
     elif title.endswith('(TV Mini-Series)'):
-        kind = u'tv mini series'
+        kind = 'tv mini series'
         title = title[:-16].rstrip()
     elif title.endswith('(mini)'):
-        kind = u'tv mini series'
+        kind = 'tv mini series'
         title = title[:-6].rstrip()
     elif title.endswith('(VG)'):
-        kind = u'video game'
+        kind = 'video game'
         title = title[:-4].rstrip()
     elif title.endswith('(Video Game)'):
-        kind = u'video game'
+        kind = 'video game'
         title = title[:-12].rstrip()
     elif title.endswith('(TV Series)'):
         epindex = title.find('(TV Episode) - ')
         if epindex >= 0:
             # It's an episode of a series.
-            kind = u'episode'
+            kind = 'episode'
             series_info = analyze_title(title[epindex + 15:])
             result['episode of'] = series_info.get('title')
             result['series year'] = series_info.get('year')
             title = title[:epindex]
         else:
-            kind = u'tv series'
+            kind = 'tv series'
             title = title[:-11].rstrip()
     # Search for the year and the optional imdbIndex (a roman number).
     yi = re_year_index.findall(title)
@@ -430,17 +430,17 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
             yk, yiy, yii = yi[-1]
             yi = [(yiy, yii)]
             if yk == 'TV episode':
-                kind = u'episode'
+                kind = 'episode'
             elif yk in ('TV', 'TV Movie'):
-                kind = u'tv movie'
+                kind = 'tv movie'
             elif yk == 'TV Series':
-                kind = u'tv series'
+                kind = 'tv series'
             elif yk == 'Video':
-                kind = u'video movie'
+                kind = 'video movie'
             elif yk in ('TV mini-series', 'TV Mini-Series'):
-                kind = u'tv mini series'
+                kind = 'tv mini series'
             elif yk == 'Video Game':
-                kind = u'video game'
+                kind = 'video game'
             title = re_remove_kind.sub('(', title)
     if yi:
         last_yi = yi[-1]
@@ -455,7 +455,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
     # XXX: strip('"') is not used for compatibility with Python 2.0.
     if title and title[0] == title[-1] == '"':
         if not kind:
-            kind = u'tv series'
+            kind = 'tv series'
         title = title[1:-1].strip()
     if not title:
         raise IMDbParserError('invalid title: "%s"' % original_t)
@@ -467,7 +467,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
     # 'kind' is one in ('movie', 'episode', 'tv series', 'tv mini series',
     #                   'tv movie', 'video movie', 'video game')
     result['title'] = title
-    result['kind'] = kind or u'movie'
+    result['kind'] = kind or 'movie'
     if year and year != '????':
         if '-' in year:
             result['series years'] = year
@@ -485,7 +485,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
 
 _web_format = '%d %B %Y'
 _ptdf_format = '(%Y-%m-%d)'
-def _convertTime(title, fromPTDFtoWEB=1, _emptyString=u''):
+def _convertTime(title, fromPTDFtoWEB=1, _emptyString=''):
     """Convert a time expressed in the pain text data files, to
     the 'Episode dated ...' format used on the web site; if
     fromPTDFtoWEB is false, the inverted conversion is applied."""
@@ -494,13 +494,13 @@ def _convertTime(title, fromPTDFtoWEB=1, _emptyString=u''):
             from_format = _ptdf_format
             to_format = _web_format
         else:
-            from_format = u'Episode dated %s' % _web_format
+            from_format = 'Episode dated %s' % _web_format
             to_format = _ptdf_format
         t = strptime(title, from_format)
         title = strftime(to_format, t)
         if fromPTDFtoWEB:
             if title[0] == '0': title = title[1:]
-            title = u'Episode dated %s' % title
+            title = 'Episode dated %s' % title
     except ValueError:
         pass
     if isinstance(_emptyString, str):
@@ -513,7 +513,7 @@ def _convertTime(title, fromPTDFtoWEB=1, _emptyString=u''):
 
 def build_title(title_dict, canonical=None, canonicalSeries=None,
                 canonicalEpisode=None, ptdf=0, lang=None, _doYear=1,
-                _emptyString=u'', appendKind=True):
+                _emptyString='', appendKind=True):
     """Given a dictionary that represents a "long" IMDb title,
     return a string.
 
@@ -586,7 +586,7 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
             title = normalizeTitle(title, lang=lang)
     if pre_title:
         title = '%s %s' % (pre_title, title)
-    if kind in (u'tv series', u'tv mini series'):
+    if kind in ('tv series', 'tv mini series'):
         title = '"%s"' % title
     if _doYear:
         year = title_dict.get('year') or '????'
@@ -618,7 +618,7 @@ def split_company_name_notes(name):
     """Return two strings, the first representing the company name,
     and the other representing the (optional) notes."""
     name = name.strip()
-    notes = u''
+    notes = ''
     if name.endswith(')'):
         fpidx = name.find('(')
         if fpidx != -1:
@@ -655,7 +655,7 @@ def analyze_company_name(name, stripNotes=False):
     return result
 
 
-def build_company_name(name_dict, _emptyString=u''):
+def build_company_name(name_dict, _emptyString=''):
     """Given a dictionary that represents a "long" IMDb company name,
     return a string.
     """
@@ -809,15 +809,15 @@ def modifyStrings(o, modFunct, titlesRefs, namesRefs, charactersRefs):
     in a list), using the provided modFunct function and titlesRefs
     namesRefs and charactersRefs references dictionaries."""
     # Notice that it doesn't go any deeper than the first two levels in a list.
-    if isinstance(o, (unicode, str)):
+    if isinstance(o, str):
         return modFunct(o, titlesRefs, namesRefs, charactersRefs)
     elif isinstance(o, (list, tuple, dict)):
         _stillorig = 1
-        if isinstance(o, (list, tuple)): keys = xrange(len(o))
-        else: keys = o.keys()
+        if isinstance(o, (list, tuple)): keys = range(len(o))
+        else: keys = list(o.keys())
         for i in keys:
             v = o[i]
-            if isinstance(v, (unicode, str)):
+            if isinstance(v, str):
                 if _stillorig:
                     o = copy(o)
                     _stillorig = 0
@@ -832,8 +832,8 @@ def date_and_notes(s):
     """Parse (birth|death) date and notes; returns a tuple in the
     form (date, notes)."""
     s = s.strip()
-    if not s: return (u'', u'')
-    notes = u''
+    if not s: return ('', '')
+    notes = ''
     if s[0].isdigit() or s.split()[0].lower() in ('c.', 'january', 'february',
                                                 'march', 'april', 'may', 'june',
                                                 'july', 'august', 'september',
@@ -846,8 +846,8 @@ def date_and_notes(s):
             s = s[:i]
     else:
         notes = s
-        s = u''
-    if s == '????': s = u''
+        s = ''
+    if s == '????': s = ''
     return s, notes
 
 
@@ -855,12 +855,12 @@ class RolesList(list):
     """A list of Person or Character instances, used for the currentRole
     property."""
     def __unicode__(self):
-        return u' / '.join([unicode(x) for x in self])
+        return ' / '.join([str(x) for x in self])
 
     def __str__(self):
         # FIXME: does it make sense at all?  Return a unicode doesn't
         #        seem right, in __str__.
-        return u' / '.join([unicode(x).encode('utf8') for x in self])
+        return ' / '.join([str(x).encode('utf8') for x in self])
 
 
 # Replace & with &amp;, but only if it's not already part of a charref.
@@ -875,7 +875,7 @@ def escape4xml(value):
     value = _re_amp.sub('&amp;', value)
     value = value.replace('"', '&quot;').replace("'", '&apos;')
     value = value.replace('<', '&lt;').replace('>', '&gt;')
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         value = value.encode('ascii', 'xmlcharrefreplace')
     return value
 
@@ -886,9 +886,9 @@ def _refsToReplace(value, modFunct, titlesRefs, namesRefs, charactersRefs):
     by the user-provided modFunct function, the second is the same
     reference un-escaped."""
     mRefs = []
-    for refRe, refTemplate in [(re_titleRef, u'_%s_ (qv)'),
-                                (re_nameRef, u"'%s' (qv)"),
-                                (re_characterRef, u'#%s# (qv)')]:
+    for refRe, refTemplate in [(re_titleRef, '_%s_ (qv)'),
+                                (re_nameRef, "'%s' (qv)"),
+                                (re_characterRef, '#%s# (qv)')]:
         theseRefs = []
         for theRef in refRe.findall(value):
             # refTemplate % theRef values don't change for a single
@@ -916,7 +916,7 @@ def _handleTextNotes(s):
     ssplit = s.split('::', 1)
     if len(ssplit) == 1:
         return s
-    return u'%s<notes>%s</notes>' % (ssplit[0], ssplit[1])
+    return '%s<notes>%s</notes>' % (ssplit[0], ssplit[1])
 
 
 def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
@@ -924,7 +924,7 @@ def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
     """Replace some chars that can't be present in a XML text."""
     # XXX: use s.encode(encoding, 'xmlcharrefreplace') ?  Probably not
     #      a great idea: after all, returning a unicode is safe.
-    if isinstance(value, (unicode, str)):
+    if isinstance(value, str):
         if not withRefs:
             value = _handleTextNotes(escape4xml(value))
         else:
@@ -938,7 +938,7 @@ def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
                 for toReplace, replaceWith in replaceList:
                     value = value.replace(toReplace, replaceWith)
     else:
-        value = unicode(value)
+        value = str(value)
     return value
 
 
@@ -953,44 +953,44 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
     else:
         value = ton.get('long imdb name') or ton.get('name', '')
     value = _normalizeValue(value)
-    extras = u''
+    extras = ''
     crl = ton.currentRole
     if crl:
         if not isinstance(crl, list):
             crl = [crl]
         for cr in crl:
             crTag = cr.__class__.__name__.lower()
-            crValue = cr.get('long imdb name') or u''
+            crValue = cr.get('long imdb name') or ''
             crValue = _normalizeValue(crValue)
             crID = cr.getID()
             if crID is not None:
-                extras += u'<current-role><%s id="%s">' \
-                            u'<name>%s</name></%s>' % (crTag, crID,
+                extras += '<current-role><%s id="%s">' \
+                            '<name>%s</name></%s>' % (crTag, crID,
                                                         crValue, crTag)
             else:
-                extras += u'<current-role><%s><name>%s</name></%s>' % \
+                extras += '<current-role><%s><name>%s</name></%s>' % \
                                (crTag, crValue, crTag)
             if cr.notes:
-                extras += u'<notes>%s</notes>' % _normalizeValue(cr.notes)
-            extras += u'</current-role>'
+                extras += '<notes>%s</notes>' % _normalizeValue(cr.notes)
+            extras += '</current-role>'
     theID = ton.getID()
     if theID is not None:
-        beginTag = u'<%s id="%s"' % (tag, theID)
+        beginTag = '<%s id="%s"' % (tag, theID)
         if addAccessSystem and ton.accessSystem:
             beginTag += ' access-system="%s"' % ton.accessSystem
         if not _containerOnly:
-            beginTag += u'><%s>%s</%s>' % (what, value, what)
+            beginTag += '><%s>%s</%s>' % (what, value, what)
         else:
-            beginTag += u'>'
+            beginTag += '>'
     else:
         if not _containerOnly:
-            beginTag = u'<%s><%s>%s</%s>' % (tag, what, value, what)
+            beginTag = '<%s><%s>%s</%s>' % (tag, what, value, what)
         else:
-            beginTag = u'<%s>' % tag
+            beginTag = '<%s>' % tag
     beginTag += extras
     if ton.notes:
-        beginTag += u'<notes>%s</notes>' % _normalizeValue(ton.notes)
-    return (beginTag, u'</%s>' % tag)
+        beginTag += '<notes>%s</notes>' % _normalizeValue(ton.notes)
+    return (beginTag, '</%s>' % tag)
 
 
 TAGS_TO_MODIFY = {
@@ -1025,13 +1025,13 @@ def _tagAttr(key, fullpath):
         tagName, useTitle = TAGS_TO_MODIFY[fullpath]
         if useTitle:
             attrs['key'] = _escapedKey
-    elif not isinstance(key, unicode):
+    elif not isinstance(key, str):
         if isinstance(key, str):
-            tagName = unicode(key, 'ascii', 'ignore')
+            tagName = str(key, 'ascii', 'ignore')
         else:
             strType = str(type(key)).replace("<type '", "").replace("'>", "")
             attrs['keytype'] = strType
-            tagName = unicode(key)
+            tagName = str(key)
     else:
         tagName = key
     if isinstance(key, int):
@@ -1050,7 +1050,7 @@ def _tagAttr(key, fullpath):
         tagName = 'item'
         _utils_logger.error('invalid tag: %s [%s]' % (_escapedKey, fullpath))
         attrs['key'] = _escapedKey
-    return tagName, u' '.join([u'%s="%s"' % i for i in attrs.items()])
+    return tagName, ' '.join(['%s="%s"' % i for i in list(attrs.items())])
 
 
 def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
@@ -1071,17 +1071,17 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                 tagName = key.__class__.__name__.lower()
             else:
                 tagName, attrs = _tagAttr(key, fullpath)
-                openTag = u'<%s' % tagName
+                openTag = '<%s' % tagName
                 if attrs:
                     openTag += ' %s' % attrs
                 if _topLevel and key2infoset and key in key2infoset:
-                    openTag += u' infoset="%s"' % key2infoset[key]
+                    openTag += ' infoset="%s"' % key2infoset[key]
                 if isinstance(value, int):
                     openTag += ' type="int"'
                 elif isinstance(value, float):
                     openTag += ' type="float"'
-                openTag += u'>'
-                closeTag = u'</%s>' % tagName
+                openTag += '>'
+                closeTag = '</%s>' % tagName
             _l.append(openTag)
             _seq2xml(value, _l, withRefs, modFunct, titlesRefs,
                     namesRefs, charactersRefs, _topLevel=False,
@@ -1089,11 +1089,11 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
             _l.append(closeTag)
     elif isinstance(seq, (list, tuple)):
         tagName, attrs = _tagAttr('item', fullpath)
-        beginTag = u'<%s' % tagName
+        beginTag = '<%s' % tagName
         if attrs:
-            beginTag += u' %s' % attrs
+            beginTag += ' %s' % attrs
         #beginTag += u'>'
-        closeTag = u'</%s>' % tagName
+        closeTag = '</%s>' % tagName
         for item in seq:
             if isinstance(item, _Container):
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
@@ -1106,7 +1106,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
                     openTag += ' type="int"'
                 elif isinstance(item, float):
                     openTag += ' type="float"'
-                openTag += u'>'
+                openTag += '>'
                 _l.append(openTag)
                 _seq2xml(item, _l, withRefs, modFunct, titlesRefs,
                         namesRefs, charactersRefs, _topLevel=False,
@@ -1125,7 +1125,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
     return _l
 
 
-_xmlHead = u"""<?xml version="1.0"?>
+_xmlHead = """<?xml version="1.0"?>
 <!DOCTYPE %s SYSTEM "http://imdbpy.sf.net/dtd/imdbpy{VERSION}.dtd">
 
 """
@@ -1150,8 +1150,8 @@ class _Container(object):
     # Regular expression used to build the 'full-size (headshot|cover url)'.
     _re_fullsizeURL = re.compile(r'\._V1\._SX(\d+)_SY(\d+)_')
 
-    def __init__(self, myID=None, data=None, notes=u'',
-                currentRole=u'', roleID=None, roleIsPerson=False,
+    def __init__(self, myID=None, data=None, notes='',
+                currentRole='', roleID=None, roleIsPerson=False,
                 accessSystem=None, titlesRefs=None, namesRefs=None,
                 charactersRefs=None, modFunct=None, *args, **kwds):
         """Initialize a Movie, Person, Character or Company object.
@@ -1238,12 +1238,12 @@ class _Container(object):
         """Return a Character or Person instance."""
         if self.__role:
             return self.__role
-        return self._roleClass(name=u'', accessSystem=self.accessSystem,
+        return self._roleClass(name='', accessSystem=self.accessSystem,
                                 modFunct=self.modFunct)
 
     def _set_currentRole(self, role):
         """Set self.currentRole to a Character or Person instance."""
-        if isinstance(role, (unicode, str)):
+        if isinstance(role, str):
             if not role:
                 self.__role = None
             else:
@@ -1252,7 +1252,7 @@ class _Container(object):
         elif isinstance(role, (list, tuple)):
             self.__role = RolesList()
             for item in role:
-                if isinstance(item, (unicode, str)):
+                if isinstance(item, str):
                     self.__role.append(self._roleClass(name=item,
                                         accessSystem=self.accessSystem,
                                         modFunct=self.modFunct))
@@ -1273,7 +1273,7 @@ class _Container(object):
         """Reset the object."""
         self.data = {}
         self.myID = None
-        self.notes = u''
+        self.notes = ''
         self.titlesRefs = {}
         self.namesRefs = {}
         self.charactersRefs = {}
@@ -1289,7 +1289,7 @@ class _Container(object):
     def clear(self):
         """Reset the dictionary."""
         self.data.clear()
-        self.notes = u''
+        self.notes = ''
         self.titlesRefs = {}
         self.namesRefs = {}
         self.charactersRefs = {}
@@ -1432,7 +1432,7 @@ class _Container(object):
             if value is None:
                 return None
             tag = self.__class__.__name__.lower()
-            return u''.join(_seq2xml({key: value}, withRefs=withRefs,
+            return ''.join(_seq2xml({key: value}, withRefs=withRefs,
                                         modFunct=origModFunct,
                                         titlesRefs=self.titlesRefs,
                                         namesRefs=self.namesRefs,
@@ -1448,14 +1448,14 @@ class _Container(object):
         beginTag, endTag = _tag4TON(self, addAccessSystem=True,
                                     _containerOnly=True)
         resList = [beginTag]
-        for key in self.keys():
+        for key in list(self.keys()):
             value = self.getAsXML(key, _with_add_keys=_with_add_keys)
             if not value:
                 continue
             resList.append(value)
         resList.append(endTag)
         head = _xmlHead % self.__class__.__name__.lower()
-        return head + u''.join(resList)
+        return head + ''.join(resList)
 
     def _getitem(self, key):
         """Handle special keys."""
@@ -1475,7 +1475,7 @@ class _Container(object):
             try:
                 return modifyStrings(rawData, self.modFunct, self.titlesRefs,
                                     self.namesRefs, self.charactersRefs)
-            except RuntimeError, e:
+            except RuntimeError as e:
                 # Symbian/python 2.2 has a poor regexp implementation.
                 import warnings
                 warnings.warn('RuntimeError in '
@@ -1499,20 +1499,20 @@ class _Container(object):
 
     def keys(self):
         """Return a list of valid keys."""
-        return self.data.keys() + self._additional_keys()
+        return list(self.data.keys()) + self._additional_keys()
 
     def items(self):
         """Return the items in the dictionary."""
-        return [(k, self.get(k)) for k in self.keys()]
+        return [(k, self.get(k)) for k in list(self.keys())]
 
     # XXX: is this enough?
-    def iteritems(self): return self.data.iteritems()
-    def iterkeys(self): return self.data.iterkeys()
-    def itervalues(self): return self.data.itervalues()
+    def iteritems(self): return iter(self.data.items())
+    def iterkeys(self): return iter(self.data.keys())
+    def itervalues(self): return iter(self.data.values())
 
     def values(self):
         """Return the values in the dictionary."""
-        return [self.get(k) for k in self.keys()]
+        return [self.get(k) for k in list(self.keys())]
 
     def has_key(self, key):
         """Return true if a given section is defined."""
@@ -1536,7 +1536,7 @@ class _Container(object):
             return failobj
 
     def setdefault(self, key, failobj=None):
-        if not self.has_key(key):
+        if key not in self:
             self[key] = failobj
         return self[key]
 
@@ -1565,7 +1565,7 @@ class _Container(object):
         """Directly store the item with the given key."""
         self.data[key] = item
 
-    def __nonzero__(self):
+    def __bool__(self):
         """Return true if self.data contains something."""
         if self.data: return 1
         return 0
@@ -1590,18 +1590,18 @@ def flatten(seq, toDescend=(list, dict, tuple), yieldDictKeys=0,
         if isinstance(seq, (dict, _Container)):
             if yieldDictKeys:
                 # Yield also the keys of the dictionary.
-                for key in seq.iterkeys():
+                for key in seq.keys():
                     for k in flatten(key, toDescend=toDescend,
                                 yieldDictKeys=yieldDictKeys,
                                 onlyKeysType=onlyKeysType, scalar=scalar):
                         if onlyKeysType and isinstance(k, onlyKeysType):
                             yield k
-            for value in seq.itervalues():
+            for value in seq.values():
                 for v in flatten(value, toDescend=toDescend,
                                 yieldDictKeys=yieldDictKeys,
                                 onlyKeysType=onlyKeysType, scalar=scalar):
                     yield v
-        elif not isinstance(seq, (str, unicode, int, float)):
+        elif not isinstance(seq, (str, int, float)):
             for item in seq:
                 for i in flatten(item, toDescend=toDescend,
                                 yieldDictKeys=yieldDictKeys,

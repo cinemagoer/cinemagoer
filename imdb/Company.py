@@ -71,15 +71,15 @@ class Company(_Container):
         *modFunct* -- function called returning text fields.
         """
         name = kwds.get('name')
-        if name and not self.data.has_key('name'):
+        if name and 'name' not in self.data:
             self.set_name(name)
         self.companyID = kwds.get('companyID', None)
-        self.myName = kwds.get('myName', u'')
+        self.myName = kwds.get('myName', '')
 
     def _reset(self):
         """Reset the company object."""
         self.companyID = None
-        self.myName = u''
+        self.myName = ''
 
     def set_name(self, name):
         """Set the name of the company."""
@@ -87,7 +87,7 @@ class Company(_Container):
         # Company diverges a bit from other classes, being able
         # to directly handle its "notes".  AND THAT'S PROBABLY A BAD IDEA!
         oname = name = name.strip()
-        notes = u''
+        notes = ''
         if name.endswith(')'):
             fparidx = name.find('(')
             if fparidx != -1:
@@ -102,14 +102,14 @@ class Company(_Container):
 
     def _additional_keys(self):
         """Valid keys to append to the data.keys() list."""
-        if self.data.has_key('name'):
+        if 'name' in self.data:
             return ['long imdb name']
         return []
 
     def _getitem(self, key):
         """Handle special keys."""
         ## XXX: can a company have an imdbIndex?
-        if self.data.has_key('name'):
+        if 'name' in self.data:
             if key == 'long imdb name':
                 return build_company_name(self.data)
         return None
@@ -118,7 +118,7 @@ class Company(_Container):
         """Return the companyID."""
         return self.companyID
 
-    def __nonzero__(self):
+    def __bool__(self):
         """The company is "false" if the self.data does not contain a name."""
         # XXX: check the name and the companyID?
         if self.data.get('name'): return 1
@@ -126,7 +126,7 @@ class Company(_Container):
 
     def __contains__(self, item):
         """Return true if this company and the given Movie are related."""
-        from Movie import Movie
+        from .Movie import Movie
         if isinstance(item, Movie):
             for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
                 if item.isSame(m):
@@ -138,8 +138,8 @@ class Company(_Container):
         and/or companyID."""
         if not isinstance(other, self.__class__):
             return 0
-        if self.data.has_key('name') and \
-                other.data.has_key('name') and \
+        if 'name' in self.data and \
+                'name' in other.data and \
                 build_company_name(self.data) == \
                 build_company_name(other.data):
             return 1
@@ -152,7 +152,7 @@ class Company(_Container):
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a company instance."""
-        c = Company(name=u'', companyID=self.companyID,
+        c = Company(name='', companyID=self.companyID,
                     myName=self.myName, myID=self.myID,
                     data=deepcopy(self.data, memo),
                     notes=self.notes, accessSystem=self.accessSystem,
@@ -168,28 +168,28 @@ class Company(_Container):
         r = '<Company id:%s[%s] name:_%s_>' % (self.companyID,
                                         self.accessSystem,
                                         self.get('long imdb name'))
-        if isinstance(r, unicode): r = r.encode('utf_8', 'replace')
+        if isinstance(r, str): r = r.encode('utf_8', 'replace')
         return r
 
     def __str__(self):
         """Simply print the short name."""
-        return self.get('name', u'').encode('utf_8', 'replace')
+        return self.get('name', '').encode('utf_8', 'replace')
 
     def __unicode__(self):
         """Simply print the short title."""
-        return self.get('name', u'')
+        return self.get('name', '')
 
     def summary(self):
         """Return a string with a pretty-printed summary for the company."""
-        if not self: return u''
-        s = u'Company\n=======\nName: %s\n' % \
-                                self.get('name', u'')
+        if not self: return ''
+        s = 'Company\n=======\nName: %s\n' % \
+                                self.get('name', '')
         for k in ('distributor', 'production company', 'miscellaneous company',
                 'special effects company'):
             d = self.get(k, [])[:5]
             if not d: continue
-            s += u'Last movies from this company (%s): %s.\n' % \
-                    (k, u'; '.join([x.get('long imdb title', u'') for x in d]))
+            s += 'Last movies from this company (%s): %s.\n' % \
+                    (k, '; '.join([x.get('long imdb title', '') for x in d]))
         return s
 
 

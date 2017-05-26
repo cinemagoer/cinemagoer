@@ -408,8 +408,8 @@ class DOMHTMLMovieParser(DOMParserBase):
             r'</div><div>\1'),
         ('<small>Full cast and crew for<br>', ''),
         ('<td> </td>', '<td>...</td>'),
-        ('<span class="tv-extra">TV mini-series</span>',
-            '<span class="tv-extra">(mini)</span>'),
+        (re.compile(r'<span class="tv-extra">TV mini-series(\s+.*?)</span>', re.I),
+            r'<span class="tv-extra">TV series\1</span> (mini)'),
         (_reRolesMovie, _manageRoles),
         (_reAkas, _replaceBR)]
 

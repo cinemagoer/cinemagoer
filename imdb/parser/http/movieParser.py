@@ -339,6 +339,24 @@ class DOMHTMLMovieParser(DOMParserBase):
                                     postprocess=lambda x: \
                                             _toInt(x, [(' Episodes', '')]))),
 
+                Extractor(label='episode number',
+                            path=".//div[@id='tn15epnav']",
+                            attrs=Attribute(key='episode number',
+                                    path="./text()",
+                                    postprocess=lambda x: int(re.sub(r'[^a-z0-9 ]', '', x.lower()).strip().split()[0]))),
+
+                Extractor(label='previous episode',
+                            path=".//a[@title='Previous Episode']",
+                            attrs=Attribute(key='previous episode',
+                                    path="./@href",
+                                    postprocess=lambda x: analyze_imdbid(x))),
+
+                Extractor(label='next episode',
+                            path=".//a[@title='Next Episode']",
+                            attrs=Attribute(key='next episode',
+                                    path="./@href",
+                                    postprocess=lambda x: analyze_imdbid(x))),
+
                 Extractor(label='akas',
                         path="//i[@class='transl']",
                         attrs=Attribute(key='akas', multi=True, path='text()',

@@ -69,7 +69,6 @@ _SECT_CONV = {
         'creators': 'creator',
         'color': 'color info',
         'plot': 'plot outline',
-        'seasons': 'number of seasons',
         'art directors': 'art direction',
         'assistant directors': 'assistant director',
         'set decorators': 'set decoration',
@@ -260,10 +259,10 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 path="./h5[starts-with(text(), " \
                                         "'Certificat')]/..//text()",
                                 postprocess=makeSplitter('Certification:')),
-                            Attribute(key='number of seasons',
+                            Attribute(key='seasons',
                                 path="./h5[starts-with(text(), " \
                                         "'Seasons')]/..//text()",
-                                postprocess=lambda x: x.count('|') + 1),
+                                postprocess=makeSplitter('Seasons:')),
                             Attribute(key='original air date',
                                 path="./h5[starts-with(text(), " \
                                         "'Original Air Date')]/../div/text()"),
@@ -472,6 +471,9 @@ class DOMHTMLMovieParser(DOMParserBase):
         if 'runtimes' in data:
             data['runtimes'] = [x.replace(' min', u'')
                                 for x in data['runtimes']]
+        if 'seasons' in data:
+            seasons = [int(s) for s in data['seasons'] if s.isdigit()]
+            data['number of seasons'] = seasons[-1] if seasons else len(data['seasons'])
         if 'original air date' in data:
             oid = self.re_space.sub(' ', data['original air date']).strip()
             data['original air date'] = oid

@@ -9,7 +9,7 @@ pages would be:
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2016 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@ from imdb import imdbURL_base
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb.Company import Company
-from imdb.utils import analyze_title, split_company_name_notes, _Container
+from imdb.utils import analyze_title, _Container
 from utils import build_person, DOMParserBase, Attribute, Extractor, \
                     analyze_imdbid
 
@@ -1314,9 +1314,8 @@ class DOMHTMLLocationsParser(DOMParserBase):
 
 
 class DOMHTMLTechParser(DOMParserBase):
-    """Parser for the "technical", "business", "literature",
-    "publicity" (for people) and "contacts (for people) pages of
-    a given movie.
+    """Parser for the "technical", "publicity" (for people) and "contacts" (for people)
+    pages of a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -1356,10 +1355,7 @@ class DOMHTMLTechParser(DOMParserBase):
             data[key] = filter(lambda x: x != '|', data[key])
             data[key] = [self.re_space.sub(' ', x).strip() for x in data[key]]
             data[key] = filter(None, data[key])
-        if self.kind in ('literature', 'business', 'contacts') and data:
-            if 'screenplay/teleplay' in data:
-                data['screenplay-teleplay'] = data['screenplay/teleplay']
-                del data['screenplay/teleplay']
+        if self.kind == 'contacts' and data:
             data = {self.kind: data}
         else:
             if self.kind == 'publicity':
@@ -1375,6 +1371,43 @@ class DOMHTMLTechParser(DOMParserBase):
                     data['film length'] = data[key]
                     del data[key]
         return data
+
+
+class DOMHTMLBusinessParser(DOMParserBase):
+    """Parser for the "business" and "literature" pages of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        bparser = DOMHTMLBusinessParser()
+        result = bparser.parse(business_html_string)
+    """
+    re_space = re.compile(r'\s+')
+
+    extractors = [Extractor(label='business',
+                    path="//div[@id='tn15content']//h5",
+                    attrs=Attribute(key='./text()',
+                                    path="./following-sibling::div[1]//text()"))]
+
+    preprocessors = [
+        ('</h5>', '</h5><div class="_imdbpy">'),
+        ('<div id="tn15content">', '<div id="tn15content"><div>'),
+        ('<h5>', '</div><h5>'),
+        ('<hr/><h3>', '</div><hr/><h3>'),
+        ('<br/>', ':::')
+        ]
+
+    def postprocess_data(self, data):
+        newData = {}
+        for key, value in data.iteritems():
+            value = value.strip().split(':::')
+            value = [v.strip() for v in value]
+            value = filter(None, value)
+            if not value:
+                continue
+            newData[key.lower().strip()] = value
+        return newData
 
 
 class DOMHTMLRecParser(DOMParserBase):
@@ -1967,9 +2000,9 @@ _OBJECTS = {
                             {'kind': 'photo sites'}),
     'connections_parser':  ((DOMHTMLConnectionParser,), None),
     'tech_parser':  ((DOMHTMLTechParser,), None),
-    'business_parser':  ((DOMHTMLTechParser,),
+    'business_parser':  ((DOMHTMLBusinessParser,),
                             {'kind': 'business', '_defGetRefs': 1}),
-    'literature_parser':  ((DOMHTMLTechParser,), {'kind': 'literature'}),
+    'literature_parser':  ((DOMHTMLBusinessParser,), None),
     'locations_parser':  ((DOMHTMLLocationsParser,), None),
     'rec_parser':  ((DOMHTMLRecParser,), None),
     'news_parser':  ((DOMHTMLNewsParser,), None),

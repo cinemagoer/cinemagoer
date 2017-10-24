@@ -5,3 +5,6 @@
 build/
 __pycache__
 dist/
+
+# virtualenv
+env*

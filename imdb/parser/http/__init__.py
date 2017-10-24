@@ -7,7 +7,7 @@ the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "http" or "web"
 or "html" (this is the default).
 
-Copyright 2004-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import sys
+import ssl
 import socket
 import logging
 from urllib import FancyURLopener, quote_plus
@@ -142,6 +143,7 @@ class IMDbURLopener(FancyURLopener):
 
     def __init__(self, *args, **kwargs):
         self._last_url = u''
+        kwargs['context'] = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
         FancyURLopener.__init__(self, *args, **kwargs)
         # Headers to add to every request.
         # XXX: IMDb's web server doesn't like urllib-based programs,

@@ -22,6 +22,8 @@ let's not forget all the translators on https://www.transifex.com/davide_alberan
 Below, a list of persons who contributed with bug reports, small
 patches and hints (kept in a reverse order since IMDbPY 4.5):
 
+* Mike Christopher for a patch for synopsis parser
+
 * Damon Brodie for a bug report about technical parser.
 
 * Sam Petulla for a bug report about searching for keywords

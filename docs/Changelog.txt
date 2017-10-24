@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in the next release
+  [http]
+  - fix synopsis parser
+
+
 * What's the new in release 5.1 "Westworld" (13 Nov 2016)
   [general]
   - fix for company names containing square brackets.

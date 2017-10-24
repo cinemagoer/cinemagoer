@@ -1922,7 +1922,7 @@ class DOMHTMLSynopsisParser(DOMParserBase):
     """
     extractors = [
         Extractor(label='synopsis',
-            path="//div[@class='display'][not(@style)]",
+            path="//ul[@id='plot-synopsis-content'][not(@style)]",
             attrs=Attribute(key='synopsis',
                 path=".//text()",
                 postprocess=lambda x: '\n\n'.join(x.strip().split('||'))))

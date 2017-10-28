@@ -539,61 +539,28 @@ class IMDbSqlAccessSystem(IMDbBase):
     accessSystem = 'sql'
     _sql_logger = logging.getLogger('imdbpy.parser.sql')
 
-    def __init__(self, uri, adultSearch=1, useORM=None, *arguments, **keywords):
+    def __init__(self, uri, adultSearch=1, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
-        if useORM is None:
-            useORM = ('sqlobject', 'sqlalchemy')
-        if not isinstance(useORM, (tuple, list)):
-            if ',' in useORM:
-                useORM = useORM.split(',')
-            else:
-                useORM = [useORM]
-        self.useORM = useORM
-        nrMods = len(useORM)
-        _gotError = False
         DB_TABLES = []
-        for idx, mod in enumerate(useORM):
-            mod = mod.strip().lower()
-            try:
-                if mod == 'sqlalchemy':
-                    from alchemyadapter import getDBTables, NotFoundError, \
-                                                setConnection, AND, OR, IN, \
-                                                ISNULL, CONTAINSSTRING, toUTF8
-                elif mod == 'sqlobject':
-                    from objectadapter import getDBTables, NotFoundError, \
-                                                setConnection, AND, OR, IN, \
-                                                ISNULL, CONTAINSSTRING, toUTF8
-                else:
-                    self._sql_logger.warn('unknown module "%s"' % mod)
-                    continue
-                self._sql_logger.info('using %s ORM', mod)
-                # XXX: look ma'... black magic!  It's used to make
-                #      TableClasses and some functions accessible
-                #      through the whole module.
-                for k, v in [('NotFoundError', NotFoundError),
-                            ('AND', AND), ('OR', OR), ('IN', IN),
-                            ('ISNULL', ISNULL),
-                            ('CONTAINSSTRING', CONTAINSSTRING)]:
-                    globals()[k] = v
-                self.toUTF8 = toUTF8
-                DB_TABLES = getDBTables(uri)
-                for t in DB_TABLES:
-                    globals()[t._imdbpyName] = t
-                if _gotError:
-                    self._sql_logger.warn('falling back to "%s"' % mod)
-                break
-            except ImportError, e:
-                if idx+1 >= nrMods:
-                    raise IMDbError('unable to use any ORM in %s: %s' % (
-                                                    str(useORM), str(e)))
-                else:
-                    self._sql_logger.warn('unable to use "%s": %s' % (mod,
-                                                                    str(e)))
-                    _gotError = True
-                continue
-        else:
-            raise IMDbError('unable to use any ORM in %s' % str(useORM))
+        try:
+            from alchemyadapter import getDBTables, NotFoundError, \
+                                        setConnection, AND, OR, IN, \
+                                        ISNULL, CONTAINSSTRING, toUTF8
+            # XXX: look ma'... black magic!  It's used to make
+            #      TableClasses and some functions accessible
+            #      through the whole module.
+            for k, v in [('NotFoundError', NotFoundError),
+                        ('AND', AND), ('OR', OR), ('IN', IN),
+                        ('ISNULL', ISNULL),
+                        ('CONTAINSSTRING', CONTAINSSTRING)]:
+                globals()[k] = v
+            self.toUTF8 = toUTF8
+            DB_TABLES = getDBTables(uri)
+            for t in DB_TABLES:
+                globals()[t._imdbpyName] = t
+        except ImportError, e:
+            raise IMDbError('unable to import SQLAlchemy')
         # Set the connection to the database.
         self._sql_logger.debug('connecting to %s', uri)
         try:

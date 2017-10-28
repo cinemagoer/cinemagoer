@@ -56,10 +56,6 @@ keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
             'company', 'package', 'plain text data files',
             'keywords', 'top250', 'bottom100', 'xml']
 
-
-cutils = setuptools.Extension('imdb.parser.sql.cutils',
-                                ['imdb/parser/sql/cutils.c'])
-
 scripts = ['./bin/get_first_movie.py',
             './bin/get_movie.py', './bin/search_movie.py',
             './bin/get_first_person.py', './bin/get_person.py',
@@ -72,41 +68,6 @@ scripts = ['./bin/get_first_movie.py',
 # XXX: I'm not sure that 'etc' is a good idea.  Making it an absolute
 #      path seems a recipe for a disaster (with bdist_egg, at least).
 data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
-
-
-# Defining these 'features', it's possible to run commands like:
-# python ./setup.py --without-sql bdist
-# having (in this example) imdb.parser.sql removed.
-
-featCutils = setuptools.dist.Feature('compile the C module', standard=True,
-        ext_modules=[cutils])
-
-featLxml = setuptools.dist.Feature('add lxml dependency', standard=True,
-        install_requires=['lxml'])
-
-# XXX: it seems there's no way to specify that we need EITHER
-#      SQLObject OR SQLAlchemy.
-featSQLObject = setuptools.dist.Feature('add SQLObject dependency',
-        standard=True, install_requires=['SQLObject', 'FormEncode'],
-        require_features='sql')
-
-featSQLAlchemy = setuptools.dist.Feature('add SQLAlchemy dependency',
-        standard=True, install_requires=['SQLAlchemy', 'sqlalchemy-migrate'],
-        require_features='sql')
-
-sqlScripts = ['./bin/imdbpy2sql.py']
-# standard=False so that it's not installed if both --without-sqlobject
-# and --without-sqlalchemy are specified.
-featSQL = setuptools.dist.Feature('access to SQL databases', standard=False,
-                                remove='imdb.parser.sql', scripts=sqlScripts)
-
-features = {
-    'cutils': featCutils,
-    'sql': featSQL,
-    'lxml': featLxml,
-    'sqlobject': featSQLObject,
-    'sqlalchemy': featSQLAlchemy
-}
 
 
 params = {
@@ -125,21 +86,11 @@ params = {
         'platforms': 'any',
         'keywords': keywords,
         'classifiers': filter(None, classifiers.split("\n")),
-        #'zip_safe': False, # XXX: I guess, at least...
-        # Download URLs.
         'url': home_page,
         'download_url': dwnl_url,
-        # Scripts.
         'scripts': scripts,
-        # Documentation files.
         'data_files': data_files,
-        # C extensions.
-        #'ext_modules': [cutils],
-        # Requirements.  XXX: maybe we can use extras_require?
-        #'install_requires': install_requires,
-        #'extras_require': extras_require,
-        'features': features,
-        # Packages.
+        'install_requires': ['SQLAlchemy', 'sqlalchemy-migrate', 'lxml'],
         'packages': setuptools.find_packages()
 }
 
@@ -153,27 +104,10 @@ ERR_MSG = """
   Curse my metal body, I wasn't fast enough.  It's all my fault!
 
   Anyway, if you were trying to build a package or install IMDbPY to your
-  system, looks like we're unable to fetch or install some dependencies,
-  or to compile the C module.
+  system, looks like we're unable to fetch or install some dependencies.
 
   The best solution is to resolve these dependencies (maybe you're
-  not connected to Internet?) and/or install a C compiler.
-
-  You may, however, go on without some optional pieces of IMDbPY;
-  try re-running this script with the corresponding optional argument:
-
-      --without-lxml        exclude lxml (speeds up 'http')
-      --without-cutils      don't compile the C module (speeds up 'sql')
-      --without-sqlobject   exclude SQLObject  (you need at least one of)
-      --without-sqlalchemy  exclude SQLAlchemy (SQLObject or SQLAlchemy,)
-                                               (if you want to access a )
-                                               (local SQL database      )
-      --without-sql         no access to SQL databases (implied if both
-                            --without-sqlobject and --without-sqlalchemy
-                            are used)
-
-  Example:
-      python ./setup.py --without-lxml --without-sqlobject --without-sqlalchemy install
+  not connected to Internet?)
 
   The caught exception, is re-raise below:
 """

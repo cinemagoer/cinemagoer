@@ -186,9 +186,6 @@ def IMDb(accessSystem=None, *arguments, **keywords):
     if accessSystem in ('http', 'web', 'html'):
         from parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
-    elif accessSystem in ('mobile',):
-        from parser.mobile import IMDbMobileAccessSystem
-        return IMDbMobileAccessSystem(*arguments, **keywords)
     elif accessSystem in ('local', 'files'):
         # The local access system was removed since IMDbPY 4.2.
         raise IMDbError('the local access system was removed since IMDbPY 4.2')
@@ -210,11 +207,6 @@ def available_access_systems():
     try:
         from parser.http import IMDbHTTPAccessSystem
         asList.append('http')
-    except ImportError:
-        pass
-    try:
-        from parser.mobile import IMDbMobileAccessSystem
-        asList.append('mobile')
     except ImportError:
         pass
     try:
@@ -770,7 +762,7 @@ class IMDbBase:
                 method = lambda *x: {}
             try:
                 ret = method(mopID)
-            except Exception, e:
+            except Exception:
                 self._imdb_logger.critical('caught an exception retrieving ' \
                                     'or parsing "%s" info set for mopID ' \
                                     '"%s" (accessSystem: %s)',
@@ -827,12 +819,10 @@ class IMDbBase:
 
     def _searchIMDb(self, kind, ton, title_kind=None):
         """Search the IMDb akas server for the given title or name."""
-        # The Exact Primary search system has gone AWOL, so we resort
-        # to the mobile search. :-/
         if not ton:
             return None
         ton = ton.strip('"')
-        aSystem = IMDb('mobile')
+        aSystem = IMDb()
         if kind == 'tt':
             searchFunct = aSystem.search_movie
             check = 'long imdb title'

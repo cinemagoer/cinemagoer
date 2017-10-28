@@ -56,7 +56,7 @@ keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
             'company', 'package', 'plain text data files',
             'keywords', 'top250', 'bottom100', 'xml']
 
-scripts = ['./bin/get_first_movie.py',
+scripts = ['./bin/get_first_movie.py', './bin/imdbpy2sql.py',
             './bin/get_movie.py', './bin/search_movie.py',
             './bin/get_first_person.py', './bin/get_person.py',
             './bin/search_person.py', './bin/get_character.py',

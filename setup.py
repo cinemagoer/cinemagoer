@@ -90,7 +90,7 @@ params = {
         'download_url': dwnl_url,
         'scripts': scripts,
         'data_files': data_files,
-        'install_requires': ['SQLAlchemy', 'sqlalchemy-migrate', 'lxml'],
+        'install_requires': ['sqlalchemy-migrate', 'SQLAlchemy', 'lxml'],
         'packages': setuptools.find_packages()
 }
 
@@ -168,8 +168,8 @@ try:
         if not base_dir:
             continue
         data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), base_dir), files_found))
-    setuptools.setup(**params)
 except SystemExit:
     print ERR_MSG
-    raise
+
+setuptools.setup(**params)
 

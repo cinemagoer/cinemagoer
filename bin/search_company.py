@@ -41,14 +41,12 @@ except imdb.IMDbError, e:
 
 # Print the results.
 print '    %s result%s for "%s":' % (len(results),
-                                    ('', 's')[len(results) != 1],
-                                    name.encode(out_encoding, 'replace'))
+                                     ('', 's')[len(results) != 1],
+                                     name.encode(out_encoding, 'replace'))
 print 'companyID\t: imdbID : name'
 
 # Print the long imdb name for every company.
 for company in results:
     outp = u'%s\t\t: %s : %s' % (company.companyID, i.get_imdbID(company),
-                                company['long imdb name'])
+                                 company['long imdb name'])
     print outp.encode(out_encoding, 'replace')
-
-

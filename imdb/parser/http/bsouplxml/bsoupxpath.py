@@ -67,7 +67,7 @@ def tokenize_path(path):
         if path[i] == '/':
             if i > 0:
                 separators.append((last_position, i))
-            if (path[i+1] == '/'):
+            if path[i+1] == '/':
                 last_position = i
                 i = i + 1
             else:

@@ -41,13 +41,11 @@ except imdb.IMDbError, e:
 
 # Print the results.
 print '    %s result%s for "%s":' % (len(results),
-                                    ('', 's')[len(results) != 1],
-                                    name.encode(out_encoding, 'replace'))
+                                     ('', 's')[len(results) != 1],
+                                     name.encode(out_encoding, 'replace'))
 print ' : movie title'
 
 # Print the long imdb title for every movie.
 for idx, movie in enumerate(results):
     outp = u'%d: %s' % (idx+1, movie['long imdb title'])
     print outp.encode(out_encoding, 'replace')
-
-

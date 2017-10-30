@@ -34,6 +34,5 @@ for label, ml in [('top 10', top250[:10]), ('bottom 10', bottom100[:10])]:
     print 'rating\tvotes\ttitle'
     for movie in ml:
         outl = u'%s\t%s\t%s' % (movie.get('rating'), movie.get('votes'),
-                                    movie['long imdb title'])
+                                movie['long imdb title'])
         print outl.encode(out_encoding, 'replace')
-

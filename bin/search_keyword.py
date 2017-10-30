@@ -41,13 +41,11 @@ except imdb.IMDbError, e:
 
 # Print the results.
 print '    %s result%s for "%s":' % (len(results),
-                                    ('', 's')[len(results) != 1],
-                                    name.encode(out_encoding, 'replace'))
+                                     ('', 's')[len(results) != 1],
+                                     name.encode(out_encoding, 'replace'))
 print ' : keyword'
 
 # Print every keyword.
 for idx, keyword in enumerate(results):
     outp = u'%d: %s' % (idx+1, keyword)
     print outp.encode(out_encoding, 'replace')
-
-

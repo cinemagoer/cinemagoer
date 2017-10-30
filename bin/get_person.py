@@ -24,7 +24,7 @@ if len(sys.argv) != 2:
     print '  %s "personID"' % sys.argv[0]
     sys.exit(2)
 
-personID = sys.argv[1]
+person_id = sys.argv[1]
 
 i = imdb.IMDb()
 
@@ -33,7 +33,7 @@ out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 try:
     # Get a Person object with the data about the person identified by
     # the given personID.
-    person = i.get_person(personID)
+    person = i.get_person(person_id)
 except imdb.IMDbError, e:
     print "Probably you're not connected to Internet.  Complete error report:"
     print e
@@ -41,7 +41,7 @@ except imdb.IMDbError, e:
 
 
 if not person:
-    print 'It seems that there\'s no person with personID "%s"' % personID
+    print 'It seems that there\'s no person with personID "%s"' % person_id
     sys.exit(4)
 
 # XXX: this is the easier way to print the main info about a person;
@@ -57,34 +57,32 @@ print person.summary().encode(out_encoding, 'replace')
 # This is only a short example; you can get a longer summary using
 # 'print person.summary()' and the complete set of information looking for
 # the output of the person.keys() method.
-#print '==== "%s" / personID: %s ====' % (person['name'], personID)
+# print '==== "%s" / personID: %s ====' % (person['name'], personID)
 # XXX: use the IMDb instance to get the IMDb web URL for the person.
-#imdbURL = i.get_imdbURL(person)
-#if imdbURL:
+# imdbURL = i.get_imdbURL(person)
+# if imdbURL:
 #    print 'IMDb URL: %s' % imdbURL
 # XXX: print the birth date and birth notes.
-#d_date = person.get('birth date')
-#if d_date:
+# d_date = person.get('birth date')
+# if d_date:
 #    print 'Birth date: %s' % d_date
 #    b_notes = person.get('birth notes')
 #    if b_notes:
 #        print 'Birth notes: %s' % b_notes
 # XXX: print the last five movies he/she acted in, and the played role.
-#movies_acted = person.get('actor') or person.get('actress')
-#if movies_acted:
+# movies_acted = person.get('actor') or person.get('actress')
+# if movies_acted:
 #    print 'Last roles played: '
 #    for movie in movies_acted[:5]:
 #        print '    %s (in "%s")' % (movie.currentRole, movie['title'])
 # XXX: example of the use of information sets.
-#import random
-#i.update(person, info=['awards'])
-#awards = person.get('awards')
-#if awards:
+# import random
+# i.update(person, info=['awards'])
+# awards = person.get('awards')
+# if awards:
 #    rand_award = awards[random.randrange(len(awards))]
 #    s = 'Random award: in year '
 #    s += rand_award.get('year', '')
 #    s += ' %s "%s"' % (rand_award.get('result', '').lower(),
 #                        rand_award.get('award', ''))
 #    print s
-
-

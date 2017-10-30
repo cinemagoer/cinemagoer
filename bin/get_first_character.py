@@ -54,6 +54,3 @@ character = results[0]
 i.update(character)
 
 print character.summary().encode(out_encoding, 'replace')
-
-
-

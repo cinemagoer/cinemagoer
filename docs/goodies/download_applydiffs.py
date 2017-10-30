@@ -180,7 +180,7 @@ def applyDiffs():
                 t = os.path.getmtime(os.path.join(ImdbListsPath,f))
                 d = datetime.fromtimestamp(t)
 
-                if day == None:
+                if day is None:
                     day = d
                 elif d > day:
                     day = d
@@ -383,7 +383,7 @@ def applyDiffs():
                         # Clean up temporary diff files
                         deleteFolder(tmpDiffsPath)
 
-                        if patchedOKWith <> None and isFirstPatchFile:
+                        if patchedOKWith is not None and isFirstPatchFile:
 
                             # The previous imdb diffs file succeeded and the current diffs file failed with the
                             # first attempted patch, so we can keep our updated list files up to this point
@@ -476,9 +476,9 @@ def applyDiffs():
     # If the imdb lists were successfully updated, even partially, then run my
     # DOS batch file "Update db from imdb lists.bat" to rebuild the imdbPy database
     # and relink and reintegrate my shadow tables data into it
-    if patchedOKWith <> None:
+    if patchedOKWith is not None:
         logger.info("imdb lists are updated up to imdb diffs file %s" % patchedOKWith)
-        if RunAfterSuccessfulUpdate <> None:
+        if RunAfterSuccessfulUpdate is not None:
             logger.info("Now running %s" % RunAfterSuccessfulUpdate)
             subprocess.call(RunAfterSuccessfulUpdate, shell=True)
 

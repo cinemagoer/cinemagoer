@@ -1885,7 +1885,7 @@ def doMovieLinks():
             if count % 10000 == 0:
                 print 'SCANNING movielinks:', _(title)
         else:
-            if mid == None:
+            if mid is None:
                continue
             line = line.strip()
             link_txt = unicode(line, 'utf_8').encode('ascii', 'replace')

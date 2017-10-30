@@ -415,7 +415,7 @@ class NavigableString(unicode, PageElement):
         return unicode.__new__(cls, value, DEFAULT_OUTPUT_ENCODING)
 
     def __getnewargs__(self):
-        return (NavigableString.__str__(self),)
+        return NavigableString.__str__(self),
 
     def __getattr__(self, attr):
         """text.string gives you text. This is for backwards
@@ -1130,7 +1130,7 @@ class BeautifulStoneSoup(Tag, SGMLParser):
                 # Python installations can't copy regexes. If anyone
                 # was relying on the existence of markupMassage, this
                 # might cause problems.
-                del(self.markupMassage)
+                del self.markupMassage
         self.reset()
 
         SGMLParser.feed(self, markup)

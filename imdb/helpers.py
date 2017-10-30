@@ -408,7 +408,7 @@ def _valueWithType(tag, tagValue):
 
 # Extra tags to get (if values were not already read from title/name).
 _titleTags = ('imdbindex', 'kind', 'year')
-_nameTags = ('imdbindex')
+_nameTags = 'imdbindex'
 _companyTags = ('imdbindex', 'country')
 
 def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,

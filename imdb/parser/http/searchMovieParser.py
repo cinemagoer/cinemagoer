@@ -67,7 +67,7 @@ class DOMBasicMovieParser(DOMParserBase):
             data = []
         else:
             link = data.pop('link')
-            if (link and data):
+            if link and data:
                 data = [(link, data)]
             else:
                 data = []

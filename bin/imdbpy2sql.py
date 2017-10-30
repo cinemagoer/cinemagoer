@@ -669,7 +669,7 @@ def _(s, truncateAt=None):
 if not hasattr(os, 'times'):
     def times():
         """Fake times() function."""
-        return (0.0, 0.0, 0.0, 0.0, 0.0)
+        return 0.0, 0.0, 0.0, 0.0, 0.0
     os.times = times
 
 # Show time consumed by the single function call.
@@ -729,7 +729,7 @@ def name_soundexes(name, character=False):
     ##if not isinstance(name, unicode): name = unicode(name, 'utf_8')
     # Prune non-ascii chars from the string.
     ##name = name.encode('ascii', 'ignore')
-    if not name: return (None, None, None)
+    if not name: return None, None, None
     s1 = soundex(name)
     name_normal = normalizeName(name)
     s2 = soundex(name_normal)
@@ -740,7 +740,7 @@ def name_soundexes(name, character=False):
     else:
         s3 = soundex(name.split(' ')[-1])
     if s3 and s3 in (s1, s2): s3 = None
-    return (s1, s2, s3)
+    return s1, s2, s3
 
 
 # Tags to identify where the meaningful data begin/end in files.
@@ -2827,7 +2827,7 @@ def _executeQuery(query):
         s_query = query[:60] + '...'
     else:
         s_query = query
-    print 'EXECUTING "%s"...' % (s_query),
+    print 'EXECUTING "%s"...' % s_query,
     sys.stdout.flush()
     try:
         CURS.execute(query)

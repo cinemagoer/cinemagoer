@@ -54,6 +54,3 @@ movie = results[0]
 i.update(movie)
 
 print movie.summary().encode(out_encoding, 'replace')
-
-
-

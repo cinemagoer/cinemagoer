@@ -422,8 +422,7 @@ class DOMHTMLResumeParser(DOMParserBase):
                         new_key[item[0]] = item[1]
                 data[key] = new_key
 
-        new_data = {}
-        new_data['resume'] = data
+        new_data = {'resume': data}
         return new_data
 
 

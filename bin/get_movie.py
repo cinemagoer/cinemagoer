@@ -2,11 +2,11 @@
 """
 get_movie.py
 
-Usage: get_movie "movieID"
+Usage: get_movie "movie_id"
 
-Show some info about the movie with the given movieID (e.g. '0133093'
+Show some info about the movie with the given movie_id (e.g. '0133093'
 for "The Matrix", using 'http' or 'mobile').
-Notice that movieID, using 'sql', are not the same IDs used on the web.
+Notice that movie_id, using 'sql', are not the same IDs used on the web.
 """
 
 import sys
@@ -21,7 +21,7 @@ except ImportError:
 
 if len(sys.argv) != 2:
     print 'Only one argument is required:'
-    print '  %s "movieID"' % sys.argv[0]
+    print '  %s "movie_id"' % sys.argv[0]
     sys.exit(2)
 
 movie_id = sys.argv[1]
@@ -32,7 +32,7 @@ out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
 try:
     # Get a Movie object with the data about the movie identified by
-    # the given movieID.
+    # the given movie_id.
     movie = i.get_movie(movie_id)
 except imdb.IMDbError, e:
     print "Probably you're not connected to Internet.  Complete error report:"
@@ -41,7 +41,7 @@ except imdb.IMDbError, e:
 
 
 if not movie:
-    print 'It seems that there\'s no movie with movieID "%s"' % movie_id
+    print 'It seems that there\'s no movie with movie_id "%s"' % movie_id
     sys.exit(4)
 
 # XXX: this is the easier way to print the main info about a movie;
@@ -58,7 +58,7 @@ print movie.summary().encode(out_encoding, 'replace')
 # 'print movie.summary()' and the complete set of information looking for
 # the output of the movie.keys() method.
 #
-# print '==== "%s" / movieID: %s ====' % (movie['title'], movieID)
+# print '==== "%s" / movie_id: %s ====' % (movie['title'], movie_id)
 # XXX: use the IMDb instance to get the IMDb web URL for the movie.
 # imdbURL = i.get_imdbURL(movie)
 # if imdbURL:

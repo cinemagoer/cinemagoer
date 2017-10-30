@@ -2,11 +2,11 @@
 """
 get_company.py
 
-Usage: get_company "companyID"
+Usage: get_company "company_id"
 
-Show some info about the company with the given companyID (e.g. '0071509'
+Show some info about the company with the given company_id (e.g. '0071509'
 for "Columbia Pictures [us]", using 'http' or 'mobile').
-Notice that companyID, using 'sql', are not the same IDs used on the web.
+Notice that company_id, using 'sql', are not the same IDs used on the web.
 """
 
 import sys
@@ -21,7 +21,7 @@ except ImportError:
 
 if len(sys.argv) != 2:
     print 'Only one argument is required:'
-    print '  %s "companyID"' % sys.argv[0]
+    print '  %s "company_id"' % sys.argv[0]
     sys.exit(2)
 
 company_id = sys.argv[1]
@@ -32,7 +32,7 @@ out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
 try:
     # Get a company object with the data about the company identified by
-    # the given companyID.
+    # the given company_id.
     company = i.get_company(company_id)
 except imdb.IMDbError, e:
     print "Probably you're not connected to Internet.  Complete error report:"
@@ -41,7 +41,7 @@ except imdb.IMDbError, e:
 
 
 if not company:
-    print 'It seems that there\'s no company with companyID "%s"' % company_id
+    print 'It seems that there\'s no company with company_id "%s"' % company_id
     sys.exit(4)
 
 # XXX: this is the easier way to print the main info about a company;

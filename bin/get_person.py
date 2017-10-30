@@ -2,11 +2,11 @@
 """
 get_person.py
 
-Usage: get_person "personID"
+Usage: get_person "person_id"
 
-Show some info about the person with the given personID (e.g. '0000210'
+Show some info about the person with the given person_id (e.g. '0000210'
 for "Julia Roberts".
-Notice that personID, using 'sql', are not the same IDs used on the web.
+Notice that person_id, using 'sql', are not the same IDs used on the web.
 """
 
 import sys
@@ -21,7 +21,7 @@ except ImportError:
 
 if len(sys.argv) != 2:
     print 'Only one argument is required:'
-    print '  %s "personID"' % sys.argv[0]
+    print '  %s "person_id"' % sys.argv[0]
     sys.exit(2)
 
 person_id = sys.argv[1]
@@ -32,7 +32,7 @@ out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
 try:
     # Get a Person object with the data about the person identified by
-    # the given personID.
+    # the given person_id.
     person = i.get_person(person_id)
 except imdb.IMDbError, e:
     print "Probably you're not connected to Internet.  Complete error report:"
@@ -41,7 +41,7 @@ except imdb.IMDbError, e:
 
 
 if not person:
-    print 'It seems that there\'s no person with personID "%s"' % person_id
+    print 'It seems that there\'s no person with person_id "%s"' % person_id
     sys.exit(4)
 
 # XXX: this is the easier way to print the main info about a person;
@@ -57,7 +57,7 @@ print person.summary().encode(out_encoding, 'replace')
 # This is only a short example; you can get a longer summary using
 # 'print person.summary()' and the complete set of information looking for
 # the output of the person.keys() method.
-# print '==== "%s" / personID: %s ====' % (person['name'], personID)
+# print '==== "%s" / person_id: %s ====' % (person['name'], person_id)
 # XXX: use the IMDb instance to get the IMDb web URL for the person.
 # imdbURL = i.get_imdbURL(person)
 # if imdbURL:

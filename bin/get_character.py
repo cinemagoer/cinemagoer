@@ -24,7 +24,7 @@ if len(sys.argv) != 2:
     print '  %s "characterID"' % sys.argv[0]
     sys.exit(2)
 
-characterID = sys.argv[1]
+character_id = sys.argv[1]
 
 i = imdb.IMDb()
 
@@ -33,7 +33,7 @@ out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 try:
     # Get a character object with the data about the character identified by
     # the given characterID.
-    character = i.get_character(characterID)
+    character = i.get_character(character_id)
 except imdb.IMDbError, e:
     print "Probably you're not connected to Internet.  Complete error report:"
     print e
@@ -41,7 +41,8 @@ except imdb.IMDbError, e:
 
 
 if not character:
-    print 'It seems that there\'s no character with characterID "%s"' % characterID
+    print ("It seems that there's no character"
+           ' with characterID "%s"' % character_id)
     sys.exit(4)
 
 # XXX: this is the easier way to print the main info about a character;
@@ -52,5 +53,3 @@ if not character:
 # commented lines show some ways to retrieve information from a
 # character object.
 print character.summary().encode(out_encoding, 'replace')
-
-

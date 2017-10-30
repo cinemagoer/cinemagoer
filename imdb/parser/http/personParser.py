@@ -406,13 +406,13 @@ class DOMHTMLResumeParser(DOMParserBase):
                 continue
             if len(data[key][0]) == 3:
                 for item in data[key]:
-                    item[:] = [x for x in item if not x == None]
+                    item[:] = [x for x in item if not x is None]
                 continue
 
             if len(data[key][0]) == 2:
                 new_key = {}
                 for item in data[key]:
-                    if item[0] == None:
+                    if item[0] is None:
                         continue
                     if ':' in item[0]:
                         if item[1].replace(item[0], '')[1:].strip() == '':
@@ -422,8 +422,7 @@ class DOMHTMLResumeParser(DOMParserBase):
                         new_key[item[0]] = item[1]
                 data[key] = new_key
 
-        new_data = {}
-        new_data['resume'] = data
+        new_data = {'resume': data}
         return new_data
 
 

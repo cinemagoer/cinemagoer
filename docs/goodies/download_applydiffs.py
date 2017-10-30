@@ -173,14 +173,14 @@ def applyDiffs():
     #
     # An even more robust approach would be to look inside each zipfile and read the date/time stamp
     # from the first line of the imdb list file itself but that seems like overkill to me.
-    day = None;
+    day = None
     for f in os.listdir(ImdbListsPath):
         if re.match(".*\.list\.gz",f) or re.match(".*\.list",f):
             try:
                 t = os.path.getmtime(os.path.join(ImdbListsPath,f))
                 d = datetime.fromtimestamp(t)
 
-                if day == None:
+                if day is None:
                     day = d
                 elif d > day:
                     day = d
@@ -217,7 +217,7 @@ def applyDiffs():
     while 1:
 
         if diffFileDate >= mostrecentfriday:
-            break;
+            break
 
         diff = "diffs-%s.tar.gz" % diffFileDate.strftime("%y%m%d")
         diffFilePath = os.path.join(ImdbDiffsPath, diff)
@@ -248,7 +248,7 @@ def applyDiffs():
 
             # Now download the diffs file
             logger.info("Downloading ftp://%s%s/%s" % ( ImdbDiffsFtp, ImdbDiffsFtpPath, diff ))
-            diffFile = open(diffFilePath, 'wb');
+            diffFile = open(diffFilePath, 'wb')
             try:
                 ftp.retrbinary("RETR " + diff, diffFile.write)
                 diffFile.close()
@@ -299,7 +299,7 @@ def applyDiffs():
     logger.info("Uncompressing imdb list files")
 
     # Uncompress list files in ImdbListsPath to our temporary folder tmpListsPath
-    numListFiles = 0;
+    numListFiles = 0
     for f in os.listdir(ImdbListsPath):
         if re.match(".*\.list\.gz",f):
             try:
@@ -320,7 +320,7 @@ def applyDiffs():
     while 1:
 
         if imdbListsDate >= mostrecentfriday:
-            break;
+            break
 
         diff = "diffs-%s.tar.gz" % imdbListsDate.strftime("%y%m%d")
         diffFilePath = os.path.join(ImdbDiffsPath, diff)
@@ -356,9 +356,9 @@ def applyDiffs():
                 return
 
             # Clean up tar file and the sub-folder which 7z may have (weirdly) created while unTarring it
-            os.remove(tarFile);
+            os.remove(tarFile)
             if os.path.exists(os.path.join(tmpDiffsPath,"diffs")):
-                os.rmdir(os.path.join(tmpDiffsPath,"diffs"));
+                os.rmdir(os.path.join(tmpDiffsPath,"diffs"))
 
             # Apply all the patch files to the list files in tmpListsPath
             isFirstPatchFile = True
@@ -383,7 +383,7 @@ def applyDiffs():
                         # Clean up temporary diff files
                         deleteFolder(tmpDiffsPath)
 
-                        if patchedOKWith <> None and isFirstPatchFile:
+                        if patchedOKWith is not None and isFirstPatchFile:
 
                             # The previous imdb diffs file succeeded and the current diffs file failed with the
                             # first attempted patch, so we can keep our updated list files up to this point
@@ -476,9 +476,9 @@ def applyDiffs():
     # If the imdb lists were successfully updated, even partially, then run my
     # DOS batch file "Update db from imdb lists.bat" to rebuild the imdbPy database
     # and relink and reintegrate my shadow tables data into it
-    if patchedOKWith <> None:
+    if patchedOKWith is not None:
         logger.info("imdb lists are updated up to imdb diffs file %s" % patchedOKWith)
-        if RunAfterSuccessfulUpdate <> None:
+        if RunAfterSuccessfulUpdate is not None:
             logger.info("Now running %s" % RunAfterSuccessfulUpdate)
             subprocess.call(RunAfterSuccessfulUpdate, shell=True)
 

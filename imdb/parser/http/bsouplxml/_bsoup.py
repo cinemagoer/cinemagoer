@@ -171,7 +171,7 @@ class PageElement:
         return self
 
     def _lastRecursiveChild(self):
-        "Finds the last element beneath this object to be parsed."
+        """Finds the last element beneath this object to be parsed."""
         lastChild = self
         while hasattr(lastChild, 'contents') and lastChild.contents:
             lastChild = lastChild.contents[-1]
@@ -184,7 +184,7 @@ class PageElement:
             newChild = NavigableString(newChild)
 
         position =  min(position, len(self.contents))
-        if hasattr(newChild, 'parent') and newChild.parent != None:
+        if hasattr(newChild, 'parent') and newChild.parent is not None:
             # We're 'inserting' an element that's already one
             # of this object's children.
             if newChild.parent == self:
@@ -323,7 +323,7 @@ class PageElement:
         return r
 
     def _findAll(self, name, attrs, text, limit, generator, **kwargs):
-        "Iterates over a generator looking for things that match."
+        """Iterates over a generator looking for things that match."""
 
         if isinstance(name, SoupStrainer):
             strainer = name
@@ -415,7 +415,7 @@ class NavigableString(unicode, PageElement):
         return unicode.__new__(cls, value, DEFAULT_OUTPUT_ENCODING)
 
     def __getnewargs__(self):
-        return (NavigableString.__str__(self),)
+        return NavigableString.__str__(self),
 
     def __getattr__(self, attr):
         """text.string gives you text. This is for backwards
@@ -460,7 +460,7 @@ class Tag(PageElement):
     """Represents a found HTML tag with its attributes and contents."""
 
     def _invert(h):
-        "Cheap function to invert a hash."
+        """Cheap function to invert a hash."""
         i = {}
         for k,v in h.items():
             i[v] = k
@@ -501,14 +501,14 @@ class Tag(PageElement):
 
     def __init__(self, parser, name, attrs=None, parent=None,
                  previous=None):
-        "Basic constructor."
+        """Basic constructor."""
 
         # We don't actually store the parser object: that lets extracted
         # chunks be garbage-collected
         self.parserClass = parser.__class__
         self.isSelfClosing = parser.isSelfClosingTag(name)
         self.name = name
-        if attrs == None:
+        if attrs is None:
             attrs = []
         self.attrs = attrs
         self.contents = []
@@ -541,18 +541,18 @@ class Tag(PageElement):
         return self._getAttrMap()[key]
 
     def __iter__(self):
-        "Iterating over a tag iterates over its contents."
+        """Iterating over a tag iterates over its contents."""
         return iter(self.contents)
 
     def __len__(self):
-        "The length of a tag is the length of its list of contents."
+        """The length of a tag is the length of its list of contents."""
         return len(self.contents)
 
     def __contains__(self, x):
         return x in self.contents
 
     def __nonzero__(self):
-        "A tag is non-None even if it has no contents."
+        """A tag is non-None even if it has no contents."""
         return True
 
     def __setitem__(self, key, value):
@@ -570,7 +570,7 @@ class Tag(PageElement):
         self._getAttrMap()[key] = value
 
     def __delitem__(self, key):
-        "Deleting tag[key] deletes all 'key' attributes for the tag."
+        """Deleting tag[key] deletes all 'key' attributes for the tag."""
         for item in self.attrs:
             if item[0] == key:
                 self.attrs.remove(item)
@@ -911,7 +911,7 @@ class SoupStrainer:
         #print "Matching %s against %s" % (markup, matchAgainst)
         result = False
         if matchAgainst == True and type(matchAgainst) == types.BooleanType:
-            result = markup != None
+            result = markup is not None
         elif callable(matchAgainst):
             result = matchAgainst(markup)
         else:
@@ -1130,7 +1130,7 @@ class BeautifulStoneSoup(Tag, SGMLParser):
                 # Python installations can't copy regexes. If anyone
                 # was relying on the existence of markupMassage, this
                 # might cause problems.
-                del(self.markupMassage)
+                del self.markupMassage
         self.reset()
 
         SGMLParser.feed(self, markup)
@@ -1253,7 +1253,7 @@ class BeautifulStoneSoup(Tag, SGMLParser):
         """
 
         nestingResetTriggers = self.NESTABLE_TAGS.get(name)
-        isNestable = nestingResetTriggers != None
+        isNestable = nestingResetTriggers is not None
         isResetNesting = self.RESET_NESTING_TAGS.has_key(name)
         popTo = None
         inclusive = True
@@ -1264,9 +1264,9 @@ class BeautifulStoneSoup(Tag, SGMLParser):
                 #last occurance.
                 popTo = name
                 break
-            if (nestingResetTriggers != None
+            if (nestingResetTriggers is not None
                 and p.name in nestingResetTriggers) \
-                or (nestingResetTriggers == None and isResetNesting
+                or (nestingResetTriggers is None and isResetNesting
                     and self.RESET_NESTING_TAGS.has_key(p.name)):
 
                 #If we encounter one of the nesting reset triggers
@@ -1342,11 +1342,11 @@ class BeautifulStoneSoup(Tag, SGMLParser):
         self._toStringSubclass(text, ProcessingInstruction)
 
     def handle_comment(self, text):
-        "Handle comments as Comment objects."
+        """Handle comments as Comment objects."""
         self._toStringSubclass(text, Comment)
 
     def handle_charref(self, ref):
-        "Handle character references as data."
+        """Handle character references as data."""
         if self.convertEntities:
             data = unichr(int(ref))
         else:
@@ -1397,7 +1397,7 @@ class BeautifulStoneSoup(Tag, SGMLParser):
         self.handle_data(data)
 
     def handle_decl(self, data):
-        "Handle DOCTYPEs and the like as Declaration objects."
+        """Handle DOCTYPEs and the like as Declaration objects."""
         self._toStringSubclass(data, Declaration)
 
     def parse_declaration(self, i):
@@ -1793,8 +1793,8 @@ class UnicodeDammit:
         return self.markup
 
     def _toUnicode(self, data, encoding):
-        '''Given a string and its encoding, decodes the string into Unicode.
-        %encoding is a string recognized by encodings.aliases'''
+        """Given a string and its encoding, decodes the string into Unicode.
+        %encoding is a string recognized by encodings.aliases"""
 
         # strip Byte Order Mark (if present)
         if (len(data) >= 4) and (data[:2] == '\xfe\xff') \

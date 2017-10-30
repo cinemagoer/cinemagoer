@@ -825,7 +825,7 @@ def _parse_ref(text, link, info):
         yearK = re_yearKind_index.match(info)
         if yearK and yearK.start() == 0:
             text += ' %s' % info[:yearK.end()]
-    return (text.replace('\n', ' '), link)
+    return text.replace('\n', ' '), link
 
 
 class GatherRefs(DOMParserBase):

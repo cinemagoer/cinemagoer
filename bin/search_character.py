@@ -41,14 +41,13 @@ except imdb.IMDbError, e:
 
 # Print the results.
 print '    %s result%s for "%s":' % (len(results),
-                                    ('', 's')[len(results) != 1],
-                                    name.encode(out_encoding, 'replace'))
+                                     ('', 's')[len(results) != 1],
+                                     name.encode(out_encoding, 'replace'))
 print 'characterID\t: imdbID : name'
 
 # Print the long imdb name for every character.
 for character in results:
-    outp = u'%s\t\t: %s : %s' % (character.characterID, i.get_imdbID(character),
-                                character['long imdb name'])
+    outp = u'%s\t\t: %s : %s' % (character.characterID,
+                                 i.get_imdbID(character),
+                                 character['long imdb name'])
     print outp.encode(out_encoding, 'replace')
-
-

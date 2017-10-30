@@ -687,7 +687,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         elif isinstance(o, dict):
             for value in o.values():
                 self._findRefs(value, trefs, nrefs)
-        return (trefs, nrefs)
+        return trefs, nrefs
 
     def _extractRefs(self, o):
         """Scan for titles or names references in strings."""
@@ -702,7 +702,7 @@ class IMDbSqlAccessSystem(IMDbBase):
                     "imdb.parser.sql.IMDbSqlAccessSystem; "
                     "if it's not a recursion limit exceeded and we're not "
                     "running in a Symbian environment, it's a bug:\n%s" % e)
-            return (trefs, nrefs)
+            return trefs, nrefs
 
     def _changeAKAencoding(self, akanotes, akatitle):
         """Return akatitle in the correct charset, as specified in

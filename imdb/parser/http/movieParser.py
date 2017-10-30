@@ -73,7 +73,6 @@ _SECT_CONV = {
         'assistant directors': 'assistant director',
         'set decorators': 'set decoration',
         'visual effects department': 'visual effects',
-        'production managers': 'production manager',
         'miscellaneous': 'miscellaneous crew',
         'make up department': 'make up',
         'plot summary': 'plot outline',

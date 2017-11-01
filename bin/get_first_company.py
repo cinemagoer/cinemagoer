@@ -54,6 +54,3 @@ company = results[0]
 i.update(company)
 
 print company.summary().encode(out_encoding, 'replace')
-
-
-

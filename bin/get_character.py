@@ -2,11 +2,11 @@
 """
 get_character.py
 
-Usage: get_character "characterID"
+Usage: get_character "character_id"
 
-Show some info about the character with the given characterID (e.g. '0000001'
+Show some info about the character with the given character_id (e.g. '0000001'
 for "Jesse James", using 'http' or 'mobile').
-Notice that characterID, using 'sql', are not the same IDs used on the web.
+Notice that character_id, using 'sql', are not the same IDs used on the web.
 """
 
 import sys
@@ -21,10 +21,10 @@ except ImportError:
 
 if len(sys.argv) != 2:
     print 'Only one argument is required:'
-    print '  %s "characterID"' % sys.argv[0]
+    print '  %s "character_id"' % sys.argv[0]
     sys.exit(2)
 
-characterID = sys.argv[1]
+character_id = sys.argv[1]
 
 i = imdb.IMDb()
 
@@ -32,8 +32,8 @@ out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
 try:
     # Get a character object with the data about the character identified by
-    # the given characterID.
-    character = i.get_character(characterID)
+    # the given character_id.
+    character = i.get_character(character_id)
 except imdb.IMDbError, e:
     print "Probably you're not connected to Internet.  Complete error report:"
     print e
@@ -41,7 +41,8 @@ except imdb.IMDbError, e:
 
 
 if not character:
-    print 'It seems that there\'s no character with characterID "%s"' % characterID
+    print ("It seems that there's no character"
+           ' with character_id "%s"' % character_id)
     sys.exit(4)
 
 # XXX: this is the easier way to print the main info about a character;
@@ -52,5 +53,3 @@ if not character:
 # commented lines show some ways to retrieve information from a
 # character object.
 print character.summary().encode(out_encoding, 'replace')
-
-

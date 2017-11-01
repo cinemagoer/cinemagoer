@@ -832,7 +832,7 @@ def date_and_notes(s):
     """Parse (birth|death) date and notes; returns a tuple in the
     form (date, notes)."""
     s = s.strip()
-    if not s: return (u'', u'')
+    if not s: return u'', u''
     notes = u''
     if s[0].isdigit() or s.split()[0].lower() in ('c.', 'january', 'february',
                                                 'march', 'april', 'may', 'june',
@@ -990,7 +990,7 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
     beginTag += extras
     if ton.notes:
         beginTag += u'<notes>%s</notes>' % _normalizeValue(ton.notes)
-    return (beginTag, u'</%s>' % tag)
+    return beginTag, u'</%s>' % tag
 
 
 TAGS_TO_MODIFY = {

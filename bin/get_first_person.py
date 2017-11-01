@@ -54,6 +54,3 @@ person = results[0]
 i.update(person)
 
 print person.summary().encode(out_encoding, 'replace')
-
-
-

@@ -5,6 +5,8 @@ Useful shell scripts, especially for developers.
 See the comments at the top of the files for usage and
 configuration options.
 
+download-from-s3: download the new alternative interface dataset.
+
 applydiffs.sh: Bash script useful apply patches to a set of
 IMDb's plain text data files.
 You can use this script to apply the diffs files distributed

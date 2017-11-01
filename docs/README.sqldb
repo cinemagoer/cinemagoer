@@ -1,14 +1,8 @@
+ DISMISSION NOTICE
+ =================
 
-NOTE: the imdbpy2sql.py script, used to populate a database using
-the data in the IMDb's plain text data files, is a critical piece
-of IMDbPY: it's based on an ORM to be database-independent and
-contains a lot of tricks to be as fast as possible; however there
-are huge margins for improvements; if you want to help, please read the
-TODO.txt file and subscribe the imdbpy-devel mailing list at:
-  http://imdbpy.sf.net/?page=help#ml
- 
-
-NOTE: see README.currentRole for information about characters support.
+The data used by the "sql" access system is no longer updated.
+In the future, we'll support the new data from http://www.imdb.com/interfaces/
 
 
   SQL

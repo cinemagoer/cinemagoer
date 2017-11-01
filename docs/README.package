@@ -63,18 +63,9 @@ you can access movie data through the e-mail interface, etc. etc.
  ---------------------------+-----------+------------------------------------
              'sql'          |   'db',   | information are fetched through
                             | 'database'| a SQL database (every database
-                            |           | supported by SQLObject and SQLAlchemy
+                            |           | supported by SQLAlchemy
                             |           | is available).
  ---------------------------+-----------+------------------------------------
-           'mobile'         |           | same as 'httpThin', but string
-                            |           | methods are used for parsing.
-                            |           | Ideal for small systems like PDA,
-                            |           | smart phones, hand-held devices with
-                            |           | limited bandwidth and CPU power.
- ---------------------------+-----------+------------------------------------
-          'httpThin'        | 'webThin' | identical to 'http', but less
-                            | 'htmlThin'| information are gathered; useful
-                            |           | for systems with limited bandwidth.
 
 NOTE ON THE 'DEFAULT' ACCESS SYSTEM: since release 3.4, the 'imdbpy.cfg'
 configuration file is available, so that you can set a system-wide (or
@@ -142,8 +133,6 @@ company2imdbID(name) take, respectively, a movie title (in the plain text
 data files format), a person name, a character name and a company name, and
 return the relative imdbID; when possibile it's safer to use the
 get_imdbID(MovieOrPersonOrCharacterOrCompanyObject) method.
-These functions _always_ need to connect to the IMDb's web site, if
-you're not using 'http', 'httpThin' or 'mobile' data acess systems.
 
 The get_imdbID(MovieOrPersonOrCharacterOrCompanyObject) method returns the
 imdbID for the given Movie, Person, Character or Company object.

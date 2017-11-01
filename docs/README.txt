@@ -20,9 +20,6 @@ If you want to develop a program/script/package/framework using the
 IMDbPY package, see the "README.package" file, for instructions about
 how to use this package.
 
-If you're installing IMDbPY in a smart phone, PDA or hand-held system,
-read the "README.mobile" file.
-
 If you're crazy enough and/or you've realized that your higher
 inspiration in life is to help the development of IMDbPY, begin reading
 the "README.devel" file. ;-)
@@ -56,36 +53,11 @@ the major version is "2.6".
 Now copy the "./imdb" directory:
     # cp -r ./imdb /usr/local/lib/python{MAJORVERSION}/site-packages/
 
-The setup.py contains some configuration options that could
-be useful if you're installing IMDbPY in a system with very
-little hard disk space (like an handheld device) or where
-you've not a complete development environment available;
-read the "README.mobile" file.
 
-If you want to insert the content of the plain text data files
-into a SQL database, read the "README.sqldb" file.
+  Git VERSION
+  ===========
 
-The whole list of command line options of the setup.py script is:
-  --without-lxml	exclude lxml (speeds up "http" considerably,
-					so try to fix it).
-  --without-cutils	don't compile the C module (speeds up 'sql')
-  --without-sqlobject	exclude SQLObject
-  --without-sqlalchemy	exclude SQLAlchemy
-
-By default, setup.py tries to install BOTH SQLObject
-and SQLAlchemy.  In fact, having one of them will be enough:
-you can exclude the unwanted one.
-
-
-  Mercurial VERSION
-  =================
-
-The best thing is always to use a package for your distribution,
-or use easy_install or pip to install the latest release, but it
-goes without saying that sometimes you need the very latest version
-(keep in mind that the IMDb site is a moving target...).
-In this case, you can always use the Mercurial version, available here:
-  http://imdbpy.sourceforge.net/?page=download#hg
+Please always use the latest master from https://github.com/alberanid/imdbpy
 
 
   HELP
@@ -103,8 +75,7 @@ keep in mind that, while IMDbPY can works out-of-the-box, some external
 package may be required for certain functionality:
   - python-lxml: the 'http' data access system will be much faster, if
     it's installed.
-  - SQLObject or SQLAlchemy: one of these is REQUIRED if you want to use
-    the 'sql' data access system.
+  - SQLAlchemy: is required if you want to use the 'sql' data access system.
 
 All of them should probably be "recommended" (or at least "suggested")
 dependencies.
@@ -151,6 +122,10 @@ imdbpyXY.dtd).  Other important features are locale (i18n) support (see
 README.locale) and support for the new style of movie titles used by IMDb
 (now in the "The Title" style, and no more as "Title, The").
 
+Release 5.2 tries to simplify everything, removing SQLObject, the cutils,
+the mobile parser and updating to Python 3.x and introducing a new parser
+for the IMDb alternative interface.
+
 
   FEATURES
   ========
@@ -163,11 +138,6 @@ web server http://akas.imdb.com) and 'sql', meaning that the data are
 taken from a SQL database, populated (using the imdbpy2sql.py script) with
 data taken from the plain text data files; see
 http://www.imdb.com/interfaces/ for more information.
-For mobile systems there's the 'mobile' data access system, useful
-for PDA, hand-held devices and smart phones.
-Another data access system is 'httpThin', which is equal to 'http'
-but fetch less data and so it is (or at least it tries to be)
-suitable for systems with limited bandwidth but normal CPU power.
 
 
   FEATURES OF THE HTTP DATA ACCESS SYSTEM
@@ -202,14 +172,5 @@ suitable for systems with limited bandwidth but normal CPU power.
   ======================================
 
 * Returns every information available in the plain text data files.
-* Every database supported by SQLObject and SQLAlchemy is available.
-
-
-  FEATURES OF THE MOBILE DATA ACCESS SYSTEM
-  =========================================
-
-* Very lightweight, returns almost every needed information.
-* Accessories data sets (like 'goofs', 'trivia' and so on) are always
-  available (being a subclass of the 'http' data access system).
-
+* Every database supported by SQLAlchemy is available.
 

@@ -264,24 +264,23 @@ class Movie(_Container):
     def __bool__(self):
         """The Movie is "false" if the self.data does not contain a title."""
         # XXX: check the title and the movieID?
-        if 'title' in self.data: return 1
-        return 0
+        return 'title' in self.data
 
     def isSameTitle(self, other):
         """Return true if this and the compared object have the same
         long imdb title and/or movieID.
         """
         # XXX: obsolete?
-        if not isinstance(other, self.__class__): return 0
+        if not isinstance(other, self.__class__): return False
         if 'title' in self.data and \
                 'title' in other.data and \
                 build_title(self.data, canonical=0) == \
                 build_title(other.data, canonical=0):
-            return 1
+            return True
         if self.accessSystem == other.accessSystem and \
                 self.movieID is not None and self.movieID == other.movieID:
-            return 1
-        return 0
+            return True
+        return False
     isSameMovie = isSameTitle # XXX: just for backward compatiblity.
 
     def __contains__(self, item):
@@ -294,18 +293,18 @@ class Movie(_Container):
             for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
                             toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(p):
-                    return 1
+                    return True
         elif isinstance(item, Character):
             for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
                             toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(p.currentRole):
-                    return 1
+                    return True
         elif isinstance(item, Company):
             for c in flatten(self.data, yieldDictKeys=1, scalar=Company,
                             toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(c):
-                    return 1
-        return 0
+                    return True
+        return False
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Movie instance."""

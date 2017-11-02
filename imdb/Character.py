@@ -119,8 +119,7 @@ class Character(_Container):
     def __bool__(self):
         """The Character is "false" if the self.data does not contain a name."""
         # XXX: check the name and the characterID?
-        if self.data.get('name'): return 1
-        return 0
+        return bool(self.data.get('name'))
 
     def __contains__(self, item):
         """Return true if this Character was portrayed in the given Movie
@@ -130,28 +129,28 @@ class Character(_Container):
         if isinstance(item, Person):
             for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
                 if item.isSame(m.currentRole):
-                    return 1
+                    return True
         elif isinstance(item, Movie):
             for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
                 if item.isSame(m):
-                    return 1
-        return 0
+                    return True
+        return False
 
     def isSameName(self, other):
         """Return true if two character have the same name
         and/or characterID."""
         if not isinstance(other, self.__class__):
-            return 0
+            return False
         if 'name' in self.data and \
                 'name' in other.data and \
                 build_name(self.data, canonical=0) == \
                 build_name(other.data, canonical=0):
-            return 1
+            return True
         if self.accessSystem == other.accessSystem and \
                 self.characterID is not None and \
                 self.characterID == other.characterID:
-            return 1
-        return 0
+            return True
+        return False
     isSameCharacter = isSameName
 
     def __deepcopy__(self, memo):

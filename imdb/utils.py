@@ -295,9 +295,7 @@ def _split_series_episode(title):
 
 def is_series_episode(title):
     """Return True if 'title' is an series episode."""
-    title = title.strip()
-    if _split_series_episode(title)[0]: return 1
-    return 0
+    return bool(_split_series_episode(title.strip())[0])
 
 
 def analyze_title(title, canonical=None, canonicalSeries=None,
@@ -671,8 +669,7 @@ def build_company_name(name_dict, _emptyString=''):
 class _LastC:
     """Size matters."""
     def __cmp__(self, other):
-        if isinstance(other, self.__class__): return 0
-        return 1
+        return not isinstance(other, self.__class__)
 
 _last = _LastC()
 
@@ -1393,9 +1390,7 @@ class _Container(object):
 
     def isSame(self, other):
         """Return True if the two represent the same object."""
-        if not isinstance(other, self.__class__): return 0
-        if hash(self) == hash(other): return 1
-        return 0
+        return isinstance(other, self.__class__) and hash(self) == hash(other)
 
     def __len__(self):
         """Number of items in the data dictionary."""
@@ -1513,8 +1508,8 @@ class _Container(object):
         try:
             self.__getitem__(key)
         except KeyError:
-            return 0
-        return 1
+            return False
+        return True
 
     # XXX: really useful???
     #      consider also that this will confuse people who meant to
@@ -1561,8 +1556,7 @@ class _Container(object):
 
     def __bool__(self):
         """Return true if self.data contains something."""
-        if self.data: return 1
-        return 0
+        return bool(self.data)
 
     def __deepcopy__(self, memo):
         raise NotImplementedError('override this method')

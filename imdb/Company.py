@@ -121,8 +121,7 @@ class Company(_Container):
     def __bool__(self):
         """The company is "false" if the self.data does not contain a name."""
         # XXX: check the name and the companyID?
-        if self.data.get('name'): return 1
-        return 0
+        return bool(self.data.get('name'))
 
     def __contains__(self, item):
         """Return true if this company and the given Movie are related."""
@@ -130,24 +129,24 @@ class Company(_Container):
         if isinstance(item, Movie):
             for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
                 if item.isSame(m):
-                    return 1
-        return 0
+                    return True
+        return False
 
     def isSameName(self, other):
         """Return true if two company have the same name
         and/or companyID."""
         if not isinstance(other, self.__class__):
-            return 0
+            return False
         if 'name' in self.data and \
                 'name' in other.data and \
                 build_company_name(self.data) == \
                 build_company_name(other.data):
-            return 1
+            return True
         if self.accessSystem == other.accessSystem and \
                 self.companyID is not None and \
                 self.companyID == other.companyID:
-            return 1
-        return 0
+            return True
+        return False
     isSameCompany = isSameName
 
     def __deepcopy__(self, memo):

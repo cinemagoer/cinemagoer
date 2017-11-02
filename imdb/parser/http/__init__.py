@@ -29,7 +29,8 @@ import sys
 import ssl
 import socket
 import logging
-from urllib import FancyURLopener, quote_plus
+from urllib.request import FancyURLopener
+from urllib.parse import quote_plus
 from codecs import lookup
 
 from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, \
@@ -39,16 +40,16 @@ from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, \
 from imdb.utils import analyze_title
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 
-import searchMovieParser
-import searchPersonParser
-import searchCharacterParser
-import searchCompanyParser
-import searchKeywordParser
-import movieParser
-import personParser
-import characterParser
-import companyParser
-import topBottomParser
+from . import searchMovieParser
+from . import searchPersonParser
+from . import searchCharacterParser
+from . import searchCompanyParser
+from . import searchKeywordParser
+from . import movieParser
+from . import personParser
+from . import characterParser
+from . import companyParser
+from . import topBottomParser
 
 # Logger for miscellaneous functions.
 _aux_logger = logging.getLogger('imdbpy.parser.http.aux')
@@ -142,7 +143,7 @@ class IMDbURLopener(FancyURLopener):
     _logger = logging.getLogger('imdbpy.parser.http.urlopener')
 
     def __init__(self, *args, **kwargs):
-        self._last_url = u''
+        self._last_url = ''
         kwargs['context'] = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
         FancyURLopener.__init__(self, *args, **kwargs)
         # Headers to add to every request.
@@ -165,7 +166,7 @@ class IMDbURLopener(FancyURLopener):
     def set_proxy(self, proxy):
         """Set the proxy."""
         if not proxy:
-            if self.proxies.has_key('http'):
+            if 'http' in self.proxies:
                 del self.proxies['http']
         else:
             if not proxy.lower().startswith('http://'):
@@ -181,14 +182,14 @@ class IMDbURLopener(FancyURLopener):
     def get_header(self, header):
         """Return the first value of a header, or None
         if not present."""
-        for index in xrange(len(self.addheaders)):
+        for index in range(len(self.addheaders)):
             if self.addheaders[index][0] == header:
                 return self.addheaders[index][1]
         return None
 
     def del_header(self, header):
         """Remove a default header."""
-        for index in xrange(len(self.addheaders)):
+        for index in range(len(self.addheaders)):
             if self.addheaders[index][0] == header:
                 del self.addheaders[index]
                 break
@@ -203,15 +204,13 @@ class IMDbURLopener(FancyURLopener):
                 self.set_header('Range', 'bytes=0-%d' % size)
             uopener = self.open(url)
             kwds = {}
-            if PY_VERSION > (2, 3) and not IN_GAE:
-                kwds['size'] = size
             content = uopener.read(**kwds)
             self._last_url = uopener.url
             # Maybe the server is so nice to tell us the charset...
-            server_encode = uopener.info().getparam('charset')
+            server_encode = (uopener.info().get_charsets() or [None])[0]
             # Otherwise, look at the content-type HTML meta tag.
             if server_encode is None and content:
-                begin_h = content.find('text/html; charset=')
+                begin_h = content.find(b'text/html; charset=')
                 if begin_h != -1:
                     end_h = content[19+begin_h:].find('"')
                     if end_h != -1:
@@ -226,7 +225,7 @@ class IMDbURLopener(FancyURLopener):
             if size != -1:
                 self.del_header('Range')
             self.close()
-        except IOError, e:
+        except IOError as e:
             if size != -1:
                 # Ensure that the Range header is removed.
                 self.del_header('Range')
@@ -241,8 +240,7 @@ class IMDbURLopener(FancyURLopener):
             # The detection of the encoding is error prone...
             self._logger.warn('Unable to detect the encoding of the retrieved '
                         'page [%s]; falling back to default latin1.', encode)
-        ##print unicode(content, encode, 'replace').encode('utf8')
-        return unicode(content, encode, 'replace')
+        return str(content, encode, 'replace')
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
         if errcode == 404:
@@ -344,21 +342,21 @@ class IMDbHTTPAccessSystem(IMDbBase):
         """Normalize the given movieID."""
         try:
             return '%07d' % int(movieID)
-        except ValueError, e:
+        except ValueError as e:
             raise IMDbParserError('invalid movieID "%s": %s' % (movieID, e))
 
     def _normalize_personID(self, personID):
         """Normalize the given personID."""
         try:
             return '%07d' % int(personID)
-        except ValueError, e:
+        except ValueError as e:
             raise IMDbParserError('invalid personID "%s": %s' % (personID, e))
 
     def _normalize_characterID(self, characterID):
         """Normalize the given characterID."""
         try:
             return '%07d' % int(characterID)
-        except ValueError, e:
+        except ValueError as e:
             raise IMDbParserError('invalid characterID "%s": %s' % \
                     (characterID, e))
 
@@ -366,7 +364,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         """Normalize the given companyID."""
         try:
             return '%07d' % int(companyID)
-        except ValueError, e:
+        except ValueError as e:
             raise IMDbParserError('invalid companyID "%s": %s' % \
                     (companyID, e))
 
@@ -464,15 +462,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         'char' (for characters) or 'co' (for companies).
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
-        if isinstance(ton, unicode):
-            try:
-                ton = ton.encode('utf-8')
-            except Exception, e:
-                try:
-                    ton = ton.encode('iso8859-1')
-                except Exception, e:
-                    pass
-        ##params = 'q=%s&%s=on&mx=%s' % (quote_plus(ton), kind, str(results))
         params = 'q=%s&s=%s&mx=%s' % (quote_plus(ton), kind, str(results))
         if kind == 'ep':
             params = params.replace('s=ep&', 's=tt&ttype=ep&', 1)
@@ -681,7 +670,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'epdate', _noCookies=True)
         data_d = self.mProxy.eprating_parser.parse(cont)
         # set movie['episode of'].movieID for every episode.
-        if data_d.get('data', {}).has_key('episodes rating'):
+        if 'episodes rating' in data_d.get('data', {}):
             for item in data_d['data']['episodes rating']:
                 episode = item['episode']
                 episode['episode of'].movieID = movieID
@@ -815,7 +804,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         #      non-ascii keyword.
         #      E.g.: http://akas.imdb.com/keyword/fianc%E9/
         #      will return a 500 Internal Server Error: Redirect Recursion.
-        keyword = keyword.encode('utf8', 'ignore')
         try:
             cont = self._get_search_content('kw', keyword, results)
         except IMDbDataAccessError:
@@ -825,7 +813,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.skProxy.search_keyword_parser.parse(cont, results=results)['data']
 
     def _get_keyword(self, keyword, results):
-        keyword = keyword.encode('utf8', 'ignore')
         try:
             cont = self._retrieve(self.urls['keyword_main'] % keyword)
         except IMDbDataAccessError:

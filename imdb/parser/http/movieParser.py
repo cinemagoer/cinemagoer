@@ -28,14 +28,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from imdb import imdbURL_base
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb.Company import Company
 from imdb.utils import analyze_title, _Container
-from utils import build_person, DOMParserBase, Attribute, Extractor, \
+from .utils import build_person, DOMParserBase, Attribute, Extractor, \
                     analyze_imdbid
 
 
@@ -103,12 +103,12 @@ def _manageRoles(mo):
             continue
         roleID = analyze_imdbid(role)
         if roleID is None:
-            roleID = u'/'
+            roleID = '/'
         else:
-            roleID += u'/'
-        newRoles.append(u'<div class="_imdbpyrole" roleid="%s">%s</div>' % \
+            roleID += '/'
+        newRoles.append('<div class="_imdbpyrole" roleid="%s">%s</div>' % \
                 (roleID, role.strip()))
-    return firstHalf + u' / '.join(newRoles) + mo.group(3)
+    return firstHalf + ' / '.join(newRoles) + mo.group(3)
 
 
 _reRolesMovie = re.compile(r'(<td class="char">)(.*?)(</td>)',
@@ -131,7 +131,7 @@ def makeSplitter(lstrip=None, sep='|', comments=True,
         if lstrip is not None:
             x = x.lstrip(lstrip).lstrip()
         lx = x.split(sep)
-        lx[:] = filter(None, [j.strip() for j in lx])
+        lx[:] = [_f for _f in [j.strip() for j in lx] if _f]
         if comments:
             lx[:] = [j.replace(origNotesSep, newNotesSep, 1) for j in lx]
         if strip:
@@ -180,7 +180,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                             path={'person': ".//text()",
                                     'link': "./td[1]/a[@href]/@href"},
                             postprocess=lambda x: \
-                                    build_person(x.get('person') or u'',
+                                    build_person(x.get('person') or '',
                                         personID=analyze_imdbid(x.get('link')))
                                 )),
 
@@ -193,9 +193,9 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 'roleID': \
                                     "td[4]/div[@class='_imdbpyrole']/@roleid"},
                             postprocess=lambda x: \
-                                    build_person(x.get('person') or u'',
+                                    build_person(x.get('person') or '',
                                     personID=analyze_imdbid(x.get('link')),
-                                    roleID=(x.get('roleID') or u'').split('/'))
+                                    roleID=(x.get('roleID') or '').split('/'))
                                 )),
 
                 Extractor(label='genres',
@@ -293,7 +293,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                                     path={'name': "./text()",
                                         'link': "./@href"},
                                     postprocess=lambda x: \
-                                        build_person(x.get('name') or u'',
+                                        build_person(x.get('name') or '',
                                         personID=analyze_imdbid(x.get('link')))
                                     )),
 
@@ -303,7 +303,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                                     path={'name': "./text()",
                                         'link': "./@href"},
                                     postprocess=lambda x: \
-                                        build_person(x.get('name') or u'',
+                                        build_person(x.get('name') or '',
                                         personID=analyze_imdbid(x.get('link')))
                                     )),
 
@@ -313,7 +313,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                                     path={'name': "./text()",
                                         'link': "@href"},
                                     postprocess=lambda x: \
-                                        build_person(x.get('name') or u'',
+                                        build_person(x.get('name') or '',
                                         personID=analyze_imdbid(x.get('link')))
                                     )),
 
@@ -398,9 +398,9 @@ class DOMHTMLMovieParser(DOMParserBase):
                                         'comp-link': "./a/@href",
                                         'notes': "./text()"},
                                 postprocess=lambda x: \
-                                        Company(name=x.get('name') or u'',
+                                        Company(name=x.get('name') or '',
                                 companyID=analyze_imdbid(x.get('comp-link')),
-                                notes=(x.get('notes') or u'').strip())
+                                notes=(x.get('notes') or '').strip())
                             )),
 
                 Extractor(label='rating',
@@ -452,7 +452,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     re_airdate = re.compile(r'(.*)\s*\(season (\d+), episode (\d+)\)', re.I)
     def postprocess_data(self, data):
         # Convert section names.
-        for sect in data.keys():
+        for sect in list(data.keys()):
             if sect in _SECT_CONV:
                 data[_SECT_CONV[sect]] = data[sect]
                 del data[sect]
@@ -462,7 +462,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             value = data[key]
             if isinstance(value, list) and value:
                 if isinstance(value[0], Person):
-                    data[key] = filter(lambda x: x.personID is not None, value)
+                    data[key] = [x for x in value if x.personID is not None]
                 if isinstance(value[0], _Container):
                     for obj in data[key]:
                         obj.accessSystem = self._as
@@ -486,7 +486,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         if 'color info' in data:
             data['color info'] = [x.replace('Color:', '', 1) for x in data['color info']]
         if 'runtimes' in data:
-            data['runtimes'] = [x.replace(' min', u'')
+            data['runtimes'] = [x.replace(' min', '')
                                 for x in data['runtimes']]
         if 'seasons' in data:
             seasons = [int(s) for s in data['seasons'] if s.isdigit()]
@@ -557,9 +557,9 @@ class DOMHTMLMovieParser(DOMParserBase):
 def _process_plotsummary(x):
     """Process a plot (contributed by Rdian06)."""
     xauthor = x.get('author')
-    xplot = x.get('plot', u'').strip()
+    xplot = x.get('plot', '').strip()
     if xauthor:
-        xplot += u'::%s' % xauthor
+        xplot += '::%s' % xauthor
     return xplot
 
 class DOMHTMLPlotParser(DOMParserBase):
@@ -696,18 +696,18 @@ class DOMHTMLAwardsParser(DOMParserBase):
         if len(data) == 0:
             return {}
         nd = []
-        for key in data.keys():
+        for key in list(data.keys()):
             dom = self.get_dom(key)
             assigner = self.xpath(dom, "//a/text()")[0]
             for entry in data[key]:
-                if not entry.has_key('name'):
+                if 'name' not in entry:
                     if not entry:
                         continue
                     # this is an award, not a recipient
                     entry['assigner'] = assigner.strip()
                     # find the recipients
                     matches = [p for p in data[key]
-                               if p.has_key('name') and (entry['anchor'] ==
+                               if 'name' in p and (entry['anchor'] ==
                                    p['anchor'])]
                     if self.subject == 'title':
                         recipients = [Person(name=recipient['name'],
@@ -1004,7 +1004,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
             date = date.strip()
             if not (country and date): continue
             notes = i['notes']
-            info = u'%s::%s' % (country, date)
+            info = '%s::%s' % (country, date)
             if notes:
                 info += notes
             rl.append(info)
@@ -1080,7 +1080,7 @@ class DOMHTMLRatingsParser(DOMParserBase):
         votes = data.get('votes', [])
         if votes:
             nd['number of votes'] = {}
-            for i in xrange(1, 11):
+            for i in range(1, 11):
                 _ordinal = int(votes[i]['ordinal'])
                 _strvts = votes[i]['votes'] or '0'
                 nd['number of votes'][_ordinal] = \
@@ -1103,7 +1103,7 @@ class DOMHTMLRatingsParser(DOMParserBase):
         dem_voters = data.get('demographic voters')
         if dem_voters:
             nd['demographic'] = {}
-            for i in xrange(1, len(dem_voters)):
+            for i in range(1, len(dem_voters)):
                 if (dem_voters[i]['votes'] is not None) \
                    and (dem_voters[i]['votes'].strip()):
                     nd['demographic'][dem_voters[i]['voters'].strip().lower()] \
@@ -1168,10 +1168,10 @@ class DOMHTMLEpisodesRatings(DOMParserBase):
             except:
                 pass
             ept = ept.strip()
-            ept = u'%s {%s' % (title, ept)
+            ept = '%s {%s' % (title, ept)
             nr = i['nr']
             if nr:
-                ept += u' (#%s)' % nr.strip()
+                ept += ' (#%s)' % nr.strip()
             ept += '}'
             if movieID is not None:
                 movieID = str(movieID)
@@ -1238,7 +1238,7 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
                     'info': "./text()"
                 },
                 postprocess=lambda x: (x.get('info').strip(),
-                            urllib.unquote(_normalize_href(x.get('link'))))))
+                            urllib.parse.unquote(_normalize_href(x.get('link'))))))
         ]
 
 
@@ -1273,13 +1273,13 @@ class DOMHTMLConnectionParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
-        for key in data.keys():
+        for key in list(data.keys()):
             nl = []
             for v in data[key]:
                 title = v['title']
                 ts = title.split('::', 1)
                 title = ts[0].strip()
-                notes = u''
+                notes = ''
                 if len(ts) == 2:
                     notes = ts[1].strip()
                 m = Movie(title=title,
@@ -1307,9 +1307,9 @@ class DOMHTMLLocationsParser(DOMParserBase):
                                 path={'place': ".//text()",
                                         'note': "./following-sibling::dd[1]" \
                                                 "//text()"},
-                                postprocess=lambda x: (u'%s::%s' % (
+                                postprocess=lambda x: ('%s::%s' % (
                                     x['place'].strip(),
-                                    (x['note'] or u'').strip())).strip(':')))]
+                                    (x['note'] or '').strip())).strip(':')))]
 
 
 class DOMHTMLTechParser(DOMParserBase):
@@ -1351,9 +1351,9 @@ class DOMHTMLTechParser(DOMParserBase):
 
     def postprocess_data(self, data):
         for key in data:
-            data[key] = filter(lambda x: x != '|', data[key])
+            data[key] = [x for x in data[key] if x != '|']
             data[key] = [self.re_space.sub(' ', x).strip() for x in data[key]]
-            data[key] = filter(None, data[key])
+            data[key] = [_f for _f in data[key] if _f]
         if self.kind == 'contacts' and data:
             data = {self.kind: data}
         else:
@@ -1362,7 +1362,7 @@ class DOMHTMLTechParser(DOMParserBase):
                     data['biography-print'] = data['biography (print)']
                     del data['biography (print)']
             # Tech info.
-            for key in data.keys():
+            for key in list(data.keys()):
                 if key.startswith('film negative format'):
                     data['film negative format'] = data[key]
                     del data[key]
@@ -1399,10 +1399,10 @@ class DOMHTMLBusinessParser(DOMParserBase):
 
     def postprocess_data(self, data):
         newData = {}
-        for key, value in data.iteritems():
+        for key, value in data.items():
             value = value.strip().split(':::')
             value = [v.strip() for v in value]
-            value = filter(None, value)
+            value = [_f for _f in value if _f]
             if not value:
                 continue
             newData[key.lower().strip()] = value
@@ -1428,7 +1428,7 @@ class DOMHTMLRecParser(DOMParserBase):
                             path={'title': ".//text()",
                                     'movieID': ".//a/@href"}))]
     def postprocess_data(self, data):
-        for key in data.keys():
+        for key in list(data.keys()):
             n_key = key
             n_keyl = n_key.lower()
             if n_keyl == 'suggested by the database':
@@ -1476,7 +1476,7 @@ class DOMHTMLNewsParser(DOMParserBase):
                     'date': x.get('fromdate').split('|')[0].strip(),
                     'from': x.get('fromdate').split('|')[1].replace('From ',
                             '').strip(),
-                    'body': (x.get('body') or u'').strip(),
+                    'body': (x.get('body') or '').strip(),
                     'link': _normalize_href(x.get('link')),
                     'full article link': _normalize_href(x.get('fulllink'))
                 }))
@@ -1489,10 +1489,10 @@ class DOMHTMLNewsParser(DOMParserBase):
         ]
 
     def postprocess_data(self, data):
-        if not data.has_key('news'):
+        if 'news' not in data:
             return {}
         for news in data['news']:
-            if news.has_key('full article link'):
+            if 'full article link' in news:
                 if news['full article link'] is None:
                     del news['full article link']
         return data
@@ -1582,7 +1582,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
         series = Movie(title=series_title, movieID=str(series_id),
                         accessSystem=self._as, modFunct=self._modFunct)
         if series.get('kind') == 'movie':
-            series['kind'] = u'tv series'
+            series['kind'] = 'tv series'
         try: selected_season = int(selected_season)
         except: pass
         nd = {selected_season: {}}
@@ -1594,7 +1594,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             k = 'episode %d' % counter
             data[k] = [episode]
           del data['episode -1']
-        for episode_nr, episode in data.iteritems():
+        for episode_nr, episode in data.items():
             if not (episode and episode[0] and
                     episode_nr.startswith('episode ')):
                 continue
@@ -1611,7 +1611,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                 continue
             ep_obj = Movie(movieID=episode_id, title=episode_title,
                         accessSystem=self._as, modFunct=self._modFunct)
-            ep_obj['kind'] = u'episode'
+            ep_obj['kind'] = 'episode'
             ep_obj['episode of'] = series
             ep_obj['season'] = selected_season
             ep_obj['episode'] = episode_nr
@@ -1635,14 +1635,14 @@ def _build_episode(x):
     episode_id = analyze_imdbid(x.get('link'))
     episode_title = x.get('title')
     e = Movie(movieID=episode_id, title=episode_title)
-    e['kind'] = u'episode'
+    e['kind'] = 'episode'
     oad = x.get('oad')
     if oad:
         e['original air date'] = oad.strip()
     year = x.get('year')
     if year is not None:
         year = year[5:]
-        if year == 'unknown': year = u'????'
+        if year == 'unknown': year = '????'
         if year and year.isdigit():
             year = int(year)
         e['year'] = year
@@ -1720,9 +1720,9 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                             'roleID': \
                                 "../td[4]/div[@class='_imdbpyrole']/@roleid"},
                         postprocess=lambda x: \
-                                build_person(x.get('person') or u'',
+                                build_person(x.get('person') or '',
                                 personID=analyze_imdbid(x.get('link')),
-                                roleID=(x.get('roleID') or u'').split('/'),
+                                roleID=(x.get('roleID') or '').split('/'),
                                 accessSystem=self._as,
                                 modFunct=self._modFunct)))
                 ]
@@ -1751,7 +1751,7 @@ class DOMHTMLEpisodesParser(DOMParserBase):
         series = Movie(title=stitle, movieID=str(seriesID),
                         accessSystem=self._as, modFunct=self._modFunct)
         nd = {}
-        for key in data.keys():
+        for key in list(data.keys()):
             if key.startswith('filter-season-') or key.startswith('season-'):
                 season_key = key.replace('filter-season-', '').replace('season-', '')
                 try: season_key = int(season_key)
@@ -1767,9 +1767,9 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                         ep_counter += 1
                     cast_key = 'Season %s, Episode %s:' % (season_key,
                                                             episode_key)
-                    if data.has_key(cast_key):
+                    if cast_key in data:
                         cast = data[cast_key]
-                        for i in xrange(len(cast)):
+                        for i in range(len(cast)):
                             cast[i].billingPos = i + 1
                         episode['cast'] = cast
                     episode['episode of'] = series
@@ -1817,7 +1817,7 @@ class DOMHTMLFaqsParser(DOMParserBase):
                     'question': "./h3/a/span/text()",
                     'answer': "../following-sibling::div[1]//text()"
                 },
-                postprocess=lambda x: u'%s::%s' % (x.get('question').strip(),
+                postprocess=lambda x: '%s::%s' % (x.get('question').strip(),
                                     '\n\n'.join(x.get('answer').replace(
                                         '\n\n', '\n').strip().split('||')))))
         ]
@@ -1847,7 +1847,7 @@ class DOMHTMLAiringParser(DOMParserBase):
             path="//title",
             attrs=Attribute(key='series title', path="./text()",
                             postprocess=lambda x: \
-                                    x.replace(' - TV schedule', u''))),
+                                    x.replace(' - TV schedule', ''))),
         Extractor(label='series id',
             path="//h1/a[@href]",
             attrs=Attribute(key='series id', path="./@href")),
@@ -1880,7 +1880,7 @@ class DOMHTMLAiringParser(DOMParserBase):
             return {}
         seriesTitle = data['series title']
         seriesID = analyze_imdbid(data['series id'])
-        if data.has_key('airing'):
+        if 'airing' in data:
             for airing in data['airing']:
                 title = airing.get('title', '').strip()
                 if not title:
@@ -1903,7 +1903,7 @@ class DOMHTMLAiringParser(DOMParserBase):
         if 'series id' in data:
             del data['series id']
         if 'airing' in data:
-            data['airing'] = filter(None, data['airing'])
+            data['airing'] = [_f for _f in data['airing'] if _f]
         if 'airing' not in data or not data['airing']:
             return {}
         return data

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 linguistics module (imdb package).
 
@@ -46,27 +49,26 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # I've left in the list 'i' (1939 vs 2151) and 'uno' (52 vs 56)
 # I'm not sure what '-al' is, and so I've left it out...
 #
-# Generic list of articles in utf-8 encoding:
+# Generic list of articles in unicode:
 GENERIC_ARTICLES = ('the', 'la', 'a', 'die', 'der', 'le', 'el',
             "l'", 'il', 'das', 'les', 'i', 'o', 'ein', 'un', 'de', 'los',
             'an', 'una', 'las', 'eine', 'den', 'het', 'gli', 'lo', 'os',
             'ang', 'oi', 'az', 'een', 'ha-', 'det', 'ta', 'al-',
             'mga', "un'", 'uno', 'ett', 'dem', 'egy', 'els', 'eines',
-            '\xc3\x8f', '\xc3\x87', '\xc3\x94\xc3\xaf', '\xc3\x8f\xc3\xa9')
+            'Ï', 'Ç', 'Ôï', 'Ïé')
 
 
 # Lists of articles separated by language.  If possible, the list should
 # be sorted by frequency (not very important, but...)
 # If you want to add a list of articles for another language, mail it
-# it at imdbpy-devel@lists.sourceforge.net; non-ascii articles must be utf-8
-# encoded.
+# it at imdbpy-devel@lists.sourceforge.net
 LANG_ARTICLES = {
     'English': ('the', 'a', 'an'),
     'Italian': ('la', 'le', "l'", 'il', 'i', 'un', 'una', 'gli', 'lo', "un'",
                 'uno'),
     'Spanish': ('la', 'lo', 'el', 'las', 'un', 'los', 'una', 'al', 'del',
                 'unos', 'unas', 'uno'),
-    'French': ('le', "l'", 'la', 'les', 'un', 'une', 'des', 'au', 'du', '\xc3\xa0 la',
+    'French': ('le', "l'", 'la', 'les', 'un', 'une', 'des', 'au', 'du', 'à la',
                 'de la', 'aux'),
     'Portuguese': ('a', 'as', 'o', 'os', 'um', 'uns', 'uma', 'umas'),
     'Turkish': (), # Some languages doesn't have articles.
@@ -154,20 +156,20 @@ for lang in LANG_COUNTRIES:
         COUNTRY_LANG[country] = lang
 
 
-def toUnicode(articles):
-    """Convert a list of articles utf-8 encoded to unicode strings."""
-    return tuple([art.decode('utf_8') for art in articles])
+def toUTF8(articles):
+    """Convert a list of unicode articles to utf-8 encoded strings."""
+    return tuple([art.encode('utf8') for art in articles])
 
 
 def toDicts(articles):
-    """Given a list of utf-8 encoded articles, build two dictionary (one
+    """Given a list of unicode encoded articles, build two dictionary (one
     utf-8 encoded and another one with unicode keys) for faster matches."""
-    uArticles = toUnicode(articles)
-    return dict([(x, x) for x in articles]), dict([(x, x) for x in uArticles])
+    utf8Articles = toUTF8(articles)
+    return dict([(x, x) for x in utf8Articles]), dict([(x, x) for x in articles])
 
 
 def addTrailingSpace(articles):
-    """From the given list of utf-8 encoded articles, return two
+    """From the given list of unicode articles, return two
     lists (one utf-8 encoded and another one in unicode) where a space
     is added at the end - if the last char is not ' or -."""
     _spArticles = []
@@ -175,8 +177,8 @@ def addTrailingSpace(articles):
     for article in articles:
         if article[-1] not in ("'", '-'):
             article += ' '
-        _spArticles.append(article)
-        _spUnicodeArticles.append(article.decode('utf_8'))
+        _spArticles.append(article.encode('utf8'))
+        _spUnicodeArticles.append(article)
     return _spArticles, _spUnicodeArticles
 
 

@@ -39,7 +39,7 @@ except ImportError:
                          'Keys will not be created.')
 
 from imdb._exceptions import IMDbDataAccessError
-from dbschema import *
+from .dbschema import *
 
 # Used to convert table and column names.
 re_upper = re.compile(r'([A-Z])')
@@ -128,7 +128,7 @@ class QAdapter(object):
 
     def __getattr__(self, name):
         try: return getattr(self.table.c, self.colMap[name])
-        except KeyError, e: raise AttributeError("unable to get '%s'" % name)
+        except KeyError as e: raise AttributeError("unable to get '%s'" % name)
 
     def __repr__(self):
         return '<QAdapter(table=%s, colMap=%s) [id=%s]>' % \
@@ -146,11 +146,11 @@ class RowAdapter(object):
         if colMap is None:
             colMap = {}
         self.colMap = colMap
-        self.colMapKeys = colMap.keys()
+        self.colMapKeys = list(colMap.keys())
 
     def __getattr__(self, name):
         try: return getattr(self.row, self.colMap[name])
-        except KeyError, e: raise AttributeError("unable to get '%s'" % name)
+        except KeyError as e: raise AttributeError("unable to get '%s'" % name)
 
     def __setattr__(self, name, value):
         # FIXME: I can't even think about how much performances suffer,
@@ -339,7 +339,7 @@ class TableAdapter(object):
         #      db-level.
         try:
             idx.create()
-        except exc.OperationalError, e:
+        except exc.OperationalError as e:
             _alchemy_logger.warn('Skipping creation of the %s.%s index: %s' %
                                 (self.sqlmeta.table, col.name, e))
 
@@ -388,7 +388,7 @@ class TableAdapter(object):
     def __call__(self, *args, **kwds):
         """To insert a new row with the syntax: TableClass(key=value, ...)"""
         taArgs = {}
-        for key, value in kwds.items():
+        for key, value in list(kwds.items()):
             taArgs[self.colMap.get(key, key)] = value
         self._ta_insert.execute(*args, **taArgs)
 

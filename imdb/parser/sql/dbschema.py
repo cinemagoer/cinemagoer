@@ -88,8 +88,8 @@ class DBCol(object):
             s += ', foreignKey="%s"' % self.foreignKey
         for param in self.params:
             val = self.params[param]
-            if isinstance(val, (unicode, str)):
-                val = u'"%s"' % val
+            if isinstance(val, str):
+                val = '"%s"' % val
             s += ', %s=%s' % (param, val)
         s += ')>'
         return s
@@ -106,7 +106,7 @@ class DBTable(object):
     def __str__(self):
         """Class representation."""
         return '<DBTable %s (%d cols, %d values)>' % (self.name,
-                len(self.cols), sum([len(v) for v in self.values.values()]))
+                len(self.cols), sum([len(v) for v in list(self.values.values())]))
 
     def __repr__(self):
         """Class representation."""
@@ -441,7 +441,7 @@ def createTables(tables, ifNotExists=True):
                                     table._imdbpyName)
             for key in table._imdbpySchema.values:
                 for value in table._imdbpySchema.values[key]:
-                    table(**{key: unicode(value)})
+                    table(**{key: str(value)})
 
 def createIndexes(tables, ifNotExists=True):
     """Create the indexes in the database.
@@ -452,7 +452,7 @@ def createIndexes(tables, ifNotExists=True):
                                 table._imdbpyName)
         try:
             table.addIndexes(ifNotExists)
-        except Exception, e:
+        except Exception as e:
             errors.append(e)
             continue
     return errors
@@ -469,7 +469,7 @@ def createForeignKeys(tables, ifNotExists=True):
                                 table._imdbpyName)
         try:
             table.addForeignKeys(mapTables, ifNotExists)
-        except Exception, e:
+        except Exception as e:
             errors.append(e)
             continue
     return errors

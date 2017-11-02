@@ -27,9 +27,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from utils import Attribute, Extractor, DOMParserBase, build_movie, \
+from .utils import Attribute, Extractor, DOMParserBase, build_movie, \
                     analyze_imdbid
-from personParser import DOMHTMLMaindetailsParser
+from .personParser import DOMHTMLMaindetailsParser
 
 from imdb.Movie import Movie
 
@@ -55,9 +55,9 @@ class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
                           'roleID': "./a/@href"
                           },
                       postprocess=lambda x:
-                          build_movie(x.get('title') or u'',
-                              movieID=analyze_imdbid(x.get('link') or u''),
-                              roleID=_personIDs.findall(x.get('roleID') or u''),
+                          build_movie(x.get('title') or '',
+                              movieID=analyze_imdbid(x.get('link') or ''),
+                              roleID=_personIDs.findall(x.get('roleID') or ''),
                               status=x.get('status') or None,
                               _parsingCharacter=True))]
 
@@ -125,7 +125,7 @@ class DOMHTMLCharacterBioParser(DOMParserBase):
                                 'info': "./preceding-sibling::h4[1]//text()",
                                 'text': ".//text()"
                             },
-                            postprocess=lambda x: u'%s: %s' % (
+                            postprocess=lambda x: '%s: %s' % (
                                 x.get('info').strip(),
                                 x.get('text').replace('\n',
                                     ' ').replace('||', '\n\n').strip()))),
@@ -190,7 +190,7 @@ class DOMHTMLCharacterQuotesParser(DOMParserBase):
         return {'quotes': newData}
 
 
-from personParser import DOMHTMLSeriesParser
+from .personParser import DOMHTMLSeriesParser
 
 _OBJECTS = {
     'character_main_parser': ((DOMHTMLCharacterMaindetailsParser,),

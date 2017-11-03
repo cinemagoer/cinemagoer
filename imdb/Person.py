@@ -224,10 +224,8 @@ class Person(_Container):
     def __repr__(self):
         """String representation of a Person object."""
         # XXX: add also currentRole and notes, if present?
-        r = '<Person id:%s[%s] name:_%s_>' % (self.personID, self.accessSystem,
+        return '<Person id:%s[%s] name:_%s_>' % (self.personID, self.accessSystem,
                                         self.get('long imdb canonical name'))
-        if isinstance(r, str): r = r.encode('utf_8', 'replace')
-        return r
 
     def __str__(self):
         """Simply print the short name."""

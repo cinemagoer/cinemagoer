@@ -916,21 +916,18 @@ def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
     """Replace some chars that can't be present in a XML text."""
     # XXX: use s.encode(encoding, 'xmlcharrefreplace') ?  Probably not
     #      a great idea: after all, returning a unicode is safe.
-    if isinstance(value, str):
-        if not withRefs:
-            value = _handleTextNotes(escape4xml(value))
-        else:
-            # Replace references that were accidentally escaped.
-            replaceLists = _refsToReplace(value, modFunct, titlesRefs,
-                                        namesRefs, charactersRefs)
-            value = modFunct(value, titlesRefs or {}, namesRefs or {},
-                            charactersRefs or {})
-            value = _handleTextNotes(escape4xml(value))
-            for replaceList in replaceLists:
-                for toReplace, replaceWith in replaceList:
-                    value = value.replace(toReplace, replaceWith)
+    if not withRefs:
+        value = _handleTextNotes(escape4xml(value))
     else:
-        value = str(value)
+        # Replace references that were accidentally escaped.
+        replaceLists = _refsToReplace(value, modFunct, titlesRefs,
+                                    namesRefs, charactersRefs)
+        value = modFunct(value, titlesRefs or {}, namesRefs or {},
+                        charactersRefs or {})
+        value = _handleTextNotes(escape4xml(value))
+        for replaceList in replaceLists:
+            for toReplace, replaceWith in replaceList:
+                value = value.replace(toReplace, replaceWith)
     return value
 
 

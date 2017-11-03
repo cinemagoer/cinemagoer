@@ -529,10 +529,8 @@ class DOMParserBase(object):
             # Browser-specific escapes create problems to BeautifulSoup.
             html_string = html_string.replace('<!--[if IE]>', '"')
             html_string = html_string.replace('<![endif]-->', '"')
-        #print html_string.encode('utf8')
         if html_string:
             dom = self.get_dom(html_string)
-            #print self.tostring(dom).encode('utf8')
             try:
                 dom = self.preprocess_dom(dom)
             except Exception as e:
@@ -631,7 +629,6 @@ class DOMParserBase(object):
                     _msg = '%s: caught exception preprocessing html'
                     self._logger.error(_msg, self._cname, exc_info=True)
                     continue
-        ##print html_string.encode('utf8')
         return html_string
 
     def gather_refs(self, dom):

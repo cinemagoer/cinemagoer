@@ -563,7 +563,7 @@ def akasLanguages(movie):
                 (movie.get('akas from release info') or []))
     for aka in akas:
         # split aka
-        aka = aka.encode('utf8').split('::')
+        aka = aka.split('::')
         # sometimes there is no countries information
         if len(aka) == 2:
             # search for something like "(... title)" where ... is a language
@@ -579,7 +579,7 @@ def akasLanguages(movie):
                 language = COUNTRY_LANG.get(country)
         else:
             language = None
-        lang_and_aka.append((language, aka[0].decode('utf8')))
+        lang_and_aka.append((language, aka[0]))
     return lang_and_aka
 
 
@@ -594,17 +594,13 @@ def sortAKAsBySimilarity(movie, title, _titlesOnly=True, _preferredLang=None):
     # estimate string distance between current title and given title
     m_title = movie['title'].lower()
     l_title = title.lower()
-    if isinstance(l_title, str):
-        l_title = l_title.encode('utf8')
     scores = []
-    score = difflib.SequenceMatcher(None, m_title.encode('utf8'), l_title).ratio()
+    score = difflib.SequenceMatcher(None, m_title, l_title).ratio()
     # set original title and corresponding score as the best match for given title
     scores.append((score, movie['title'], None))
     for language, aka in akasLanguages(movie):
         # estimate string distance between current title and given title
         m_title = aka.lower()
-        if isinstance(m_title, str):
-            m_title = m_title.encode('utf8')
         score = difflib.SequenceMatcher(None, m_title, l_title).ratio()
         # if current language is the same as the given one, increase score
         if _preferredLang and _preferredLang == language:
@@ -626,13 +622,8 @@ def getAKAsInLanguage(movie, lang, _searchedTitle=None):
             akas.append(aka)
     if _searchedTitle:
         scores = []
-        if isinstance(_searchedTitle, str):
-            _searchedTitle = _searchedTitle.encode('utf8')
         for aka in akas:
-            m_aka = aka
-            if isinstance(m_aka):
-                m_aka = m_aka.encode('utf8')
-            scores.append(difflib.SequenceMatcher(None, m_aka.lower(),
+            scores.append(difflib.SequenceMatcher(None, aka.lower(),
                             _searchedTitle.lower()), aka)
         scores.sort(reverse=True)
         akas = [x[1] for x in scores]

@@ -164,11 +164,9 @@ class Company(_Container):
 
     def __repr__(self):
         """String representation of a Company object."""
-        r = '<Company id:%s[%s] name:_%s_>' % (self.companyID,
+        return '<Company id:%s[%s] name:_%s_>' % (self.companyID,
                                         self.accessSystem,
                                         self.get('long imdb name'))
-        if isinstance(r, str): r = r.encode('utf_8', 'replace')
-        return r
 
     def __str__(self):
         """Simply print the short name."""

@@ -327,10 +327,8 @@ class Movie(_Container):
             title = self.get('long imdb episode title')
         else:
             title = self.get('long imdb title')
-        r = '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
+        return '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
                                                 title)
-        if isinstance(r, str): r = r.encode('utf_8', 'replace')
-        return r
 
     def __str__(self):
         """Simply print the short title."""

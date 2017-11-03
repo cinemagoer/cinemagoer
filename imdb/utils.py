@@ -73,16 +73,10 @@ def canonicalName(name):
     #      - Jr.: 8025
     # Don't convert names already in the canonical format.
     if name.find(', ') != -1: return name
-    if isinstance(name, str):
-        joiner = '%s, %s'
-        sur_joiner = '%s %s'
-        sur_space = ' %s'
-        space = ' '
-    else:
-        joiner = '%s, %s'
-        sur_joiner = '%s %s'
-        sur_space = ' %s'
-        space = ' '
+    joiner = '%s, %s'
+    sur_joiner = '%s %s'
+    sur_space = ' %s'
+    space = ' '
     sname = name.split(' ')
     snl = len(sname)
     if snl == 2:
@@ -117,10 +111,7 @@ def canonicalName(name):
 
 def normalizeName(name):
     """Return a name in the normal "Name Surname" format."""
-    if isinstance(name, str):
-        joiner = '%s %s'
-    else:
-        joiner = '%s %s'
+    joiner = '%s %s'
     sname = name.split(', ')
     if len(sname) == 2:
         name = joiner % (sname[1], sname[0])
@@ -476,8 +467,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None,
             pass
     if imdbIndex:
         result['imdbIndex'] = imdbIndex
-    if isinstance(_emptyString, str):
-        result['kind'] = str(kind or 'movie')
+    result['kind'] = kind or 'movie'
     return result
 
 
@@ -501,11 +491,6 @@ def _convertTime(title, fromPTDFtoWEB=1, _emptyString=''):
             title = 'Episode dated %s' % title
     except ValueError:
         pass
-    if isinstance(_emptyString, str):
-        try:
-            title = str(title)
-        except UnicodeDecodeError:
-            pass
     return title
 
 
@@ -587,9 +572,7 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
     if kind in ('tv series', 'tv mini series'):
         title = '"%s"' % title
     if _doYear:
-        year = title_dict.get('year') or '????'
-        if isinstance(_emptyString, str):
-            year = str(year)
+        year = str(title_dict.get('year')) or '????'
         imdbIndex = title_dict.get('imdbIndex')
         if not ptdf:
             if imdbIndex and (canonical is None or canonical):
@@ -1014,14 +997,11 @@ def _tagAttr(key, fullpath):
         if useTitle:
             attrs['key'] = _escapedKey
     elif not isinstance(key, str):
-        if isinstance(key, str):
-            tagName = str(key, 'ascii', 'ignore')
-        else:
-            strType = str(type(key)).replace("<type '", "").replace("'>", "")
-            attrs['keytype'] = strType
-            tagName = str(key)
+        strType = str(type(key)).replace("<type '", "").replace("'>", "")
+        attrs['keytype'] = strType
+        tagName = str(key)
     else:
-        tagName = key
+        tagName = str(bytes((key, 'ascii', 'ignore')))
     if isinstance(key, int):
         attrs['keytype'] = 'int'
     origTagName = tagName

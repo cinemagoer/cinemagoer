@@ -168,11 +168,9 @@ class Character(_Container):
 
     def __repr__(self):
         """String representation of a Character object."""
-        r = '<Character id:%s[%s] name:_%s_>' % (self.characterID,
+        return '<Character id:%s[%s] name:_%s_>' % (self.characterID,
                                         self.accessSystem,
                                         self.get('name'))
-        if isinstance(r, str): r = r.encode('utf_8', 'replace')
-        return r
 
     def __str__(self):
         """Simply print the short name."""

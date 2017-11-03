@@ -420,10 +420,6 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        # XXX: I suppose it will be much safer if the user provides
-        #      an unicode string... this is just a guess.
-        if not isinstance(title, str):
-            title = str(title, encoding, 'replace')
         if not _episodes:
             res = self._search_movie(title, results)
         else:
@@ -482,8 +478,6 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if not isinstance(name, str):
-            name = str(name, encoding, 'replace')
         res = self._search_person(name, results)
         return [Person.Person(personID=self._get_real_personID(pi),
                 data=pd, modFunct=self._defModFunct,
@@ -527,8 +521,6 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if not isinstance(name, str):
-            name = str(name, encoding, 'replace')
         res = self._search_character(name, results)
         return [Character.Character(characterID=self._get_real_characterID(pi),
                 data=pd, modFunct=self._defModFunct,
@@ -572,8 +564,6 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        if not isinstance(name, str):
-            name = str(name, encoding, 'replace')
         res = self._search_company(name, results)
         return [Company.Company(companyID=self._get_real_companyID(pi),
                 data=pd, modFunct=self._defModFunct,
@@ -593,8 +583,6 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 100
-        if not isinstance(keyword, str):
-            keyword = str(keyword, encoding, 'replace')
         return self._search_keyword(keyword, results)
 
     def _get_keyword(self, keyword, results):
@@ -613,8 +601,6 @@ class IMDbBase:
             results = 100
         # XXX: I suppose it will be much safer if the user provides
         #      an unicode string... this is just a guess.
-        if not isinstance(keyword, str):
-            keyword = str(keyword, encoding, 'replace')
         res = self._get_keyword(keyword, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
@@ -645,52 +631,24 @@ class IMDbBase:
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""
         # XXX: not really useful...
-        if 'title' in keywords:
-            if not isinstance(keywords['title'], str):
-                keywords['title'] = str(keywords['title'],
-                                            encoding, 'replace')
-        elif len(arguments) > 1:
-            if not isinstance(arguments[1], str):
-                arguments[1] = str(arguments[1], encoding, 'replace')
         return Movie.Movie(accessSystem=self.accessSystem,
                             *arguments, **keywords)
 
     def new_person(self, *arguments, **keywords):
         """Return a Person object."""
         # XXX: not really useful...
-        if 'name' in keywords:
-            if not isinstance(keywords['name'], str):
-                keywords['name'] = str(keywords['name'],
-                                            encoding, 'replace')
-        elif len(arguments) > 1:
-            if not isinstance(arguments[1], str):
-                arguments[1] = str(arguments[1], encoding, 'replace')
         return Person.Person(accessSystem=self.accessSystem,
                                 *arguments, **keywords)
 
     def new_character(self, *arguments, **keywords):
         """Return a Character object."""
         # XXX: not really useful...
-        if 'name' in keywords:
-            if not isinstance(keywords['name'], str):
-                keywords['name'] = str(keywords['name'],
-                                            encoding, 'replace')
-        elif len(arguments) > 1:
-            if not isinstance(arguments[1], str):
-                arguments[1] = str(arguments[1], encoding, 'replace')
         return Character.Character(accessSystem=self.accessSystem,
                                     *arguments, **keywords)
 
     def new_company(self, *arguments, **keywords):
         """Return a Company object."""
         # XXX: not really useful...
-        if 'name' in keywords:
-            if not isinstance(keywords['name'], str):
-                keywords['name'] = str(keywords['name'],
-                                            encoding, 'replace')
-        elif len(arguments) > 1:
-            if not isinstance(arguments[1], str):
-                arguments[1] = str(arguments[1], encoding, 'replace')
         return Company.Company(accessSystem=self.accessSystem,
                                     *arguments, **keywords)
 

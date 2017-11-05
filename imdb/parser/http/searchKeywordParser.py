@@ -87,7 +87,7 @@ class DOMHTMLSearchMovieKeywordParser(DOMHTMLSearchMovieParser):
                         path={
                             'link': "./a[1]/@href",
                             'info': "./a[1]//text()",
-                            'ynote': "./span[@class='desc']/text()",
+                            'ynote': "./span[@class='lister-item-year text-muted unbold']/text()",
                             'outline': "./span[@class='outline']//text()"
                             },
                         postprocess=lambda x: (

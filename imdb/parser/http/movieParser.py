@@ -1215,8 +1215,8 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
                                 path="./@href")) ]
 
 class DOMHTMLOfficialsitesParser(DOMParserBase):
-    """Parser for the "official sites", "external reviews", "newsgroup
-    reviews", "miscellaneous links", "sound clips", "video clips" and
+    """Parser for the "official sites", "external reviews"
+    "miscellaneous links", "sound clips", "video clips" and
     "photographs" pages of a given movie.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
@@ -1987,8 +1987,6 @@ _OBJECTS = {
                             {'kind': 'critic reviews'}),
     'externalrev_parser':  ((DOMHTMLOfficialsitesParser,),
                             {'kind': 'external reviews'}),
-    'newsgrouprev_parser':  ((DOMHTMLOfficialsitesParser,),
-                            {'kind': 'newsgroup reviews'}),
     'misclinks_parser':  ((DOMHTMLOfficialsitesParser,),
                             {'kind': 'misc links'}),
     'soundclips_parser':  ((DOMHTMLOfficialsitesParser,),

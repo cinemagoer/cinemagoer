@@ -28,8 +28,6 @@ company_id = sys.argv[1]
 
 i = imdb.IMDb()
 
-out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
-
 try:
     # Get a company object with the data about the company identified by
     # the given company_id.
@@ -51,4 +49,4 @@ if not company:
 # to access the data stored in a company object, so look below; the
 # commented lines show some ways to retrieve information from a
 # company object.
-print(company.summary().encode(out_encoding, 'replace'))
+print(company.summary())

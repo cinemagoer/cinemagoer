@@ -27,10 +27,8 @@ name = sys.argv[1]
 
 i = imdb.IMDb()
 
-in_encoding = sys.stdin.encoding or sys.getdefaultencoding()
 out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
-name = str(name, in_encoding, 'replace')
 try:
     # Do the search, and get the results (a list of company objects).
     results = i.search_company(name)
@@ -42,11 +40,11 @@ except imdb.IMDbError as e:
 # Print the results.
 print('    %s result%s for "%s":' % (len(results),
                                      ('', 's')[len(results) != 1],
-                                     name.encode(out_encoding, 'replace')))
+                                     name))
 print('companyID\t: imdbID : name')
 
 # Print the long imdb name for every company.
 for company in results:
     outp = '%s\t\t: %s : %s' % (company.companyID, i.get_imdbID(company),
                                  company['long imdb name'])
-    print(outp.encode(out_encoding, 'replace'))
+    print(outp)

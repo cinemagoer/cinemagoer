@@ -27,10 +27,8 @@ name = sys.argv[1]
 
 i = imdb.IMDb()
 
-in_encoding = sys.stdin.encoding or sys.getdefaultencoding()
 out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
-name = str(name, in_encoding, 'replace')
 try:
     # Do the search, and get the results (a list of character objects).
     results = i.search_character(name)
@@ -42,7 +40,7 @@ except imdb.IMDbError as e:
 # Print the results.
 print('    %s result%s for "%s":' % (len(results),
                                      ('', 's')[len(results) != 1],
-                                     name.encode(out_encoding, 'replace')))
+                                     name))
 print('characterID\t: imdbID : name')
 
 # Print the long imdb name for every character.
@@ -50,4 +48,4 @@ for character in results:
     outp = '%s\t\t: %s : %s' % (character.characterID,
                                  i.get_imdbID(character),
                                  character['long imdb name'])
-    print(outp.encode(out_encoding, 'replace'))
+    print(outp)

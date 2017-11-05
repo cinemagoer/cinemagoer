@@ -27,10 +27,8 @@ name = sys.argv[1]
 
 i = imdb.IMDb()
 
-in_encoding = sys.stdin.encoding or sys.getdefaultencoding()
 out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
-name = str(name, in_encoding, 'replace')
 try:
     # Do the search, and get the results (a list of keyword strings).
     results = i.search_keyword(name, results=20)
@@ -42,10 +40,10 @@ except imdb.IMDbError as e:
 # Print the results.
 print('    %s result%s for "%s":' % (len(results),
                                      ('', 's')[len(results) != 1],
-                                     name.encode(out_encoding, 'replace')))
+                                     name))
 print(' : keyword')
 
 # Print every keyword.
 for idx, keyword in enumerate(results):
     outp = '%d: %s' % (idx+1, keyword)
-    print(outp.encode(out_encoding, 'replace'))
+    print(outp)

@@ -28,8 +28,6 @@ character_id = sys.argv[1]
 
 i = imdb.IMDb()
 
-out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
-
 try:
     # Get a character object with the data about the character identified by
     # the given character_id.
@@ -52,4 +50,4 @@ if not character:
 # to access the data stored in a character object, so look below; the
 # commented lines show some ways to retrieve information from a
 # character object.
-print(character.summary().encode(out_encoding, 'replace'))
+print(character.summary())

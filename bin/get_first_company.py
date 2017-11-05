@@ -27,10 +27,6 @@ name = sys.argv[1]
 
 i = imdb.IMDb()
 
-in_encoding = sys.stdin.encoding or sys.getdefaultencoding()
-out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
-
-name = str(name, in_encoding, 'replace')
 try:
     # Do the search, and get the results (a list of company objects).
     results = i.search_company(name)
@@ -40,11 +36,11 @@ except imdb.IMDbError as e:
     sys.exit(3)
 
 if not results:
-    print('No matches for "%s", sorry.' % name.encode(out_encoding, 'replace'))
+    print('No matches for "%s", sorry.' % name)
     sys.exit(0)
 
 # Print only the first result.
-print('    Best match for "%s"' % name.encode(out_encoding, 'replace'))
+print('    Best match for "%s"' % name)
 
 # This is a company instance.
 company = results[0]
@@ -53,4 +49,4 @@ company = results[0]
 # name; retrieve main information:
 i.update(company)
 
-print(company.summary().encode(out_encoding, 'replace'))
+print(company.summary())

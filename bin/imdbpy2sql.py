@@ -29,6 +29,7 @@ import getopt
 import time
 import re
 import warnings
+import operator
 import dbm
 from itertools import islice, chain
 try:
@@ -381,7 +382,9 @@ class CSVCursor(object):
             r[3] = '%s.%d.%d/' % (lobFN, val3off, val3len)
             lobFD.write(val3)
         # Build the line and add the end-of-line.
-        return '%s%s' % (self.delimeter.join(r), self.csvEOL)
+        ret = '%s%s' % (self.delimeter.join(r), self.csvEOL)
+        ret = ret.encode('latin1', 'ignore')
+        return ret
 
     def executemany(self, sqlstr, items):
         """Emulate the executemany method of a cursor, but writes the
@@ -775,6 +778,7 @@ class SourceFile(GzipFile):
         for item in start:
             itemlen = len(item)
             for line in self:
+                line = line.decode('latin1')
                 if line[:itemlen] == item: break
         self.set_stop(stop)
 
@@ -788,12 +792,12 @@ class SourceFile(GzipFile):
 
     def readline_NOcheckEnd(self, size=-1):
         line = GzipFile.readline(self, size)
-        return str(line, 'latin_1').encode('utf_8')
+        return str(line, 'latin_1')
 
     def readline_checkEnd(self, size=-1):
         line = GzipFile.readline(self, size)
         if self.stop is not None and line[:self.stoplen] == self.stop: return ''
-        return str(line, 'latin_1').encode('utf_8')
+        return str(line, 'latin_1')
 
     def getByHashSections(self):
         return getSectionHash(self)
@@ -1039,8 +1043,7 @@ class MoviesCache(_BaseCache):
             sys.stdout.flush()
         l = []
         lapp = l.append
-        tmpDictiter = self._tmpDict.iteritems
-        for k, v in tmpDictiter():
+        for k, v in self._tmpDict.items():
             try:
                 t = analyze_title(k, _emptyString='')
             except IMDbParserError:
@@ -1067,7 +1070,7 @@ class MoviesCache(_BaseCache):
             lapp((v, title, tget('imdbIndex'), KIND_IDS[kind],
                     tget('year'), None, soundex, episodeOf,
                     tget('season'), tget('episode'), tget('series years'),
-                    md5(k).hexdigest()))
+                    md5(k.encode('latin1')).hexdigest()))
         self._runCommand(l)
 
     def _runCommand(self, dataList):
@@ -1127,8 +1130,7 @@ class PersonsCache(_BaseCache):
             sys.stdout.flush()
         l = []
         lapp = l.append
-        tmpDictiter = self._tmpDict.iteritems
-        for k, v in tmpDictiter():
+        for k, v in self._tmpDict.items():
             try:
                 t = analyze_name(k)
             except IMDbParserError:
@@ -1141,7 +1143,7 @@ class PersonsCache(_BaseCache):
             gender = self.personGender.get(v)
             lapp((v, name, tget('imdbIndex'), None, gender,
                 namePcodeCf, namePcodeNf, surnamePcode,
-                md5(k).hexdigest()))
+                md5(k.encode('latin1')).hexdigest()))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
         else:
@@ -1185,8 +1187,7 @@ class CharactersCache(_BaseCache):
             sys.stdout.flush()
         l = []
         lapp = l.append
-        tmpDictiter = self._tmpDict.iteritems
-        for k, v in tmpDictiter():
+        for k, v in self._tmpDict.items():
             try:
                 t = analyze_name(k)
             except IMDbParserError:
@@ -1198,7 +1199,7 @@ class CharactersCache(_BaseCache):
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name,
                                                                 character=True)
             lapp((v, name, tget('imdbIndex'), None,
-                namePcodeCf, surnamePcode, md5(k).hexdigest()))
+                namePcodeCf, surnamePcode, md5(k.encode('latin1')).hexdigest()))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
         else:
@@ -1242,8 +1243,7 @@ class CompaniesCache(_BaseCache):
             sys.stdout.flush()
         l = []
         lapp = l.append
-        tmpDictiter = self._tmpDict.iteritems
-        for k, v in tmpDictiter():
+        for k, v in self._tmpDict.items():
             try:
                 t = analyze_company_name(k)
             except IMDbParserError:
@@ -1258,7 +1258,7 @@ class CompaniesCache(_BaseCache):
             if k != name:
                 namePcodeSf = soundex(k)
             lapp((v, name, country, None, namePcodeNf, namePcodeSf,
-                    md5(k).hexdigest()))
+                    md5(k.encode('latin1')).hexdigest()))
         if not CSV_DIR:
             CURS.executemany(self.sqlstr, self.converter(l))
         else:
@@ -1298,8 +1298,7 @@ class KeywordsCache(_BaseCache):
             sys.stdout.flush()
         l = []
         lapp = l.append
-        tmpDictiter = self._tmpDict.iteritems
-        for k, v in tmpDictiter():
+        for k, v in self._tmpDict.items():
             keySoundex = soundex(k)
             lapp((v, k, keySoundex))
         if not CSV_DIR:
@@ -1627,7 +1626,7 @@ def doAkaNames():
             namePcodeCf, namePcodeNf, surnamePcode = name_soundexes(name)
             sqldata.add((pid, name, name_dict.get('imdbIndex'),
                         namePcodeCf, namePcodeNf, surnamePcode,
-                        md5(line).hexdigest()))
+                        md5(line.encode('latin1')).hexdigest()))
             if count % 10000 == 0:
                 print('SCANNING akanames:', _(line))
             count += 1
@@ -2181,7 +2180,7 @@ def nmmvFiles(fp, funct, fname):
                                     name_soundexes(realname)
                         akanamesdata.add((mopid, realname, imdbIndex,
                                     namePcodeCf, namePcodeNf, surnamePcode,
-                                    md5(realname).hexdigest()))
+                                    md5(realname.encode('latin1')).hexdigest()))
         count += 1
     if guestdata is not None: guestdata.flush()
     if akanamesdata is not None: akanamesdata.flush()
@@ -2555,15 +2554,6 @@ CACHE_CID = CharactersCache()
 CACHE_CID.className = 'CharactersCache'
 CACHE_COMPID = CompaniesCache()
 CACHE_KWRDID = KeywordsCache()
-
-def _cmpfunc(x, y):
-    """Sort a list of tuples, by the length of the first item (in reverse)."""
-    lx = len(x[0])
-    ly = len(y[0])
-    if lx > ly: return -1
-    elif lx < ly: return 1
-    return 0
-
 INFO_TYPES = {}
 MOVIELINK_IDS = []
 KIND_IDS = {}
@@ -2581,7 +2571,7 @@ def readConstants():
 
     for x in LinkType.select():
         MOVIELINK_IDS.append((x.link, len(x.link), x.id))
-    MOVIELINK_IDS.sort(_cmpfunc)
+    MOVIELINK_IDS.sort(key=lambda x: operator.length_hint(x[0]), reverse=True)
 
     for x in KindType.select():
         KIND_IDS[x.kind] = x.id

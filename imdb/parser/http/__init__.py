@@ -33,10 +33,7 @@ from urllib.request import FancyURLopener
 from urllib.parse import quote_plus
 from codecs import lookup
 
-from imdb import IMDbBase, imdbURL_movie_main, imdbURL_person_main, \
-                imdbURL_character_main, imdbURL_company_main, \
-                imdbURL_keyword_main, imdbURL_find, imdbURL_top250, \
-                imdbURL_bottom100
+from imdb import IMDbBase
 from imdb.utils import analyze_title
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 
@@ -456,7 +453,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         'char' (for characters) or 'co' (for companies).
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
-        params = 'q=%s&s=%s&mx=%s' % (quote_plus(ton), kind, str(results))
+        params = 'q=%s&s=%s&mx=%s' % (quote_plus(ton, safe=''), kind, str(results))
         if kind == 'ep':
             params = params.replace('s=ep&', 's=tt&ttype=ep&', 1)
         cont = self._retrieve(self.urls['find'] % params)
@@ -466,17 +463,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
             return cont
         # The retrieved page contains no results, because too many
         # titles or names contain the string we're looking for.
-        params = 'q=%s&ls=%s&lm=0' % (quote_plus(ton), kind)
+        params = 'q=%s&ls=%s&lm=0' % (quote_plus(ton, safe=''), kind)
         size = 131072 + results * 512
         return self._retrieve(self.urls['find'] % params, size=size)
 
     def _search_movie(self, title, results):
-        # The URL of the query.
-        # XXX: To retrieve the complete results list:
-        #      params = urllib.urlencode({'more': 'tt', 'q': title})
-        ##params = urllib.urlencode({'tt': 'on','mx': str(results),'q': title})
-        ##params = 'q=%s&tt=on&mx=%s' % (quote_plus(title), str(results))
-        ##cont = self._retrieve(imdbURL_find % params)
         cont = self._get_search_content('tt', title, results)
         return self.smProxy.search_movie_parser.parse(cont, results=results)['data']
 
@@ -681,12 +672,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.mProxy.parentsguide_parser.parse(cont)
 
     def _search_person(self, name, results):
-        # The URL of the query.
-        # XXX: To retrieve the complete results list:
-        #      params = urllib.urlencode({'more': 'nm', 'q': name})
-        ##params = urllib.urlencode({'nm': 'on', 'mx': str(results), 'q': name})
-        #params = 'q=%s&nm=on&mx=%s' % (quote_plus(name), str(results))
-        #cont = self._retrieve(imdbURL_find % params)
         cont = self._get_search_content('nm', name, results)
         return self.spProxy.search_person_parser.parse(cont, results=results)['data']
 

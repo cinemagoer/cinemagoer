@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 rebuildmo.py script.
 
@@ -21,11 +21,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import glob
-from . import msgfmt
 import os
-
-#LOCALE_DIR = os.path.dirname(__file__)
+import glob
+import msgfmt
 
 def rebuildmo():
     lang_glob = 'imdbpy-*.po'

@@ -78,7 +78,7 @@ class DOMHTMLTop250Parser(DOMParserBase):
             except: pass
             if 'votes' in d:
                 try:
-                    votes = d['votes'].replace(' votes','')
+                    votes = d['votes'].replace(' user ratings','')
                     votes = votes.split(' based on ')[1]
                     minfo['votes'] = int(votes.replace(',', ''))
                 except:

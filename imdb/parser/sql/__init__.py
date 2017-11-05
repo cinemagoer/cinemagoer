@@ -748,7 +748,6 @@ class IMDbSqlAccessSystem(IMDbBase):
                                 self._buildNULLCondition(Name.q.imdbIndex,
                                                         nd.get('imdbIndex'))))
         try:
-            c = res.count()
             if res.count() != 1:
                 return None
         except (UnicodeDecodeError, TypeError):

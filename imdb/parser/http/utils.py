@@ -533,13 +533,13 @@ class DOMParserBase(object):
             dom = self.get_dom(html_string)
             try:
                 dom = self.preprocess_dom(dom)
-            except Exception as e:
+            except Exception:
                 self._logger.error('%s: caught exception preprocessing DOM',
                                     self._cname, exc_info=True)
             if self.getRefs:
                 try:
                     self.gather_refs(dom)
-                except Exception as e:
+                except Exception:
                     self._logger.warn('%s: unable to gather refs: %s',
                                     self._cname, exc_info=True)
             data = self.parse_dom(dom)
@@ -547,7 +547,7 @@ class DOMParserBase(object):
             data = {}
         try:
             data = self.postprocess_data(data)
-        except Exception as e:
+        except Exception:
             self._logger.error('%s: caught exception postprocessing data',
                                 self._cname, exc_info=True)
         if self._containsObjects:
@@ -567,7 +567,7 @@ class DOMParserBase(object):
                 dom = self._build_empty_dom()
                 self._logger.error('%s: using a fake empty DOM', self._cname)
             return dom
-        except Exception as e:
+        except Exception:
             self._logger.error('%s: caught exception parsing DOM',
                                 self._cname, exc_info=True)
             return self._build_empty_dom()
@@ -584,7 +584,7 @@ class DOMParserBase(object):
                     item = str(item)
                 result.append(item)
             return result
-        except Exception as e:
+        except Exception:
             self._logger.error('%s: caught exception extracting XPath "%s"',
                                 self._cname, path, exc_info=True)
             return []
@@ -596,7 +596,7 @@ class DOMParserBase(object):
         else:
             try:
                 return self._tostring(element, encoding=str)
-            except Exception as e:
+            except Exception:
                 self._logger.error('%s: unable to convert to string',
                                     self._cname, exc_info=True)
                 return ''
@@ -625,7 +625,7 @@ class DOMParserBase(object):
             elif isinstance(src, collections.Callable):
                 try:
                     html_string = src(html_string)
-                except Exception as e:
+                except Exception:
                     _msg = '%s: caught exception preprocessing html'
                     self._logger.error(_msg, self._cname, exc_info=True)
                     continue
@@ -703,7 +703,7 @@ class DOMParserBase(object):
                     if isinstance(attr_postprocess, collections.Callable):
                         try:
                             data = attr_postprocess(data)
-                        except Exception as e:
+                        except Exception:
                             _m = '%s: unable to apply attr postprocess'
                             self._logger.error(_m, self._cname, exc_info=True)
                     key = attr.key

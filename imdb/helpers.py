@@ -38,7 +38,6 @@ from imdb.utils import modClearRefs, re_titleRef, re_nameRef, \
 from imdb import IMDb, imdbURL_movie_base, imdbURL_person_base, \
                     imdbURL_character_base
 
-import imdb.locale
 from imdb.linguistics import COUNTRY_LANG
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -429,7 +428,6 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         tagContent = tag.contents[0]
         if isinstance(tagContent, BeautifulSoup.NavigableString):
             tagStr = (str(tagContent) or '').strip()
-    tagType = tag.get('type')
     infoset = tag.get('infoset')
     if infoset:
         _key2infoset[name] = infoset
@@ -450,7 +448,6 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None,
         if name == 'movie':
             item.movieID = theID
             tagsToGet = _titleTags
-            theTitle = tag.find('title', recursive=False)
             if tag.title:
                 item.set_title(tag.title.string)
                 tag.title.extract()

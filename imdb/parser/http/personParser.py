@@ -28,15 +28,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 from imdb.Movie import Movie
-from imdb.utils import analyze_name, canonicalName, normalizeName, \
-                        analyze_title, date_and_notes
+from imdb.utils import analyze_name, canonicalName, analyze_title
 from .utils import build_movie, DOMParserBase, Attribute, Extractor, \
                         analyze_imdbid
 
 
-from .movieParser import _manageRoles
 _reRoles = re.compile(r'(<li>.*? \.\.\.\. )(.*?)(</li>|<br>)',
                         re.I | re.M | re.S)
+
 
 def build_date(date):
     day = date.get('day')

@@ -31,7 +31,7 @@ __version__ = VERSION = '5.2dev20171024'
 from . import _compat
 
 import sys, os, configparser, logging
-from types import MethodType
+from types import MethodType, FunctionType
 
 from imdb import Movie, Person, Character, Company
 import imdb._logging
@@ -363,7 +363,7 @@ class IMDbBase:
         for name in dir(self.__class__):
             if name.startswith(prefname) and name not in excludes:
                 member = getattr(self.__class__, name)
-                if isinstance(member, MethodType):
+                if isinstance(member, (MethodType, FunctionType)):
                     infoset.append(name[preflen:].replace('_', ' '))
         return infoset
 
@@ -912,7 +912,7 @@ class IMDbBase:
         base_methods = []
         for name in dir(IMDbBase):
             member = getattr(IMDbBase, name)
-            if isinstance(member, MethodType):
+            if isinstance(member, (MethodType, FunctionType)):
                 base_methods.append(name)
         for name in dir(self.__class__):
             if name.startswith('_') or name in base_methods or \
@@ -922,7 +922,7 @@ class IMDbBase:
                     name.startswith('get_character_'):
                 continue
             member = getattr(self.__class__, name)
-            if isinstance(member, MethodType):
+            if isinstance(member, (MethodType, FunctionType)):
                 sm_dict.update({name: member.__doc__})
         return sm_dict
 

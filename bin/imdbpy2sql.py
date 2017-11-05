@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 imdbpy2sql.py script.
 
@@ -36,7 +36,6 @@ try:
 except ImportError:
     from md5 import md5
 from gzip import GzipFile
-from types import UnicodeType
 
 #from imdb.parser.sql.dbschema import *
 from imdb.parser.sql.dbschema import DB_SCHEMA, dropTables, createTables, \
@@ -46,10 +45,11 @@ from imdb.utils import analyze_title, analyze_name, date_and_notes, \
         build_name, build_title, normalizeName, normalizeTitle, _articles, \
         build_company_name, analyze_company_name, canonicalTitle
 from imdb._exceptions import IMDbParserError, IMDbError
+from imdb.parser.sql.alchemyadapter import getDBTables, setConnection
 
 
 HELP = """imdbpy2sql.py usage:
-    %s -d /directory/with/PlainTextDataFiles/ -u URI [-c /directory/for/CSV_files] [-o sqlobject,sqlalchemy] [-i table,dbm] [--CSV-OPTIONS] [--COMPATIBILITY-OPTIONS]
+    %s -d /directory/with/PlainTextDataFiles/ -u URI [-c /directory/for/CSV_files] [-i table,dbm] [--CSV-OPTIONS] [--COMPATIBILITY-OPTIONS]
 
         # NOTE: URI is something along the line:
                 scheme://[user[:password]@]host[:port]/database[?parameters]
@@ -63,10 +63,6 @@ HELP = """imdbpy2sql.py usage:
         # NOTE: CSV mode (-c path):
                 A directory is used to store CSV files; on supported
                 database servers it should be really fast.
-
-        # NOTE: ORMs (-o orm):
-                Valid options are 'sqlobject', 'sqlalchemy' or the
-                preferred order separating the voices with a comma.
 
         # NOTE: imdbIDs store/restore (-i method):
                 Valid options are 'table' (imdbIDs stored in a temporary
@@ -94,9 +90,6 @@ HELP = """imdbpy2sql.py usage:
 IMDB_PTDF_DIR = None
 # URI used to connect to the database.
 URI = None
-# ORM to use (list of options) and actually used (string).
-USE_ORM = None
-USED_ORM = None
 # List of tables of the database.
 DB_TABLES = []
 # Max allowed recursion, inserting data.
@@ -172,12 +165,12 @@ if '--sqlite-transactions' in sys.argv[1:]:
 
 # Manage arguments list.
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:o:c:i:h',
+    optlist, args = getopt.getopt(sys.argv[1:], 'u:d:e:c:i:h',
                                                 ['uri=', 'data=', 'execute=',
                                                 'mysql-innodb', 'ms-sqlserver',
                                                 'sqlite-transactions',
                                                 'fix-old-style-titles',
-                                                'mysql-force-myisam', 'orm',
+                                                'mysql-force-myisam',
                                                 'csv-only-write',
                                                 'csv-only-load',
                                                 'csv=', 'csv-ext=',
@@ -218,8 +211,6 @@ for opt in optlist:
                 CUSTOM_QUERIES.setdefault(nw, []).append(cmd)
         else:
             CUSTOM_QUERIES.setdefault(when, []).append(cmd)
-    elif opt[0] in ('-o', '--orm'):
-        USE_ORM = opt[1].split(',')
     elif opt[0] == '--fix-old-style-titles':
         warnings.warn('The --fix-old-style-titles argument is obsolete.')
     elif opt[0] == '--csv-only-write':
@@ -310,39 +301,9 @@ if CSV_DIR:
         sys.exit(3)
 
 
-if USE_ORM is None:
-    USE_ORM = ('sqlobject', 'sqlalchemy')
-if not isinstance(USE_ORM, (tuple, list)):
-    USE_ORM = [USE_ORM]
-nrMods = len(USE_ORM)
-_gotError = False
-for idx, mod in enumerate(USE_ORM):
-    mod = mod.lower()
-    try:
-        if mod == 'sqlalchemy':
-            from imdb.parser.sql.alchemyadapter import getDBTables, setConnection
-        elif mod == 'sqlobject':
-            from imdb.parser.sql.objectadapter import getDBTables, setConnection
-        else:
-            warnings.warn('unknown module "%s".' % mod)
-            continue
-        DB_TABLES = getDBTables(URI)
-        for t in DB_TABLES:
-            globals()[t._imdbpyName] = t
-        if _gotError:
-            warnings.warn('falling back to "%s".' % mod)
-        USED_ORM = mod
-        break
-    except ImportError as e:
-        if idx+1 >= nrMods:
-            raise IMDbError('unable to use any ORM in %s: %s' % (
-                                            str(USE_ORM), str(e)))
-        else:
-            warnings.warn('unable to use "%s": %s' % (mod, str(e)))
-            _gotError = True
-        continue
-else:
-    raise IMDbError('unable to use any ORM in %s' % str(USE_ORM))
+DB_TABLES = getDBTables(URI)
+for t in DB_TABLES:
+    globals()[t._imdbpyName] = t
 
 
 #-----------------------
@@ -554,12 +515,6 @@ except AttributeError as e:
     IntegrityError = Exception
 
 connectObject = conn.getConnection()
-# XXX: fix for a problem that should be fixed in objectadapter.py (see it).
-if URI and URI.startswith('sqlite') and USED_ORM == 'sqlobject':
-    major = sys.version_info[0]
-    minor = sys.version_info[1]
-    if major > 2 or (major == 2 and minor > 5):
-        connectObject.text_factory = str
 
 # Cursor object.
 CURS = connectObject.cursor()
@@ -659,11 +614,8 @@ def createSQLstr(table, cols, command='INSERT'):
 def _(s, truncateAt=None):
     """Nicely print a string to sys.stdout, optionally
     truncating it a the given char."""
-    if not isinstance(s, UnicodeType):
-        s = str(s, 'utf_8')
     if truncateAt is not None:
         s = s[:truncateAt]
-    s = s.encode(sys.stdout.encoding or 'utf_8', 'replace')
     return s
 
 if not hasattr(os, 'times'):
@@ -2021,7 +1973,7 @@ def getBusiness(lines):
     for k in list(bd.keys()):
         nv = []
         for v in bd[k]:
-            v = v.replace('USD ',_usd).replace('GBP ',_gbp).replace('EUR',_eur)
+            v = v.replace('USD ', _usd).replace('GBP ', _gbp).replace('EUR', _eur)
             nv.append(v)
         bd[k] = nv
     return bd
@@ -2376,7 +2328,6 @@ def doNMMVFiles():
             ('literature.list.gz', LIT_START, getLiterature),
             ('mpaa-ratings-reasons.list.gz', MPAA_START, getMPAA),
             ('plot.list.gz', PLOT_START, getPlot)]:
-    ##for fname, start, funct in [('business.list.gz',BUS_START,getBusiness)]:
         try:
             fp = SourceFile(fname, start=start)
         except IOError:
@@ -2904,7 +2855,7 @@ def restoreCSV():
 
 # begin the iterations...
 def run():
-    print('RUNNING imdbpy2sql.py using the %s ORM' % USED_ORM)
+    print('RUNNING imdbpy2sql.py')
 
     executeCustomQueries('BEGIN')
 

@@ -43,21 +43,3 @@ def setLevel(level):
     imdbpyLogger.setLevel(LEVELS.get(level, logging.NOTSET))
     imdbpyLogger.log(imdbpyLogger.level, 'set logging threshold to "%s"',
                     logging.getLevelName(imdbpyLogger.level))
-
-
-#imdbpyLogger.setLevel(logging.DEBUG)
-
-
-# It can be an idea to have a single function to log and warn:
-#import warnings
-#def log_and_warn(msg, args=None, logger=None, level=None):
-#    """Log the message and issue a warning."""
-#    if logger is None:
-#        logger = imdbpyLogger
-#    if level is None:
-#        level = logging.WARNING
-#    if args is None:
-#        args = ()
-#    #warnings.warn(msg % args, stacklevel=0)
-#    logger.log(level, msg % args)
-

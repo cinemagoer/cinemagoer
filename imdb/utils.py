@@ -1442,12 +1442,10 @@ class _Container(object):
                 return modifyStrings(rawData, self.modFunct, self.titlesRefs,
                                     self.namesRefs, self.charactersRefs)
             except RuntimeError as e:
-                # Symbian/python 2.2 has a poor regexp implementation.
                 import warnings
                 warnings.warn('RuntimeError in '
                         "imdb.utils._Container.__getitem__; if it's not "
-                        "a recursion limit exceeded and we're not running "
-                        "in a Symbian environment, it's a bug:\n%s" % e)
+                        "a recursion limit exceeded, it's a bug:\n%s" % e)
         return rawData
 
     def __setitem__(self, key, item):

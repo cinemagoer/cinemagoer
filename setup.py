@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 
-import distutils.sysconfig
 import os
 import sys
-import ez_setup
-ez_setup.use_setuptools()
-
 import setuptools
+import distutils.sysconfig
 
 # version of the software; in the code repository this represents
 # the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
 version = '5.2'
 
-home_page = 'http://imdbpy.sf.net/'
+home_page = 'https://imdbpy.sourceforge.io/'
 
 long_desc = """IMDbPY is a Python package useful to retrieve and
 manage the data of the IMDb movie database about movies, people,
@@ -30,7 +27,7 @@ in this package; other IMDbPY-based programs are available at the
 home page: %s
 """ % home_page
 
-dwnl_url = 'http://imdbpy.sf.net/?page=download'
+dwnl_url = 'https://imdbpy.sourceforge.io/downloads.html'
 
 classifiers = """\
 Development Status :: 5 - Production/Stable

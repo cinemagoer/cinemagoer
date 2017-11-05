@@ -298,7 +298,8 @@ if CSV_DIR:
         CSV_NULL = ''
     else:
         print("\nERROR: importing CSV files is not supported for this database")
-        sys.exit(3)
+        if not CSV_ONLY_WRITE:
+            sys.exit(3)
 
 
 DB_TABLES = getDBTables(URI)
@@ -3006,18 +3007,6 @@ def _kdb_handler(signum, frame):
 
 
 if __name__ == '__main__':
-    try:
-        print('IMPORTING psyco...', end=' ')
-        sys.stdout.flush()
-        #import DONOTIMPORTPSYCO
-        import psyco
-        #psyco.log()
-        psyco.profile()
-        print('DONE!')
-        print('')
-    except ImportError:
-        print('FAILED (not a big deal, everything is alright...)')
-        print('')
     import signal
     signal.signal(signal.SIGINT, _kdb_handler)
     if CSV_ONLY_LOAD:

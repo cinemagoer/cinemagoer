@@ -601,11 +601,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.mProxy.episodes_cast_parser.parse(cont)
     get_movie_episodes_cast = get_movie_guests
 
-    def get_movie_merchandising_links(self, movieID):
-        self._http_logger.warn('merchandising links no longer available',
-                exc_info=False)
-        return {}
-
     def _purge_seasons_data(self, data_d):
         if '_current_season' in data_d['data']:
             del data_d['data']['_current_season']

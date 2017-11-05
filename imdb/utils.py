@@ -3,7 +3,7 @@ utils module (imdb package).
 
 This module provides basic utilities for the imdb package.
 
-Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
                2009 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify

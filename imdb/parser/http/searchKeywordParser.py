@@ -7,7 +7,7 @@ for a given keyword.
 E.g., when searching for the keyword "alabama", the parsed page would be:
     http://akas.imdb.com/find?s=kw;mx=20;q=alabama
 
-Copyright 2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

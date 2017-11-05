@@ -7,7 +7,7 @@ for a given company.
 E.g., when searching for the name "Columbia Pictures", the parsed page would be:
     http://akas.imdb.com/find?s=co;mx=20;q=Columbia+Pictures
 
-Copyright 2008-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2017 Davide Alberani <da@erlug.linux.it>
           2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify

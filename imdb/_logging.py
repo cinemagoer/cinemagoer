@@ -3,7 +3,7 @@ _logging module (imdb package).
 
 This module provides the logging facilities used by the imdb package.
 
-Copyright 2009-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

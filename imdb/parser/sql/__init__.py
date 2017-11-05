@@ -7,7 +7,7 @@ the SQLObject _AND_ SQLAlchemy Object Relational Managers is available.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "sql", "database" or "db".
 
-Copyright 2005-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

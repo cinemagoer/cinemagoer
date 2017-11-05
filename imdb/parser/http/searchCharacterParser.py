@@ -7,7 +7,7 @@ for a given character.
 E.g., when searching for the name "Jesse James", the parsed page would be:
     http://akas.imdb.com/find?s=ch;mx=20;q=Jesse+James
 
-Copyright 2007-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2007-2017 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify

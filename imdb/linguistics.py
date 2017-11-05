@@ -7,7 +7,7 @@ linguistics module (imdb package).
 This module provides functions and data to handle in a smart way
 languages and articles (in various languages) at the beginning of movie titles.
 
-Copyright 2009-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
           2012 Alberto Malagoli <albemala AT gmail.com>
           2009 H. Turgut Uyar <uyar@tekir.org>
 

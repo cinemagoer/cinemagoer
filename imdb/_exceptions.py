@@ -3,7 +3,7 @@ _exceptions module (imdb package).
 
 This module provides the exception hierarchy used by the imdb package.
 
-Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

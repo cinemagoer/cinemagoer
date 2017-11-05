@@ -6,7 +6,7 @@ This module provides the schema used to describe the layout of the
 database used by the imdb.parser.sql package; functions to create/drop
 tables and indexes are also provided.
 
-Copyright 2005-2012 Davide Alberani <da@erlug.linux.it>
+Copyright 2005-2017 Davide Alberani <da@erlug.linux.it>
                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 
 This program is free software; you can redistribute it and/or modify

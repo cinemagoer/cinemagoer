@@ -4,7 +4,7 @@ _compat module (imdb package).
 This module provides compatibility functions used by the imdb package
 to deal with unusual environments.
 
-Copyright 2008-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

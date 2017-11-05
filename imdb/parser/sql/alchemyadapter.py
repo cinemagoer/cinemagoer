@@ -3,7 +3,7 @@ parser.sql.alchemyadapter module (imdb.parser.sql package).
 
 This module adapts the SQLAlchemy ORM to the internal mechanism.
 
-Copyright 2008-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -477,11 +477,11 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
         else:
             uri += '?'
         uri += 'charset=%s' % encoding
-        
+
         # On some server configurations, we will need to explictly enable
         # loading data from local files
         params['local_infile'] = 1
-   
+
     if debug:
         params['echo'] = True
     if uri.startswith('ibm_db'):

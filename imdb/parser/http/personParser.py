@@ -8,7 +8,7 @@ E.g., for "Mel Gibson" the referred pages would be:
     biography:      http://akas.imdb.com/name/nm0000154/bio
     ...and so on...
 
-Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify

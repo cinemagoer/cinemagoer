@@ -4,7 +4,7 @@ Movie module (imdb package).
 This module provides the Movie class, used to store information about
 a given movie.
 
-Copyright 2004-2010 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

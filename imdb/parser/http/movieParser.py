@@ -1878,9 +1878,9 @@ class DOMHTMLAiringParser(DOMParserBase):
     def postprocess_data(self, data):
         if len(data) == 0:
             return {}
-        seriesTitle = data['series title']
-        seriesID = analyze_imdbid(data['series id'])
-        if 'airing' in data:
+        seriesTitle = data.get('series title') or ''
+        seriesID = analyze_imdbid(data.get('series id'))
+        if seriesID and 'airing' in data:
             for airing in data['airing']:
                 title = airing.get('title', '').strip()
                 if not title:

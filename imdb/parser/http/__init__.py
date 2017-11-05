@@ -54,14 +54,6 @@ from . import topBottomParser
 # Logger for miscellaneous functions.
 _aux_logger = logging.getLogger('imdbpy.parser.http.aux')
 
-IN_GAE = False
-try:
-    import google.appengine
-    IN_GAE = True
-    _aux_logger.info('IMDbPY is running in the Google App Engine environment')
-except ImportError:
-    pass
-
 
 class _ModuleProxy:
     """A proxy to instantiate and access parsers."""
@@ -196,7 +188,7 @@ class IMDbURLopener(FancyURLopener):
 
     def retrieve_unicode(self, url, size=-1):
         """Retrieves the given URL, and returns a unicode string,
-        trying to guess the encoding of the data (assuming latin_1
+        trying to guess the encoding of the data (assuming utf8
         by default)"""
         encode = None
         try:
@@ -236,10 +228,12 @@ class IMDbURLopener(FancyURLopener):
                                         'exception type': 'IOError',
                                         'original exception': e})
         if encode is None:
-            encode = 'latin_1'
+            encode = 'utf8'
             # The detection of the encoding is error prone...
             self._logger.warn('Unable to detect the encoding of the retrieved '
-                        'page [%s]; falling back to default latin1.', encode)
+                        'page [%s]; falling back to default utf8.', encode)
+        if isinstance(content, str):
+            return content
         return str(content, encode, 'replace')
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
@@ -579,10 +573,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'soundtrack')
         return self.mProxy.soundtrack_parser.parse(cont)
 
-    def get_movie_dvd(self, movieID):
-        self._http_logger.warn('dvd information no longer available', exc_info=False)
-        return {}
-
     def get_movie_recommendations(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'recommendations')
         return self.mProxy.rec_parser.parse(cont)
@@ -618,10 +608,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_news(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'news')
         return self.mProxy.news_parser.parse(cont, getRefs=self._getRefs)
-
-    def get_movie_amazon_reviews(self, movieID):
-        self._http_logger.warn('amazon review no longer available', exc_info=False)
-        return {}
 
     def get_movie_guests(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'epcast')
@@ -748,10 +734,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_person_episodes(self, personID):
         cont = self._retrieve(self.urls['person_main'] % personID + 'filmoseries')
         return self.pProxy.person_series_parser.parse(cont)
-
-    def get_person_merchandising_links(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'forsale')
-        return self.pProxy.sales_parser.parse(cont)
 
     def get_person_genres_links(self, personID):
         cont = self._retrieve(self.urls['person_main'] % personID + 'filmogenre')

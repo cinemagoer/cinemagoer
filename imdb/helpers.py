@@ -65,8 +65,8 @@ def makeCgiPrintEncoding(encoding):
         return s
     return cgiPrint
 
-# cgiPrint uses the latin_1 encoding.
-cgiPrint = makeCgiPrintEncoding('latin_1')
+# cgiPrint uses the utf8 encoding.
+cgiPrint = makeCgiPrintEncoding('utf8')
 
 # Regular expression for %(varname)s substitutions.
 re_subst = re.compile(r'%\((.+?)\)s')
@@ -196,7 +196,7 @@ def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
 
 
 def makeModCGILinks(movieTxt, personTxt, characterTxt=None,
-                    encoding='latin_1'):
+                    encoding='utf8'):
     """Make a function used to pretty-print movies and persons refereces;
     movieTxt and personTxt are the strings used for the substitutions.
     movieTxt must contains %(movieID)s and %(title)s, while personTxt

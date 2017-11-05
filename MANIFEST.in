@@ -16,7 +16,7 @@ global-exclude CVS
 global-exclude .svn
 
 # Try to force the inclusion of ez_setup.py.
-include ez_setup.py
+#include ez_setup.py
 
 # Uncomment the following line if you don't want to install the logo images.
 # exclude docs/*.png docs/*.xpm docs/*.bmp

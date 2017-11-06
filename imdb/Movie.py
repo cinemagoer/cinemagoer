@@ -24,7 +24,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 from copy import deepcopy
 
 from imdb import linguistics
-from imdb.utils import _Container, analyze_title, build_title, canonicalTitle, cmpMovies, flatten
+from imdb.utils import _Container
+from imdb.utils import analyze_title, build_title, canonicalTitle, cmpMovies, flatten
 
 
 class Movie(_Container):

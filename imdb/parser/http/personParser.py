@@ -299,19 +299,22 @@ class DOMHTMLBioParser(DOMParserBase):
 
         Extractor(
             label='birth info',
-            path="//table[@id='overviewTable']//td[text()='Date of Birth']/following-sibling::td[1]",
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Date of Birth']/following-sibling::td[1]",
             attrs=_birth_attrs
         ),
 
         Extractor(
             label='death info',
-            path="//table[@id='overviewTable']//td[text()='Date of Death']/following-sibling::td[1]",
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Date of Death']/following-sibling::td[1]",
             attrs=_death_attrs
         ),
 
         Extractor(
             label='nick names',
-            path="//table[@id='overviewTable']//td[text()='Nickenames']/following-sibling::td[1]",
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Nickenames']/following-sibling::td[1]",
             attrs=Attribute(
                 key='nick names',
                 path="./text()",
@@ -323,7 +326,8 @@ class DOMHTMLBioParser(DOMParserBase):
 
         Extractor(
             label='birth name',
-            path="//table[@id='overviewTable']//td[text()='Birth Name']/following-sibling::td[1]",
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Birth Name']/following-sibling::td[1]",
             attrs=Attribute(
                 key='birth name',
                 path="./text()",
@@ -343,7 +347,8 @@ class DOMHTMLBioParser(DOMParserBase):
 
         Extractor(
             label='mini biography',
-            path="//a[@name='mini_bio']/following-sibling::div[1 = count(preceding-sibling::a[1] | ../a[@name='mini_bio'])]",
+            path="//a[@name='mini_bio']/following-sibling::"
+                 "div[1 = count(preceding-sibling::a[1] | ../a[@name='mini_bio'])]",
             attrs=Attribute(
                 key='mini biography',
                 multi=True,

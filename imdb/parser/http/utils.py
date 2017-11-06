@@ -813,10 +813,10 @@ class Extractor(object):
 
     def __repr__(self):
         """String representation of an Extractor object."""
-        r = '<Extractor id:%s (label=%s, path=%s, attrs=%s, group=%s, group_key=%s group_key_normalize=%s)>' % (
-            id(self), self.label, self.path, repr(self.attrs), self.group,
-            self.group_key, self.group_key_normalize
-        )
+        t = '<Extractor id:%s (label=%s, path=%s, attrs=%s, group=%s, group_key=%s' + \
+            ', group_key_normalize=%s)>'
+        r = t % (id(self), self.label, self.path, repr(self.attrs), self.group,
+                 self.group_key, self.group_key_normalize)
         return r
 
 

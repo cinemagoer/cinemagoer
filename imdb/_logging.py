@@ -35,7 +35,9 @@ LEVELS = {
 
 imdbpyLogger = logging.getLogger('imdbpy')
 imdbpyStreamHandler = logging.StreamHandler()
-imdbpyFormatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s] %(pathname)s:%(lineno)d: %(message)s')
+imdbpyFormatter = logging.Formatter(
+    '%(asctime)s %(levelname)s [%(name)s] %(pathname)s:%(lineno)d: %(message)s'
+)
 imdbpyStreamHandler.setFormatter(imdbpyFormatter)
 imdbpyLogger.addHandler(imdbpyStreamHandler)
 

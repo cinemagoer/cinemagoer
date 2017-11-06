@@ -1282,7 +1282,8 @@ class _Container(object):
             self.__role = role
 
     currentRole = property(_get_currentRole, _set_currentRole,
-                           doc="The role of a Person in a Movie or the interpreter of a Character in a Movie.")
+                           doc="The role of a Person in a Movie"
+                               " or the interpreter of a Character in a Movie.")
 
     def _init(self, **kwds):
         pass
@@ -1498,7 +1499,8 @@ class _Container(object):
                                      self.namesRefs, self.charactersRefs)
             except RuntimeError as e:
                 import warnings
-                warnings.warn("RuntimeError in imdb.utils._Container.__getitem__; if it's not a recursion limit exceeded, it's a bug:\n%s" % e)
+                warnings.warn("RuntimeError in imdb.utils._Container.__getitem__;"
+                              " if it's not a recursion limit exceeded, it's a bug:\n%s" % e)
         return rawData
 
     def __setitem__(self, key, item):

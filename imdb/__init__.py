@@ -39,6 +39,7 @@ from imdb import Character, Company, Movie, Person
 from imdb.utils import build_company_name, build_name, build_title
 
 
+_imdb_logger = logging.getLogger('imdbpy')
 _aux_logger = logging.getLogger('imdbpy.aux')
 
 
@@ -160,7 +161,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             kwds.update(keywords)
             keywords = kwds
         except Exception as e:
-            logging.getLogger('imdbpy').warn('Unable to read configuration file; complete error: %s' % e)
+            _imdb_logger.warn('Unable to read configuration file; complete error: %s' % e)
             # It just LOOKS LIKE a bad habit: we tried to read config
             # options from some files, but something is gone horribly
             # wrong: ignore everything and pretend we were called with
@@ -176,7 +177,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             import logging.config
             logging.config.fileConfig(os.path.expanduser(logCfg))
         except Exception as e:
-            logging.getLogger('imdbpy').warn('unable to read logger config: %s' % e)
+            _imdb_logger.warn('unable to read logger config: %s' % e)
     if accessSystem in ('httpThin', 'webThin', 'htmlThin'):
         logging.warn('httpThin was removed since IMDbPY 4.8')
         accessSystem = 'http'
@@ -232,9 +233,6 @@ class IMDbBase:
     # The name of the preferred access system (MUST be overridden
     # in the subclasses).
     accessSystem = 'UNKNOWN'
-
-    # Top-level logger for IMDbPY.
-    _imdb_logger = logging.getLogger('imdbpy')
 
     # Whether to re-raise caught exceptions or not.
     _reraise_exceptions = False
@@ -667,14 +665,15 @@ class IMDbBase:
             mopID = mop.companyID
             prefix = 'company'
         else:
-            raise IMDbError('object ' + repr(mop) + ' is not a Movie, Person, Character or Company instance')
+            raise IMDbError('object ' + repr(mop) +
+                            ' is not a Movie, Person, Character or Company instance')
         if mopID is None:
             # XXX: enough?  It's obvious that there are Characters
             #      objects without characterID, so I think they should
             #      just do nothing, when an i.update(character) is tried.
             if prefix == 'character':
                 return
-            raise IMDbDataAccessError('the supplied object has null movieID, personID or companyID')
+            raise IMDbDataAccessError('supplied object has null movieID, personID or companyID')
         if mop.accessSystem == self.accessSystem:
             aSystem = self
         else:
@@ -698,18 +697,21 @@ class IMDbBase:
                 continue
             if not i:
                 continue
-            self._imdb_logger.debug('retrieving "%s" info set', i)
+            _imdb_logger.debug('retrieving "%s" info set', i)
             try:
                 method = getattr(aSystem, 'get_%s_%s' % (prefix, i.replace(' ', '_')))
             except AttributeError:
-                self._imdb_logger.error('unknown information set "%s"', i)
+                _imdb_logger.error('unknown information set "%s"', i)
                 # Keeps going.
                 method = lambda *x: {}
             try:
                 ret = method(mopID)
             except Exception:
-                self._imdb_logger.critical('caught an exception retrieving or parsing "%s" info set for mopID "%s" (accessSystem: %s)',
-                                           i, mopID, mop.accessSystem, exc_info=True)
+                _imdb_logger.critical(
+                    'caught an exception retrieving or parsing "%s" info set'
+                    ' for mopID "%s" (accessSystem: %s)',
+                    i, mopID, mop.accessSystem, exc_info=True
+                )
                 ret = {}
                 # If requested by the user, reraise the exception.
                 if self._reraise_exceptions:
@@ -868,7 +870,8 @@ class IMDbBase:
             else:
                 imdbID = aSystem.company2imdbID(build_company_name(mop))
         else:
-            raise IMDbError('object ' + repr(mop) + ' is not a Movie, Person or Character instance')
+            raise IMDbError('object ' + repr(mop) +
+                            ' is not a Movie, Person or Character instance')
         return imdbID
 
     def get_imdbURL(self, mop):
@@ -886,7 +889,8 @@ class IMDbBase:
         elif isinstance(mop, Company.Company):
             url_firstPart = imdbURL_company_main
         else:
-            raise IMDbError('object ' + repr(mop) + ' is not a Movie, Person, Character or Company instance')
+            raise IMDbError('object ' + repr(mop) +
+                            ' is not a Movie, Person, Character or Company instance')
         return url_firstPart % imdbID
 
     def get_special_methods(self):

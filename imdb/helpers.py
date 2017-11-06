@@ -278,7 +278,8 @@ for k, v in list({'lt': '<', 'gt': '>', 'amp': '&', 'quot': '"', 'apos': '\''}.i
     everyentcharrefs[k] = v
     everyentcharrefs['#%s' % ord(v)] = v
 everyentcharrefsget = everyentcharrefs.get
-re_everyentcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' % '|'.join(map(re.escape, everyentcharrefs)))
+re_everyentcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' % '|'.join(map(re.escape,
+                                                                         everyentcharrefs)))
 re_everyentcharrefssub = re_everyentcharrefs.sub
 
 

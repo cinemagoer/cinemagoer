@@ -58,8 +58,7 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
             },
             postprocess=lambda x: (
                 analyze_imdbid(x.get('link')),
-                analyze_company_name(x.get('name')+(x.get('notes')
-                                                    or ''), stripNotes=True)
+                analyze_company_name(x.get('name') + (x.get('notes') or ''), stripNotes=True)
             )
         )
     ]

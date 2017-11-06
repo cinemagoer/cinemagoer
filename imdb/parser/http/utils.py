@@ -36,7 +36,9 @@ from imdb.utils import _Container, flatten
 
 
 # Year, imdbIndex and kind.
-re_yearKind_index = re.compile(r'(\([0-9\?]{4}(?:/[IVXLCDM]+)?\)(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)')
+re_yearKind_index = re.compile(
+    r'(\([0-9\?]{4}(?:/[IVXLCDM]+)?\)(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)'
+)
 
 # Match imdb ids in href tags
 re_imdbid = re.compile(r'(title/tt|name/nm|character/ch|company/co)([0-9]+)')
@@ -313,7 +315,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
     elif title[-14:] == 'TV mini-series':
         title = title[:-14] + ' (mini)'
     if title and title.endswith(_defSep.rstrip()):
-        title = title[:-len(_defSep)+1]
+        title = title[:-len(_defSep) + 1]
     # Try to understand where the movie title ends.
     while True:
         if year:
@@ -329,17 +331,17 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         # Try to match paired parentheses; yes: sometimes there are
         # parentheses inside comments...
         nidx = title.rfind('(')
-        while (nidx != -1 and title[nidx:].count('(') != title[nidx:].count(')')):
+        while nidx != -1 and title[nidx:].count('(') != title[nidx:].count(')'):
             nidx = title[:nidx].rfind('(')
         # Unbalanced parentheses: stop here.
         if nidx == -1:
             break
         # The last item in parentheses seems to be a year: stop here.
-        first4 = title[nidx+1:nidx+5]
-        if (first4.isdigit() or first4 == '????') and title[nidx+5:nidx+6] in (')', '/'):
+        first4 = title[nidx + 1:nidx + 5]
+        if (first4.isdigit() or first4 == '????') and title[nidx + 5:nidx + 6] in (')', '/'):
             break
         # The last item in parentheses is a known kind: stop here.
-        if title[nidx+1:-1] in ('TV', 'V', 'mini', 'VG', 'TV movie', 'TV series', 'short'):
+        if title[nidx + 1:-1] in ('TV', 'V', 'mini', 'VG', 'TV movie', 'TV series', 'short'):
             break
         # Else, in parentheses there are some notes.
         # XXX: should the notes in the role half be kept separated
@@ -485,7 +487,7 @@ class DOMParserBase(object):
                     warnings.warn('falling back to "%s"' % mod)
                 break
             except ImportError as e:
-                if idx+1 >= nrMods:
+                if idx + 1 >= nrMods:
                     # Raise the exception, if we don't have any more
                     # options to try.
                     raise IMDbError('unable to use any parser in %s: %s' % (

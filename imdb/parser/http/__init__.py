@@ -205,9 +205,9 @@ class IMDbURLopener(FancyURLopener):
             if server_encode is None and content:
                 begin_h = content.find(b'text/html; charset=')
                 if begin_h != -1:
-                    end_h = content[19+begin_h:].find('"')
+                    end_h = content[19 + begin_h:].find('"')
                     if end_h != -1:
-                        server_encode = content[19+begin_h:19+begin_h+end_h]
+                        server_encode = content[19 + begin_h:19 + begin_h + end_h]
             if server_encode:
                 try:
                     if lookup(server_encode):

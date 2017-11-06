@@ -619,7 +619,7 @@ def _build_episode(link, title, minfo, role, roleA, roleAID):
     minidx = minfo.find(' -')
     # Sometimes, for some unknown reason, the role is left in minfo.
     if minidx != -1:
-        slfRole = minfo[minidx+3:].lstrip()
+        slfRole = minfo[minidx + 3:].lstrip()
         minfo = minfo[:minidx].rstrip()
         if slfRole.endswith(')'):
             commidx = slfRole.rfind('(')

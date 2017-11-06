@@ -59,13 +59,13 @@ _SECT_CONV = {
     'second unit director or assistant director': 'assistant director',
     'costume and wardrobe department': 'costume department',
     'sound department': 'sound crew',
-    'stunts':   'stunt performer',
+    'stunts': 'stunt performer',
     'other crew': 'miscellaneous crew',
     'also known as': 'akas',
-    'country':  'countries',
-    'runtime':  'runtimes',
+    'country': 'countries',
+    'runtime': 'runtimes',
     'language': 'languages',
-    'certification':    'certificates',
+    'certification': 'certificates',
     'genre': 'genres',
     'created': 'creator',
     'creators': 'creator',
@@ -832,7 +832,7 @@ class DOMHTMLAwardsParser(DOMParserBase):
             del col.attrib['rowspan']
             position = len(self.xpath(col, "./preceding-sibling::td"))
             row = col.getparent()
-            for tr in self.xpath(row, "./following-sibling::tr")[:span-1]:
+            for tr in self.xpath(row, "./following-sibling::tr")[:span - 1]:
                 # if not cloned, child will be moved to new parent
                 clone = self.clone(col)
                 # XXX: beware that here we don't use an "adapted" function,
@@ -1040,7 +1040,7 @@ class DOMHTMLSoundtrackParser(DOMParserBase):
                         for sep in ' with ', ' by ', ' from ', ' of ':
                             fdix = l.find(sep)
                             if fdix != -1:
-                                fdix = fdix+len(sep)
+                                fdix = fdix + len(sep)
                                 kind = l[:fdix].rstrip().lower()
                                 info = l[fdix:].lstrip()
                                 newData[title][kind] = info

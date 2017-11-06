@@ -88,6 +88,10 @@ params = {
         'scripts': scripts,
         'data_files': data_files,
         'install_requires': ['sqlalchemy-migrate', 'SQLAlchemy', 'lxml'],
+        'extras_require': {
+            'dev': ['flake8', 'flake8-isort'],
+            'test': ['pytest'],
+         },
         'packages': setuptools.find_packages()
 }
 

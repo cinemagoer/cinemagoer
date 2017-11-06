@@ -73,9 +73,11 @@ class DOMHTMLTop250Parser(DOMParserBase):
             if theID in seenIDs:
                 continue
             seenIDs.append(theID)
-            minfo = analyze_title(d['title']+" "+d['year'])
-            try: minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
-            except: pass
+            minfo = analyze_title(d['title'] + ' ' + d['year'])
+            try:
+                minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
+            except:
+                pass
             if 'votes' in d:
                 try:
                     votes = d['votes'].replace(' votes','')

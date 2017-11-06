@@ -46,22 +46,29 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
     _titleBuilder = lambda self, x: build_company_name(x)
     _linkPrefix = '/company/co'
 
-    _attrs = [Attribute(key='data',
-                        multi=True,
-                        path={
-                            'link': "./a[1]/@href",
-                            'name': "./a[1]/text()",
-                            'notes': "./text()[1]"
-                            },
-                        postprocess=lambda x: (
-                            analyze_imdbid(x.get('link')),
-                            analyze_company_name(x.get('name')+(x.get('notes')
-                                                or u''), stripNotes=True)
-                        ))]
-    extractors = [Extractor(label='search',
-                            path="//td[@class='result_text']/a[starts-with(@href, " \
-                                    "'/company/co')]/..",
-                            attrs=_attrs)]
+    _attrs = [
+        Attribute(
+            key='data',
+            multi=True,
+            path={
+                'link': "./a[1]/@href",
+                'name': "./a[1]/text()",
+                'notes': "./text()[1]"
+            },
+            postprocess=lambda x: (
+                analyze_imdbid(x.get('link')),
+                analyze_company_name(x.get('name') + (x.get('notes') or u''), stripNotes=True)
+            )
+        )
+    ]
+
+    extractors = [
+        Extractor(
+            label='search',
+            path="//td[@class='result_text']/a[starts-with(@href, '/company/co')]/..",
+            attrs=_attrs
+        )
+    ]
 
 
 _OBJECTS = {

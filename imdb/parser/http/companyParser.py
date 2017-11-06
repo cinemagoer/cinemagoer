@@ -44,31 +44,38 @@ class DOMCompanyParser(DOMParserBase):
     _containsObjects = True
 
     extractors = [
-            Extractor(label='name',
-                        path="//title",
-                        attrs=Attribute(key='name',
-                            path="./text()",
-                        postprocess=lambda x: \
-                                analyze_company_name(x, stripNotes=True))),
+        Extractor(
+            label='name',
+            path="//title",
+            attrs=Attribute(
+                key='name',
+                path="./text()",
+                postprocess=lambda x: analyze_company_name(x, stripNotes=True)
+            )
+        ),
 
-            Extractor(label='filmography',
-                        group="//b/a[@name]",
-                        group_key="./text()",
-                        group_key_normalize=lambda x: x.lower(),
-                        path="../following-sibling::ol[1]/li",
-                        attrs=Attribute(key=None,
-                            multi=True,
-                            path={
-                                'link': "./a[1]/@href",
-                                'title': "./a[1]/text()",
-                                'year': "./text()[1]"
-                                },
-                            postprocess=lambda x:
-                                build_movie(u'%s %s' % \
-                                (x.get('title'), x.get('year').strip()),
-                                movieID=analyze_imdbid(x.get('link') or u''),
-                                _parsingCompany=True))),
-            ]
+        Extractor(
+            label='filmography',
+            group="//b/a[@name]",
+            group_key="./text()",
+            group_key_normalize=lambda x: x.lower(),
+            path="../following-sibling::ol[1]/li",
+            attrs=Attribute(
+                key=None,
+                multi=True,
+                path={
+                    'link': "./a[1]/@href",
+                    'title': "./a[1]/text()",
+                    'year': "./text()[1]"
+                },
+                postprocess=lambda x: build_movie(
+                    '%s %s' % (x.get('title'), x.get('year').strip()),
+                    movieID=analyze_imdbid(x.get('link') or u''),
+                    _parsingCompany=True
+                )
+            )
+        )
+    ]
 
     preprocessors = [
         (re.compile('(<b><a name=)', re.I), r'</p>\1')

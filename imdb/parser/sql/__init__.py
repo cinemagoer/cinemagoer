@@ -1558,4 +1558,3 @@ class IMDbSqlAccessSystem(IMDbBase):
         if not hasattr(self, '_connection'): return
         self._sql_logger.debug('closing connection to the database')
         self._connection.close()
-

@@ -22,24 +22,27 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import re
+import collections
 import logging
+import re
 import warnings
+from html.entities import entitydefs
 
 from imdb._exceptions import IMDbError
-
-from imdb.utils import flatten, _Container
+from imdb.Character import Character
 from imdb.Movie import Movie
 from imdb.Person import Person
-from imdb.Character import Character
-import collections
+from imdb.utils import _Container, flatten
 
 
 # Year, imdbIndex and kind.
-re_yearKind_index = re.compile(r'(\([0-9\?]{4}(?:/[IVXLCDM]+)?\)(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)')
+re_yearKind_index = re.compile(
+    r'(\([0-9\?]{4}(?:/[IVXLCDM]+)?\)(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)'
+)
 
 # Match imdb ids in href tags
 re_imdbid = re.compile(r'(title/tt|name/nm|character/ch|company/co)([0-9]+)')
+
 
 def analyze_imdbid(href):
     """Return an imdbID from an URL."""
@@ -52,6 +55,8 @@ def analyze_imdbid(href):
 
 
 _modify_keys = list(Movie.keys_tomodify_list) + list(Person.keys_tomodify_list)
+
+
 def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
     """Iterate over the strings inside list items or dictionary values,
     substitutes movie titles and person names with the (qv) references."""
@@ -66,8 +71,7 @@ def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
                     if re_characters:
                         d[i] = re_characters.sub(r'#\1# (qv)', d[i])
             elif isinstance(d[i], (list, dict)):
-                _putRefs(d[i], re_titles, re_names, re_characters,
-                        lastKey=lastKey)
+                _putRefs(d[i], re_titles, re_names, re_characters, lastKey=lastKey)
     elif isinstance(d, dict):
         for k, v in list(d.items()):
             lastKey = k
@@ -80,12 +84,10 @@ def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
                     if re_characters:
                         d[k] = re_characters.sub(r'#\1# (qv)', v)
             elif isinstance(v, (list, dict)):
-                _putRefs(d[k], re_titles, re_names, re_characters,
-                        lastKey=lastKey)
+                _putRefs(d[k], re_titles, re_names, re_characters, lastKey=lastKey)
 
 
 # Handle HTML/XML/SGML entities.
-from html.entities import entitydefs
 entitydefs = entitydefs.copy()
 entitydefsget = entitydefs.get
 entitydefs['nbsp'] = ' '
@@ -97,7 +99,8 @@ _sgmlentkeys = list(sgmlentity.keys())
 entcharrefs = {}
 entcharrefsget = entcharrefs.get
 for _k, _v in list(entitydefs.items()):
-    if _k in _sgmlentkeys: continue
+    if _k in _sgmlentkeys:
+        continue
     if _v[0:2] == '&#':
         dec_code = _v[1:-1]
         _v = chr(int(_v[2:-1]))
@@ -145,9 +148,9 @@ def _replXMLRef(match):
             if ref_code in ('34', '38', '60', '62', '39'):
                 return match.group(0)
             elif ref_code[0].lower() == 'x':
-                #if ref[2:] == '26':
-                #    # Don't convert &x26; to &amp;, to make BeautifulSoup happy.
-                #    return '&amp;'
+                # if ref[2:] == '26':
+                #     # Don't convert &x26; to &amp;, to make BeautifulSoup happy.
+                #     return '&amp;'
                 return chr(int(ref[2:], 16))
             else:
                 return chr(int(ref[1:]))
@@ -155,16 +158,19 @@ def _replXMLRef(match):
             return ref
     return value
 
+
 def subXMLRefs(s):
     """Return the given html string with entity and char references
     replaced."""
     return re_entcharrefssub(_replXMLRef, s)
+
 
 # XXX: no more used here; move it to mobile (they are imported by helpers, too)?
 def _replSGMLRefs(match):
     """Replace the matched SGML entity."""
     ref = match.group(1)
     return sgmlentityget(ref, ref)
+
 
 def subSGMLRefs(s):
     """Return the given html string with sgml entity and char references
@@ -173,12 +179,14 @@ def subSGMLRefs(s):
 
 
 _b_p_logger = logging.getLogger('imdbpy.parser.http.build_person')
+
+
 def build_person(txt, personID=None, billingPos=None,
-                roleID=None, accessSystem='http', modFunct=None):
+                 roleID=None, accessSystem='http', modFunct=None):
     """Return a Person instance from the tipical <tr>...</tr> strings
     found in the IMDb's web site."""
-    #if personID is None
-    #    _b_p_logger.debug('empty name or personID for "%s"', txt)
+    # if personID is None
+    #     _b_p_logger.debug('empty name or personID for "%s"', txt)
     notes = ''
     role = ''
     # Search the (optional) separator between name and role/notes.
@@ -188,8 +196,7 @@ def build_person(txt, personID=None, billingPos=None,
         sep = '...'
     else:
         sep = '...'
-        # Replace the first parenthesis, assuming there are only
-        # notes, after.
+        # Replace the first parenthesis, assuming there are only notes, after.
         # Rationale: no imdbIndex is (ever?) showed on the web site.
         txt = txt.replace('(', '...(', 1)
     txt_split = txt.split(sep, 1)
@@ -219,7 +226,8 @@ def build_person(txt, personID=None, billingPos=None,
             # We're managing something that doesn't have a 'role', so
             # everything are notes.
             notes = role_comment
-    if role == '....': role = ''
+    if role == '....':
+        role = ''
     roleNotes = []
     # Manages multiple roleIDs.
     if isinstance(roleID, list):
@@ -267,8 +275,11 @@ def build_person(txt, personID=None, billingPos=None,
 _re_chrIDs = re.compile('[0-9]{7}')
 
 _b_m_logger = logging.getLogger('imdbpy.parser.http.build_movie')
+
 # To shrink spaces.
 re_spaces = re.compile(r'\s+')
+
+
 def build_movie(txt, movieID=None, roleID=None, status=None,
                 accessSystem='http', modFunct=None, _parsingCharacter=False,
                 _parsingCompany=False, year=None, chrRoles=None,
@@ -295,16 +306,16 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         role = tsplit[1].lstrip()
     if title[-9:] == 'TV Series':
         title = title[:-9].rstrip()
-    #elif title[-7:] == '(short)':
-    #    title = title[:-7].rstrip()
-    #elif title[-11:] == '(TV series)':
-    #    title = title[:-11].rstrip()
-    #elif title[-10:] == '(TV movie)':
-    #    title = title[:-10].rstrip()
+    # elif title[-7:] == '(short)':
+    #     title = title[:-7].rstrip()
+    # elif title[-11:] == '(TV series)':
+    #     title = title[:-11].rstrip()
+    # elif title[-10:] == '(TV movie)':
+    #     title = title[:-10].rstrip()
     elif title[-14:] == 'TV mini-series':
         title = title[:-14] + ' (mini)'
     if title and title.endswith(_defSep.rstrip()):
-        title = title[:-len(_defSep)+1]
+        title = title[:-len(_defSep) + 1]
     # Try to understand where the movie title ends.
     while True:
         if year:
@@ -320,31 +331,35 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
         # Try to match paired parentheses; yes: sometimes there are
         # parentheses inside comments...
         nidx = title.rfind('(')
-        while (nidx != -1 and \
-                    title[nidx:].count('(') != title[nidx:].count(')')):
+        while nidx != -1 and title[nidx:].count('(') != title[nidx:].count(')'):
             nidx = title[:nidx].rfind('(')
         # Unbalanced parentheses: stop here.
-        if nidx == -1: break
+        if nidx == -1:
+            break
         # The last item in parentheses seems to be a year: stop here.
-        first4 = title[nidx+1:nidx+5]
-        if (first4.isdigit() or first4 == '????') and \
-                title[nidx+5:nidx+6] in (')', '/'): break
+        first4 = title[nidx + 1:nidx + 5]
+        if (first4.isdigit() or first4 == '????') and title[nidx + 5:nidx + 6] in (')', '/'):
+            break
         # The last item in parentheses is a known kind: stop here.
-        if title[nidx+1:-1] in ('TV', 'V', 'mini', 'VG', 'TV movie',
-                'TV series', 'short'): break
+        if title[nidx + 1:-1] in ('TV', 'V', 'mini', 'VG', 'TV movie', 'TV series', 'short'):
+            break
         # Else, in parentheses there are some notes.
         # XXX: should the notes in the role half be kept separated
         #      from the notes in the movie title half?
-        if notes: notes = '%s %s' % (title[nidx:], notes)
-        else: notes = title[nidx:]
+        if notes:
+            notes = '%s %s' % (title[nidx:], notes)
+        else:
+            notes = title[nidx:]
         title = title[:nidx].rstrip()
     if year:
         year = year.strip()
         if title[-1:] == ')':
             fpIdx = title.rfind('(')
             if fpIdx != -1:
-                if notes: notes = '%s %s' % (title[fpIdx:], notes)
-                else: notes = title[fpIdx:]
+                if notes:
+                    notes = '%s %s' % (title[fpIdx:], notes)
+                else:
+                    notes = title[fpIdx:]
                 title = title[:fpIdx].rstrip()
         title = '%s (%s)' % (title, year)
     if _parsingCharacter and roleID and not role:
@@ -402,8 +417,8 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
     if role and isinstance(role, list) and notes.endswith(role[-1].replace('\n', ' ')):
         role = role[:-1]
     m = Movie(title=title, movieID=movieID, notes=notes, currentRole=role,
-                roleID=roleID, roleIsPerson=_parsingCharacter,
-                modFunct=modFunct, accessSystem=accessSystem)
+              roleID=roleID, roleIsPerson=_parsingCharacter,
+              modFunct=modFunct, accessSystem=accessSystem)
     if additionalNotes:
         if '(TV Series)' in additionalNotes:
             m['kind'] = 'tv series'
@@ -472,11 +487,12 @@ class DOMParserBase(object):
                     warnings.warn('falling back to "%s"' % mod)
                 break
             except ImportError as e:
-                if idx+1 >= nrMods:
+                if idx + 1 >= nrMods:
                     # Raise the exception, if we don't have any more
                     # options to try.
-                    raise IMDbError('unable to use any parser in %s: %s' % \
-                                    (str(useModule), str(e)))
+                    raise IMDbError('unable to use any parser in %s: %s' % (
+                        str(useModule), str(e)
+                    ))
                 else:
                     warnings.warn('unable to use "%s": %s' % (mod, str(e)))
                     _gotError = True
@@ -535,13 +551,13 @@ class DOMParserBase(object):
                 dom = self.preprocess_dom(dom)
             except Exception:
                 self._logger.error('%s: caught exception preprocessing DOM',
-                                    self._cname, exc_info=True)
+                                   self._cname, exc_info=True)
             if self.getRefs:
                 try:
                     self.gather_refs(dom)
                 except Exception:
                     self._logger.warn('%s: unable to gather refs: %s',
-                                    self._cname, exc_info=True)
+                                      self._cname, exc_info=True)
             data = self.parse_dom(dom)
         else:
             data = {}
@@ -549,7 +565,7 @@ class DOMParserBase(object):
             data = self.postprocess_data(data)
         except Exception:
             self._logger.error('%s: caught exception postprocessing data',
-                                self._cname, exc_info=True)
+                               self._cname, exc_info=True)
         if self._containsObjects:
             self.set_objects_params(data)
         data = self.add_refs(data)
@@ -569,7 +585,7 @@ class DOMParserBase(object):
             return dom
         except Exception:
             self._logger.error('%s: caught exception parsing DOM',
-                                self._cname, exc_info=True)
+                               self._cname, exc_info=True)
             return self._build_empty_dom()
 
     def xpath(self, element, path):
@@ -586,7 +602,7 @@ class DOMParserBase(object):
             return result
         except Exception:
             self._logger.error('%s: caught exception extracting XPath "%s"',
-                                self._cname, path, exc_info=True)
+                               self._cname, path, exc_info=True)
             return []
 
     def tostring(self, element):
@@ -598,7 +614,7 @@ class DOMParserBase(object):
                 return self._tostring(element, encoding=str)
             except Exception:
                 self._logger.error('%s: unable to convert to string',
-                                    self._cname, exc_info=True)
+                                   self._cname, exc_info=True)
                 return ''
 
     def clone(self, element):
@@ -652,7 +668,7 @@ class DOMParserBase(object):
         in self.extractors."""
         result = {}
         for extractor in self.extractors:
-            ##print extractor.label
+            # print extractor.label
             if extractor.group is None:
                 elements = [(extractor.label, element)
                             for element in self.xpath(dom, extractor.path)]
@@ -661,7 +677,8 @@ class DOMParserBase(object):
                 elements = []
                 for group in groups:
                     group_key = self.xpath(group, extractor.group_key)
-                    if not group_key: continue
+                    if not group_key:
+                        continue
                     group_key = group_key[0]
                     # XXX: always tries the conversion to unicode:
                     #      BeautifulSoup.NavigableString is a subclass
@@ -674,11 +691,9 @@ class DOMParserBase(object):
                                 group_key = normalizer(group_key)
                             except Exception as e:
                                 _m = '%s: unable to apply group_key normalizer'
-                                self._logger.error(_m, self._cname,
-                                                    exc_info=True)
+                                self._logger.error(_m, self._cname, exc_info=True)
                     group_elements = self.xpath(group, extractor.path)
-                    elements.extend([(group_key, element)
-                                     for element in group_elements])
+                    elements.extend([(group_key, element) for element in group_elements])
             for group_key, element in elements:
                 for attr in extractor.attrs:
                     if isinstance(attr.path, dict):
@@ -721,7 +736,7 @@ class DOMParserBase(object):
                             key = self.xpath(element, key)[0]
                         except IndexError:
                             self._logger.error('%s: XPath returned no items',
-                                                self._cname, exc_info=True)
+                                               self._cname, exc_info=True)
                     elif key.startswith('self.'):
                         key = getattr(self, key[5:])
                     if attr.multi:
@@ -749,18 +764,27 @@ class DOMParserBase(object):
     def add_refs(self, data):
         """Modify data according to the expected output."""
         if self.getRefs:
-            titl_re = r'(%s)' % '|'.join([re.escape(x) for x
-                                            in list(self._titlesRefs.keys())])
-            if titl_re != r'()': re_titles = re.compile(titl_re, re.U)
-            else: re_titles = None
-            nam_re = r'(%s)' % '|'.join([re.escape(x) for x
-                                            in list(self._namesRefs.keys())])
-            if nam_re != r'()': re_names = re.compile(nam_re, re.U)
-            else: re_names = None
-            chr_re = r'(%s)' % '|'.join([re.escape(x) for x
-                                            in list(self._charactersRefs.keys())])
-            if chr_re != r'()': re_characters = re.compile(chr_re, re.U)
-            else: re_characters = None
+            titl_re = r'(%s)' % '|'.join(
+                [re.escape(x) for x in list(self._titlesRefs.keys())]
+            )
+            if titl_re != r'()':
+                re_titles = re.compile(titl_re, re.U)
+            else:
+                re_titles = None
+            nam_re = r'(%s)' % '|'.join(
+                [re.escape(x) for x in list(self._namesRefs.keys())]
+            )
+            if nam_re != r'()':
+                re_names = re.compile(nam_re, re.U)
+            else:
+                re_names = None
+            chr_re = r'(%s)' % '|'.join(
+                [re.escape(x) for x in list(self._charactersRefs.keys())]
+            )
+            if chr_re != r'()':
+                re_characters = re.compile(chr_re, re.U)
+            else:
+                re_characters = None
             _putRefs(data, re_titles, re_names, re_characters)
         return {'data': data, 'titlesRefs': self._titlesRefs,
                 'namesRefs': self._namesRefs,
@@ -789,10 +813,10 @@ class Extractor(object):
 
     def __repr__(self):
         """String representation of an Extractor object."""
-        r = '<Extractor id:%s (label=%s, path=%s, attrs=%s, group=%s, ' \
-                'group_key=%s group_key_normalize=%s)>' % (id(self),
-                        self.label, self.path, repr(self.attrs), self.group,
-                        self.group_key, self.group_key_normalize)
+        t = '<Extractor id:%s (label=%s, path=%s, attrs=%s, group=%s, group_key=%s' + \
+            ', group_key_normalize=%s)>'
+        r = t % (id(self), self.label, self.path, repr(self.attrs), self.group,
+                 self.group_key, self.group_key_normalize)
         return r
 
 
@@ -814,7 +838,8 @@ class Attribute(object):
         self.postprocess = postprocess
 
         if ignore is not None:
-            # If there is no explicit mapping for values to ignore for particular fields, use the value for all fields.
+            # If there is no explicit mapping for values to ignore for particular fields,
+            # use the value for all fields.
             if not isinstance(ignore, dict):
                 ignore = {k: ignore for k in self.path}
         else:
@@ -823,10 +848,10 @@ class Attribute(object):
 
     def __repr__(self):
         """String representation of an Attribute object."""
-        r = '<Attribute id:%s (key=%s, multi=%s, path=%s, joiner=%s, ' \
-                'postprocess=%s)>' % (id(self), self.key,
-                        self.multi, repr(self.path),
-                        self.joiner, repr(self.postprocess))
+        r = '<Attribute id:%s (key=%s, multi=%s, path=%s, joiner=%s, postprocess=%s)>' % (
+            id(self), self.key, self.multi, repr(self.path), self.joiner,
+            repr(self.postprocess)
+        )
         return r
 
 
@@ -841,29 +866,42 @@ def _parse_ref(text, link, info):
 
 class GatherRefs(DOMParserBase):
     """Parser used to gather references to movies, persons and characters."""
-    _attrs = [Attribute(key=None, multi=True,
-                        path={
-                            'text': './text()',
-                            'link': './@href',
-                            'info': './following::text()[1]'
-                            },
-        postprocess=lambda x: _parse_ref(x.get('text') or '', x.get('link') or '',
-                                         (x.get('info') or '').strip()))]
+    _attrs = [
+        Attribute(
+            key=None,
+            multi=True,
+            path={
+                'text': './text()',
+                'link': './@href',
+                'info': './following::text()[1]'
+            },
+            postprocess=lambda x: _parse_ref(
+                x.get('text') or '',
+                x.get('link') or '',
+                (x.get('info') or '').strip()
+            )
+        )
+    ]
+
     extractors = [
-        Extractor(label='names refs',
+        Extractor(
+            label='names refs',
             path="//a[starts-with(@href, '/name/nm')][string-length(@href)=16]",
-            attrs=_attrs),
+            attrs=_attrs
+        ),
 
-        Extractor(label='titles refs',
-            path="//a[starts-with(@href, '/title/tt')]" \
-                    "[string-length(@href)=17]",
-            attrs=_attrs),
+        Extractor(
+            label='titles refs',
+            path="//a[starts-with(@href, '/title/tt')][string-length(@href)=17]",
+            attrs=_attrs
+        ),
 
-        Extractor(label='characters refs',
-            path="//a[starts-with(@href, '/character/ch')]" \
-                    "[string-length(@href)=21]",
-            attrs=_attrs),
-            ]
+        Extractor(
+            label='characters refs',
+            path="//a[starts-with(@href, '/character/ch')][string-length(@href)=21]",
+            attrs=_attrs
+        ),
+    ]
 
     def postprocess_data(self, data):
         result = {}
@@ -874,17 +912,18 @@ class GatherRefs(DOMParserBase):
                 v = v.strip()
                 if not (k and v):
                     continue
-                if not v.endswith('/'): continue
+                if not v.endswith('/'):
+                    continue
                 imdbID = analyze_imdbid(v)
                 if item == 'names refs':
                     obj = Person(personID=imdbID, name=k,
-                                accessSystem=self._as, modFunct=self._modFunct)
+                                 accessSystem=self._as, modFunct=self._modFunct)
                 elif item == 'titles refs':
                     obj = Movie(movieID=imdbID, title=k,
                                 accessSystem=self._as, modFunct=self._modFunct)
                 else:
                     obj = Character(characterID=imdbID, name=k,
-                                accessSystem=self._as, modFunct=self._modFunct)
+                                    accessSystem=self._as, modFunct=self._modFunct)
                 # XXX: companies aren't handled: are they ever found in text,
                 #      as links to their page?
                 result[item][k] = obj
@@ -892,5 +931,3 @@ class GatherRefs(DOMParserBase):
 
     def add_refs(self, data):
         return data
-
-

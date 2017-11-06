@@ -27,13 +27,16 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from .utils import Attribute, Extractor, DOMParserBase, build_movie, \
-    analyze_imdbid
-from .personParser import DOMHTMLMaindetailsParser
 
 from imdb.Movie import Movie
 
+from .personParser import DOMHTMLMaindetailsParser, DOMHTMLSeriesParser
+from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_movie
+
+
 _personIDs = re.compile(r'/name/nm([0-9]{7})')
+
+
 class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
     """Parser for the "filmography" page of a given character.
     The page should be provided as a string, as taken from
@@ -46,69 +49,101 @@ class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
     """
     _containsObjects = True
 
-    _film_attrs = [Attribute(key=None,
-                             multi=True,
-                             path={
-                                 'link': "./a[1]/@href",
-                                 'title': ".//text()",
-                                 'status': "./i/a//text()",
-                                 'roleID': "./a/@href"
-                             },
-                             postprocess=lambda x:
-                             build_movie(x.get('title') or '',
-                                         movieID=analyze_imdbid(x.get('link') or ''),
-                                         roleID=_personIDs.findall(x.get('roleID') or ''),
-                                         status=x.get('status') or None,
-                                         _parsingCharacter=True))]
+    _film_attrs = [
+        Attribute(
+            key=None,
+            multi=True,
+            path={
+                'link': "./a[1]/@href",
+                'title': ".//text()",
+                'status': "./i/a//text()",
+                'roleID': "./a/@href"
+            },
+            postprocess=lambda x: build_movie(
+                x.get('title') or '',
+                movieID=analyze_imdbid(x.get('link') or ''),
+                roleID=_personIDs.findall(x.get('roleID') or ''),
+                status=x.get('status') or None,
+                _parsingCharacter=True)
+        )
+    ]
 
     extractors = [
-        Extractor(label='title',
-                  path="//title",
-                  attrs=Attribute(key='name',
-                                  path="./text()",
-                                  postprocess=lambda x: \
-                                      x.replace(' (Character)', '').replace(
-                                          '- Filmography by type', '').strip())),
+        Extractor(
+            label='title',
+            path="//title",
+            attrs=Attribute(
+                key='name',
+                path="./text()",
+                postprocess=lambda x: x
+                    .replace(' (Character)', '')
+                    .replace('- Filmography by type', '')
+                    .strip()
+            )
+        ),
 
-        Extractor(label='headshot',
-                  path="//a[@name='headshot']",
-                  attrs=Attribute(key='headshot',
-                                  path="./img/@src")),
+        Extractor(
+            label='headshot',
+            path="//a[@name='headshot']",
+            attrs=Attribute(
+                key='headshot',
+                path="./img/@src"
+            )
+        ),
 
-        Extractor(label='akas',
-                  path="//div[h5='Alternate Names:']",
-                  attrs=Attribute(key='akas',
-                                  path="./div//text()",
-                                  postprocess=lambda x: x.strip().split(' / '))),
+        Extractor(
+            label='akas',
+            path="//div[h5='Alternate Names:']",
+            attrs=Attribute(
+                key='akas',
+                path="./div//text()",
+                postprocess=lambda x: x.strip().split(' / ')
+            )
+        ),
 
-        Extractor(label='filmography',
-                  path="//div[@class='filmo'][not(h5)]/ol/li",
-                  attrs=_film_attrs),
+        Extractor(
+            label='filmography',
+            path="//div[@class='filmo'][not(h5)]/ol/li",
+            attrs=_film_attrs
+        ),
 
-        Extractor(label='filmography sections',
-                  group="//div[@class='filmo'][h5]",
-                  group_key="./h5/a/text()",
-                  group_key_normalize=lambda x: x.lower()[:-1],
-                  path="./ol/li",
-                  attrs=_film_attrs),
-        Extractor(label='from movie',
-                  path="//div[@id='tn15title']//a",
-                  attrs=Attribute(key='movie',
-                                  path="./@href")),
-        Extractor(label='actor_mapping',
-                  group="//div[@class='filmo'][h5]",
-                  group_key="./h5/a/text()",
-                  group_key_normalize=lambda x: x.lower()[:-1],
-                  path="./ol/li",
-                  attrs=Attribute(key="actor_mapping",
-                                  multi=True,
-                                  path={'movie': './a[1]/@href',
-                                        'actor': './a[starts-with(@href, "/name/")][1]/@href'},
-                                  # The DOM in the browser is different to the DOM seen here
-                                  # (we haven't figured out why yet).
-                                  # Sometimes the actor does not appear in the DOM for some reason.
-                                  # Do not add the match if that is the case.
-                                  ignore={'actor': None}))
+        Extractor(
+            label='filmography sections',
+            group="//div[@class='filmo'][h5]",
+            group_key="./h5/a/text()",
+            group_key_normalize=lambda x: x.lower()[:-1],
+            path="./ol/li",
+            attrs=_film_attrs
+        ),
+
+        Extractor(
+            label='from movie',
+            path="//div[@id='tn15title']//a",
+            attrs=Attribute(
+                key='movie',
+                path="./@href"
+            )
+        ),
+
+        Extractor(
+            label='actor_mapping',
+            group="//div[@class='filmo'][h5]",
+            group_key="./h5/a/text()",
+            group_key_normalize=lambda x: x.lower()[:-1],
+            path="./ol/li",
+            attrs=Attribute(
+                key="actor_mapping",
+                multi=True,
+                path={
+                    'movie': './a[1]/@href',
+                    'actor': './a[starts-with(@href, "/name/")][1]/@href'
+                },
+                # The DOM in the browser is different to the DOM seen here
+                #  (we haven't figured out why yet).
+                #  Sometimes the actor does not appear in the DOM for some reason.
+                #  Do not add the match if that is the case.
+                ignore={'actor': None})
+        )
     ]
 
     preprocessors = [
@@ -129,30 +164,37 @@ class DOMHTMLCharacterBioParser(DOMParserBase):
     _defGetRefs = True
 
     extractors = [
-        Extractor(label='introduction',
-                  path="//div[@id='_intro']",
-                  attrs=Attribute(key='introduction',
-                                  path=".//text()",
-                                  postprocess=lambda x: x.strip())),
+        Extractor(
+            label='introduction',
+            path="//div[@id='_intro']",
+            attrs=Attribute(
+                key='introduction',
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
 
-        Extractor(label='biography',
-                  path="//span[@class='_biography']",
-                  attrs=Attribute(key='biography',
-                                  multi=True,
-                                  path={
-                                      'info': "./preceding-sibling::h4[1]//text()",
-                                      'text': ".//text()"
-                                  },
-                                  postprocess=lambda x: '%s: %s' % (
-                                      x.get('info').strip(),
-                                      x.get('text').replace('\n',
-                                                            ' ').replace('||', '\n\n').strip()))),
+        Extractor(
+            label='biography',
+            path="//span[@class='_biography']",
+            attrs=Attribute(
+                key='biography',
+                multi=True,
+                path={
+                    'info': "./preceding-sibling::h4[1]//text()",
+                    'text': ".//text()"
+                },
+                postprocess=lambda x: '%s: %s' % (
+                    x.get('info').strip(),
+                    x.get('text').replace('\n', ' ').replace('||', '\n\n').strip()
+                )
+            )
+        )
     ]
 
     preprocessors = [
         (re.compile('(<div id="swiki.2.3.1">)', re.I), r'\1<div id="_intro">'),
-        (re.compile('(<a name="history">)\s*(<table .*?</table>)',
-                    re.I | re.DOTALL),
+        (re.compile('(<a name="history">)\s*(<table .*?</table>)', re.I | re.DOTALL),
          r'</div>\2\1</a>'),
         (re.compile('(<a name="[^"]+">)(<h4>)', re.I), r'</span>\1</a>\2'),
         (re.compile('(</h4>)</a>', re.I), r'\1<span class="_biography">'),
@@ -174,16 +216,22 @@ class DOMHTMLCharacterQuotesParser(DOMParserBase):
     _defGetRefs = True
 
     extractors = [
-        Extractor(label='charquotes',
-                  group="//h5",
-                  group_key="./a/text()",
-                  path="./following-sibling::div[1]",
-                  attrs=Attribute(key=None,
-                                  path={'txt': ".//text()",
-                                        'movieID': ".//a[1]/@href"},
-                                  postprocess=lambda x: (analyze_imdbid(x['movieID']),
-                                                         x['txt'].strip().replace(':   ',
-                                                                                  ': ').replace(':  ', ': ').split('||'))))
+        Extractor(
+            label='charquotes',
+            group="//h5",
+            group_key="./a/text()",
+            path="./following-sibling::div[1]",
+            attrs=Attribute(
+                key=None,
+                path={
+                    'txt': ".//text()",
+                    'movieID': ".//a[1]/@href"
+                },
+                postprocess=lambda x: (
+                    analyze_imdbid(x['movieID']),
+                    x['txt'].strip().replace(':   ', ': ').replace(':  ', ': ').split('||'))
+            )
+        )
     ]
 
     preprocessors = [
@@ -208,14 +256,9 @@ class DOMHTMLCharacterQuotesParser(DOMParserBase):
         return {'quotes': newData}
 
 
-from .personParser import DOMHTMLSeriesParser
-
 _OBJECTS = {
-    'character_main_parser': ((DOMHTMLCharacterMaindetailsParser,),
-                              {'kind': 'character'}),
+    'character_main_parser': ((DOMHTMLCharacterMaindetailsParser,), {'kind': 'character'}),
     'character_series_parser': ((DOMHTMLSeriesParser,), None),
     'character_bio_parser': ((DOMHTMLCharacterBioParser,), None),
     'character_quotes_parser': ((DOMHTMLCharacterQuotesParser,), None)
 }
-
-

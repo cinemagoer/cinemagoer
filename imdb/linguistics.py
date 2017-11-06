@@ -50,12 +50,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # I'm not sure what '-al' is, and so I've left it out...
 #
 # Generic list of articles in unicode:
-GENERIC_ARTICLES = ('the', 'la', 'a', 'die', 'der', 'le', 'el',
-            "l'", 'il', 'das', 'les', 'i', 'o', 'ein', 'un', 'de', 'los',
-            'an', 'una', 'las', 'eine', 'den', 'het', 'gli', 'lo', 'os',
-            'ang', 'oi', 'az', 'een', 'ha-', 'det', 'ta', 'al-',
-            'mga', "un'", 'uno', 'ett', 'dem', 'egy', 'els', 'eines',
-            'Ï', 'Ç', 'Ôï', 'Ïé')
+GENERIC_ARTICLES = (
+    'the', 'la', 'a', 'die', 'der', 'le', 'el', "l'", 'il', 'das', 'les', 'i', 'o', 'ein',
+    'un', 'de', 'los', 'an', 'una', 'las', 'eine', 'den', 'het', 'gli', 'lo', 'os', 'ang',
+    'oi', 'az', 'een', 'ha-', 'det', 'ta', 'al-', 'mga', "un'", 'uno', 'ett', 'dem', 'egy',
+    'els', 'eines', 'Ï', 'Ç', 'Ôï', 'Ïé'
+)
 
 
 # Lists of articles separated by language.  If possible, the list should
@@ -64,14 +64,13 @@ GENERIC_ARTICLES = ('the', 'la', 'a', 'die', 'der', 'le', 'el',
 # it at imdbpy-devel@lists.sourceforge.net
 LANG_ARTICLES = {
     'English': ('the', 'a', 'an'),
-    'Italian': ('la', 'le', "l'", 'il', 'i', 'un', 'una', 'gli', 'lo', "un'",
-                'uno'),
-    'Spanish': ('la', 'lo', 'el', 'las', 'un', 'los', 'una', 'al', 'del',
-                'unos', 'unas', 'uno'),
-    'French': ('le', "l'", 'la', 'les', 'un', 'une', 'des', 'au', 'du', 'à la',
-                'de la', 'aux'),
+    'Italian': ('la', 'le', "l'", 'il', 'i', 'un', 'una', 'gli', 'lo', "un'", 'uno'),
+    'Spanish': (
+        'la', 'lo', 'el', 'las', 'un', 'los', 'una', 'al', 'del', 'unos', 'unas', 'uno'
+    ),
+    'French': ('le', "l'", 'la', 'les', 'un', 'une', 'des', 'au', 'du', 'à la', 'de la', 'aux'),
     'Portuguese': ('a', 'as', 'o', 'os', 'um', 'uns', 'uma', 'umas'),
-    'Turkish': (), # Some languages doesn't have articles.
+    'Turkish': ()   # Some languages doesn't have articles.
 }
 LANG_ARTICLESget = LANG_ARTICLES.get
 
@@ -80,13 +79,40 @@ LANG_ARTICLESget = LANG_ARTICLES.get
 # If you want to add an entry for another language or country, mail it at
 # imdbpy-devel@lists.sourceforge.net .
 LANG_COUNTRIES = {
-    'English': ('Canada', 'Swaziland', 'Ghana', 'St. Lucia', 'Liberia', 'Jamaica', 'Bahamas', 'New Zealand', 'Lesotho', 'Kenya', 'Solomon Islands', 'United States', 'South Africa', 'St. Vincent and the Grenadines', 'Fiji', 'UK', 'Nigeria', 'Australia', 'USA', 'St. Kitts and Nevis', 'Belize', 'Sierra Leone', 'Gambia', 'Namibia', 'Micronesia', 'Kiribati', 'Grenada', 'Antigua and Barbuda', 'Barbados', 'Malta', 'Zimbabwe', 'Ireland', 'Uganda', 'Trinidad and Tobago', 'South Sudan', 'Guyana', 'Botswana', 'United Kingdom', 'Zambia'),
+    'English': (
+        'Canada', 'Swaziland', 'Ghana', 'St. Lucia', 'Liberia', 'Jamaica', 'Bahamas',
+        'New Zealand', 'Lesotho', 'Kenya', 'Solomon Islands', 'United States', 'South Africa',
+        'St. Vincent and the Grenadines', 'Fiji', 'UK', 'Nigeria', 'Australia', 'USA',
+        'St. Kitts and Nevis', 'Belize', 'Sierra Leone', 'Gambia', 'Namibia', 'Micronesia',
+        'Kiribati', 'Grenada', 'Antigua and Barbuda', 'Barbados', 'Malta', 'Zimbabwe',
+        'Ireland', 'Uganda', 'Trinidad and Tobago', 'South Sudan', 'Guyana', 'Botswana',
+        'United Kingdom', 'Zambia'
+    ),
     'Italian': ('Italy', 'San Marino', 'Vatican City'),
-    'Spanish': ('Spain', 'Mexico', 'Argentina', 'Bolivia', 'Guatemala', 'Uruguay', 'Peru', 'Cuba', 'Dominican Republic', 'Panama', 'Costa Rica', 'Ecuador', 'El Salvador', 'Chile', 'Equatorial Guinea', 'Spain', 'Colombia', 'Nicaragua', 'Venezuela', 'Honduras', 'Paraguay'),
-    'French': ('Cameroon', 'Burkina Faso', 'Dominica', 'Gabon', 'Monaco', 'France', "Cote d'Ivoire", 'Benin', 'Togo', 'Central African Republic', 'Mali', 'Niger', 'Congo, Republic of', 'Guinea', 'Congo, Democratic Republic of the', 'Luxembourg', 'Haiti', 'Chad', 'Burundi', 'Madagascar', 'Comoros', 'Senegal'),
-    'Portuguese': ('Portugal', 'Brazil', 'Sao Tome and Principe', 'Cape Verde', 'Angola',  'Mozambique', 'Guinea-Bissau'),
-    'German': ('Liechtenstein', 'Austria', 'West Germany', 'Switzerland', 'East Germany', 'Germany'),
-    'Arabic': ('Saudi Arabia', 'Kuwait', 'Jordan', 'Oman', 'Yemen', 'United Arab Emirates', 'Mauritania', 'Lebanon', 'Bahrain', 'Libya', 'Palestinian State (proposed)', 'Qatar', 'Algeria', 'Morocco', 'Iraq', 'Egypt', 'Djibouti', 'Sudan', 'Syria', 'Tunisia'),
+    'Spanish': (
+        'Spain', 'Mexico', 'Argentina', 'Bolivia', 'Guatemala', 'Uruguay', 'Peru', 'Cuba',
+        'Dominican Republic', 'Panama', 'Costa Rica', 'Ecuador', 'El Salvador', 'Chile',
+        'Equatorial Guinea', 'Spain', 'Colombia', 'Nicaragua', 'Venezuela', 'Honduras',
+        'Paraguay'
+    ),
+    'French': (
+        'Cameroon', 'Burkina Faso', 'Dominica', 'Gabon', 'Monaco', 'France', "Cote d'Ivoire",
+        'Benin', 'Togo', 'Central African Republic', 'Mali', 'Niger', 'Congo, Republic of',
+        'Guinea', 'Congo, Democratic Republic of the', 'Luxembourg', 'Haiti', 'Chad',
+        'Burundi', 'Madagascar', 'Comoros', 'Senegal'
+    ),
+    'Portuguese': (
+        'Portugal', 'Brazil', 'Sao Tome and Principe', 'Cape Verde', 'Angola', 'Mozambique',
+        'Guinea-Bissau'
+    ),
+    'German': (
+        'Liechtenstein', 'Austria', 'West Germany', 'Switzerland', 'East Germany', 'Germany'
+    ),
+    'Arabic': (
+        'Saudi Arabia', 'Kuwait', 'Jordan', 'Oman', 'Yemen', 'United Arab Emirates',
+        'Mauritania', 'Lebanon', 'Bahrain', 'Libya', 'Palestinian State (proposed)', 'Qatar',
+        'Algeria', 'Morocco', 'Iraq', 'Egypt', 'Djibouti', 'Sudan', 'Syria', 'Tunisia'
+    ),
     'Turkish': ('Turkey', 'Azerbaijan'),
     'Swahili': ('Tanzania',),
     'Swedish': ('Sweden',),
@@ -186,6 +212,7 @@ def addTrailingSpace(articles):
 _ART_CACHE = {}
 _SP_ART_CACHE = {}
 
+
 def articlesDictsForLang(lang):
     """Return dictionaries of articles specific for the given language, or the
     default one if the language is not known."""
@@ -204,4 +231,3 @@ def spArticlesForLang(lang):
     spArticles = addTrailingSpace(LANG_ARTICLESget(lang, GENERIC_ARTICLES))
     _SP_ART_CACHE[lang] = spArticles
     return spArticles
-

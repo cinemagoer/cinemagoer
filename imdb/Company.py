@@ -23,8 +23,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from copy import deepcopy
 
-from imdb.utils import analyze_company_name, build_company_name, \
-                        flatten, _Container, cmpCompanies
+from imdb.utils import _Container
+from imdb.utils import analyze_company_name, build_company_name, cmpCompanies, flatten
 
 
 class Company(_Container):
@@ -42,14 +42,15 @@ class Company(_Container):
 
     # Aliases for some not-so-intuitive keys.
     keys_alias = {
-            'distributor': 'distributors',
-            'special effects company': 'special effects companies',
-            'other company': 'miscellaneous companies',
-            'miscellaneous company': 'miscellaneous companies',
-            'other companies': 'miscellaneous companies',
-            'misc companies': 'miscellaneous companies',
-            'misc company': 'miscellaneous companies',
-            'production company': 'production companies'}
+        'distributor': 'distributors',
+        'special effects company': 'special effects companies',
+        'other company': 'miscellaneous companies',
+        'miscellaneous company': 'miscellaneous companies',
+        'other companies': 'miscellaneous companies',
+        'misc companies': 'miscellaneous companies',
+        'misc company': 'miscellaneous companies',
+        'production company': 'production companies'
+    }
 
     keys_tomodify_list = ()
 
@@ -108,7 +109,7 @@ class Company(_Container):
 
     def _getitem(self, key):
         """Handle special keys."""
-        ## XXX: can a company have an imdbIndex?
+        # XXX: can a company have an imdbIndex?
         if 'name' in self.data:
             if key == 'long imdb name':
                 return build_company_name(self.data)
@@ -164,9 +165,9 @@ class Company(_Container):
 
     def __repr__(self):
         """String representation of a Company object."""
-        return '<Company id:%s[%s] name:_%s_>' % (self.companyID,
-                                        self.accessSystem,
-                                        self.get('long imdb name'))
+        return '<Company id:%s[%s] name:_%s_>' % (
+            self.companyID, self.accessSystem, self.get('long imdb name')
+        )
 
     def __str__(self):
         """Simply print the short name."""
@@ -174,15 +175,15 @@ class Company(_Container):
 
     def summary(self):
         """Return a string with a pretty-printed summary for the company."""
-        if not self: return ''
-        s = 'Company\n=======\nName: %s\n' % \
-                                self.get('name', '')
+        if not self:
+            return ''
+        s = 'Company\n=======\nName: %s\n' % self.get('name', '')
         for k in ('distributor', 'production company', 'miscellaneous company',
-                'special effects company'):
+                  'special effects company'):
             d = self.get(k, [])[:5]
-            if not d: continue
-            s += 'Last movies from this company (%s): %s.\n' % \
-                    (k, '; '.join([x.get('long imdb title', '') for x in d]))
+            if not d:
+                continue
+            s += 'Last movies from this company (%s): %s.\n' % (
+                k, '; '.join([x.get('long imdb title', '') for x in d])
+            )
         return s
-
-

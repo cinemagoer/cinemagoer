@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from copy import deepcopy
 
-from imdb.utils import analyze_name, build_name, flatten, _Container, cmpPeople
+from imdb.utils import _Container, analyze_name, build_name, cmpPeople, flatten
 
 
 class Character(_Container):
@@ -40,18 +40,20 @@ class Character(_Container):
     default_info = ('main', 'filmography', 'biography')
 
     # Aliases for some not-so-intuitive keys.
-    keys_alias = {'mini biography': 'biography',
-                  'bio': 'biography',
-                  'character biography': 'biography',
-                  'character biographies': 'biography',
-                  'biographies': 'biography',
-                  'character bio': 'biography',
-                  'aka': 'akas',
-                  'also known as': 'akas',
-                  'alternate names': 'akas',
-                  'personal quotes': 'quotes',
-                  'keys': 'keywords',
-                  'keyword': 'keywords'}
+    keys_alias = {
+        'mini biography': 'biography',
+        'bio': 'biography',
+        'character biography': 'biography',
+        'character biographies': 'biography',
+        'biographies': 'biography',
+        'character bio': 'biography',
+        'aka': 'akas',
+        'also known as': 'akas',
+        'alternate names': 'akas',
+        'personal quotes': 'quotes',
+        'keys': 'keywords',
+        'keyword': 'keywords'
+    }
 
     keys_tomodify_list = ('biography', 'quotes')
 
@@ -104,7 +106,7 @@ class Character(_Container):
 
     def _getitem(self, key):
         """Handle special keys."""
-        ## XXX: can a character have an imdbIndex?
+        # XXX: can a character have an imdbIndex?
         if 'name' in self.data:
             if key == 'long imdb name':
                 return build_name(self.data)
@@ -141,10 +143,8 @@ class Character(_Container):
         and/or characterID."""
         if not isinstance(other, self.__class__):
             return False
-        if 'name' in self.data and \
-                'name' in other.data and \
-                build_name(self.data, canonical=0) == \
-                build_name(other.data, canonical=0):
+        if 'name' in self.data and 'name' in other.data and \
+                build_name(self.data, canonical=0) == build_name(other.data, canonical=0):
             return True
         if self.accessSystem == other.accessSystem and \
                 self.characterID is not None and \
@@ -156,21 +156,21 @@ class Character(_Container):
     def __deepcopy__(self, memo):
         """Return a deep copy of a Character instance."""
         c = Character(name='', characterID=self.characterID,
-                    myName=self.myName, myID=self.myID,
-                    data=deepcopy(self.data, memo),
-                    notes=self.notes, accessSystem=self.accessSystem,
-                    titlesRefs=deepcopy(self.titlesRefs, memo),
-                    namesRefs=deepcopy(self.namesRefs, memo),
-                    charactersRefs=deepcopy(self.charactersRefs, memo))
+                      myName=self.myName, myID=self.myID,
+                      data=deepcopy(self.data, memo),
+                      notes=self.notes, accessSystem=self.accessSystem,
+                      titlesRefs=deepcopy(self.titlesRefs, memo),
+                      namesRefs=deepcopy(self.namesRefs, memo),
+                      charactersRefs=deepcopy(self.charactersRefs, memo))
         c.current_info = list(self.current_info)
         c.set_mod_funct(self.modFunct)
         return c
 
     def __repr__(self):
         """String representation of a Character object."""
-        return '<Character id:%s[%s] name:_%s_>' % (self.characterID,
-                                        self.accessSystem,
-                                        self.get('name'))
+        return '<Character id:%s[%s] name:_%s_>' % (
+            self.characterID, self.accessSystem, self.get('name')
+        )
 
     def __str__(self):
         """Simply print the short name."""
@@ -178,17 +178,14 @@ class Character(_Container):
 
     def summary(self):
         """Return a string with a pretty-printed summary for the character."""
-        if not self: return ''
-        s = 'Character\n=====\nName: %s\n' % \
-                                self.get('name', '')
+        if not self:
+            return ''
+        s = 'Character\n=====\nName: %s\n' % self.get('name', '')
         bio = self.get('biography')
         if bio:
             s += 'Biography: %s\n' % bio[0]
         filmo = self.get('filmography')
         if filmo:
-            a_list = [x.get('long imdb canonical title', '')
-                        for x in filmo[:5]]
+            a_list = [x.get('long imdb canonical title', '') for x in filmo[:5]]
             s += 'Last movies with this character: %s.\n' % '; '.join(a_list)
         return s
-
-

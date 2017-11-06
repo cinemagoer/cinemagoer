@@ -25,10 +25,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from .utils import build_movie, Attribute, Extractor, DOMParserBase, \
-                    analyze_imdbid
 
 from imdb.utils import analyze_company_name
+
+from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_movie
 
 
 class DOMCompanyParser(DOMParserBase):
@@ -44,35 +44,42 @@ class DOMCompanyParser(DOMParserBase):
     _containsObjects = True
 
     extractors = [
-            Extractor(label='name',
-                        path="//title",
-                        attrs=Attribute(key='name',
-                            path="./text()",
-                        postprocess=lambda x: \
-                                analyze_company_name(x, stripNotes=True))),
+        Extractor(
+            label='name',
+            path="//title",
+            attrs=Attribute(
+                key='name',
+                path="./text()",
+                postprocess=lambda x: analyze_company_name(x, stripNotes=True)
+            )
+        ),
 
-            Extractor(label='filmography',
-                        group="//b/a[@name]",
-                        group_key="./text()",
-                        group_key_normalize=lambda x: x.lower(),
-                        path="../following-sibling::ol[1]/li",
-                        attrs=Attribute(key=None,
-                            multi=True,
-                            path={
-                                'link': "./a[1]/@href",
-                                'title': "./a[1]/text()",
-                                'year': "./text()[1]"
-                                },
-                            postprocess=lambda x:
-                                build_movie('%s %s' % \
-                                (x.get('title'), x.get('year').strip()),
-                                movieID=analyze_imdbid(x.get('link') or ''),
-                                _parsingCompany=True))),
-            ]
+        Extractor(
+            label='filmography',
+            group="//b/a[@name]",
+            group_key="./text()",
+            group_key_normalize=lambda x: x.lower(),
+            path="../following-sibling::ol[1]/li",
+            attrs=Attribute(
+                key=None,
+                multi=True,
+                path={
+                    'link': "./a[1]/@href",
+                    'title': "./a[1]/text()",
+                    'year': "./text()[1]"
+                },
+                postprocess=lambda x: build_movie(
+                    '%s %s' % (x.get('title'), x.get('year').strip()),
+                    movieID=analyze_imdbid(x.get('link') or ''),
+                    _parsingCompany=True
+                )
+            )
+        )
+    ]
 
     preprocessors = [
         (re.compile('(<b><a name=)', re.I), r'</p>\1')
-        ]
+    ]
 
     def postprocess_data(self, data):
         for key in list(data.keys()):
@@ -88,4 +95,3 @@ class DOMCompanyParser(DOMParserBase):
 _OBJECTS = {
     'company_main_parser': ((DOMCompanyParser,), None)
 }
-

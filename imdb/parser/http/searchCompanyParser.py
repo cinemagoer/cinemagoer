@@ -26,9 +26,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.utils import analyze_company_name, build_company_name
-from .utils import Extractor, Attribute, analyze_imdbid
 
-from .searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
+from .searchMovieParser import DOMBasicMovieParser, DOMHTMLSearchMovieParser
+from .utils import Attribute, Extractor, analyze_imdbid
+
 
 class DOMBasicCompanyParser(DOMBasicMovieParser):
     """Simply get the name of a company and the imdbID.
@@ -46,26 +47,32 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
     _titleBuilder = lambda self, x: build_company_name(x)
     _linkPrefix = '/company/co'
 
-    _attrs = [Attribute(key='data',
-                        multi=True,
-                        path={
-                            'link': "./a[1]/@href",
-                            'name': "./a[1]/text()",
-                            'notes': "./text()[1]"
-                            },
-                        postprocess=lambda x: (
-                            analyze_imdbid(x.get('link')),
-                            analyze_company_name(x.get('name')+(x.get('notes')
-                                                or ''), stripNotes=True)
-                        ))]
-    extractors = [Extractor(label='search',
-                            path="//td[@class='result_text']/a[starts-with(@href, " \
-                                    "'/company/co')]/..",
-                            attrs=_attrs)]
+    _attrs = [
+        Attribute(
+            key='data',
+            multi=True,
+            path={
+                'link': "./a[1]/@href",
+                'name': "./a[1]/text()",
+                'notes': "./text()[1]"
+            },
+            postprocess=lambda x: (
+                analyze_imdbid(x.get('link')),
+                analyze_company_name(x.get('name') + (x.get('notes') or ''), stripNotes=True)
+            )
+        )
+    ]
+
+    extractors = [
+        Extractor(
+            label='search',
+            path="//td[@class='result_text']/a[starts-with(@href, '/company/co')]/..",
+            attrs=_attrs
+        )
+    ]
 
 
 _OBJECTS = {
-        'search_company_parser': ((DOMHTMLSearchCompanyParser,),
-                {'kind': 'company', '_basic_parser': DOMBasicCompanyParser})
+    'search_company_parser': ((DOMHTMLSearchCompanyParser,),
+                              {'kind': 'company', '_basic_parser': DOMBasicCompanyParser})
 }
-

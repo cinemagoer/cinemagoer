@@ -24,8 +24,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 from copy import deepcopy
 
 from imdb import linguistics
-from imdb.utils import analyze_title, build_title, canonicalTitle, \
-                        flatten, _Container, cmpMovies
+from imdb.utils import _Container, analyze_title, build_title, canonicalTitle, cmpMovies, flatten
 
 
 class Movie(_Container):
@@ -43,97 +42,99 @@ class Movie(_Container):
 
     # Aliases for some not-so-intuitive keys.
     keys_alias = {
-                'tv schedule': 'airing',
-                'user rating':  'rating',
-                'plot summary': 'plot',
-                'plot summaries': 'plot',
-                'directed by':  'director',
-                'created by': 'creator',
-                'writing credits': 'writer',
-                'produced by':  'producer',
-                'original music by':    'original music',
-                'non-original music by':    'non-original music',
-                'music':    'original music',
-                'cinematography by':    'cinematographer',
-                'cinematography':   'cinematographer',
-                'film editing by':  'editor',
-                'film editing': 'editor',
-                'editing':  'editor',
-                'actors':   'cast',
-                'actresses':    'cast',
-                'casting by':   'casting director',
-                'casting':  'casting director',
-                'art direction by': 'art direction',
-                'set decoration by':    'set decoration',
-                'costume design by':    'costume designer',
-                'costume design':    'costume designer',
-                'makeup department':    'make up',
-                'makeup':    'make up',
-                'make-up':    'make up',
-                'production management':    'production manager',
-                'production company':    'production companies',
-                'second unit director or assistant director':
-                                                'assistant director',
-                'second unit director':   'assistant director',
-                'sound department': 'sound crew',
-                'costume and wardrobe department': 'costume department',
-                'special effects by':   'special effects',
-                'visual effects by':    'visual effects',
-                'special effects company':   'special effects companies',
-                'stunts':   'stunt performer',
-                'other crew':   'miscellaneous crew',
-                'misc crew':   'miscellaneous crew',
-                'miscellaneouscrew':   'miscellaneous crew',
-                'crewmembers': 'miscellaneous crew',
-                'crew members': 'miscellaneous crew',
-                'other companies': 'miscellaneous companies',
-                'misc companies': 'miscellaneous companies',
-                'miscellaneous company': 'miscellaneous companies',
-                'misc company': 'miscellaneous companies',
-                'other company': 'miscellaneous companies',
-                'aka':  'akas',
-                'also known as':    'akas',
-                'country':  'countries',
-                'production country':  'countries',
-                'production countries':  'countries',
-                'genre': 'genres',
-                'runtime':  'runtimes',
-                'lang': 'languages',
-                'color': 'color info',
-                'cover': 'cover url',
-                'full-size cover': 'full-size cover url',
-                'seasons': 'number of seasons',
-                'language': 'languages',
-                'certificate':  'certificates',
-                'certifications':   'certificates',
-                'certification':    'certificates',
-                'miscellaneous links':  'misc links',
-                'miscellaneous':    'misc links',
-                'soundclips':   'sound clips',
-                'videoclips':   'video clips',
-                'photographs':  'photo sites',
-                'distributor': 'distributors',
-                'distribution': 'distributors',
-                'distribution companies': 'distributors',
-                'distribution company': 'distributors',
-                'guest': 'guests',
-                'guest appearances': 'guests',
-                'tv guests': 'guests',
-                'notable tv guest appearances': 'guests',
-                'episodes cast': 'guests',
-                'episodes number': 'number of episodes',
-                'amazon review': 'amazon reviews',
-                'merchandising': 'merchandising links',
-                'merchandise': 'merchandising links',
-                'sales': 'merchandising links',
-                'faq': 'faqs',
-                'parental guide': 'parents guide',
-                'frequently asked questions': 'faqs'}
+        'tv schedule': 'airing',
+        'user rating': 'rating',
+        'plot summary': 'plot',
+        'plot summaries': 'plot',
+        'directed by': 'director',
+        'created by': 'creator',
+        'writing credits': 'writer',
+        'produced by': 'producer',
+        'original music by': 'original music',
+        'non-original music by': 'non-original music',
+        'music': 'original music',
+        'cinematography by': 'cinematographer',
+        'cinematography': 'cinematographer',
+        'film editing by': 'editor',
+        'film editing': 'editor',
+        'editing': 'editor',
+        'actors': 'cast',
+        'actresses': 'cast',
+        'casting by': 'casting director',
+        'casting': 'casting director',
+        'art direction by': 'art direction',
+        'set decoration by': 'set decoration',
+        'costume design by': 'costume designer',
+        'costume design': 'costume designer',
+        'makeup department': 'make up',
+        'makeup': 'make up',
+        'make-up': 'make up',
+        'production management': 'production manager',
+        'production company': 'production companies',
+        'second unit director or assistant director': 'assistant director',
+        'second unit director': 'assistant director',
+        'sound department': 'sound crew',
+        'costume and wardrobe department': 'costume department',
+        'special effects by': 'special effects',
+        'visual effects by': 'visual effects',
+        'special effects company': 'special effects companies',
+        'stunts': 'stunt performer',
+        'other crew': 'miscellaneous crew',
+        'misc crew': 'miscellaneous crew',
+        'miscellaneouscrew': 'miscellaneous crew',
+        'crewmembers': 'miscellaneous crew',
+        'crew members': 'miscellaneous crew',
+        'other companies': 'miscellaneous companies',
+        'misc companies': 'miscellaneous companies',
+        'miscellaneous company': 'miscellaneous companies',
+        'misc company': 'miscellaneous companies',
+        'other company': 'miscellaneous companies',
+        'aka': 'akas',
+        'also known as': 'akas',
+        'country': 'countries',
+        'production country': 'countries',
+        'production countries': 'countries',
+        'genre': 'genres',
+        'runtime': 'runtimes',
+        'lang': 'languages',
+        'color': 'color info',
+        'cover': 'cover url',
+        'full-size cover': 'full-size cover url',
+        'seasons': 'number of seasons',
+        'language': 'languages',
+        'certificate': 'certificates',
+        'certifications': 'certificates',
+        'certification': 'certificates',
+        'miscellaneous links': 'misc links',
+        'miscellaneous': 'misc links',
+        'soundclips': 'sound clips',
+        'videoclips': 'video clips',
+        'photographs': 'photo sites',
+        'distributor': 'distributors',
+        'distribution': 'distributors',
+        'distribution companies': 'distributors',
+        'distribution company': 'distributors',
+        'guest': 'guests',
+        'guest appearances': 'guests',
+        'tv guests': 'guests',
+        'notable tv guest appearances': 'guests',
+        'episodes cast': 'guests',
+        'episodes number': 'number of episodes',
+        'amazon review': 'amazon reviews',
+        'merchandising': 'merchandising links',
+        'merchandise': 'merchandising links',
+        'sales': 'merchandising links',
+        'faq': 'faqs',
+        'parental guide': 'parents guide',
+        'frequently asked questions': 'faqs'
+    }
 
-    keys_tomodify_list = ('plot', 'trivia', 'alternate versions', 'goofs',
-                        'quotes', 'dvd', 'laserdisc', 'news', 'soundtrack',
-                        'crazy credits', 'business', 'supplements',
-                        'video review', 'faqs')
+    keys_tomodify_list = (
+        'plot', 'trivia', 'alternate versions', 'goofs',
+        'quotes', 'dvd', 'laserdisc', 'news', 'soundtrack',
+        'crazy credits', 'business', 'supplements',
+        'video review', 'faqs'
+    )
 
     cmpFunct = cmpMovies
 
@@ -251,8 +252,7 @@ class Movie(_Container):
             elif key == 'long imdb canonical title':
                 return build_title(self.data, canonical=1)
             elif key == 'smart long imdb canonical title':
-                return build_title(self.data, canonical=1,
-                                    lang=self.guessLanguage())
+                return build_title(self.data, canonical=1, lang=self.guessLanguage())
         if key == 'full-size cover url' and 'cover url' in self.data:
             return self._re_fullsizeURL.sub('', self.data.get('cover url', ''))
         return None
@@ -271,17 +271,16 @@ class Movie(_Container):
         long imdb title and/or movieID.
         """
         # XXX: obsolete?
-        if not isinstance(other, self.__class__): return False
-        if 'title' in self.data and \
-                'title' in other.data and \
-                build_title(self.data, canonical=0) == \
-                build_title(other.data, canonical=0):
+        if not isinstance(other, self.__class__):
+            return False
+        if 'title' in self.data and 'title' in other.data and \
+                build_title(self.data, canonical=0) == build_title(other.data, canonical=0):
             return True
         if self.accessSystem == other.accessSystem and \
                 self.movieID is not None and self.movieID == other.movieID:
             return True
         return False
-    isSameMovie = isSameTitle # XXX: just for backward compatiblity.
+    isSameMovie = isSameTitle   # XXX: just for backward compatiblity.
 
     def __contains__(self, item):
         """Return true if the given Person object is listed in this Movie,
@@ -291,17 +290,17 @@ class Movie(_Container):
         from .Company import Company
         if isinstance(item, Person):
             for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
-                            toDescend=(list, dict, tuple, Movie)):
+                             toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(p):
                     return True
         elif isinstance(item, Character):
             for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
-                            toDescend=(list, dict, tuple, Movie)):
+                             toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(p.currentRole):
                     return True
         elif isinstance(item, Company):
             for c in flatten(self.data, yieldDictKeys=1, scalar=Company,
-                            toDescend=(list, dict, tuple, Movie)):
+                             toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(c):
                     return True
         return False
@@ -309,13 +308,13 @@ class Movie(_Container):
     def __deepcopy__(self, memo):
         """Return a deep copy of a Movie instance."""
         m = Movie(title='', movieID=self.movieID, myTitle=self.myTitle,
-                    myID=self.myID, data=deepcopy(self.data, memo),
-                    currentRole=deepcopy(self.currentRole, memo),
-                    roleIsPerson=self._roleIsPerson,
-                    notes=self.notes, accessSystem=self.accessSystem,
-                    titlesRefs=deepcopy(self.titlesRefs, memo),
-                    namesRefs=deepcopy(self.namesRefs, memo),
-                    charactersRefs=deepcopy(self.charactersRefs, memo))
+                  myID=self.myID, data=deepcopy(self.data, memo),
+                  currentRole=deepcopy(self.currentRole, memo),
+                  roleIsPerson=self._roleIsPerson,
+                  notes=self.notes, accessSystem=self.accessSystem,
+                  titlesRefs=deepcopy(self.titlesRefs, memo),
+                  namesRefs=deepcopy(self.namesRefs, memo),
+                  charactersRefs=deepcopy(self.charactersRefs, memo))
         m.current_info = list(self.current_info)
         m.set_mod_funct(self.modFunct)
         return m
@@ -327,8 +326,7 @@ class Movie(_Container):
             title = self.get('long imdb episode title')
         else:
             title = self.get('long imdb title')
-        return '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem,
-                                                title)
+        return '<Movie id:%s[%s] title:_%s_>' % (self.movieID, self.accessSystem, title)
 
     def __str__(self):
         """Simply print the short title."""
@@ -336,19 +334,22 @@ class Movie(_Container):
 
     def summary(self):
         """Return a string with a pretty-printed summary for the movie."""
-        if not self: return ''
+        if not self:
+            return ''
+
         def _nameAndRole(personList, joiner=', '):
             """Build a pretty string with name and role."""
             nl = []
             for person in personList:
                 n = person.get('name', '')
-                if person.currentRole: n += ' (%s)' % person.currentRole
+                if person.currentRole:
+                    n += ' (%s)' % person.currentRole
                 nl.append(n)
             return joiner.join(nl)
-        s = 'Movie\n=====\nTitle: %s\n' % \
-                    self.get('long imdb canonical title', '')
+        s = 'Movie\n=====\nTitle: %s\n' % self.get('long imdb canonical title', '')
         genres = self.get('genres')
-        if genres: s += 'Genres: %s.\n' % ', '.join(genres)
+        if genres:
+            s += 'Genres: %s.\n' % ', '.join(genres)
         director = self.get('director')
         if director:
             s += 'Director: %s.\n' % _nameAndRole(director)
@@ -387,5 +388,3 @@ class Movie(_Container):
                 plot = plot[:i]
             s += 'Plot: %s' % plot
         return s
-
-

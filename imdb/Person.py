@@ -23,8 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from copy import deepcopy
 
-from imdb.utils import analyze_name, build_name, normalizeName, \
-                        flatten, _Container, cmpPeople
+from imdb.utils import _Container, analyze_name, build_name, cmpPeople, flatten, normalizeName
 
 
 class Person(_Container):
@@ -41,54 +40,56 @@ class Person(_Container):
     default_info = ('main', 'filmography', 'biography')
 
     # Aliases for some not-so-intuitive keys.
-    keys_alias = {'biography': 'mini biography',
-                  'bio': 'mini biography',
-                  'aka': 'akas',
-                  'also known as': 'akas',
-                  'nick name': 'nick names',
-                  'nicks': 'nick names',
-                  'nickname': 'nick names',
-                  'miscellaneouscrew': 'miscellaneous crew',
-                  'crewmembers': 'miscellaneous crew',
-                  'misc': 'miscellaneous crew',
-                  'guest': 'notable tv guest appearances',
-                  'guests': 'notable tv guest appearances',
-                  'tv guest': 'notable tv guest appearances',
-                  'guest appearances': 'notable tv guest appearances',
-                  'spouses': 'spouse',
-                  'salary': 'salary history',
-                  'salaries': 'salary history',
-                  'otherworks': 'other works',
-                  "maltin's biography":
-                        "biography from leonard maltin's movie encyclopedia",
-                  "leonard maltin's biography":
-                        "biography from leonard maltin's movie encyclopedia",
-                  'real name': 'birth name',
-                  'where are they now': 'where now',
-                  'personal quotes': 'quotes',
-                  'mini-biography author': 'imdb mini-biography by',
-                  'biography author': 'imdb mini-biography by',
-                  'genre': 'genres',
-                  'portrayed': 'portrayed in',
-                  'keys': 'keywords',
-                  'trademarks': 'trade mark',
-                  'trade mark': 'trade mark',
-                  'trade marks': 'trade mark',
-                  'trademark': 'trade mark',
-                  'pictorials': 'pictorial',
-                  'magazine covers': 'magazine cover photo',
-                  'magazine-covers': 'magazine cover photo',
-                  'tv series episodes': 'episodes',
-                  'tv-series episodes': 'episodes',
-                  'articles': 'article',
-                  'keyword': 'keywords'}
+    keys_alias = {
+        'biography': 'mini biography',
+        'bio': 'mini biography',
+        'aka': 'akas',
+        'also known as': 'akas',
+        'nick name': 'nick names',
+        'nicks': 'nick names',
+        'nickname': 'nick names',
+        'miscellaneouscrew': 'miscellaneous crew',
+        'crewmembers': 'miscellaneous crew',
+        'misc': 'miscellaneous crew',
+        'guest': 'notable tv guest appearances',
+        'guests': 'notable tv guest appearances',
+        'tv guest': 'notable tv guest appearances',
+        'guest appearances': 'notable tv guest appearances',
+        'spouses': 'spouse',
+        'salary': 'salary history',
+        'salaries': 'salary history',
+        'otherworks': 'other works',
+        "maltin's biography": "biography from leonard maltin's movie encyclopedia",
+        "leonard maltin's biography": "biography from leonard maltin's movie encyclopedia",
+        'real name': 'birth name',
+        'where are they now': 'where now',
+        'personal quotes': 'quotes',
+        'mini-biography author': 'imdb mini-biography by',
+        'biography author': 'imdb mini-biography by',
+        'genre': 'genres',
+        'portrayed': 'portrayed in',
+        'keys': 'keywords',
+        'trademarks': 'trade mark',
+        'trade mark': 'trade mark',
+        'trade marks': 'trade mark',
+        'trademark': 'trade mark',
+        'pictorials': 'pictorial',
+        'magazine covers': 'magazine cover photo',
+        'magazine-covers': 'magazine cover photo',
+        'tv series episodes': 'episodes',
+        'tv-series episodes': 'episodes',
+        'articles': 'article',
+        'keyword': 'keywords'
+    }
 
     # 'nick names'???
-    keys_tomodify_list = ('mini biography', 'spouse', 'quotes', 'other works',
-                        'salary history', 'trivia', 'trade mark', 'news',
-                        'books', 'biographical movies', 'portrayed in',
-                        'where now', 'interviews', 'article',
-                        "biography from leonard maltin's movie encyclopedia")
+    keys_tomodify_list = (
+        'mini biography', 'spouse', 'quotes', 'other works',
+        'salary history', 'trivia', 'trade mark', 'news',
+        'books', 'biographical movies', 'portrayed in',
+        'where now', 'interviews', 'article',
+        "biography from leonard maltin's movie encyclopedia"
+    )
 
     cmpFunct = cmpPeople
 
@@ -204,18 +205,19 @@ class Person(_Container):
                 self.personID and self.personID == other.personID:
             return True
         return False
-    isSamePerson = isSameName # XXX: just for backward compatiblity.
+
+    isSamePerson = isSameName   # XXX: just for backward compatiblity.
 
     def __deepcopy__(self, memo):
         """Return a deep copy of a Person instance."""
         p = Person(name='', personID=self.personID, myName=self.myName,
-                    myID=self.myID, data=deepcopy(self.data, memo),
-                    currentRole=deepcopy(self.currentRole, memo),
-                    roleIsPerson=self._roleIsPerson,
-                    notes=self.notes, accessSystem=self.accessSystem,
-                    titlesRefs=deepcopy(self.titlesRefs, memo),
-                    namesRefs=deepcopy(self.namesRefs, memo),
-                    charactersRefs=deepcopy(self.charactersRefs, memo))
+                   myID=self.myID, data=deepcopy(self.data, memo),
+                   currentRole=deepcopy(self.currentRole, memo),
+                   roleIsPerson=self._roleIsPerson,
+                   notes=self.notes, accessSystem=self.accessSystem,
+                   titlesRefs=deepcopy(self.titlesRefs, memo),
+                   namesRefs=deepcopy(self.namesRefs, memo),
+                   charactersRefs=deepcopy(self.charactersRefs, memo))
         p.current_info = list(self.current_info)
         p.set_mod_funct(self.modFunct)
         p.billingPos = self.billingPos
@@ -224,8 +226,9 @@ class Person(_Container):
     def __repr__(self):
         """String representation of a Person object."""
         # XXX: add also currentRole and notes, if present?
-        return '<Person id:%s[%s] name:_%s_>' % (self.personID, self.accessSystem,
-                                        self.get('long imdb canonical name'))
+        return '<Person id:%s[%s] name:_%s_>' % (
+            self.personID, self.accessSystem, self.get('long imdb canonical name')
+        )
 
     def __str__(self):
         """Simply print the short name."""
@@ -233,9 +236,9 @@ class Person(_Container):
 
     def summary(self):
         """Return a string with a pretty-printed summary for the person."""
-        if not self: return ''
-        s = 'Person\n=====\nName: %s\n' % \
-                                self.get('long imdb canonical name', '')
+        if not self:
+            return ''
+        s = 'Person\n=====\nName: %s\n' % self.get('long imdb canonical name', '')
         bdate = self.get('birth date')
         if bdate:
             s += 'Birth date: %s' % bdate
@@ -255,14 +258,10 @@ class Person(_Container):
             s += 'Biography: %s\n' % bio[0]
         director = self.get('director')
         if director:
-            d_list = [x.get('long imdb canonical title', '')
-                        for x in director[:3]]
+            d_list = [x.get('long imdb canonical title', '') for x in director[:3]]
             s += 'Last movies directed: %s.\n' % '; '.join(d_list)
         act = self.get('actor') or self.get('actress')
         if act:
-            a_list = [x.get('long imdb canonical title', '')
-                        for x in act[:5]]
+            a_list = [x.get('long imdb canonical title', '') for x in act[:5]]
             s += 'Last movies acted: %s.\n' % '; '.join(a_list)
         return s
-
-

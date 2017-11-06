@@ -258,7 +258,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                 ),
                 Attribute(
                     key="countries",
-                    path="./h5[starts-with(text(), 'Countr')]/../div[@class='info-content']//text()",
+                    path="./h5[starts-with(text(), 'Countr')]/.."
+                         "/div[@class='info-content']//text()",
                     postprocess=makeSplitter('|')
                 ),
                 Attribute(
@@ -273,7 +274,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                 ),
                 Attribute(
                     key='sound mix',
-                    path="./h5[starts-with(text(), 'Sound Mix')]/../div[@class='info-content']//text()",
+                    path="./h5[starts-with(text(), 'Sound Mix')]/.."
+                         "/div[@class='info-content']//text()",
                     postprocess=makeSplitter()
                 ),
                 # Collects akas not encosed in <i> tags.
@@ -316,7 +318,8 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='language codes',
-            path="//h5[starts-with(text(), 'Language')]/..//a[starts-with(@href, '/language/')]",
+            path="//h5[starts-with(text(), 'Language')]/.."
+                 "//a[starts-with(@href, '/language/')]",
             attrs=Attribute(
                 key='language codes',
                 multi=True,
@@ -576,7 +579,8 @@ class DOMHTMLMovieParser(DOMParserBase):
             proLink.drop_tree()
         # Remove some 'more' links (keep others, like the one around
         # the number of votes).
-        for tn15more in self.xpath(dom, "//a[@class='tn15more'][starts-with(@href, '/title/')]"):
+        for tn15more in self.xpath(dom,
+                                   "//a[@class='tn15more'][starts-with(@href, '/title/')]"):
             tn15more.drop_tree()
         return dom
 
@@ -785,7 +789,8 @@ class DOMHTMLAwardsParser(DOMParserBase):
                     'award': "../td[3]/text()",
                     'category': "./text()[1]",
                     # FIXME: takes only the first co-recipient
-                    'with': "./small[starts-with(text(), 'Shared with:')]/following-sibling::a[1]/text()",
+                    'with': "./small[starts-with(text(), 'Shared with:')]/"
+                            "following-sibling::a[1]/text()",
                     'notes': "./small[last()]//text()",
                     'anchor': ".//text()"
                 },
@@ -797,7 +802,8 @@ class DOMHTMLAwardsParser(DOMParserBase):
             label='recipients',
             group="//table//big",
             group_key="./a",
-            path="./ancestor::tr[1]/following-sibling::tr/td[last()]/small[1]/preceding-sibling::a",
+            path="./ancestor::tr[1]/following-sibling::tr"
+                 "/td[last()]/small[1]/preceding-sibling::a",
             attrs=Attribute(
                 key=None,
                 multi=True,

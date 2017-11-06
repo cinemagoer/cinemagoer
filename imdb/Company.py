@@ -23,8 +23,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from copy import deepcopy
 
-from imdb.utils import analyze_company_name, build_company_name, \
-                        flatten, _Container, cmpCompanies
+from imdb.utils import _Container
+from imdb.utils import analyze_company_name, build_company_name, cmpCompanies, flatten
 
 
 class Company(_Container):

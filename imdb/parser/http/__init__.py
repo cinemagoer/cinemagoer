@@ -69,8 +69,8 @@ class _ModuleProxy:
         """Initialize a proxy for the given module; defaultKeys, if set,
         muste be a dictionary of values to set for instanced objects."""
         if oldParsers or fallBackToNew:
-            _aux_logger.warn('The old set of parsers was removed; falling ' \
-                            'back to the new parsers.')
+            _aux_logger.warn('The old set of parsers was removed;'
+                             ' falling back to the new parsers.')
         self.useModule = useModule
         if defaultKeys is None:
             defaultKeys = {}
@@ -239,9 +239,10 @@ class IMDbURLopener(FancyURLopener):
         if encode is None:
             encode = 'latin_1'
             # The detection of the encoding is error prone...
-            self._logger.warn('Unable to detect the encoding of the retrieved '
-                        'page [%s]; falling back to default latin1.', encode)
-        ##print unicode(content, encode, 'replace').encode('utf8')
+            self._logger.warn('Unable to detect the encoding of the retrieved page [%s];'
+                              ' falling back to default utf8.', encode)
+        if isinstance(content, unicode):
+            return content
         return unicode(content, encode, 'replace')
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
@@ -290,8 +291,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self._getRefs = True
         self._mdparse = False
         if isThin:
-            self._http_logger.warn('"httpThin" access system no longer ' +
-                    'supported; "http" used automatically', exc_info=False)
+            self._http_logger.warn('"httpThin" access system no longer supported;'
+                                   ' "http" used automatically', exc_info=False)
             self.isThin = 0
             if self.accessSystem in ('httpThin', 'webThin', 'htmlThin'):
                 self.accessSystem = 'http'

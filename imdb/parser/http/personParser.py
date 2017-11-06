@@ -225,92 +225,157 @@ class DOMHTMLBioParser(DOMParserBase):
                         # TODO: check if this slicing is always correct
                         postprocess=lambda x: u''.join(x).strip()[2:])]
     extractors = [
-            Extractor(label='headshot',
-                        path="//a[@name='headshot']",
-                        attrs=Attribute(key='headshot',
-                            path="./img/@src")),
-            Extractor(label='birth info',
-                        path="//table[@id='overviewTable']//td[text()='Date of Birth']/following-sibling::td[1]",
-                        attrs=_birth_attrs),
-            Extractor(label='death info',
-                        path="//table[@id='overviewTable']//td[text()='Date of Death']/following-sibling::td[1]",
-                        attrs=_death_attrs),
-            Extractor(label='nick names',
-                        path="//table[@id='overviewTable']//td[text()='Nickenames']/following-sibling::td[1]",
-                        attrs=Attribute(key='nick names',
-                            path="./text()",
-                            joiner='|',
-                            postprocess=lambda x: [n.strip().replace(' (',
-                                    '::(', 1) for n in x.split('|')
-                                    if n.strip()])),
-            Extractor(label='birth name',
-                        path="//table[@id='overviewTable']//td[text()='Birth Name']/following-sibling::td[1]",
-                        attrs=Attribute(key='birth name',
-                            path="./text()",
-                            postprocess=lambda x: canonicalName(x.strip()))),
-            Extractor(label='height',
-                path="//table[@id='overviewTable']//td[text()='Height']/following-sibling::td[1]",
-                        attrs=Attribute(key='height',
-                            path="./text()",
-                            postprocess=lambda x: x.strip())),
-            Extractor(label='mini biography',
-                        path="//a[@name='mini_bio']/following-sibling::div[1 = count(preceding-sibling::a[1] | ../a[@name='mini_bio'])]",
-                        attrs=Attribute(key='mini biography',
-                            multi=True,
-                            path={
-                                'bio': ".//text()",
-                                'by': ".//a[@name='ba']//text()"
-                                },
-                            postprocess=lambda x: "%s::%s" % \
-                                ((x.get('bio') or u'').split('- IMDb Mini Biography By:')[0].strip(),
-                                (x.get('by') or u'').strip() or u'Anonymous'))),
-            Extractor(label='spouse',
-                        path="//div[h5='Spouse']/table/tr",
-                        attrs=Attribute(key='spouse',
-                            multi=True,
-                            path={
-                                'name': "./td[1]//text()",
-                                'info': "./td[2]//text()"
-                                },
-                            postprocess=lambda x: ("%s::%s" % \
-                                (x.get('name').strip(),
-                                (x.get('info') or u'').strip())).strip(':'))),
-            Extractor(label='trade mark',
-                        path="//div[h5='Trade Mark']/p",
-                        attrs=Attribute(key='trade mark',
-                            multi=True,
-                            path=".//text()",
-                            postprocess=lambda x: x.strip())),
-            Extractor(label='trivia',
-                        path="//div[h5='Trivia']/p",
-                        attrs=Attribute(key='trivia',
-                            multi=True,
-                            path=".//text()",
-                            postprocess=lambda x: x.strip())),
-            Extractor(label='quotes',
-                        path="//div[h5='Personal Quotes']/p",
-                        attrs=Attribute(key='quotes',
-                            multi=True,
-                            path=".//text()",
-                            postprocess=lambda x: x.strip())),
-            Extractor(label='salary',
-                        path="//div[h5='Salary']/table/tr",
-                        attrs=Attribute(key='salary history',
-                            multi=True,
-                            path={
-                                'title': "./td[1]//text()",
-                                'info': "./td[2]/text()",
-                                },
-                            postprocess=lambda x: "%s::%s" % \
-                                    (x.get('title').strip(),
-                                        x.get('info').strip()))),
-            Extractor(label='where now',
-                        path="//div[h5='Where Are They Now']/p",
-                        attrs=Attribute(key='where now',
-                            multi=True,
-                            path=".//text()",
-                            postprocess=lambda x: x.strip())),
-            ]
+        Extractor(
+            label='headshot',
+            path="//a[@name='headshot']",
+            attrs=Attribute(
+                key='headshot',
+                path="./img/@src"
+            )
+        ),
+
+        Extractor(
+            label='birth info',
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Date of Birth']/following-sibling::td[1]",
+            attrs=_birth_attrs
+        ),
+
+        Extractor(
+            label='death info',
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Date of Death']/following-sibling::td[1]",
+            attrs=_death_attrs
+        ),
+
+        Extractor(
+            label='nick names',
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Nickenames']/following-sibling::td[1]",
+            attrs=Attribute(
+                key='nick names',
+                path="./text()",
+                joiner='|',
+                postprocess=lambda x: [n.strip().replace(' (', '::(', 1) for n in x.split('|')
+                                       if n.strip()]
+            )
+        ),
+
+        Extractor(
+            label='birth name',
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Birth Name']/following-sibling::td[1]",
+            attrs=Attribute(
+                key='birth name',
+                path="./text()",
+                postprocess=lambda x: canonicalName(x.strip())
+            )
+        ),
+
+        Extractor(
+            label='height',
+            path="//table[@id='overviewTable']//td[text()='Height']/following-sibling::td[1]",
+            attrs=Attribute(
+                key='height',
+                path="./text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
+            label='mini biography',
+            path="//a[@name='mini_bio']/following-sibling::"
+                 "div[1 = count(preceding-sibling::a[1] | ../a[@name='mini_bio'])]",
+            attrs=Attribute(
+                key='mini biography',
+                multi=True,
+                path={
+                    'bio': ".//text()",
+                    'by': ".//a[@name='ba']//text()"
+                },
+                postprocess=lambda x: "%s::%s" % (
+                    (x.get('bio') or u'').split('- IMDb Mini Biography By:')[0].strip(),
+                    (x.get('by') or u'').strip() or u'Anonymous'
+                )
+            )
+        ),
+
+        Extractor(
+            label='spouse',
+            path="//div[h5='Spouse']/table/tr",
+            attrs=Attribute(
+                key='spouse',
+                multi=True,
+                path={
+                    'name': "./td[1]//text()",
+                    'info': "./td[2]//text()"
+                },
+                postprocess=lambda x: ("%s::%s" % (
+                    x.get('name').strip(),
+                    (x.get('info') or u'').strip())).strip(':')
+            )
+        ),
+
+        Extractor(
+            label='trade mark',
+            path="//div[h5='Trade Mark']/p",
+            attrs=Attribute(
+                key='trade mark',
+                multi=True,
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
+            label='trivia',
+            path="//div[h5='Trivia']/p",
+            attrs=Attribute(
+                key='trivia',
+                multi=True,
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
+            label='quotes',
+            path="//div[h5='Personal Quotes']/p",
+            attrs=Attribute(
+                key='quotes',
+                multi=True,
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
+            label='salary',
+            path="//div[h5='Salary']/table/tr",
+            attrs=Attribute(
+                key='salary history',
+                multi=True,
+                path={
+                    'title': "./td[1]//text()",
+                    'info': "./td[2]/text()",
+                },
+                postprocess=lambda x: "%s::%s" % (
+                    x.get('title').strip(),
+                    x.get('info').strip())
+            )
+        ),
+
+        Extractor(
+            label='where now',
+            path="//div[h5='Where Are They Now']/p",
+            attrs=Attribute(
+                key='where now',
+                multi=True,
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        )
+    ]
 
     preprocessors = [
         (re.compile('(<h5>)', re.I), r'</div><div class="_imdbpy">\1'),

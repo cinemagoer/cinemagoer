@@ -23,10 +23,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 import sys
-
 from datetime import datetime as dt
 
-DEFAULT_MESSAGES = { }
+
+DEFAULT_MESSAGES = {}
 
 ELEMENT_PATTERN = r"""<!ELEMENT\s+([^\s]+)"""
 re_element = re.compile(ELEMENT_PATTERN)
@@ -70,9 +70,8 @@ for element in sorted(elements):
     print('msgid "%s"' % element)
     print('msgstr ""')
     # use this part instead of the line above to generate the po file for English
-    #if element in DEFAULT_MESSAGES:
-    #    print 'msgstr "%s"' % DEFAULT_MESSAGES[element]
-    #else:
-    #    print 'msgstr "%s"' % element.replace('-', ' ').capitalize()
+    # if element in DEFAULT_MESSAGES:
+    #     print 'msgstr "%s"' % DEFAULT_MESSAGES[element]
+    # else:
+    #     print 'msgstr "%s"' % element.replace('-', ' ').capitalize()
     print()
-

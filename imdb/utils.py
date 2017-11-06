@@ -87,21 +87,21 @@ def canonicalName(name):
     elif snl > 2:
         lsname = [x.lower() for x in sname]
         if snl == 3:
-            _indexes = (0, snl-2)
+            _indexes = (0, snl - 2)
         else:
-            _indexes = (0, snl-2, snl-3)
+            _indexes = (0, snl - 2, snl - 3)
         # Check for common surname prefixes at the beginning and near the end.
         for index in _indexes:
             if lsname[index] not in _sname_suffixes:
                 continue
             try:
                 # Build the surname.
-                surn = sur_joiner % (sname[index], sname[index+1])
+                surn = sur_joiner % (sname[index], sname[index + 1])
                 del sname[index]
                 del sname[index]
                 try:
                     # Handle the "Jr." after the name.
-                    if lsname[index+2].startswith('jr'):
+                    if lsname[index + 2].startswith('jr'):
                         surn += sur_space % sname[index]
                         del sname[index]
                 except (IndexError, ValueError):
@@ -142,8 +142,8 @@ def analyze_name(name, canonical=None):
     cpi = name.rfind(')')
     # Strip  notes (but not if the name starts with a parenthesis).
     if opi not in (-1, 0) and cpi > opi:
-        if re_index.match(name[opi:cpi+1]):
-            imdbIndex = name[opi+1:cpi]
+        if re_index.match(name[opi:cpi + 1]):
+            imdbIndex = name[opi + 1:cpi]
             name = name[:opi].rstrip()
         else:
             # XXX: for the birth and death dates case like " (1926-2004)"
@@ -339,8 +339,8 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
                 if not oad:
                     # No year, but the title is something like (2005-04-12)
                     if episode_or_year and episode_or_year[0] == '(' and \
-                                    episode_or_year[-1:] == ')' and \
-                                    episode_or_year[1:2] != '#':
+                            episode_or_year[-1:] == ')' and \
+                            episode_or_year[1:2] != '#':
                         oad = episode_or_year
                         if oad[1:5] and oad[5:6] == '-':
                             try:
@@ -453,10 +453,10 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
         year = last_yi[0]
         if last_yi[1]:
             imdbIndex = last_yi[1][1:]
-            year = year[:-len(imdbIndex)-1]
+            year = year[:-len(imdbIndex) - 1]
         i = title.rfind('(%s)' % last_yi[0])
         if i != -1:
-            title = title[:i-1].rstrip()
+            title = title[:i - 1].rstrip()
     # This is a tv (mini) series: strip the '"' at the begin and at the end.
     # XXX: strip('"') is not used for compatibility with Python 2.0.
     if title and title[0] == title[-1] == '"':
@@ -871,7 +871,7 @@ def date_and_notes(s):
             'ca.', 'circa', '????,'):
         i = s.find(',')
         if i != -1:
-            notes = s[i+1:].strip()
+            notes = s[i + 1:].strip()
             s = s[:i]
     else:
         notes = s
@@ -988,8 +988,7 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
                     crTag, crID, crValue, crTag
                 )
             else:
-                extras += '<current-role><%s><name>%s</name></%s>' % \
-                               (crTag, crValue, crTag)
+                extras += '<current-role><%s><name>%s</name></%s>' % (crTag, crValue, crTag)
             if cr.notes:
                 extras += '<notes>%s</notes>' % _normalizeValue(cr.notes)
             extras += '</current-role>'
@@ -1022,10 +1021,10 @@ TAGS_TO_MODIFY = {
     'movie.demographic': ('item', True),
     'movie.episodes': ('season', True),
     'movie.episodes.season': ('episode', True),
-    'person.merchandising-links':  ('item', True),
-    'person.genres':  ('item', True),
-    'person.quotes':  ('quote', False),
-    'person.keywords':  ('item', True),
+    'person.merchandising-links': ('item', True),
+    'person.genres': ('item', True),
+    'person.quotes': ('quote', False),
+    'person.keywords': ('item', True),
     'character.quotes': ('item', True),
     'character.quotes.item': ('quote', False),
     'character.quotes.item.quote': ('line', False)
@@ -1285,7 +1284,8 @@ class _Container(object):
     currentRole = property(_get_currentRole, _set_currentRole,
                            doc="The role of a Person in a Movie or the interpreter of a Character in a Movie.")
 
-    def _init(self, **kwds): pass
+    def _init(self, **kwds):
+        pass
 
     def reset(self):
         """Reset the object."""
@@ -1302,7 +1302,8 @@ class _Container(object):
         self.__role = None
         self._reset()
 
-    def _reset(self): pass
+    def _reset(self):
+        pass
 
     def clear(self):
         """Reset the dictionary."""
@@ -1317,7 +1318,8 @@ class _Container(object):
         self.__role = None
         self._clear()
 
-    def _clear(self): pass
+    def _clear(self):
+        pass
 
     def get_current_info(self):
         """Return the current set of information retrieved."""

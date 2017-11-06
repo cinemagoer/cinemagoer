@@ -22,24 +22,27 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import logging
 
-LEVELS = {'debug': logging.DEBUG,
-        'info': logging.INFO,
-        'warn': logging.WARNING,
-        'warning': logging.WARNING,
-        'error': logging.ERROR,
-        'critical': logging.CRITICAL}
+
+LEVELS = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warn': logging.WARNING,
+    'warning': logging.WARNING,
+    'error': logging.ERROR,
+    'critical': logging.CRITICAL
+}
 
 
 imdbpyLogger = logging.getLogger('imdbpy')
 imdbpyStreamHandler = logging.StreamHandler()
-imdbpyFormatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s]' \
-                                    ' %(pathname)s:%(lineno)d: %(message)s')
+imdbpyFormatter = logging.Formatter('%(asctime)s %(levelname)s [%(name)s] %(pathname)s:%(lineno)d: %(message)s')
 imdbpyStreamHandler.setFormatter(imdbpyFormatter)
 imdbpyLogger.addHandler(imdbpyStreamHandler)
+
 
 def setLevel(level):
     """Set logging level for the main logger."""
     level = level.lower().strip()
     imdbpyLogger.setLevel(LEVELS.get(level, logging.NOTSET))
     imdbpyLogger.log(imdbpyLogger.level, 'set logging threshold to "%s"',
-                    logging.getLevelName(imdbpyLogger.level))
+                     logging.getLevelName(imdbpyLogger.level))

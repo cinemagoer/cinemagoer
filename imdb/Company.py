@@ -41,14 +41,15 @@ class Company(_Container):
 
     # Aliases for some not-so-intuitive keys.
     keys_alias = {
-            'distributor': 'distributors',
-            'special effects company': 'special effects companies',
-            'other company': 'miscellaneous companies',
-            'miscellaneous company': 'miscellaneous companies',
-            'other companies': 'miscellaneous companies',
-            'misc companies': 'miscellaneous companies',
-            'misc company': 'miscellaneous companies',
-            'production company': 'production companies'}
+        'distributor': 'distributors',
+        'special effects company': 'special effects companies',
+        'other company': 'miscellaneous companies',
+        'miscellaneous company': 'miscellaneous companies',
+        'other companies': 'miscellaneous companies',
+        'misc companies': 'miscellaneous companies',
+        'misc company': 'miscellaneous companies',
+        'production company': 'production companies'
+    }
 
     keys_tomodify_list = ()
 

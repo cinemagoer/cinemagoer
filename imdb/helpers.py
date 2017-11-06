@@ -335,8 +335,10 @@ def get_byURL(url, info=None, args=None, kwds=None):
     and a dictionary or arguments to initialize the data access system.
     Returns None if unable to correctly parse the url; can raise
     exceptions if unable to retrieve the data."""
-    if args is None: args = []
-    if kwds is None: kwds = {}
+    if args is None:
+        args = []
+    if kwds is None:
+        kwds = {}
     ia = IMDb(*args, **kwds)
     match = _re_imdbIDurl.search(url)
     if not match:

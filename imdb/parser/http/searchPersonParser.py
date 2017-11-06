@@ -26,18 +26,20 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from imdb.utils import analyze_name, build_name
-from .utils import Extractor, Attribute, analyze_imdbid
 
-from .searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
+from imdb.utils import analyze_name, build_name
+
+from .searchMovieParser import DOMBasicMovieParser, DOMHTMLSearchMovieParser
+from .utils import Attribute, Extractor, analyze_imdbid
 
 
 def _cleanName(n):
     """Clean the name in a title tag."""
     if not n:
         return ''
-    n = n.replace('Filmography by type for', '') # FIXME: temporary.
+    n = n.replace('Filmography by type for', '')    # FIXME: temporary.
     return n
+
 
 class DOMBasicPersonParser(DOMBasicMovieParser):
     """Simply get the name of a person and the imdbID.
@@ -48,8 +50,8 @@ class DOMBasicPersonParser(DOMBasicMovieParser):
     _titleFunct = lambda self, x: analyze_name(_cleanName(x), canonical=1)
 
 
-_reAKASp = re.compile(r'(?:aka|birth name) (<em>")(.*?)"(<br>|<\/em>|<\/td>)',
-                    re.I | re.M)
+_reAKASp = re.compile(r'(?:aka|birth name) (<em>")(.*?)"(<br>|<\/em>|<\/td>)', re.I | re.M)
+
 
 class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     """Parse the html page that the IMDb web server shows when the
@@ -59,34 +61,42 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     _titleBuilder = lambda self, x: build_name(x, canonical=True)
     _linkPrefix = '/name/nm'
 
-    _attrs = [Attribute(key='data',
-                        multi=True,
-                        path={
-                            'link': "./a[1]/@href",
-                            'name': "./a[1]/text()",
-                            'index': "./text()[1]",
-                            'akas': ".//div[@class='_imdbpyAKA']/text()"
-                            },
-                        postprocess=lambda x: (
-                            analyze_imdbid(x.get('link') or ''),
-                            analyze_name((x.get('name') or '') + \
-                                        (x.get('index') or ''),
-                                         canonical=1), x.get('akas')
-                        ))]
-    extractors = [Extractor(label='search',
-                            path="//td[@class='result_text']/a[starts-with(@href, '/name/nm')]/..",
-                            attrs=_attrs)]
+    _attrs = [
+        Attribute(
+            key='data',
+            multi=True,
+            path={
+                'link': "./a[1]/@href",
+                'name': "./a[1]/text()",
+                'index': "./text()[1]",
+                'akas': ".//div[@class='_imdbpyAKA']/text()"
+            },
+            postprocess=lambda x: (
+                analyze_imdbid(x.get('link') or ''),
+                analyze_name((x.get('name') or '') + (x.get('index') or ''),
+                             canonical=1), x.get('akas')
+            )
+        )
+    ]
+
+    extractors = [
+        Extractor(
+            label='search',
+            path="//td[@class='result_text']/a[starts-with(@href, '/name/nm')]/..",
+            attrs=_attrs
+        )
+    ]
 
     def preprocess_string(self, html_string):
         if self._notDirectHitTitle in html_string[:10240].lower():
             html_string = _reAKASp.sub(
-                                    r'\1<div class="_imdbpyAKA">\2::</div>\3',
-                                    html_string)
+                r'\1<div class="_imdbpyAKA">\2::</div>\3',
+                html_string
+            )
         return DOMHTMLSearchMovieParser.preprocess_string(self, html_string)
 
 
 _OBJECTS = {
-        'search_person_parser': ((DOMHTMLSearchPersonParser,),
-                    {'kind': 'person', '_basic_parser': DOMBasicPersonParser})
+    'search_person_parser': ((DOMHTMLSearchPersonParser,),
+                             {'kind': 'person', '_basic_parser': DOMBasicPersonParser})
 }
-

@@ -24,16 +24,20 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
-            'available_access_systems']
+           'available_access_systems']
 __version__ = VERSION = '5.2dev20171105'
 
-import sys, os, configparser, logging
+import configparser
+import logging
+import os
+import sys
 from types import MethodType, FunctionType
 
-from imdb import Movie, Person, Character, Company
 import imdb._logging
-from imdb._exceptions import IMDbError, IMDbDataAccessError, IMDbParserError
-from imdb.utils import build_title, build_name, build_company_name
+from imdb._exceptions import IMDbDataAccessError, IMDbError, IMDbParserError
+from imdb import Character, Company, Movie, Person
+from imdb.utils import build_company_name, build_name, build_title
+
 
 _aux_logger = logging.getLogger('imdbpy.aux')
 
@@ -72,6 +76,7 @@ imdbURL_find = imdbURL_base + 'find?%s'
 # Name of the configuration file.
 confFileName = 'imdbpy.cfg'
 
+
 class ConfigParserWithCase(configparser.ConfigParser):
     """A case-sensitive parser for configuration files."""
     def __init__(self, defaults=None, confFile=None, *args, **kwds):
@@ -91,8 +96,7 @@ class ConfigParserWithCase(configparser.ConfigParser):
                 sep = getattr(os.path, 'sep', '/')
                 # /etc/ and /etc/conf.d/
                 confFile.append(os.path.join(sep, 'etc', confFileName))
-                confFile.append(os.path.join(sep, 'etc', 'conf.d',
-                                            confFileName))
+                confFile.append(os.path.join(sep, 'etc', 'conf.d', confFileName))
             else:
                 # etc subdirectory of sys.prefix, for non-unix systems.
                 confFile.append(os.path.join(sys.prefix, 'etc', confFileName))
@@ -123,8 +127,7 @@ class ConfigParserWithCase(configparser.ConfigParser):
 
     def get(self, section, option, *args, **kwds):
         """Return the value of an option from a given section."""
-        value = configparser.ConfigParser.get(self, section, option,
-                                            *args, **kwds)
+        value = configparser.ConfigParser.get(self, section, option, *args, **kwds)
         return self._manageValue(value)
 
     def items(self, section, *args, **kwds):
@@ -157,9 +160,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             kwds.update(keywords)
             keywords = kwds
         except Exception as e:
-            import logging
-            logging.getLogger('imdbpy').warn('Unable to read configuration' \
-                                            ' file; complete error: %s' % e)
+            logging.getLogger('imdbpy').warn('Unable to read configuration file; complete error: %s' % e)
             # It just LOOKS LIKE a bad habit: we tried to read config
             # options from some files, but something is gone horribly
             # wrong: ignore everything and pretend we were called with
@@ -175,8 +176,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             import logging.config
             logging.config.fileConfig(os.path.expanduser(logCfg))
         except Exception as e:
-            logging.getLogger('imdbpy').warn('unable to read logger ' \
-                                            'config: %s' % e)
+            logging.getLogger('imdbpy').warn('unable to read logger config: %s' % e)
     if accessSystem in ('httpThin', 'webThin', 'htmlThin'):
         logging.warn('httpThin was removed since IMDbPY 4.8')
         accessSystem = 'http'
@@ -193,8 +193,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             raise IMDbError('the sql access system is not installed')
         return IMDbSqlAccessSystem(*arguments, **keywords)
     else:
-        raise IMDbError('unknown kind of data access system: "%s"' \
-                            % accessSystem)
+        raise IMDbError('unknown kind of data access system: "%s"' % accessSystem)
 
 
 def available_access_systems():
@@ -222,6 +221,7 @@ def available_access_systems():
 #      and search_character() methods is always safer.
 encoding = getattr(sys.stdin, 'encoding', '') or sys.getdefaultencoding()
 
+
 class IMDbBase:
     """The base class used to search for a movie/person/character and
     to get a Movie/Person/Character object.
@@ -240,7 +240,7 @@ class IMDbBase:
     _reraise_exceptions = False
 
     def __init__(self, defaultModFunct=None, results=20, keywordsResults=100,
-                *arguments, **keywords):
+                 *arguments, **keywords):
         """Initialize the access system.
         If specified, defaultModFunct is the function used by
         default by the Person, Movie and Character objects, when
@@ -275,29 +275,29 @@ class IMDbBase:
         if not imdbURL_base.endswith('/'):
             imdbURL_base = '%s/' % imdbURL_base
         # http://akas.imdb.com/title/
-        imdbURL_movie_base='%stitle/' % imdbURL_base
+        imdbURL_movie_base = '%stitle/' % imdbURL_base
         # http://akas.imdb.com/title/tt%s/
-        imdbURL_movie_main=imdbURL_movie_base + 'tt%s/'
+        imdbURL_movie_main = imdbURL_movie_base + 'tt%s/'
         # http://akas.imdb.com/name/
-        imdbURL_person_base='%sname/' % imdbURL_base
+        imdbURL_person_base = '%sname/' % imdbURL_base
         # http://akas.imdb.com/name/nm%s/
-        imdbURL_person_main=imdbURL_person_base + 'nm%s/'
+        imdbURL_person_main = imdbURL_person_base + 'nm%s/'
         # http://akas.imdb.com/character/
-        imdbURL_character_base='%scharacter/' % imdbURL_base
+        imdbURL_character_base = '%scharacter/' % imdbURL_base
         # http://akas.imdb.com/character/ch%s/
-        imdbURL_character_main=imdbURL_character_base + 'ch%s/'
+        imdbURL_character_main = imdbURL_character_base + 'ch%s/'
         # http://akas.imdb.com/company/
-        imdbURL_company_base='%scompany/' % imdbURL_base
+        imdbURL_company_base = '%scompany/' % imdbURL_base
         # http://akas.imdb.com/company/co%s/
-        imdbURL_company_main=imdbURL_company_base + 'co%s/'
+        imdbURL_company_main = imdbURL_company_base + 'co%s/'
         # http://akas.imdb.com/keyword/%s/
-        imdbURL_keyword_main=imdbURL_base + 'keyword/%s/'
+        imdbURL_keyword_main = imdbURL_base + 'keyword/%s/'
         # http://akas.imdb.com/chart/top
-        imdbURL_top250=imdbURL_base + 'chart/top'
+        imdbURL_top250 = imdbURL_base + 'chart/top'
         # http://akas.imdb.com/chart/bottom
-        imdbURL_bottom100=imdbURL_base + 'chart/bottom'
+        imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
         # http://akas.imdb.com/find?%s
-        imdbURL_find=imdbURL_base + 'find?%s'
+        imdbURL_find = imdbURL_base + 'find?%s'
         self.urls = dict(
             movie_base=imdbURL_movie_base,
             movie_main=imdbURL_movie_main,
@@ -437,8 +437,7 @@ class IMDbBase:
         this method searches only for titles of tv (mini) series' episodes."""
         return self.search_movie(title, results=results, _episodes=True)
 
-    def get_person(self, personID, info=Person.Person.default_info,
-                    modFunct=None):
+    def get_person(self, personID, info=Person.Person.default_info, modFunct=None):
         """Return a Person object for the given personID.
 
         The personID is something used to univocally identify a person;
@@ -451,8 +450,7 @@ class IMDbBase:
         object when accessing its text fields (like 'mini biography')."""
         personID = self._normalize_personID(personID)
         personID = self._get_real_personID(personID)
-        person = Person.Person(personID=personID,
-                                accessSystem=self.accessSystem)
+        person = Person.Person(personID=personID, accessSystem=self.accessSystem)
         modFunct = modFunct or self._defModFunct
         if modFunct is not None:
             person.set_mod_funct(modFunct)
@@ -481,7 +479,7 @@ class IMDbBase:
                 accessSystem=self.accessSystem) for pi, pd in res][:results]
 
     def get_character(self, characterID, info=Character.Character.default_info,
-                    modFunct=None):
+                      modFunct=None):
         """Return a Character object for the given characterID.
 
         The characterID is something used to univocally identify a character;
@@ -495,7 +493,7 @@ class IMDbBase:
         characterID = self._normalize_characterID(characterID)
         characterID = self._get_real_characterID(characterID)
         character = Character.Character(characterID=characterID,
-                                accessSystem=self.accessSystem)
+                                        accessSystem=self.accessSystem)
         modFunct = modFunct or self._defModFunct
         if modFunct is not None:
             character.set_mod_funct(modFunct)
@@ -537,8 +535,7 @@ class IMDbBase:
         object when accessing its text fields (none, so far)."""
         companyID = self._normalize_companyID(companyID)
         companyID = self._get_real_companyID(companyID)
-        company = Company.Company(companyID=companyID,
-                                accessSystem=self.accessSystem)
+        company = Company.Company(companyID=companyID, accessSystem=self.accessSystem)
         modFunct = modFunct or self._defModFunct
         if modFunct is not None:
             company.set_mod_funct(modFunct)
@@ -628,26 +625,22 @@ class IMDbBase:
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""
         # XXX: not really useful...
-        return Movie.Movie(accessSystem=self.accessSystem,
-                            *arguments, **keywords)
+        return Movie.Movie(accessSystem=self.accessSystem, *arguments, **keywords)
 
     def new_person(self, *arguments, **keywords):
         """Return a Person object."""
         # XXX: not really useful...
-        return Person.Person(accessSystem=self.accessSystem,
-                                *arguments, **keywords)
+        return Person.Person(accessSystem=self.accessSystem, *arguments, **keywords)
 
     def new_character(self, *arguments, **keywords):
         """Return a Character object."""
         # XXX: not really useful...
-        return Character.Character(accessSystem=self.accessSystem,
-                                    *arguments, **keywords)
+        return Character.Character(accessSystem=self.accessSystem, *arguments, **keywords)
 
     def new_company(self, *arguments, **keywords):
         """Return a Company object."""
         # XXX: not really useful...
-        return Company.Company(accessSystem=self.accessSystem,
-                                    *arguments, **keywords)
+        return Company.Company(accessSystem=self.accessSystem, *arguments, **keywords)
 
     def update(self, mop, info=None, override=0):
         """Given a Movie, Person, Character or Company object with only
@@ -674,16 +667,14 @@ class IMDbBase:
             mopID = mop.companyID
             prefix = 'company'
         else:
-            raise IMDbError('object ' + repr(mop) + \
-                    ' is not a Movie, Person, Character or Company instance')
+            raise IMDbError('object ' + repr(mop) + ' is not a Movie, Person, Character or Company instance')
         if mopID is None:
             # XXX: enough?  It's obvious that there are Characters
             #      objects without characterID, so I think they should
             #      just do nothing, when an i.update(character) is tried.
             if prefix == 'character':
                 return
-            raise IMDbDataAccessError( \
-                'the supplied object has null movieID, personID or companyID')
+            raise IMDbDataAccessError('the supplied object has null movieID, personID or companyID')
         if mop.accessSystem == self.accessSystem:
             aSystem = self
         else:
@@ -709,8 +700,7 @@ class IMDbBase:
                 continue
             self._imdb_logger.debug('retrieving "%s" info set', i)
             try:
-                method = getattr(aSystem, 'get_%s_%s' %
-                                    (prefix, i.replace(' ', '_')))
+                method = getattr(aSystem, 'get_%s_%s' % (prefix, i.replace(' ', '_')))
             except AttributeError:
                 self._imdb_logger.error('unknown information set "%s"', i)
                 # Keeps going.
@@ -718,10 +708,8 @@ class IMDbBase:
             try:
                 ret = method(mopID)
             except Exception:
-                self._imdb_logger.critical('caught an exception retrieving ' \
-                                    'or parsing "%s" info set for mopID ' \
-                                    '"%s" (accessSystem: %s)',
-                                    i, mopID, mop.accessSystem, exc_info=True)
+                self._imdb_logger.critical('caught an exception retrieving or parsing "%s" info set for mopID "%s" (accessSystem: %s)',
+                                           i, mopID, mop.accessSystem, exc_info=True)
                 ret = {}
                 # If requested by the user, reraise the exception.
                 if self._reraise_exceptions:
@@ -861,8 +849,8 @@ class IMDbBase:
                 imdbID = aSystem.get_imdbMovieID(mop.movieID)
             else:
                 imdbID = aSystem.title2imdbID(build_title(mop, canonical=0,
-                                                ptdf=0, appendKind=False),
-                                                mop['kind'])
+                                                          ptdf=0, appendKind=False),
+                                              mop['kind'])
         elif isinstance(mop, Person.Person):
             if mop.personID is not None:
                 imdbID = aSystem.get_imdbPersonID(mop.personID)
@@ -880,8 +868,7 @@ class IMDbBase:
             else:
                 imdbID = aSystem.company2imdbID(build_company_name(mop))
         else:
-            raise IMDbError('object ' + repr(mop) + \
-                        ' is not a Movie, Person or Character instance')
+            raise IMDbError('object ' + repr(mop) + ' is not a Movie, Person or Character instance')
         return imdbID
 
     def get_imdbURL(self, mop):
@@ -899,8 +886,7 @@ class IMDbBase:
         elif isinstance(mop, Company.Company):
             url_firstPart = imdbURL_company_main
         else:
-            raise IMDbError('object ' + repr(mop) + \
-                        ' is not a Movie, Person, Character or Company instance')
+            raise IMDbError('object ' + repr(mop) + ' is not a Movie, Person, Character or Company instance')
         return url_firstPart % imdbID
 
     def get_special_methods(self):
@@ -922,4 +908,3 @@ class IMDbBase:
             if isinstance(member, (MethodType, FunctionType)):
                 sm_dict.update({name: member.__doc__})
         return sm_dict
-

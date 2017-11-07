@@ -304,10 +304,11 @@ def test_rank_none_should_be_excluded(movie_combined_details):
     assert 'bottom 100 rank' not in data
 
 
+@mark.fragile
 def test_series_season_titles_should_be_a_list_of_season_titles(movie_combined_details):
     page = get_document(movie_combined_details['dr_who'])
     data = parser.parse(page)['data']
-    assert data['seasons'] == [str(i) for i in range(1, 11)] + ['unknown']
+    assert data['seasons'] == [str(i) for i in range(1, 12)] + ['unknown']
 
 
 def test_series_season_titles_none_should_be_excluded(movie_combined_details):
@@ -326,7 +327,7 @@ def test_series_number_of_seasons_numeric_should_be_ok(movie_combined_details):
 def test_series_number_of_seasons_should_exclude_non_numeric_season_titles(movie_combined_details):
     page = get_document(movie_combined_details['dr_who'])
     data = parser.parse(page)['data']
-    assert data['number of seasons'] == 10
+    assert data['number of seasons'] == 11
 
 
 def test_original_air_date_should_be_a_date(movie_combined_details):

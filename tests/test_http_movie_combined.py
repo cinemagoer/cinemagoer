@@ -526,13 +526,13 @@ def test_colors_multiple_should_be_a_list_of_color_types(movie_combined_details)
     assert data['color info'] == ['Black and White', 'Color']
 
 
-def test_colors_with_notes_single_should_include_notes(movie_combined_details):
+def test_colors_single_with_notes_should_include_notes(movie_combined_details):
     page = movie_combined_details('manos')
     data = parser.parse(page)['data']
     assert data['color info'] == ['Color::(Eastmancolor)']
 
 
-def test_colors_with_notes_multiple_should_include_notes(movie_combined_details):
+def test_colors_multiple_with_notes_should_include_notes(movie_combined_details):
     page = movie_combined_details('if')
     data = parser.parse(page)['data']
     assert data['color info'] == ['Black and White', 'Color::(Eastmancolor) (uncredited)']
@@ -542,3 +542,45 @@ def test_colors_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('matrix_tv')
     data = parser.parse(page)['data']
     assert 'color info' not in data
+
+
+def test_aspect_ratio_should_be_a_number_to_one(movie_combined_details):
+    page = movie_combined_details('matrix')
+    data = parser.parse(page)['data']
+    assert data['aspect ratio'] == '2.39 : 1'
+
+
+def test_aspect_ratio_none_should_be_excluded(movie_combined_details):
+    page = movie_combined_details('ates_parcasi')
+    data = parser.parse(page)['data']
+    assert 'aspect ratio' not in data
+
+
+def test_sound_mix_single_should_be_a_list_of_sound_mix_types(movie_combined_details):
+    page = movie_combined_details('if')
+    data = parser.parse(page)['data']
+    assert data['sound mix'] == ['Mono']
+
+
+def test_sound_mix_multiple_should_be_a_list_of_sound_mix_types(movie_combined_details):
+    page = movie_combined_details('pleasantville')
+    data = parser.parse(page)['data']
+    assert data['sound mix'] == ['DTS', 'Dolby Digital', 'SDDS']
+
+
+def test_sound_mix_single_with_notes_should_include_notes(movie_combined_details):
+    page = movie_combined_details('ace_in_the_hole')
+    data = parser.parse(page)['data']
+    assert data['sound mix'] == ['Mono::(Western Electric Recording)']
+
+
+def test_sound_mix_multiple_with_notes_should_include_notes(movie_combined_details):
+    page = movie_combined_details('matrix')
+    data = parser.parse(page)['data']
+    assert data['sound mix'] == ['DTS::(Digital DTS Sound)', 'Dolby Digital', 'SDDS']
+
+
+def test_sound_mix_none_should_be_excluded(movie_combined_details):
+    page = movie_combined_details('ates_parcasi')
+    data = parser.parse(page)['data']
+    assert 'sound mix' not in data

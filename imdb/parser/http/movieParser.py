@@ -271,7 +271,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                 ),
                 Attribute(
                     key='color info',
-                    path="./h5[starts-with(text(), 'Color')]/..//text()",
+                    path="./h5[starts-with(text(), 'Color')]/.."
+                         "/div[@class='info-content']//text()",
                     postprocess=makeSplitter('|')
                 ),
                 Attribute(
@@ -622,8 +623,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                 del data['other akas']
             if nakas:
                 data['akas'] = nakas
-        if 'color info' in data:
-            data['color info'] = [x.replace('Color:', '', 1) for x in data['color info']]
         if 'runtimes' in data:
             data['runtimes'] = [x.replace(' min', '')
                                 for x in data['runtimes']]

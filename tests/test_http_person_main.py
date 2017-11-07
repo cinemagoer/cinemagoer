@@ -1,6 +1,5 @@
 from pytest import fixture, mark
 
-import re
 from urllib.request import urlopen
 
 from imdb.parser.http.personParser import DOMHTMLMaindetailsParser

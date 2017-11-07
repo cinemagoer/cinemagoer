@@ -8,7 +8,7 @@ from imdb.parser.http.movieParser import DOMHTMLMovieParser
 
 @fixture(scope='module')
 def movie_combined_details(movies):
-    """Combined details page addresses of all test movies."""
+    """A function to retrieve the combined details page of a test movie."""
     def retrieve(movie_key):
         url = movies[movie_key] + '/combined'
         return urlopen(url).read().decode('utf-8')

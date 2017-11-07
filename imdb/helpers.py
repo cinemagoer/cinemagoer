@@ -37,7 +37,6 @@ from imdb.Character import Character
 from imdb.Company import Company
 from imdb.linguistics import COUNTRY_LANG
 from imdb.Movie import Movie
-from imdb.parser.http.bsouplxml.etree import BeautifulSoup
 from imdb.parser.http.utils import entcharrefs
 from imdb.Person import Person
 from imdb.utils import _Container, _tagAttr, re_characterRef, re_nameRef, re_titleRef
@@ -409,7 +408,7 @@ def tagToKey(tag):
         if tag.get('keytype') == 'int':
             keyAttr = int(keyAttr)
         return keyAttr
-    return tag.name
+    return tag.tag
 
 
 def _valueWithType(tag, tagValue):
@@ -438,19 +437,19 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
     if _key2infoset is None:
         _key2infoset = {}
     name = tagToKey(tag)
-    firstChild = tag.find(recursive=False)
-    tagStr = (tag.string or '').strip()
+    firstChild = (tag.getchildren() or [None])[0]
+    tagStr = (tag.text or '').strip()
     if not tagStr and name == 'item':
         # Handles 'item' tags containing text and a 'notes' sub-tag.
-        tagContent = tag.contents[0]
-        if isinstance(tagContent, BeautifulSoup.NavigableString):
-            tagStr = (str(tagContent) or '').strip()
+        tagContent = tag.getchildren()
+        if tagContent and tagContent[0].text:
+            tagStr = (tagContent[0].text or '').strip()
     infoset = tag.get('infoset')
     if infoset:
         _key2infoset[name] = infoset
         _infoset2keys.setdefault(infoset, []).append(name)
     # Here we use tag.name to avoid tags like <item title="company">
-    if tag.name in _MAP_TOP_OBJ:
+    if tag.tag in _MAP_TOP_OBJ:
         # One of the subclasses of _Container.
         item = _MAP_TOP_OBJ[name]()
         itemAs = tag.get('access-system')
@@ -465,49 +464,50 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
         if name == 'movie':
             item.movieID = theID
             tagsToGet = _titleTags
-            if tag.title:
-                item.set_title(tag.title.string)
-                tag.title.extract()
+            ttitle = tag.find('title')
+            if ttitle is not None:
+                item.set_title(ttitle.text)
+                tag.remove(ttitle)
         else:
             if name == 'person':
                 item.personID = theID
                 tagsToGet = _nameTags
-                theName = tag.find('long imdb canonical name', recursive=False)
+                theName = tag.find('long imdb canonical name')
                 if not theName:
-                    theName = tag.find('name', recursive=False)
+                    theName = tag.find('name')
             elif name == 'character':
                 item.characterID = theID
                 tagsToGet = _nameTags
-                theName = tag.find('name', recursive=False)
+                theName = tag.find('name')
             elif name == 'company':
                 item.companyID = theID
                 tagsToGet = _companyTags
-                theName = tag.find('name', recursive=False)
-            if theName:
-                item.set_name(theName.string)
-            if theName:
-                theName.extract()
+                theName = tag.find('name')
+            if theName is not None:
+                item.set_name(theName.text)
+                tag.remove(theName)
         for t in tagsToGet:
             if t in item.data:
                 continue
-            dataTag = tag.find(t, recursive=False)
-            if dataTag:
-                item.data[tagToKey(dataTag)] = _valueWithType(dataTag, dataTag.string)
-        if tag.notes:
-            item.notes = tag.notes.string
-            tag.notes.extract()
-        episodeOf = tag.find('episode-of', recursive=False)
-        if episodeOf:
+            dataTag = tag.find(t)
+            if dataTag is not None:
+                item.data[tagToKey(dataTag)] = _valueWithType(dataTag, dataTag.text)
+        notesTag = tag.find('notes')
+        if notesTag is not None:
+            item.notes = notesTag.text
+            tag.remove(notesTag)
+        episodeOf = tag.find('episode-of')
+        if episodeOf is not None:
             item.data['episode of'] = parseTags(episodeOf, _topLevel=False,
                                                 _as=_as, _infoset2keys=_infoset2keys,
                                                 _key2infoset=_key2infoset)
-            episodeOf.extract()
-        cRole = tag.find('current-role', recursive=False)
-        if cRole:
+            tag.remove(episodeOf)
+        cRole = tag.find('current-role')
+        if cRole is not None:
             cr = parseTags(cRole, _topLevel=False, _as=_as,
                            _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
             item.currentRole = cr
-            cRole.extract()
+            tag.remove(cRole)
         # XXX: big assumption, here.  What about Movie instances used
         #      as keys in dictionaries?  What about other keys (season and
         #      episode number, for example?)
@@ -516,14 +516,15 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
             return item
         _adder = lambda key, value: item.data.update({key: value})
     elif tagStr:
-        if tag.notes:
-            notes = (tag.notes.string or '').strip()
+        tagNotes = tag.find('notes')
+        if tagNotes is not None:
+            notes = (tagNotes.text or '').strip()
             if notes:
                 tagStr += '::%s' % notes
         else:
             tagStr = _valueWithType(tag, tagStr)
         return tagStr
-    elif firstChild:
+    elif firstChild is not None:
         firstChildName = tagToKey(firstChild)
         if firstChildName in _TAGS_TO_LIST:
             item = []
@@ -534,10 +535,10 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
     else:
         item = {}
         _adder = lambda key, value: item.update({name: value})
-    for subTag in tag(recursive=False):
+    for subTag in tag.getchildren():
         subTagKey = tagToKey(subTag)
         # Exclude dinamically generated keys.
-        if tag.name in _MAP_TOP_OBJ and subTagKey in item._additional_keys():
+        if tag.tag in _MAP_TOP_OBJ and subTagKey in item._additional_keys():
             continue
         subItem = parseTags(subTag, _topLevel=False, _as=_as,
                             _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
@@ -554,14 +555,8 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
 def parseXML(xml):
     """Parse a XML string, returning an appropriate object (usually an
     instance of a subclass of _Container."""
-    xmlObj = BeautifulSoup.BeautifulStoneSoup(
-        xml, convertEntities=BeautifulSoup.BeautifulStoneSoup.XHTML_ENTITIES
-    )
-    if xmlObj:
-        mainTag = xmlObj.find()
-        if mainTag:
-            return parseTags(mainTag)
-    return None
+    import lxml.etree
+    return parseTags(lxml.etree.fromstring(xml))
 
 
 _re_akas_lang = re.compile('(?:[(])([a-zA-Z]+?)(?: title[)])')

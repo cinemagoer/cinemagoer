@@ -18,7 +18,7 @@ def movie_combined_details(movies):
 parser = DOMHTMLMovieParser()
 
 
-def test_cover_url_should_be_link(movie_combined_details):
+def test_cover_url_should_be_a_link(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
     assert data['cover url'].endswith('.jpg')

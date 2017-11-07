@@ -62,9 +62,23 @@ MOVIES = {
     'suspiria':         '0076786'   # multiple country runtimes
 }
 
+PEOPLE = {
+    'deni_gordon':   '0330139',  # no headshot
+    'fred_astaire':  '0000001',  # name with dates
+    'julia_roberts': '0000210',  # IMDb index
+    'keanu_reeves':  '0000206'   # no IMDb index
+}
+
 
 @fixture(scope='session')
 def movies():
     """Base addresses of all test movies."""
     return {k: '%(base)s/title/tt%(key)s' % {'base': BASE_URL, 'key': v}
             for k, v in MOVIES.items()}
+
+
+@fixture(scope='session')
+def people():
+    """Base addresses of all test people."""
+    return {k: '%(base)s/name/nm%(key)s' % {'base': BASE_URL, 'key': v}
+            for k, v in PEOPLE.items()}

@@ -6,7 +6,7 @@ import os
 import urllib.request
 from hashlib import md5
 from io import BytesIO
-from urllib.request import urlopen as urlopen_orig
+from urllib.request import urlopen as orig_urlopen
 
 
 logging.raiseExceptions = False
@@ -20,13 +20,13 @@ if not os.path.exists(cache_dir):
 def mock_urlopen(url):
     key = md5(url.encode('utf-8')).hexdigest()
     cache_file = os.path.join(cache_dir, key)
-    if not os.path.exists(cache_file):
-        content = urlopen_orig(url).read()
-        with open(cache_file, 'wb') as f:
-            f.write(content)
-    else:
+    if os.path.exists(cache_file):
         with open(cache_file, 'rb') as f:
             content = f.read()
+    else:
+        content = orig_urlopen(url).read()
+        with open(cache_file, 'wb') as f:
+            f.write(content)
     return BytesIO(content)
 
 

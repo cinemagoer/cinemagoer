@@ -349,18 +349,17 @@ class TableAdapter(object):
             if col.index:
                 self._createIndex(col, checkfirst=ifNotExists)
 
-    def addForeignKeys(self, mapTables, ifNotExists=True):
+    def addForeignKeys(self, mapTables, ifNotExists=True, _counter=0):
         """Create all required foreign keys."""
         if not HAS_MC:
             return
         # It seems that there's no reason to prevent the creation of
         # indexes for columns with FK constrains: if there's already
         # an index, the FK index is not created.
-        countCols = 0
         for col in self._imdbpySchema.cols:
-            countCols += 1
             if not col.foreignKey:
                 continue
+            _counter += 1
             fks = col.foreignKey.split('.', 1)
             foreignTableName = fks[0]
             if len(fks) == 2:
@@ -375,8 +374,7 @@ class TableAdapter(object):
             foreignCol = getattr(foreignTable.c, foreignColName)
             # Need to explicitly set an unique name, otherwise it will
             # explode, if two cols points to the same table.
-            fkName = 'fk_%s_%s_%d' % (foreignTable.name, foreignColName,
-                                        countCols)
+            fkName = 'fk_%s_%s_%s_%d' % (self.table.name, foreignTable.name, foreignColName, _counter)
             constrain = migrate.changeset.ForeignKeyConstraint([thisCol],
                                                         [foreignCol],
                                                         name=fkName)
@@ -384,6 +382,7 @@ class TableAdapter(object):
                 constrain.create()
             except exc.OperationalError:
                 continue
+        return _counter
 
     def __call__(self, *args, **kwds):
         """To insert a new row with the syntax: TableClass(key=value, ...)"""

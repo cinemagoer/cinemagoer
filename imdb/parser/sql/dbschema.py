@@ -445,10 +445,11 @@ def createForeignKeys(tables, ifNotExists=True):
     mapTables = {}
     for table in tables:
         mapTables[table._imdbpyName] = table
+    globCounter = 0
     for table in tables:
         _dbschema_logger.info('creating foreign keys for table %s', table._imdbpyName)
         try:
-            table.addForeignKeys(mapTables, ifNotExists)
+            globCounter = table.addForeignKeys(mapTables, ifNotExists=ifNotExists, _counter=globCounter)
         except Exception as e:
             errors.append(e)
             continue

@@ -1084,12 +1084,10 @@ class MoviesCache(_BaseCache):
         in the dictionary, its previous  value is returned."""
         if key.endswith('{{SUSPENDED}}'):
             return None
-        # DONE: to be removed when it will be no more needed!
-        #if FIX_OLD_STYLE_TITLES:
-        #    key = build_title(analyze_title(key, canonical=False,
-        #                    _emptyString=''), ptdf=1, _emptyString='')
-        if key in self: return self[key]
-        else: return self.add(key, miscData)
+        if key in self:
+            return self[key]
+        else:
+            return self.add(key, miscData)
 
 
 class PersonsCache(_BaseCache):
@@ -1839,8 +1837,7 @@ def doMovieLinks():
         else:
             if mid is None:
                continue
-            line = line.strip()
-            link_txt = str(line, 'utf_8').encode('ascii', 'replace')
+            link_txt = line = line.strip()
             theid = None
             for k, lenkp1, v in MOVIELINK_IDS:
                 if link_txt and link_txt[0] == '(' \
@@ -1965,8 +1962,8 @@ _bus = {'BT': 'budget',
         'CP': 'copyright holder'
 }
 _usd = '$'
-_gbp = chr(0x00a3).encode('utf_8')
-_eur = chr(0x20ac).encode('utf_8')
+_gbp = chr(0x00a3)
+_eur = chr(0x20ac)
 def getBusiness(lines):
     """Movie's business information."""
     bd = _parseColonList(lines, _bus)

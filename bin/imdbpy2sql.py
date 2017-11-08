@@ -2442,7 +2442,7 @@ def getRating():
     """Movie's rating."""
     try: fp = SourceFile('ratings.list.gz', start=RAT_START, stop=RAT_STOP)
     except IOError: return
-    sqldata = SQLData(table=MovieInfoIdx, cols=['movieID', 'infoTypeID',
+    sqldata = SQLData(table=MovieInfo, cols=['movieID', 'infoTypeID',
                                                 'info', 'note'])
     count = 0
     for line in fp:
@@ -2471,7 +2471,7 @@ def getTopBottomRating():
         else: st = RAT_BOT10_START
         try: fp = SourceFile('ratings.list.gz', start=st, stop=TOPBOT_STOP)
         except IOError: break
-        sqldata = SQLData(table=MovieInfoIdx,
+        sqldata = SQLData(table=MovieInfo,
                     cols=['movieID',
                         RawValue('infoTypeID', INFO_TYPES[what]),
                         'info', 'note'])

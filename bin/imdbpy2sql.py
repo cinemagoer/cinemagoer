@@ -792,12 +792,12 @@ class SourceFile(GzipFile):
 
     def readline_NOcheckEnd(self, size=-1):
         line = GzipFile.readline(self, size)
-        return str(line, 'latin_1')
+        return str(line, 'latin_1', 'ignore')
 
     def readline_checkEnd(self, size=-1):
         line = GzipFile.readline(self, size)
         if self.stop is not None and line[:self.stoplen] == self.stop: return ''
-        return str(line, 'latin_1')
+        return str(line, 'latin_1', 'ignore')
 
     def getByHashSections(self):
         return getSectionHash(self)
@@ -917,7 +917,7 @@ class _BaseCache(dict):
                 firstHalf = {}
                 poptmpd = self._tmpDict.popitem
                 originalLength = len(self._tmpDict)
-                for x in range(1, 1 + originalLength/2):
+                for x in range(1, 1 + originalLength//2):
                     k, v = poptmpd()
                     firstHalf[k] = v
                 self._secondHalf = self._tmpDict
@@ -937,7 +937,7 @@ class _BaseCache(dict):
             except Exception as e:
                 if isinstance(e, KeyboardInterrupt):
                     raise
-                print('WARNING: unknown exception caught committing the data')
+                print('WARNING: %s; unknown exception caught committing the data' % self.className)
                 print('WARNING: to the database; report this as a bug, since')
                 print('WARNING: many data (%d items) were lost: %s' % \
                         (len(self._tmpDict), e))
@@ -1341,9 +1341,7 @@ class SQLData(dict):
 
     def flush(self, _resetRecursion=1):
         if not self: return
-        # XXX: it's safer to flush MoviesCache and PersonsCache, to preserve
-        #      consistency of ForeignKey, but it can also slow down everything
-        #      a bit...
+        # XXX: it's safer to flush MoviesCache and PersonsCache, to preserve consistency
         CACHE_MID.flush(quiet=1)
         CACHE_PID.flush(quiet=1)
         if _resetRecursion: self._recursionLevel = 1
@@ -1375,7 +1373,7 @@ class SQLData(dict):
                                     sqlString=self.sqlString,
                                     converter=self.converter)
             newdata._recursionLevel = self._recursionLevel
-            newflushEvery = self.flushEvery / 2
+            newflushEvery = self.flushEvery // 2
             if newflushEvery < 1:
                 print('WARNING recursion level exceded trying to flush data')
                 print('WARNING this batch of data is lost.')
@@ -1386,7 +1384,7 @@ class SQLData(dict):
             newdata.flushEvery = newflushEvery
             popitem = self.popitem
             dsi = dict.__setitem__
-            for x in range(len(self)/2):
+            for x in range(len(self)//2):
                 k, v = popitem()
                 dsi(newdata, k, v)
             newdata.flush(_resetRecursion=0)
@@ -1397,7 +1395,7 @@ class SQLData(dict):
         except Exception as e:
             if isinstance(e, KeyboardInterrupt):
                 raise
-            print('WARNING: unknown exception caught committing the data')
+            print('WARNING: SQLData; unknown exception caught committing the data')
             print('WARNING: to the database; report this as a bug, since')
             print('WARNING: many data (%d items) were lost: %s' % \
                     (len(self), e))
@@ -2141,17 +2139,12 @@ def nmmvFiles(fp, funct, fname):
                                                 for x in crole])
                         if not crole:
                             crole = None
-                        else:
-                            crole = str(crole).encode('utf_8')
                         guestdata.add((mopid, movieid, crole,
                                         i.notes or None))
                         continue
                     if k in ('plot', 'mini biography'):
                         s = i.split('::')
                         if len(s) == 2:
-                            #if note: note += ' '
-                            #else: note = ''
-                            #note += '(author: %s)' % s[1]
                             note = s[1]
                             i = s[0]
                     if i: sqldata.add((mopid, theid, i, note))

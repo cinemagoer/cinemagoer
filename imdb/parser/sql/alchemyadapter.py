@@ -243,25 +243,6 @@ class TableAdapter(object):
             if 'length' in params:
                 colKindParams['length'] = params['length']
                 del params['length']
-            elif colClass is UnicodeText and col.index:
-                # XXX: limit length for UNICODECOLs that will have an index.
-                #      this can result in name.name and title.title truncations!
-                colClass = Unicode
-                # Should work for most of the database servers.
-                length = 511
-                if self.connectionURI:
-                    if self.connectionURI.startswith('mysql'):
-                        # To stay compatible with MySQL 4.x.
-                        length = 255
-                colKindParams['length'] = length
-            elif self._imdbpyName == 'PersonInfo' and col.name == 'info':
-                if self.connectionURI:
-                    if self.connectionURI.startswith('ibm'):
-                        # There are some entries longer than 32KB.
-                        colClass = CLOB
-                        # I really do hope that this space isn't wasted
-                        # for each other shorter entry... <g>
-                        colKindParams['length'] = 68*1024
             colKind = colClass(**colKindParams)
             if 'alternateID' in params:
                 # There's no need to handle them here.
@@ -322,16 +303,18 @@ class TableAdapter(object):
 
     def _createIndex(self, col, checkfirst=True):
         """Create an index for a given (schema) column."""
-        # XXX: indexLen is ignored in SQLAlchemy, and that means that
-        #      indexes will be over the whole 255 chars strings...
-        # NOTE: don't use a dot as a separator, or DB2 will do
-        #       nasty things.
         idx_name = '%s_%s' % (self.table.name, col.index or col.name)
         if checkfirst:
             for index in self.table.indexes:
                 if index.name == idx_name:
                     return
-        idx = Index(idx_name, getattr(self.table.c, self.colMap[col.name]))
+        index_args = {}
+        if self.connectionURI.startswith('mysql'):
+            if col.indexLen:
+                index_args['mysql_length'] = col.indexLen
+            elif col.kind in (UNICODECOL, STRINGCOL):
+                index_args['mysql_length'] = min(5, col.params.get('length') or 5)
+        idx = Index(idx_name, getattr(self.table.c, self.colMap[col.name]), **index_args)
         # XXX: beware that exc.OperationalError can be raised, is some
         #      strange circumstances; that's why the index name doesn't
         #      follow the SQLObject convention, but includes the table name:

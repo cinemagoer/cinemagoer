@@ -276,7 +276,7 @@ DB_SCHEMA = [
     DBTable('AkaName',
             DBCol('id', INTCOL, notNone=True, alternateID=True),
             DBCol('personID', INTCOL, notNone=True, index='idx_person'),
-            DBCol('name', UNICODECOL, notNone=True, index='idx_name'),
+            DBCol('name', UNICODECOL, notNone=True, index='idx_name', indexLen=6),
             DBCol('imdbIndex', STRINGCOL, length=12, default=None),
             DBCol('namePcodeCf', STRINGCOL, length=5, default=None, index='idx_pcodecf'),
             DBCol('namePcodeNf', STRINGCOL, length=5, default=None, index='idx_pcodenf'),
@@ -298,7 +298,7 @@ DB_SCHEMA = [
             # "Series, The" (2005)                "Other Title" (2005)
             DBCol('id', INTCOL, notNone=True, alternateID=True),
             DBCol('movieID', INTCOL, notNone=True, index='idx_movieid'),
-            DBCol('title', UNICODECOL, notNone=True, index='idx_title'),
+            DBCol('title', UNICODECOL, notNone=True, index='idx_title', indexLen=10),
             DBCol('imdbIndex', STRINGCOL, length=12, default=None),
             DBCol('kindID', INTCOL, notNone=True, index='idx_kindid'),
             DBCol('productionYear', INTCOL, default=None, index='idx_year'),

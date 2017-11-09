@@ -722,17 +722,23 @@ class DOMHTMLPlotParser(DOMParserBase):
     extractors = [
         Extractor(
             label='plot',
-            path="//ul[@class='zebraList']/li",
+            path="//ul[@id='plot-summaries-content']/li",
             attrs=Attribute(
                 key='plot',
                 multi=True,
                 path={
-                    'plot': './/p[@class="plotSummary"]//text()',
-                    'author': './/span/em/a/text()'
+                    'plot': "./p//text()",
+                    'author': ".//div[@class='author-container']//a/text()"
                 },
-                postprocess=_process_plotsummary)
+                postprocess=_process_plotsummary
+            )
         )
     ]
+
+    def preprocess_dom(self, dom):
+        for no_summary in self.xpath(dom, "//li[@id='no-summary-content']"):
+            no_summary.drop_tree()
+        return dom
 
 
 def _process_award(x):

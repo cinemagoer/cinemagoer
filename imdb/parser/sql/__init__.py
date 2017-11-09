@@ -1035,8 +1035,6 @@ class IMDbSqlAccessSystem(IMDbBase):
         # Info about the movie.
         minfo = [(self._info[m.infoTypeID], m.info, m.note)
                 for m in MovieInfo.select(MovieInfo.q.movieID == movieID)]
-        minfo += [(self._info[m.infoTypeID], m.info, m.note)
-                for m in MovieInfoIdx.select(MovieInfoIdx.q.movieID == movieID)]
         minfo += [('keywords', Keyword.get(m.keywordID).keyword, None)
                 for m in MovieKeyword.select(MovieKeyword.q.movieID == movieID)]
         minfo = _groupListBy(minfo, 0)
@@ -1536,12 +1534,12 @@ class IMDbSqlAccessSystem(IMDbBase):
         if infoID.count() == 0:
             return []
         infoID = infoID[0].id
-        movies = MovieInfoIdx.select(MovieInfoIdx.q.infoTypeID == infoID)
+        movies = MovieInfo.select(MovieInfo.q.infoTypeID == infoID)
         ml = []
         for m in movies:
             minfo = get_movie_data(m.movieID, self._kind)
             for k in kind, 'votes', 'rating', 'votes distribution':
-                valueDict = getSingleInfo(MovieInfoIdx, m.movieID,
+                valueDict = getSingleInfo(MovieInfo, m.movieID,
                                             k, notAList=True)
                 if k in (kind, 'votes') and k in valueDict:
                     valueDict[k] = int(valueDict[k])

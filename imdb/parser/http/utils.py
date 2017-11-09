@@ -22,13 +22,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import collections
-import logging
 import re
-import warnings
+import logging
+import collections
+import lxml.etree
+import lxml.html
 from html.entities import entitydefs
 
-from imdb._exceptions import IMDbError
 from imdb.Character import Character
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -116,9 +116,6 @@ entcharrefs['#xa0'] = ' '
 entcharrefs['#XA0'] = ' '
 entcharrefs['#x22'] = '"'
 entcharrefs['#X22'] = '"'
-# convert &x26; to &amp;, to make BeautifulSoup happy; beware that this
-# leaves lone '&' in the html broken, but I assume this is better than
-# the contrary...
 entcharrefs['#38'] = '&amp;'
 entcharrefs['#x26'] = '&amp;'
 entcharrefs['#x26'] = '&amp;'
@@ -148,9 +145,6 @@ def _replXMLRef(match):
             if ref_code in ('34', '38', '60', '62', '39'):
                 return match.group(0)
             elif ref_code[0].lower() == 'x':
-                # if ref[2:] == '26':
-                #     # Don't convert &x26; to &amp;, to make BeautifulSoup happy.
-                #     return '&amp;'
                 return chr(int(ref[2:], 16))
             else:
                 return chr(int(ref[1:]))
@@ -448,58 +442,12 @@ class DOMParserBase(object):
 
     preprocessors = []
     extractors = []
-    usingModule = None
 
     _logger = logging.getLogger('imdbpy.parser.http.domparser')
 
-    def __init__(self, useModule=None):
-        """Initialize the parser. useModule can be used to force it
-        to use 'BeautifulSoup' or 'lxml'; by default, it's auto-detected,
-        using 'lxml' if available and falling back to 'BeautifulSoup'
-        otherwise."""
-        # Module to use.
-        if useModule is None:
-            useModule = ('lxml', 'BeautifulSoup')
-        if not isinstance(useModule, (tuple, list)):
-            useModule = [useModule]
-        self._useModule = useModule
-        nrMods = len(useModule)
-        _gotError = False
-        for idx, mod in enumerate(useModule):
-            mod = mod.strip().lower()
-            try:
-                if mod == 'lxml':
-                    from lxml.html import fromstring
-                    from lxml.etree import tostring
-                    self._is_xml_unicode = False
-                    self.usingModule = 'lxml'
-                elif mod == 'beautifulsoup':
-                    from .bsouplxml.html import fromstring
-                    from .bsouplxml.etree import tostring
-                    self._is_xml_unicode = True
-                    self.usingModule = 'beautifulsoup'
-                else:
-                    self._logger.warn('unknown module "%s"' % mod)
-                    continue
-                self.fromstring = fromstring
-                self._tostring = tostring
-                if _gotError:
-                    warnings.warn('falling back to "%s"' % mod)
-                break
-            except ImportError as e:
-                if idx + 1 >= nrMods:
-                    # Raise the exception, if we don't have any more
-                    # options to try.
-                    raise IMDbError('unable to use any parser in %s: %s' % (
-                        str(useModule), str(e)
-                    ))
-                else:
-                    warnings.warn('unable to use "%s": %s' % (mod, str(e)))
-                    _gotError = True
-                continue
-        else:
-            raise IMDbError('unable to use parsers in %s' % str(useModule))
-        # Fall-back defaults.
+    def __init__(self):
+        """Initialize the parser."""
+        self._is_xml_unicode = False
         self._modFunct = None
         self._as = 'http'
         self._cname = self.__class__.__name__
@@ -538,13 +486,6 @@ class DOMParserBase(object):
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
         html_string = html_string.strip()
-        if self.usingModule == 'beautifulsoup':
-            # tag attributes like title="&#x22;Family Guy&#x22;" will be
-            # converted to title=""Family Guy"" and this confuses BeautifulSoup.
-            html_string = html_string.replace('""', '"')
-            # Browser-specific escapes create problems to BeautifulSoup.
-            html_string = html_string.replace('<!--[if IE]>', '"')
-            html_string = html_string.replace('<![endif]-->', '"')
         if html_string:
             dom = self.get_dom(html_string)
             try:
@@ -578,7 +519,7 @@ class DOMParserBase(object):
     def get_dom(self, html_string):
         """Return a dom object, from the given string."""
         try:
-            dom = self.fromstring(html_string)
+            dom = lxml.html.fromstring(html_string)
             if dom is None:
                 dom = self._build_empty_dom()
                 self._logger.error('%s: using a fake empty DOM', self._cname)
@@ -611,7 +552,7 @@ class DOMParserBase(object):
             return str(element)
         else:
             try:
-                return self._tostring(element, encoding=str)
+                return lxml.etree.tostring(element, encoding='utf8')
             except Exception:
                 self._logger.error('%s: unable to convert to string',
                                    self._cname, exc_info=True)
@@ -619,7 +560,7 @@ class DOMParserBase(object):
 
     def clone(self, element):
         """Clone an element."""
-        return self.fromstring(self.tostring(element))
+        return lxml.html.fromstring(self.tostring(element))
 
     def preprocess_string(self, html_string):
         """Here we can modify the text, before it's parsed."""
@@ -680,16 +621,13 @@ class DOMParserBase(object):
                     if not group_key:
                         continue
                     group_key = group_key[0]
-                    # XXX: always tries the conversion to unicode:
-                    #      BeautifulSoup.NavigableString is a subclass
-                    #      of unicode, and so it's never converted.
                     group_key = self.tostring(group_key)
                     normalizer = extractor.group_key_normalize
                     if normalizer is not None:
                         if isinstance(normalizer, collections.Callable):
                             try:
                                 group_key = normalizer(group_key)
-                            except Exception as e:
+                            except Exception:
                                 _m = '%s: unable to apply group_key normalizer'
                                 self._logger.error(_m, self._cname, exc_info=True)
                     group_elements = self.xpath(group, extractor.path)

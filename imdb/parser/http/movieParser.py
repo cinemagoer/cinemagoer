@@ -840,9 +840,6 @@ class DOMHTMLAwardsParser(DOMParserBase):
             for tr in self.xpath(row, "./following-sibling::tr")[:span - 1]:
                 # if not cloned, child will be moved to new parent
                 clone = self.clone(col)
-                # XXX: beware that here we don't use an "adapted" function,
-                #      because both BeautifulSoup and lxml uses the same
-                #      "insert" method.
                 tr.insert(position, clone)
         return dom
 
@@ -2208,8 +2205,6 @@ class DOMHTMLFaqsParser(DOMParserBase):
         result = fparser.parse(faqs_html_string)
     """
     _defGetRefs = True
-
-    # XXX: bsoup and lxml don't match (looks like a minor issue, anyway).
 
     extractors = [
         Extractor(

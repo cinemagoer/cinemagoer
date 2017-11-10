@@ -71,20 +71,26 @@ PEOPLE = {
 
 
 @fixture(scope='session')
-def movies():
+def base_url():
+    """Base address of the IMDb site."""
+    return BASE_URL
+
+
+@fixture(scope='session')
+def movies(base_url):
     """Base addresses of all test movies."""
-    return {v: '%(base)s/title/tt%(key)s' % {'base': BASE_URL, 'key': k}
+    return {v: '%(base)s/title/tt%(key)s' % {'base': base_url, 'key': k}
             for k, v in MOVIES.items()}
 
 
 @fixture(scope='session')
-def people():
+def people(base_url):
     """Base addresses of all test people."""
-    return {v: '%(base)s/name/nm%(key)s' % {'base': BASE_URL, 'key': k}
+    return {v: '%(base)s/name/nm%(key)s' % {'base': base_url, 'key': k}
             for k, v in PEOPLE.items()}
 
 
 @fixture(scope='session')
-def search():
+def search(base_url):
     """Base address for search pages."""
-    return '%(base)s/find' % {'base': BASE_URL}
+    return '%(base)s/find' % {'base': base_url}

@@ -47,8 +47,7 @@ MOVIES = {
     '0606035': 'house md ep first',         # first episode
     '2121964': 'house md ep middle',        # intermediate episode
     '2121965': 'house md ep last',          # last episode
-    '0063850': 'if....',                    # one genre, multiple color info with notes,
-                                            # single sound mix without notes
+    '0063850': 'if....',                    # one genre, multiple color info with notes, single sound mix without notes
     '0060666': 'manos',                     # bottom 100, single color info with notes
     '0133093': 'matrix',                    # top 250, aspect ratio, multiple sound mix with notes
     '2971344': 'matrix short',              # short movie, language "None"

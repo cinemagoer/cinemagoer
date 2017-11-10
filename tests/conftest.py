@@ -36,53 +36,52 @@ urllib.request.urlopen = mock.Mock(wraps=mock_urlopen)
 BASE_URL = 'http://akas.imdb.com'
 
 MOVIES = {
-    'ace_in_the_hole':  '0043338',  # multiple languages, single sound mix with note
-    'aslan':            '3629794',  # no cover URL
-    'ates_parcasi':     '1863157',  # no rating, no votes, no rank, no plot, no mpaa,
-                                    # no aspect ratio, no sound mix
-    'band_of_brothers': '0185906',  # TV mini-series, ended series years
-    'band_ep4':         '1247467',  # episode in mini-series
-    'dr_who':           '0436992',  # TV series, continuing series years
-    'dr_who_blink':     '1000252',  # TV episode
-    'house':            '0412142',  # multiple seasons
-    'house_first':      '0606035',  # first episode
-    'house_middle':     '2121964',  # intermediate episode
-    'house_last':       '2121965',  # last episode
-    'if':               '0063850',  # one genre, multiple color info with notes,
-                                    # single sound mix without notes
-    'manos':            '0060666',  # bottom 100, single color info with notes
-    'matrix':           '0133093',  # top 250, aspect ratio, multiple sound mix with notes
-    'matrix_short':     '2971344',  # short movie, language "None"
-    'matrix_tv':        '0389150',  # TV movie, no color info
-    'matrix_tv_short':  '0274085',  # TV short movie
-    'matrix_vg':        '0390244',  # video game
-    'matrix_video':     '0109151',  # video movie
-    'mothers_day4':     '3698420',  # IMDb index
-    'pleasantville':    '0120789',  # multiple color info, multiple sound mix without notes
-    'roast_sheen':      '1985970',  # TV special
-    'shining':          '0081505',  # multiple runtimes, multiple countries
-    'suspiria':         '0076786'   # multiple country runtimes
+    '0043338': 'ace in the hole',           # multiple languages, single sound mix with note
+    '3629794': 'aslan',                     # no cover URL
+    '1863157': 'ates parcasi',              # no rating, no votes, no rank, no plot, no mpaa, no aspect ratio, no sound mix
+    '0185906': 'band of brothers',          # TV mini-series, ended series years
+    '1247467': 'band of brothers ep 4',     # episode in mini-series
+    '0436992': 'dr who',                    # TV series, continuing series years
+    '1000252': 'dr who ep blink',           # TV episode
+    '0412142': 'house md',                  # multiple seasons
+    '0606035': 'house md ep first',         # first episode
+    '2121964': 'house md ep middle',        # intermediate episode
+    '2121965': 'house md ep last',          # last episode
+    '0063850': 'if....',                    # one genre, multiple color info with notes,
+                                            # single sound mix without notes
+    '0060666': 'manos',                     # bottom 100, single color info with notes
+    '0133093': 'matrix',                    # top 250, aspect ratio, multiple sound mix with notes
+    '2971344': 'matrix short',              # short movie, language "None"
+    '0389150': 'matrix tv',                 # TV movie, no color info
+    '0274085': 'matrix tv short',           # TV short movie
+    '0390244': 'matrix vg',                 # video game
+    '0109151': 'matrix video',              # video movie
+    '3698420': 'mothers day iv',            # IMDb index
+    '0120789': 'pleasantville',             # multiple color info, multiple sound mix without notes
+    '1985970': 'roast of charlie sheen',    # TV special
+    '0081505': 'shining',                   # multiple runtimes, multiple countries
+    '0076786': 'suspiria'                   # multiple country runtimes
 }
 
 PEOPLE = {
-    'deni_gordon':   '0330139',  # no headshot
-    'fred_astaire':  '0000001',  # name with dates
-    'julia_roberts': '0000210',  # IMDb index
-    'keanu_reeves':  '0000206'   # no IMDb index
+    '0000001': 'fred astaire',      # name with dates
+    '0000206': 'keanu reeves',      # no IMDb index
+    '0000210': 'julia roberts',     # IMDb index
+    '0330139': 'deni gordon'        # no headshot
 }
 
 
 @fixture(scope='session')
 def movies():
     """Base addresses of all test movies."""
-    return {k: '%(base)s/title/tt%(key)s' % {'base': BASE_URL, 'key': v}
+    return {v: '%(base)s/title/tt%(key)s' % {'base': BASE_URL, 'key': k}
             for k, v in MOVIES.items()}
 
 
 @fixture(scope='session')
 def people():
     """Base addresses of all test people."""
-    return {k: '%(base)s/name/nm%(key)s' % {'base': BASE_URL, 'key': v}
+    return {v: '%(base)s/name/nm%(key)s' % {'base': BASE_URL, 'key': k}
             for k, v in PEOPLE.items()}
 
 

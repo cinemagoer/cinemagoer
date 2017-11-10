@@ -18,7 +18,7 @@ parser = DOMHTMLSearchPersonParser()
 
 
 @mark.fragile
-def test_found_many_result_should_contain_correct_number_of_movies(search_person):
+def test_found_many_result_should_contain_correct_number_of_persons(search_person):
     page = search_person('keanu reeves')
     data = parser.parse(page)['data']
     assert len(data) == 4

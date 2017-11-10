@@ -34,7 +34,7 @@ import sys
 from types import MethodType, FunctionType
 
 import imdb._logging
-from imdb._exceptions import IMDbDataAccessError, IMDbError, IMDbParserError
+from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb import Character, Company, Movie, Person
 from imdb.utils import build_company_name, build_name, build_title
 

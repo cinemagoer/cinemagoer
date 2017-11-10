@@ -1,4 +1,4 @@
-from pytest import fixture, mark
+from pytest import fixture
 
 from urllib.request import urlopen
 
@@ -18,37 +18,36 @@ parser = DOMHTMLMaindetailsParser()
 
 
 def test_headshot_should_be_a_link(person_main_details):
-    page = person_main_details('keanu_reeves')
+    page = person_main_details('keanu reeves')
     data = parser.parse(page)['data']
     assert data['headshot'].endswith('.jpg')
 
 
-@mark.fragile
 def test_headshot_none_should_be_excluded(person_main_details):
-    page = person_main_details('deni_gordon')
+    page = person_main_details('deni gordon')
     data = parser.parse(page)['data']
     assert 'headshot' not in data
 
 
 def test_name_should_be_canonical(person_main_details):
-    page = person_main_details('keanu_reeves')
+    page = person_main_details('keanu reeves')
     data = parser.parse(page)['data']
     assert data['name'] == 'Reeves, Keanu'
 
 
 def test_name_should_not_have_year(person_main_details):
-    page = person_main_details('fred_astaire')
+    page = person_main_details('fred astaire')
     data = parser.parse(page)['data']
     assert data['name'] == 'Astaire, Fred'
 
 
 def test_imdb_index_should_be_a_roman_number(person_main_details):
-    page = person_main_details('julia_roberts')
+    page = person_main_details('julia roberts')
     data = parser.parse(page)['data']
     assert data['imdbIndex'] == 'I'
 
 
 def test_imdb_index_none_should_be_excluded(person_main_details):
-    page = person_main_details('keanu_reeves')
+    page = person_main_details('keanu reeves')
     data = parser.parse(page)['data']
     assert 'imdbIndex' not in data

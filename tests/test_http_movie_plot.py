@@ -25,6 +25,6 @@ def test_summary_should_end_with_author(movie_plot_summaries):
 
 
 def test_summary_none_should_be_excluded(movie_plot_summaries):
-    page = movie_plot_summaries('ates_parcasi')
+    page = movie_plot_summaries('ates parcasi')
     data = parser.parse(page)['data']
     assert 'plot' not in data

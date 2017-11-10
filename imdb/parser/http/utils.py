@@ -22,12 +22,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import re
-import logging
 import collections
+import logging
+import re
+from html.entities import entitydefs
+
 import lxml.etree
 import lxml.html
-from html.entities import entitydefs
 
 from imdb.Character import Character
 from imdb.Movie import Movie

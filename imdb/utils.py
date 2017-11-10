@@ -42,7 +42,10 @@ _utils_logger = logging.getLogger('imdbpy.utils')
 # and year of release.
 # XXX: probably L, C, D and M are far too much! ;-)
 re_year_index = re.compile(r'\(([0-9\?]{4}(/[IVXLCDM]+)?)\)')
-re_extended_year_index = re.compile(r'\((TV episode|TV Series|TV mini-series|TV|Video|Video Game)? ?((?:[0-9\?]{4})(?:-[0-9\?]{4})?)(?:/([IVXLCDM]+)?)?\)')
+re_extended_year_index = re.compile(
+    r'\((TV episode|TV Series|TV mini-series|TV|Video|Video Game)? '
+    r'?((?:[0-9\?]{4})(?:-[0-9\?]{4})?)(?:/([IVXLCDM]+)?)?\)'
+)
 re_remove_kind = re.compile(r'\((TV episode|TV Series|TV mini-series|TV|Video|Video Game)? ?')
 
 # Match only the imdbIndex (for name strings).
@@ -53,7 +56,9 @@ re_parentheses = re.compile(r'(\(.*\))')
 
 # Match the number of episodes.
 re_episodes = re.compile('\s?\((\d+) episodes\)', re.I)
-re_episode_info = re.compile(r'{\s*(.+?)?\s?(\([0-9\?]{4}-[0-9\?]{1,2}-[0-9\?]{1,2}\))?\s?(\(#[0-9]+\.[0-9]+\))?}')
+re_episode_info = re.compile(
+    r'{\s*(.+?)?\s?(\([0-9\?]{4}-[0-9\?]{1,2}-[0-9\?]{1,2}\))?\s?(\(#[0-9]+\.[0-9]+\))?}'
+)
 
 # Common suffixes in surnames.
 _sname_suffixes = ('de', 'la', 'der', 'den', 'del', 'y', 'da', 'van',
@@ -369,11 +374,11 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
                 # Set season and episode.
                 try:
                     seas = int(seas)
-                except:
+                except ValueError:
                     pass
                 try:
                     epn = int(epn)
-                except:
+                except ValueError:
                     pass
                 episode_d['season'] = seas
                 if epn:
@@ -798,7 +803,9 @@ def cmpCompanies(p1, p2):
 
 # References to titles, names and characters.
 # XXX: find better regexp!
-re_titleRef = re.compile(r'_(.+?(?: \([0-9\?]{4}(?:/[IVXLCDM]+)?\))?(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)_ \(qv\)')
+re_titleRef = re.compile(
+    r'_(.+?(?: \([0-9\?]{4}(?:/[IVXLCDM]+)?\))?(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)_ \(qv\)'
+)
 # FIXME: doesn't match persons with ' in the name.
 re_nameRef = re.compile(r"'([^']+?)' \(qv\)")
 # XXX: good choice?  Are there characters with # in the name?

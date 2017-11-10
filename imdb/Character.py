@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from copy import deepcopy
 
+from imdb._exceptions import IMDbParserError
 from imdb.utils import _Container, analyze_name, build_name, cmpPeople, flatten
 
 
@@ -91,8 +92,8 @@ class Character(_Container):
         try:
             d = analyze_name(name, canonical=0)
             self.data.update(d)
-        except:
-            # TODO: catch only IMDbPYParserError and issue a warning.
+        except IMDbParserError:
+            # TODO: issue a warning.
             pass
 
     def _additional_keys(self):

@@ -148,7 +148,8 @@ class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
 
     preprocessors = [
         # Check that this doesn't cut "status"...
-        (re.compile(r'<br>(\.\.\.|   ).+?</li>', re.I | re.M), '</li>')]
+        (re.compile(r'<br>(\.\.\.|   ).+?</li>', re.I | re.M), '</li>')
+    ]
 
 
 class DOMHTMLCharacterBioParser(DOMParserBase):

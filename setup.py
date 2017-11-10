@@ -1,9 +1,9 @@
-#!/usr/bin/env python
-
+import distutils.sysconfig
 import os
 import sys
+
 import setuptools
-import distutils.sysconfig
+
 
 # version of the software; in the code repository this represents
 # the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
@@ -53,14 +53,24 @@ keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
             'company', 'package', 'plain text data files',
             'keywords', 'top250', 'bottom100', 'xml']
 
-scripts = ['./bin/get_first_movie.py', './bin/imdbpy2sql.py',
-            './bin/get_movie.py', './bin/search_movie.py',
-            './bin/get_first_person.py', './bin/get_person.py',
-            './bin/search_person.py', './bin/get_character.py',
-            './bin/get_first_character.py', './bin/get_company.py',
-            './bin/search_character.py', './bin/search_company.py',
-            './bin/get_first_company.py', './bin/get_keyword.py',
-            './bin/search_keyword.py', './bin/get_top_bottom_movies.py']
+scripts = [
+    './bin/get_first_movie.py',
+    './bin/imdbpy2sql.py',
+    './bin/get_movie.py',
+    './bin/search_movie.py',
+    './bin/get_first_person.py',
+    './bin/get_person.py',
+    './bin/search_person.py',
+    './bin/get_character.py',
+    './bin/get_first_character.py',
+    './bin/get_company.py',
+    './bin/search_character.py',
+    './bin/search_company.py',
+    './bin/get_first_company.py',
+    './bin/get_keyword.py',
+    './bin/search_keyword.py',
+    './bin/get_top_bottom_movies.py'
+]
 
 # XXX: I'm not sure that 'etc' is a good idea.  Making it an absolute
 #      path seems a recipe for a disaster (with bdist_egg, at least).
@@ -68,31 +78,32 @@ data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
 
 
 params = {
-        # Meta-information.
-        'name': 'IMDbPY',
-        'version': version,
-        'description': 'Python package to access the IMDb\'s database',
-        'long_description': long_desc,
-        'author': 'Davide Alberani',
-        'author_email': 'da@erlug.linux.it',
-        'contact': 'IMDbPY-devel mailing list',
-        'contact_email': 'imdbpy-devel@lists.sourceforge.net',
-        'maintainer': 'Davide Alberani',
-        'maintainer_email': 'da@erlug.linux.it',
-        'license': 'GPL',
-        'platforms': 'any',
-        'keywords': keywords,
-        'classifiers': [_f for _f in classifiers.split("\n") if _f],
-        'url': home_page,
-        'download_url': dwnl_url,
-        'scripts': scripts,
-        'data_files': data_files,
-        'install_requires': ['sqlalchemy-migrate', 'SQLAlchemy', 'lxml'],
-        'extras_require': {
-            'dev': ['flake8', 'flake8-isort'],
-            'test': ['pytest'],
-         },
-        'packages': setuptools.find_packages()
+    # Meta-information.
+    'name': 'IMDbPY',
+    'version': version,
+    'description': 'Python package to access the IMDb\'s database',
+    'long_description': long_desc,
+    'author': 'Davide Alberani',
+    'author_email': 'da@erlug.linux.it',
+    'contact': 'IMDbPY-devel mailing list',
+    'contact_email': 'imdbpy-devel@lists.sourceforge.net',
+    'maintainer': 'Davide Alberani',
+    'maintainer_email': 'da@erlug.linux.it',
+    'license': 'GPL',
+    'platforms': 'any',
+    'keywords': keywords,
+    'classifiers': [_f for _f in classifiers.split("\n") if _f],
+    'url': home_page,
+    'download_url': dwnl_url,
+    'scripts': scripts,
+    'data_files': data_files,
+    'install_requires': ['sqlalchemy-migrate', 'SQLAlchemy', 'lxml'],
+    'extras_require': {
+        'dev': ['flake8', 'flake8-isort'],
+        'test': ['pytest'],
+    },
+    'packages': setuptools.find_packages(),
+    'package_data': {'imdb.parser.http': ['*.json']}
 }
 
 
@@ -117,15 +128,15 @@ ERR_MSG = """
 REBUILDMO_DIR = os.path.join('imdb', 'locale')
 REBUILDMO_NAME = 'rebuildmo'
 
+
 def runRebuildmo():
     """Call the function to rebuild the locales."""
     cwd = os.getcwd()
-    import sys
     path = list(sys.path)
     languages = []
     try:
         import imp
-        scriptPath =  os.path.dirname(__file__)
+        scriptPath = os.path.dirname(__file__)
         modulePath = os.path.join(cwd, scriptPath, REBUILDMO_DIR)
         sys.path += [modulePath, '.', cwd]
         modInfo = imp.find_module(REBUILDMO_NAME, [modulePath, '.', cwd])
@@ -159,18 +170,20 @@ try:
     else:
         languages = []
     if languages:
-        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), 'imdb/locale'), ['imdb/locale/imdbpy.pot']))
+        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), 'imdb/locale'),
+                           ['imdb/locale/imdbpy.pot']))
     for lang in languages:
         files_found = setuptools.findall('imdb/locale/%s' % lang)
         if not files_found:
             continue
         base_dir = os.path.dirname(files_found[0])
-        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), 'imdb/locale'), ['imdb/locale/imdbpy-%s.po' % lang]))
+        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), 'imdb/locale'),
+                           ['imdb/locale/imdbpy-%s.po' % lang]))
         if not base_dir:
             continue
-        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), base_dir), files_found))
+        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), base_dir),
+                           files_found))
 except SystemExit:
     print(ERR_MSG)
 
 setuptools.setup(**params)
-

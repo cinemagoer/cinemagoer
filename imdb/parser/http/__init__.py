@@ -25,6 +25,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import json
+import os
 import sys
 import ssl
 import socket
@@ -93,21 +95,30 @@ PY_VERSION = sys.version_info[:2]
 
 # The cookies for the "adult" search.
 # Please don't mess with these account.
+_cookies_file_path = os.path.join(os.path.dirname(__file__), 'cookies.json')
+with open(_cookies_file_path) as _cookies_file:
+    _cookies_content = _cookies_file.read()
+_cookies = json.loads(_cookies_content)
+
 # Old 'IMDbPY' account.
-_IMDbPY_cookie_id = 'boM2bYxz9MCsOnH9gZ0S9QHs12NWrNdApxsls1Vb5/NGrNdjcHx3dUas10UASoAjVEvhAbGagERgOpNkAPvxdbfKwaV2ikEj9SzXY1WPxABmDKQwdqzwRbM+12NSeJFGUEx3F8as10WwidLzVshDtxaPIbP13NdjVS9UZTYqgTVGrNcT9vyXU1'
-_IMDbPY_cookie_uu = '3M3AXsquTU5Gur/Svik+ewflPm5Rk2ieY3BIPlLjyK3C0Dp9F8UoPgbTyKiGtZp4x1X+uAUGKD7BM2g+dVd8eqEzDErCoYvdcvGLvVLAen1y08hNQtALjVKAe+1hM8g9QbNonlG1/t4S82ieUsBbrSIQbq1yhV6tZ6ArvSbA7rgHc8n5AdReyAmDaJ5Wm/ee3VDoCnGj/LlBs2ieUZNorhHDKK5Q=='
+_IMDbPY_cookie_id = _cookies['IMDbPY']['id']
+_IMDbPY_cookie_uu = _cookies['IMDbPY']['uu']
+
 # 'imdbpy2010' account.
-_imdbpy2010_cookie_id = 'QrCdxVi+L+WgqOLrQJJgBgRRXGInphxiBPU/YXSFDyExMFzCp6YcYgSVXyEUhS/xMID8wqemHGID4DlntwZ49vemP5UXsAxiJ4D6goSmHGIgNT9hMXBaRSF2vMS3phxB0bVfQiQlP1RxdrzhB6YcRHFASyIhQVowwXCKtDSlD2YhgRvxBsCKtGemHBKH9mxSI='
-_imdbpy2010_cookie_uu = 'oiEo2yoJFCA2Zbn/o7Z1LAPIwotAu6QdALv3foDb1x5F/tdrFY63XkSfty4kntS8Y8jkHSDLt3406+d+JThEilPI0mtTaOQdA/t2/iErp22jaLdeVU5ya4PIREpj7HFdpzhEHadcIAngSER50IoHDpD6Bz4Qy3b+UIhE/hBbhz5Q63ceA2hEvhPo5B0FnrL9Q8jkWjDIbA0Au3d+AOtnXoCIRL4Q28c+UOtnXpP4RL4T6OQdA+6ijUCI5B0AW2d+UOtnXpPYRL4T6OQdA8jkTUOYlC0A=='
+_imdbpy2010_cookie_id = _cookies['imdbpy2010']['id']
+_imdbpy2010_cookie_uu = _cookies['imdbpy2010']['uu']
+
 # old 'IMDbPYweb' account.
-_old_IMDbPYweb_cookie_id = 'rH1jNAkjTlNXvHolvBVBsgaPICNZbNdjVjzFwzas9JRmusdjVoqBs/Hs12NR+1WFxEoR9bGKEDUg6sNlADqXwkas12N131Rwdb+UQNGKN8PWrNdjcdqBQVLq8mbGDHP3hqzxhbD692NQi9D0JjpBtRaPIbP1zNdjUOqENQYv1ADWrNcT9vyXU1'
-_old_IMDbPYweb_cookie_uu = 'su4/m8cho4c6HP+W1qgq6wchOmhnF0w+lIWvHjRUPJ6nRA9sccEafjGADJ6hQGrMd4GKqLcz2X4z5+w+M4OIKnRn7FpENH7dxDQu3bQEHyx0ZEyeRFTPHfQEX03XF+yeN1dsPpcXaqjUZAw+lGRfXRQEfz3RIX9IgVEffdBAHw2wQXyf9xdMPrQELw0QNB8dsffsqcdQemjPB0w+moLcPh0JrKrHJ9hjBzdMPpcXTH7XRwwOk='
+_old_IMDbPYweb_cookie_id = _cookies['old_IMDbPYweb']['id']
+_old_IMDbPYweb_cookie_uu = _cookies['old_IMDbPYweb']['uu']
+
 # old 'IMDbPYweb' account values (as of 2012-12-30)
-_IMDbPYweb_cookie_id = 'BCYjtpb46Go0cMHAMewWZEauhwqPL7ASCPpPVNutu6BuayHZd0U6Dk3UAqVlEM8DHLDsSr02RGQn5ff3245-R4A130NAWJ_5yqXx7X-zJey8vQM8JKdv3rTUSEJznJQlojUW1Bije-Q0FXAixs4I0sePWhd_tA41i-9AF2q3lPmaksram6ilMhN9i3IPESW1PMbk'
-_IMDbPYweb_cookie_uu = 'BCYttQjEMc-NyUdFUGxThidAnBo7wwalEzj4un9uzf2XoEjtqDhNfrH7bOSuwlRkMEQ11SNyTajl-b9Q-21m4HwYu0e3jXZrjYLXLYzFkrEroCDyUREqaTwPJPSjGtFmvlaVBZEZmsWpaxe18DT5KiygKyGPZKH78Xu4im6ba-Sd31WvbXHzP8KGXPpGjhhVuv7Dcv314HCWkE832Srf9ya-Uv0FdGAmYyLbIAXuxnvpYQd6oZ8-CYkSGLIqcKWdrf5S'
+_IMDbPYweb_cookie_id = _cookies['IMDbPYweb']['id']
+_IMDbPYweb_cookie_uu = _cookies['IMDbPYweb']['uu']
+
 # 'IMDbPY2013' account
-_IMDbPY2013_cookie_id = 'BCYmoyqSm2WglmOzG-SrFWSvVpxsTZOB0qEOOqmAwCBxCbaNgKOxd0DTKzUvt7t04Pya5gV2tUrpDmYxrc1Dr54DQj2UXI7QI35__M5-HI2KrbOI3PjDz6M-_U3HG8topMfN64R24tmBixoZhMYXVaEc556lf0Z4gQNJVYRANXvwytP5v1lpfeToRlu9aVJwN4kT'
-_IMDbPY2013_cookie_uu = 'BCYquDS8Y2i8R1pJxS4nB77YrhjHHXeOea2Xl9KtZvE6RZKVfMvzTGU4Vl5-yxfPbgRSiFJasyf-hhPuVvXyaHlfeBjNlbFT8hz2HzFFkQ_SxKxq05J51gi7Fv4SaAws1M-i7zmQ1TRunfJqCVIYqPwIs2NO7s4_YDH2ZoISVGLgca8OY2K58HychOZB1oRWHVeAJNhLJMrCWJBuGRLCNnQK5X9tA0dPPntr2Ussy0ouul-N1GQz-8y5vda3JJ_C6xkwmHcA6JrOdOFO_HqMWjVSXuxGEdrXC919JM9H0vooVvKeVgAEJnTh2GiVlUJUoH3c'
+_IMDbPY2013_cookie_id = _cookies['IMDbPY2013']['id']
+_IMDbPY2013_cookie_uu = _cookies['IMDbPY2013']['uu']
 
 # Currently used account.
 _cookie_id = _IMDbPY2013_cookie_id

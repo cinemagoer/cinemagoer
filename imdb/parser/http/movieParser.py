@@ -638,11 +638,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                 date = date.strip()
                 try:
                     season = int(season)
-                except:
+                except ValueError:
                     pass
                 try:
                     episode = int(episode)
-                except:
+                except ValueError:
                     pass
                 if date and date != '????':
                     data['original air date'] = date
@@ -1448,11 +1448,11 @@ class DOMHTMLEpisodesRatings(DOMParserBase):
                 continue
             try:
                 votes = int(votes.replace(',', '').replace('.', ''))
-            except:
+            except ValueError:
                 pass
             try:
                 rating = float(rating)
-            except:
+            except ValueError:
                 pass
             ept = ept.strip()
             ept = '%s {%s' % (title, ept)
@@ -1961,7 +1961,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             series['kind'] = 'tv series'
         try:
             selected_season = int(selected_season)
-        except:
+        except ValueError:
             pass
         nd = {selected_season: {}}
         if 'episode -1' in data:
@@ -1980,7 +1980,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             episode_nr = episode_nr[8:].rstrip()
             try:
                 episode_nr = int(episode_nr)
-            except:
+            except ValueError:
                 pass
             episode_id = analyze_imdbid(episode.get('link' ''))
             episode_air_date = episode.get('original air date', '').strip()
@@ -2005,7 +2005,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
         for idx, season in enumerate(_seasons):
             try:
                 _seasons[idx] = int(season)
-            except:
+            except ValueError:
                 pass
         return {'episodes': nd, '_seasons': _seasons, '_current_season': selected_season}
 
@@ -2159,7 +2159,7 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                 season_key = key.replace('filter-season-', '').replace('season-', '')
                 try:
                     season_key = int(season_key)
-                except:
+                except ValueError:
                     pass
                 nd[season_key] = {}
                 ep_counter = 1

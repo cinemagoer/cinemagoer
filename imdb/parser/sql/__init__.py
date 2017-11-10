@@ -299,32 +299,25 @@ def scan_company_names(name_list, name1, results=0, ro_thresold=None):
     return res
 
 
-try:
-    from .cutils import soundex
-except ImportError:
-    _aux_logger.warn('Unable to import the cutils.soundex function.'
-                    '  Searches of movie titles and person names will be'
-                    ' a bit slower.')
+_translate = dict(B='1', C='2', D='3', F='1', G='2', J='2', K='2', L='4',
+                    M='5', N='5', P='1', Q='2', R='6', S='2', T='3', V='1',
+                    X='2', Z='2')
+_translateget = _translate.get
+_re_non_ascii = re.compile(r'^[^a-z]*', re.I)
+SOUNDEX_LEN = 5
 
-    _translate = dict(B='1', C='2', D='3', F='1', G='2', J='2', K='2', L='4',
-                      M='5', N='5', P='1', Q='2', R='6', S='2', T='3', V='1',
-                      X='2', Z='2')
-    _translateget = _translate.get
-    _re_non_ascii = re.compile(r'^[^a-z]*', re.I)
-    SOUNDEX_LEN = 5
-
-    def soundex(s):
-        """Return the soundex code for the given string."""
-        # Maximum length of the soundex code.
-        s = _re_non_ascii.sub('', s)
-        if not s: return None
-        s = s.upper()
-        soundCode =  s[0]
-        for c in s[1:]:
-            cw = _translateget(c, '0')
-            if cw != '0' and soundCode[-1] != cw:
-                soundCode += cw
-        return soundCode[:SOUNDEX_LEN] or None
+def soundex(s):
+    """Return the soundex code for the given string."""
+    # Maximum length of the soundex code.
+    s = _re_non_ascii.sub('', s)
+    if not s: return None
+    s = s.upper()
+    soundCode =  s[0]
+    for c in s[1:]:
+        cw = _translateget(c, '0')
+        if cw != '0' and soundCode[-1] != cw:
+            soundCode += cw
+    return soundCode[:SOUNDEX_LEN] or None
 
 
 def _sortKeywords(keyword, kwds):

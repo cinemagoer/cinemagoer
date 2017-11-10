@@ -199,7 +199,8 @@ class ResultAdapter(object):
         return self.result.rowcount
 
     def __getitem__(self, key):
-        res = list(self.result)[key]
+        rlist = list(self.result)
+        res = rlist[key]
         if not isinstance(key, slice):
             # A single item.
             return RowAdapter(res, self.table, colMap=self.colMap)
@@ -274,7 +275,7 @@ class TableAdapter(object):
         #        What about converting it to a list and getting the first item?
         try:
             return result[0]
-        except KeyError:
+        except IndexError:
             raise NotFoundError('no data for ID %s' % theID)
 
     def dropTable(self, checkfirst=True):

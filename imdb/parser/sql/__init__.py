@@ -24,9 +24,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-# FIXME: this whole module was written in a veeery short amount of time.
-#        The code should be commented, rewritten and cleaned. :-)
-
 import re
 import logging
 from difflib import SequenceMatcher
@@ -114,31 +111,19 @@ def nameVariations(name, fromPtdf=0):
     return name1, name2, name3
 
 
-try:
-    from .cutils import ratcliff as _ratcliff
-    def ratcliff(s1, s2, sm):
-        """Return the Ratcliff-Obershelp value between the two strings,
-        using the C implementation."""
-        return _ratcliff(s1.encode('latin_1', 'replace'),
-                        s2.encode('latin_1', 'replace'))
-except ImportError:
-    _aux_logger.warn('Unable to import the cutils.ratcliff function.'
-                    '  Searching names and titles using the "sql"'
-                    ' data access system will be slower.')
-
-    def ratcliff(s1, s2, sm):
-        """Ratcliff-Obershelp similarity."""
-        STRING_MAXLENDIFFER = 0.7
-        s1len = len(s1)
-        s2len = len(s2)
-        if s1len < s2len:
-            threshold = float(s1len) / s2len
-        else:
-            threshold = float(s2len) / s1len
-        if threshold < STRING_MAXLENDIFFER:
-            return 0.0
-        sm.set_seq2(s2.lower())
-        return sm.ratio()
+def ratcliff(s1, s2, sm):
+    """Ratcliff-Obershelp similarity."""
+    STRING_MAXLENDIFFER = 0.7
+    s1len = len(s1)
+    s2len = len(s2)
+    if s1len < s2len:
+        threshold = float(s1len) / s2len
+    else:
+        threshold = float(s2len) / s1len
+    if threshold < STRING_MAXLENDIFFER:
+        return 0.0
+    sm.set_seq2(s2.lower())
+    return sm.ratio()
 
 
 def merge_roles(mop):
@@ -170,10 +155,6 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
     resd = {}
     for i, n_data in name_list:
         nil = n_data['name']
-        # XXX: on Symbian, here we get a str; not sure this is the
-        #      right place to fix it.
-        if isinstance(nil, str):
-            nil = str(nil, 'latin1', 'ignore')
         # Distance with the canonical name.
         ratios = [ratcliff(name1, nil, sm1) + 0.05]
         namesurname = ''
@@ -247,10 +228,6 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
             if t_data.get('kind') != 'episode': continue
         elif t_data.get('kind') == 'episode': continue
         til = t_data['title']
-        # XXX: on Symbian, here we get a str; not sure this is the
-        #      right place to fix it.
-        if isinstance(til, str):
-            til = str(til, 'latin1', 'ignore')
         # Distance with the canonical title (with or without article).
         #   titleS      -> titleR
         #   titleS, the -> titleR, the
@@ -300,10 +277,6 @@ def scan_company_names(name_list, name1, results=0, ro_thresold=None):
     resd = {}
     withoutCountry = not name1.endswith(']')
     for i, n in name_list:
-        # XXX: on Symbian, here we get a str; not sure this is the
-        #      right place to fix it.
-        if isinstance(n, str):
-            n = str(n, 'latin1', 'ignore')
         o_name = n
         var = 0.0
         if withoutCountry and n.endswith(']'):
@@ -376,7 +349,7 @@ def _sortKeywords(keyword, kwds):
 def filterSimilarKeywords(keyword, kwdsIterator):
     """Return a sorted list of keywords similar to the one given."""
     seenDict = {}
-    kwdSndx = soundex(keyword.encode('ascii', 'ignore'))
+    kwdSndx = soundex(keyword)
     matches = []
     matchesappend = matches.append
     checkContained = False
@@ -389,7 +362,7 @@ def filterSimilarKeywords(keyword, kwdsIterator):
         if checkContained and keyword in key:
             matchesappend(key)
             continue
-        if kwdSndx == soundex(key.encode('ascii', 'ignore')):
+        if kwdSndx == soundex(key):
             matchesappend(key)
     return _sortKeywords(keyword, matches)
 
@@ -890,8 +863,6 @@ class IMDbSqlAccessSystem(IMDbBase):
         #                s_title = s_title_rebuilt
         #else:
         #    _episodes = False
-        if isinstance(s_title, str):
-            s_title = s_title.encode('ascii', 'ignore')
 
         soundexCode = soundex(s_title)
 
@@ -1182,8 +1153,6 @@ class IMDbSqlAccessSystem(IMDbBase):
         if not name: return []
         s_name = analyze_name(name)['name']
         if not s_name: return []
-        if isinstance(s_name, str):
-            s_name = s_name.encode('ascii', 'ignore')
         soundexCode = soundex(s_name)
         name1, name2, name3 = nameVariations(name)
 
@@ -1350,8 +1319,6 @@ class IMDbSqlAccessSystem(IMDbBase):
         if not name: return []
         s_name = analyze_name(name)['name']
         if not s_name: return []
-        if isinstance(s_name, str):
-            s_name = s_name.encode('ascii', 'ignore')
         s_name = normalizeName(s_name)
         soundexCode = soundex(s_name)
         surname = s_name.split(' ')[-1]
@@ -1443,8 +1410,6 @@ class IMDbSqlAccessSystem(IMDbBase):
     def _search_company(self, name, results):
         name = name.strip()
         if not name: return []
-        if isinstance(name, str):
-            name = name.encode('ascii', 'ignore')
         soundexCode = soundex(name)
         # If the soundex is None, compare only with the first
         # phoneticCode column.
@@ -1505,8 +1470,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         return {'data': res, 'info sets': infosets}
 
     def _search_keyword(self, keyword, results):
-        constr = OR(Keyword.q.phoneticCode ==
-                    soundex(keyword.encode('ascii', 'ignore')),
+        constr = OR(Keyword.q.phoneticCode == soundex(keyword),
                     CONTAINSSTRING(Keyword.q.keyword, self.toUTF8(keyword)))
         return filterSimilarKeywords(keyword,
                         _iterKeywords(Keyword.select(constr)))[:results]

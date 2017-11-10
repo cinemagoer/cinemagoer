@@ -634,12 +634,14 @@ BEGIN_TIME = CTIME
 CTIMES = os.times()
 BEGIN_TIMES = CTIMES
 
+
 def _minSec(*t):
     """Return a tuple of (mins, secs, ...) - two for every item passed."""
     l = []
     for i in t:
         l.extend(divmod(int(i), 60))
     return tuple(l)
+
 
 def t(s, sinceBegin=False):
     """Pretty-print timing information."""
@@ -659,6 +661,7 @@ def t(s, sinceBegin=False):
         CTIME = nt
         CTIMES = ntimes
 
+
 def title_soundex(title):
     """Return the soundex code for the given title; the (optional) starting
     article is pruned.  It assumes to receive a title without year/imdbIndex
@@ -672,6 +675,7 @@ def title_soundex(title):
     if ts[-1].lower() in _articles:
         title = ', '.join(ts[:-1])
     return soundex(title)
+
 
 def name_soundexes(name, character=False):
     """Return three soundex codes for the given name; the name is assumed

@@ -19,7 +19,7 @@ parser = DOMHTMLPlotParser()
 
 
 def test_summary_should_end_with_author(movie_plot_summaries):
-    page = movie_plot_summaries('the matrix')
+    page = movie_plot_summaries('matrix')
     data = parser.parse(page)['data']
     assert re.match('^Thomas A\. Anderson is a man .*::redcommander27$', data['plot'][0])
 

@@ -87,19 +87,19 @@ class DOMHTMLTop250Parser(DOMParserBase):
             minfo = analyze_title(d['title'] + ' ' + d['year'])
             try:
                 minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
-            except:
+            except ValueError:
                 pass
             if 'votes' in d:
                 try:
                     votes = d['votes'].replace(' user ratings', '')
-                    votes = votes.split(' based on ')[1]
+                    votes = votes.split(' based on ')[1]    # is IndexError possible?
                     minfo['votes'] = int(votes.replace(',', ''))
-                except:
+                except (IndexError, ValueError):
                     pass
             if 'rating' in d:
                 try:
                     minfo['rating'] = float(d['rating'])
-                except:
+                except ValueError:
                     pass
             mlist.append((theID, minfo))
         return mlist

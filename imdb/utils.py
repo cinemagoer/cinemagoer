@@ -369,11 +369,11 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
                 # Set season and episode.
                 try:
                     seas = int(seas)
-                except:
+                except ValueError:
                     pass
                 try:
                     epn = int(epn)
-                except:
+                except ValueError:
                     pass
                 episode_d['season'] = seas
                 if epn:

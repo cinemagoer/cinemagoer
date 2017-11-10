@@ -1572,6 +1572,7 @@ def doCast(fp, roleid, rolename):
     sqldata.flush()
     CACHE_PID.flush()
     CACHE_PID.personGender.clear()
+    CACHE_CID.flush()
     print('CLOSING %s...' % rolename)
 
 

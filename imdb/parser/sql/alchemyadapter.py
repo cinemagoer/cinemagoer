@@ -25,8 +25,10 @@ import sys
 import logging
 from sqlalchemy import *
 from sqlalchemy import schema
-try: from sqlalchemy import exc # 0.5
-except ImportError: from sqlalchemy import exceptions as exc # 0.4
+try:
+    from sqlalchemy import exc  # 0.5
+except ImportError:
+    from sqlalchemy import exceptions as exc  # 0.4
 
 _alchemy_logger = logging.getLogger('imdbpy.parser.sql.alchemy')
 
@@ -35,7 +37,7 @@ try:
     HAS_MC = True
 except ImportError:
     HAS_MC = False
-    _alchemy_logger.warn('Unable to import migrate.changeset: Foreign ' \
+    _alchemy_logger.warn('Unable to import migrate.changeset: Foreign '
                          'Keys will not be created.')
 
 from imdb._exceptions import IMDbDataAccessError
@@ -57,6 +59,7 @@ MAP_COLS = {
 
 
 class NotFoundError(IMDbDataAccessError):
+
     """Exception raised when Table.get(id) returns no value."""
     pass
 
@@ -68,6 +71,7 @@ def _renameTable(tname):
         tname = tname[1:]
     return tname.lower()
 
+
 def _renameColumn(cname):
     """Build the name of a column, as done by SQLObject."""
     cname = cname.replace('ID', 'Id')
@@ -75,7 +79,9 @@ def _renameColumn(cname):
 
 
 class DNNameObj(object):
+
     """Used to access table.sqlmeta.columns[column].dbName (a string)."""
+
     def __init__(self, dbName):
         self.dbName = dbName
 
@@ -84,7 +90,9 @@ class DNNameObj(object):
 
 
 class DNNameDict(object):
+
     """Used to access table.sqlmeta.columns (a dictionary)."""
+
     def __init__(self, colMap):
         self.colMap = colMap
 
@@ -96,8 +104,10 @@ class DNNameDict(object):
 
 
 class SQLMetaAdapter(object):
+
     """Used to access table.sqlmeta (an object with .table, .columns and
     .idName attributes)."""
+
     def __init__(self, table, colMap=None):
         self.table = table
         if colMap is None:
@@ -115,11 +125,13 @@ class SQLMetaAdapter(object):
 
     def __repr__(self):
         return '<SQLMetaAdapter(table=%s, colMap=%s) [id=%s]>' % \
-                (repr(self.table), repr(self.colMap), id(self))
+            (repr(self.table), repr(self.colMap), id(self))
 
 
 class QAdapter(object):
+
     """Used to access table.q attribute (remapped to SQLAlchemy table.c)."""
+
     def __init__(self, table, colMap=None):
         self.table = table
         if colMap is None:
@@ -127,16 +139,20 @@ class QAdapter(object):
         self.colMap = colMap
 
     def __getattr__(self, name):
-        try: return getattr(self.table.c, self.colMap[name])
-        except KeyError: raise AttributeError("unable to get '%s'" % name)
+        try:
+            return getattr(self.table.c, self.colMap[name])
+        except KeyError:
+            raise AttributeError("unable to get '%s'" % name)
 
     def __repr__(self):
         return '<QAdapter(table=%s, colMap=%s) [id=%s]>' % \
-                (repr(self.table), repr(self.colMap), id(self))
+            (repr(self.table), repr(self.colMap), id(self))
 
 
 class RowAdapter(object):
+
     """Adapter for a SQLAlchemy RowProxy object."""
+
     def __init__(self, row, table, colMap=None):
         self.row = row
         # FIXME: it's OBSCENE that 'table' should be passed from
@@ -149,8 +165,10 @@ class RowAdapter(object):
         self.colMapKeys = list(colMap.keys())
 
     def __getattr__(self, name):
-        try: return getattr(self.row, self.colMap[name])
-        except KeyError: raise AttributeError("unable to get '%s'" % name)
+        try:
+            return getattr(self.row, self.colMap[name])
+        except KeyError:
+            raise AttributeError("unable to get '%s'" % name)
 
     def __setattr__(self, name, value):
         # FIXME: I can't even think about how much performances suffer,
@@ -165,7 +183,7 @@ class RowAdapter(object):
             table = self.__dict__['table']
             colMap = self.__dict__['colMap']
             params = {colMap[name]: value}
-            table.update(table.c.id==row.id).execute(**params)
+            table.update(table.c.id == row.id).execute(**params)
             # XXX: minor bug: after a value is assigned with the
             #      'rowAdapterInstance.colName = value' syntax, for some
             #      reason rowAdapterInstance.colName still returns the
@@ -177,11 +195,13 @@ class RowAdapter(object):
 
     def __repr__(self):
         return '<RowAdapter(row=%s, table=%s, colMap=%s) [id=%s]>' % \
-                (repr(self.row), repr(self.table), repr(self.colMap), id(self))
+            (repr(self.row), repr(self.table), repr(self.colMap), id(self))
 
 
 class ResultAdapter(object):
+
     """Adapter for a SQLAlchemy ResultProxy object."""
+
     def __init__(self, result, table, colMap=None):
         self.result = result
         self.table = table
@@ -215,12 +235,14 @@ class ResultAdapter(object):
 
     def __repr__(self):
         return '<ResultAdapter(result=%s, table=%s, colMap=%s) [id=%s]>' % \
-                (repr(self.result), repr(self.table),
-                    repr(self.colMap), id(self))
+            (repr(self.result), repr(self.table),
+             repr(self.colMap), id(self))
 
 
 class TableAdapter(object):
+
     """Adapter for a SQLAlchemy Table object, to mimic a SQLObject class."""
+
     def __init__(self, table, uri=None):
         """Initialize a TableAdapter object."""
         self._imdbpySchema = table
@@ -268,7 +290,7 @@ class TableAdapter(object):
     def get(self, theID):
         """Get an object given its ID."""
         result = self.select(self.table.c.id == theID)
-        #if not result:
+        # if not result:
         #    raise NotFoundError, 'no data for ID %s' % theID
         # FIXME: isn't this a bit risky?  We can't check len(result),
         #        because sqlite returns -1...
@@ -325,7 +347,7 @@ class TableAdapter(object):
             idx.create()
         except exc.OperationalError as e:
             _alchemy_logger.warn('Skipping creation of the %s.%s index: %s' %
-                                (self.sqlmeta.table, col.name, e))
+                                 (self.sqlmeta.table, col.name, e))
 
     def addIndexes(self, ifNotExists=True):
         """Create all required indexes."""
@@ -351,7 +373,7 @@ class TableAdapter(object):
             else:
                 foreignColName = 'id'
             foreignColName = mapTables[foreignTableName].colMap.get(
-                                                foreignColName, foreignColName)
+                foreignColName, foreignColName)
             thisColName = self.colMap.get(col.name, col.name)
             thisCol = self.table.columns[thisColName]
             foreignTable = mapTables[foreignTableName].table
@@ -360,8 +382,8 @@ class TableAdapter(object):
             # explode, if two cols points to the same table.
             fkName = 'fk_%s_%s_%s_%d' % (self.table.name, foreignTable.name, foreignColName, _counter)
             constrain = migrate.changeset.ForeignKeyConstraint([thisCol],
-                                                        [foreignCol],
-                                                        name=fkName)
+                                                               [foreignCol],
+                                                               name=fkName)
             try:
                 constrain.create()
             except exc.OperationalError:
@@ -385,6 +407,7 @@ class TableAdapter(object):
 # XXX: is this the best way to act?
 TABLES_REPOSITORY = {}
 
+
 def getDBTables(uri=None):
     """Return a list of TableAdapter objects to be used to access the
     database through the SQLAlchemy ORM.  The connection uri is optional, and
@@ -405,9 +428,11 @@ def AND(*params):
     """Emulate SQLObject's AND."""
     return and_(*params)
 
+
 def OR(*params):
     """Emulate SQLObject's OR."""
     return or_(*params)
+
 
 def IN(item, inList):
     """Emulate SQLObject's IN."""
@@ -415,6 +440,7 @@ def IN(item, inList):
         return OR(*[x == item for x in inList])
     else:
         return item.in_(inList)
+
 
 def ISNULL(x):
     """Emulate SQLObject's ISNULL."""
@@ -440,8 +466,10 @@ def toUTF8(s):
 
 
 class _AlchemyConnection(object):
+
     """A proxy for the connection object, required since _ConnectionFairy
     uses __slots__."""
+
     def __init__(self, conn):
         self.conn = conn
 
@@ -489,5 +517,3 @@ def setConnection(uri, tables, encoding='utf8', debug=False):
     connection.getConnection = lambda: connection.connection
     connection.dbName = engine.url.drivername
     return connection
-
-

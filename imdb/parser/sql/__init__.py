@@ -31,7 +31,7 @@ from codecs import lookup
 
 from imdb import IMDbBase
 from imdb.utils import normalizeName, normalizeTitle, build_title, \
-                        build_name, analyze_name, analyze_title, \
+    build_name, analyze_name, analyze_title, \
                         canonicalTitle, canonicalName, re_titleRef, \
                         build_company_name, re_episodes, _unicodeArticles, \
                         analyze_company_name, re_year_index, re_nameRef
@@ -47,11 +47,14 @@ _aux_logger = logging.getLogger('imdbpy.parser.sql.aux')
 # =============================
 # Things that once upon a time were in imdb.parser.common.locsql.
 
+
 def titleVariations(title, fromPtdf=0):
     """Build title variations useful for searches; if fromPtdf is true,
     the input is assumed to be in the plain text data files format."""
-    if fromPtdf: title1 = ''
-    else: title1 = title
+    if fromPtdf:
+        title1 = ''
+    else:
+        title1 = title
     title2 = title3 = ''
     if fromPtdf or re_year_index.search(title):
         # If it appears to have a (year[/imdbIndex]) indication,
@@ -61,8 +64,10 @@ def titleVariations(title, fromPtdf=0):
         title1 = titldict['title']
         if titldict['kind'] != 'episode':
             # title3: the long imdb canonical name.
-            if fromPtdf: title3 = title
-            else: title3 = build_title(titldict, canonical=1, ptdf=1)
+            if fromPtdf:
+                title3 = title
+            else:
+                title3 = build_title(titldict, canonical=1, ptdf=1)
         else:
             title1 = normalizeTitle(title1)
             title3 = build_title(titldict, canonical=1, ptdf=1)
@@ -78,11 +83,12 @@ def titleVariations(title, fromPtdf=0):
         if t2s[-1].lower() in _unicodeArticles:
             title2 = ', '.join(t2s[:-1])
     _aux_logger.debug('title variations: 1:[%s] 2:[%s] 3:[%s]',
-                        title1, title2, title3)
+                      title1, title2, title3)
     return title1, title2, title3
 
 
 re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
+
 
 def nameVariations(name, fromPtdf=0):
     """Build name variations useful for searches; if fromPtdf is true,
@@ -105,9 +111,10 @@ def nameVariations(name, fromPtdf=0):
         name3 = ''
     # name2 is the name in the normal format, if it differs from name1.
     name2 = normalizeName(name1)
-    if name1 == name2: name2 = ''
+    if name1 == name2:
+        name2 = ''
     _aux_logger.debug('name variations: 1:[%s] 2:[%s] 3:[%s]',
-                        name1, name2, name3)
+                      name1, name2, name3)
     return name1, name2, name3
 
 
@@ -141,17 +148,21 @@ def merge_roles(mop):
 
 
 def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
-                _scan_character=False):
+               _scan_character=False):
     """Scan a list of names, searching for best matches against
     the given variations."""
-    if ro_thresold is not None: RO_THRESHOLD = ro_thresold
-    else: RO_THRESHOLD = 0.6
+    if ro_thresold is not None:
+        RO_THRESHOLD = ro_thresold
+    else:
+        RO_THRESHOLD = 0.6
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
     sm3 = SequenceMatcher()
     sm1.set_seq1(name1.lower())
-    if name2: sm2.set_seq1(name2.lower())
-    if name3: sm3.set_seq1(name3.lower())
+    if name2:
+        sm2.set_seq1(name2.lower())
+    if name3:
+        sm3.set_seq1(name3.lower())
     resd = {}
     for i, n_data in name_list:
         nil = n_data['name']
@@ -161,7 +172,8 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
         if not _scan_character:
             nils = nil.split(', ', 1)
             surname = nils[0]
-            if len(nils) == 2: namesurname = '%s %s' % (nils[1], surname)
+            if len(nils) == 2:
+                namesurname = '%s %s' % (nils[1], surname)
         else:
             nils = nil.split(' ', 1)
             surname = nils[-1]
@@ -179,16 +191,19 @@ def scan_names(name_list, name1, name2, name3, results=0, ro_thresold=None,
         if name3:
             # Distance with the long imdb canonical name.
             ratios.append(ratcliff(name3,
-                        build_name(n_data, canonical=1), sm3) + 0.1)
+                                   build_name(n_data, canonical=1), sm3) + 0.1)
         ratio = max(ratios)
         if ratio >= RO_THRESHOLD:
             if i in resd:
-                if ratio > resd[i][0]: resd[i] = (ratio, (i, n_data))
-            else: resd[i] = (ratio, (i, n_data))
+                if ratio > resd[i][0]:
+                    resd[i] = (ratio, (i, n_data))
+            else:
+                resd[i] = (ratio, (i, n_data))
     res = list(resd.values())
     res.sort()
     res.reverse()
-    if results > 0: res[:] = res[:results]
+    if results > 0:
+        res[:] = res[:results]
     return res
 
 
@@ -196,8 +211,10 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
                 searchingEpisode=0, onlyEpisodes=0, ro_thresold=None):
     """Scan a list of titles, searching for best matches against
     the given variations."""
-    if ro_thresold is not None: RO_THRESHOLD = ro_thresold
-    else: RO_THRESHOLD = 0.6
+    if ro_thresold is not None:
+        RO_THRESHOLD = ro_thresold
+    else:
+        RO_THRESHOLD = 0.6
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
     sm3 = SequenceMatcher()
@@ -205,9 +222,11 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
     sm2.set_seq2(title2.lower())
     if title3:
         sm3.set_seq1(title3.lower())
-        if title3[-1] == '}': searchingEpisode = 1
+        if title3[-1] == '}':
+            searchingEpisode = 1
     hasArt = 0
-    if title2 != title1: hasArt = 1
+    if title2 != title1:
+        hasArt = 1
     resd = {}
     for i, t_data in titles_list:
         if onlyEpisodes:
@@ -225,8 +244,10 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
                 resd[i] = (ratio, (i, t_data))
             continue
         if searchingEpisode:
-            if t_data.get('kind') != 'episode': continue
-        elif t_data.get('kind') == 'episode': continue
+            if t_data.get('kind') != 'episode':
+                continue
+        elif t_data.get('kind') == 'episode':
+            continue
         til = t_data['title']
         # Distance with the canonical title (with or without article).
         #   titleS      -> titleR
@@ -252,17 +273,19 @@ def scan_titles(titles_list, title1, title2, title3, results=0,
         if title3:
             # Distance with the long imdb canonical title.
             ratios.append(ratcliff(title3,
-                        build_title(t_data, canonical=1, ptdf=1), sm3) + 0.1)
+                                   build_title(t_data, canonical=1, ptdf=1), sm3) + 0.1)
         ratio = max(ratios)
         if ratio >= RO_THRESHOLD:
             if i in resd:
                 if ratio > resd[i][0]:
                     resd[i] = (ratio, (i, t_data))
-            else: resd[i] = (ratio, (i, t_data))
+            else:
+                resd[i] = (ratio, (i, t_data))
     res = list(resd.values())
     res.sort()
     res.reverse()
-    if results > 0: res[:] = res[:results]
+    if results > 0:
+        res[:] = res[:results]
     return res
 
 
@@ -270,8 +293,10 @@ def scan_company_names(name_list, name1, results=0, ro_thresold=None):
     """Scan a list of company names, searching for best matches against
     the given name.  Notice that this function takes a list of
     strings, and not a list of dictionaries."""
-    if ro_thresold is not None: RO_THRESHOLD = ro_thresold
-    else: RO_THRESHOLD = 0.6
+    if ro_thresold is not None:
+        RO_THRESHOLD = ro_thresold
+    else:
+        RO_THRESHOLD = 0.6
     sm1 = SequenceMatcher()
     sm1.set_seq1(name1.lower())
     resd = {}
@@ -288,14 +313,16 @@ def scan_company_names(name_list, name1, results=0, ro_thresold=None):
         ratio = ratcliff(name1, n, sm1) + var
         if ratio >= RO_THRESHOLD:
             if i in resd:
-                if ratio > resd[i][0]: resd[i] = (ratio,
-                                            (i, analyze_company_name(o_name)))
+                if ratio > resd[i][0]:
+                    resd[i] = (ratio,
+                               (i, analyze_company_name(o_name)))
             else:
                 resd[i] = (ratio, (i, analyze_company_name(o_name)))
     res = list(resd.values())
     res.sort()
     res.reverse()
-    if results > 0: res[:] = res[:results]
+    if results > 0:
+        res[:] = res[:results]
     return res
 
 
@@ -306,13 +333,15 @@ _translateget = _translate.get
 _re_non_ascii = re.compile(r'^[^a-z]*', re.I)
 SOUNDEX_LEN = 5
 
+
 def soundex(s):
     """Return the soundex code for the given string."""
     # Maximum length of the soundex code.
     s = _re_non_ascii.sub('', s)
-    if not s: return None
+    if not s:
+        return None
     s = s.upper()
-    soundCode =  s[0]
+    soundCode = s[0]
     for c in s[1:]:
         cw = _translateget(c, '0')
         if cw != '0' and soundCode[-1] != cw:
@@ -331,9 +360,9 @@ def _sortKeywords(keyword, kwds):
     for idx, data in enumerate(ratios):
         ratio, key = data
         if key.startswith(keyword):
-            ratios[idx] = (ratio+0.5, key)
+            ratios[idx] = (ratio + 0.5, key)
         elif checkContained and keyword in key:
-            ratios[idx] = (ratio+0.3, key)
+            ratios[idx] = (ratio + 0.3, key)
     ratios.sort()
     ratios.reverse()
     return [r[1] for r in ratios]
@@ -358,7 +387,6 @@ def filterSimilarKeywords(keyword, kwdsIterator):
         if kwdSndx == soundex(key):
             matchesappend(key)
     return _sortKeywords(keyword, matches)
-
 
 
 # =============================
@@ -388,9 +416,10 @@ def _reGroupDict(d, newgr):
         if k in newgrks:
             r.setdefault(newgr[k][0], {})[newgr[k][1]] = v
             # A not-so-clearer version:
-            ##r.setdefault(newgr[k][0], {})
-            ##r[newgr[k][0]][newgr[k][1]] = v
-        else: r[k] = v
+            # r.setdefault(newgr[k][0], {})
+            # r[newgr[k][0]][newgr[k][1]] = v
+        else:
+            r[k] = v
     return r
 
 
@@ -416,8 +445,10 @@ def get_movie_data(movieID, kindDict, fromAka=0, _table=None):
     if _table is not None:
         Table = _table
     else:
-        if not fromAka: Table = Title
-        else: Table = AkaTitle
+        if not fromAka:
+            Table = Title
+        else:
+            Table = AkaTitle
     try:
         m = Table.get(movieID)
     except Exception as e:
@@ -425,26 +456,34 @@ def get_movie_data(movieID, kindDict, fromAka=0, _table=None):
         mdict = {}
         return mdict
     mdict = {'title': m.title, 'kind': kindDict[m.kindID],
-            'year': m.productionYear, 'imdbIndex': m.imdbIndex,
-            'season': m.seasonNr, 'episode': m.episodeNr}
+             'year': m.productionYear, 'imdbIndex': m.imdbIndex,
+             'season': m.seasonNr, 'episode': m.episodeNr}
     if not fromAka:
         if m.seriesYears is not None:
             mdict['series years'] = str(m.seriesYears)
-    if mdict['imdbIndex'] is None: del mdict['imdbIndex']
-    if mdict['year'] is None: del mdict['year']
+    if mdict['imdbIndex'] is None:
+        del mdict['imdbIndex']
+    if mdict['year'] is None:
+        del mdict['year']
     else:
         try:
             mdict['year'] = int(mdict['year'])
         except (TypeError, ValueError):
             del mdict['year']
-    if mdict['season'] is None: del mdict['season']
+    if mdict['season'] is None:
+        del mdict['season']
     else:
-        try: mdict['season'] = int(mdict['season'])
-        except: pass
-    if mdict['episode'] is None: del mdict['episode']
+        try:
+            mdict['season'] = int(mdict['season'])
+        except:
+            pass
+    if mdict['episode'] is None:
+        del mdict['episode']
     else:
-        try: mdict['episode'] = int(mdict['episode'])
-        except: pass
+        try:
+            mdict['episode'] = int(mdict['episode'])
+        except:
+            pass
     episodeOfID = m.episodeOfID
     if episodeOfID is not None:
         ser_dict = get_movie_data(episodeOfID, kindDict, fromAka)
@@ -472,7 +511,7 @@ def getSingleInfo(table, movieID, infoType, notAList=False):
     if infoTypeID.count() == 0:
         return {}
     res = table.select(AND(table.q.movieID == movieID,
-                        table.q.infoTypeID == infoTypeID[0].id))
+                           table.q.infoTypeID == infoTypeID[0].id))
     retList = []
     for r in res:
         info = r.info
@@ -482,8 +521,10 @@ def getSingleInfo(table, movieID, infoType, notAList=False):
         retList.append(info)
     if not retList:
         return {}
-    if not notAList: return {infoType: retList}
-    else: return {infoType: retList[0]}
+    if not notAList:
+        return {infoType: retList}
+    else:
+        return {infoType: retList[0]}
 
 
 def _cmpTop(a, b, what='top 250 rank'):
@@ -494,12 +535,14 @@ def _cmpTop(a, b, what='top 250 rank'):
         return 0
     return (-1, 1)[av > bv]
 
+
 def _cmpBottom(a, b):
     """Compare function used to sort top 250/bottom 10 rank."""
     return _cmpTop(a, b, what='bottom 10 rank')
 
 
 class IMDbSqlAccessSystem(IMDbBase):
+
     """The class used to access IMDb's data through a SQL database."""
 
     accessSystem = 'sql'
@@ -511,15 +554,15 @@ class IMDbSqlAccessSystem(IMDbBase):
         DB_TABLES = []
         try:
             from .alchemyadapter import getDBTables, NotFoundError, \
-                                        setConnection, AND, OR, IN, \
+                setConnection, AND, OR, IN, \
                                         ISNULL, CONTAINSSTRING, toUTF8
             # XXX: look ma'... black magic!  It's used to make
             #      TableClasses and some functions accessible
             #      through the whole module.
             for k, v in [('NotFoundError', NotFoundError),
-                        ('AND', AND), ('OR', OR), ('IN', IN),
-                        ('ISNULL', ISNULL),
-                        ('CONTAINSSTRING', CONTAINSSTRING)]:
+                         ('AND', AND), ('OR', OR), ('IN', IN),
+                         ('ISNULL', ISNULL),
+                         ('CONTAINSSTRING', CONTAINSSTRING)]:
                 globals()[k] = v
             self.toUTF8 = toUTF8
             DB_TABLES = getDBTables(uri)
@@ -532,8 +575,8 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             self._connection = setConnection(uri, DB_TABLES)
         except AssertionError as e:
-            raise IMDbDataAccessError( \
-                    'unable to connect to the database server; ' + \
+            raise IMDbDataAccessError(
+                'unable to connect to the database server; ' +
                     'complete message: "%s"' % str(e))
         self.Error = self._connection.module.Error
         # Maps some IDs to the corresponding strings.
@@ -548,8 +591,8 @@ class IMDbSqlAccessSystem(IMDbBase):
             # NOTE: you can also get the error, but - at least with
             #       MySQL - it also contains the password, and I don't
             #       like the idea to print it out.
-            raise IMDbDataAccessError( \
-                    'unable to connect to the database server')
+            raise IMDbDataAccessError(
+                'unable to connect to the database server')
         self._role = {}
         for rl in RoleType.select():
             self._role[rl.id] = str(rl.role)
@@ -572,7 +615,8 @@ class IMDbSqlAccessSystem(IMDbBase):
         # Build self._moviesubs, a dictionary used to rearrange
         # the data structure for a movie object.
         for vid, vinfo in info:
-            if not vinfo.startswith('LD '): continue
+            if not vinfo.startswith('LD '):
+                continue
             self._moviesubs[vinfo] = ('laserdisc', vinfo[3:])
         self._moviesubs.update(_litd)
         self._moviesubs.update(_busd)
@@ -584,14 +628,15 @@ class IMDbSqlAccessSystem(IMDbBase):
             for title in re_titleRef.findall(o):
                 a_title = analyze_title(title, canonical=0)
                 rtitle = build_title(a_title, ptdf=1)
-                if rtitle in trefs: continue
+                if rtitle in trefs:
+                    continue
                 movieID = self._getTitleID(rtitle)
                 if movieID is None:
                     movieID = self._getTitleID(title)
                 if movieID is None:
                     continue
                 m = Movie(title=rtitle, movieID=movieID,
-                            accessSystem=self.accessSystem)
+                          accessSystem=self.accessSystem)
                 trefs[rtitle] = m
                 rtitle2 = canonicalTitle(a_title.get('title', ''))
                 if rtitle2 and rtitle2 != rtitle and rtitle2 != title:
@@ -601,13 +646,15 @@ class IMDbSqlAccessSystem(IMDbBase):
             for name in re_nameRef.findall(o):
                 a_name = analyze_name(name, canonical=1)
                 rname = build_name(a_name, canonical=1)
-                if rname in nrefs: continue
+                if rname in nrefs:
+                    continue
                 personID = self._getNameID(rname)
                 if personID is None:
                     personID = self._getNameID(name)
-                if personID is None: continue
+                if personID is None:
+                    continue
                 p = Person(name=rname, personID=personID,
-                            accessSystem=self.accessSystem)
+                           accessSystem=self.accessSystem)
                 nrefs[rname] = p
                 rname2 = normalizeName(a_name.get('name', ''))
                 if rname2 and rname2 != rname:
@@ -632,9 +679,9 @@ class IMDbSqlAccessSystem(IMDbBase):
             # Symbian/python 2.2 has a poor regexp implementation.
             import warnings
             warnings.warn('RuntimeError in '
-                    "imdb.parser.sql.IMDbSqlAccessSystem; "
-                    "if it's not a recursion limit exceeded and we're not "
-                    "running in a Symbian environment, it's a bug:\n%s" % e)
+                          "imdb.parser.sql.IMDbSqlAccessSystem; "
+                          "if it's not a recursion limit exceeded and we're not "
+                          "running in a Symbian environment, it's a bug:\n%s" % e)
             return trefs, nrefs
 
     def _changeAKAencoding(self, akanotes, akatitle):
@@ -642,13 +689,15 @@ class IMDbSqlAccessSystem(IMDbBase):
         the akanotes field; if akatitle doesn't need to be modified,
         return None."""
         oti = akanotes.find('(original ')
-        if oti == -1: return None
-        ote = akanotes[oti+10:].find(' title)')
+        if oti == -1:
+            return None
+        ote = akanotes[oti + 10:].find(' title)')
         if ote != -1:
-            cs_info = akanotes[oti+10:oti+10+ote].lower().split()
+            cs_info = akanotes[oti + 10:oti + 10 + ote].lower().split()
             for e in cs_info:
                 # excludes some strings that clearly are not encoding.
-                if e in ('script', '', 'cyrillic', 'greek'): continue
+                if e in ('script', '', 'cyrillic', 'greek'):
+                    continue
                 if e.startswith('iso-') and e.find('latin') != -1:
                     e = e[4:].replace('-', '')
                 try:
@@ -679,25 +728,25 @@ class IMDbSqlAccessSystem(IMDbBase):
             seriesID = [s.id for s in Title.select(
                         AND(Title.q.title == self.toUTF8(epof['title']),
                             self._buildNULLCondition(Title.q.imdbIndex,
-                                                    epof.get('imdbIndex')),
-                           Title.q.kindID == self._kindRev[epof['kind']],
-                           self._buildNULLCondition(Title.q.productionYear,
-                                                    epof.get('year'))))]
+                                                     epof.get('imdbIndex')),
+                            Title.q.kindID == self._kindRev[epof['kind']],
+                            self._buildNULLCondition(Title.q.productionYear,
+                                                     epof.get('year'))))]
             if seriesID:
                 condition = AND(IN(Title.q.episodeOfID, seriesID),
                                 Title.q.title == self.toUTF8(td['title']),
                                 self._buildNULLCondition(Title.q.imdbIndex,
-                                                        td.get('imdbIndex')),
+                                                         td.get('imdbIndex')),
                                 Title.q.kindID == self._kindRev[td['kind']],
                                 self._buildNULLCondition(Title.q.productionYear,
-                                                        td.get('year')))
+                                                         td.get('year')))
         if condition is None:
             condition = AND(Title.q.title == self.toUTF8(td['title']),
                             self._buildNULLCondition(Title.q.imdbIndex,
-                                                    td.get('imdbIndex')),
+                                                     td.get('imdbIndex')),
                             Title.q.kindID == self._kindRev[td['kind']],
                             self._buildNULLCondition(Title.q.productionYear,
-                                                    td.get('year')))
+                                                     td.get('year')))
         res = Title.select(condition)
         try:
             if res.count() != 1:
@@ -711,8 +760,8 @@ class IMDbSqlAccessSystem(IMDbBase):
         None if not found."""
         nd = analyze_name(name)
         res = Name.select(AND(Name.q.name == self.toUTF8(nd['name']),
-                                self._buildNULLCondition(Name.q.imdbIndex,
-                                                        nd.get('imdbIndex'))))
+                              self._buildNULLCondition(Name.q.imdbIndex,
+                                                       nd.get('imdbIndex'))))
         try:
             if res.count() != 1:
                 return None
@@ -725,7 +774,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             return int(movieID)
         except (ValueError, OverflowError):
-            raise IMDbError('movieID "%s" can\'t be converted to integer' % \
+            raise IMDbError('movieID "%s" can\'t be converted to integer' %
                             movieID)
 
     def _normalize_personID(self, personID):
@@ -733,7 +782,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             return int(personID)
         except (ValueError, OverflowError):
-            raise IMDbError('personID "%s" can\'t be converted to integer' % \
+            raise IMDbError('personID "%s" can\'t be converted to integer' %
                             personID)
 
     def _normalize_characterID(self, characterID):
@@ -741,7 +790,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             return int(characterID)
         except (ValueError, OverflowError):
-            raise IMDbError('characterID "%s" can\'t be converted to integer' \
+            raise IMDbError('characterID "%s" can\'t be converted to integer'
                             % characterID)
 
     def _normalize_companyID(self, companyID):
@@ -749,7 +798,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             return int(companyID)
         except (ValueError, OverflowError):
-            raise IMDbError('companyID "%s" can\'t be converted to integer' \
+            raise IMDbError('companyID "%s" can\'t be converted to integer'
                             % companyID)
 
     def get_imdbMovieID(self, movieID):
@@ -757,10 +806,13 @@ class IMDbSqlAccessSystem(IMDbBase):
         If not in the database, try an Exact Primary Title search on IMDb;
         return None if it's unable to get the imdbID.
         """
-        try: movie = Title.get(movieID)
-        except NotFoundError: return None
+        try:
+            movie = Title.get(movieID)
+        except NotFoundError:
+            return None
         imdbID = movie.imdbID
-        if imdbID is not None: return '%07d' % imdbID
+        if imdbID is not None:
+            return '%07d' % imdbID
         m_dict = get_movie_data(movie.id, self._kind)
         titline = build_title(m_dict, ptdf=0)
         imdbID = self.title2imdbID(titline, m_dict['kind'])
@@ -770,8 +822,10 @@ class IMDbSqlAccessSystem(IMDbBase):
         # There're times when I think I'm a genius; this one of
         # those times... <g>
         if imdbID is not None and not isinstance(imdbID, list):
-            try: movie.imdbID = int(imdbID)
-            except: pass
+            try:
+                movie.imdbID = int(imdbID)
+            except:
+                pass
         return imdbID
 
     def get_imdbPersonID(self, personID):
@@ -779,16 +833,21 @@ class IMDbSqlAccessSystem(IMDbBase):
         If not in the database, try an Exact Primary Name search on IMDb;
         return None if it's unable to get the imdbID.
         """
-        try: person = Name.get(personID)
-        except NotFoundError: return None
+        try:
+            person = Name.get(personID)
+        except NotFoundError:
+            return None
         imdbID = person.imdbID
-        if imdbID is not None: return '%07d' % imdbID
+        if imdbID is not None:
+            return '%07d' % imdbID
         n_dict = {'name': person.name, 'imdbIndex': person.imdbIndex}
         namline = build_name(n_dict, canonical=False)
         imdbID = self.name2imdbID(namline)
         if imdbID is not None and not isinstance(imdbID, list):
-            try: person.imdbID = int(imdbID)
-            except: pass
+            try:
+                person.imdbID = int(imdbID)
+            except:
+                pass
         return imdbID
 
     def get_imdbCharacterID(self, characterID):
@@ -796,16 +855,21 @@ class IMDbSqlAccessSystem(IMDbBase):
         If not in the database, try an Exact Primary Name search on IMDb;
         return None if it's unable to get the imdbID.
         """
-        try: character = CharName.get(characterID)
-        except NotFoundError: return None
+        try:
+            character = CharName.get(characterID)
+        except NotFoundError:
+            return None
         imdbID = character.imdbID
-        if imdbID is not None: return '%07d' % imdbID
+        if imdbID is not None:
+            return '%07d' % imdbID
         n_dict = {'name': character.name, 'imdbIndex': character.imdbIndex}
         namline = build_name(n_dict, canonical=False)
         imdbID = self.character2imdbID(namline)
         if imdbID is not None and not isinstance(imdbID, list):
-            try: character.imdbID = int(imdbID)
-            except: pass
+            try:
+                character.imdbID = int(imdbID)
+            except:
+                pass
         return imdbID
 
     def get_imdbCompanyID(self, companyID):
@@ -813,16 +877,21 @@ class IMDbSqlAccessSystem(IMDbBase):
         If not in the database, try an Exact Primary Name search on IMDb;
         return None if it's unable to get the imdbID.
         """
-        try: company = CompanyName.get(companyID)
-        except NotFoundError: return None
+        try:
+            company = CompanyName.get(companyID)
+        except NotFoundError:
+            return None
         imdbID = company.imdbID
-        if imdbID is not None: return '%07d' % imdbID
+        if imdbID is not None:
+            return '%07d' % imdbID
         n_dict = {'name': company.name, 'country': company.countryCode}
         namline = build_company_name(n_dict)
         imdbID = self.company2imdbID(namline)
         if imdbID is not None and not isinstance(imdbID, list):
-            try: company.imdbID = int(imdbID)
-            except: pass
+            try:
+                company.imdbID = int(imdbID)
+            except:
+                pass
         return imdbID
 
     def do_adult_search(self, doAdult):
@@ -833,10 +902,12 @@ class IMDbSqlAccessSystem(IMDbBase):
 
     def _search_movie(self, title, results, _episodes=False):
         title = title.strip()
-        if not title: return []
+        if not title:
+            return []
         title_dict = analyze_title(title, canonical=1)
         s_title = title_dict['title']
-        if not s_title: return []
+        if not s_title:
+            return []
         episodeOf = title_dict.get('episode of')
         if episodeOf:
             _episodes = False
@@ -846,7 +917,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             s_title_rebuilt = ', '.join(s_title_split[:-1])
             if s_title_rebuilt:
                 s_title = s_title_rebuilt
-        #if not episodeOf:
+        # if not episodeOf:
         #    if not _episodes:
         #        s_title_split = s_title.split(', ')
         #        if len(s_title_split) > 1 and \
@@ -854,7 +925,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         #            s_title_rebuilt = ', '.join(s_title_split[:-1])
         #            if s_title_rebuilt:
         #                s_title = s_title_rebuilt
-        #else:
+        # else:
         #    _episodes = False
 
         soundexCode = soundex(s_title)
@@ -866,7 +937,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             condition = AND(Title.q.phoneticCode == soundexCode,
                             Title.q.kindID == self._kindRev['episode'])
             conditionAka = AND(AkaTitle.q.phoneticCode == soundexCode,
-                            AkaTitle.q.kindID == self._kindRev['episode'])
+                               AkaTitle.q.kindID == self._kindRev['episode'])
         elif title_dict['kind'] == 'episode' and episodeOf is not None:
             # set canonical=0 ?  Should not make much difference.
             series_title = build_title(episodeOf, canonical=1)
@@ -882,8 +953,8 @@ class IMDbSqlAccessSystem(IMDbBase):
                                 IN(Title.q.episodeOfID, seriesIDs),
                                 Title.q.kindID == self._kindRev['episode'])
                 conditionAka = AND(AkaTitle.q.phoneticCode == soundexCode,
-                                IN(AkaTitle.q.episodeOfID, seriesIDs),
-                                AkaTitle.q.kindID == self._kindRev['episode'])
+                                   IN(AkaTitle.q.episodeOfID, seriesIDs),
+                                   AkaTitle.q.kindID == self._kindRev['episode'])
             else:
                 # XXX: bad situation: we have found no matching series;
                 #      try searching everything (both episodes and
@@ -891,13 +962,13 @@ class IMDbSqlAccessSystem(IMDbBase):
                 condition = AND(Title.q.phoneticCode == soundexCode,
                                 IN(Title.q.episodeOfID, seriesIDs))
                 conditionAka = AND(AkaTitle.q.phoneticCode == soundexCode,
-                                IN(AkaTitle.q.episodeOfID, seriesIDs))
+                                   IN(AkaTitle.q.episodeOfID, seriesIDs))
         if condition is None:
             # XXX: excludes episodes?
             condition = AND(Title.q.kindID != self._kindRev['episode'],
                             Title.q.phoneticCode == soundexCode)
             conditionAka = AND(AkaTitle.q.kindID != self._kindRev['episode'],
-                            AkaTitle.q.phoneticCode == soundexCode)
+                               AkaTitle.q.phoneticCode == soundexCode)
 
         # Up to 3 variations of the title are searched, plus the
         # long imdb canonical title, if provided.
@@ -909,29 +980,29 @@ class IMDbSqlAccessSystem(IMDbBase):
             title3 = ''
         try:
             qr = [(q.id, get_movie_data(q.id, self._kind))
-                    for q in Title.select(condition)]
+                  for q in Title.select(condition)]
             q2 = [(q.movieID, get_movie_data(q.id, self._kind, fromAka=1))
-                    for q in AkaTitle.select(conditionAka)]
+                  for q in AkaTitle.select(conditionAka)]
             qr += q2
         except NotFoundError as e:
-            raise IMDbDataAccessError( \
-                    'unable to search the database: "%s"' % str(e))
+            raise IMDbDataAccessError(
+                'unable to search the database: "%s"' % str(e))
 
         resultsST = results * 3
         res = scan_titles(qr, title1, title2, title3, resultsST,
-                            searchingEpisode=episodeOf is not None,
-                            onlyEpisodes=_episodes,
-                            ro_thresold=0.0)
+                          searchingEpisode=episodeOf is not None,
+                          onlyEpisodes=_episodes,
+                          ro_thresold=0.0)
         res[:] = [x[1] for x in res]
 
         if res and not self.doAdult:
             mids = [x[0] for x in res]
             genreID = self._infoRev['genres']
             adultlist = [al.movieID for al
-                        in MovieInfo.select(
-                            AND(MovieInfo.q.infoTypeID == genreID,
-                                MovieInfo.q.info == 'Adult',
-                                IN(MovieInfo.q.movieID, mids)))]
+                         in MovieInfo.select(
+                         AND(MovieInfo.q.infoTypeID == genreID,
+                             MovieInfo.q.info == 'Adult',
+                             IN(MovieInfo.q.movieID, mids)))]
             res[:] = [x for x in res if x[0] not in adultlist]
 
         new_res = []
@@ -949,7 +1020,8 @@ class IMDbSqlAccessSystem(IMDbBase):
                 continue
             orig_dict['akas'] = [aka_title]
             new_res.append((r[0], orig_dict))
-        if results > 0: new_res[:] = new_res[:results]
+        if results > 0:
+            new_res[:] = new_res[:results]
         return new_res
 
     def _search_episode(self, title, results):
@@ -961,8 +1033,8 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             res = get_movie_data(movieID, self._kind)
         except NotFoundError as e:
-            raise IMDbDataAccessError( \
-                    'unable to get movieID "%s": "%s"' % (movieID, str(e)))
+            raise IMDbDataAccessError(
+                'unable to get movieID "%s": "%s"' % (movieID, str(e)))
         if not res:
             raise IMDbDataAccessError('unable to get movieID "%s"' % movieID)
         # Collect cast information.
@@ -975,7 +1047,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             if p[4] in ('actor', 'actress'):
                 p[4] = 'cast'
         # Regroup by role/duty (cast, writer, director, ...)
-        castdata[:] =  _groupListBy(castdata, 4)
+        castdata[:] = _groupListBy(castdata, 4)
         for group in castdata:
             duty = group[0][4]
             for pdata in group:
@@ -986,11 +1058,12 @@ class IMDbSqlAccessSystem(IMDbBase):
                     curRole = robj.name
                     curRoleID = robj.id
                 p = Person(personID=pdata[0], name=pdata[5],
-                            currentRole=curRole or '',
-                            roleID=curRoleID,
-                            notes=pdata[2] or '',
-                            accessSystem='sql')
-                if pdata[6]: p['imdbIndex'] = pdata[6]
+                           currentRole=curRole or '',
+                           roleID=curRoleID,
+                           notes=pdata[2] or '',
+                           accessSystem='sql')
+                if pdata[6]:
+                    p['imdbIndex'] = pdata[6]
                 p.billingPos = pdata[3]
                 res.setdefault(duty, []).append(p)
             if duty == 'cast':
@@ -998,19 +1071,20 @@ class IMDbSqlAccessSystem(IMDbBase):
             res[duty].sort()
         # Info about the movie.
         minfo = [(self._info[m.infoTypeID], m.info, m.note)
-                for m in MovieInfo.select(MovieInfo.q.movieID == movieID)]
+                 for m in MovieInfo.select(MovieInfo.q.movieID == movieID)]
         minfo += [('keywords', Keyword.get(m.keywordID).keyword, None)
-                for m in MovieKeyword.select(MovieKeyword.q.movieID == movieID)]
+                  for m in MovieKeyword.select(MovieKeyword.q.movieID == movieID)]
         minfo = _groupListBy(minfo, 0)
         for group in minfo:
             sect = group[0][0]
             for mdata in group:
                 data = mdata[1]
-                if mdata[2]: data += '::%s' % mdata[2]
+                if mdata[2]:
+                    data += '::%s' % mdata[2]
                 res.setdefault(sect, []).append(data)
         # Companies info about a movie.
         cinfo = [(self._compType[m.companyTypeID], m.companyID, m.note) for m
-                in MovieCompanies.select(MovieCompanies.q.movieID == movieID)]
+                 in MovieCompanies.select(MovieCompanies.q.movieID == movieID)]
         cinfo = _groupListBy(cinfo, 0)
         for group in cinfo:
             sect = group[0][0]
@@ -1020,9 +1094,9 @@ class IMDbSqlAccessSystem(IMDbBase):
                 if cDb.countryCode:
                     cDbTxt += ' %s' % cDb.countryCode
                 company = Company(name=cDbTxt,
-                                companyID=mdata[1],
-                                notes=mdata[2] or '',
-                                accessSystem=self.accessSystem)
+                                  companyID=mdata[1],
+                                  notes=mdata[2] or '',
+                                  accessSystem=self.accessSystem)
                 res.setdefault(sect, []).append(company)
         # AKA titles.
         akat = [(get_movie_data(at.id, self._kind, fromAka=1), at.note)
@@ -1033,19 +1107,21 @@ class IMDbSqlAccessSystem(IMDbBase):
                 nt = build_title(td, ptdf=1)
                 if note:
                     net = self._changeAKAencoding(note, nt)
-                    if net is not None: nt = net
+                    if net is not None:
+                        nt = net
                     nt += '::%s' % note
-                if nt not in res['akas']: res['akas'].append(nt)
+                if nt not in res['akas']:
+                    res['akas'].append(nt)
         # Complete cast/crew.
         compcast = [(self._compcast[cc.subjectID], self._compcast[cc.statusID])
-            for cc in CompleteCast.select(CompleteCast.q.movieID == movieID)]
+                    for cc in CompleteCast.select(CompleteCast.q.movieID == movieID)]
         if compcast:
             for entry in compcast:
                 val = str(entry[1])
                 res['complete %s' % entry[0]] = val
         # Movie connections.
         mlinks = [[ml.linkedMovieID, self._link[ml.linkTypeID]]
-                    for ml in MovieLink.select(MovieLink.q.movieID == movieID)]
+                  for ml in MovieLink.select(MovieLink.q.movieID == movieID)]
         if mlinks:
             for ml in mlinks:
                 lmovieData = get_movie_data(ml[0], self._kind)
@@ -1063,18 +1139,19 @@ class IMDbSqlAccessSystem(IMDbBase):
         eps_list.sort()
         if eps_list:
             ps_data = {'title': res['title'], 'kind': res['kind'],
-                        'year': res.get('year'),
-                        'imdbIndex': res.get('imdbIndex')}
+                       'year': res.get('year'),
+                       'imdbIndex': res.get('imdbIndex')}
             parentSeries = Movie(movieID=movieID, data=ps_data,
-                                accessSystem='sql')
+                                 accessSystem='sql')
             for episode in eps_list:
                 episodeID = episode.id
                 episode_data = get_movie_data(episodeID, self._kind)
                 m = Movie(movieID=episodeID, data=episode_data,
-                            accessSystem='sql')
+                          accessSystem='sql')
                 m['episode of'] = parentSeries
                 season = episode_data.get('season', 'UNKNOWN')
-                if season not in episodes: episodes[season] = {}
+                if season not in episodes:
+                    episodes[season] = {}
                 ep_number = episode_data.get('episode')
                 if ep_number is None:
                     ep_number = max((list(episodes[season].keys()) or [0])) + 1
@@ -1105,20 +1182,24 @@ class IMDbSqlAccessSystem(IMDbBase):
         if 'mpaa' in res:
             res['mpaa'] = res['mpaa'][0]
         if 'top 250 rank' in res:
-            try: res['top 250 rank'] = int(res['top 250 rank'])
-            except: pass
+            try:
+                res['top 250 rank'] = int(res['top 250 rank'])
+            except:
+                pass
         if 'bottom 10 rank' in res:
-            try: res['bottom 100 rank'] = int(res['bottom 10 rank'])
-            except: pass
+            try:
+                res['bottom 100 rank'] = int(res['bottom 10 rank'])
+            except:
+                pass
             del res['bottom 10 rank']
         for old, new in [('guest', 'guests'), ('trademarks', 'trade-mark'),
-                        ('articles', 'article'), ('pictorials', 'pictorial'),
-                        ('magazine-covers', 'magazine-cover-photo')]:
+                         ('articles', 'article'), ('pictorials', 'pictorial'),
+                         ('magazine-covers', 'magazine-cover-photo')]:
             if old in res:
                 res[new] = res[old]
                 del res[old]
-        trefs,nrefs = {}, {}
-        trefs,nrefs = self._extractRefs(sub_dict(res,Movie.keys_tomodify_list))
+        trefs, nrefs = {}, {}
+        trefs, nrefs = self._extractRefs(sub_dict(res, Movie.keys_tomodify_list))
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
                 'info sets': infosets}
 
@@ -1143,9 +1224,11 @@ class IMDbSqlAccessSystem(IMDbBase):
 
     def _search_person(self, name, results):
         name = name.strip()
-        if not name: return []
+        if not name:
+            return []
         s_name = analyze_name(name)['name']
-        if not s_name: return []
+        if not s_name:
+            return []
         soundexCode = soundex(s_name)
         name1, name2, name3 = nameVariations(name)
 
@@ -1153,8 +1236,8 @@ class IMDbSqlAccessSystem(IMDbBase):
         # phoneticCode column.
         if soundexCode is not None:
             condition = IN(soundexCode, [Name.q.namePcodeCf,
-                                        Name.q.namePcodeNf,
-                                        Name.q.surnamePcode])
+                                         Name.q.namePcodeNf,
+                                         Name.q.surnamePcode])
             conditionAka = IN(soundexCode, [AkaName.q.namePcodeCf,
                                             AkaName.q.namePcodeNf,
                                             AkaName.q.surnamePcode])
@@ -1164,14 +1247,14 @@ class IMDbSqlAccessSystem(IMDbBase):
 
         try:
             qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
-                    for q in Name.select(condition)]
+                  for q in Name.select(condition)]
 
             q2 = [(q.personID, {'name': q.name, 'imdbIndex': q.imdbIndex})
-                    for q in AkaName.select(conditionAka)]
+                  for q in AkaName.select(conditionAka)]
             qr += q2
         except NotFoundError as e:
-            raise IMDbDataAccessError( \
-                    'unable to search the database: "%s"' % str(e))
+            raise IMDbDataAccessError(
+                'unable to search the database: "%s"' % str(e))
 
         res = scan_names(qr, name1, name2, name3, results)
         res[:] = [x[1] for x in res]
@@ -1201,7 +1284,8 @@ class IMDbSqlAccessSystem(IMDbBase):
                 continue
             orig_dict['akas'] = [aka_name]
             new_res.append((r[0], orig_dict))
-        if results > 0: new_res[:] = new_res[:results]
+        if results > 0:
+            new_res[:] = new_res[:results]
 
         return new_res
 
@@ -1211,30 +1295,33 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             p = Name.get(personID)
         except NotFoundError as e:
-            raise IMDbDataAccessError( \
-                    'unable to get personID "%s": "%s"' % (personID, str(e)))
+            raise IMDbDataAccessError(
+                'unable to get personID "%s": "%s"' % (personID, str(e)))
         res = {'name': p.name, 'imdbIndex': p.imdbIndex}
-        if res['imdbIndex'] is None: del res['imdbIndex']
+        if res['imdbIndex'] is None:
+            del res['imdbIndex']
         if not res:
             raise IMDbDataAccessError('unable to get personID "%s"' % personID)
         # Collect cast information.
         castdata = [(cd.movieID, cd.personRoleID, cd.note,
                     self._role[cd.roleID],
                     get_movie_data(cd.movieID, self._kind))
-                for cd in CastInfo.select(CastInfo.q.personID == personID)]
+                    for cd in CastInfo.select(CastInfo.q.personID == personID)]
         # Regroup by role/duty (cast, writer, director, ...)
-        castdata[:] =  _groupListBy(castdata, 3)
+        castdata[:] = _groupListBy(castdata, 3)
         episodes = {}
         seenDuties = []
         for group in castdata:
             for mdata in group:
                 duty = orig_duty = group[0][3]
-                if duty not in seenDuties: seenDuties.append(orig_duty)
+                if duty not in seenDuties:
+                    seenDuties.append(orig_duty)
                 note = mdata[2] or ''
                 if 'episode of' in mdata[4]:
                     duty = 'episodes'
                     if orig_duty not in ('actor', 'actress'):
-                        if note: note = ' %s' % note
+                        if note:
+                            note = ' %s' % note
                         note = '[%s]%s' % (orig_duty, note)
                 curRole = mdata[1]
                 curRoleID = None
@@ -1243,9 +1330,9 @@ class IMDbSqlAccessSystem(IMDbBase):
                     curRole = robj.name
                     curRoleID = robj.id
                 m = Movie(movieID=mdata[0], data=mdata[4],
-                            currentRole=curRole or '',
-                            roleID=curRoleID,
-                            notes=note, accessSystem='sql')
+                          currentRole=curRole or '',
+                          roleID=curRoleID,
+                          notes=note, accessSystem='sql')
                 if duty != 'episodes':
                     res.setdefault(duty, []).append(m)
                 else:
@@ -1263,14 +1350,15 @@ class IMDbSqlAccessSystem(IMDbBase):
                 res[duty].sort()
         # Info about the person.
         pinfo = [(self._info[pi.infoTypeID], pi.info, pi.note)
-                for pi in PersonInfo.select(PersonInfo.q.personID == personID)]
+                 for pi in PersonInfo.select(PersonInfo.q.personID == personID)]
         # Regroup by duty.
         pinfo = _groupListBy(pinfo, 0)
         for group in pinfo:
             sect = group[0][0]
             for pdata in group:
                 data = pdata[1]
-                if pdata[2]: data += '::%s' % pdata[2]
+                if pdata[2]:
+                    data += '::%s' % pdata[2]
                 res.setdefault(sect, []).append(data)
         # AKA names.
         akan = [(an.name, an.imdbIndex)
@@ -1279,25 +1367,29 @@ class IMDbSqlAccessSystem(IMDbBase):
             res['akas'] = []
             for n in akan:
                 nd = {'name': n[0]}
-                if n[1]: nd['imdbIndex'] = n[1]
+                if n[1]:
+                    nd['imdbIndex'] = n[1]
                 nt = build_name(nd, canonical=1)
                 res['akas'].append(nt)
         # Do some transformation to preserve consistency with other
         # data access systems.
         for key in ('birth date', 'birth notes', 'death date', 'death notes',
-                        'birth name', 'height'):
+                    'birth name', 'height'):
             if key in res:
                 res[key] = res[key][0]
         if 'guest' in res:
             res['notable tv guest appearances'] = res['guest']
             del res['guest']
         miscnames = res.get('nick names', [])
-        if 'birth name' in res: miscnames.append(res['birth name'])
+        if 'birth name' in res:
+            miscnames.append(res['birth name'])
         if 'akas' in res:
             for mname in miscnames:
-                if mname in res['akas']: res['akas'].remove(mname)
-            if not res['akas']: del res['akas']
-        trefs,nrefs = self._extractRefs(sub_dict(res,Person.keys_tomodify_list))
+                if mname in res['akas']:
+                    res['akas'].remove(mname)
+            if not res['akas']:
+                del res['akas']
+        trefs, nrefs = self._extractRefs(sub_dict(res, Person.keys_tomodify_list))
         return {'data': res, 'titlesRefs': trefs, 'namesRefs': nrefs,
                 'info sets': infosets}
 
@@ -1309,9 +1401,11 @@ class IMDbSqlAccessSystem(IMDbBase):
 
     def _search_character(self, name, results):
         name = name.strip()
-        if not name: return []
+        if not name:
+            return []
         s_name = analyze_name(name)['name']
-        if not s_name: return []
+        if not s_name:
+            return []
         s_name = normalizeName(s_name)
         soundexCode = soundex(s_name)
         surname = s_name.split(' ')[-1]
@@ -1330,24 +1424,24 @@ class IMDbSqlAccessSystem(IMDbBase):
         if soundexCode is not None:
             if soundexName2 is not None:
                 condition = OR(surnameSoundex == CharName.q.surnamePcode,
-                            IN(CharName.q.namePcodeNf, [soundexCode,
-                                                        soundexName2]),
-                            IN(CharName.q.surnamePcode, [soundexCode,
-                                                        soundexName2]))
+                               IN(CharName.q.namePcodeNf, [soundexCode,
+                                                           soundexName2]),
+                               IN(CharName.q.surnamePcode, [soundexCode,
+                                                            soundexName2]))
             else:
                 condition = OR(surnameSoundex == CharName.q.surnamePcode,
-                            IN(soundexCode, [CharName.q.namePcodeNf,
-                                            CharName.q.surnamePcode]))
+                               IN(soundexCode, [CharName.q.namePcodeNf,
+                                                CharName.q.surnamePcode]))
         else:
             condition = ISNULL(Name.q.namePcodeNf)
         try:
             qr = [(q.id, {'name': q.name, 'imdbIndex': q.imdbIndex})
-                    for q in CharName.select(condition)]
+                  for q in CharName.select(condition)]
         except NotFoundError as e:
-            raise IMDbDataAccessError( \
-                    'unable to search the database: "%s"' % str(e))
+            raise IMDbDataAccessError(
+                'unable to search the database: "%s"' % str(e))
         res = scan_names(qr, s_name, name2, '', results,
-                        _scan_character=True)
+                         _scan_character=True)
         res[:] = [x[1] for x in res]
         # Purge empty imdbIndex.
         returnl = []
@@ -1364,20 +1458,21 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             c = CharName.get(characterID)
         except NotFoundError as e:
-            raise IMDbDataAccessError( \
-                    'unable to get characterID "%s": "%s"' % (characterID, e))
+            raise IMDbDataAccessError(
+                'unable to get characterID "%s": "%s"' % (characterID, e))
         res = {'name': c.name, 'imdbIndex': c.imdbIndex}
-        if res['imdbIndex'] is None: del res['imdbIndex']
+        if res['imdbIndex'] is None:
+            del res['imdbIndex']
         if not res:
-            raise IMDbDataAccessError('unable to get characterID "%s"' % \
-                                        characterID)
+            raise IMDbDataAccessError('unable to get characterID "%s"' %
+                                      characterID)
         # Collect filmography information.
         items = CastInfo.select(CastInfo.q.personRoleID == characterID)
         if results > 0:
             items = items[:results]
         filmodata = [(cd.movieID, cd.personID, cd.note,
-                    get_movie_data(cd.movieID, self._kind)) for cd in items
-                    if self._role[cd.roleID] in ('actor', 'actress')]
+                      get_movie_data(cd.movieID, self._kind)) for cd in items
+                     if self._role[cd.roleID] in ('actor', 'actress')]
         fdata = []
         for f in filmodata:
             curRole = None
@@ -1387,9 +1482,9 @@ class IMDbSqlAccessSystem(IMDbBase):
                 robj = Name.get(curRoleID)
                 curRole = robj.name
             m = Movie(movieID=f[0], data=f[3],
-                        currentRole=curRole or '',
-                        roleID=curRoleID, roleIsPerson=True,
-                        notes=note, accessSystem='sql')
+                      currentRole=curRole or '',
+                      roleID=curRoleID, roleIsPerson=True,
+                      notes=note, accessSystem='sql')
             fdata.append(m)
         fdata = merge_roles(fdata)
         fdata.sort()
@@ -1402,7 +1497,8 @@ class IMDbSqlAccessSystem(IMDbBase):
 
     def _search_company(self, name, results):
         name = name.strip()
-        if not name: return []
+        if not name:
+            return []
         soundexCode = soundex(name)
         # If the soundex is None, compare only with the first
         # phoneticCode column.
@@ -1415,10 +1511,10 @@ class IMDbSqlAccessSystem(IMDbBase):
                 condition = CompanyName.q.namePcodeNf == soundexCode
         try:
             qr = [(q.id, {'name': q.name, 'country': q.countryCode})
-                    for q in CompanyName.select(condition)]
+                  for q in CompanyName.select(condition)]
         except NotFoundError as e:
-            raise IMDbDataAccessError( \
-                    'unable to search the database: "%s"' % str(e))
+            raise IMDbDataAccessError(
+                'unable to search the database: "%s"' % str(e))
         qr[:] = [(x[0], build_company_name(x[1])) for x in qr]
         res = scan_company_names(qr, name, results)
         res[:] = [x[1] for x in res]
@@ -1438,26 +1534,27 @@ class IMDbSqlAccessSystem(IMDbBase):
         try:
             c = CompanyName.get(companyID)
         except NotFoundError as e:
-            raise IMDbDataAccessError( \
-                    'unable to get companyID "%s": "%s"' % (companyID, e))
+            raise IMDbDataAccessError(
+                'unable to get companyID "%s": "%s"' % (companyID, e))
         res = {'name': c.name, 'country': c.countryCode}
-        if res['country'] is None: del res['country']
+        if res['country'] is None:
+            del res['country']
         if not res:
-            raise IMDbDataAccessError('unable to get companyID "%s"' % \
-                                        companyID)
+            raise IMDbDataAccessError('unable to get companyID "%s"' %
+                                      companyID)
         # Collect filmography information.
         items = MovieCompanies.select(MovieCompanies.q.companyID == companyID)
         if results > 0:
             items = items[:results]
         filmodata = [(cd.movieID, cd.companyID,
-                    self._compType[cd.companyTypeID], cd.note,
-                    get_movie_data(cd.movieID, self._kind)) for cd in items]
+                      self._compType[cd.companyTypeID], cd.note,
+                      get_movie_data(cd.movieID, self._kind)) for cd in items]
         filmodata = _groupListBy(filmodata, 2)
         for group in filmodata:
             ctype = group[0][2]
             for movieID, companyID, ctype, note, movieData in group:
                 movie = Movie(data=movieData, movieID=movieID,
-                            notes=note or '', accessSystem=self.accessSystem)
+                              notes=note or '', accessSystem=self.accessSystem)
                 res.setdefault(ctype, []).append(movie)
             res.get(ctype, []).sort()
         return {'data': res, 'info sets': infosets}
@@ -1466,7 +1563,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         constr = OR(Keyword.q.phoneticCode == soundex(keyword),
                     CONTAINSSTRING(Keyword.q.keyword, self.toUTF8(keyword)))
         return filterSimilarKeywords(keyword,
-                        _iterKeywords(Keyword.select(constr)))[:results]
+                                     _iterKeywords(Keyword.select(constr)))[:results]
 
     def _get_keyword(self, keyword, results):
         keyID = Keyword.select(Keyword.q.keyword == keyword)
@@ -1474,7 +1571,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             return []
         keyID = keyID[0].id
         movies = MovieKeyword.select(MovieKeyword.q.keywordID ==
-                                    keyID)[:results]
+                                     keyID)[:results]
         return [(m.movieID, get_movie_data(m.movieID, self._kind))
                 for m in movies]
 
@@ -1497,7 +1594,7 @@ class IMDbSqlAccessSystem(IMDbBase):
             minfo = get_movie_data(m.movieID, self._kind)
             for k in kind, 'votes', 'rating', 'votes distribution':
                 valueDict = getSingleInfo(MovieInfo, m.movieID,
-                                            k, notAList=True)
+                                          k, notAList=True)
                 if k in (kind, 'votes') and k in valueDict:
                     valueDict[k] = int(valueDict[k])
                 elif k == 'rating' and k in valueDict:
@@ -1510,6 +1607,7 @@ class IMDbSqlAccessSystem(IMDbBase):
 
     def __del__(self):
         """Ensure that the connection is closed."""
-        if not hasattr(self, '_connection'): return
+        if not hasattr(self, '_connection'):
+            return
         self._sql_logger.debug('closing connection to the database')
         self._connection.close()

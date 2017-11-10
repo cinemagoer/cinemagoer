@@ -38,7 +38,9 @@ _strMap = {1: 'INTCOL', 2: 'UNICODECOL', 3: 'STRINGCOL'}
 
 
 class DBCol(object):
+
     """Define column objects."""
+
     def __init__(self, name, kind, **params):
         self.name = name
         self.kind = kind
@@ -99,7 +101,9 @@ class DBCol(object):
 
 
 class DBTable(object):
+
     """Define table objects."""
+
     def __init__(self, name, *cols, **kwds):
         self.name = name
         self.cols = cols

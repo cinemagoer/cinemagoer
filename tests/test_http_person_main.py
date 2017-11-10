@@ -23,7 +23,6 @@ def test_headshot_should_be_a_link(person_main_details):
     assert data['headshot'].endswith('.jpg')
 
 
-@mark.fragile
 def test_headshot_none_should_be_excluded(person_main_details):
     page = person_main_details('deni gordon')
     data = parser.parse(page)['data']

@@ -281,14 +281,12 @@ def test_votes_none_should_be_excluded(movie_combined_details):
     assert 'votes' not in data
 
 
-@mark.fragile
 def test_rank_top250_should_be_between_1_and_250(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
     assert 1 <= data['top 250 rank'] <= 250
 
 
-@mark.fragile
 def test_rank_bottom100_should_be_between_1_and_100(movie_combined_details):
     page = movie_combined_details('manos')
     data = parser.parse(page)['data']

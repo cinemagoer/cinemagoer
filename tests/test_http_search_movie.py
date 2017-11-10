@@ -17,7 +17,6 @@ def search_movie(search):
 parser = DOMHTMLSearchMovieParser()
 
 
-@mark.fragile
 def test_found_one_result_should_be_list_with_one_movie(search_movie):
     page = search_movie('od instituta do proizvodnje')
     data = parser.parse(page)['data']
@@ -33,32 +32,28 @@ def test_found_many_result_should_contain_correct_number_of_movies(search_movie)
     assert len(data) == 186
 
 
-@mark.fragile
 def test_found_too_many_result_should_contain_200_movies(search_movie):
     page = search_movie('matrix')
     data = parser.parse(page)['data']
     assert len(data) == 200
 
 
-@mark.fragile
-def test_found_result_should_contain_correct_movie(search_movie):
+def test_found_many_result_should_contain_correct_movie(search_movie):
     page = search_movie('matrix')
     data = parser.parse(page)['data']
     movies = dict(data)
     assert movies['0133093'] == {'title': 'The Matrix', 'kind': 'movie', 'year': 1999}
 
 
-@mark.fragile
-def test_found_result_should_contain_correct_movie_kind(search_movie):
+def test_found_movie_should_have_kind(search_movie):
     page = search_movie('matrix')
     data = parser.parse(page)['data']
     movies = dict(data)
     assert movies['0106062'] == {'title': 'Matrix', 'kind': 'tv series', 'year': 1993}
 
 
-@mark.fragile
 @mark.skip('IMDb index is part of title')
-def test_found_result_should_contain_imdb_index(search_movie):
+def test_found_movie_should_have_imdb_index(search_movie):
     page = search_movie('blink')
     data = parser.parse(page)['data']
     movies = dict(data)
@@ -66,7 +61,6 @@ def test_found_result_should_contain_imdb_index(search_movie):
                                  'kind': 'movie', 'year': 2015}
 
 
-@mark.fragile
 def test_found_none_result_should_be_empty(search_movie):
     page = search_movie('%e3%82%a2')
     data = parser.parse(page)['data']

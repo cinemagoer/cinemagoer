@@ -20,8 +20,7 @@ parser = DOMHTMLKeywordsParser()
 def test_keywords_multiple_should_be_parsed_correctly(movie_keywords):
     page = movie_keywords('matrix')
     data = parser.parse(page)['data']
-    keywords = set(data['keywords'])
-    assert {'computer-hacker', 'messiah', 'artificial-reality'}.issubset(keywords)
+    assert {'computer-hacker', 'messiah', 'artificial-reality'}.issubset(set(data['keywords']))
 
 
 def test_keywords_none_should_be_excluded(movie_keywords):

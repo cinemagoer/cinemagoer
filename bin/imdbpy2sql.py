@@ -942,6 +942,10 @@ class _BaseCache(dict):
                 print('WARNING: many data (%d items) were lost: %s' % \
                         (len(self._tmpDict), e))
         self._flushing = 0
+        try:
+            connectObject.commit()
+        except:
+            pass
         # Flush also deferred data.
         if self._deferredData:
             self._tmpDict = self._deferredData

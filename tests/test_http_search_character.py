@@ -18,7 +18,7 @@ parser = DOMHTMLSearchCharacterParser()
 
 
 @mark.fragile
-def test_found_many_result_should_contain_correct_number_of_characters(search_character):
+def test_found_many_result_should_contain_correct_number_of_entries(search_character):
     page = search_character('jesse james')
     data = parser.parse(page)['data']
     assert len(data) == 11

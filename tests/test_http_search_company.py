@@ -18,7 +18,7 @@ parser = DOMHTMLSearchCompanyParser()
 
 
 @mark.fragile
-def test_found_many_result_should_contain_correct_number_of_companies(search_company):
+def test_found_many_result_should_contain_correct_number_of_entries(search_company):
     page = search_company('pixar')
     data = parser.parse(page)['data']
     assert len(data) == 38

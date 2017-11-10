@@ -100,7 +100,7 @@ params = {
     'install_requires': ['sqlalchemy-migrate', 'SQLAlchemy', 'lxml'],
     'extras_require': {
         'dev': ['flake8', 'flake8-isort'],
-        'test': ['pytest'],
+        'test': ['pytest', 'pytest-cov'],
     },
     'packages': setuptools.find_packages(),
     'package_data': {'imdb.parser.http': ['*.json']}

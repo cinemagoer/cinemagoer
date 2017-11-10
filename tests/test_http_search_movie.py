@@ -27,7 +27,7 @@ def test_found_one_result_should_be_list_with_one_movie(search_movie):
 
 
 @mark.fragile
-def test_found_many_result_should_contain_correct_number_of_entries(search_movie):
+def test_found_many_result_should_contain_correct_number_of_movies(search_movie):
     page = search_movie('ace in the hole')
     data = parser.parse(page)['data']
     assert len(data) == 186

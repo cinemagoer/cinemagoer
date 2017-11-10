@@ -22,11 +22,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 
-import logging
 import re
 import string
+import logging
 from copy import copy, deepcopy
 from time import strftime, strptime
+from functools import total_ordering
 
 from imdb import VERSION
 from imdb import linguistics
@@ -674,9 +675,13 @@ def build_company_name(name_dict, _emptyString=''):
     return name
 
 
+@total_ordering
 class _LastC:
     """Size matters."""
-    def __cmp__(self, other):
+    def __lt__(self, other):
+        return False
+
+    def __eq__(self, other):
         return not isinstance(other, self.__class__)
 
 
@@ -1155,6 +1160,7 @@ _xmlHead = """<?xml version="1.0"?>
 _xmlHead = _xmlHead.replace('{VERSION}', VERSION.replace('.', '').split('dev')[0][:2])
 
 
+@total_ordering
 class _Container(object):
     """Base class for Movie, Person, Character and Company classes."""
     # The default sets of information retrieved.
@@ -1404,13 +1410,20 @@ class _Container(object):
         """Return movieID, personID, characterID or companyID."""
         raise NotImplementedError('override this method')
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         """Compare two Movie, Person, Character or Company objects."""
-        # XXX: raise an exception?
         if self.cmpFunct is None:
-            return -1
+            return False
         if not isinstance(other, self.__class__):
-            return -1
+            return False
+        return self.cmpFunct(other) == -1
+
+    def __eq__(self, other):
+        """Compare two Movie, Person, Character or Company objects."""
+        if self.cmpFunct is None:
+            return False
+        if not isinstance(other, self.__class__):
+            return False
         return self.cmpFunct(other)
 
     def __hash__(self):

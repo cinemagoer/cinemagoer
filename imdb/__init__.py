@@ -31,6 +31,7 @@ import configparser
 import logging
 import os
 import sys
+from pkgutil import find_loader
 from types import MethodType, FunctionType
 
 import imdb._logging
@@ -200,17 +201,10 @@ def IMDb(accessSystem=None, *arguments, **keywords):
 def available_access_systems():
     """Return the list of available data access systems."""
     asList = []
-    # XXX: trying to import modules is a good thing?
-    try:
-        from .parser.http import IMDbHTTPAccessSystem
+    if find_loader('imdb.parser.http') is not None:
         asList.append('http')
-    except ImportError:
-        pass
-    try:
-        from .parser.sql import IMDbSqlAccessSystem
+    if find_loader('imdb.parser.sql') is not None:
         asList.append('sql')
-    except ImportError:
-        pass
     return asList
 
 

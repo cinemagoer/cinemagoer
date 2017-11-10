@@ -92,7 +92,8 @@ params = {
             'dev': ['flake8', 'flake8-isort'],
             'test': ['pytest'],
          },
-        'packages': setuptools.find_packages()
+        'packages': setuptools.find_packages(),
+        'package_data': {'imdb.parser.http': ['*.json']}
 }
 
 

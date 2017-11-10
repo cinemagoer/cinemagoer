@@ -38,7 +38,7 @@ BASE_URL = 'http://akas.imdb.com'
 MOVIES = {
     '0043338': 'ace in the hole',           # multiple languages, single sound mix with note
     '3629794': 'aslan',                     # no cover URL
-    '1863157': 'ates parcasi',              # no rating, no votes, no rank, no plot, no mpaa, no aspect ratio, no sound mix
+    '1863157': 'ates parcasi',              # most fields missing
     '0185906': 'band of brothers',          # TV mini-series, ended series years
     '1247467': 'band of brothers ep 4',     # episode in mini-series
     '0436992': 'dr who',                    # TV series, continuing series years

@@ -84,3 +84,9 @@ def people():
     """Base addresses of all test people."""
     return {k: '%(base)s/name/nm%(key)s' % {'base': BASE_URL, 'key': v}
             for k, v in PEOPLE.items()}
+
+
+@fixture(scope='session')
+def search():
+    """Base address for search pages."""
+    return '%(base)s/find' % {'base': BASE_URL}

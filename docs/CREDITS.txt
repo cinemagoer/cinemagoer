@@ -1,16 +1,13 @@
-
-  CREDITS
-  =======
+# CREDITS
 
 See also CONTRIBUTORS.txt for a list of the most important developers
 who share the copyright on some portions of the code.
 
 First of all, I want to thank all the maintainers of the
-packages, listed on http://imdbpy.sf.net/?page=download#otherpkg,
-and especially Ana Guerrero.
+packages and especially Ana Guerrero.
 Another big thank to the developers who used IMDbPY for their
 projects and researches; they can be found here:
-  http://imdbpy.sf.net/?page=programs
+  https://imdbpy.sourceforge.io/ecosystem.html
 
 Other very special thanks go to some people who followed very
 closely the development of IMDbPY, providing hints and insights:

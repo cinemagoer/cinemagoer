@@ -1,6 +1,4 @@
-
-  INFORMATION IN XML FORMAT
-  =========================
+# INFORMATION IN XML FORMAT
 
 Since version 4.0, IMDbPY can output information of Movie, Person,
 Character and Company instances in XML format.
@@ -23,8 +21,7 @@ exclude the dynamically generated keys (like 'smart canonical title'
 and so on).
 
 
-  XML FORMAT
-  ==========
+# XML FORMAT
 
 Keywords are converted to tags, items in lists are enclosed in
 a 'item' tag.  E.g.:
@@ -60,8 +57,7 @@ Every 'id' can be empty.
 Actually the returned XML is mostly not pretty-printed.
 
 
-  REFERENCES
-  ==========
+# REFERENCES
 
 Some text keys can contain references to other movies, persons
 and characters.  The user can provide the defaultModFunct function (see
@@ -71,8 +67,7 @@ strings (e.g.: a link to a web page); it's up to the user, to be sure
 that the output of the defaultModFunct function is valid XML.
 
 
-  DTD
-  ===
+# DTD
 
 Since version 4.1 a DTD is available; it can be found in this
 directory or on the web, at:
@@ -81,20 +76,17 @@ directory or on the web, at:
 The version number changes with the IMDbPY version.
 
 
-  LOCALIZATION
-  ============
+# LOCALIZATION
 
 Since version 4.1 it's possible to translate the XML tags;
 see README.locale.
 
 
-  FROM XML TO OBJECTS
-  ===================
+# FROM XML TO OBJECTS
 
 Since version 4.6, you can dump the generated XML in a string or
 in a file, using it - later - to rebuild the original object.
 In the imdb.helpers module there's the parseXML() function which
 takes a string as input and return - if possible - an instance of
 the Movie, Person, Character or Company classes.
-
 

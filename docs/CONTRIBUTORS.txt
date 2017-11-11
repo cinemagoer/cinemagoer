@@ -1,15 +1,19 @@
-  OTHER AUTHORS
-  =============
+# AUTHORS
 
 People who contributed with a substantial amount of work and that
 share the copyright over some portions of the code:
+
+NAME: Davide Alberani
+EMAIL: <da --> erlug.linux.it>
+CONTRIBUTION: main author and project leader.
+
 
 NAME: H. Turgut Uyar
 EMAIL: <uyar --> tekir.org>
 CONTRIBUTION: the whole new "http" data access system (using a DOM and
 XPath-based approach) is based on his work.  The imdbpykit interface
 was mostly written by him and he holds the copyright over the whole
-code (with some portions shared with others).
+code (with some portions shared with others).  He provided the tox testsuite.
 
 
 NAME: Giuseppe "Cowo" Corbelli
@@ -55,25 +59,23 @@ EMAIL: <roystead247 --> gmail.com>
 CONTRIBUTION: provided the download_applydiffs.py script.
 
 
-  TRANSLATORS
-  ===========
+# TRANSLATORS
 
 Additional translations were provided by:
- - strel (Spanish)
- - Stéphane Aulery (French)
- - RainDropR (Arabic)
- - Atanas Kovachki (Bulgarian)
- - lukophron (French)
- - Raphael (German)
+- strel (Spanish)
+- Stéphane Aulery (French)
+- RainDropR (Arabic)
+- Atanas Kovachki (Bulgarian)
+- lukophron (French)
+- Raphael (German)
 
 
-  DONATIONS
-  =========
+# DONATIONS
 
 We'd like to thank these persons for their donations:
- - Paulina Wadecka
- - Oleg Peil
- - Diego Sarmentero
- - Fabian Winter
- - Lacroix Scott
+- Paulina Wadecka
+- Oleg Peil
+- Diego Sarmentero
+- Fabian Winter
+- Lacroix Scott
 

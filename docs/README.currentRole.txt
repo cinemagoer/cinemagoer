@@ -1,12 +1,10 @@
-
-  THE currentRole ATTRIBUTE AND THE Character CLASS
-  =================================================
+# THE currentRole ATTRIBUTE AND THE Character CLASS
 
 Since version 3.3, IMDbPY supports the character pages of the IMDb
 database; this required some substantial changes to how actors'
 and acresses' roles were handled.
 Starting with release 3.4, "sql" data access system is supported,
-too - but it works a bit differently from "http" and "mobile".
+too - but it works a bit differently from "http".
 See "SQL" below.
 
 The currentRole instance attribute can be found in every instance
@@ -50,8 +48,7 @@ will return a good-old-unicode string, like expected in the previous
 version of IMDbPY.
 
 
-  SQL
-  ===
+# SQL
 
 Fetching data from the web, only characters with an active page
 on the web site will have their characterID; we don't have these
@@ -62,8 +59,7 @@ characterID, even if - in fact - they may not be portraying the
 same character.
 
 
-  GOODIES
-  =======
+# GOODIES
 
 To help getting the required information from Movie, Person and
 Character objects, in the "helpers" module there's a new factory

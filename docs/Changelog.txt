@@ -1,10 +1,13 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in the next release
-  [http]
-  - ignore invalid https certificate for akas.imdb.com domain
-  - fix synopsis parser
+* What's the new in release 6.0 "Life is Strange" (12 Nov 2017)
+  [general]
+  - now IMDbPY is a Python 3 package
+  - simplified the code base: #61
+  - remove dependencies: SQLObject, BeautifulSoup, C compiler
+  - introduced a tox testsuite
+  - fix various parsers
 
 
 * What's the new in release 5.1 "Westworld" (13 Nov 2016)

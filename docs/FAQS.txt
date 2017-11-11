@@ -1,20 +1,16 @@
-  IMDbPY FAQS
-  ===========
+# IMDbPY FAQS
 
-Q1: Since version 3.7, parsing the data from the IMDb web site is slow,
-    sloow, slooow!  Why?
+Q: is IMDbPY compatible with Python 3?
 
-A1: if python-lxml is not installed in your system, IMDbPY uses the
-    pure-python BeautifulSoup module as a fall-back; BeautifulSoup does
-    an impressive job, but it can't be as fast as a parser written in C.
-    You can install python-lxml following the instructions in the
-    README.newparsers file.
+A: yes.  Actually the versions after 6.0 are only compatible with Python 3.
+    If you need an older, not maintained, version for Python, see the
+    imdbpy-legacy branch in the repository.
 
 
-Q2: why the movieID (and other IDs) used in the 'sql' database are not
+Q: why the movieID (and other IDs) used in the old 'sql' database are not
     the same used on the IMDb.com site?
 
-A2: first, a bit of nomenclature: we'll call "movieID" (or things like
+A: first, a bit of nomenclature: we'll call "movieID" (or things like
     "personID", for instance of the Person class) a unique identifier used
     by IMDbPY to manage a single movie (or other kinds of object).
     We'll call "imdbID" a unique identifier used, for the same kind
@@ -37,10 +33,10 @@ A2: first, a bit of nomenclature: we'll call "movieID" (or things like
     way you can't use imdbIDs with your local database or vice-versa.
 
 
-Q3: using a sql database, what's the imdb_id (or something like that)
+Q: using a sql database, what's the imdb_id (or something like that)
     column in tables like 'title', 'name' and so on?
 
-A3: it's internally used by IMDbPY to remember the imdbID (the one
+A: it's internally used by IMDbPY to remember the imdbID (the one
     used by the web site - accessing the database you'll use the numeric
     value of the 'id' column, as movieID) of a movie, once it stumbled
     upon.  This way, if IMDbPY is asked again about the imdbID of
@@ -54,15 +50,15 @@ A3: it's internally used by IMDbPY to remember the imdbID (the one
     its best to succeed.
 
 
-Q4: but what if I really need the imdbIDs, to use my database?
+Q: but what if I really need the imdbIDs, to use my database?
 
-A4: no, you don't.  Search for a title, get its information.  Be happy!
+A: no, you don't.  Search for a title, get its information.  Be happy!
 
 
-Q5: I have a great idea: write a script to fetch all the imdbID from the
+Q: I have a great idea: write a script to fetch all the imdbID from the
     web site!  Can't you do it?
 
-A5: yeah, I can.  But I won't. :-)
+A: yeah, I can.  But I won't. :-)
     It would be somewhat easy to map every title on the web to its
     imdbID, but there are still a lot of problems.
     First of all, every user will end up doing it for its own copy
@@ -82,10 +78,10 @@ A5: yeah, I can.  But I won't. :-)
     Repeat with me: I DON'T NEED ALL THE imdbIDs. :-)
 
 
-Q6: using a sql database, how can I convert a movieID (whose value
+Q: using a sql database, how can I convert a movieID (whose value
     is valid only locally) to an imdbID (the ID used by the imdb.com site)?
 
-A6: various functions can be used to convert a movieID (or personID or
+A: various functions can be used to convert a movieID (or personID or
     other IDs) to the imdbID used by the web site.
     Example of code:
 
@@ -107,11 +103,11 @@ A6: various functions can be used to convert a movieID (or personID or
     In case of problems, these methods will return None.
 
 
-Q7: I have a movie title (in the format used by the plain text data files)
+Q: I have a movie title (in the format used by the plain text data files)
     or other kind of data (like a person/character/company name) and I want
     to get its imdbID.  How can I do?
 
-A7: the safest thing, is probably to do a normal search on IMDb (using the
+A: the safest thing, is probably to do a normal search on IMDb (using the
     'http' or 'mobile' data access system of IMDbPY) and see if the first
     item is the correct one.
     You can also try the 'title2imdbID' method (and similar) of the IMDb
@@ -119,14 +115,14 @@ A7: the safest thing, is probably to do a normal search on IMDb (using the
     expect some failures - it returns None in this case.
 
 
-Q8: I have an URL (of a movie, person or something else); how can I
+Q: I have an URL (of a movie, person or something else); how can I
     get a Movie/Person/... instance?
 
-A8: import the imdb.helpers module and use the get_byURL function.
+A: import the imdb.helpers module and use the get_byURL function.
 
 
-Q9: I'm writing an interface based on IMDbPY and I have problems handling
+Q: I'm writing an interface based on IMDbPY and I have problems handling
     encoding, chars conversions, replacements of references and so on.
 
-A9: see the many functions in the imdb.helpers module.
+A: see the many functions in the imdb.helpers module.
 

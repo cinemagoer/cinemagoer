@@ -1,6 +1,8 @@
 syntax: glob
 build
 dist
+.cache
+.tox
 __pycache__
 *.egg-info
 *.mo

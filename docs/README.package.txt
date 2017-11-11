@@ -152,18 +152,18 @@ Example:
   # the first movie in the list.
   first_match = movie_list[0]
   # only basic information like the title will be printed.
-  print first_match.summary()
+  print(first_match.summary())
   # update the information for this movie.
   i.update(first_match)
   # a lot of information will be printed!
-  print first_match.summary()
-  # retrieve trivia information and print it.
+  print(first_match.summary())
+  # retrieve trivia information
   i.update(first_match, 'trivia')
-  print m['trivia']
+  print(m['trivia'])
   # retrieve both 'quotes' and 'goofs' information (with a list or tuple)
   i.update(m, ['quotes', 'goofs'])
-  print m['quotes']
-  print m['goofs']
+  print(m['quotes'])
+  print(m['goofs'])
   # retrieve every available information.
   i.update(m, 'all')
 
@@ -272,14 +272,14 @@ It works mostly like the Movie class. :-)
 The Movie class defines a __contains__() method, which is used to
 check if a given person has worked in a given movie with the syntax:
   if personObject in movieObject:
-      print '%s worked in %s' % (personObject['name'], movieObject['title'])
+      print('%s worked in %s' % (personObject['name'], movieObject['title']))
 
 The Person class defines a isSamePerson(otherPersonObject) method, useful
 to compare two person if you're not sure that both objects have retrieved
 complete information (e.g.: a Person object returned by a query);
 th syntax is:
    if personObject.isSamePerson(otherPersonObject):
-       print 'they are the same person!'
+       print('they are the same person!')
 
 An analogous method is defined for the Movie class, and it's
 called isSameTitle(otherMovieObject)
@@ -328,14 +328,14 @@ Example:
   m.has_key('demographic') # returns false, since no demographic breakdowns
                            # aren't available by default.
   i.update(m, info=('vote details',)) # retrieve the vote details info set.
-  print m['demographic'] # print the demographic breakdowns.
+  print(m['demographic'] # demographic breakdowns.)
 
 Another example:
   i = imdb.IMDb(accessSystem='http')
   # retrieve only the biography and the "other works" page:
   p = i.get_person('0000154', info=['biography', 'other works'])
-  print p['salary']
-  print p['other works']
+  print(p['salary'])
+  print(p['other works'])
 
 To see which information sets are available and what are the defaults,
 see the all_info and default_info instance variable of Movie, Person
@@ -397,25 +397,25 @@ E.g.:
 
     # Get the 7th Person object in the cast list
     cast = movie['cast'][6]
-    # Will print "Warren J. Kemmerling"
-    print cast['name']
-    # Will print "Wild Bill"
-    print cast.currentRole
-    # Will print "(as Warren Kemmerling)"
-    print cast.notes
+    # "Warren J. Kemmerling"
+    print(cast['name'])
+    # "Wild Bill"
+    print(cast.currentRole)
+    # "(as Warren Kemmerling)"
+    print(cast.notes)
 
     # Get the 5th Person object in the list of writers
     writer = movie['writer'][4]
-    # Will print "Steven Spielberg"
-    print writer['name']
-    # Will print "written by", because that was duty of Steven Spielberg,
+    # "Steven Spielberg"
+    print(writer['name'])
+    # "written by", because that was the duty of Steven Spielberg,
     # as a writer for the movie.
-    print writer.notes
+    print(writer.notes)
 
 Obviously these Person objects contain only information directly
 available parsing the movie pages (e.g.: the name, an imdbID, the role/duty),
 so if now you:
-    print writer['actor']
+    print(writer['actor'])
 to get a list of movies acted by Mel Gibson, you'll get a KeyError
 exception, because the Person object doesn't contain this kind of
 information.
@@ -423,8 +423,8 @@ information.
 To gather every available information, you've to use the update()
 method of the IMDb class:
     i.update(writer)
-    # Now it will print a list of Movie objects.
-    print writer['actor']
+    # a list of Movie objects.
+    print(writer['actor'])
 
 The same is true parsing a person data: you'll find a list of movie
 he/she worked on and, for every movie, the currentRole instance variable
@@ -432,18 +432,18 @@ is set to a string describing the role/duty of the considered person.
 E.g.:
     # Julia Roberts
     julia = i.get_person('0000210')
-    # Print a list of movies she acted in and the played role, separated
+    # Output a list of movies she acted in and the played role, separated
     # by '::'
-    print [movie['title'] + '::' + movie.currentRole
-           for movie in julia['actress']]
+    print([movie['title'] + '::' + movie.currentRole
+           for movie in julia['actress']])
 
 Here the various Movie objects only contain minimal information, like
 the title and the year; the latest movie with Julia Roberts:
     last = julia['actress'][0]
     # Retrieve full information
     i.update(last)
-    # Print the name of the first director
-    print last['director'][0]['name']
+    # name of the first director
+    print(last['director'][0]['name'])
 
 
 # Company OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Company OBJECT
@@ -462,7 +462,7 @@ It's easier to understand if you look at it; look at the output of:
   import imdb
   i = imdb.IMDb()
   m = i.get_movie('0094226')
-  print m['akas']
+  print(m['akas'])
 
 As a rule, there's as much as one '::' separator inside a string,
 splitting it two logical pieces: "TEXT::NOTE".
@@ -513,17 +513,17 @@ something like:
   try:
       i = IMDb()
   except IMDbError, err:
-      print err
+      print(err)
 
   try:
       results = i.search_person('Mel Gibson')
   except IMDbError, err:
-      print err
+      print(err)
 
   try:
       movie = i.get_movie('0335345')
   except IMDbError, err:
-      print err
+      print(err)
 
 
 # OTHER SOURCES OF INFO

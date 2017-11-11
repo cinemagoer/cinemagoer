@@ -31,11 +31,11 @@ Starting on November 2017 many things were improved and simplified:
 
     # print the director(s) of a movie
     the_matrix = ia.get_movie('0133093')
-    print the_matrix['director']
+    print(the_matrix['director'])
 
     # search for a person
     for person in ia.search_person('Mel Gibson'):
-        print person.personID, person['name']
+        print(person.personID, person['name'])
 
 
 ## License

@@ -75,7 +75,7 @@ E.g.:
   i = imdb.IMDb()
   m = i.get_movie('0057012')
   ps = m['cast'][0]
-  print myPrint(ps)
+  print(myPrint(ps))
   # The output will be something like:
   Peter Sellers ... Group Captain Lionel Mandrake / President Merkin Muffley / Dr. Strangelove
 

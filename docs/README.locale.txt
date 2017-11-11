@@ -36,7 +36,7 @@ E.g.:
   gettext.textdomain('imdbpy')
 
   # Request a translation.
-  print _(u'long-imdb-name')
+  print(_(u'long-imdb-name'))
 
 
 # ADD A NEW LANGUAGE

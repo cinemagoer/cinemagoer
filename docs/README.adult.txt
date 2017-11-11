@@ -23,7 +23,7 @@ E.g.:
 
     results = ia.search_movie('debby does dallas', results=5)
     for movie in results:
-        print movie['long imdb title'], movie.movieID
+        print(movie['long imdb title'], movie.movieID)
     # It will print:
     # Debbie Does Dallas (1978) 0077415
     # Debbie Does Dallas Part II (1981) 0083807
@@ -36,8 +36,8 @@ E.g.:
 
     results = ia.search_movie('debby does dallas', results=5)
     for movie in results:
-       print movie['long imdb title'], movie.movieID
-    # It will print only:
+       print(movie['long imdb title'], movie.movieID)
+    # It will printonly:
     # Pauly Does Dallas (1993) (TV) 0208347
 
 

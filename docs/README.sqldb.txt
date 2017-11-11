@@ -220,10 +220,10 @@ Now you can use IMDbPY with the database:
   from imdb import IMDb
   i = IMDb('sql', uri='YOUR_URI_STRING')
   resList = i.search_movie('the incredibles')
-  for x in resList: print x
+  for x in resList: print(x)
   ti = resList[0]
   i.update(ti)
-  print ti['director'][0]
+  print(ti['director'][0])
 
 and so on...
 

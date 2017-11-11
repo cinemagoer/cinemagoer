@@ -107,9 +107,9 @@ data set; e.g.:
   from imdb import IMDb
   i = IMDb()
   m = i.get_movie('0285331')  # 24.
-  print len(m['cast']) # wooah!  Only 7 person in the cast of 24?!?!
+  print(len(m['cast'])) # wooah!  Only 7 person in the cast of 24?!?!
   i.update(m, 'full credits')
-  print len(m['cast']) # yup!  More than 300 persons!
+  print(len(m['cast'])) # yup!  More than 300 persons!
 
 If you prefer, you can retrieve the complete cast of every episode,
 keeping the lists separated for every episode; instead of retrieving

@@ -9,11 +9,11 @@ E.g.:
   from imdb import IMDb
   ia = IMDb('http')
   movie = ia.get_movie(theMovieID)
-  print movie.getAsXML('keywords')
+  print(movie.getAsXML('keywords'))
 
 It's also possible to get a representation of a whole object,
 using the asXML() method:
-  print movie.asXML()
+  print(movie.asXML())
 
 The returned strings are unicode.  The _with_add_keys argument
 of the asXML() method can be set to False (default: True) to

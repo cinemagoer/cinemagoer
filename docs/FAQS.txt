@@ -88,9 +88,9 @@ A: various functions can be used to convert a movieID (or personID or
       from imdb import IMDb
       ia = IMDb('sql', uri=URI_TO_YOUR_SQL_DATABASE)
       movie = ia.search_movie('The Untouchables')[0] # a Movie instance.
-      print 'The movieID for The Untouchables:', movie.movieID
-      print 'The imdbID used by the site:', ia.get_imdbMovieID(movie.movieID)
-      print 'Same ID, smarter function:', ia.get_imdbID(movie)
+      print('The movieID for The Untouchables:', movie.movieID)
+      print('The imdbID used by the site:', ia.get_imdbMovieID(movie.movieID))
+      print('Same ID, smarter function:', ia.get_imdbID(movie))
 
     It goes without saying that get_imdbMovieID has some sibling
     methods: get_imdbPersonID, get_imdbCompanyID and get_imdbCharacterID.

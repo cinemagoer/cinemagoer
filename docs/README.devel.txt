@@ -213,7 +213,7 @@ Then it's possibile to use the new data access system like:
   from imdb import IMDb
   i = IMDb(accessSystem='mysql')
   results = i.search_movie('the matrix')
-  print results
+  print(results)
 
 A specific data access system implementation can defines it's own
 methods.
@@ -230,7 +230,7 @@ with their description, is always available calling the get_special_methods()
 of the IMDb class.
 E.g.:
      i = IMDb(accessSystem='http')
-     print i.get_special_methods()
+     print(i.get_special_methods())
 
 will print a dictionary with the format:
   {'method_name': 'method_description', ...}

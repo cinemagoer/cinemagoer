@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
 # This script downloads and applies any and all imdb diff files which
@@ -33,16 +33,13 @@
 #
 
 import os
-import sys
 import shutil
 import subprocess
 import re
 import datetime
-import time
-import MySQLdb
 import logging
 
-from datetime import timedelta,datetime
+from datetime import timedelta
 from ftplib import FTP
 from random import choice
 
@@ -137,7 +134,7 @@ def mktree(path):
     for path in paths_to_create:
         try:
             os.mkdir(path)
-        except Exception as e:
+        except Exception:
             logger.exception("Error trying to create %p" % path)
             return -1
     return 0
@@ -225,7 +222,7 @@ def applyDiffs():
         logger.debug("Need diff file %s" % diff)
 
         if not os.path.isfile(diffFilePath):
-            
+
             # diff file is missing so we need to download it so first make sure we have an FTP connection
             if not haveFTPConnection:
                 try:
@@ -453,7 +450,7 @@ def applyDiffs():
     # Now move the updated and compressed lists to the main lists folder, replacing the old list files
     for f in os.listdir(tmpListsPath):
         if re.match(".*\.list.gz",f):
-            # Delete the original compressed list file from ImdbListsPath if it exists 
+            # Delete the original compressed list file from ImdbListsPath if it exists
             if os.path.isfile(os.path.join(ImdbListsPath,f)):
                 os.remove(os.path.join(ImdbListsPath,f))
 

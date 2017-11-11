@@ -7,7 +7,7 @@ import setuptools
 
 # version of the software; in the code repository this represents
 # the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
-version = '5.2'
+version = '6.0'
 
 home_page = 'https://imdbpy.sourceforge.io/'
 
@@ -33,7 +33,6 @@ classifiers = """\
 Development Status :: 5 - Production/Stable
 Environment :: Console
 Environment :: Web Environment
-Environment :: Handhelds/PDA's
 Intended Audience :: Developers
 Intended Audience :: End Users/Desktop
 License :: OSI Approved :: GNU General Public License (GPL)

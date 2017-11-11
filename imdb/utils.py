@@ -43,11 +43,21 @@ _utils_logger = logging.getLogger('imdbpy.utils')
 # and year of release.
 # XXX: probably L, C, D and M are far too much! ;-)
 re_year_index = re.compile(r'\(([0-9\?]{4}(/[IVXLCDM]+)?)\)')
-re_extended_year_index = re.compile(
-    r'\((TV episode|TV Series|TV mini-series|TV|Video|Video Game)? '
-    r'?((?:[0-9\?]{4})(?:-[0-9\?]{4})?)(?:/([IVXLCDM]+)?)?\)'
-)
-re_remove_kind = re.compile(r'\((TV episode|TV Series|TV mini-series|TV|Video|Video Game)? ?')
+re_m_episode = re.compile(r'\(TV Episode\)\s+-\s+', re.I)
+re_m_series = re.compile(r'Season\s+\d+\s+\|\s+Episode\s+\d+\s+-', re.I)
+re_m_imdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
+re_m_kind = re.compile(
+    r'\((TV episode|TV Series|TV mini-series|mini|TV|Video|Video Game|VG|Short|TV Movie|TV Short|V)\)',
+    re.I)
+
+KIND_MAP = {
+    'tv': 'tv movie',
+    'tv episode': 'episode',
+    'v': 'video movie',
+    'video': 'video movie',
+    'vg': 'video game',
+    'mini': 'tv mini series'
+}
 
 # Match only the imdbIndex (for name strings).
 re_index = re.compile(r'^\(([IVXLCDM]+)\)$')
@@ -293,13 +303,6 @@ def _split_series_episode(title):
                 # that means this is an episode title, as returned by
                 # the web server.
                 series_title = title[:second_quot]
-            # elif episode_or_year[-1:] == '}':
-            #         # Title of the episode, as in the plain text data files.
-            #         begin_eps = episode_or_year.find('{')
-            #         if begin_eps == -1: return series_title, episode_or_year
-            #         series_title = title[:second_quot+begin_eps].rstrip()
-            #         # episode_or_year is returned with the {...}
-            #         episode_or_year = episode_or_year[begin_eps:]
     return series_title, episode_or_year
 
 
@@ -395,65 +398,24 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
     #      tv mini series: 5,497
     #      video game:     5,490
     #      More up-to-date statistics: http://us.imdb.com/database_statistics
-    if title.endswith('(TV)'):
-        kind = 'tv movie'
-        title = title[:-4].rstrip()
-    elif title.endswith('(TV Movie)'):
-        kind = 'tv movie'
-        title = title[:-10].rstrip()
-    elif title.endswith('(V)'):
-        kind = 'video movie'
-        title = title[:-3].rstrip()
-    elif title.lower().endswith('(video)'):
-        kind = 'video movie'
-        title = title[:-7].rstrip()
-    elif title.endswith('(TV Short)'):
-        kind = 'tv short'
-        title = title[:-10].rstrip()
-    elif title.endswith('(TV Mini-Series)'):
-        kind = 'tv mini series'
-        title = title[:-16].rstrip()
-    elif title.endswith('(mini)'):
-        kind = 'tv mini series'
-        title = title[:-6].rstrip()
-    elif title.endswith('(VG)'):
-        kind = 'video game'
-        title = title[:-4].rstrip()
-    elif title.endswith('(Video Game)'):
-        kind = 'video game'
-        title = title[:-12].rstrip()
-    elif title.endswith('(TV Series)'):
-        epindex = title.find('(TV Episode) - ')
-        if epindex >= 0:
-            # It's an episode of a series.
-            kind = 'episode'
-            series_info = analyze_title(title[epindex + 15:])
-            result['episode of'] = series_info.get('title')
-            result['series year'] = series_info.get('year')
-            title = title[:epindex]
-        else:
-            kind = 'tv series'
-            title = title[:-11].rstrip()
+    epindex = re_m_episode.search(title)
+    if epindex:
+        # It's an episode of a series.
+        kind = 'episode'
+        series_title = title[epindex.end():]
+        series_title = re_m_series.sub('', series_title)
+        series_info = analyze_title(series_title)
+        result['episode of'] = series_info.get('title')
+        result['series year'] = series_info.get('year')
+        title = title[:epindex.start()].strip()
+    else:
+        detected_kind = re_m_kind.findall(title)
+        if detected_kind:
+            kind = detected_kind[-1].lower().replace('-', '')
+            kind = KIND_MAP.get(kind, kind)
+            title = re_m_kind.sub('', title).strip()
     # Search for the year and the optional imdbIndex (a roman number).
     yi = re_year_index.findall(title)
-    if not yi:
-        yi = re_extended_year_index.findall(title)
-        if yi:
-            yk, yiy, yii = yi[-1]
-            yi = [(yiy, yii)]
-            if yk == 'TV episode':
-                kind = 'episode'
-            elif yk in ('TV', 'TV Movie'):
-                kind = 'tv movie'
-            elif yk == 'TV Series':
-                kind = 'tv series'
-            elif yk == 'Video':
-                kind = 'video movie'
-            elif yk in ('TV mini-series', 'TV Mini-Series'):
-                kind = 'tv mini series'
-            elif yk == 'Video Game':
-                kind = 'video game'
-            title = re_remove_kind.sub('(', title)
     if yi:
         last_yi = yi[-1]
         year = last_yi[0]
@@ -463,6 +425,11 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
         i = title.rfind('(%s)' % last_yi[0])
         if i != -1:
             title = title[:i - 1].rstrip()
+    if not imdbIndex:
+        detect_imdbIndex = re_m_imdbIndex.findall(title)
+        if detect_imdbIndex:
+            imdbIndex = detect_imdbIndex[-1]
+            title = re_m_imdbIndex.sub('', title).strip()
     # This is a tv (mini) series: strip the '"' at the begin and at the end.
     # XXX: strip('"') is not used for compatibility with Python 2.0.
     if title and title[0] == title[-1] == '"':
@@ -476,8 +443,6 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
             title = canonicalTitle(title)
         else:
             title = normalizeTitle(title)
-    # 'kind' is one in ('movie', 'episode', 'tv series', 'tv mini series',
-    #                   'tv movie', 'video movie', 'video game')
     result['title'] = title
     result['kind'] = kind or 'movie'
     if year and year != '????':

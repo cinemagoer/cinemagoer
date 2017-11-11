@@ -21,7 +21,7 @@ def test_found_one_result_should_be_list_with_one_movie(search_movie):
     page = search_movie('od instituta do proizvodnje')
     data = parser.parse(page)['data']
     assert data == [
-        ('0483758', {'kind': 'movie', 'title': 'Od instituta do proizvodnje', 'year': 1971})
+        ('0483758', {'kind': 'short', 'title': 'Od instituta do proizvodnje', 'year': 1971})
     ]
 
 
@@ -52,7 +52,7 @@ def test_found_movie_should_have_kind(search_movie):
     assert movies['0106062'] == {'title': 'Matrix', 'kind': 'tv series', 'year': 1993}
 
 
-@mark.skip('IMDb index is part of title')
+# @mark.skip('IMDb index is part of title')
 def test_found_movie_should_have_imdb_index(search_movie):
     page = search_movie('blink')
     data = parser.parse(page)['data']

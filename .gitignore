@@ -1,7 +1,10 @@
 *.pyc
+*.pyo
 *.egg-info
 *.mo
 *.so
 build/
 __pycache__
 dist/
+.cache/
+.tox/

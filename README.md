@@ -1,11 +1,13 @@
-IMDbPY
-======
+# IMDbPY
 
 **IMDbPY** is a Python package useful to retrieve and manage the data of the [IMDb][imdb] movie database about movies, people, characters and companies.
 
+## IMDbPY-legacy
 
-Main features
--------------
+This is the *imdbpy-legacy* branch, still compatible with Python 2.7.  Beware that it's no longer maintained; if possible, switch to the *master* version, compatible with Python 3.
+
+
+## Main features
 
 * written in pure Python (and few, optional, C lines)
 * platform-independent
@@ -15,8 +17,7 @@ Main features
 * IMDbPY powers many other softwares and has been used in various research papers. [Curious about that][ecosystem]?
 
 
-Code example
-------------
+## Code example
 
     from imdb import IMDb
     ia = IMDb()
@@ -30,8 +31,7 @@ Code example
         print person.personID, person['name']
 
 
-License
--------
+## License
 
 IMDbPY is released under the terms of the GNU GPL v2 (or later) license.
 

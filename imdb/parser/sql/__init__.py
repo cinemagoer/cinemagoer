@@ -1136,7 +1136,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         # Episodes.
         episodes = {}
         eps_list = list(Title.select(Title.q.episodeOfID == movieID))
-        eps_list.sort()
+        eps_list.sort(key=lambda e: '%s.%s' % (e.seasonNr or '', e.episodeNr or ''))
         if eps_list:
             ps_data = {'title': res['title'], 'kind': res['kind'],
                        'year': res.get('year'),
@@ -1607,7 +1607,13 @@ class IMDbSqlAccessSystem(IMDbBase):
 
     def __del__(self):
         """Ensure that the connection is closed."""
+        # TODO: on Python 3, using mysql+pymysql, raises random exceptions;
+        # for now, skip it and hope it's garbage-collected.
+        return
         if not hasattr(self, '_connection'):
             return
         self._sql_logger.debug('closing connection to the database')
-        self._connection.close()
+        try:
+            self._connection.close()
+        except:
+            pass

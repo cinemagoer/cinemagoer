@@ -122,53 +122,80 @@ class DBTable(object):
 
 
 # Default values to insert in some tables: {'column': (list, of, values, ...)}
-kindTypeDefs = {'kind': ('movie', 'tv series', 'tv movie', 'video movie',
-                        'tv mini series', 'video game', 'episode')}
-companyTypeDefs = {'kind': ('distributors', 'production companies',
-                        'special effects companies', 'miscellaneous companies')}
-infoTypeDefs = {'info': ('runtimes', 'color info', 'genres', 'languages',
-    'certificates', 'sound mix', 'tech info', 'countries', 'taglines',
-    'keywords', 'alternate versions', 'crazy credits', 'goofs',
-    'soundtrack', 'quotes', 'release dates', 'trivia', 'locations',
-    'mini biography', 'birth notes', 'birth date', 'height',
-    'death date', 'spouse', 'other works', 'birth name',
-    'salary history', 'nick names', 'books', 'agent address',
-    'biographical movies', 'portrayed in', 'where now', 'trade mark',
-    'interviews', 'article', 'magazine cover photo', 'pictorial',
-    'death notes', 'LD disc format', 'LD year', 'LD digital sound',
-    'LD official retail price', 'LD frequency response', 'LD pressing plant',
-    'LD length', 'LD language', 'LD review', 'LD spaciality', 'LD release date',
-    'LD production country', 'LD contrast', 'LD color rendition',
-    'LD picture format', 'LD video noise', 'LD video artifacts',
-    'LD release country', 'LD sharpness', 'LD dynamic range',
-    'LD audio noise', 'LD color information', 'LD group genre',
-    'LD quality program', 'LD close captions-teletext-ld-g',
-    'LD category', 'LD analog left', 'LD certification',
-    'LD audio quality', 'LD video quality', 'LD aspect ratio',
-    'LD analog right', 'LD additional information',
-    'LD number of chapter stops', 'LD dialogue intellegibility',
-    'LD disc size', 'LD master format', 'LD subtitles',
-    'LD status of availablility', 'LD quality of source',
-    'LD number of sides', 'LD video standard', 'LD supplement',
-    'LD original title', 'LD sound encoding', 'LD number', 'LD label',
-    'LD catalog number', 'LD laserdisc title', 'screenplay-teleplay',
-    'novel', 'adaption', 'book', 'production process protocol',
-    'printed media reviews', 'essays', 'other literature', 'mpaa',
-    'plot', 'votes distribution', 'votes', 'rating',
-    'production dates', 'copyright holder', 'filming dates', 'budget',
-    'weekend gross', 'gross', 'opening weekend', 'rentals',
-    'admissions', 'studios', 'top 250 rank', 'bottom 10 rank')}
-compCastTypeDefs = {'kind': ('cast', 'crew', 'complete', 'complete+verified')}
-linkTypeDefs = {'link': ('follows', 'followed by', 'remake of', 'remade as',
-                        'references', 'referenced in', 'spoofs', 'spoofed in',
-                        'features', 'featured in', 'spin off from', 'spin off',
-                        'version of', 'similar to', 'edited into',
-                        'edited from', 'alternate language version of',
-                        'unknown link')}
-roleTypeDefs = {'role': ('actor', 'actress', 'producer', 'writer',
-                        'cinematographer', 'composer', 'costume designer',
-                        'director', 'editor', 'miscellaneous crew',
-                        'production designer', 'guest')}
+kindTypeDefs = {
+    'kind': (
+        'movie', 'tv series', 'tv movie', 'video movie',
+        'tv mini series', 'video game', 'episode', 'short', 'tv short'
+    )
+}
+
+companyTypeDefs = {
+    'kind': (
+        'distributors', 'production companies',
+        'special effects companies', 'miscellaneous companies'
+    )
+}
+
+infoTypeDefs = {
+    'info': (
+        'runtimes', 'color info', 'genres', 'languages',
+        'certificates', 'sound mix', 'tech info', 'countries', 'taglines',
+        'keywords', 'alternate versions', 'crazy credits', 'goofs',
+        'soundtrack', 'quotes', 'release dates', 'trivia', 'locations',
+        'mini biography', 'birth notes', 'birth date', 'height',
+        'death date', 'spouse', 'other works', 'birth name',
+        'salary history', 'nick names', 'books', 'agent address',
+        'biographical movies', 'portrayed in', 'where now', 'trade mark',
+        'interviews', 'article', 'magazine cover photo', 'pictorial',
+        'death notes', 'LD disc format', 'LD year', 'LD digital sound',
+        'LD official retail price', 'LD frequency response', 'LD pressing plant',
+        'LD length', 'LD language', 'LD review', 'LD spaciality', 'LD release date',
+        'LD production country', 'LD contrast', 'LD color rendition',
+        'LD picture format', 'LD video noise', 'LD video artifacts',
+        'LD release country', 'LD sharpness', 'LD dynamic range',
+        'LD audio noise', 'LD color information', 'LD group genre',
+        'LD quality program', 'LD close captions-teletext-ld-g',
+        'LD category', 'LD analog left', 'LD certification',
+        'LD audio quality', 'LD video quality', 'LD aspect ratio',
+        'LD analog right', 'LD additional information',
+        'LD number of chapter stops', 'LD dialogue intellegibility',
+        'LD disc size', 'LD master format', 'LD subtitles',
+        'LD status of availablility', 'LD quality of source',
+        'LD number of sides', 'LD video standard', 'LD supplement',
+        'LD original title', 'LD sound encoding', 'LD number', 'LD label',
+        'LD catalog number', 'LD laserdisc title', 'screenplay-teleplay',
+        'novel', 'adaption', 'book', 'production process protocol',
+        'printed media reviews', 'essays', 'other literature', 'mpaa',
+        'plot', 'votes distribution', 'votes', 'rating',
+        'production dates', 'copyright holder', 'filming dates', 'budget',
+        'weekend gross', 'gross', 'opening weekend', 'rentals',
+        'admissions', 'studios', 'top 250 rank', 'bottom 10 rank'
+    )
+}
+
+compCastTypeDefs = {
+    'kind': ('cast', 'crew', 'complete', 'complete+verified')
+}
+
+linkTypeDefs = {
+    'link': (
+        'follows', 'followed by', 'remake of', 'remade as',
+        'references', 'referenced in', 'spoofs', 'spoofed in',
+        'features', 'featured in', 'spin off from', 'spin off',
+        'version of', 'similar to', 'edited into',
+        'edited from', 'alternate language version of',
+        'unknown link'
+    )
+}
+
+roleTypeDefs = {
+    'role': (
+        'actor', 'actress', 'producer', 'writer',
+        'cinematographer', 'composer', 'costume designer',
+        'director', 'editor', 'miscellaneous crew',
+        'production designer', 'guest'
+    )
+}
 
 # Schema of tables in our database.
 # XXX: Foreign keys can be used to create constrains between tables,

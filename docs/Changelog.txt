@@ -1,10 +1,14 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in the next release
+* What's the new in release 5.2 "Blade Runner 2049" (11 Nov 2017)
+  [general]
+  - last release to support Python 2.7
+
   [http]
   - ignore invalid https certificate for akas.imdb.com domain
   - fix synopsis parser
+  - fix title parser
 
 
 * What's the new in release 5.1 "Westworld" (13 Nov 2016)

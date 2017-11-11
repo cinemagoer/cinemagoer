@@ -90,7 +90,7 @@ class Character(_Container):
         """Set the name of the character."""
         # XXX: convert name to unicode, if it's a plain string?
         try:
-            d = analyze_name(name, canonical=0)
+            d = analyze_name(name, canonical=False)
             self.data.update(d)
         except IMDbParserError:
             # TODO: issue a warning.
@@ -130,11 +130,11 @@ class Character(_Container):
         from .Movie import Movie
         from .Person import Person
         if isinstance(item, Person):
-            for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
+            for m in flatten(self.data, yieldDictKeys=True, scalar=Movie):
                 if item.isSame(m.currentRole):
                     return True
         elif isinstance(item, Movie):
-            for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
+            for m in flatten(self.data, yieldDictKeys=True, scalar=Movie):
                 if item.isSame(m):
                     return True
         return False
@@ -145,7 +145,7 @@ class Character(_Container):
         if not isinstance(other, self.__class__):
             return False
         if 'name' in self.data and 'name' in other.data and \
-                build_name(self.data, canonical=0) == build_name(other.data, canonical=0):
+                build_name(self.data, canonical=False) == build_name(other.data, canonical=False):
             return True
         if self.accessSystem == other.accessSystem and \
                 self.characterID is not None and \

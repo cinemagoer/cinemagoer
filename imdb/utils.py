@@ -311,8 +311,7 @@ def is_series_episode(title):
     return bool(_split_series_episode(title.strip())[0])
 
 
-def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=None,
-                  _emptyString=''):
+def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=None):
     """Analyze the given title and return a dictionary with the
     "stripped" title, the kind of the show ("movie", "tv series", etc.),
     the year of production and the optional imdbIndex (a roman number
@@ -330,14 +329,14 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
     original_t = title
     result = {}
     title = title.strip()
-    year = _emptyString
-    kind = _emptyString
-    imdbIndex = _emptyString
+    year = ''
+    kind = ''
+    imdbIndex = ''
     series_title, episode_or_year = _split_series_episode(title)
     if series_title:
         # It's an episode of a series.
         series_d = analyze_title(series_title, canonical=canonicalSeries)
-        oad = sen = ep_year = _emptyString
+        oad = sen = ep_year = ''
         # Plain text data files format.
         if episode_or_year[0:1] == '{' and episode_or_year[-1:] == '}':
             match = re_episode_info.findall(episode_or_year)
@@ -463,7 +462,7 @@ _web_format = '%d %B %Y'
 _ptdf_format = '(%Y-%m-%d)'
 
 
-def _convertTime(title, fromPTDFtoWEB=1, _emptyString=''):
+def _convertTime(title, fromPTDFtoWEB=True):
     """Convert a time expressed in the pain text data files, to
     the 'Episode dated ...' format used on the web site; if
     fromPTDFtoWEB is false, the inverted conversion is applied."""
@@ -486,8 +485,7 @@ def _convertTime(title, fromPTDFtoWEB=1, _emptyString=''):
 
 
 def build_title(title_dict, canonical=None, canonicalSeries=None,
-                canonicalEpisode=None, ptdf=0, lang=None, _doYear=1,
-                _emptyString='', appendKind=True):
+                canonicalEpisode=None, ptdf=False, lang=None, _doYear=True, appendKind=True):
     """Given a dictionary that represents a "long" IMDb title,
     return a string.
 
@@ -501,7 +499,7 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
     """
     if canonical is not None:
         canonicalSeries = canonical
-    pre_title = _emptyString
+    pre_title = ''
     kind = title_dict.get('kind')
     episode_of = title_dict.get('episode of')
     if kind == 'episode' and episode_of is not None:
@@ -515,8 +513,7 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
             if 'series year' in title_dict:
                 episode_of['year'] = title_dict['series year']
         pre_title = build_title(episode_of, canonical=canonicalSeries,
-                                ptdf=0, _doYear=doYear,
-                                _emptyString=_emptyString)
+                                ptdf=False, _doYear=doYear)
         ep_dict = {'title': title_dict.get('title', ''),
                    'imdbIndex': title_dict.get('imdbIndex')}
         ep_title = ep_dict['title']
@@ -525,18 +522,16 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
             ep_dict['year'] = title_dict.get('year', '????')
             if ep_title[0:1] == '(' and ep_title[-1:] == ')' and \
                     ep_title[1:5].isdigit():
-                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=1,
-                                                _emptyString=_emptyString)
+                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=True)
         else:
             doYear = 0
             if ep_title.startswith('Episode dated'):
-                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=0,
-                                                _emptyString=_emptyString)
+                ep_dict['title'] = _convertTime(ep_title, fromPTDFtoWEB=False)
         episode_title = build_title(ep_dict,
                                     canonical=canonicalEpisode, ptdf=ptdf,
-                                    _doYear=doYear, _emptyString=_emptyString)
+                                    _doYear=doYear)
         if ptdf:
-            oad = title_dict.get('original air date', _emptyString)
+            oad = title_dict.get('original air date', '')
             if len(oad) == 10 and oad[4] == '-' and oad[7] == '-' and \
                     episode_title.find(oad) == -1:
                 episode_title += ' (%s)' % oad
@@ -548,11 +543,11 @@ def build_title(title_dict, canonical=None, canonicalSeries=None,
                     episode_title += '.%s' % episode
                 episode_title += ')'
             episode_title = '{%s}' % episode_title
-        return _emptyString + '%s %s' % (_emptyString + pre_title, _emptyString + episode_title)
+        return '%s %s' % (pre_title, episode_title)
     title = title_dict.get('title', '')
     imdbIndex = title_dict.get('imdbIndex', '')
     if not title:
-        return _emptyString
+        return ''
     if canonical is not None:
         if canonical:
             title = canonicalTitle(title, lang=lang, imdbIndex=imdbIndex)
@@ -627,13 +622,13 @@ def analyze_company_name(name, stripNotes=False):
     return result
 
 
-def build_company_name(name_dict, _emptyString=''):
+def build_company_name(name_dict):
     """Given a dictionary that represents a "long" IMDb company name,
     return a string.
     """
     name = name_dict.get('name')
     if not name:
-        return _emptyString
+        return ''
     country = name_dict.get('country')
     if country is not None:
         name += ' %s' % country
@@ -1173,7 +1168,7 @@ class _Container(object):
         self.myID = myID
         if data is None:
             data = {}
-        self.set_data(data, override=1)
+        self.set_data(data, override=True)
         self.notes = notes
         if titlesRefs is None:
             titlesRefs = {}
@@ -1361,7 +1356,7 @@ class _Container(object):
         """Return the dictionary with the references to characters."""
         return self.charactersRefs
 
-    def set_data(self, data, override=0):
+    def set_data(self, data, override=False):
         """Set the movie data to the given dictionary; if 'override' is
         set, the previous data is removed, otherwise the two dictionary
         are merged.
@@ -1586,7 +1581,7 @@ class _Container(object):
         return deepcopy(self)
 
 
-def flatten(seq, toDescend=(list, dict, tuple), yieldDictKeys=0,
+def flatten(seq, toDescend=(list, dict, tuple), yieldDictKeys=False,
             onlyKeysType=(_Container,), scalar=None):
     """Iterate over nested lists and dictionaries; toDescend is a list
     or a tuple of types to be considered non-scalar; if yieldDictKeys is

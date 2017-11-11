@@ -251,9 +251,9 @@ class Movie(_Container):
             elif key == 'smart canonical title':
                 return self.smartCanonicalTitle(self.data['title'])
             elif key == 'long imdb canonical title':
-                return build_title(self.data, canonical=1)
+                return build_title(self.data, canonical=True)
             elif key == 'smart long imdb canonical title':
-                return build_title(self.data, canonical=1, lang=self.guessLanguage())
+                return build_title(self.data, canonical=True, lang=self.guessLanguage())
         if key == 'full-size cover url' and 'cover url' in self.data:
             return self._re_fullsizeURL.sub('', self.data.get('cover url', ''))
         return None
@@ -275,7 +275,7 @@ class Movie(_Container):
         if not isinstance(other, self.__class__):
             return False
         if 'title' in self.data and 'title' in other.data and \
-                build_title(self.data, canonical=0) == build_title(other.data, canonical=0):
+                build_title(self.data, canonical=False) == build_title(other.data, canonical=False):
             return True
         if self.accessSystem == other.accessSystem and \
                 self.movieID is not None and self.movieID == other.movieID:
@@ -290,17 +290,17 @@ class Movie(_Container):
         from .Character import Character
         from .Company import Company
         if isinstance(item, Person):
-            for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
+            for p in flatten(self.data, yieldDictKeys=True, scalar=Person,
                              toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(p):
                     return True
         elif isinstance(item, Character):
-            for p in flatten(self.data, yieldDictKeys=1, scalar=Person,
+            for p in flatten(self.data, yieldDictKeys=True, scalar=Person,
                              toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(p.currentRole):
                     return True
         elif isinstance(item, Company):
-            for c in flatten(self.data, yieldDictKeys=1, scalar=Company,
+            for c in flatten(self.data, yieldDictKeys=True, scalar=Company,
                              toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(c):
                     return True

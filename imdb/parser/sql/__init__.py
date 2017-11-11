@@ -48,7 +48,7 @@ _aux_logger = logging.getLogger('imdbpy.parser.sql.aux')
 # Things that once upon a time were in imdb.parser.common.locsql.
 
 
-def titleVariations(title, fromPtdf=0):
+def titleVariations(title, fromPtdf=False):
     """Build title variations useful for searches; if fromPtdf is true,
     the input is assumed to be in the plain text data files format."""
     if fromPtdf:
@@ -90,7 +90,7 @@ def titleVariations(title, fromPtdf=0):
 re_nameIndex = re.compile(r'\(([IVXLCDM]+)\)')
 
 
-def nameVariations(name, fromPtdf=0):
+def nameVariations(name, fromPtdf=False):
     """Build name variations useful for searches; if fromPtdf is true,
     the input is assumed to be in the plain text data files format."""
     name1 = name2 = name3 = ''
@@ -814,7 +814,7 @@ class IMDbSqlAccessSystem(IMDbBase):
         if imdbID is not None:
             return '%07d' % imdbID
         m_dict = get_movie_data(movie.id, self._kind)
-        titline = build_title(m_dict, ptdf=0)
+        titline = build_title(m_dict, ptdf=False)
         imdbID = self.title2imdbID(titline, m_dict['kind'])
         # If the imdbID was retrieved from the web and was not in the
         # database, update the database (ignoring errors, because it's

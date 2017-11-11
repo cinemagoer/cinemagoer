@@ -138,7 +138,7 @@ class Person(_Container):
     def set_name(self, name):
         """Set the name of the person."""
         # XXX: convert name to unicode, if it's a plain string?
-        d = analyze_name(name, canonical=1)
+        d = analyze_name(name, canonical=True)
         self.data.update(d)
 
     def _additional_keys(self):
@@ -159,7 +159,7 @@ class Person(_Container):
             elif key == 'canonical name':
                 return self.data['name']
             elif key == 'long imdb name':
-                return build_name(self.data, canonical=0)
+                return build_name(self.data, canonical=False)
             elif key == 'long imdb canonical name':
                 return build_name(self.data)
         if key == 'full-size headshot' and 'headshot' in self.data:
@@ -181,11 +181,11 @@ class Person(_Container):
         from .Movie import Movie
         from .Character import Character
         if isinstance(item, Movie):
-            for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
+            for m in flatten(self.data, yieldDictKeys=True, scalar=Movie):
                 if item.isSame(m):
                     return True
         elif isinstance(item, Character):
-            for m in flatten(self.data, yieldDictKeys=1, scalar=Movie):
+            for m in flatten(self.data, yieldDictKeys=True, scalar=Movie):
                 if item.isSame(m.currentRole):
                     return True
         return False
@@ -198,8 +198,8 @@ class Person(_Container):
             return False
         if 'name' in self.data and \
                 'name' in other.data and \
-                build_name(self.data, canonical=1) == \
-                build_name(other.data, canonical=1):
+                build_name(self.data, canonical=True) == \
+                build_name(other.data, canonical=True):
             return True
         if self.accessSystem == other.accessSystem and \
                 self.personID and self.personID == other.personID:

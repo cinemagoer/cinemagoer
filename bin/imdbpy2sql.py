@@ -1090,7 +1090,7 @@ class MoviesCache(_BaseCache):
                 else:
                     series_d['year'] = str(series_d['year'])
                 mdict['episode of'] = series_d
-            title = build_title(mdict, ptdf=1, _emptyString='')
+            title = build_title(mdict, ptdf=True)
             dict.__setitem__(self, title, x[0])
         self.counter = counter(Title.select().count() + 1)
         Title.sqlmeta.cacheValues = _oldcacheValues
@@ -1103,7 +1103,7 @@ class MoviesCache(_BaseCache):
         lapp = l.append
         for k, v in self._tmpDict.items():
             try:
-                t = analyze_title(k, _emptyString='')
+                t = analyze_title(k)
             except IMDbParserError:
                 if k and k.strip():
                     print('WARNING %s._toDB() invalid title:' % self.className, end=' ')
@@ -1114,7 +1114,7 @@ class MoviesCache(_BaseCache):
             kind = tget('kind')
             if kind == 'episode':
                 # Series title.
-                stitle = build_title(tget('episode of'), _emptyString='', ptdf=1)
+                stitle = build_title(tget('episode of'), ptdf=True)
                 episodeOf = self.addUnique(stitle)
                 del t['episode of']
                 year = self.movieYear.get(v)
@@ -1818,14 +1818,14 @@ def doAkaTitles():
                 line = line.strip()
                 if obsolete:
                     try:
-                        tonD = analyze_title(line, _emptyString='')
+                        tonD = analyze_title(line)
                     except IMDbParserError:
                         if line:
                             print('WARNING doAkaTitles(obsol O) invalid title:', end=' ')
                             print(_(line))
                         continue
                     tonD['title'] = normalizeTitle(tonD['title'])
-                    line = build_title(tonD, ptdf=1, _emptyString='')
+                    line = build_title(tonD, ptdf=True)
                     # Aka information for titles in obsolete files are
                     # added only if the movie already exists in the cache.
                     if line not in CACHE_MID:
@@ -1836,7 +1836,7 @@ def doAkaTitles():
                     continue
                 if line[0] == '"':
                     try:
-                        titleDict = analyze_title(line, _emptyString='')
+                        titleDict = analyze_title(line)
                     except IMDbParserError:
                         if line:
                             print('WARNING doAkaTitles (O) invalid title:', end=' ')
@@ -1847,7 +1847,7 @@ def doAkaTitles():
                             titleDict['episode of']['title'] = \
                                 normalizeTitle(titleDict['episode of']['title'])
                         series = build_title(titleDict['episode of'],
-                                             ptdf=1, _emptyString='')
+                                             ptdf=True)
                         seriesID = CACHE_MID.addUnique(series)
                         if seriesID is None:
                             continue
@@ -1883,14 +1883,14 @@ def doAkaTitles():
                     continue
                 if obsolete:
                     try:
-                        akatD = analyze_title(akat, _emptyString='')
+                        akatD = analyze_title(akat)
                     except IMDbParserError:
                         if line:
                             print('WARNING doAkaTitles(obsol) invalid title:', end=' ')
                             print(_(akat))
                         continue
                     akatD['title'] = normalizeTitle(akatD['title'])
-                    akat = build_title(akatD, ptdf=1, _emptyString='')
+                    akat = build_title(akatD, ptdf=True)
                 if count % 10000 == 0:
                     print('SCANNING %s:' % fname[:-8].replace('-', ' '), end=' ')
                     print(_(akat))
@@ -1898,7 +1898,7 @@ def doAkaTitles():
                     # Handle series for which only single episodes have
                     # aliases.
                     try:
-                        akaDict = analyze_title(akat, _emptyString='')
+                        akaDict = analyze_title(akat)
                     except IMDbParserError:
                         if line:
                             print('WARNING doAkaTitles (epis) invalid title:', end=' ')
@@ -1908,7 +1908,7 @@ def doAkaTitles():
                         if obsolete:
                             akaDict['episode of']['title'] = normalizeTitle(
                                 akaDict['episode of']['title'])
-                        akaSeries = build_title(akaDict['episode of'], ptdf=1)
+                        akaSeries = build_title(akaDict['episode of'], ptdf=True)
                         CACHE_MID_AKAS.add(akaSeries, [('ids', seriesID)])
                 append_data = [('ids', mid)]
                 if note is not None:
@@ -2236,9 +2236,9 @@ def nmmvFiles(fp, funct, fname):
         note = None
         if datakind == 'movie':
             if islaserdisc:
-                tonD = analyze_title(ton, _emptyString='')
+                tonD = analyze_title(ton)
                 tonD['title'] = normalizeTitle(tonD['title'])
-                ton = build_title(tonD, ptdf=1, _emptyString='')
+                ton = build_title(tonD, ptdf=True)
                 # Skips movies that are not already in the cache, since
                 # laserdisc.list.gz is an obsolete file.
                 if ton not in CACHE_MID:

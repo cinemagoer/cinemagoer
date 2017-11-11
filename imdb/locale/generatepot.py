@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 generatepot.py script.
 
@@ -23,10 +23,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 import sys
-
 from datetime import datetime as dt
 
-DEFAULT_MESSAGES = { }
+
+DEFAULT_MESSAGES = {}
 
 ELEMENT_PATTERN = r"""<!ELEMENT\s+([^\s]+)"""
 re_element = re.compile(ELEMENT_PATTERN)
@@ -50,7 +50,7 @@ msgstr ""
 """
 
 if len(sys.argv) != 2:
-    print "Usage: %s dtd_file" % sys.argv[0]
+    print("Usage: %s dtd_file" % sys.argv[0])
     sys.exit()
 
 dtdfilename = sys.argv[1]
@@ -59,20 +59,19 @@ elements = re_element.findall(dtd)
 uniq = set(elements)
 elements = list(uniq)
 
-print POT_HEADER_TEMPLATE % {
+print(POT_HEADER_TEMPLATE % {
     'now': dt.strftime(dt.now(), "%Y-%m-%d %H:%M+0000")
-}
+})
 for element in sorted(elements):
     if element in DEFAULT_MESSAGES:
-        print '# Default: %s' % DEFAULT_MESSAGES[element]
+        print('# Default: %s' % DEFAULT_MESSAGES[element])
     else:
-        print '# Default: %s' % element.replace('-', ' ').capitalize()
-    print 'msgid "%s"' % element
-    print 'msgstr ""'
+        print('# Default: %s' % element.replace('-', ' ').capitalize())
+    print('msgid "%s"' % element)
+    print('msgstr ""')
     # use this part instead of the line above to generate the po file for English
-    #if element in DEFAULT_MESSAGES:
-    #    print 'msgstr "%s"' % DEFAULT_MESSAGES[element]
-    #else:
-    #    print 'msgstr "%s"' % element.replace('-', ' ').capitalize()
-    print
-
+    # if element in DEFAULT_MESSAGES:
+    #     print 'msgstr "%s"' % DEFAULT_MESSAGES[element]
+    # else:
+    #     print 'msgstr "%s"' % element.replace('-', ' ').capitalize()
+    print()

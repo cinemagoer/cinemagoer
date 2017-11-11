@@ -7,7 +7,7 @@ for a given keyword.
 E.g., when searching for the keyword "alabama", the parsed page would be:
     http://akas.imdb.com/find?s=kw;mx=20;q=alabama
 
-Copyright 2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,10 +24,11 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from utils import Extractor, Attribute, analyze_imdbid
-from imdb.utils import analyze_title, analyze_company_name
+from imdb.utils import analyze_company_name, analyze_title
 
-from searchMovieParser import DOMHTMLSearchMovieParser, DOMBasicMovieParser
+from .searchMovieParser import DOMBasicMovieParser, DOMHTMLSearchMovieParser
+from .utils import Attribute, Extractor, analyze_imdbid
+
 
 class DOMBasicKeywordParser(DOMBasicMovieParser):
     """Simply get the name of a keyword.
@@ -38,7 +39,7 @@ class DOMBasicKeywordParser(DOMBasicMovieParser):
     """
     # XXX: it's still to be tested!
     # I'm not even sure there can be a direct hit, searching for keywords.
-    _titleFunct = lambda self, x: analyze_company_name(x or u'')
+    _titleFunct = lambda self, x: analyze_company_name(x or '')
 
 
 class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
@@ -51,14 +52,21 @@ class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
     _titleBuilder = lambda self, x: x
     _linkPrefix = '/keyword/'
 
-    _attrs = [Attribute(key='data',
-                        multi=True,
-                        path="./a[1]/text()"
-                            )]
-    extractors = [Extractor(label='search',
-                            path="//a[starts-with(@href, " \
-                                    "'/keyword/')]/..",
-                            attrs=_attrs)]
+    _attrs = [
+        Attribute(
+            key='data',
+            multi=True,
+            path="./a[1]/text()"
+        )
+    ]
+
+    extractors = [
+        Extractor(
+            label='search',
+            path="//a[starts-with(@href, '/keyword/')]/..",
+            attrs=_attrs
+        )
+    ]
 
 
 def custom_analyze_title4kwd(title, yearNote, outline):
@@ -82,30 +90,36 @@ class DOMHTMLSearchMovieKeywordParser(DOMHTMLSearchMovieParser):
 
     _notDirectHitTitle = '<title>most'
 
-    _attrs = [Attribute(key='data',
-                        multi=True,
-                        path={
-                            'link': "./a[1]/@href",
-                            'info': "./a[1]//text()",
-                            'ynote': "./span[@class='desc']/text()",
-                            'outline': "./span[@class='outline']//text()"
-                            },
-                        postprocess=lambda x: (
-                            analyze_imdbid(x.get('link') or u''),
-                            custom_analyze_title4kwd(x.get('info') or u'',
-                                                    x.get('ynote') or u'',
-                                                    x.get('outline') or u'')
-                        ))]
+    _attrs = [
+        Attribute(
+            key='data',
+            multi=True,
+            path={
+                'link': "./a[1]/@href",
+                'info': "./a[1]//text()",
+                'ynote': "./span[@class='lister-item-year text-muted unbold']/text()",
+                'outline': "./span[@class='outline']//text()"
+            },
+            postprocess=lambda x: (
+                analyze_imdbid(x.get('link') or ''),
+                custom_analyze_title4kwd(x.get('info') or '',
+                                         x.get('ynote') or '',
+                                         x.get('outline') or '')
+            )
+        )
+    ]
 
-    extractors = [Extractor(label='search',
-                            path="//div[@class='lister-list']//h3//a[starts-with(@href, " \
-                                    "'/title/tt')]/..",
-                            attrs=_attrs)]
+    extractors = [
+        Extractor(
+            label='search',
+            path="//div[@class='lister-list']//h3//a[starts-with(@href, '/title/tt')]/..",
+            attrs=_attrs
+        )
+    ]
 
 
 _OBJECTS = {
-        'search_keyword_parser': ((DOMHTMLSearchKeywordParser,),
-                {'kind': 'keyword', '_basic_parser': DOMBasicKeywordParser}),
-        'search_moviekeyword_parser': ((DOMHTMLSearchMovieKeywordParser,), None)
+    'search_keyword_parser': ((DOMHTMLSearchKeywordParser,),
+                              {'kind': 'keyword', '_basic_parser': DOMBasicKeywordParser}),
+    'search_moviekeyword_parser': ((DOMHTMLSearchMovieKeywordParser,), None)
 }
-

@@ -8,16 +8,14 @@ Summary of this file:
 * GOODIES
 
 
-  MANAGING SERIES EPISODES
-  ========================
+# MANAGING SERIES EPISODES
 
 Since January 2006, IMDb changed the way it handles TV episodes:
 now every episode is treated as full title.
 Starting with version 2.5, also IMDbPY supports this new behavior.
 
 
-  TITLES
-  ======
+# TITLES
 
 analyze_title() and build_title() now supports tv episodes.
 You can pass a string to the analyze_title function in the format used
@@ -46,8 +44,7 @@ otherwise it uses the format used by the plain text data files (something
 like "The Series" (2004) {An Episode (#2.5)})
 
 
-  SERIES
-  ======
+# SERIES
 
 You can retrieve information about seasons and episodes for a tv (mini) series:
 
@@ -101,8 +98,7 @@ Summary of keys of the Movie object for a series:
   'episodes': dictionary (seasons) of dictionary (episodes in the season).
 
 
-  FULL CREDITS
-  ============
+# FULL CREDITS
 
 Retrieving credits for a tv (mini) series, you may notice that many long lists
 (like "cast", "writers", ...) are incomplete.
@@ -135,15 +131,13 @@ Beware that both 'episodes cast' and 'guests' will update the
 keyword 'episodes' (and not 'episodes cast' or 'guests').
 
 
-  RATINGS
-  =======
+# RATINGS
 
 You can retrieve rating information about every episode in a tv (mini) series
 using the 'episodes rating' data set.
  
 
-  PEOPLE
-  ======
+# PEOPLE
 
 You can retrieve information about single episodes acted/directed/... by
 a person.
@@ -176,8 +170,7 @@ a person.
   p['episodes'][er][0].currentRole   # 'Dr. Kerry Weaver'
 
 
-  GOODIES
-  =======
+# GOODIES
 
 In the imdb.helpers module there are some functions useful to manage
 lists of episodes:

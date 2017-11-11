@@ -7,7 +7,7 @@ E.g.:
     http://akas.imdb.com/chart/top
     http://akas.imdb.com/chart/bottom
 
-Copyright 2009-2015 Davide Alberani <da@erlug.linux.it>
+Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,7 +25,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 from imdb.utils import analyze_title
-from utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
+
+from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid
 
 
 class DOMHTMLTop250Parser(DOMParserBase):
@@ -42,17 +43,24 @@ class DOMHTMLTop250Parser(DOMParserBase):
     ranktext = 'top 250 rank'
 
     def _init(self):
-        self.extractors = [Extractor(label=self.label,
-                        path="//div[@id='main']//div[1]//div//table//tbody//tr",
-                        attrs=Attribute(key=None,
-                                multi=True,
-                                path={self.ranktext: "./td[2]//text()",
-                                        'rating': "./td[3]//strong//text()",
-                                        'title': "./td[2]//a//text()",
-                                        'year': "./td[2]//span//text()",
-                                        'movieID': "./td[2]//a/@href",
-                                        'votes': "./td[3]//strong/@title"
-                                        }))]
+        self.extractors = [
+            Extractor(
+                label=self.label,
+                path="//div[@id='main']//div[1]//div//table//tbody//tr",
+                attrs=Attribute(
+                    key=None,
+                    multi=True,
+                    path={
+                        self.ranktext: "./td[2]//text()",
+                        'rating': "./td[3]//strong//text()",
+                        'title': "./td[2]//a//text()",
+                        'year': "./td[2]//span//text()",
+                        'movieID': "./td[2]//a/@href",
+                        'votes': "./td[3]//strong/@title"
+                    }
+                )
+            )
+        ]
 
     def postprocess_data(self, data):
         if not data or self.label not in data:
@@ -63,9 +71,12 @@ class DOMHTMLTop250Parser(DOMParserBase):
         # XXX: probably this is no more needed.
         seenIDs = []
         for d in data:
-            if 'movieID' not in d: continue
-            if self.ranktext not in d: continue
-            if 'title' not in d: continue
+            if 'movieID' not in d:
+                continue
+            if self.ranktext not in d:
+                continue
+            if 'title' not in d:
+                continue
             theID = analyze_imdbid(d['movieID'])
             if theID is None:
                 continue
@@ -73,19 +84,23 @@ class DOMHTMLTop250Parser(DOMParserBase):
             if theID in seenIDs:
                 continue
             seenIDs.append(theID)
-            minfo = analyze_title(d['title']+" "+d['year'])
-            try: minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
-            except: pass
+            minfo = analyze_title(d['title'] + ' ' + d['year'])
+            try:
+                minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
+            except ValueError:
+                pass
             if 'votes' in d:
                 try:
-                    votes = d['votes'].replace(' votes','')
-                    votes = votes.split(' based on ')[1]
+                    votes = d['votes'].replace(' user ratings', '')
+                    votes = votes.split(' based on ')[1]    # is IndexError possible?
                     minfo['votes'] = int(votes.replace(',', ''))
-                except:
+                except (IndexError, ValueError):
                     pass
             if 'rating' in d:
-                try: minfo['rating'] = float(d['rating'])
-                except: pass
+                try:
+                    minfo['rating'] = float(d['rating'])
+                except ValueError:
+                    pass
             mlist.append((theID, minfo))
         return mlist
 
@@ -105,7 +120,6 @@ class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):
 
 
 _OBJECTS = {
-    'top250_parser':  ((DOMHTMLTop250Parser,), None),
-    'bottom100_parser':  ((DOMHTMLBottom100Parser,), None)
+    'top250_parser': ((DOMHTMLTop250Parser,), None),
+    'bottom100_parser': ((DOMHTMLBottom100Parser,), None)
 }
-

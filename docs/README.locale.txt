@@ -1,13 +1,11 @@
-
-  LOCALIZATION FOR IMDbPY
+# LOCALIZATION FOR IMDbPY
   =======================
 
 Since version 4.1 it's easy to translate the labels that describe
 sets of information.
 
 
-  LIMITATION
-  ==========
+# LIMITATION
 
 So far no internal message or exception is translated, the
 internationalization is limited to the "tags" returned
@@ -22,8 +20,7 @@ To translate keys, you can use the helpers.translateKey function in
 the 'helpers' module.
 
 
-  USAGE
-  =====
+# USAGE
 
 If you want to add i18n to your IMDbPY-based application, all you need
 to do is to switch to the 'imdbpy' text domain.
@@ -42,8 +39,7 @@ E.g.:
   print _(u'long-imdb-name')
 
 
-  ADD A NEW LANGUAGE
-  ==================
+# ADD A NEW LANGUAGE
 
 You can (but you're not forced to) use Transifex to manage/coordinate
 your translations; see: http://www.transifex.net/projects/p/imdbpy/c/default/
@@ -71,8 +67,7 @@ E.g.:
 
 
 
-  ARTICLES IN TITLES
-  ==================
+# ARTICLES IN TITLES
 
 Converting a title to its 'Title, The' canonical format, IMDbPY does
 some assumptions about what is an article and what not, and this could
@@ -94,8 +89,7 @@ can call its 'smartCanonicalTitle' method, setting the 'lang' argument
 appropriately.
 
 
-  TITLE AKAS
-  ==========
+# TITLE AKAS
 
 Sometimes it's useful to manage title's AKAs knowing their languages.
 In the 'helpers' module there are some (hopefully) useful functions:

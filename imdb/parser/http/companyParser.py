@@ -6,7 +6,7 @@ the IMDb pages on the akas.imdb.com server about a company.
 E.g., for "Columbia Pictures [us]" the referred page would be:
     main details:   http://akas.imdb.com/company/co0071509/
 
-Copyright 2008-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2017 Davide Alberani <da@erlug.linux.it>
           2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -25,10 +25,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import re
-from utils import build_movie, Attribute, Extractor, DOMParserBase, \
-                    analyze_imdbid
 
 from imdb.utils import analyze_company_name
+
+from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_movie
 
 
 class DOMCompanyParser(DOMParserBase):
@@ -44,38 +44,45 @@ class DOMCompanyParser(DOMParserBase):
     _containsObjects = True
 
     extractors = [
-            Extractor(label='name',
-                        path="//title",
-                        attrs=Attribute(key='name',
-                            path="./text()",
-                        postprocess=lambda x: \
-                                analyze_company_name(x, stripNotes=True))),
+        Extractor(
+            label='name',
+            path="//title",
+            attrs=Attribute(
+                key='name',
+                path="./text()",
+                postprocess=lambda x: analyze_company_name(x, stripNotes=True)
+            )
+        ),
 
-            Extractor(label='filmography',
-                        group="//b/a[@name]",
-                        group_key="./text()",
-                        group_key_normalize=lambda x: x.lower(),
-                        path="../following-sibling::ol[1]/li",
-                        attrs=Attribute(key=None,
-                            multi=True,
-                            path={
-                                'link': "./a[1]/@href",
-                                'title': "./a[1]/text()",
-                                'year': "./text()[1]"
-                                },
-                            postprocess=lambda x:
-                                build_movie(u'%s %s' % \
-                                (x.get('title'), x.get('year').strip()),
-                                movieID=analyze_imdbid(x.get('link') or u''),
-                                _parsingCompany=True))),
-            ]
+        Extractor(
+            label='filmography',
+            group="//b/a[@name]",
+            group_key="./text()",
+            group_key_normalize=lambda x: x.lower(),
+            path="../following-sibling::ol[1]/li",
+            attrs=Attribute(
+                key=None,
+                multi=True,
+                path={
+                    'link': "./a[1]/@href",
+                    'title': "./a[1]/text()",
+                    'year': "./text()[1]"
+                },
+                postprocess=lambda x: build_movie(
+                    '%s %s' % (x.get('title'), x.get('year').strip()),
+                    movieID=analyze_imdbid(x.get('link') or ''),
+                    _parsingCompany=True
+                )
+            )
+        )
+    ]
 
     preprocessors = [
         (re.compile('(<b><a name=)', re.I), r'</p>\1')
-        ]
+    ]
 
     def postprocess_data(self, data):
-        for key in data.keys():
+        for key in list(data.keys()):
             new_key = key.replace('company', 'companies')
             new_key = new_key.replace('other', 'miscellaneous')
             new_key = new_key.replace('distributor', 'distributors')
@@ -88,4 +95,3 @@ class DOMCompanyParser(DOMParserBase):
 _OBJECTS = {
     'company_main_parser': ((DOMCompanyParser,), None)
 }
-

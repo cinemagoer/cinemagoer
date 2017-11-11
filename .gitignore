@@ -6,5 +6,7 @@
 build/
 __pycache__
 dist/
-.cache/
-.tox/
+.idea
+.cache
+.tox
+.coverage

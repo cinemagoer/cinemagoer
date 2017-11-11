@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: UTF-8 -*-
 
 # This script downloads and applies any and all imdb diff files which
@@ -33,16 +33,13 @@
 #
 
 import os
-import sys
 import shutil
 import subprocess
 import re
 import datetime
-import time
-import MySQLdb
 import logging
 
-from datetime import timedelta,datetime
+from datetime import timedelta
 from ftplib import FTP
 from random import choice
 
@@ -137,7 +134,7 @@ def mktree(path):
     for path in paths_to_create:
         try:
             os.mkdir(path)
-        except Exception, e:
+        except Exception:
             logger.exception("Error trying to create %p" % path)
             return -1
     return 0
@@ -184,7 +181,7 @@ def applyDiffs():
                     day = d
                 elif d > day:
                     day = d
-            except Exception, e:
+            except Exception as e:
                 logger.exception("Unable to read last modified date for file %s" % f)
 
     if day is None:
@@ -207,7 +204,7 @@ def applyDiffs():
     if not os.path.isdir(ImdbDiffsPath):
         try:
             os.mkdir(ImdbDiffsPath)
-        except Exception, e:
+        except Exception as e:
             logger.exception("Unable to create folder for imdb diff files (%s)" % ImdbDiffsPath)
             return
 
@@ -225,7 +222,7 @@ def applyDiffs():
         logger.debug("Need diff file %s" % diff)
 
         if not os.path.isfile(diffFilePath):
-            
+
             # diff file is missing so we need to download it so first make sure we have an FTP connection
             if not haveFTPConnection:
                 try:
@@ -242,7 +239,7 @@ def applyDiffs():
                     ftp.cwd(ImdbDiffsFtpPath)
 
                     haveFTPConnection = True
-                except Exception, e:
+                except Exception as e:
                     logger.exception("Unable to connect to FTP server %s" % ImdbDiffsFtp)
                     return
 
@@ -252,7 +249,7 @@ def applyDiffs():
             try:
                 ftp.retrbinary("RETR " + diff, diffFile.write)
                 diffFile.close()
-            except Exception, e:
+            except Exception as e:
 
                 # Unable to download diff file. This may be because it's not yet available but is due for release today
                 code, message = e.message.split(' ', 1)
@@ -292,7 +289,7 @@ def applyDiffs():
     deleteFolder(tmpListsPath)
     try:
         os.mkdir(tmpListsPath)
-    except Exception, e:
+    except Exception as e:
         logger.exception("Unable to create temporary folder for imdb lists")
         return
 
@@ -305,7 +302,7 @@ def applyDiffs():
             try:
                 cmdUnGzip = unGzip % (os.path.join(ImdbListsPath,f), tmpListsPath)
                 subprocess.call(cmdUnGzip , shell=True)
-            except Exception, e:
+            except Exception as e:
                 logger.exception("Unable to uncompress imdb list file using: %s" % cmdUnGzip)
             numListFiles += 1
 
@@ -340,7 +337,7 @@ def applyDiffs():
         try:
             cmdUnGzip = unGzip % (diffFilePath, tmpDiffsPath)
             subprocess.call(cmdUnGzip, shell=True)
-        except Exception, e:
+        except Exception as e:
             logger.exception("Unable to unzip imdb diffs file using: %s" % cmdUnGzip)
             return
 
@@ -351,7 +348,7 @@ def applyDiffs():
             try:
                 cmdUnTar = unTar % (tarFile, tmpDiffsPath)
                 subprocess.call(cmdUnTar, shell=True)
-            except Exception, e:
+            except Exception as e:
                 logger.exception("Unable to untar imdb diffs file using: %s" % cmdUnTar)
                 return
 
@@ -368,11 +365,11 @@ def applyDiffs():
                     try:
                         cmdApplyPatch = applyPatch % (os.path.join(tmpListsPath,f), os.path.join(tmpDiffsPath,f))
                         patchStatus = subprocess.call(cmdApplyPatch, shell=True)
-                    except Exception, e:
+                    except Exception as e:
                         logger.exception("Unable to patch imdb list file using: %s" % cmdApplyPatch)
                         patchStatus=-1
 
-                    if patchStatus <> 0:
+                    if patchStatus != 0:
 
                         # Patch failed so...
                         logger.critical("Patch status %s: Wrong diff file for these imdb lists (%s)" % (patchStatus, diff))
@@ -424,7 +421,7 @@ def applyDiffs():
                     if not os.path.isfile(os.path.join(diffFilesBackupFolder,diff)):
                         try:
                             shutil.copy(diffFilePath,diffFilesBackupFolder)
-                        except Exception, e:
+                        except Exception as e:
                             logger.exception("Unable to copy %s to backup folder %s" % (diffFilePath, diffFilesBackupFolder))
                             if not keepDiffFiles:
                                 keepDiffFiles = True
@@ -444,7 +441,7 @@ def applyDiffs():
             try:
                 cmdGZip = progGZip % os.path.join(tmpListsPath,f)
                 subprocess.call(cmdGZip, shell=True)
-            except Exception, e:
+            except Exception as e:
                 logger.exception("Unable to Gzip imdb list file using: %s" % cmdGZip)
                 break
             if os.path.isfile(os.path.join(tmpListsPath,f)):
@@ -453,7 +450,7 @@ def applyDiffs():
     # Now move the updated and compressed lists to the main lists folder, replacing the old list files
     for f in os.listdir(tmpListsPath):
         if re.match(".*\.list.gz",f):
-            # Delete the original compressed list file from ImdbListsPath if it exists 
+            # Delete the original compressed list file from ImdbListsPath if it exists
             if os.path.isfile(os.path.join(ImdbListsPath,f)):
                 os.remove(os.path.join(ImdbListsPath,f))
 

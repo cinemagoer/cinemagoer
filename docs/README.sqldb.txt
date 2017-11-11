@@ -1,79 +1,23 @@
+# DISMISSION NOTICE
 
-NOTE: the imdbpy2sql.py script, used to populate a database using
-the data in the IMDb's plain text data files, is a critical piece
-of IMDbPY: it's based on an ORM to be database-independent and
-contains a lot of tricks to be as fast as possible; however there
-are huge margins for improvements; if you want to help, please read the
-TODO.txt file and subscribe the imdbpy-devel mailing list at:
-  http://imdbpy.sf.net/?page=help#ml
- 
-
-NOTE: see README.currentRole for information about characters support.
+The data used by the "sql" access system is no longer updated.
+In the future, we'll support the new data from http://www.imdb.com/interfaces/
 
 
-  SQL
-  ===
+# REQUIREMENTS
 
-Since version 2.1 it's possible to transfer the whole IMDb's
-database from the plain text data files into a SQL database.
-Starting with version 2.5 every database supported by the SQLObject
-Object Relational Manager can be used to store and retrieve
-movies and persons information.
-This means that MySQL, PostgreSQL, SQLite, Firebird, MAX DB,
-Sybase and MSSQL are supported and, as your read this text,
-maybe other database backends were added.
-
-Since release 3.8, SQLAlchemy (version 0.4 and 0.5) is also supported
-(this adds at least DB2/Informix IDS to the list of supported databases).
-
-Since release 3.9, there's a partial support to output large tables
-in a set of CSV (Comma Separated Values) files, to be later imported
-in a database.  Actually only MySQL, PostgreSQL and IBM DB2 are
-supported.
-
-In version 4.1 the imdbpy2sql.py script has the '--fix-old-style-titles'
-command line argument; if used, every movie title will be converted to
-the new style ("The Title", instead of the old "Title, The").
-This option will go away in 4.2, and is intended only to support old
-set of plain text data files.
-
-Since version 4.2 --fix-old-style-titles is no more needed, being
-turned on by default.  The --do-not-fix-old-style-titles was
-introduced in case you want to turn it off for some strange reason.
-
-
-  REQUIREMENTS
-  ============
-
-You need one of SQLObject or SQLAlchemy (both can be installed
-safely: by default IMDbPY first tries SQLObject; if not present
-it fall-backs to SQLAlchemy).
-
-[SQLObject]
-You need the SQLObject package, at least version 0.8; even better
-if you can download the latest SVN snapshot.
-
-SQLObject home page: http://sqlobject.org/
-SVN command to download the latest development version:
-  svn co http://svn.colorstudy.com/SQLObject/trunk SQLObject
-
-[SQLAlchemy]
-Support for SQLAlchemy is still in beta (please report any bug!)
-and a bit slower than SQLObject; anyway, you need version 0.4 or 0.5.
+You need SQLAlchemy.
 
 SQLAlchemy home page: http://www.sqlalchemy.org/
-SVN command to download the latest development version:
-  svn checkout http://svn.sqlalchemy.org/sqlalchemy/trunk sqlalchemy
 
 
 [OTHER REQUIRED MODULES]
-Obviously SQLObject and SQLAlchemy can access databases only through other
+Obviously SQLAlchemy can access databases only through other
 specific modules/packages, that you need to have installed (e.g.:
 'mysql-python' for MySQL, 'psycopg' for PostgreSQL, and so on).
 
 
-  SQL DATABASE INSTALLATION
-  =========================
+# SQL DATABASE INSTALLATION
 
 Select a mirror of the "The Plain Text Data Files" from
 the http://www.imdb.com/interfaces/ page and download
@@ -113,14 +57,10 @@ Some examples:
     sqlite:/C|/full/path/to/database
     sqlite:/:memory:
 
-For other information you can read the SQLObject/SQLAlchemy documentation.
-You can force the use of SQLObject or SQLAlchemy with the '-o' command
-line option (i.e.: "-o sqlobject" or "-o sqlalchemy" or a list of comma
-separated values to specify an order of preference).
+For other information you can read the SQLAlchemy documentation.
 
 
-  TIMING
-  ======
+# TIMING
 
 The performances are hugely dependant upon the underlying Python
 module/package used to access the database.  The imdbpy2sql.py script
@@ -132,8 +72,6 @@ complete on my test system (read below).
 A lot of memory (RAM or swap space) is required, in the range of
 at least 250/500 megabytes (plus more for the database server).
 In the end, the database will require between 2.5GB and 5GB of disc space.
-The should be no difference - at insert time - between SQLObject and
-SQLAlchemy.
 
 As said, the performances varies greatly using a database server or another:
 MySQL, for instance, has an executemany() method of the cursor object
@@ -174,8 +112,7 @@ As expected, the most important things that you can do to improve performances a
 3. follow the specific notes about your database server.
 
 
-  NOTES
-  =====
+# NOTES
 
 [save the output]
 The imdbpy2sql.py will print a lot of debug information on standard output;
@@ -225,8 +162,6 @@ with the new custom queries support; see ADVANCED FEATURES below.
 
 As a shortcut, you can use the "--ms-sqlserver" command line option
 to set all the needed options.
-You probably need SQLObject 0.10 (in the svn repository, as I'm
-writing this).
 
 
 [SQLite speed-up]
@@ -279,8 +214,7 @@ screaming 'daddy!  daddy!  what kind of animals Rocco trains in the
 documentary "Rocco: Animal Trainer 17"???'... well it's not my fault! ;-)
 
 
-  SQL USAGE
-  =========
+# SQL USAGE
 
 Now you can use IMDbPY with the database:
   from imdb import IMDb
@@ -293,19 +227,8 @@ Now you can use IMDbPY with the database:
 
 and so on...
 
-The 'sql' data access system takes an optional argument, named "useORM",
-which can be set to a string or a list of values (the string can be
-a comma-separated list of items, to denote an order of preference).
-Valid values are "sqlobject" and "sqlalchemy".
-The default is ('sqlobject', 'sqlalchemy').
-E.g.:
-  i = IMDb('sql', uri='YOUR_URI_STRING', useORM='sqlalchemy,sqlobject')
-  i = IMDb('sql', uri='YOUR_URI_STRING', useORM=['sqlalchemy', 'sqlobject'])
-  i = IMDb('sql', uri='YOUR_URI_STRING', useORM='sqlalchemy'])
 
-
-  ADVANCED FEATURES
-  =================
+# ADVANCED FEATURES
 
 With the -e (or --execute) command line argument you can specify
 custom queries to be executed at certain times, with the syntax:
@@ -365,8 +288,7 @@ Which is also the same thing the command line option '--sqlite-transactions'
 does.
 
 
-  CSV files
-  =========
+# CSV files
 
 Keep in mind that actually only MySQL, PostgreSQL and IBM DB2 are
 supported.  Moreover, you may incur in problems (e.g.: your
@@ -381,8 +303,7 @@ The created files will be imported near the end of the imdbpy2sql.py
 processing; notice that after that, you can safely cancel these files.
 
 
-  CSV partial processing
-  ======================
+# CSV partial processing
 
 It's possible, since IMDbPY 4.5, to separate the two steps involved using
 CSV files.

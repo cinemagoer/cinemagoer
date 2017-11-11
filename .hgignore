@@ -4,6 +4,9 @@ syntax: glob
 __pycache__
 build
 dist
+.cache
+.tox
+__pycache__
 *.egg-info
 *.mo
 *.pyc

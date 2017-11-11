@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 rebuildmo.py script.
 
@@ -22,10 +22,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import glob
-import msgfmt
 import os
 
-#LOCALE_DIR = os.path.dirname(__file__)
+import msgfmt
+
 
 def rebuildmo():
     lang_glob = 'imdbpy-*.po'
@@ -45,5 +45,4 @@ def rebuildmo():
 
 if __name__ == '__main__':
     languages = rebuildmo()
-    print 'Created locale for: %s.' % ' '.join(languages)
-
+    print('Created locale for: %s.' % ' '.join(languages))

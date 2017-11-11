@@ -1,15 +1,8 @@
-  IMDbPY for (too) sensitive people
-  =================================
+# IMDbPY for (too) sensitive people
 
-Since version 2.0 (shame on me!  I've noticed this only after more
-than a year of development!!!) by default adult movies are included
-in the result of the search_movie(), search_episode() and search_person()
-methods.
+Since version 2.0 (shame on me!  I've noticed this only after more than a year of development!!!) by default adult movies are included in the result of the search_movie(), search_episode() and search_person() methods.
 
-If for some unintelligible reason you don't want classics
-like "Debbie Does Dallas" to show up in your list of results,
-you can disable this feature initializing the IMDb class with
-the 'adultSearch' argument set to 0 (or other "False" value).
+If for some unintelligible reason you don't want classics like "Debbie Does Dallas" to show up in your list of results, you can disable this feature initializing the IMDb class with the 'adultSearch' argument set to 0 (or other "False" value).
 
 E.g.:
     from imdb import IMDb
@@ -58,8 +51,7 @@ Obviously you need to activate the "adult movies" option for
 your account; see http://imdb.com/find/preferences?_adult=1
 
 
-  OTHER DATA ACCESS SYSTEMS
-  =========================
+# OTHER DATA ACCESS SYSTEMS
 
 Since version 2.2 every other data access system (sql)
 support the same behavior of the http and mobile data access
@@ -69,5 +61,4 @@ the 'do_adult_search' method).
 Notice that for the sql data access system only results from the
 search_movie() and search_episode() methods are filtered: there's no
 easy (and fast) way to tell that an actor/actress is a porn-star.
-
 

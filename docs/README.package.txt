@@ -1,5 +1,4 @@
-  IMDbPY package
-  ==============
+# IMDbPY package
 
 Here you can find information useful to use IMDbPY to write your
 own scripts or programs.
@@ -20,15 +19,8 @@ Sections in this file:
 * EXCEPTIONS
 * OTHER SOURCES OF INFO
 
-  UNICODE NOTICE
-  ==============
 
-Since release 2.4, IMDbPY internally manages every information about
-movies and people using unicode strings.  Please read the README.unicode file.
-
-
-  GENERAL USAGE
-  =============
+# GENERAL USAGE
 
 To use the IMDbPY package, you've to import the imdb package and
 call the IMDb function.
@@ -63,18 +55,9 @@ you can access movie data through the e-mail interface, etc. etc.
  ---------------------------+-----------+------------------------------------
              'sql'          |   'db',   | information are fetched through
                             | 'database'| a SQL database (every database
-                            |           | supported by SQLObject and SQLAlchemy
+                            |           | supported by SQLAlchemy
                             |           | is available).
  ---------------------------+-----------+------------------------------------
-           'mobile'         |           | same as 'httpThin', but string
-                            |           | methods are used for parsing.
-                            |           | Ideal for small systems like PDA,
-                            |           | smart phones, hand-held devices with
-                            |           | limited bandwidth and CPU power.
- ---------------------------+-----------+------------------------------------
-          'httpThin'        | 'webThin' | identical to 'http', but less
-                            | 'htmlThin'| information are gathered; useful
-                            |           | for systems with limited bandwidth.
 
 NOTE ON THE 'DEFAULT' ACCESS SYSTEM: since release 3.4, the 'imdbpy.cfg'
 configuration file is available, so that you can set a system-wide (or
@@ -142,8 +125,6 @@ company2imdbID(name) take, respectively, a movie title (in the plain text
 data files format), a person name, a character name and a company name, and
 return the relative imdbID; when possibile it's safer to use the
 get_imdbID(MovieOrPersonOrCharacterOrCompanyObject) method.
-These functions _always_ need to connect to the IMDb's web site, if
-you're not using 'http', 'httpThin' or 'mobile' data acess systems.
 
 The get_imdbID(MovieOrPersonOrCharacterOrCompanyObject) method returns the
 imdbID for the given Movie, Person, Character or Company object.
@@ -187,8 +168,7 @@ Example:
   i.update(m, 'all')
 
 
-  THE Movie CLASS
-  ===============
+# THE Movie CLASS
 
 The main use of a Movie object is to access to the info it contains
 with a dictionary-like interface, like "movieObject[key]" where 'key'
@@ -285,8 +265,7 @@ For more information on this subject, see the "ARTICLES IN TITLES"
 section of the README.locale file.
 
 
-  THE Person CLASS
-  ================
+# THE Person CLASS
 
 It works mostly like the Movie class. :-)
 
@@ -306,23 +285,20 @@ An analogous method is defined for the Movie class, and it's
 called isSameTitle(otherMovieObject)
 
 
-  THE Character CLASS
-  ===================
+# THE Character CLASS
 
 It works mostly like the Person class. :-)
 For more information about the "currentRole" attribute, see the
 README.currentRole file.
 
 
-  THE Company CLASS
-  ================
+# THE Company CLASS
 
 It works mostly like the Person class. :-)
 The "currentRole" attribute is always None.
 
 
-  INFORMATION SETS
-  ================
+# INFORMATION SETS
 
 Since release 1.2, it's possibile to retrieve almost every piece of
 information about a given movie or person; this can be a problem, because
@@ -376,8 +352,7 @@ i.get_movie_infoset(), i.get_person_infoset(), i.get_character_infoset()
 and i.get_company_infoset().
 
 
-  TOP250 / BOTTOM100 LISTS
-  ========================
+# TOP250 / BOTTOM100 LISTS
 
 Since IMDbPY 4.0, it's possible to retrieve the list of top250
 and bottom100 movies.
@@ -385,8 +360,7 @@ Use the get_top250_movies() and get_bottom100_movies() methods.
 Beware that, for 'sql', the bottom100 list i limited to the first 10 results.
 
 
-  Person OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Person OBJECT
-  ============================================================================
+# Person OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Person OBJECT
 
 Parsing the information about a movie, you'll encounter a lot of references
 to the people who worked on it, like the cast, the director, the stunts,
@@ -472,15 +446,14 @@ the title and the year; the latest movie with Julia Roberts:
     print last['director'][0]['name']
 
 
-  Company OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Company OBJECT
+# Company OBJECTS INSIDE A Movie CLASS AND Movie OBJECTS INSIDE A Company OBJECT
   ==============================================================================
 
 As for Person/Character and Movie objects, you can test - using the "in"
 operator - if a Company has worked on a given Movie.
 
 
-  THE (NOT-SO-)"UNIVERSAL" '::' SEPARATOR
-  =======================================
+# THE (NOT-SO-)"UNIVERSAL" '::' SEPARATOR
 
 Sometimes I've used '::' to separate a set of different information
 inside a string, like the name of a company and what it has done for the
@@ -498,8 +471,7 @@ be used to create a custom function to pretty-print this kind of
 information.  See its documentation for more info.
 
 
-  MOVIE TITLES AND PERSON/CHARACTER NAMES REFERENCES
-  ==================================================
+# MOVIE TITLES AND PERSON/CHARACTER NAMES REFERENCES
 
 Sometimes in Movie, Person and Character attributes, there're strings
 with references to other movies or persons (e.g.: in the plot, in
@@ -528,8 +500,7 @@ Or:
   i.get_person('0000154', modFunct=imdb.utils.modHtmlLinks)
 
 
-  EXCEPTIONS
-  ==========
+# EXCEPTIONS
 
 The imdb._exceptions module contains the exceptions raised by the
 imdb package.  Every exception is a subsclass of IMDbError, which is
@@ -555,8 +526,7 @@ something like:
       print err
 
 
-  OTHER SOURCES OF INFO
-  =====================
+# OTHER SOURCES OF INFO
 
 Once the IMDbPY package is installed, you can read the docstring for
 packages, modules, functions, classes, objects, methods using the

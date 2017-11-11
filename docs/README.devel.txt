@@ -1,8 +1,6 @@
-  DEVELOPMENT OF IMDbPY
-  =====================
+# DEVELOPMENT OF IMDbPY
 
-A lot of other information useful to IMDbPY developers are available
-in the "README.package" file.
+A lot of other information useful to IMDbPY developers are available in the "README.package" file.
 
 Sections in this file:
 * STRUCTURE OF THE IMDbPY PACKAGE
@@ -10,12 +8,10 @@ Sections in this file:
 * HOW TO EXTEND
 
 
-  STRUCTURE OF THE IMDbPY PACKAGE
-  ===============================
+# STRUCTURE OF THE IMDbPY PACKAGE
 
 imdb (package)
  |
- +-> _compat
  +-> _exceptions
  +-> _logging
  +-> linguistics
@@ -40,28 +36,16 @@ imdb (package)
        |    +-> searchKeywordParser
        |    +-> topBottomParser
        |    +-> utils
-       |    +-> bsouplxml
-       |         |
-       |         +-> _bsoup.py
-       |         +-> etree.py
-       |         +-> html.py
-       |         +-> bsoupxpath.py
-       |
-       +-> mobile (package)
        |
        +-> sql (package)
             |
             +-> dbschema
             +-> alchemyadapter
-            +-> objectadapter
-            +-> cutils (C module)
 
 
 Description:
 imdb (package): contains the IMDb function, the IMDbBase class and imports
                 the IMDbError exception class.
-_compat: compatibility functions and class for some strange environments
-         (internally used).
 _exceptions: defines the exceptions internally used.
 _logging: provides the logging facility used by IMDbPY.
 linguistics: defines some functions and data useful to smartly guess the
@@ -99,37 +83,18 @@ http.searchKeywordParser: parse an html string, result of a query for a keyword.
 http.topBottomParser: parse an html string, result of a query for top250
                       and bottom100 movies.
 http.utils: miscellaneous utilities used only by the http package.
-http.bsouplxml (package): adapter to make BeautifulSoup behave like lxml
-                          (internally, the API of lxml is always used).
-http.bsouplxml._bsoup: just a copy of the BeautifulSoup module, so that it's not
-                       an external dependency.
-http.bsouplxml.etree: adapter for the lxml.etree module.
-http.bsouplxml.html: adapter for the lxml.html module.
-http.bsouplxml.bsoupxpath: xpath support for beautifulsoup.
 
 
 The parser.sql package manages the access to the data in the SQL
 database, created with the imdbpy2sql.py script; see the README.sqldb file.
 The dbschema module contains tables definitions and some useful functions;
-The alchemyadapter adapts the SQLAlchemy ORM to the internal mechanisms
-of IMDbPY, and the objectadapter does the same for the SQLObject ORM
-(internally the API of SQLObject is always used).
-The cutils module is a C module containing C function to speed up the
-'sql' data access system; if it can't be compiled, a set of fall'back
-functions will be used.
-
-The class in the parser.mobile package is a subclass of the one found
-in parser.http, with some method overridden to be many times faster (from
-2 to 20 times); it's useful for systems with slow bandwidth and not
-much CPU power.
 
 The helpers module contains functions and other goodies not directly
 used by the IMDbPY package, but that can be useful to develop
 IMDbPY-based programs.
 
 
-  GENERIC DESCRIPTION
-  ===================
+# GENERIC DESCRIPTION
 
 I wanted to stay independent from the source of the data for a given
 movie/person/character/company, and so the imdb.IMDb function returns
@@ -144,8 +109,7 @@ accessSystem instance variable is set to a string used to identify the
 used data access system.
 
 
-  HOW TO EXTEND
-  =============
+# HOW TO EXTEND
 
 To introduce a new data access system, you've to write a new package
 inside the "parser" package; this new package must provide a subclass

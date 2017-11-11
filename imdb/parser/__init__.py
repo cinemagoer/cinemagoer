@@ -4,9 +4,9 @@ parser package (imdb package).
 This package provides various parsers to access IMDb data (e.g.: a
 parser for the web/http interface, a parser for the SQL database
 interface, etc.).
-So far, the http/httpThin, mobile and sql parsers are implemented.
+So far, the http and sql parsers are implemented.
 
-Copyright 2004-2009 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +23,4 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-__all__ = ['http', 'mobile', 'sql']
-
-
+__all__ = ['http', 'sql']

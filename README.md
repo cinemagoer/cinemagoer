@@ -6,10 +6,13 @@
 ## Revamp notice
 
 Starting on November 2017 many things were improved and simplfied:
+
 - move the package to Python 3
 - removed dependencies: SQLObject, C compiler, BeautifulSoup
 - removed the "mobile" and "httpThin" parsers
 - introduced a testsuite ([please help with it!][testsuite])
+- the old, Python 2, version is available in the *imdbpy-legacy* branch (mostly unsupported)
+
 
 ## Main features
 

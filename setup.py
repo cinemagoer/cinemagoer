@@ -40,7 +40,6 @@ Natural Language :: English
 Natural Language :: Italian
 Natural Language :: Turkish
 Programming Language :: Python
-Programming Language :: C
 Operating System :: OS Independent
 Topic :: Database :: Front-Ends
 Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries

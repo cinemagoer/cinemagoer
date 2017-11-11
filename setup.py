@@ -15,7 +15,7 @@ long_desc = """IMDbPY is a Python package useful to retrieve and
 manage the data of the IMDb movie database about movies, people,
 characters and companies.
 
-Platform-independent and written in pure Python (and few C lines),
+Platform-independent and written in pure Python 3
 it can retrieve data from both the IMDb's web server and a local copy
 of the whole database.
 

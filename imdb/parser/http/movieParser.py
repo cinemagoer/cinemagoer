@@ -114,7 +114,7 @@ def _manageRoles(mo):
     return firstHalf + ' / '.join(newRoles) + mo.group(3)
 
 
-_reRolesMovie = re.compile(r'(<td class="char">)(.*?)(</td>)', re.I | re.M | re.S)
+_reRolesMovie = re.compile(r'(<td class="character">)(.*?)(</td>)', re.I | re.M | re.S)
 
 
 def _replaceBR(mo):
@@ -211,7 +211,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 path={
                     'person': ".//text()",
                     'link': "td[2]/a/@href",
-                    'roleID': "td[4]/div[@class='_imdbpyrole']/@roleid"
+                    'roleID': "td[4]//div[@class='_imdbpyrole']/@roleid"
                 },
                 postprocess=lambda x: build_person(
                     x.get('person') or '',
@@ -1514,6 +1514,37 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
     ]
 
 
+class DOMHTMLFullCreditsParser(DOMParserBase):
+    """Parser for the "full credits" (series cast section) page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        osparser = DOMHTMLFullCreditsParser()
+        result = osparser.parse(officialsites_html_string)
+    """
+    kind = 'full credits'
+    extractors = [
+        Extractor(label='cast',
+                  path="//table[@class='cast_list']//tr[@class='odd' or @class='even']",
+                  attrs=Attribute(key="cast",
+                                  multi=True,
+                                  path={
+                                        'person': ".//text()",
+                                        'link': "td[2]/a/@href",
+                                        'roleID': "td[4]//div[@class='_imdbpyrole']/@roleid"},
+                                  postprocess=lambda x: \
+                                      build_person(x.get('person') or '',
+                                                   personID=analyze_imdbid(x.get('link')),
+                                                   roleID=(x.get('roleID') or '').split('/'))
+                                  )),
+    ]
+    preprocessors = [
+        (_reRolesMovie, _manageRoles)
+    ]
+
+
 class DOMHTMLOfficialsitesParser(DOMParserBase):
     """Parser for the "official sites", "external reviews"
     "miscellaneous links", "sound clips", "video clips" and
@@ -2114,7 +2145,7 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                         path={
                             'person': "..//text()",
                             'link': "./a/@href",
-                            'roleID': "../td[4]/div[@class='_imdbpyrole']/@roleid"
+                            'roleID': "../td[4]//div[@class='_imdbpyrole']/@roleid"
                         },
                         postprocess=lambda x: build_person(
                             x.get('person') or '',
@@ -2401,6 +2432,7 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
 
 _OBJECTS = {
     'movie_parser': ((DOMHTMLMovieParser,), None),
+    'full_credits_parser': ((DOMHTMLFullCreditsParser,), None),
     'plot_parser': ((DOMHTMLPlotParser,), None),
     'movie_awards_parser': ((DOMHTMLAwardsParser,), None),
     'taglines_parser': ((DOMHTMLTaglinesParser,), None),

@@ -195,9 +195,17 @@ def build_person(txt, personID=None, billingPos=None,
         # Rationale: no imdbIndex is (ever?) showed on the web site.
         txt = txt.replace('(', '...(', 1)
     txt_split = txt.split(sep, 1)
+    if isinstance(roleID, list):
+        roleID = [r for r in roleID if r]
+        if not roleID:
+            roleID = ['']
     name = txt_split[0].strip()
     if len(txt_split) == 2:
-        role_comment = txt_split[1].strip()
+        role_comment = re_spaces.sub(' ', txt_split[1]).strip()
+        re_episodes = re.compile(r'(\d+ episodes.*)', re.I | re.M | re.S)
+        ep_match = re_episodes.search(role_comment)
+        if ep_match and (not ep_match.start() or role_comment[ep_match.start()-1] != '('):
+            role_comment = re_episodes.sub(r'(\1)', role_comment)
         # Strip common endings.
         if role_comment[-4:] == ' and':
             role_comment = role_comment[:-4].rstrip()
@@ -256,6 +264,16 @@ def build_person(txt, personID=None, billingPos=None,
     if (not name) or (personID is None):
         # Set to 'debug', since build_person is expected to receive some crap.
         _b_p_logger.debug('empty name or personID for "%s"', txt)
+    if role:
+        if isinstance(role, list):
+            role = [r.strip() for r in role]
+        else:
+            role = role.strip()
+    if notes:
+        if isinstance(notes, list):
+            notes = [n.strip() for n in notes]
+        else:
+            notes = notes.strip()
     # XXX: return None if something strange is detected?
     person = Person(name=name, personID=personID, currentRole=role,
                     roleID=roleID, notes=notes, billingPos=billingPos,
@@ -264,6 +282,8 @@ def build_person(txt, personID=None, billingPos=None,
         for idx, role in enumerate(person.currentRole):
             if roleNotes[idx]:
                 role.notes = roleNotes[idx]
+    elif person.currentRole and not person.currentRole.notes and notes:
+        person.currentRole.notes = notes
     return person
 
 

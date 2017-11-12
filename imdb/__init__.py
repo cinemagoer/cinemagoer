@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.1dev2017111'
+__version__ = VERSION = '6.1dev2017112'
 
 import configparser
 import logging
@@ -179,15 +179,9 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             logging.config.fileConfig(os.path.expanduser(logCfg))
         except Exception as e:
             _imdb_logger.warn('unable to read logger config: %s' % e)
-    if accessSystem in ('httpThin', 'webThin', 'htmlThin'):
-        logging.warn('httpThin was removed since IMDbPY 4.8')
-        accessSystem = 'http'
     if accessSystem in ('http', 'web', 'html'):
         from .parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
-    elif accessSystem in ('local', 'files'):
-        # The local access system was removed since IMDbPY 4.2.
-        raise IMDbError('the local access system was removed since IMDbPY 4.2')
     elif accessSystem in ('sql', 'db', 'database'):
         try:
             from .parser.sql import IMDbSqlAccessSystem

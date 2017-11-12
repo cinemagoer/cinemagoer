@@ -285,26 +285,14 @@ class IMDbHTTPAccessSystem(IMDbBase):
     accessSystem = 'http'
     _http_logger = logging.getLogger('imdbpy.parser.http')
 
-    def __init__(self, isThin=0, adultSearch=1, proxy=-1, oldParsers=False,
+    def __init__(self, adultSearch=True, proxy=-1, oldParsers=False,
                  fallBackToNew=False, cookie_id=-1,
                  timeout=30, cookie_uu=None, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         self.urlOpener = IMDbURLopener()
-        # When isThin is set, we're parsing the "maindetails" page
-        # of a movie (instead of the "combined" page) and movie/person
-        # references are not collected if no defaultModFunct is provided.
-        #
-        # NOTE: httpThin was removed since IMDbPY 4.8.
-        self.isThin = isThin
         self._getRefs = True
         self._mdparse = False
-        if isThin:
-            self._http_logger.warn('"httpThin" access system no longer supported;'
-                                   ' "http" used automatically', exc_info=False)
-            self.isThin = 0
-            if self.accessSystem in ('httpThin', 'webThin', 'htmlThin'):
-                self.accessSystem = 'http'
         self.set_timeout(timeout)
         self.do_adult_search(adultSearch)
         if cookie_id != -1:
@@ -450,8 +438,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         or cookies.txt file."""
         if doAdult:
             self.set_cookies(cookie_id, cookie_uu)
-            # c_header = 'id=%s; uu=%s' % (cookie_id, cookie_uu)
-            # self.urlOpener.set_header('Cookie', c_header)
         else:
             self.urlOpener.del_header('Cookie')
 

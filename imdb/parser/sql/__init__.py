@@ -548,7 +548,7 @@ class IMDbSqlAccessSystem(IMDbBase):
     accessSystem = 'sql'
     _sql_logger = logging.getLogger('imdbpy.parser.sql')
 
-    def __init__(self, uri, adultSearch=1, *arguments, **keywords):
+    def __init__(self, uri, adultSearch=True, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         DB_TABLES = []

@@ -856,6 +856,18 @@ def date_and_notes(s):
 class RolesList(list):
     """A list of Person or Character instances, used for the currentRole
     property."""
+    @property
+    def notes(self):
+        return self._notes
+
+    @notes.setter
+    def notes(self, notes):
+        self._notes = notes
+
+    def __init__(self, *args, **kwds):
+        self._notes = None
+        super(RolesList, self).__init__(*args, **kwds)
+
     def __str__(self):
         return ' / '.join([str(x) for x in self])
 

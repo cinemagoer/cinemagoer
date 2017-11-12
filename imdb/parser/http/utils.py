@@ -591,7 +591,7 @@ class DOMParserBase(object):
 
     def gather_refs(self, dom):
         """Collect references."""
-        grParser = GatherRefs(useModule=self._useModule)
+        grParser = GatherRefs()
         grParser._as = self._as
         grParser._modFunct = self._modFunct
         refs = grParser.parse_dom(dom)

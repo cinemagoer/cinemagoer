@@ -156,7 +156,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                 html_string = html_string.replace('(TV mini-series)', '(mini)')
             return html_string
         # Direct hit!
-        dbme = self._BaseParser(useModule=self._useModule)
+        dbme = self._BaseParser()
         res = dbme.parse(html_string, url=self.url)
         if not res:
             return ''

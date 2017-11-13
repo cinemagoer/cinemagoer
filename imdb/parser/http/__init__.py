@@ -90,8 +90,7 @@ class _ModuleProxy:
 # Please don't mess with these account.
 _cookies_file_path = os.path.join(os.path.dirname(__file__), 'cookies.json')
 with open(_cookies_file_path) as _cookies_file:
-    _cookies_content = _cookies_file.read()
-_cookies = json.loads(_cookies_content)
+    _cookies = json.loads(_cookies_file.read())
 
 # Currently used account.
 _cookie_id = _cookies['IMDbPY2013']['id']

@@ -1,6 +1,11 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 5.2.1
+  [general]
+  - notice if wrong Python version is used
+
+
 * What's the new in release 5.2 "Blade Runner 2049" (11 Nov 2017)
   [general]
   - last release to support Python 2.7

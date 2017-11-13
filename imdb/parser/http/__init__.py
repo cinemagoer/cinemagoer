@@ -54,7 +54,8 @@ _aux_logger = logging.getLogger('imdbpy.parser.http.aux')
 
 class _ModuleProxy:
     """A proxy to instantiate and access parsers."""
-    def __init__(self, module, defaultKeys=None, oldParsers=False, fallBackToNew=False):
+    def __init__(self, module, defaultKeys=None, oldParsers=False,
+                 fallBackToNew=False):
         """Initialize a proxy for the given module; defaultKeys, if set,
         muste be a dictionary of values to set for instanced objects."""
         if oldParsers or fallBackToNew:
@@ -260,8 +261,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
     accessSystem = 'http'
     _http_logger = logging.getLogger('imdbpy.parser.http')
 
-    def __init__(self, adultSearch=True, proxy=-1, oldParsers=False, fallBackToNew=False,
-                 cookie_id=-1, timeout=30, cookie_uu=None, *arguments, **keywords):
+    def __init__(self, adultSearch=True, proxy=-1, oldParsers=False,
+                 fallBackToNew=False, cookie_id=-1,
+                 timeout=30, cookie_uu=None, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         self.urlOpener = IMDbURLopener()

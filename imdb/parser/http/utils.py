@@ -533,22 +533,18 @@ class DOMParserBase(object):
         data = self.add_refs(data)
         return data
 
-    def _build_empty_dom(self):
-        from .bsouplxml import _bsoup
-        return _bsoup.BeautifulSoup('')
-
     def get_dom(self, html_string):
         """Return a dom object, from the given string."""
         try:
             dom = lxml.html.fromstring(html_string)
             if dom is None:
-                dom = self._build_empty_dom()
+                dom = lxml.html.fromstring('')
                 self._logger.error('%s: using a fake empty DOM', self._cname)
             return dom
         except Exception:
             self._logger.error('%s: caught exception parsing DOM',
                                self._cname, exc_info=True)
-            return self._build_empty_dom()
+            return lxml.html.fromstring('')
 
     def xpath(self, element, path):
         """Return elements matching the given XPath."""
@@ -745,7 +741,8 @@ class DOMParserBase(object):
             else:
                 re_characters = None
             _putRefs(data, re_titles, re_names, re_characters)
-        return {'data': data, 'titlesRefs': self._titlesRefs,
+        return {'data': data,
+                'titlesRefs': self._titlesRefs,
                 'namesRefs': self._namesRefs,
                 'charactersRefs': self._charactersRefs}
 

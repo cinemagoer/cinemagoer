@@ -4,6 +4,7 @@
 * What's the new in release 6.2
   [general]
   - introduce check for Python version
+  - SQLAlchemy can be disabled using --without-sqlalchemy
 
 
 * What's the new in release 6.1

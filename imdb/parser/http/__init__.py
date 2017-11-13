@@ -54,13 +54,9 @@ _aux_logger = logging.getLogger('imdbpy.parser.http.aux')
 
 class _ModuleProxy:
     """A proxy to instantiate and access parsers."""
-    def __init__(self, module, defaultKeys=None, oldParsers=False,
-                 fallBackToNew=False):
+    def __init__(self, module, defaultKeys=None):
         """Initialize a proxy for the given module; defaultKeys, if set,
         muste be a dictionary of values to set for instanced objects."""
-        if oldParsers or fallBackToNew:
-            _aux_logger.warn('The old set of parsers was removed;'
-                             ' falling back to the new parsers.')
         if defaultKeys is None:
             defaultKeys = {}
         self._defaultKeys = defaultKeys
@@ -261,8 +257,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     accessSystem = 'http'
     _http_logger = logging.getLogger('imdbpy.parser.http')
 
-    def __init__(self, adultSearch=True, proxy=-1, oldParsers=False,
-                 fallBackToNew=False, cookie_id=-1,
+    def __init__(self, adultSearch=True, proxy=-1, cookie_id=-1,
                  timeout=30, cookie_uu=None, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
@@ -281,46 +276,16 @@ class IMDbHTTPAccessSystem(IMDbBase):
         _def = {'_modFunct': self._defModFunct, '_as': self.accessSystem}
 
         # Proxy objects.
-        self.smProxy = _ModuleProxy(
-            searchMovieParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
-        self.spProxy = _ModuleProxy(
-            searchPersonParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
-        self.scProxy = _ModuleProxy(
-            searchCharacterParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
-        self.scompProxy = _ModuleProxy(
-            searchCompanyParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
-        self.skProxy = _ModuleProxy(
-            searchKeywordParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
-        self.mProxy = _ModuleProxy(
-            movieParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
-        self.pProxy = _ModuleProxy(
-            personParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
-        self.cProxy = _ModuleProxy(
-            characterParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
-        self.compProxy = _ModuleProxy(
-            companyParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
-        self.topBottomProxy = _ModuleProxy(
-            topBottomParser, defaultKeys=_def, oldParsers=oldParsers,
-            fallBackToNew=fallBackToNew
-        )
+        self.smProxy = _ModuleProxy(searchMovieParser, defaultKeys=_def)
+        self.spProxy = _ModuleProxy(searchPersonParser, defaultKeys=_def)
+        self.scProxy = _ModuleProxy(searchCharacterParser, defaultKeys=_def)
+        self.scompProxy = _ModuleProxy(searchCompanyParser, defaultKeys=_def)
+        self.skProxy = _ModuleProxy(searchKeywordParser, defaultKeys=_def)
+        self.mProxy = _ModuleProxy(movieParser, defaultKeys=_def)
+        self.pProxy = _ModuleProxy(personParser, defaultKeys=_def)
+        self.cProxy = _ModuleProxy(characterParser, defaultKeys=_def)
+        self.compProxy = _ModuleProxy(companyParser, defaultKeys=_def)
+        self.topBottomProxy = _ModuleProxy(topBottomParser, defaultKeys=_def)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""

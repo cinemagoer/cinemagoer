@@ -217,10 +217,7 @@ def canonicalTitle(title, lang=None, imdbIndex=None):
             return title
     except IndexError:
         pass
-    if isUnicode:
-        _format = '%s%s, %s'
-    else:
-        _format = '%s%s, %s'
+    _format = '%s%s, %s'
     ltitle = title.lower()
     if imdbIndex:
         imdbIndex = ' (%s)' % imdbIndex
@@ -261,12 +258,8 @@ def normalizeTitle(title, lang=None):
         sep = ' '
         if stitle[-1][-1] in ("'", '-'):
             sep = ''
-        if isUnicode:
-            _format = '%s%s%s'
-            _joiner = ', '
-        else:
-            _format = '%s%s%s'
-            _joiner = ', '
+        _format = '%s%s%s'
+        _joiner = ', '
         title = _format % (stitle[-1], sep, _joiner.join(stitle[:-1]))
     return title
 

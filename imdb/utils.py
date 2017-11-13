@@ -22,12 +22,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 
+import logging
 import re
 import string
-import logging
 from copy import copy, deepcopy
-from time import strftime, strptime
 from functools import total_ordering
+from time import strftime, strptime
 
 from imdb import VERSION
 from imdb import linguistics
@@ -48,7 +48,8 @@ re_m_series = re.compile(r'Season\s+\d+\s+\|\s+Episode\s+\d+\s+-', re.I)
 re_m_imdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 re_m_kind = re.compile(
     r'\((TV episode|TV Series|TV mini-series|mini|TV|Video|Video Game|VG|Short|TV Movie|TV Short|V)\)',
-    re.I)
+    re.I
+)
 
 KIND_MAP = {
     'tv': 'tv movie',

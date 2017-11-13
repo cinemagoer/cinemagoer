@@ -93,29 +93,9 @@ with open(_cookies_file_path) as _cookies_file:
     _cookies_content = _cookies_file.read()
 _cookies = json.loads(_cookies_content)
 
-# Old 'IMDbPY' account.
-_IMDbPY_cookie_id = _cookies['IMDbPY']['id']
-_IMDbPY_cookie_uu = _cookies['IMDbPY']['uu']
-
-# 'imdbpy2010' account.
-_imdbpy2010_cookie_id = _cookies['imdbpy2010']['id']
-_imdbpy2010_cookie_uu = _cookies['imdbpy2010']['uu']
-
-# old 'IMDbPYweb' account.
-_old_IMDbPYweb_cookie_id = _cookies['old_IMDbPYweb']['id']
-_old_IMDbPYweb_cookie_uu = _cookies['old_IMDbPYweb']['uu']
-
-# old 'IMDbPYweb' account values (as of 2012-12-30)
-_IMDbPYweb_cookie_id = _cookies['IMDbPYweb']['id']
-_IMDbPYweb_cookie_uu = _cookies['IMDbPYweb']['uu']
-
-# 'IMDbPY2013' account
-_IMDbPY2013_cookie_id = _cookies['IMDbPY2013']['id']
-_IMDbPY2013_cookie_uu = _cookies['IMDbPY2013']['uu']
-
 # Currently used account.
-_cookie_id = _IMDbPY2013_cookie_id
-_cookie_uu = _IMDbPY2013_cookie_uu
+_cookie_id = _cookies['IMDbPY2013']['id']
+_cookie_uu = _cookies['IMDbPY2013']['uu']
 
 
 class _FakeURLOpener(object):

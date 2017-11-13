@@ -26,14 +26,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import json
-import os
-import sys
-import ssl
-import socket
 import logging
-from urllib.request import FancyURLopener
-from urllib.parse import quote_plus
+import os
+import socket
+import ssl
 from codecs import lookup
+from urllib.parse import quote_plus
+from urllib.request import FancyURLopener
 
 from imdb import IMDbBase
 from imdb.utils import analyze_title
@@ -87,39 +86,15 @@ class _ModuleProxy:
         return getattr(_sm, name)
 
 
-PY_VERSION = sys.version_info[:2]
-
-
 # The cookies for the "adult" search.
 # Please don't mess with these account.
 _cookies_file_path = os.path.join(os.path.dirname(__file__), 'cookies.json')
 with open(_cookies_file_path) as _cookies_file:
-    _cookies_content = _cookies_file.read()
-_cookies = json.loads(_cookies_content)
-
-# Old 'IMDbPY' account.
-_IMDbPY_cookie_id = _cookies['IMDbPY']['id']
-_IMDbPY_cookie_uu = _cookies['IMDbPY']['uu']
-
-# 'imdbpy2010' account.
-_imdbpy2010_cookie_id = _cookies['imdbpy2010']['id']
-_imdbpy2010_cookie_uu = _cookies['imdbpy2010']['uu']
-
-# old 'IMDbPYweb' account.
-_old_IMDbPYweb_cookie_id = _cookies['old_IMDbPYweb']['id']
-_old_IMDbPYweb_cookie_uu = _cookies['old_IMDbPYweb']['uu']
-
-# old 'IMDbPYweb' account values (as of 2012-12-30)
-_IMDbPYweb_cookie_id = _cookies['IMDbPYweb']['id']
-_IMDbPYweb_cookie_uu = _cookies['IMDbPYweb']['uu']
-
-# 'IMDbPY2013' account
-_IMDbPY2013_cookie_id = _cookies['IMDbPY2013']['id']
-_IMDbPY2013_cookie_uu = _cookies['IMDbPY2013']['uu']
+    _cookies = json.loads(_cookies_file.read())
 
 # Currently used account.
-_cookie_id = _IMDbPY2013_cookie_id
-_cookie_uu = _IMDbPY2013_cookie_uu
+_cookie_id = _cookies['IMDbPY2013']['id']
+_cookie_uu = _cookies['IMDbPY2013']['uu']
 
 
 class _FakeURLOpener(object):
@@ -303,6 +278,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         if proxy != -1:
             self.set_proxy(proxy)
         _def = {'_modFunct': self._defModFunct, '_as': self.accessSystem}
+
         # Proxy objects.
         self.smProxy = _ModuleProxy(
             searchMovieParser, defaultKeys=_def, oldParsers=oldParsers,
@@ -535,7 +511,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
         ret = self.mProxy.releasedates_parser.parse(cont)
         ret['info sets'] = ('release dates', 'akas')
         return ret
+
     get_movie_akas = get_movie_release_dates
+
     get_movie_release_info = get_movie_release_dates
 
     def get_movie_vote_details(self, movieID):
@@ -609,6 +587,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_guests(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'epcast')
         return self.mProxy.episodes_cast_parser.parse(cont)
+
     get_movie_episodes_cast = get_movie_guests
 
     def _purge_seasons_data(self, data_d):

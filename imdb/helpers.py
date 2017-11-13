@@ -176,7 +176,6 @@ def makeObject2Txt(movieTxt=None, personTxt=None, characterTxt=None,
                 return matchobj.group(2)
             else:
                 return ''
-            return matchobj.group(2)
         while re_conditional.search(outs):
             outs = re_conditional.sub(_excludeFalseConditionals, outs)
         for key in re_subst.findall(outs):

@@ -54,8 +54,7 @@ _aux_logger = logging.getLogger('imdbpy.parser.http.aux')
 
 class _ModuleProxy:
     """A proxy to instantiate and access parsers."""
-    def __init__(self, module, defaultKeys=None, oldParsers=False,
-                 fallBackToNew=False):
+    def __init__(self, module, defaultKeys=None, oldParsers=False, fallBackToNew=False):
         """Initialize a proxy for the given module; defaultKeys, if set,
         muste be a dictionary of values to set for instanced objects."""
         if oldParsers or fallBackToNew:
@@ -261,9 +260,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
     accessSystem = 'http'
     _http_logger = logging.getLogger('imdbpy.parser.http')
 
-    def __init__(self, adultSearch=True, proxy=-1, oldParsers=False,
-                 fallBackToNew=False, cookie_id=-1,
-                 timeout=30, cookie_uu=None, *arguments, **keywords):
+    def __init__(self, adultSearch=True, proxy=-1, oldParsers=False, fallBackToNew=False,
+                 cookie_id=-1, timeout=30, cookie_uu=None, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         self.urlOpener = IMDbURLopener()
@@ -279,6 +277,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         if proxy != -1:
             self.set_proxy(proxy)
         _def = {'_modFunct': self._defModFunct, '_as': self.accessSystem}
+
         # Proxy objects.
         self.smProxy = _ModuleProxy(
             searchMovieParser, defaultKeys=_def, oldParsers=oldParsers,
@@ -511,7 +510,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
         ret = self.mProxy.releasedates_parser.parse(cont)
         ret['info sets'] = ('release dates', 'akas')
         return ret
+
     get_movie_akas = get_movie_release_dates
+
     get_movie_release_info = get_movie_release_dates
 
     def get_movie_vote_details(self, movieID):
@@ -585,6 +586,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_guests(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'epcast')
         return self.mProxy.episodes_cast_parser.parse(cont)
+
     get_movie_episodes_cast = get_movie_guests
 
     def _purge_seasons_data(self, data_d):

@@ -741,7 +741,8 @@ class DOMParserBase(object):
             else:
                 re_characters = None
             _putRefs(data, re_titles, re_names, re_characters)
-        return {'data': data, 'titlesRefs': self._titlesRefs,
+        return {'data': data,
+                'titlesRefs': self._titlesRefs,
                 'namesRefs': self._namesRefs,
                 'charactersRefs': self._charactersRefs}
 

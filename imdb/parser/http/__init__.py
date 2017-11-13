@@ -30,7 +30,6 @@ import logging
 import os
 import socket
 import ssl
-import sys
 from codecs import lookup
 from urllib.parse import quote_plus
 from urllib.request import FancyURLopener
@@ -85,9 +84,6 @@ class _ModuleProxy:
             setattr(self, name, obj)
             return obj
         return getattr(_sm, name)
-
-
-PY_VERSION = sys.version_info[:2]
 
 
 # The cookies for the "adult" search.

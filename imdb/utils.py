@@ -22,12 +22,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 
+import logging
 import re
 import string
-import logging
 from copy import copy, deepcopy
-from time import strftime, strptime
 from functools import total_ordering
+from time import strftime, strptime
 
 from imdb import VERSION
 from imdb import linguistics

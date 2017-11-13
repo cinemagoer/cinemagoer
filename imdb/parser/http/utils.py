@@ -204,7 +204,7 @@ def build_person(txt, personID=None, billingPos=None,
         role_comment = re_spaces.sub(' ', txt_split[1]).strip()
         re_episodes = re.compile(r'(\d+ episodes.*)', re.I | re.M | re.S)
         ep_match = re_episodes.search(role_comment)
-        if ep_match and (not ep_match.start() or role_comment[ep_match.start()-1] != '('):
+        if ep_match and (not ep_match.start() or role_comment[ep_match.start() - 1] != '('):
             role_comment = re_episodes.sub(r'(\1)', role_comment)
         # Strip common endings.
         if role_comment[-4:] == ' and':

@@ -1525,21 +1525,28 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
         result = osparser.parse(officialsites_html_string)
     """
     kind = 'full credits'
+
     extractors = [
-        Extractor(label='cast',
-                  path="//table[@class='cast_list']//tr[@class='odd' or @class='even']",
-                  attrs=Attribute(key="cast",
-                                  multi=True,
-                                  path={
-                                        'person': ".//text()",
-                                        'link': "td[2]/a/@href",
-                                        'roleID': "td[4]//div[@class='_imdbpyrole']/@roleid"},
-                                  postprocess=lambda x: \
-                                      build_person(x.get('person') or '',
-                                                   personID=analyze_imdbid(x.get('link')),
-                                                   roleID=(x.get('roleID') or '').split('/'))
-                                  )),
+        Extractor(
+            label='cast',
+            path="//table[@class='cast_list']//tr[@class='odd' or @class='even']",
+            attrs=Attribute(
+                key="cast",
+                multi=True,
+                path={
+                    'person': ".//text()",
+                    'link': "td[2]/a/@href",
+                    'roleID': "td[4]//div[@class='_imdbpyrole']/@roleid"
+                },
+                postprocess=lambda x: build_person(
+                    x.get('person') or '',
+                    personID=analyze_imdbid(x.get('link')),
+                    roleID=(x.get('roleID') or '').split('/')
+                )
+            )
+        ),
     ]
+
     preprocessors = [
         (_reRolesMovie, _manageRoles)
     ]

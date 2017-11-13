@@ -26,14 +26,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
 import json
-import os
-import sys
-import ssl
-import socket
 import logging
-from urllib.request import FancyURLopener
-from urllib.parse import quote_plus
+import os
+import socket
+import ssl
+import sys
 from codecs import lookup
+from urllib.parse import quote_plus
+from urllib.request import FancyURLopener
 
 from imdb import IMDbBase
 from imdb.utils import analyze_title

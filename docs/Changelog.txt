@@ -6,6 +6,9 @@
   - introduce check for Python version
   - SQLAlchemy can be disabled using --without-sqlalchemy
 
+  [http]
+  - fixed ratings parser
+
 
 * What's the new in release 6.1
   - skipped version 6.1 due to a wrong release on pypi

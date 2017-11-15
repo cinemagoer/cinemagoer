@@ -1280,19 +1280,19 @@ class DOMHTMLRatingsParser(DOMParserBase):
         rparser = DOMHTMLRatingsParser()
         result = rparser.parse(userratings_html_string)
     """
-    re_means = re.compile('mean\s*=\s*([0-9]\.[0-9])\.\s*median\s*=\s*([0-9])', re.I)
+    re_means = re.compile('mean\s*=\s*([0-9]\.[0-9])\s*median\s*=\s*([0-9])', re.I)
 
     extractors = [
         Extractor(
             label='number of votes',
-            path="//td[b='Percentage']/../../tr",
+            path="//th[@class='firstTableCoulmn']/../../tr",
             attrs=[
                 Attribute(
                     key='votes',
                     multi=True,
                     path={
-                        'votes': "td[1]//text()",
-                        'ordinal': "td[3]//text()"
+                        'ordinal': "td[1]/div//text()",
+                        'votes': "td[3]/div/div//text()"
                     }
                 )
             ]
@@ -1300,55 +1300,70 @@ class DOMHTMLRatingsParser(DOMParserBase):
 
         Extractor(
             label='mean and median',
-            path="//p[starts-with(text(), 'Arithmetic mean')]",
+            path="//div[starts-with(normalize-space(text()), 'Arithmetic mean')]",
             attrs=Attribute(
                 key='mean and median',
-                path="text()"
+                path="normalize-space(text())"
             )
         ),
 
         Extractor(
-            label='rating',
-            path="//a[starts-with(@href, '/search/title?user_rating=')]",
+            label='demographics',
+            path="//div[@class='smallcell']",
             attrs=Attribute(
-                key='rating',
-                path="text()"
-            )
-        ),
-
-        Extractor(
-            label='demographic voters',
-            path="//td[b='Average']/../../tr",
-            attrs=Attribute(
-                key='demographic voters',
+                key='demographics',
                 multi=True,
                 path={
-                    'voters': "td[1]//text()",
-                    'votes': "td[2]//text()",
-                    'average': "td[3]//text()"
+                    'link': "a/@href",
+                    'rating': "..//div[@class='bigcell']//text()",
+                    'votes': "a/text()"
                 }
-            )
-        ),
-
-        Extractor(
-            label='top 250',
-            path="//a[text()='top 250']",
-            attrs=Attribute(
-                key='top 250',
-                path="./preceding-sibling::text()[1]"
             )
         )
     ]
 
     def postprocess_data(self, data):
         nd = {}
+        demographics = data.get('demographics')
+        if demographics:
+            dem = {}
+            for dem_data in demographics:
+                link = (dem_data.get('link') or '').strip()
+                votes = (dem_data.get('votes') or '').strip()
+                rating = (dem_data.get('rating') or '').strip()
+                if not (link and votes and rating):
+                    continue
+                eq_idx = link.rfind('=')
+                if eq_idx == -1:
+                    continue
+                info = link[eq_idx + 1:].replace('_', ' ')
+                try:
+                    votes = int(votes.replace(',', ''))
+                except Exception:
+                    continue
+                try:
+                    rating = float(rating)
+                except Exception:
+                    continue
+                dem[info] = {'votes': votes, 'rating': rating}
+            nd['demographics'] = dem
         votes = data.get('votes', [])
         if votes:
             nd['number of votes'] = {}
-            for i in range(1, 11):
-                _ordinal = int(votes[i]['ordinal'])
-                _strvts = votes[i]['votes'] or '0'
-                nd['number of votes'][_ordinal] = int(_strvts.replace(',', ''))
+            for v_info in votes:
+                ordinal = v_info.get('ordinal')
+                nr_votes = v_info.get('votes')
+                if not (ordinal and nr_votes):
+                    continue
+                try:
+                    ordinal = int(ordinal)
+                except Exception:
+                    continue
+                try:
+                    nr_votes = int(nr_votes.replace(',', ''))
+                except Exception:
+                    continue
+                nd['number of votes'][ordinal] = nr_votes
         mean = data.get('mean and median', '')
         if mean:
             means = self.re_means.findall(mean)
@@ -1366,32 +1381,6 @@ class DOMHTMLRatingsParser(DOMParserBase):
                     pass
                 if isinstance(med, int):
                     nd['median'] = med
-        if 'rating' in data:
-            nd['rating'] = float(data['rating'])
-        dem_voters = data.get('demographic voters')
-        if dem_voters:
-            nd['demographic'] = {}
-            for i in range(1, len(dem_voters)):
-                if (dem_voters[i]['votes'] is not None) and (dem_voters[i]['votes'].strip()):
-                    nd['demographic'][dem_voters[i]['voters'].strip().lower()] = \
-                        (int(dem_voters[i]['votes'].replace(',', '')),
-                         float(dem_voters[i]['average']))
-        if 'imdb users' in nd.get('demographic', {}):
-            nd['votes'] = nd['demographic']['imdb users'][0]
-            nd['demographic']['all votes'] = nd['demographic']['imdb users']
-            del nd['demographic']['imdb users']
-        top250 = data.get('top 250')
-        if top250:
-            sd = top250[9:]
-            i = sd.find(' ')
-            if i != -1:
-                sd = sd[:i]
-                try:
-                    sd = int(sd)
-                except (ValueError, OverflowError):
-                    pass
-                if isinstance(sd, int):
-                    nd['top 250 rank'] = sd
         return nd
 
 

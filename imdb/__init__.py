@@ -25,12 +25,24 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.1dev2017112'
+__version__ = VERSION = '6.1dev2017114'
+
+VERSION_NOTICE = """This version of IMDbPY requires Python 3.
+For a version compatible with Python 2.7, see the imdbpy-legacy branch:
+    https://github.com/alberanid/imdbpy/tree/imdbpy-legacy
+
+Please notice that the imdbpy-legacy branch is mostly unsupported.
+"""
+
+import sys
+
+if sys.hexversion < 0x3000000:
+    print(VERSION_NOTICE)
+    sys.exit(1)
 
 import configparser
 import logging
 import os
-import sys
 from pkgutil import find_loader
 from types import MethodType, FunctionType
 

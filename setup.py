@@ -74,6 +74,8 @@ scripts = [
 #      path seems a recipe for a disaster (with bdist_egg, at least).
 data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
 
+featSQLAlchemy = setuptools.dist.Feature('SQLAlchemy dependency',
+        standard=True, install_requires=['sqlalchemy-migrate', 'SQLAlchemy'])
 
 params = {
     # Meta-information.
@@ -100,6 +102,7 @@ params = {
         'dev': ['flake8', 'flake8-isort'],
         'test': ['pytest', 'pytest-cov'],
     },
+    'features': {'sqlalchemy': featSQLAlchemy},
     'packages': setuptools.find_packages(),
     'package_data': {'imdb.parser.http': ['*.json']}
 }

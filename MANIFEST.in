@@ -4,8 +4,6 @@
 # Manifest template for creating the Distutils source distribution.
 #
 
-recursive-include imdb *.json
-
 # Comment out the "recursive-include docs" entry if you don't want
 # to install the documentation.
 recursive-include docs *

@@ -103,8 +103,7 @@ params = {
         'test': ['pytest', 'pytest-cov'],
     },
     'features': {'sqlalchemy': featSQLAlchemy},
-    'packages': setuptools.find_packages(),
-    'package_data': {'imdb.parser.http': ['*.json']}
+    'packages': setuptools.find_packages()
 }
 
 

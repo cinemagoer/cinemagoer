@@ -25,9 +25,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import json
 import logging
-import os
 import socket
 import ssl
 from codecs import lookup
@@ -84,13 +82,12 @@ class _ModuleProxy:
 
 # The cookies for the "adult" search.
 # Please don't mess with these account.
-_cookies_file_path = os.path.join(os.path.dirname(__file__), 'cookies.json')
-with open(_cookies_file_path) as _cookies_file:
-    _cookies = json.loads(_cookies_file.read())
-
-# Currently used account.
-_cookie_id = _cookies['IMDbPY2013']['id']
-_cookie_uu = _cookies['IMDbPY2013']['uu']
+_cookie_id = 'BCYmoyqSm2WglmOzG-SrFWSvVpxsTZOB0qEOOqmAwCBxCbaNgKOxd0DTKzUvt7t04Pya5gV2tUrpDmYxrc1Dr54DQj2UX' \
+    'I7QI35__M5-HI2KrbOI3PjDz6M-_U3HG8topMfN64R24tmBixoZhMYXVaEc556lf0Z4gQNJVYRANXvwytP5v1lpfeToRlu9aVJwN4kT'
+_cookie_uu = 'BCYquDS8Y2i8R1pJxS4nB77YrhjHHXeOea2Xl9KtZvE6RZKVfMvzTGU4Vl5-yxfPbgRSiFJasyf-hhPuVvXyaHlfeBjNl' \
+    'bFT8hz2HzFFkQ_SxKxq05J51gi7Fv4SaAws1M-i7zmQ1TRunfJqCVIYqPwIs2NO7s4_YDH2ZoISVGLgca8OY2K58HychOZB1oRWHVe' \
+    'AJNhLJMrCWJBuGRLCNnQK5X9tA0dPPntr2Ussy0ouul-N1GQz-8y5vda3JJ_C6xkwmHcA6JrOdOFO_HqMWjVSXuxGEdrXC919JM9H0' \
+    'vooVvKeVgAEJnTh2GiVlUJUoH3c'
 
 
 class _FakeURLOpener(object):

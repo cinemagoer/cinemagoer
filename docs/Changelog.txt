@@ -6,6 +6,7 @@
   - introduce check for Python version
   - SQLAlchemy can be disabled using --without-sqlalchemy
   - fix #88: configuration file parser
+  - update documentation
 
   [http]
   - fixed ratings parser

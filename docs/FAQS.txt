@@ -17,11 +17,11 @@ A: first, a bit of nomenclature: we'll call "movieID" (or things like
     of data, by the IMDb.com site (i.e.: the 7-digit number in tt0094226,
     as seen in the URL for "The Untouchables").
 
-    Using IMDbPY to access the web ('http' and 'mobile' data access
-    systems), movieIDs and imdbIDs are the same thing - beware that
-    in this case a movieID is a string, with the leading zeroes.
+    Using IMDbPY to access the web ('http' data access system), movieIDs
+    and imdbIDs are the same thing - beware that in this case a movieID
+    is a string, with the leading zeroes.
 
-    Unfortunately, populating a sql database with data from the plain
+    Unfortunately, populating a SQL database with data from the plain
     text data files, we don't have access to imdbIDs - since they are
     not distributed at all - and so we have to made them by ourselves
     (they are the 'id' column in tables like 'title' or 'name').
@@ -29,11 +29,11 @@ A: first, a bit of nomenclature: we'll call "movieID" (or things like
     if you update it with a newer set of plain text data files, these IDs
     will surely change (and, by the way, they are integers).
     It's also obvious, now, that you can't exchange IDs between the
-    'http' (or 'mobile') data access system and 'sql', and in the same
+    'http' data access system and 'sql', and in the same
     way you can't use imdbIDs with your local database or vice-versa.
 
 
-Q: using a sql database, what's the imdb_id (or something like that)
+Q: using a SQL database, what's the imdb_id (or something like that)
     column in tables like 'title', 'name' and so on?
 
 A: it's internally used by IMDbPY to remember the imdbID (the one
@@ -41,11 +41,11 @@ A: it's internally used by IMDbPY to remember the imdbID (the one
     value of the 'id' column, as movieID) of a movie, once it stumbled
     upon.  This way, if IMDbPY is asked again about the imdbID of
     a movie (or person, or ...), it doesn't have to contact again to
-    the web site.  Notice that you have to access the sql database using
+    the web site.  Notice that you have to access the SQL database using
     a user with write permission, to update it.
 
     As a bonus, when possible, the values of these imdbIDs are saved
-    between updates of the sql database (using the imdbpy2sql.py script).
+    between updates of the SQL database (using the imdbpy2sql.py script).
     Beware that it's tricky and not always possible, but the script does
     its best to succeed.
 
@@ -78,7 +78,7 @@ A: yeah, I can.  But I won't. :-)
     Repeat with me: I DON'T NEED ALL THE imdbIDs. :-)
 
 
-Q: using a sql database, how can I convert a movieID (whose value
+Q: using a SQL database, how can I convert a movieID (whose value
     is valid only locally) to an imdbID (the ID used by the imdb.com site)?
 
 A: various functions can be used to convert a movieID (or personID or
@@ -108,10 +108,10 @@ Q: I have a movie title (in the format used by the plain text data files)
     to get its imdbID.  How can I do?
 
 A: the safest thing, is probably to do a normal search on IMDb (using the
-    'http' or 'mobile' data access system of IMDbPY) and see if the first
+    'http' data access system of IMDbPY) and see if the first
     item is the correct one.
     You can also try the 'title2imdbID' method (and similar) of the IMDb
-    instance (no matter if you're using 'http', 'mobile' or 'sql'), but
+    instance (no matter if you're using 'http' or 'sql'), but
     expect some failures - it returns None in this case.
 
 

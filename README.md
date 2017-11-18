@@ -26,16 +26,108 @@ Starting on November 2017 many things were improved and simplified:
 
 ## Code example
 
+    # create and instance of the IMDb class
     from imdb import IMDb
     ia = IMDb()
 
-    # print the director(s) of a movie
+    # get a movie and print its director(s)
     the_matrix = ia.get_movie('0133093')
     print(the_matrix['director'])
+
+    # show all the information sets avaiable for Movie objects
+    print(ia.get_movie_infoset())
+
+    # update a Movie object with more information
+    ia.update(the_matrix, ['technical'])
+    # show which keys were added by the information set
+    print(the_matrix.infoset2keys['technical'])
+    # print one of the new keys
+    print(the_matrix.get('cinematographic process'))
 
     # search for a person
     for person in ia.search_person('Mel Gibson'):
         print(person.personID, person['name'])
+
+    # get the first result of a company search,
+    # update it to get the basic information
+    ladd_company = ia.search_company('The Ladd Company')[0]
+    ia.update(ladd_company)
+    # show the available information and print some
+    print(ladd_company.keys())
+    print(ladd_company.get('production companies'))
+
+    # get 5 movies tagged with a keyword
+    dystopia = ia.get_keyword('dystopia', results=5)
+
+    # get a Character object
+    deckard = ia.search_character('Rick Deckard')[0]
+    ia.update(deckard)
+    print(deckard['full-size headshot'])
+
+    # get top250 and bottom100 movies
+    top250 = ia.get_top250_movies()
+    bottom100 = ia.get_bottom100_movies()
+
+
+## Main objects and methods
+
+> **ia = imdb.IMDb()**
+
+create an instance of the IMDb class, to access information from the web or a SQL database.
+
+> **movie = ia.get_movie(** movieID **)**
+> **person = ia.get_person(** personID **)**
+> **company = ia.get_company(** companyID **)**
+> **character = ia.get_character(** characterID **)**
+
+return an instance of a Movie, Person, Company or Character classes. The objects have the basic information.
+
+> **movies = ia.search_movie(** title **)**
+> **persons = ia.search_person(** name **)**
+> **companies = ia.search_company(** name **)**
+> **characters = ia.search_characters(** name **)**
+
+return a list of Movie, Person, Company or Character instances. These objects have only bare information, like title and movieID.
+
+> **ia.update(** obj, [info='infoset'] **)**
+
+update a Movie, Person, Company or Character instance with basic information, or any other specified info set.
+
+> **ia.get_movie_infoset()**
+
+all the info set available for a movie; similar methods are available for other objects.
+
+> **movie.infoset2keys**
+
+mapping between the fetched info sets and the keywords they provide; similar methods are available for other objects.
+
+> **movie.movieID**
+> **person.personID**
+> **company.companyID**
+> **character.characterID**
+
+the ID of the object.
+
+> **movie['title']**
+> **person.get('name')**
+
+get a key of an object.
+
+> **keywords = ia.search_keyword(** keyword **)**
+> **movies = ia.get_keyword(** keyword **)**
+
+search for keywords similar to the one provided, and fetch movies matching a given keyword.
+
+> **ia.get_top250_movies()**
+> **ia.get_bottom100_movies()**
+
+top 250 and bottom 100 movies.
+
+> **person_in_cast = movie['cast'][0]**
+> **notes = person_in_cast.notes**
+> **character = person_in_cast.currentRole**
+
+character associated to a person who starred in a movie, and its notes.
 
 
 ## License

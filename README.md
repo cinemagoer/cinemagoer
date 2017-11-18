@@ -75,16 +75,16 @@ Starting on November 2017 many things were improved and simplified:
 
 create an instance of the IMDb class, to access information from the web or a SQL database.
 
-> **movie = ia.get_movie(** movieID **)**
-> **person = ia.get_person(** personID **)**
-> **company = ia.get_company(** companyID **)**
+> **movie = ia.get_movie(** movieID **)**<br>
+> **person = ia.get_person(** personID **)**<br>
+> **company = ia.get_company(** companyID **)**<br>
 > **character = ia.get_character(** characterID **)**
 
 return an instance of a Movie, Person, Company or Character classes. The objects have the basic information.
 
-> **movies = ia.search_movie(** title **)**
-> **persons = ia.search_person(** name **)**
-> **companies = ia.search_company(** name **)**
+> **movies = ia.search_movie(** title **)**<br>
+> **persons = ia.search_person(** name **)**<br>
+> **companies = ia.search_company(** name **)**<br>
 > **characters = ia.search_characters(** name **)**
 
 return a list of Movie, Person, Company or Character instances. These objects have only bare information, like title and movieID.
@@ -101,30 +101,30 @@ all the info set available for a movie; similar methods are available for other 
 
 mapping between the fetched info sets and the keywords they provide; similar methods are available for other objects.
 
-> **movie.movieID**
-> **person.personID**
-> **company.companyID**
+> **movie.movieID**<br>
+> **person.personID**<br>
+> **company.companyID**<br>
 > **character.characterID**
 
 the ID of the object.
 
-> **movie['title']**
+> **movie['title']**<br>
 > **person.get('name')**
 
 get a key of an object.
 
-> **keywords = ia.search_keyword(** keyword **)**
+> **keywords = ia.search_keyword(** keyword **)**<br>
 > **movies = ia.get_keyword(** keyword **)**
 
 search for keywords similar to the one provided, and fetch movies matching a given keyword.
 
-> **ia.get_top250_movies()**
+> **ia.get_top250_movies()**<br>
 > **ia.get_bottom100_movies()**
 
 top 250 and bottom 100 movies.
 
-> **person_in_cast = movie['cast'][0]**
-> **notes = person_in_cast.notes**
+> **person_in_cast = movie['cast'][0]**<br>
+> **notes = person_in_cast.notes**<br>
 > **character = person_in_cast.currentRole**
 
 character associated to a person who starred in a movie, and its notes.

@@ -98,7 +98,7 @@ class ConfigParserWithCase(configparser.ConfigParser):
 
         *defaults* -- defaults values.
         *confFile* -- the file (or list of files) to parse."""
-        configparser.ConfigParser.__init__(self, defaults=defaults)
+        super(configparser.ConfigParser, self).__init__(defaults=defaults)
         if confFile is None:
             dotFileName = '.' + confFileName
             # Current and home directory.
@@ -133,8 +133,8 @@ class ConfigParserWithCase(configparser.ConfigParser):
         if not isinstance(value, str):
             return value
         vlower = value.lower()
-        if vlower in self._boolean_states:
-            return self._boolean_states[vlower]
+        if vlower in ('1', 'on', 'false', '0', 'off', 'yes', 'no', 'true'):
+            return self._convert_to_boolean(vlower)
         elif vlower == 'none':
             return None
         return value

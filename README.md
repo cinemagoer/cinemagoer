@@ -24,6 +24,13 @@ Starting on November 2017 many things were improved and simplified:
 * IMDbPY powers many other softwares and has been used in various research papers. [Curious about that][ecosystem]?
 
 
+## Installation
+
+Whenever it's possible, please always use the latest version from the repository.  To install it using `pip`:
+
+    pip3 install git+https://github.com/alberanid/imdbpy
+
+
 ## Code example
 
     # create and instance of the IMDb class

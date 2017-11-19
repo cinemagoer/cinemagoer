@@ -136,6 +136,11 @@ top 250 and bottom 100 movies.
 
 character associated to a person who starred in a movie, and its notes.
 
+> **person** in **movie**
+> **movie** in **person**
+
+return True if a person worked in a given movie
+
 
 ## License
 

@@ -27,6 +27,7 @@
 * `git push --tags`
 * don't forget to push both sources and tags to both the GitHub and Bitbucket repositories (they are kept in sync)
 * upload to pypi: `twine upload dist/IMDbPY-*` (you probably need a recent version of twine and the appropriate ~/.pypi file)
+* the new tar.gz must also be uploaded to https://sourceforge.net/projects/imdbpy/ (along with a new "news")
 
 
 ### After the release

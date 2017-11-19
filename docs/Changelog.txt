@@ -1,6 +1,9 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 6.3
+
+
 * What's the new in release 6.2 "Justice League" (19 Nov 2017)
   [general]
   - introduce check for Python version

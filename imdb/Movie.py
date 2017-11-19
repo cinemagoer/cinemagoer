@@ -177,7 +177,6 @@ class Movie(_Container):
 
     def set_title(self, title):
         """Set the title of the movie."""
-        # XXX: convert title to unicode, if it's a plain string?
         d_title = analyze_title(title)
         self.data.update(d_title)
 

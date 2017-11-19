@@ -591,8 +591,6 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 100
-        # XXX: I suppose it will be much safer if the user provides
-        #      an unicode string... this is just a guess.
         res = self._get_keyword(keyword, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,

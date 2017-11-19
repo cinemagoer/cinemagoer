@@ -88,12 +88,10 @@ class Character(_Container):
 
     def set_name(self, name):
         """Set the name of the character."""
-        # XXX: convert name to unicode, if it's a plain string?
         try:
             d = analyze_name(name, canonical=False)
             self.data.update(d)
         except IMDbParserError:
-            # TODO: issue a warning.
             pass
 
     def _additional_keys(self):

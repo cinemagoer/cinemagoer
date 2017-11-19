@@ -84,7 +84,6 @@ class Company(_Container):
 
     def set_name(self, name):
         """Set the name of the company."""
-        # XXX: convert name to unicode, if it's a plain string?
         # Company diverges a bit from other classes, being able
         # to directly handle its "notes".  AND THAT'S PROBABLY A BAD IDEA!
         oname = name = name.strip()

@@ -703,9 +703,6 @@ def name_soundexes(name, character=False):
     from the first one.
     The third is the soundex of the surname, if different from the
     other two values."""
-    # if not isinstance(name, unicode): name = unicode(name, 'utf_8')
-    # Prune non-ascii chars from the string.
-    # name = name.encode('ascii', 'ignore')
     if not name:
         return None, None, None
     s1 = soundex(name)
@@ -1007,8 +1004,6 @@ class _BaseCache(dict):
     def add(self, key, miscData=None):
         """Insert a new key and return its value."""
         c = next(self.counter)
-        # miscData=[('a_dict', 'value')] will set self.a_dict's c key
-        # to 'value'.
         if miscData is not None:
             for d_name, data in miscData:
                 getattr(self, d_name)[c] = data

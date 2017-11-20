@@ -109,35 +109,45 @@ def get_entity(args):
 def get_top_movies(args):
     connection = IMDb()
     movies = connection.get_top250_movies()
-    n = args.n if args.n is not None else DEFAULT_RESULT_SIZE
-    print('Top movies')
-    print('    rating\t  votes\tIMDb id\ttitle')
-    print('    ======\t=======\t=======\t=====')
-    for i, movie in enumerate(movies[:n]):
-        print('%(index)3d.   %(rating)s\t%(votes)7s\t%(imdb_id)7s\t%(title)s' % {
-            'index': i + 1,
-            'rating': movie.get('rating'),
-            'votes': movie.get('votes'),
-            'imdb_id': movie.movieID,
-            'title': movie.get('long imdb title')
-        })
+    if args.first:
+        item = movies[0]
+        connection.update(item)
+        print(item.summary())
+    else:
+        n = args.n if args.n is not None else DEFAULT_RESULT_SIZE
+        print('Top movies')
+        print('    rating\t  votes\tIMDb id\ttitle')
+        print('    ======\t=======\t=======\t=====')
+        for i, movie in enumerate(movies[:n]):
+            print('%(index)3d.   %(rating)s\t%(votes)7s\t%(imdb_id)7s\t%(title)s' % {
+                'index': i + 1,
+                'rating': movie.get('rating'),
+                'votes': movie.get('votes'),
+                'imdb_id': movie.movieID,
+                'title': movie.get('long imdb title')
+            })
 
 
 def get_bottom_movies(args):
     connection = IMDb()
     movies = connection.get_bottom100_movies()
-    n = args.n if args.n is not None else DEFAULT_RESULT_SIZE
-    print('Bottom movies')
-    print('    rating\t  votes\ttitle')
-    print('    ======\t=======\t=====')
-    for i, movie in enumerate(movies[:n]):
-        print('%(index)3d.   %(rating)s\t%(votes)7s\t%(imdb_id)7s\t%(title)s' % {
-            'index': i + 1,
-            'rating': movie.get('rating'),
-            'votes': movie.get('votes'),
-            'imdb_id': movie.movieID,
-            'title': movie.get('long imdb title')
-        })
+    if args.first:
+        item = movies[0]
+        connection.update(item)
+        print(item.summary())
+    else:
+        n = args.n if args.n is not None else DEFAULT_RESULT_SIZE
+        print('Bottom movies')
+        print('    rating\t  votes\ttitle')
+        print('    ======\t=======\t=====')
+        for i, movie in enumerate(movies[:n]):
+            print('%(index)3d.   %(rating)s\t%(votes)7s\t%(imdb_id)7s\t%(title)s' % {
+                'index': i + 1,
+                'rating': movie.get('rating'),
+                'votes': movie.get('votes'),
+                'imdb_id': movie.movieID,
+                'title': movie.get('long imdb title')
+            })
 
 
 def make_parser(prog):
@@ -152,8 +162,7 @@ def make_parser(prog):
                                        choices=['movie', 'person', 'character', 'company', 'keyword'])
     command_search_parser.add_argument('key', help='title or name of entity to search for')
     command_search_parser.add_argument('-n', type=int, help='number of items to list')
-    command_search_parser.add_argument('--first', action='store_true',
-                                       help='display only the first result')
+    command_search_parser.add_argument('--first', action='store_true', help='display only the first result')
     command_search_parser.set_defaults(func=search_entity)
 
     command_get_parser = command_parser.add_parser('get', help='get information about an entity')
@@ -164,10 +173,12 @@ def make_parser(prog):
 
     command_top_parser = command_parser.add_parser('top', help='get top ranked movies')
     command_top_parser.add_argument('-n', type=int, help='number of movies to list')
+    command_top_parser.add_argument('--first', action='store_true', help='display only the first result')
     command_top_parser.set_defaults(func=get_top_movies)
 
     command_bottom_parser = command_parser.add_parser('bottom', help='get bottom ranked movies')
     command_bottom_parser.add_argument('-n', type=int, help='number of movies to list')
+    command_bottom_parser.add_argument('--first', action='store_true', help='display only the first result')
     command_bottom_parser.set_defaults(func=get_bottom_movies)
 
     return parser

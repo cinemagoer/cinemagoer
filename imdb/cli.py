@@ -26,35 +26,19 @@ from argparse import ArgumentParser
 from imdb import VERSION, IMDb
 
 
-def list_movies(movies, key):
-    print('     %(num)s result%(plural)s for "%(kw)s":' % {
-        'num': len(movies),
-        'plural': 's' if len(movies) != 1 else '',
-        'kw': key
+def list_results(results, key, type_, field):
+    print('     %(num)s result%(plural)s for "%(key)s":' % {
+        'num': len(results),
+        'plural': 's' if len(results) != 1 else '',
+        'key': key
     })
-    print('     IMDb id  movie title')
-    print('     =======  ===========')
-    for i, movie in enumerate(movies):
+    print('     IMDb id  %s' % field)
+    print('     =======  %s' % ('=' * len(field),))
+    for i, item in enumerate(results):
         print('%(index)3d. %(imdb_id)7s  %(title)s' % {
             'index': i + 1,
-            'imdb_id': movie.movieID,
-            'title': movie['long imdb title']
-        })
-
-
-def list_people(people, key, character=False):
-    print('     %(num)s result%(plural)s for "%(kw)s":' % {
-        'num': len(people),
-        'plural': 's' if len(people) != 1 else '',
-        'kw': key
-    })
-    print('     IMDb id  name')
-    print('     =======  ====')
-    for i, person in enumerate(people):
-        print('%(index)3d. %(imdb_id)7s  %(name)s' % {
-            'index': i + 1,
-            'imdb_id': person.personID if not character else person.characterID,
-            'name': person['long imdb name']
+            'imdb_id': getattr(item, type_ + 'ID'),
+            'title': item['long imdb ' + field]
         })
 
 
@@ -62,13 +46,13 @@ def search_entity(args):
     connection = IMDb()
     if args.type == 'movie':
         results = connection.search_movie(args.key)
-        list_movies(results, args.key)
+        list_results(results, args.key, type_='movie', field='title')
     elif args.type == 'person':
         results = connection.search_person(args.key)
-        list_people(results, args.key)
+        list_results(results, args.key, type_='person', field='name')
     elif args.type == 'character':
         results = connection.search_character(args.key)
-        list_people(results, args.key, character=True)
+        list_results(results, args.key, type_='character', field='name')
 
 
 def get_entity(args):
@@ -87,7 +71,7 @@ def get_entity(args):
         print(company.summary())
     elif args.type == 'keyword':
         results = connection.get_keyword(args.key, results=20)
-        list_movies(results, args.key)
+        list_results(results, args.key, type_='movie')
 
 
 def get_top_movies(args):

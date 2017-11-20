@@ -46,16 +46,36 @@ def search_entity(args):
     connection = IMDb()
     if args.type == 'movie':
         results = connection.search_movie(args.key, results=args.n)
-        list_results(results, args.key, type_='movie', field='title')
+        if args.first:
+            item = results[0]
+            connection.update(item)
+            print(item.summary())
+        else:
+            list_results(results, args.key, type_='movie', field='title')
     elif args.type == 'person':
         results = connection.search_person(args.key, results=args.n)
-        list_results(results, args.key, type_='person', field='name')
+        if args.first:
+            item = results[0]
+            connection.update(item)
+            print(item.summary())
+        else:
+            list_results(results, args.key, type_='person', field='name')
     elif args.type == 'character':
         results = connection.search_character(args.key, results=args.n)
-        list_results(results, args.key, type_='character', field='name')
+        if args.first:
+            item = results[0]
+            connection.update(item)
+            print(item.summary())
+        else:
+            list_results(results, args.key, type_='character', field='name')
     elif args.type == 'company':
         results = connection.search_company(args.key, results=args.n)
-        list_results(results, args.key, type_='company', field='name')
+        if args.first:
+            item = results[0]
+            connection.update(item)
+            print(item.summary())
+        else:
+            list_results(results, args.key, type_='company', field='name')
     elif args.type == 'keyword':
         results = connection.search_keyword(args.key, results=args.n)
         print('     %(num)s result%(plural)s for "%(key)s":' % {
@@ -133,6 +153,8 @@ def make_parser(prog):
     command_search_parser.add_argument('key', help='title or name of entity to search for')
     command_search_parser.add_argument('-n', type=int, required=False,
                                        help='number of items to list (max 200)')
+    command_search_parser.add_argument('--first', action='store_true',
+                                       help='display only the first result')
     command_search_parser.set_defaults(func=search_entity)
 
     command_get_parser = commands.add_parser('get', help='get information about an entity')

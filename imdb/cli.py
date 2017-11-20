@@ -40,7 +40,16 @@ def get_entity(args):
     elif args.type == 'company':
         company = connection.get_company(args.id)
         print(company.summary())
-
+    elif args.type == 'keyword':
+        results = connection.get_keyword(args.id, results=20)
+        print('    %(num)s result%(plural)s for "%(kw)s":' % {
+            'num': len(results),
+            'plural': 's' if len(results) != 1 else '',
+            'kw': args.id
+        })
+        print(' : movie title')
+        for i, movie in enumerate(results):
+            print('%d: %s' % (i + 1, movie['long imdb title']))
 
 def make_parser(prog):
     parser = ArgumentParser(prog)
@@ -51,7 +60,7 @@ def make_parser(prog):
 
     command_get_parser = commands.add_parser('get', help='get information about an entity')
     command_get_parser.add_argument('type', help='type of entity to get',
-                                    choices=['movie', 'person', 'character', 'company'])
+                                    choices=['movie', 'person', 'character', 'company', 'keyword'])
     command_get_parser.add_argument('id', help='IMDb id of entity to get')
     command_get_parser.set_defaults(func=get_entity)
 

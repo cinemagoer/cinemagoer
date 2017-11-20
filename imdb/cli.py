@@ -47,27 +47,30 @@ def get_entity(args):
             'plural': 's' if len(results) != 1 else '',
             'kw': args.id
         })
-        print(' : movie title')
+        print('    movie title')
+        print('    ===========')
         for i, movie in enumerate(results):
-            print('%d: %s' % (i + 1, movie['long imdb title']))
+            print('%(index)2d: %(title)s' % {'index': i + 1, 'title': movie['long imdb title']})
 
 
 def get_top_movies(args):
     connection = IMDb()
     movies = connection.get_top250_movies()
     print('Top movies')
-    print('rating\tvotes\ttitle')
-    for movie in movies[:args.n]:
-        print('%s\t%s\t%s' % (movie.get('rating'), movie.get('votes'), movie['long imdb title']))
+    print('    rating\t  votes\ttitle')
+    print('    ======\t=======\t=====')
+    for i, movie in enumerate(movies[:args.n]):
+        print('%3d' % (i + 1), '   %(rating)s\t%(votes)7d\t%(long imdb title)s' % movie)
 
 
 def get_bottom_movies(args):
     connection = IMDb()
     movies = connection.get_bottom100_movies()
     print('Bottom movies')
-    print('rating\tvotes\ttitle')
-    for movie in movies[:args.n]:
-        print('%s\t%s\t%s' % (movie.get('rating'), movie.get('votes'), movie['long imdb title']))
+    print('    rating\t  votes\ttitle')
+    print('    ======\t=======\t=====')
+    for i, movie in enumerate(movies[:args.n]):
+        print('%3d' % (i + 1), '   %(rating)s\t%(votes)7d\t%(long imdb title)s' % movie)
 
 
 def make_parser(prog):

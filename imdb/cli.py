@@ -42,45 +42,38 @@ def list_results(results, key, type_, field):
         })
 
 
+def process_results(results, key, type_, field, first, connection):
+    if first:
+        item = results[0]
+        connection.update(item)
+        print(item.summary())
+    else:
+        list_results(results, key, type_=type_, field=field)
+
+
 def search_entity(args):
     connection = IMDb()
     if args.type == 'movie':
         results = connection.search_movie(args.key, results=args.n)
-        if args.first:
-            item = results[0]
-            connection.update(item)
-            print(item.summary())
-        else:
-            list_results(results, args.key, type_='movie', field='title')
+        process_results(results, args.key, type_='movie', field='title',
+                        first=args.first, connection=connection)
     elif args.type == 'person':
         results = connection.search_person(args.key, results=args.n)
-        if args.first:
-            item = results[0]
-            connection.update(item)
-            print(item.summary())
-        else:
-            list_results(results, args.key, type_='person', field='name')
+        process_results(results, args.key, type_='person', field='name',
+                        first=args.first, connection=connection)
     elif args.type == 'character':
         results = connection.search_character(args.key, results=args.n)
-        if args.first:
-            item = results[0]
-            connection.update(item)
-            print(item.summary())
-        else:
-            list_results(results, args.key, type_='character', field='name')
+        process_results(results, args.key, type_='character', field='name',
+                        first=args.first, connection=connection)
     elif args.type == 'company':
         results = connection.search_company(args.key, results=args.n)
-        if args.first:
-            item = results[0]
-            connection.update(item)
-            print(item.summary())
-        else:
-            list_results(results, args.key, type_='company', field='name')
+        process_results(results, args.key, type_='company', field='name',
+                        first=args.first, connection=connection)
     elif args.type == 'keyword':
         results = connection.search_keyword(args.key, results=args.n)
         if args.first:
             item = results[0]
-            results = connection.get_keyword(args.key, results=20)
+            results = connection.get_keyword(item, results=20)
             list_results(results, args.key, type_='movie', field='title')
         else:
             print('     %(num)s result%(plural)s for "%(key)s":' % {

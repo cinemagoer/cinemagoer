@@ -55,7 +55,7 @@ def process_results(results, key, type_, first, connection):
         list_results(results, key, type_=type_)
 
 
-def search_entity(args):
+def search_item(args):
     connection = IMDb()
     if args.type == 'movie':
         results = connection.search_movie(args.key, results=args.n)
@@ -87,7 +87,7 @@ def search_entity(args):
                 print('%(index)3d. %(kw)s' % {'index': i + 1, 'kw': keyword})
 
 
-def get_entity(args):
+def get_item(args):
     connection = IMDb()
     if args.type == 'movie':
         movie = connection.get_movie(args.key)
@@ -106,77 +106,67 @@ def get_entity(args):
         list_results(results, args.key, type_='movie')
 
 
+def list_ranking(items, n=None):
+    print('  # rating   votes IMDb id title')
+    print('=== ====== ======= ======= =====')
+    n = n if n is not None else DEFAULT_RESULT_SIZE
+    for i, movie in enumerate(items[:n]):
+        print('%(index)3d    %(rating)s %(votes)7s %(imdb_id)7s %(title)s' % {
+            'index': i + 1,
+            'rating': movie.get('rating'),
+            'votes': movie.get('votes'),
+            'imdb_id': movie.movieID,
+            'title': movie.get('long imdb title')
+        })
+
+
 def get_top_movies(args):
     connection = IMDb()
-    movies = connection.get_top250_movies()
+    items = connection.get_top250_movies()
     if args.first:
-        item = movies[0]
-        connection.update(item)
-        print(item.summary())
+        connection.update(items[0])
+        print(items[0].summary())
     else:
-        n = args.n if args.n is not None else DEFAULT_RESULT_SIZE
-        print('Top movies')
-        print('    rating\t  votes\tIMDb id\ttitle')
-        print('    ======\t=======\t=======\t=====')
-        for i, movie in enumerate(movies[:n]):
-            print('%(index)3d.   %(rating)s\t%(votes)7s\t%(imdb_id)7s\t%(title)s' % {
-                'index': i + 1,
-                'rating': movie.get('rating'),
-                'votes': movie.get('votes'),
-                'imdb_id': movie.movieID,
-                'title': movie.get('long imdb title')
-            })
+        list_ranking(items, n=args.n)
 
 
 def get_bottom_movies(args):
     connection = IMDb()
-    movies = connection.get_bottom100_movies()
+    items = connection.get_bottom100_movies()
     if args.first:
-        item = movies[0]
-        connection.update(item)
-        print(item.summary())
+        connection.update(items[0])
+        print(items[0].summary())
     else:
-        n = args.n if args.n is not None else DEFAULT_RESULT_SIZE
-        print('Bottom movies')
-        print('    rating\t  votes\ttitle')
-        print('    ======\t=======\t=====')
-        for i, movie in enumerate(movies[:n]):
-            print('%(index)3d.   %(rating)s\t%(votes)7s\t%(imdb_id)7s\t%(title)s' % {
-                'index': i + 1,
-                'rating': movie.get('rating'),
-                'votes': movie.get('votes'),
-                'imdb_id': movie.movieID,
-                'title': movie.get('long imdb title')
-            })
+        list_ranking(items, n=args.n)
 
 
 def make_parser(prog):
     parser = ArgumentParser(prog)
     parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
 
-    command_parser = parser.add_subparsers(metavar='command', dest='command')
-    command_parser.required = True
+    command_parsers = parser.add_subparsers(metavar='command', dest='command')
+    command_parsers.required = True
 
-    command_search_parser = command_parser.add_parser('search', help='search for an entity')
-    command_search_parser.add_argument('type', help='type of entity to search for',
+    command_search_parser = command_parsers.add_parser('search', help='search for items')
+    command_search_parser.add_argument('type', help='type of item to search for',
                                        choices=['movie', 'person', 'character', 'company', 'keyword'])
-    command_search_parser.add_argument('key', help='title or name of entity to search for')
+    command_search_parser.add_argument('key', help='title or name of item to search for')
     command_search_parser.add_argument('-n', type=int, help='number of items to list')
     command_search_parser.add_argument('--first', action='store_true', help='display only the first result')
-    command_search_parser.set_defaults(func=search_entity)
+    command_search_parser.set_defaults(func=search_item)
 
-    command_get_parser = command_parser.add_parser('get', help='get information about an entity')
-    command_get_parser.add_argument('type', help='type of entity to get',
+    command_get_parser = command_parsers.add_parser('get', help='retrieve information about an item')
+    command_get_parser.add_argument('type', help='type of item to retrieve',
                                     choices=['movie', 'person', 'character', 'company', 'keyword'])
-    command_get_parser.add_argument('key', help='IMDb id (or keyword name) of entity to get')
-    command_get_parser.set_defaults(func=get_entity)
+    command_get_parser.add_argument('key', help='IMDb id (or keyword name) of item to retrieve')
+    command_get_parser.set_defaults(func=get_item)
 
-    command_top_parser = command_parser.add_parser('top', help='get top ranked movies')
+    command_top_parser = command_parsers.add_parser('top', help='get top ranked movies')
     command_top_parser.add_argument('-n', type=int, help='number of movies to list')
     command_top_parser.add_argument('--first', action='store_true', help='display only the first result')
     command_top_parser.set_defaults(func=get_top_movies)
 
-    command_bottom_parser = command_parser.add_parser('bottom', help='get bottom ranked movies')
+    command_bottom_parser = command_parsers.add_parser('bottom', help='get bottom ranked movies')
     command_bottom_parser.add_argument('-n', type=int, help='number of movies to list')
     command_bottom_parser.add_argument('--first', action='store_true', help='display only the first result')
     command_bottom_parser.set_defaults(func=get_bottom_movies)

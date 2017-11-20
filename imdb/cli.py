@@ -26,31 +26,54 @@ from argparse import ArgumentParser
 from imdb import VERSION, IMDb
 
 
-def get_entity(args):
+def search_entity(args):
     connection = IMDb()
     if args.type == 'movie':
-        movie = connection.get_movie(args.id)
-        print(movie.summary())
-    elif args.type == 'person':
-        person = connection.get_person(args.id)
-        print(person.summary())
-    elif args.type == 'character':
-        character = connection.get_character(args.id)
-        print(character.summary())
-    elif args.type == 'company':
-        company = connection.get_company(args.id)
-        print(company.summary())
-    elif args.type == 'keyword':
-        results = connection.get_keyword(args.id, results=20)
+        results = connection.search_movie(args.key)
         print('    %(num)s result%(plural)s for "%(kw)s":' % {
             'num': len(results),
             'plural': 's' if len(results) != 1 else '',
-            'kw': args.id
+            'kw': args.key
         })
-        print('    movie title')
-        print('    ===========')
+        print('    IMDb id  movie title')
+        print('    =======  ===========')
         for i, movie in enumerate(results):
-            print('%(index)2d: %(title)s' % {'index': i + 1, 'title': movie['long imdb title']})
+            print('%(index)2d. %(imdb_id)7s  %(title)s' % {
+                'index': i + 1,
+                'imdb_id': connection.get_imdbID(movie),
+                'title': movie['long imdb title']
+            })
+
+
+def get_entity(args):
+    connection = IMDb()
+    if args.type == 'movie':
+        movie = connection.get_movie(args.key)
+        print(movie.summary())
+    elif args.type == 'person':
+        person = connection.get_person(args.key)
+        print(person.summary())
+    elif args.type == 'character':
+        character = connection.get_character(args.key)
+        print(character.summary())
+    elif args.type == 'company':
+        company = connection.get_company(args.key)
+        print(company.summary())
+    elif args.type == 'keyword':
+        results = connection.get_keyword(args.key, results=20)
+        print('    %(num)s result%(plural)s for "%(kw)s":' % {
+            'num': len(results),
+            'plural': 's' if len(results) != 1 else '',
+            'kw': args.key
+        })
+        print('    IMDb id  movie title')
+        print('    =======  ===========')
+        for i, movie in enumerate(results):
+            print('%(index)2d. %(imdb_id)7s  %(title)s' % {
+                'index': i + 1,
+                'imdb_id': connection.get_imdbID(movie),
+                'title': movie['long imdb title']
+            })
 
 
 def get_top_movies(args):
@@ -80,10 +103,16 @@ def make_parser(prog):
     commands = parser.add_subparsers(metavar='command', dest='command')
     commands.required = True
 
+    command_search_parser = commands.add_parser('search', help='search for an entity')
+    command_search_parser.add_argument('type', help='type of entity to search for',
+                                       choices=['movie', 'person', 'character', 'company', 'keyword'])
+    command_search_parser.add_argument('key', help='title or name of entity to search for')
+    command_search_parser.set_defaults(func=search_entity)
+
     command_get_parser = commands.add_parser('get', help='get information about an entity')
     command_get_parser.add_argument('type', help='type of entity to get',
                                     choices=['movie', 'person', 'character', 'company', 'keyword'])
-    command_get_parser.add_argument('id', help='IMDb id of entity to get')
+    command_get_parser.add_argument('key', help='IMDb id (or keyword name) of entity to get')
     command_get_parser.set_defaults(func=get_entity)
 
     command_top_parser = commands.add_parser('top', help='get top ranked movies')

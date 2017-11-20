@@ -53,6 +53,9 @@ def search_entity(args):
     elif args.type == 'character':
         results = connection.search_character(args.key)
         list_results(results, args.key, type_='character', field='name')
+    elif args.type == 'company':
+        results = connection.search_company(args.key)
+        list_results(results, args.key, type_='company', field='name')
 
 
 def get_entity(args):

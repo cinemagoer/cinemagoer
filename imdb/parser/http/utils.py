@@ -468,7 +468,6 @@ class DOMParserBase(object):
 
     def __init__(self):
         """Initialize the parser."""
-        self._is_xml_unicode = False
         self._modFunct = None
         self._as = 'http'
         self._cname = self.__class__.__name__
@@ -550,8 +549,6 @@ class DOMParserBase(object):
         """Return elements matching the given XPath."""
         try:
             xpath_result = element.xpath(path)
-            if self._is_xml_unicode:
-                return xpath_result
             result = []
             for item in xpath_result:
                 if isinstance(item, str):

@@ -1,0 +1,38 @@
+# How to deploy and release a new version of IMDbPY
+
+
+### While the development is ongoing
+
+* **setup.cfg**: in the egg_info section, must include the lines `tag_build = dev` and `tag_date = true`
+* **setup.py**: the `version` variable must be set to the **next** version.
+* **imdb/__init__.py**: when a major fix or feature is committed, the `VERSION` and `__version__` variable must be updated to something like *{next.version}devISO8601DATE* (not mandatory, but...)
+* **docs/Changelog.txt**: when a major fix or feature is committed, it must be updated
+
+
+### When a new release is planned
+
+* **setup.cfg**: in the egg_info section, the above mentioned lines must be commented
+* **setup.py**: not touched
+* **imdb/__init__.py**: the *devISO8601DATE* part must be removed from the version variables
+* **docs/Changelog.txt**: add the date of the release
+
+
+### How to release
+
+* commit the above changes
+* add an annotated tag like *major.minor*; e.g.: `git tag -a 6.3` (the commit message is not important)
+* `python3 setup.py sdist`
+* `python3 setup.py bdist_wheel`
+* `git push`
+* `git push --tags`
+* don't forget to push both sources and tags to both the GitHub and Bitbucket repositories (they are kept in sync)
+* upload to pypi: `twine upload dist/IMDbPY-*` (you probably need a recent version of twine and the appropriate ~/.pypi file)
+* the new tar.gz must also be uploaded to https://sourceforge.net/projects/imdbpy/ (along with a new "news")
+
+
+### After the release
+
+* **setup.cfg**: un-comment again the two lines
+* **setup.py**: bump the `version` variable
+* **imdb/__init__.py**: bump the `VERSION` and `__version__` variables
+* **docs/Changelog.txt**: add a new section for the next release, on top

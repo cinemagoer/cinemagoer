@@ -1,13 +1,19 @@
   Changelog for IMDbPY
   ====================
 
-* What's the new in release 6.2
+* What's the new in release 6.3
+
+
+* What's the new in release 6.2 "Justice League" (19 Nov 2017)
   [general]
   - introduce check for Python version
   - SQLAlchemy can be disabled using --without-sqlalchemy
+  - fix #88: configuration file parser
+  - update documentation
 
   [http]
   - fixed ratings parser
+  - moved cookies from json to Python source
 
 
 * What's the new in release 6.1

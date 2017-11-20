@@ -7,7 +7,7 @@ import setuptools
 
 # version of the software; in the code repository this represents
 # the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
-version = '6.1'
+version = '6.3'
 
 home_page = 'https://imdbpy.sourceforge.io/'
 
@@ -103,8 +103,7 @@ params = {
         'test': ['pytest', 'pytest-cov'],
     },
     'features': {'sqlalchemy': featSQLAlchemy},
-    'packages': setuptools.find_packages(),
-    'package_data': {'imdb.parser.http': ['*.json']}
+    'packages': setuptools.find_packages()
 }
 
 

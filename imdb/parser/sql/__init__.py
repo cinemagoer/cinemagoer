@@ -415,9 +415,6 @@ def _reGroupDict(d, newgr):
     for k, v in list(d.items()):
         if k in newgrks:
             r.setdefault(newgr[k][0], {})[newgr[k][1]] = v
-            # A not-so-clearer version:
-            # r.setdefault(newgr[k][0], {})
-            # r[newgr[k][0]][newgr[k][1]] = v
         else:
             r[k] = v
     return r
@@ -917,16 +914,6 @@ class IMDbSqlAccessSystem(IMDbBase):
             s_title_rebuilt = ', '.join(s_title_split[:-1])
             if s_title_rebuilt:
                 s_title = s_title_rebuilt
-        # if not episodeOf:
-        #    if not _episodes:
-        #        s_title_split = s_title.split(', ')
-        #        if len(s_title_split) > 1 and \
-        #                s_title_split[-1].lower() in _articles:
-        #            s_title_rebuilt = ', '.join(s_title_split[:-1])
-        #            if s_title_rebuilt:
-        #                s_title = s_title_rebuilt
-        # else:
-        #    _episodes = False
 
         soundexCode = soundex(s_title)
 

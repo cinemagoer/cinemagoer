@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.1dev2017114'
+__version__ = VERSION = '6.3dev20171119'
 
 VERSION_NOTICE = """This version of IMDbPY requires Python 3.
 For a version compatible with Python 2.7, see the imdbpy-legacy branch:
@@ -98,7 +98,7 @@ class ConfigParserWithCase(configparser.ConfigParser):
 
         *defaults* -- defaults values.
         *confFile* -- the file (or list of files) to parse."""
-        configparser.ConfigParser.__init__(self, defaults=defaults)
+        super(configparser.ConfigParser, self).__init__(defaults=defaults)
         if confFile is None:
             dotFileName = '.' + confFileName
             # Current and home directory.
@@ -133,8 +133,8 @@ class ConfigParserWithCase(configparser.ConfigParser):
         if not isinstance(value, str):
             return value
         vlower = value.lower()
-        if vlower in self._boolean_states:
-            return self._boolean_states[vlower]
+        if vlower in ('1', 'on', 'false', '0', 'off', 'yes', 'no', 'true'):
+            return self._convert_to_boolean(vlower)
         elif vlower == 'none':
             return None
         return value
@@ -591,8 +591,6 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 100
-        # XXX: I suppose it will be much safer if the user provides
-        #      an unicode string... this is just a guess.
         res = self._get_keyword(keyword, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,

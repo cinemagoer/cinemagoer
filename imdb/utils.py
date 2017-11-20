@@ -232,17 +232,6 @@ def canonicalTitle(title, lang=None, imdbIndex=None):
             if article[-1] == ' ':
                 title = title[:-1]
             break
-    # XXX: an attempt using a dictionary lookup.
-    # for artSeparator in (' ', "'", '-'):
-    #     article = _articlesDict.get(ltitle.split(artSeparator)[0])
-    #     if article is not None:
-    #         lart = len(article)
-    #         # check titles like "una", "I'm Mad" and "L'abbacchio".
-    #         if title[lart:] == '' or (artSeparator != ' ' and
-    #                                 title[lart:][1] != artSeparator): continue
-    #         title = '%s, %s' % (title[lart:], title[:lart])
-    #         if artSeparator == ' ': title = title[1:]
-    #         break
     return title
 
 
@@ -925,8 +914,6 @@ def _handleTextNotes(s):
 def _normalizeValue(value, withRefs=False, modFunct=None, titlesRefs=None,
                     namesRefs=None, charactersRefs=None):
     """Replace some chars that can't be present in a XML text."""
-    # XXX: use s.encode(encoding, 'xmlcharrefreplace') ?  Probably not
-    #      a great idea: after all, returning a unicode is safe.
     if not withRefs:
         value = _handleTextNotes(escape4xml(value))
     else:

@@ -41,7 +41,7 @@ E.g.:
     # Pauly Does Dallas (1993) (TV) 0208347
 
 
-The do_adult_search() method of the http and mobile data access system
+The do_adult_search() method of the http data access system
 also takes another couple of arguments: "cookie_id" and "cookie_uu", so
 that you can select _your own_ IMDb's account; if cookie_id is set to
 None, no cookies are sent.  These parameters can also be set in
@@ -54,8 +54,8 @@ your account; see http://imdb.com/find/preferences?_adult=1
 # OTHER DATA ACCESS SYSTEMS
 
 Since version 2.2 every other data access system (sql)
-support the same behavior of the http and mobile data access
-systems (i.e.: you can set the 'adultSearch' argument and use
+support the same behavior of the http data access
+system (i.e.: you can set the 'adultSearch' argument and use
 the 'do_adult_search' method).
 
 Notice that for the sql data access system only results from the

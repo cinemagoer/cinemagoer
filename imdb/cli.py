@@ -56,6 +56,17 @@ def search_entity(args):
     elif args.type == 'company':
         results = connection.search_company(args.key)
         list_results(results, args.key, type_='company', field='name')
+    elif args.type == 'keyword':
+        results = connection.search_keyword(args.key)
+        print('     %(num)s result%(plural)s for "%(key)s":' % {
+            'num': len(results),
+            'plural': 's' if len(results) != 1 else '',
+            'key': args.key
+        })
+        print('     keyword')
+        print('     =======')
+        for i, keyword in enumerate(results):
+            print('%(index)3d. %(kw)s' % {'index': i + 1, 'kw': keyword})
 
 
 def get_entity(args):

@@ -26,12 +26,13 @@ from argparse import ArgumentParser
 from imdb import VERSION, IMDb
 
 
-def list_results(results, key, type_, field):
+def list_results(results, key, type_):
     print('     %(num)s result%(plural)s for "%(key)s":' % {
         'num': len(results),
         'plural': 's' if len(results) != 1 else '',
         'key': key
     })
+    field = 'title' if type_ == 'movie' else 'name'
     print('     IMDb id  %s' % field)
     print('     =======  %s' % ('=' * len(field),))
     for i, item in enumerate(results):
@@ -42,39 +43,35 @@ def list_results(results, key, type_, field):
         })
 
 
-def process_results(results, key, type_, field, first, connection):
+def process_results(results, key, type_, first, connection):
     if first:
         item = results[0]
         connection.update(item)
         print(item.summary())
     else:
-        list_results(results, key, type_=type_, field=field)
+        list_results(results, key, type_=type_)
 
 
 def search_entity(args):
     connection = IMDb()
     if args.type == 'movie':
         results = connection.search_movie(args.key, results=args.n)
-        process_results(results, args.key, type_='movie', field='title',
-                        first=args.first, connection=connection)
+        process_results(results, args.key, type_='movie', first=args.first, connection=connection)
     elif args.type == 'person':
         results = connection.search_person(args.key, results=args.n)
-        process_results(results, args.key, type_='person', field='name',
-                        first=args.first, connection=connection)
+        process_results(results, args.key, type_='person', first=args.first, connection=connection)
     elif args.type == 'character':
         results = connection.search_character(args.key, results=args.n)
-        process_results(results, args.key, type_='character', field='name',
-                        first=args.first, connection=connection)
+        process_results(results, args.key, type_='character', first=args.first, connection=connection)
     elif args.type == 'company':
         results = connection.search_company(args.key, results=args.n)
-        process_results(results, args.key, type_='company', field='name',
-                        first=args.first, connection=connection)
+        process_results(results, args.key, type_='company', first=args.first, connection=connection)
     elif args.type == 'keyword':
         results = connection.search_keyword(args.key, results=args.n)
         if args.first:
             item = results[0]
             results = connection.get_keyword(item, results=20)
-            list_results(results, args.key, type_='movie', field='title')
+            list_results(results, args.key, type_='movie')
         else:
             print('     %(num)s result%(plural)s for "%(key)s":' % {
                 'num': len(results),
@@ -103,7 +100,7 @@ def get_entity(args):
         print(company.summary())
     elif args.type == 'keyword':
         results = connection.get_keyword(args.key, results=20)
-        list_results(results, args.key, type_='movie', field='title')
+        list_results(results, args.key, type_='movie')
 
 
 def get_top_movies(args):

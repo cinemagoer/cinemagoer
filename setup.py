@@ -103,7 +103,11 @@ params = {
         'test': ['pytest', 'pytest-cov'],
     },
     'features': {'sqlalchemy': featSQLAlchemy},
-    'packages': setuptools.find_packages()
+    'packages': setuptools.find_packages(),
+    'entry_points': """
+        [console_scripts]
+        imdbpy=imdb.cli:main
+    """
 }
 
 

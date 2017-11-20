@@ -78,15 +78,20 @@ def search_entity(args):
             list_results(results, args.key, type_='company', field='name')
     elif args.type == 'keyword':
         results = connection.search_keyword(args.key, results=args.n)
-        print('     %(num)s result%(plural)s for "%(key)s":' % {
-            'num': len(results),
-            'plural': 's' if len(results) != 1 else '',
-            'key': args.key
-        })
-        print('     keyword')
-        print('     =======')
-        for i, keyword in enumerate(results):
-            print('%(index)3d. %(kw)s' % {'index': i + 1, 'kw': keyword})
+        if args.first:
+            item = results[0]
+            results = connection.get_keyword(args.key, results=20)
+            list_results(results, args.key, type_='movie', field='title')
+        else:
+            print('     %(num)s result%(plural)s for "%(key)s":' % {
+                'num': len(results),
+                'plural': 's' if len(results) != 1 else '',
+                'key': args.key
+            })
+            print('     keyword')
+            print('     =======')
+            for i, keyword in enumerate(results):
+                print('%(index)3d. %(kw)s' % {'index': i + 1, 'kw': keyword})
 
 
 def get_entity(args):
@@ -105,7 +110,7 @@ def get_entity(args):
         print(company.summary())
     elif args.type == 'keyword':
         results = connection.get_keyword(args.key, results=20)
-        list_results(results, args.key, type_='movie')
+        list_results(results, args.key, type_='movie', field='title')
 
 
 def get_top_movies(args):

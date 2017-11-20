@@ -33,7 +33,6 @@ def list_results(items, type_, n=None):
     field = 'title' if type_ == 'movie' else 'name'
     print('  # IMDb id %s' % field)
     print('=== ======= %s' % ('=' * len(field),))
-    n = n if n is not None else DEFAULT_RESULT_SIZE
     for i, item in enumerate(items[:n]):
         print('%(index)3d %(imdb_id)7s %(title)s' % {
             'index': i + 1,
@@ -44,16 +43,17 @@ def list_results(items, type_, n=None):
 
 def search_item(args):
     connection = IMDb()
+    n = args.n if args.n is not None else DEFAULT_RESULT_SIZE
     if args.type == 'keyword':
-        items = connection.search_keyword(args.key, results=args.n)
+        items = connection.search_keyword(args.key)
         if args.first:
-            items = connection.get_keyword(items[0], results=DEFAULT_RESULT_SIZE)
-            list_results(items, type_='movie')
+            items = connection.get_keyword(items[0])
+            list_results(items, type_='movie', n=n)
         else:
             print('  # keyword')
             print('=== =======')
-            for i, keyword in enumerate(items):
-                print('%(index)3d. %(kw)s' % {'index': i + 1, 'kw': keyword})
+            for i, keyword in enumerate(items[:n]):
+                print('%(index)3d %(kw)s' % {'index': i + 1, 'kw': keyword})
     else:
         if args.type == 'movie':
             items = connection.search_movie(args.key)

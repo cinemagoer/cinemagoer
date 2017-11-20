@@ -30,16 +30,11 @@ DEFAULT_RESULT_SIZE = 20
 
 
 def list_results(results, key, type_):
-    print('     %(num)s result%(plural)s for "%(key)s":' % {
-        'num': len(results),
-        'plural': 's' if len(results) != 1 else '',
-        'key': key
-    })
     field = 'title' if type_ == 'movie' else 'name'
-    print('     IMDb id  %s' % field)
-    print('     =======  %s' % ('=' * len(field),))
+    print('  # IMDb id %s' % field)
+    print('=== ======= %s' % ('=' * len(field),))
     for i, item in enumerate(results):
-        print('%(index)3d. %(imdb_id)7s  %(title)s' % {
+        print('%(index)3d %(imdb_id)7s %(title)s' % {
             'index': i + 1,
             'imdb_id': getattr(item, type_ + 'ID'),
             'title': item['long imdb ' + field]
@@ -89,21 +84,20 @@ def search_item(args):
 
 def get_item(args):
     connection = IMDb()
-    if args.type == 'movie':
-        movie = connection.get_movie(args.key)
-        print(movie.summary())
-    elif args.type == 'person':
-        person = connection.get_person(args.key)
-        print(person.summary())
-    elif args.type == 'character':
-        character = connection.get_character(args.key)
-        print(character.summary())
-    elif args.type == 'company':
-        company = connection.get_company(args.key)
-        print(company.summary())
-    elif args.type == 'keyword':
-        results = connection.get_keyword(args.key, results=20)
-        list_results(results, args.key, type_='movie')
+    if args.type == 'keyword':
+        n = args.n if args.n is not None else DEFAULT_RESULT_SIZE
+        items = connection.get_keyword(args.key, results=n)
+        list_results(items, args.key, type_='movie')
+    else:
+        if args.type == 'movie':
+            item = connection.get_movie(args.key)
+        elif args.type == 'person':
+            item = connection.get_person(args.key)
+        elif args.type == 'character':
+            item = connection.get_character(args.key)
+        elif args.type == 'company':
+            item = connection.get_company(args.key)
+        print(item.summary())
 
 
 def list_ranking(items, n=None):
@@ -159,6 +153,7 @@ def make_parser(prog):
     command_get_parser.add_argument('type', help='type of item to retrieve',
                                     choices=['movie', 'person', 'character', 'company', 'keyword'])
     command_get_parser.add_argument('key', help='IMDb id (or keyword name) of item to retrieve')
+    command_get_parser.add_argument('-n', type=int, help='number of movies to list (only for keywords)')
     command_get_parser.set_defaults(func=get_item)
 
     command_top_parser = command_parsers.add_parser('top', help='get top ranked movies')

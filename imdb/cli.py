@@ -1,7 +1,7 @@
 """
 cli package (imdb package).
 
-This package provides the command line for IMDbPY.
+This package provides the command line interface for IMDbPY.
 
 Copyright 2017 H. Turgut Uyar <uyar@tekir.org>
 
@@ -51,6 +51,25 @@ def get_entity(args):
         for i, movie in enumerate(results):
             print('%d: %s' % (i + 1, movie['long imdb title']))
 
+
+def get_top_movies(args):
+    connection = IMDb()
+    movies = connection.get_top250_movies()
+    print('Top movies')
+    print('rating\tvotes\ttitle')
+    for movie in movies[:args.n]:
+        print('%s\t%s\t%s' % (movie.get('rating'), movie.get('votes'), movie['long imdb title']))
+
+
+def get_bottom_movies(args):
+    connection = IMDb()
+    movies = connection.get_bottom100_movies()
+    print('Bottom movies')
+    print('rating\tvotes\ttitle')
+    for movie in movies[:args.n]:
+        print('%s\t%s\t%s' % (movie.get('rating'), movie.get('votes'), movie['long imdb title']))
+
+
 def make_parser(prog):
     parser = ArgumentParser(prog)
     parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
@@ -63,6 +82,14 @@ def make_parser(prog):
                                     choices=['movie', 'person', 'character', 'company', 'keyword'])
     command_get_parser.add_argument('id', help='IMDb id of entity to get')
     command_get_parser.set_defaults(func=get_entity)
+
+    command_top_parser = commands.add_parser('top', help='get top ranked movies')
+    command_top_parser.add_argument('n', type=int, help='number of movies to list (max 250)')
+    command_top_parser.set_defaults(func=get_top_movies)
+
+    command_bottom_parser = commands.add_parser('bottom', help='get bottom ranked movies')
+    command_bottom_parser.add_argument('n', type=int, help='number of movies to list (max 100)')
+    command_bottom_parser.set_defaults(func=get_bottom_movies)
 
     return parser
 

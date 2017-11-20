@@ -29,11 +29,12 @@ from imdb import VERSION, IMDb
 DEFAULT_RESULT_SIZE = 20
 
 
-def list_results(results, key, type_):
+def list_results(items, type_, n=None):
     field = 'title' if type_ == 'movie' else 'name'
     print('  # IMDb id %s' % field)
     print('=== ======= %s' % ('=' * len(field),))
-    for i, item in enumerate(results):
+    n = n if n is not None else DEFAULT_RESULT_SIZE
+    for i, item in enumerate(items[:n]):
         print('%(index)3d %(imdb_id)7s %(title)s' % {
             'index': i + 1,
             'imdb_id': getattr(item, type_ + 'ID'),
@@ -41,45 +42,33 @@ def list_results(results, key, type_):
         })
 
 
-def process_results(results, key, type_, first, connection):
-    if first:
-        item = results[0]
-        connection.update(item)
-        print(item.summary())
-    else:
-        list_results(results, key, type_=type_)
-
-
 def search_item(args):
     connection = IMDb()
-    if args.type == 'movie':
-        results = connection.search_movie(args.key, results=args.n)
-        process_results(results, args.key, type_='movie', first=args.first, connection=connection)
-    elif args.type == 'person':
-        results = connection.search_person(args.key, results=args.n)
-        process_results(results, args.key, type_='person', first=args.first, connection=connection)
-    elif args.type == 'character':
-        results = connection.search_character(args.key, results=args.n)
-        process_results(results, args.key, type_='character', first=args.first, connection=connection)
-    elif args.type == 'company':
-        results = connection.search_company(args.key, results=args.n)
-        process_results(results, args.key, type_='company', first=args.first, connection=connection)
-    elif args.type == 'keyword':
-        results = connection.search_keyword(args.key, results=args.n)
+    if args.type == 'keyword':
+        items = connection.search_keyword(args.key, results=args.n)
         if args.first:
-            item = results[0]
-            results = connection.get_keyword(item, results=20)
-            list_results(results, args.key, type_='movie')
+            items = connection.get_keyword(items[0], results=DEFAULT_RESULT_SIZE)
+            list_results(items, type_='movie')
         else:
-            print('     %(num)s result%(plural)s for "%(key)s":' % {
-                'num': len(results),
-                'plural': 's' if len(results) != 1 else '',
-                'key': args.key
-            })
-            print('     keyword')
-            print('     =======')
-            for i, keyword in enumerate(results):
+            print('  # keyword')
+            print('=== =======')
+            for i, keyword in enumerate(items):
                 print('%(index)3d. %(kw)s' % {'index': i + 1, 'kw': keyword})
+    else:
+        if args.type == 'movie':
+            items = connection.search_movie(args.key)
+        elif args.type == 'person':
+            items = connection.search_person(args.key)
+        elif args.type == 'character':
+            items = connection.search_character(args.key)
+        elif args.type == 'company':
+            items = connection.search_company(args.key)
+
+        if args.first:
+            connection.update(items[0])
+            print(items[0].summary())
+        else:
+            list_results(items, type_=args.type, n=args.n)
 
 
 def get_item(args):
@@ -87,7 +76,7 @@ def get_item(args):
     if args.type == 'keyword':
         n = args.n if args.n is not None else DEFAULT_RESULT_SIZE
         items = connection.get_keyword(args.key, results=n)
-        list_results(items, args.key, type_='movie')
+        list_results(items, type_='movie')
     else:
         if args.type == 'movie':
             item = connection.get_movie(args.key)

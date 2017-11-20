@@ -34,11 +34,27 @@ def list_movies(movies, key):
     })
     print('     IMDb id  movie title')
     print('     =======  ===========')
-    for i, item in enumerate(movies):
+    for i, movie in enumerate(movies):
         print('%(index)3d. %(imdb_id)7s  %(title)s' % {
             'index': i + 1,
-            'imdb_id': item.movieID,
-            'title': item['long imdb title']
+            'imdb_id': movie.movieID,
+            'title': movie['long imdb title']
+        })
+
+
+def list_people(people, key, character=False):
+    print('     %(num)s result%(plural)s for "%(kw)s":' % {
+        'num': len(people),
+        'plural': 's' if len(people) != 1 else '',
+        'kw': key
+    })
+    print('     IMDb id  name')
+    print('     =======  ====')
+    for i, person in enumerate(people):
+        print('%(index)3d. %(imdb_id)7s  %(name)s' % {
+            'index': i + 1,
+            'imdb_id': person.personID if not character else person.characterID,
+            'name': person['long imdb name']
         })
 
 
@@ -47,6 +63,12 @@ def search_entity(args):
     if args.type == 'movie':
         results = connection.search_movie(args.key)
         list_movies(results, args.key)
+    elif args.type == 'person':
+        results = connection.search_person(args.key)
+        list_people(results, args.key)
+    elif args.type == 'character':
+        results = connection.search_character(args.key)
+        list_people(results, args.key, character=True)
 
 
 def get_entity(args):

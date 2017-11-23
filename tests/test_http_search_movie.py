@@ -1,16 +1,14 @@
 from pytest import fixture, mark
 
-from urllib.request import urlopen
-
 from imdb.parser.http.searchMovieParser import DOMHTMLSearchMovieParser
 
 
 @fixture(scope='module')
-def search_movie(search):
+def search_movie(url_opener, search):
     """A function to retrieve the search result for a title."""
     def retrieve(term):
         url = search + '?s=tt&q=' + term.replace(' ', '+')
-        return urlopen(url).read().decode('utf-8')
+        return url_opener.retrieve_unicode(url)
     return retrieve
 
 

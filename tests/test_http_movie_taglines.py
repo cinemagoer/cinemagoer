@@ -1,16 +1,14 @@
 from pytest import fixture
 
-from urllib.request import urlopen
-
 from imdb.parser.http.movieParser import DOMHTMLTaglinesParser
 
 
 @fixture(scope='module')
-def movie_taglines(movies):
+def movie_taglines(url_opener, movies):
     """A function to retrieve the taglines page of a test movie."""
     def retrieve(movie_key):
         url = movies[movie_key] + '/taglines'
-        return urlopen(url).read().decode('utf-8')
+        return url_opener.retrieve_unicode(url)
     return retrieve
 
 

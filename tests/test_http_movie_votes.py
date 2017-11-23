@@ -1,16 +1,14 @@
 from pytest import fixture
 
-from urllib.request import urlopen
-
 from imdb.parser.http.movieParser import DOMHTMLRatingsParser
 
 
 @fixture(scope='module')
-def movie_ratings(movies):
+def movie_ratings(url_opener, movies):
     """A function to retrieve the ratings page of a test movie."""
     def retrieve(movie_key):
         url = movies[movie_key] + '/ratings'
-        return urlopen(url).read().decode('utf-8')
+        return url_opener.retrieve_unicode(url)
     return retrieve
 
 

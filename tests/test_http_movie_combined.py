@@ -17,10 +17,10 @@ def movie_combined_details(url_opener, movies):
 parser = DOMHTMLMovieParser()
 
 
-def test_cover_url_should_be_an_image_link(movie_combined_details):
+def test_cover_url_should_be_a_link(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
-    assert re.match(r'^https?://.*\.jpg$', data['cover url'])
+    assert data['cover url'].endswith('.jpg')
 
 
 def test_cover_url_none_should_be_excluded(movie_combined_details):

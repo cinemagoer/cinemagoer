@@ -6,7 +6,6 @@ from hashlib import md5
 
 from imdb.parser.http import IMDbURLopener
 
-
 logging.raiseExceptions = False
 
 

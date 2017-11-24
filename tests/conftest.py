@@ -61,6 +61,7 @@ MOVIES = {
 PEOPLE = {
     '0000001': 'fred astaire',              # name with dates
     '0330139': 'deni gordon',               # no headshot
+    '0617588': 'georges melies',            # no height
     '0000206': 'keanu reeves',              # no IMDb index
     '0000210': 'julia roberts'              # IMDb index
 }

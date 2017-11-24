@@ -43,18 +43,6 @@ from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_mo
 _reRoles = re.compile(r'(<li>.*? \.\.\.\. )(.*?)(</li>|<br>)', re.I | re.M | re.S)
 
 
-def build_date(date):
-    day = date.get('day')
-    year = date.get('year')
-    if day and year:
-        return "%s %s" % (day, year)
-    if day:
-        return day
-    if year:
-        return year
-    return ""
-
-
 class DOMHTMLMaindetailsParser(DOMParserBase):
     """Parser for the "categorized" (maindetails) page of a given person.
     The page should be provided as a string, as taken from
@@ -256,11 +244,7 @@ class DOMHTMLBioParser(DOMParserBase):
     _birth_attrs = [
         Attribute(
             key='birth date',
-            path={
-                'day': "./a[starts-with(@href, '/search/name?birth_monthday=')]/text()",
-                'year': "./a[starts-with(@href, '/search/name?birth_year=')]/text()"
-            },
-            postprocess=build_date
+            path="./time[@itemprop='birthDate']/@datetime"
         ),
 
         Attribute(
@@ -272,11 +256,7 @@ class DOMHTMLBioParser(DOMParserBase):
     _death_attrs = [
         Attribute(
             key='death date',
-            path={
-                'day': "./a[starts-with(@href, '/search/name?death_monthday=')]/text()",
-                'year': "./a[starts-with(@href, '/search/name?death_date=')]/text()"
-            },
-            postprocess=build_date
+            path="./time[@itemprop='deathDate']/@datetime"
         ),
 
         Attribute(
@@ -290,31 +270,31 @@ class DOMHTMLBioParser(DOMParserBase):
     extractors = [
         Extractor(
             label='headshot',
-            path="//a[@name='headshot']",
+            path="//img[@class='poster']",
             attrs=Attribute(
                 key='headshot',
-                path="./img/@src"
+                path="./@src"
             )
         ),
 
         Extractor(
             label='birth info',
             path="//table[@id='overviewTable']"
-                 "//td[text()='Date of Birth']/following-sibling::td[1]",
+                 "//td[text()='Born']/following-sibling::td[1]",
             attrs=_birth_attrs
         ),
 
         Extractor(
             label='death info',
             path="//table[@id='overviewTable']"
-                 "//td[text()='Date of Death']/following-sibling::td[1]",
+                 "//td[text()='Died']/following-sibling::td[1]",
             attrs=_death_attrs
         ),
 
         Extractor(
             label='nick names',
             path="//table[@id='overviewTable']"
-                 "//td[text()='Nickenames']/following-sibling::td[1]",
+                 "//td[starts-with(text(), 'Nickname')]/following-sibling::td[1]",
             attrs=Attribute(
                 key='nick names',
                 path="./text()",

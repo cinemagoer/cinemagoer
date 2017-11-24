@@ -1,14 +1,16 @@
 from pytest import fixture
 
+from urllib.request import urlopen
+
 from imdb.parser.http.personParser import DOMHTMLMaindetailsParser
 
 
 @fixture(scope='module')
-def person_main_details(url_opener, people):
+def person_main_details(people):
     """A function to retrieve the main details page of a test person."""
     def retrieve(person_key):
         url = people[person_key]
-        return url_opener.retrieve_unicode(url)
+        return urlopen(url).read().decode('utf-8')
     return retrieve
 
 

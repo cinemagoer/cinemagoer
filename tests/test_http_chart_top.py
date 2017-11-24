@@ -1,14 +1,16 @@
 from pytest import fixture
 
+from urllib.request import urlopen
+
 from imdb.parser.http.topBottomParser import DOMHTMLTop250Parser
 
 
 @fixture(scope='module')
-def chart_top(url_opener, base_url):
+def chart_top(base_url):
     """A function to retrieve the top movies page."""
     def retrieve():
         url = base_url + '/chart/top'
-        return url_opener.retrieve_unicode(url)
+        return urlopen(url).read().decode('utf-8')
     return retrieve
 
 

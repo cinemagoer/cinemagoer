@@ -1,16 +1,17 @@
 from pytest import fixture
 
 import re
+from urllib.request import urlopen
 
 from imdb.parser.http.movieParser import DOMHTMLPlotParser
 
 
 @fixture(scope='module')
-def movie_plot_summaries(url_opener, movies):
+def movie_plot_summaries(movies):
     """A function to retrieve the plot summary page of a test movie."""
     def retrieve(movie_key):
         url = movies[movie_key] + '/plotsummary'
-        return url_opener.retrieve_unicode(url)
+        return urlopen(url).read().decode('utf-8')
     return retrieve
 
 

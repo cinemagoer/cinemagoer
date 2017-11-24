@@ -1,14 +1,16 @@
 from pytest import fixture
 
+from urllib.request import urlopen
+
 from imdb.parser.http.topBottomParser import DOMHTMLBottom100Parser
 
 
 @fixture(scope='module')
-def chart_bottom(url_opener, base_url):
+def chart_bottom(base_url):
     """A function to retrieve the bottom movies page."""
     def retrieve():
         url = base_url + '/chart/bottom'
-        return url_opener.retrieve_unicode(url)
+        return urlopen(url).read().decode('utf-8')
     return retrieve
 
 

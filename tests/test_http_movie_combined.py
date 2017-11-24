@@ -1,16 +1,17 @@
 from pytest import fixture, mark
 
 import re
+from urllib.request import urlopen
 
 from imdb.parser.http.movieParser import DOMHTMLMovieParser
 
 
 @fixture(scope='module')
-def movie_combined_details(url_opener, movies):
+def movie_combined_details(movies):
     """A function to retrieve the combined details page of a test movie."""
     def retrieve(movie_key):
         url = movies[movie_key] + '/combined'
-        return url_opener.retrieve_unicode(url)
+        return urlopen(url).read().decode('utf-8')
     return retrieve
 
 

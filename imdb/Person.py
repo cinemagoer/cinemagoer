@@ -48,6 +48,7 @@ class Person(_Container):
         'nick name': 'nick names',
         'nicks': 'nick names',
         'nickname': 'nick names',
+        'nicknames': 'nick names',
         'miscellaneouscrew': 'miscellaneous crew',
         'crewmembers': 'miscellaneous crew',
         'misc': 'miscellaneous crew',

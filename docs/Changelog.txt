@@ -2,7 +2,12 @@
   ====================
 
 * What's the new in release 6.3
+  [general]
+  - documentation updates
+  - introduced the 'imdbpy' CLI
 
+  [http]
+  - Person parser fixes
 
 * What's the new in release 6.2 "Justice League" (19 Nov 2017)
   [general]

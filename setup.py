@@ -97,8 +97,9 @@ params = {
     'download_url': dwnl_url,
     'scripts': scripts,
     'data_files': data_files,
-    'install_requires': ['sqlalchemy-migrate', 'SQLAlchemy', 'lxml'],
+    'install_requires': ['lxml'],
     'extras_require': {
+        'sqlalchemy': ['sqlalchemy-migrate', 'SQLAlchemy'],
         'dev': ['flake8', 'flake8-isort'],
         'test': ['pytest', 'pytest-cov'],
     },

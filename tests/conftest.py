@@ -1,12 +1,10 @@
 from pytest import fixture
-from unittest import mock
 
 import logging
 import os
-import urllib.request
 from hashlib import md5
-from io import BytesIO
-from urllib.request import urlopen as orig_urlopen
+
+from imdb.parser.http import IMDbURLopener
 
 
 logging.raiseExceptions = False
@@ -17,20 +15,18 @@ if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
 
 
-def mock_urlopen(url):
-    key = md5(url.encode('utf-8')).hexdigest()
-    cache_file = os.path.join(cache_dir, key)
-    if os.path.exists(cache_file):
-        with open(cache_file, 'rb') as f:
-            content = f.read()
-    else:
-        content = orig_urlopen(url).read()
-        with open(cache_file, 'wb') as f:
-            f.write(content)
-    return BytesIO(content)
-
-
-urllib.request.urlopen = mock.Mock(wraps=mock_urlopen)
+class CachedURLOpener(IMDbURLopener):
+    def retrieve_unicode(self, url, size=-1):
+        key = md5(url.encode('utf-8')).hexdigest()
+        cache_file = os.path.join(cache_dir, key)
+        if os.path.exists(cache_file):
+            with open(cache_file, 'r') as f:
+                content = f.read()
+        else:
+            content = super().retrieve_unicode(url, size=size)
+            with open(cache_file, 'w') as f:
+                f.write(content)
+        return content
 
 
 BASE_URL = 'http://akas.imdb.com'
@@ -68,6 +64,11 @@ PEOPLE = {
     '0000206': 'keanu reeves',              # no IMDb index
     '0000210': 'julia roberts'              # IMDb index
 }
+
+
+@fixture(scope='session')
+def url_opener():
+    return CachedURLOpener()
 
 
 @fixture(scope='session')

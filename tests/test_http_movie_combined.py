@@ -1,27 +1,26 @@
 from pytest import fixture, mark
 
 import re
-from urllib.request import urlopen
 
 from imdb.parser.http.movieParser import DOMHTMLMovieParser
 
 
 @fixture(scope='module')
-def movie_combined_details(movies):
+def movie_combined_details(url_opener, movies):
     """A function to retrieve the combined details page of a test movie."""
     def retrieve(movie_key):
         url = movies[movie_key] + '/combined'
-        return urlopen(url).read().decode('utf-8')
+        return url_opener.retrieve_unicode(url)
     return retrieve
 
 
 parser = DOMHTMLMovieParser()
 
 
-def test_cover_url_should_be_a_link(movie_combined_details):
+def test_cover_url_should_be_an_image_link(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
-    assert data['cover url'].endswith('.jpg')
+    assert re.match(r'^https?://.*\.jpg$', data['cover url'])
 
 
 def test_cover_url_none_should_be_excluded(movie_combined_details):

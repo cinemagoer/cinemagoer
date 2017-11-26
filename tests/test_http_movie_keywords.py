@@ -1,16 +1,14 @@
 from pytest import fixture
 
-from urllib.request import urlopen
-
 from imdb.parser.http.movieParser import DOMHTMLKeywordsParser
 
 
 @fixture(scope='module')
-def movie_keywords(movies):
+def movie_keywords(url_opener, movies):
     """A function to retrieve the keywords page of a test movie."""
     def retrieve(movie_key):
         url = movies[movie_key] + '/keywords'
-        return urlopen(url).read().decode('utf-8')
+        return url_opener.retrieve_unicode(url)
     return retrieve
 
 

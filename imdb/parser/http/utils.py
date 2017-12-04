@@ -42,7 +42,7 @@ re_yearKind_index = re.compile(
 )
 
 # Match imdb ids in href tags
-re_imdbid = re.compile(r'(title/tt|name/nm|character/ch|company/co)([0-9]+)')
+re_imdbid = re.compile(r'(title/tt|name/nm|character/ch|company/co|user/ur)([0-9]+)')
 
 
 def analyze_imdbid(href):

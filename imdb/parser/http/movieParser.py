@@ -1503,6 +1503,59 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
     ]
 
 
+class DOMHTMLReviewsParser(DOMParserBase):
+    """Parser for the "reviews" pages of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        osparser = DOMHTMLReviewsParser()
+        result = osparser.parse(officialsites_html_string)
+    """
+    kind = 'reviews'
+
+    extractors = [
+        Extractor(label='review',
+                path="//div[@class='reviews']/div/div/div[@class='yn']",
+                attrs=Attribute(key='self.kind',
+                    multi=True,
+                    path={
+                        'text': "./preceding::p[1]/text()",
+                        'helpful': "./preceding::div[1]/small[1]/text()",
+                        'title': "./preceding::div[1]/h2/text()",
+                        'author': "./preceding::div[1]/a[1]/@href",
+                        'date': "./preceding::div[1]/small[3]/text()",
+                        'rating': "./preceding::div[1]/img/@alt"
+                    },
+                    postprocess=lambda x: ({
+                        'content': (x['text'] or '').replace("\n", " ").strip(),
+                        'helpful': [int(s) for s in (x.get('helpful') or '').split() if s.isdigit()],
+                        'title': (x.get('title') or '').strip(),
+                        'author': analyze_imdbid(x.get('author')),
+                        'date': (x.get('date') or '').strip(),
+                        'rating': (x.get('rating') or '').strip().split('/')
+                    })
+                ))
+    ]
+
+    def postprocess_data(self, data):
+        for review in data.get('reviews', []):
+            if review.get('rating') and len(review['rating']) == 2:
+                review['rating'] = int(review['rating'][0])
+            else:
+                review['rating'] = None
+
+            if review.get('helpful') and len(review['helpful']) == 2:
+                review['not_helpful'] = review['helpful'][1] - review['helpful'][0]
+                review['helpful'] = review['helpful'][0]
+            else:
+                review['helpful'] = 0
+                review['not_helpful'] = 0
+
+        return data
+
+
 class DOMHTMLFullCreditsParser(DOMParserBase):
     """Parser for the "full credits" (series cast section) page of a given movie.
     The page should be provided as a string, as taken from
@@ -2443,6 +2496,7 @@ _OBJECTS = {
     'ratings_parser': ((DOMHTMLRatingsParser,), None),
     'officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'criticrev_parser': ((DOMHTMLCriticReviewsParser,), {'kind': 'critic reviews'}),
+    'reviews_parser':  ((DOMHTMLReviewsParser,), {'kind': 'reviews'}),
     'externalrev_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'external reviews'}),
     'misclinks_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'misc links'}),
     'soundclips_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'sound clips'}),

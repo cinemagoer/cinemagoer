@@ -1529,7 +1529,7 @@ class DOMHTMLReviewsParser(DOMParserBase):
                         'rating': "./preceding::div[1]/img/@alt"
                     },
                     postprocess=lambda x: ({
-                        'content': (x['text'] or '').replace("\n", " ").strip(),
+                        'content': (x['text'] or '').replace("\n", " ").replace('  ', ' ').strip(),
                         'helpful': [int(s) for s in (x.get('helpful') or '').split() if s.isdigit()],
                         'title': (x.get('title') or '').strip(),
                         'author': analyze_imdbid(x.get('author')),
@@ -1538,6 +1538,8 @@ class DOMHTMLReviewsParser(DOMParserBase):
                     })
                 ))
     ]
+
+    preprocessors = [('<br>', '<br>\n')]
 
     def postprocess_data(self, data):
         for review in data.get('reviews', []):
@@ -1552,6 +1554,8 @@ class DOMHTMLReviewsParser(DOMParserBase):
             else:
                 review['helpful'] = 0
                 review['not_helpful'] = 0
+
+            review['author'] = "ur%s" % review['author']
 
         return data
 

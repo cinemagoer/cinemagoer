@@ -8,6 +8,7 @@
 
   [http]
   - Person parser fixes
+  - users review parser
 
 * What's the new in release 6.2 "Justice League" (19 Nov 2017)
   [general]

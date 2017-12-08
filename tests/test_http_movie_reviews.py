@@ -15,7 +15,7 @@ def movie_reviews_details(url_opener, movies):
 parser = DOMHTMLReviewsParser()
 
 
-def test_cover_url_should_be_an_image_link(movie_reviews_details):
+def test_number_of_reviews(movie_reviews_details):
     page = movie_reviews_details('dust devil')
     data = parser.parse(page)['data']
     reviews_number = len(data.get('reviews', []))

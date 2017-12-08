@@ -1230,7 +1230,7 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
 
     extractors = [
         Extractor(label='site',
-            path="//ol/li/a",
+            path="//ul/li/a",
             attrs=Attribute(key='self.kind',
                 multi=True,
                 path={

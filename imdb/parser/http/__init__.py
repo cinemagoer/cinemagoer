@@ -482,10 +482,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'ratings')
         return self.mProxy.ratings_parser.parse(cont)
 
-    def get_movie_official_sites(self, movieID):
-        cont = self._retrieve(self.urls['movie_main'] % movieID + 'officialsites')
-        return self.mProxy.officialsites_parser.parse(cont)
-
     def get_movie_trivia(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'trivia')
         return self.mProxy.trivia_parser.parse(cont, getRefs=self._getRefs)
@@ -530,21 +526,47 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'externalreviews')
         return self.mProxy.externalrev_parser.parse(cont)
 
+    def get_movie_external_sites(self, movieID):
+        cont = self._retrieve(self.urls['movie_main'] % movieID + 'externalsites')
+        ret = self.mProxy.externalsites_parser.parse(cont)
+        ret['info sets'] = ('external sites', 'misc sites', 'sound clips',
+                            'video sites', 'photo sites', 'official sites')
+        return ret
+
+    def get_movie_official_sites(self, movieID):
+        cont = self._retrieve(self.urls['movie_main'] % movieID + 'officialsites')
+        ret = self.mProxy.officialsites_parser.parse(cont)
+        ret['info sets'] = ('external sites', 'misc sites', 'sound clips',
+                            'video sites', 'photo sites', 'official sites')
+        return ret
+
     def get_movie_misc_sites(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'miscsites')
-        return self.mProxy.misclinks_parser.parse(cont)
+        ret = self.mProxy.misclinks_parser.parse(cont)
+        ret['info sets'] = ('external sites', 'misc sites', 'sound clips',
+                            'video sites', 'photo sites', 'official sites')
+        return ret
 
     def get_movie_sound_clips(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'soundsites')
-        return self.mProxy.soundclips_parser.parse(cont)
+        ret = self.mProxy.soundclips_parser.parse(cont)
+        ret['info sets'] = ('external sites', 'misc sites', 'sound clips',
+                            'video sites', 'photo sites', 'official sites')
+        return ret
 
     def get_movie_video_clips(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'videosites')
-        return self.mProxy.videoclips_parser.parse(cont)
+        ret = self.mProxy.videoclips_parser.parse(cont)
+        ret['info sets'] = ('external sites', 'misc sites', 'sound clips',
+                            'video sites', 'photo sites', 'official sites')
+        return ret
 
     def get_movie_photo_sites(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'photosites')
-        return self.mProxy.photosites_parser.parse(cont)
+        ret = self.mProxy.photosites_parser.parse(cont)
+        ret['info sets'] = ('external sites', 'misc sites', 'sound clips',
+                            'video sites', 'photo sites', 'official sites')
+        return ret
 
     def get_movie_news(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'news')

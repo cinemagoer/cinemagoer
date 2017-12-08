@@ -1610,14 +1610,15 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
         osparser = DOMHTMLOfficialsitesParser()
         result = osparser.parse(officialsites_html_string)
     """
-    kind = 'official sites'
-
     extractors = [
         Extractor(
             label='site',
-            path="//ol/li/a",
+            group="//h4[@class='li_group']",
+            group_key="./text()",
+            group_key_normalize=lambda x: x.strip().lower(),
+            path="./following::ul[1]/li/a",
             attrs=Attribute(
-                key='self.kind',
+                key=None,
                 multi=True,
                 path={
                     'link': "./@href",
@@ -2498,14 +2499,15 @@ _OBJECTS = {
     'quotes_parser': ((DOMHTMLQuotesParser,), None),
     'releasedates_parser': ((DOMHTMLReleaseinfoParser,), None),
     'ratings_parser': ((DOMHTMLRatingsParser,), None),
-    'officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'criticrev_parser': ((DOMHTMLCriticReviewsParser,), {'kind': 'critic reviews'}),
     'reviews_parser':  ((DOMHTMLReviewsParser,), {'kind': 'reviews'}),
-    'externalrev_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'external reviews'}),
-    'misclinks_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'misc links'}),
-    'soundclips_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'sound clips'}),
-    'videoclips_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'video clips'}),
-    'photosites_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'photo sites'}),
+    'externalsites_parser': ((DOMHTMLOfficialsitesParser,), None),
+    'officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
+    'externalrev_parser': ((DOMHTMLOfficialsitesParser,), None),
+    'misclinks_parser': ((DOMHTMLOfficialsitesParser,), None),
+    'soundclips_parser': ((DOMHTMLOfficialsitesParser,), None),
+    'videoclips_parser': ((DOMHTMLOfficialsitesParser,), None),
+    'photosites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'connections_parser': ((DOMHTMLConnectionParser,), None),
     'tech_parser': ((DOMHTMLTechParser,), None),
     'business_parser': ((DOMHTMLBusinessParser,), {'kind': 'business', '_defGetRefs': 1}),

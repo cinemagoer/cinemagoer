@@ -9,7 +9,7 @@ E.g., for "Mel Gibson" the referred pages would be:
     ...and so on...
 
 Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
-               2008 H. Turgut Uyar <uyar@tekir.org>
+          2008-2017 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -564,7 +564,7 @@ class DOMHTMLResumeParser(DOMParserBase):
 
 
 class DOMHTMLOtherWorksParser(DOMParserBase):
-    """Parser for the "other works" and "agent" pages of a given person.
+    """Parser for the "other works" page of a given person.
     The page should be provided as a string, as taken from
     the akas.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -574,26 +574,18 @@ class DOMHTMLOtherWorksParser(DOMParserBase):
         result = owparser.parse(otherworks_html_string)
     """
     _defGetRefs = True
-    kind = 'other works'
 
-    # XXX: looks like the 'agent' page is no more public.
     extractors = [
         Extractor(
             label='other works',
-            path="//h5[text()='Other works']/following-sibling::div[1]",
+            path="//li[@class='ipl-zebra-list__item']",
             attrs=Attribute(
-                key='self.kind',
+                key='other works',
                 path=".//text()",
-                postprocess=lambda x: x.strip().split('\n\n')
+                multi=True,
+                postprocess=lambda x: x.strip()
             )
         )
-    ]
-
-    preprocessors = [
-        (re.compile('(<h5>[^<]+</h5>)', re.I), r'</div>\1<div class="_imdbpy">'),
-        (re.compile('(</table>\n</div>\s+)</div>', re.I), r'\1'),
-        (re.compile('(<div id="tn15bot">)'), r'</div>\1'),
-        (re.compile('<br/><br/>', re.I), r'\n\n')
     ]
 
 
@@ -745,7 +737,6 @@ _OBJECTS = {
     'bio_parser': ((DOMHTMLBioParser,), None),
     'resume_parser': ((DOMHTMLResumeParser,), None),
     'otherworks_parser': ((DOMHTMLOtherWorksParser,), None),
-    # 'agent_parser': ((DOMHTMLOtherWorksParser,), {'kind': 'agent'}),
     'person_officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'person_awards_parser': ((DOMHTMLAwardsParser,), {'subject': 'name'}),
     'publicity_parser': ((DOMHTMLTechParser,), {'kind': 'publicity'}),

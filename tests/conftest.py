@@ -62,8 +62,17 @@ MOVIES = {
 PEOPLE = {
     '0000001': 'fred astaire',              # name with dates
     '0330139': 'deni gordon',               # no headshot
+    '0617588': 'georges melies',            # no height
     '0000206': 'keanu reeves',              # no IMDb index
     '0000210': 'julia roberts'              # IMDb index
+}
+
+CHARACTERS = {
+    '0000001': 'jesse james'
+}
+
+COMPANIES = {
+    '0017902': 'pixar'
 }
 
 
@@ -90,6 +99,20 @@ def people(base_url):
     """Base addresses of all test people."""
     return {v: '%(base)s/name/nm%(key)s' % {'base': base_url, 'key': k}
             for k, v in PEOPLE.items()}
+
+
+@fixture(scope='session')
+def characters(base_url):
+    """Base addresses of all test characters."""
+    return {v: '%(base)s/character/ch%(key)s' % {'base': base_url, 'key': k}
+            for k, v in CHARACTERS.items()}
+
+
+@fixture(scope='session')
+def companies(base_url):
+    """Base addresses of all test companies."""
+    return {v: '%(base)s/company/co%(key)s' % {'base': base_url, 'key': k}
+            for k, v in COMPANIES.items()}
 
 
 @fixture(scope='session')

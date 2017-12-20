@@ -1,5 +1,7 @@
 from pytest import fixture
 
+import re
+
 from imdb.parser.http.personParser import DOMHTMLMaindetailsParser
 
 
@@ -15,10 +17,10 @@ def person_main_details(url_opener, people):
 parser = DOMHTMLMaindetailsParser()
 
 
-def test_headshot_should_be_a_link(person_main_details):
+def test_headshot_should_be_an_image_link(person_main_details):
     page = person_main_details('keanu reeves')
     data = parser.parse(page)['data']
-    assert data['headshot'].endswith('.jpg')
+    assert re.match(r'^https?://.*\.jpg$', data['headshot'])
 
 
 def test_headshot_none_should_be_excluded(person_main_details):

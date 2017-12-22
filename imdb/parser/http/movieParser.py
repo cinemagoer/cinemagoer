@@ -165,7 +165,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     _containsObjects = True
 
     extractors = [Extractor(label='title',
-                            path="//h1",
+                            path="//h1[@itemprop='name']",
                             attrs=Attribute(key='title',
                                         path=".//text()",
                                         postprocess=analyze_title)),

@@ -242,7 +242,7 @@ def test_episode_of_series_should_have_title_year_and_kind(movie_combined_detail
     assert series.data == {'title': 'House M.D.', 'year': 2004, 'kind': 'tv series'}
 
 
-def test_episode_of_mini_series_should_have_kind_tv_series(movie_combined_details):
+def test_episode_of_mini_series_should_have_title_year_and_kind(movie_combined_details):
     page = movie_combined_details('band of brothers ep 4')
     data = parser.parse(page)['data']
     series = data['episode of']

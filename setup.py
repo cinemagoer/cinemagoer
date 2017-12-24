@@ -100,7 +100,7 @@ params = {
     'install_requires': ['sqlalchemy-migrate', 'SQLAlchemy', 'lxml'],
     'extras_require': {
         'dev': ['flake8', 'flake8-isort'],
-        'test': ['pytest', 'pytest-cov'],
+        'test': ['pytest', 'pytest-cov', 'pytest-profiling']
     },
     'features': {'sqlalchemy': featSQLAlchemy},
     'packages': setuptools.find_packages(),

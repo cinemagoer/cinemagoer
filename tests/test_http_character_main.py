@@ -1,4 +1,4 @@
-from pytest import fixture
+from pytest import fixture, mark
 
 from imdb.parser.http.characterParser import DOMHTMLCharacterMaindetailsParser
 
@@ -15,6 +15,7 @@ def character_main_details(url_opener, characters):
 parser = DOMHTMLCharacterMaindetailsParser()
 
 
+@mark.skip(reason="character pages are title specific now")
 def test_name_should_be_as_is(character_main_details):
     page = character_main_details('jesse james')
     data = parser.parse(page)['data']

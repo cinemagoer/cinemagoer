@@ -46,7 +46,7 @@ class DOMCompanyParser(DOMParserBase):
     extractors = [
         Extractor(
             label='name',
-            path="//title",
+            path="//h1/span[@class='display-title ']",  # note the extra trailing space in class
             attrs=Attribute(
                 key='name',
                 path="./text()",

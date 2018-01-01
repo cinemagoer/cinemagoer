@@ -172,7 +172,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     extractors = [
         Extractor(
             label='title',
-            path="//h1",
+            path="//h3[@itemprop='name']",
             attrs=Attribute(
                 key='title',
                 path=".//text()",
@@ -239,86 +239,87 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='h5sections',
-            path="//div[@class='info']/h5/..",
+            path="//section[contains(@class, 'listo')]",
             attrs=[
                 Attribute(
                     key="plot summary",
-                    path="./h5[starts-with(text(), 'Plot:')]/../div/text()",
+                    path=".//td[starts-with(text(), 'Plot:')]/../div/text()",
                     postprocess=lambda x: x.strip().rstrip('|').rstrip()
                 ),
                 Attribute(
                     key="aspect ratio",
-                    path="./h5[starts-with(text(), 'Aspect')]/../div/text()",
+                    path=".//td[starts-with(text(), 'Aspect')]/../div/text()",
                     postprocess=lambda x: x.strip()
                 ),
                 Attribute(
                     key="mpaa",
-                    path="./h5/a[starts-with(text(), 'MPAA')]/../../div/text()",
+                    path=".//td/a[starts-with(text(), 'MPAA')]/../../div/text()",
                     postprocess=lambda x: x.strip()
                 ),
                 Attribute(
                     key="countries",
-                    path="./h5[starts-with(text(), 'Countr')]/.."
+                    path=".//td[starts-with(text(), 'Countr')]/.."
                          "/div[@class='info-content']//text()",
                     postprocess=makeSplitter('|')
                 ),
                 Attribute(
                     key="language",
-                    path="./h5[starts-with(text(), 'Language')]/..//text()",
+                    path=".//td[starts-with(text(), 'Language')]/..//text()",
                     postprocess=makeSplitter('Language:')
                 ),
                 Attribute(
                     key='color info',
-                    path="./h5[starts-with(text(), 'Color')]/..//text()",
+                    path=".//td[starts-with(text(), 'Color')]/.."
+                         "/div[@class='info-content']//text()",
                     postprocess=makeSplitter('|')
                 ),
                 Attribute(
                     key='sound mix',
-                    path="./h5[starts-with(text(), 'Sound Mix')]/.."
+                    path=".//td[starts-with(text(), 'Sound Mix')]/.."
                          "/div[@class='info-content']//text()",
                     postprocess=makeSplitter()
                 ),
                 # Collects akas not encosed in <i> tags.
                 Attribute(
                     key='other akas',
-                    path="./h5[starts-with(text(), 'Also Known As')]/../div//text()",
+                    path=".//td[starts-with(text(), 'Also Known As')]/..//ul//text()",
                     postprocess=makeSplitter(
                         sep='::', origNotesSep='" - ', newNotesSep='::', strip='"'
                     )
                 ),
                 Attribute(
                     key='runtimes',
-                    path="./h5[starts-with(text(), 'Runtime')]/../div/text()",
+                    path=".//td[starts-with(text(), 'Runtime')]/..//ul//text()",
                     postprocess=makeSplitter()
                 ),
                 Attribute(
                     key='certificates',
-                    path="./h5[starts-with(text(), 'Certificat')]/..//text()",
-                    postprocess=makeSplitter('Certification:')
+                    path=".//td[starts-with(text(), 'Certificat')]/..//text()",
+                    postprocess=makeSplitter('Certification:', sep='\n')
                 ),
                 Attribute(
                     key='seasons',
-                    path="./h5[starts-with(text(), 'Seasons')]/..//text()",
+                    path=".//td[starts-with(text(), 'Seasons')]/..//text()",
                     postprocess=makeSplitter('Seasons:')
                 ),
                 Attribute(
                     key='original air date',
-                    path="./h5[starts-with(text(), 'Original Air Date')]/../div/text()"
+                    path=".//td[starts-with(text(), 'Original Air Date')]/../div/text()"
                 ),
                 Attribute(
                     key='tv series link',
-                    path="./h5[starts-with(text(), 'TV Series')]/..//a/@href"
+                    path=".//td[starts-with(text(), 'TV Series')]/..//a/@href"
                 ),
                 Attribute(
                     key='tv series title',
-                    path="./h5[starts-with(text(), 'TV Series')]/..//a/text()"
+                    path=".//td[starts-with(text(), 'TV Series')]/..//a/text()"
                 )
             ]
         ),
 
         Extractor(
             label='language codes',
-            path="//h5[starts-with(text(), 'Language')]/.."
+            path="//td[starts-with(text(), 'Language')]/.."
                  "//a[starts-with(@href, '/language/')]",
             attrs=Attribute(
                 key='language codes',
@@ -330,7 +331,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='country codes',
-            path="//h5[starts-with(text(), 'Country')]/..//a[starts-with(@href, '/country/')]",
+            path="//td[starts-with(text(), 'Country')]/..//a[starts-with(@href, '/country/')]",
             attrs=Attribute(
                 key='country codes',
                 multi=True,
@@ -341,7 +342,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='creator',
-            path="//h5[starts-with(text(), 'Creator')]/..//a",
+            path="//td[starts-with(text(), 'Creator')]/..//a",
             attrs=Attribute(
                 key='creator',
                 multi=True,
@@ -358,7 +359,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='thin writer',
-            path="//h5[starts-with(text(), 'Writer')]/..//a",
+            path="//td[starts-with(text(), 'Writer')]/..//a",
             attrs=Attribute(
                 key='thin writer',
                 multi=True,
@@ -375,7 +376,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='thin director',
-            path="//h5[starts-with(text(), 'Director')]/..//a",
+            path="//td[starts-with(text(), 'Director')]/..//a",
             attrs=Attribute(
                 key='thin director',
                 multi=True,
@@ -469,7 +470,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='production notes/status',
-            path="//h5[starts-with(text(), 'Status:')]/..//div[@class='info-content']",
+            path="//td[starts-with(text(), 'Status:')]/..//div[@class='info-content']",
             attrs=Attribute(
                 key='production status',
                 path=".//text()",
@@ -479,7 +480,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='production notes/status updated',
-            path="//h5[starts-with(text(), 'Status Updated:')]/..//div[@class='info-content']",
+            path="//td[starts-with(text(), 'Status Updated:')]/..//div[@class='info-content']",
             attrs=Attribute(
                 key='production status updated',
                 path=".//text()",
@@ -489,7 +490,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='production notes/comments',
-            path="//h5[starts-with(text(), 'Comments:')]/..//div[@class='info-content']",
+            path="//td[starts-with(text(), 'Comments:')]/..//div[@class='info-content']",
             attrs=Attribute(
                 key='production comments',
                 path=".//text()",
@@ -499,7 +500,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='production notes/note',
-            path="//h5[starts-with(text(), 'Note:')]/..//div[@class='info-content']",
+            path="//td[starts-with(text(), 'Note:')]/..//div[@class='info-content']",
             attrs=Attribute(
                 key='production note',
                 path=".//text()",
@@ -529,28 +530,28 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='rating',
-            path="//div[@class='starbar-meta']/b",
+            path="(//span[@class='ipl-rating-star__rating'])[1]",
             attrs=Attribute(
                 key='rating',
-                path=".//text()"
+                path="./text()"
             )
         ),
 
         Extractor(
             label='votes',
-            path="//div[@class='starbar-meta']/a[@href]",
+            path="//span[@class='ipl-rating-star__total-votes'][1]",
             attrs=Attribute(
                 key='votes',
-                path=".//text()"
+                path="./text()"
             )
         ),
 
         Extractor(
             label='cover url',
-            path="//a[@name='poster']",
+            path="//img[@alt='Poster']",
             attrs=Attribute(
                 key='cover url',
-                path="./img/@src"
+                path="@src"
             )
         )
     ]
@@ -687,7 +688,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 pass
         if 'votes' in data:
             try:
-                votes = data['votes'].replace(',', '').replace('votes', '')
+                votes = data['votes'].replace('(', '').replace(')', '').replace(',', '').replace('votes', '')
                 data['votes'] = int(votes)
             except (TypeError, ValueError):
                 pass

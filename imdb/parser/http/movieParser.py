@@ -221,16 +221,6 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
-            label='genres',
-            path="//div[@class='info']//a[starts-with(@href, '/Sections/Genres')]",
-            attrs=Attribute(
-                key="genres",
-                multi=True,
-                path="./text()"
-            )
-        ),
-
-        Extractor(
             label='myrating',
             path="//span[@id='voteuser']",
             attrs=Attribute(
@@ -240,47 +230,114 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='plot summary',
+            path=".//td[starts-with(text(), 'Plot')]/..//p",
+            attrs=Attribute(
+                key='plot summary',
+                path='./text()',
+                postprocess=lambda x: x.strip().rstrip('|').rstrip()
+            )
+        ),
+
+        Extractor(
+            label='genres',
+            path="//td[starts-with(text(), 'Genre')]/..//li/a",
+            attrs=Attribute(
+                key="genres",
+                multi=True,
+                path="./text()"
+            )
+        ),
+
+        Extractor(
+            label='runtimes',
+            path="//td[starts-with(text(), 'Runtime')]/..//li",
+            attrs=Attribute(
+                key='runtimes',
+                path="./text()",
+                multi=True,
+                postprocess=lambda x: x.strip().replace(' min', '')
+            )
+        ),
+
+        Extractor(
+            label='countries',
+            path="//td[starts-with(text(), 'Countr')]/..//li/a",
+            attrs=Attribute(
+                key='countries',
+                path="./text()",
+                multi=True
+            )
+        ),
+
+        Extractor(
+            label='country codes',
+            path="//td[starts-with(text(), 'Countr')]/..//li/a",
+            attrs=Attribute(
+                key='country codes',
+                path="./@href",
+                multi=True,
+                postprocess=lambda x: x.split('/')[2].strip().lower()
+            )
+        ),
+
+        Extractor(
+            label='language',
+            path="//td[starts-with(text(), 'Language')]/..//li/a",
+            attrs=Attribute(
+                key='language',
+                path="./text()",
+                multi=True
+            )
+        ),
+
+        Extractor(
+            label='language codes',
+            path="//td[starts-with(text(), 'Language')]/..//li/a",
+            attrs=Attribute(
+                key='language codes',
+                path="./@href",
+                multi=True,
+                postprocess=lambda x: x.split('/')[2].strip()
+            )
+        ),
+
+        Extractor(
+            label='color info',
+            path="//td[starts-with(text(), 'Color')]/..//li/a",
+            attrs=Attribute(
+                key='color info',
+                path="./text()",
+                multi=True,
+                postprocess=lambda x: x.replace(' (', '::(')
+            )
+        ),
+
+        Extractor(
+            label='aspect ratio',
+            path="//td[starts-with(text(), 'Aspect')]/..",
+            attrs=Attribute(
+                key='aspect ratio',
+                path=".//li/text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
+            label='sound mix',
+            path="//td[starts-with(text(), 'Sound Mix')]/..//li/a",
+            attrs=Attribute(
+                key='sound mix',
+                path="./text()",
+                multi=True,
+                postprocess=lambda x: x.replace(' (', '::(')
+            )
+        ),
+
+        Extractor(
             label='h5sections',
             path="//section[contains(@class, 'listo')]",
             attrs=[
-                Attribute(
-                    key="plot summary",
-                    path=".//td[starts-with(text(), 'Plot:')]/../div/text()",
-                    postprocess=lambda x: x.strip().rstrip('|').rstrip()
-                ),
-                Attribute(
-                    key="aspect ratio",
-                    path=".//td[starts-with(text(), 'Aspect')]/../div/text()",
-                    postprocess=lambda x: x.strip()
-                ),
-                Attribute(
-                    key="mpaa",
-                    path=".//td/a[starts-with(text(), 'MPAA')]/../../div/text()",
-                    postprocess=lambda x: x.strip()
-                ),
-                Attribute(
-                    key="countries",
-                    path=".//td[starts-with(text(), 'Countr')]/.."
-                         "/div[@class='info-content']//text()",
-                    postprocess=makeSplitter('|')
-                ),
-                Attribute(
-                    key="language",
-                    path=".//td[starts-with(text(), 'Language')]/..//text()",
-                    postprocess=makeSplitter('Language:')
-                ),
-                Attribute(
-                    key='color info',
-                    path=".//td[starts-with(text(), 'Color')]/.."
-                         "/div[@class='info-content']//text()",
-                    postprocess=makeSplitter('|')
-                ),
-                Attribute(
-                    key='sound mix',
-                    path=".//td[starts-with(text(), 'Sound Mix')]/.."
-                         "/div[@class='info-content']//text()",
-                    postprocess=makeSplitter()
-                ),
                 # Collects akas not encosed in <i> tags.
                 Attribute(
                     key='other akas',
@@ -288,11 +345,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                     postprocess=makeSplitter(
                         sep='::', origNotesSep='" - ', newNotesSep='::', strip='"'
                     )
-                ),
-                Attribute(
-                    key='runtimes',
-                    path=".//td[starts-with(text(), 'Runtime')]/..//ul//text()",
-                    postprocess=makeSplitter()
                 ),
                 Attribute(
                     key='certificates',
@@ -317,29 +369,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                     path=".//td[starts-with(text(), 'TV Series')]/..//a/text()"
                 )
             ]
-        ),
-
-        Extractor(
-            label='language codes',
-            path="//td[starts-with(text(), 'Language')]/.."
-                 "//a[starts-with(@href, '/language/')]",
-            attrs=Attribute(
-                key='language codes',
-                multi=True,
-                path="./@href",
-                postprocess=lambda x: x.split('/')[2].strip()
-            )
-        ),
-
-        Extractor(
-            label='country codes',
-            path="//td[starts-with(text(), 'Country')]/..//a[starts-with(@href, '/country/')]",
-            attrs=Attribute(
-                key='country codes',
-                multi=True,
-                path="./@href",
-                postprocess=lambda x: x.split('/')[2].strip()
-            )
         ),
 
         Extractor(

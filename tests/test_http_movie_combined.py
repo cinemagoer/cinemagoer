@@ -373,7 +373,7 @@ def test_genres_multiple_should_be_a_list_of_genre_names(movie_combined_details)
 def test_plot_outline_should_be_a_longer_text(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
-    assert re.match('^A computer hacker .* against its controllers.$', data['plot outline'])
+    assert re.match('^Thomas A\. Anderson is a man .* human rebellion.$', data['plot outline'])
 
 
 def test_plot_outline_none_should_be_excluded(movie_combined_details):
@@ -382,12 +382,14 @@ def test_plot_outline_none_should_be_excluded(movie_combined_details):
     assert 'plot outline' not in data
 
 
+@mark.skip(reason="mpaa rating is not included anymore")
 def test_mpaa_should_be_a_rating(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
     assert data['mpaa'] == 'Rated R for sci-fi violence and brief language'
 
 
+@mark.skip(reason="mpaa rating is not included anymore")
 def test_mpaa_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('ates parcasi')
     data = parser.parse(page)['data']
@@ -400,12 +402,14 @@ def test_runtimes_single_should_be_a_list_in_minutes(movie_combined_details):
     assert data['runtimes'] == ['136']
 
 
+@mark.skip(reason='only a single runtime is included now')
 def test_runtimes_with_countries_should_include_context(movie_combined_details):
     page = movie_combined_details('suspiria')
     data = parser.parse(page)['data']
     assert data['runtimes'] == ['98', 'Germany:88', 'USA:92', 'Argentina:95']
 
 
+@mark.skip(reason='only a single runtime is included now')
 def test_runtimes_multiple_with_notes_should_include_notes(movie_combined_details):
     page = movie_combined_details('shining')
     data = parser.parse(page)['data']
@@ -426,13 +430,13 @@ def test_runtimes_none_should_be_excluded(movie_combined_details):
 def test_countries_single_should_be_a_list_of_country_names(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
-    assert data['countries'] == ['USA']
+    assert data['countries'] == ['United States']
 
 
 def test_countries_multiple_should_be_a_list_of_country_names(movie_combined_details):
     page = movie_combined_details('shining')
     data = parser.parse(page)['data']
-    assert data['countries'] == ['UK', 'USA']
+    assert data['countries'] == ['United Kingdom', 'United States']
 
 
 # TODO: find a movie with no country
@@ -517,6 +521,7 @@ def test_colors_single_should_be_a_list_of_color_types(movie_combined_details):
     assert data['color info'] == ['Color']
 
 
+@mark.skip('only a single color is listed now')
 def test_colors_multiple_should_be_a_list_of_color_types(movie_combined_details):
     page = movie_combined_details('pleasantville')
     data = parser.parse(page)['data']
@@ -529,6 +534,7 @@ def test_colors_single_with_notes_should_include_notes(movie_combined_details):
     assert data['color info'] == ['Color::(Eastmancolor)']
 
 
+@mark.skip('only a single color is listed now')
 def test_colors_multiple_with_notes_should_include_notes(movie_combined_details):
     page = movie_combined_details('if....')
     data = parser.parse(page)['data']

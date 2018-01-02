@@ -251,11 +251,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                     path=".//td[starts-with(text(), 'Aspect')]/..//li/text()",
                     postprocess=lambda x: x.strip()
                 ),
-                Attribute(
-                    key="mpaa",
-                    path=".//td/a[starts-with(text(), 'MPAA')]/../../div/text()",
-                    postprocess=lambda x: x.strip()
-                ),
+                # Attribute(
+                #     key="mpaa",
+                #     path=".//td/a[starts-with(text(), 'MPAA')]/../../div/text()",
+                #     postprocess=lambda x: x.strip()
+                # ),
                 Attribute(
                     key="countries",
                     path=".//td[starts-with(text(), 'Countr')]/.."

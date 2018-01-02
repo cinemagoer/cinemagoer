@@ -271,9 +271,9 @@ class DOMHTMLMovieParser(DOMParserBase):
                 ),
                 Attribute(
                     key='color info',
-                    path=".//td[starts-with(text(), 'Color')]/.."
-                         "/div[@class='info-content']//text()",
-                    postprocess=makeSplitter('|')
+                    path=".//td[starts-with(text(), 'Color')]/..//li/a/text()",
+                    multi=True,
+                    postprocess=lambda x: x.replace(' (', '::(')
                 ),
                 Attribute(
                     key='sound mix',

@@ -519,6 +519,7 @@ def test_colors_single_should_be_a_list_of_color_types(movie_combined_details):
     assert data['color info'] == ['Color']
 
 
+@mark.skip('only a single color is listed now')
 def test_colors_multiple_should_be_a_list_of_color_types(movie_combined_details):
     page = movie_combined_details('pleasantville')
     data = parser.parse(page)['data']
@@ -531,6 +532,7 @@ def test_colors_single_with_notes_should_include_notes(movie_combined_details):
     assert data['color info'] == ['Color::(Eastmancolor)']
 
 
+@mark.skip('only a single color is listed now')
 def test_colors_multiple_with_notes_should_include_notes(movie_combined_details):
     page = movie_combined_details('if....')
     data = parser.parse(page)['data']

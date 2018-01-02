@@ -249,6 +249,16 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='aspect ratio',
+            path="//td[starts-with(text(), 'Aspect')]/..",
+            attrs=Attribute(
+                key='aspect ratio',
+                path=".//li/text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
             label='sound mix',
             path="//td[starts-with(text(), 'Sound Mix')]/..//li/a",
             attrs=Attribute(
@@ -267,11 +277,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                     key="plot summary",
                     path=".//td[starts-with(text(), 'Plot')]/..//p/text()",
                     postprocess=lambda x: x.strip().rstrip('|').rstrip()
-                ),
-                Attribute(
-                    key="aspect ratio",
-                    path=".//td[starts-with(text(), 'Aspect')]/..//li/text()",
-                    postprocess=lambda x: x.strip()
                 ),
                 # Attribute(
                 #     key="mpaa",

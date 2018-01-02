@@ -250,7 +250,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 ),
                 Attribute(
                     key="aspect ratio",
-                    path=".//td[starts-with(text(), 'Aspect')]/../div/text()",
+                    path=".//td[starts-with(text(), 'Aspect')]/..//li/text()",
                     postprocess=lambda x: x.strip()
                 ),
                 Attribute(

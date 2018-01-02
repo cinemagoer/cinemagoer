@@ -221,6 +221,15 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='myrating',
+            path="//span[@id='voteuser']",
+            attrs=Attribute(
+                key='myrating',
+                path=".//text()"
+            )
+        ),
+
+        Extractor(
             label='genres',
             path="//td[starts-with(text(), 'Genre')]/..//li/a",
             attrs=Attribute(
@@ -231,17 +240,8 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
-            label='myrating',
-            path="//span[@id='voteuser']",
-            attrs=Attribute(
-                key='myrating',
-                path=".//text()"
-            )
-        ),
-
-        Extractor(
             label='color info',
-            path=".//td[starts-with(text(), 'Color')]/..//li/a",
+            path="//td[starts-with(text(), 'Color')]/..//li/a",
             attrs=Attribute(
                 key='color info',
                 path="./text()",
@@ -252,7 +252,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='sound mix',
-            path=".//td[starts-with(text(), 'Sound Mix')]/..//li/a",
+            path="//td[starts-with(text(), 'Sound Mix')]/..//li/a",
             attrs=Attribute(
                 key='sound mix',
                 path="./text()",

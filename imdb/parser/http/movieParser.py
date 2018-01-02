@@ -269,6 +269,27 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='language',
+            path="//td[starts-with(text(), 'Language')]/..//li/a",
+            attrs=Attribute(
+                key='language',
+                path="./text()",
+                multi=True
+            )
+        ),
+
+        Extractor(
+            label='language codes',
+            path="//td[starts-with(text(), 'Language')]/..//li/a",
+            attrs=Attribute(
+                key='language codes',
+                path="./@href",
+                multi=True,
+                postprocess=lambda x: x.split('/')[2].strip()
+            )
+        ),
+
+        Extractor(
             label='color info',
             path="//td[starts-with(text(), 'Color')]/..//li/a",
             attrs=Attribute(
@@ -309,11 +330,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                 #     path=".//td/a[starts-with(text(), 'MPAA')]/../../div/text()",
                 #     postprocess=lambda x: x.strip()
                 # ),
-                Attribute(
-                    key="language",
-                    path=".//td[starts-with(text(), 'Language')]/..//text()",
-                    postprocess=makeSplitter('Language:')
-                ),
                 # Collects akas not encosed in <i> tags.
                 Attribute(
                     key='other akas',
@@ -350,18 +366,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                     path=".//td[starts-with(text(), 'TV Series')]/..//a/text()"
                 )
             ]
-        ),
-
-        Extractor(
-            label='language codes',
-            path="//td[starts-with(text(), 'Language')]/.."
-                 "//a[starts-with(@href, '/language/')]",
-            attrs=Attribute(
-                key='language codes',
-                multi=True,
-                path="./@href",
-                postprocess=lambda x: x.split('/')[2].strip()
-            )
         ),
 
         Extractor(

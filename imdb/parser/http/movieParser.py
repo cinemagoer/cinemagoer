@@ -231,10 +231,10 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='plot summary',
-            path=".//td[starts-with(text(), 'Plot')]/..",
+            path=".//td[starts-with(text(), 'Plot')]/..//p",
             attrs=Attribute(
                 key='plot summary',
-                path='./p//text()',
+                path='./text()',
                 postprocess=lambda x: x.strip().rstrip('|').rstrip()
             )
         ),
@@ -285,11 +285,6 @@ class DOMHTMLMovieParser(DOMParserBase):
             label='h5sections',
             path="//section[contains(@class, 'listo')]",
             attrs=[
-                Attribute(
-                    key="plot summary",
-                    path=".//td[starts-with(text(), 'Plot')]/..//p/text()",
-                    postprocess=lambda x: x.strip().rstrip('|').rstrip()
-                ),
                 # Attribute(
                 #     key="mpaa",
                 #     path=".//td/a[starts-with(text(), 'MPAA')]/../../div/text()",

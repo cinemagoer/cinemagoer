@@ -240,6 +240,17 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='sound mix',
+            path=".//td[starts-with(text(), 'Sound Mix')]/..//li/a",
+            attrs=Attribute(
+                key='sound mix',
+                path="./text()",
+                multi=True,
+                postprocess=lambda x: x.replace(' (', '::(')
+            )
+        ),
+
+        Extractor(
             label='h5sections',
             path="//section[contains(@class, 'listo')]",
             attrs=[
@@ -274,12 +285,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                     path=".//td[starts-with(text(), 'Color')]/..//li/a/text()",
                     multi=True,
                     postprocess=lambda x: x.replace(' (', '::(')
-                ),
-                Attribute(
-                    key='sound mix',
-                    path=".//td[starts-with(text(), 'Sound Mix')]/.."
-                         "/div[@class='info-content']//text()",
-                    postprocess=makeSplitter()
                 ),
                 # Collects akas not encosed in <i> tags.
                 Attribute(

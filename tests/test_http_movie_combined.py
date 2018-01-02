@@ -428,13 +428,13 @@ def test_runtimes_none_should_be_excluded(movie_combined_details):
 def test_countries_single_should_be_a_list_of_country_names(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
-    assert data['countries'] == ['USA']
+    assert data['countries'] == ['United States']
 
 
 def test_countries_multiple_should_be_a_list_of_country_names(movie_combined_details):
     page = movie_combined_details('shining')
     data = parser.parse(page)['data']
-    assert data['countries'] == ['UK', 'USA']
+    assert data['countries'] == ['United Kingdom', 'United States']
 
 
 # TODO: find a movie with no country

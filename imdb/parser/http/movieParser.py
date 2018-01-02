@@ -250,6 +250,27 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='countries',
+            path="//td[starts-with(text(), 'Countr')]/..//li/a",
+            attrs=Attribute(
+                key='countries',
+                path="./text()",
+                multi=True
+            )
+        ),
+
+        Extractor(
+            label='country codes',
+            path="//td[starts-with(text(), 'Countr')]/..//li/a",
+            attrs=Attribute(
+                key='country codes',
+                path="./@href",
+                multi=True,
+                postprocess=lambda x: x.split('/')[2].strip().lower()
+            )
+        ),
+
+        Extractor(
             label='color info',
             path="//td[starts-with(text(), 'Color')]/..//li/a",
             attrs=Attribute(
@@ -290,12 +311,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                 #     path=".//td/a[starts-with(text(), 'MPAA')]/../../div/text()",
                 #     postprocess=lambda x: x.strip()
                 # ),
-                Attribute(
-                    key="countries",
-                    path=".//td[starts-with(text(), 'Countr')]/.."
-                         "/div[@class='info-content']//text()",
-                    postprocess=makeSplitter('|')
-                ),
                 Attribute(
                     key="language",
                     path=".//td[starts-with(text(), 'Language')]/..//text()",
@@ -345,17 +360,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                  "//a[starts-with(@href, '/language/')]",
             attrs=Attribute(
                 key='language codes',
-                multi=True,
-                path="./@href",
-                postprocess=lambda x: x.split('/')[2].strip()
-            )
-        ),
-
-        Extractor(
-            label='country codes',
-            path="//td[starts-with(text(), 'Country')]/..//a[starts-with(@href, '/country/')]",
-            attrs=Attribute(
-                key='country codes',
                 multi=True,
                 path="./@href",
                 postprocess=lambda x: x.split('/')[2].strip()

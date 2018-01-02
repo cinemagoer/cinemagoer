@@ -172,10 +172,10 @@ class DOMHTMLMovieParser(DOMParserBase):
     extractors = [
         Extractor(
             label='title',
-            path="//h3[@itemprop='name']",
+            path="//meta[@property='og:title']",
             attrs=Attribute(
                 key='title',
-                path=".//text()",
+                path="@content",
                 postprocess=analyze_title
             )
         ),

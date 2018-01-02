@@ -245,7 +245,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             attrs=[
                 Attribute(
                     key="plot summary",
-                    path=".//td[starts-with(text(), 'Plot:')]/../div/text()",
+                    path=".//td[starts-with(text(), 'Plot')]/..//p/text()",
                     postprocess=lambda x: x.strip().rstrip('|').rstrip()
                 ),
                 Attribute(

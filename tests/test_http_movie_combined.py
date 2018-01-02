@@ -373,7 +373,7 @@ def test_genres_multiple_should_be_a_list_of_genre_names(movie_combined_details)
 def test_plot_outline_should_be_a_longer_text(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
-    assert re.match('^A computer hacker .* against its controllers.$', data['plot outline'])
+    assert re.match('^Thomas A\. Anderson is a man .* human rebellion.$', data['plot outline'])
 
 
 def test_plot_outline_none_should_be_excluded(movie_combined_details):

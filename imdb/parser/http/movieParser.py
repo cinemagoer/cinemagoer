@@ -220,7 +220,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='genres',
-            path="//div[@class='info']//a[starts-with(@href, '/Sections/Genres')]",
+            path="//td[starts-with(text(), 'Genre')]/..//li/a",
             attrs=Attribute(
                 key="genres",
                 multi=True,

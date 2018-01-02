@@ -250,6 +250,17 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='runtimes',
+            path="//td[starts-with(text(), 'Runtime')]/..//li",
+            attrs=Attribute(
+                key='runtimes',
+                path="./text()",
+                multi=True,
+                postprocess=lambda x: x.strip().replace(' min', '')
+            )
+        ),
+
+        Extractor(
             label='countries',
             path="//td[starts-with(text(), 'Countr')]/..//li/a",
             attrs=Attribute(
@@ -339,11 +350,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                     postprocess=makeSplitter(
                         sep='::', origNotesSep='" - ', newNotesSep='::', strip='"'
                     )
-                ),
-                Attribute(
-                    key='runtimes',
-                    path=".//td[starts-with(text(), 'Runtime')]/..//ul//text()",
-                    postprocess=makeSplitter()
                 ),
                 Attribute(
                     key='certificates',

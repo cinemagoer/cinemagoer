@@ -402,12 +402,14 @@ def test_runtimes_single_should_be_a_list_in_minutes(movie_combined_details):
     assert data['runtimes'] == ['136']
 
 
+@mark.skip(reason='only a single runtime is included now')
 def test_runtimes_with_countries_should_include_context(movie_combined_details):
     page = movie_combined_details('suspiria')
     data = parser.parse(page)['data']
     assert data['runtimes'] == ['98', 'Germany:88', 'USA:92', 'Argentina:95']
 
 
+@mark.skip(reason='only a single runtime is included now')
 def test_runtimes_multiple_with_notes_should_include_notes(movie_combined_details):
     page = movie_combined_details('shining')
     data = parser.parse(page)['data']

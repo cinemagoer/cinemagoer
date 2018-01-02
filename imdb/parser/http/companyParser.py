@@ -7,7 +7,7 @@ E.g., for "Columbia Pictures [us]" the referred page would be:
     main details:   http://akas.imdb.com/company/co0071509/
 
 Copyright 2008-2017 Davide Alberani <da@erlug.linux.it>
-          2008 H. Turgut Uyar <uyar@tekir.org>
+          2008-2017 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ class DOMCompanyParser(DOMParserBase):
     extractors = [
         Extractor(
             label='name',
-            path="//title",
+            path="//h1/span[@class='display-title ']",  # note the extra trailing space in class
             attrs=Attribute(
                 key='name',
                 path="./text()",

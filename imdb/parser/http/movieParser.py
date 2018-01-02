@@ -5,7 +5,7 @@ This module provides the classes (and the instances), used to parse the
 IMDb pages on the akas.imdb.com server about a movie.
 E.g., for Brian De Palma's "The Untouchables", the referred
 pages would be:
-    combined details:   http://akas.imdb.com/title/tt0094226/combined
+    combined details:   http://akas.imdb.com/title/tt0094226/reference
     plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 

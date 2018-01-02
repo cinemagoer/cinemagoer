@@ -15,6 +15,7 @@ def search_character(url_opener, search):
 parser = DOMHTMLSearchCharacterParser()
 
 
+@mark.skip(reason='no search for characters anymore')
 @mark.fragile
 def test_found_many_result_should_contain_correct_number_of_characters(search_character):
     page = search_character('jesse james')

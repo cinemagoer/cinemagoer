@@ -238,6 +238,17 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='color info',
+            path=".//td[starts-with(text(), 'Color')]/..//li/a",
+            attrs=Attribute(
+                key='color info',
+                path="./text()",
+                multi=True,
+                postprocess=lambda x: x.replace(' (', '::(')
+            )
+        ),
+
+        Extractor(
             label='sound mix',
             path=".//td[starts-with(text(), 'Sound Mix')]/..//li/a",
             attrs=Attribute(
@@ -277,12 +288,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                     key="language",
                     path=".//td[starts-with(text(), 'Language')]/..//text()",
                     postprocess=makeSplitter('Language:')
-                ),
-                Attribute(
-                    key='color info',
-                    path=".//td[starts-with(text(), 'Color')]/..//li/a/text()",
-                    multi=True,
-                    postprocess=lambda x: x.replace(' (', '::(')
                 ),
                 # Collects akas not encosed in <i> tags.
                 Attribute(

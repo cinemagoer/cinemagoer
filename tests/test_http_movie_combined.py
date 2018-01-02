@@ -9,7 +9,7 @@ from imdb.parser.http.movieParser import DOMHTMLMovieParser
 def movie_combined_details(url_opener, movies):
     """A function to retrieve the combined details page of a test movie."""
     def retrieve(movie_key):
-        url = movies[movie_key] + '/combined'
+        url = movies[movie_key] + '/reference'
         return url_opener.retrieve_unicode(url)
     return retrieve
 

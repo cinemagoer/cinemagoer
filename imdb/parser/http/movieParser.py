@@ -336,11 +336,6 @@ class DOMHTMLMovieParser(DOMParserBase):
             label='h5sections',
             path="//section[contains(@class, 'listo')]",
             attrs=[
-                # Attribute(
-                #     key="mpaa",
-                #     path=".//td/a[starts-with(text(), 'MPAA')]/../../div/text()",
-                #     postprocess=lambda x: x.strip()
-                # ),
                 # Collects akas not encosed in <i> tags.
                 Attribute(
                     key='other akas',

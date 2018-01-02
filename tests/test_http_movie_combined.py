@@ -382,12 +382,14 @@ def test_plot_outline_none_should_be_excluded(movie_combined_details):
     assert 'plot outline' not in data
 
 
+@mark.skip(reason="mpaa rating is not included anymore")
 def test_mpaa_should_be_a_rating(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
     assert data['mpaa'] == 'Rated R for sci-fi violence and brief language'
 
 
+@mark.skip(reason="mpaa rating is not included anymore")
 def test_mpaa_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('ates parcasi')
     data = parser.parse(page)['data']

@@ -228,6 +228,16 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='plot summary',
+            path=".//td[starts-with(text(), 'Plot')]/..",
+            attrs=Attribute(
+                key='plot summary',
+                path='./p//text()',
+                postprocess=lambda x: x.strip().rstrip('|').rstrip()
+            )
+        ),
+
+        Extractor(
             label='genres',
             path="//td[starts-with(text(), 'Genre')]/..//li/a",
             attrs=Attribute(

@@ -156,6 +156,34 @@ def _toInt(val, replace=()):
         return None
 
 
+_re_og_title = re.compile(r'(.*) \(((.*) )?((\d{4})(-(\d{4}| ))?)\)')
+
+
+def analyze_og_title(og_title):
+    data = {}
+    match = _re_og_title.match(og_title)
+    if match:
+        data['title'] = match.group(1)
+        data['year'] = int(match.group(5))
+        kind = match.group(3)
+        if kind is None:
+            kind = 'Movie'
+        else:
+            if kind == 'TV Episode':
+                kind = 'Episode'
+            elif kind == 'TV Mini-Series':
+                kind = 'TV Mini Series'
+            elif kind == 'Video':
+                kind = 'Video Movie'
+        data['kind'] = kind.lower()
+        years = match.group(6)
+        if years is not None:
+            data['series years'] = match.group(4).strip()
+        elif kind.endswith('Series'):
+            data['series years'] = '%(year)d-%(year)d' % {'year': data['year']}
+    return data
+
+
 class DOMHTMLMovieParser(DOMParserBase):
     """Parser for the "combined details" (and if instance.mdparse is
     True also for the "main details") page of a given movie.
@@ -176,7 +204,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             attrs=Attribute(
                 key='title',
                 path="@content",
-                postprocess=analyze_title
+                postprocess=analyze_og_title
             )
         ),
 

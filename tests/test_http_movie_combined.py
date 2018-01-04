@@ -44,7 +44,7 @@ def test_title_tv_movie_should_not_include_type(movie_combined_details):
 def test_title_video_movie_should_not_include_type(movie_combined_details):
     page = movie_combined_details('matrix video')
     data = parser.parse(page)['data']
-    assert data['title'] == 'Armitage III: Poly Matrix'
+    assert data['title'] == 'Armitage III: Polymatrix'
 
 
 def test_title_video_game_should_not_include_type(movie_combined_details):

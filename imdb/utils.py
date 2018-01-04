@@ -55,7 +55,8 @@ KIND_MAP = {
     'v': 'video movie',
     'video': 'video movie',
     'vg': 'video game',
-    'mini': 'tv mini series'
+    'mini': 'tv mini series',
+    'tv mini-series': 'tv mini series'
 }
 
 # Match only the imdbIndex (for name strings).

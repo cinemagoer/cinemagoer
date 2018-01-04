@@ -34,7 +34,7 @@ from imdb import imdbURL_base
 from imdb.Company import Company
 from imdb.Movie import Movie
 from imdb.Person import Person
-from imdb.utils import _Container, analyze_title
+from imdb.utils import _Container, KIND_MAP
 
 from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_person
 
@@ -167,19 +167,15 @@ def analyze_og_title(og_title):
         data['year'] = int(match.group(5))
         kind = match.group(3)
         if kind is None:
-            kind = 'Movie'
+            kind = 'movie'
         else:
-            if kind == 'TV Episode':
-                kind = 'Episode'
-            elif kind == 'TV Mini-Series':
-                kind = 'TV Mini Series'
-            elif kind == 'Video':
-                kind = 'Video Movie'
-        data['kind'] = kind.lower()
+            kind = kind.lower()
+            kind = KIND_MAP.get(kind, kind)
+        data['kind'] = kind
         years = match.group(6)
         if years is not None:
             data['series years'] = match.group(4).strip()
-        elif kind.endswith('Series'):
+        elif kind.endswith('series'):
             data['series years'] = '%(year)d-%(year)d' % {'year': data['year']}
     return data
 

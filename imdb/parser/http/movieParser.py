@@ -36,7 +36,7 @@ from imdb import imdbURL_base
 from imdb.Company import Company
 from imdb.Movie import Movie
 from imdb.Person import Person
-from imdb.utils import _Container, analyze_title
+from imdb.utils import _Container, KIND_MAP
 
 from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_person
 
@@ -158,6 +158,30 @@ def _toInt(val, replace=()):
         return None
 
 
+_re_og_title = re.compile(r'(.*) \(((.*) )?((\d{4})(-(\d{4}| ))?)\)')
+
+
+def analyze_og_title(og_title):
+    data = {}
+    match = _re_og_title.match(og_title)
+    if match:
+        data['title'] = match.group(1)
+        data['year'] = int(match.group(5))
+        kind = match.group(3)
+        if kind is None:
+            kind = 'movie'
+        else:
+            kind = kind.lower()
+            kind = KIND_MAP.get(kind, kind)
+        data['kind'] = kind
+        years = match.group(6)
+        if years is not None:
+            data['series years'] = match.group(4).strip()
+        elif kind.endswith('series'):
+            data['series years'] = '%(year)d-%(year)d' % {'year': data['year']}
+    return data
+
+
 class DOMHTMLMovieParser(DOMParserBase):
     """Parser for the "combined details" (and if instance.mdparse is
     True also for the "main details") page of a given movie.
@@ -178,7 +202,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             attrs=Attribute(
                 key='title',
                 path="@content",
-                postprocess=analyze_title
+                postprocess=analyze_og_title
             )
         ),
 

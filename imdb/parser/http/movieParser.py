@@ -414,7 +414,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='thin writer',
-            path="//td[starts-with(text(), 'Writer')]/..//a",
+            path="//div[starts-with(normalize-space(text()), 'Writer')]/ul/li[1]/a",
             attrs=Attribute(
                 key='thin writer',
                 multi=True,
@@ -431,13 +431,13 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='thin director',
-            path="//td[starts-with(text(), 'Director')]/..//a",
+            path="//div[starts-with(normalize-space(text()), 'Director')]/ul/li[1]/a",
             attrs=Attribute(
                 key='thin director',
                 multi=True,
                 path={
                     'name': "./text()",
-                    'link': "@href"
+                    'link': "./@href"
                 },
                 postprocess=lambda x: build_person(
                     x.get('name') or '',

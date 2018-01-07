@@ -23,6 +23,18 @@ def test_cover_url_should_be_an_image_link(movie_combined_details):
     assert re.match(r'^https?://.*\.jpg$', data['cover url'])
 
 
+def test_two_directors(movie_combined_details):
+    page = movie_combined_details('matrix')
+    data = parser.parse(page)['data']
+    assert sorted([p.personID for p in data['director']]) == ['0905152', '0905154']
+
+
+def test_two_writers(movie_combined_details):
+    page = movie_combined_details('matrix')
+    data = parser.parse(page)['data']
+    assert sorted([p.personID for p in data['writer']]) == ['0905152', '0905154']
+
+
 def test_cover_url_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('aslan')
     data = parser.parse(page)['data']

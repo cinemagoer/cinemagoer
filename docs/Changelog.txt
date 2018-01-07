@@ -7,9 +7,11 @@
   - introduced the 'imdbpy' CLI
 
   [http]
+  - fixes for IMDb site redesign
   - Person parser fixes
   - users review parser
   - improve external sites parser
+
 
 * What's the new in release 6.2 "Justice League" (19 Nov 2017)
   [general]

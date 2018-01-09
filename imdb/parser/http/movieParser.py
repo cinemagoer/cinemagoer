@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 parser.http.movieParser module (imdb package).
 
@@ -161,7 +159,7 @@ def _toInt(val, replace=()):
 
 
 _re_og_title = re.compile(
-    ur'(.*) \((?:(.+)(?= ))? ?(\d{4})(?:–(\d{4}| ))?\)',
+    r'(.*) \((?:(.+)(?= ))? ?(\d{4})(?:–(\d{4}| ))?\)',
     re.UNICODE
 )
 

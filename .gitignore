@@ -12,3 +12,4 @@ dist/
 .coverage
 prof
 .vscode/settings.json
+.vscode/tags

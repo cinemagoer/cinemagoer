@@ -159,7 +159,7 @@ def _toInt(val, replace=()):
 
 
 _re_og_title = re.compile(
-    r'(.*) \((?:(.+)(?= ))? ?(\d{4})(?:–(\d{4}| ))?\)',
+    r'(.*) \((?:(.+)(?= ))? ?(\d{4})(?:(–)(\d{4}| ))?\)',
     re.UNICODE
 )
 
@@ -177,11 +177,22 @@ def analyze_og_title(og_title):
             kind = kind.lower()
             kind = KIND_MAP.get(kind, kind)
         data['kind'] = kind
-        years = match.group(4)
-        if years is not None:
-            data['series years'] = years.strip()
+
+        year_separator = match.group(4)
+        # There is a year separator so assume an ongoing or ended series
+        if year_separator is not None:
+            end_year = match.group(5)
+            if end_year is not None:
+                data['series years'] = '%(year)d-%(end_year)s' % {
+                    'year': data['year'],
+                    'end_year': end_year.strip(),
+                }
+            elif kind.endswith('series'):
+                data['series years'] = '%(year)d-' % {'year': data['year']}
+        # No year separator and series, so assume that it ended the same year
         elif kind.endswith('series'):
             data['series years'] = '%(year)d-%(year)d' % {'year': data['year']}
+
     return data
 
 

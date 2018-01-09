@@ -11,3 +11,5 @@ dist/
 .tox
 .coverage
 prof
+.vscode/settings.json
+.vscode/tags

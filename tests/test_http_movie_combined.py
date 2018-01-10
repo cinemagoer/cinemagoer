@@ -599,3 +599,15 @@ def test_sound_mix_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('ates parcasi')
     data = parser.parse(page)['data']
     assert 'sound mix' not in data
+
+
+def test_certificates_should_be_a_list_of_certificates(movie_combined_details):
+    page = movie_combined_details('dr who ep blink')
+    data = parser.parse(page)['data']
+    assert data['certificates'] == ['United Kingdom:PG::(DVD rating)', 'United States:TV-PG']
+
+
+def test_certificates_none_should_be_excluded(movie_combined_details):
+    page = movie_combined_details('ates parcasi')
+    data = parser.parse(page)['data']
+    assert 'certificates' not in data

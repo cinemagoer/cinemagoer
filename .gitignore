@@ -7,9 +7,8 @@ build/
 __pycache__
 dist/
 .idea
+.vscode
 .cache
 .tox
 .coverage
 prof
-.vscode/settings.json
-.vscode/tags

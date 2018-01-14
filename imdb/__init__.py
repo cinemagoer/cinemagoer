@@ -194,6 +194,9 @@ def IMDb(accessSystem=None, *arguments, **keywords):
     if accessSystem in ('http', 'web', 'html'):
         from .parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
+    if accessSystem in ('s3', 's3dataset'):
+        from .parser.s3 import IMDbS3AccessSystem
+        return IMDbS3AccessSystem(*arguments, **keywords)
     elif accessSystem in ('sql', 'db', 'database'):
         try:
             from .parser.sql import IMDbSqlAccessSystem

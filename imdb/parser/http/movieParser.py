@@ -393,10 +393,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                     key='certificates',
                     path=".//td[starts-with(text(), 'Certificat')]/..//text()",
                     postprocess=makeSplitter('Certification:', sep='\n')
-                ),
-                Attribute(
-                    key='original air date',
-                    path=".//td[starts-with(text(), 'Original Air Date')]/../div/text()"
                 )
             ]
         ),
@@ -458,6 +454,15 @@ class DOMHTMLMovieParser(DOMParserBase):
             path="//li[@class='ipl-inline-list__item']//a[starts-with(@href, '/chart/')]",
             attrs=Attribute(
                 key='top/bottom rank',
+                path="./text()"
+            )
+        ),
+
+        Extractor(
+            label='original air date',
+            path="//span[@imdbpy='airdate']",
+            attrs=Attribute(
+                key='original air date',
                 path="./text()"
             )
         ),
@@ -638,6 +643,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     ]
 
     preprocessors = [
+        ('/releaseinfo">', '"><span imdbpy="airdate">'),
         (re.compile(r'(<b class="blackcatheader">.+?</b>)', re.I), r'</div><div>\1'),
         ('<small>Full cast and crew for<br>', ''),
         ('<td> </td>', '<td>...</td>'),

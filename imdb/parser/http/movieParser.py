@@ -395,11 +395,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                     postprocess=makeSplitter('Certification:', sep='\n')
                 ),
                 Attribute(
-                    key='seasons',
-                    path=".//td[starts-with(text(), 'Seasons')]/..//text()",
-                    postprocess=makeSplitter('Seasons:')
-                ),
-                Attribute(
                     key='original air date',
                     path=".//td[starts-with(text(), 'Original Air Date')]/../div/text()"
                 )
@@ -516,6 +511,16 @@ class DOMHTMLMovieParser(DOMParserBase):
                 key='next episode',
                 path="./@href",
                 postprocess=lambda x: analyze_imdbid(x)
+            )
+        ),
+
+        Extractor(
+            label='number of seasons',
+            path=".//section[@class='titlereference-section-overview']/div/a[1]",
+            attrs=Attribute(
+                key='number of seasons',
+                path="./text()",
+                postprocess=lambda x: int(x)
             )
         ),
 
@@ -702,9 +707,9 @@ class DOMHTMLMovieParser(DOMParserBase):
         if 'runtimes' in data:
             data['runtimes'] = [x.replace(' min', u'')
                                 for x in data['runtimes']]
-        if 'seasons' in data:
-            seasons = [int(s) for s in data['seasons'] if s.isdigit()]
-            data['number of seasons'] = seasons[-1] if seasons else len(data['seasons'])
+        if 'number of seasons' in data:
+            data['seasons'] = [i for i in range(1, data['number of seasons'] + 1)]
+            # data['number of seasons'] = seasons[-1] if seasons else len(data['seasons'])
         if 'original air date' in data:
             oid = self.re_space.sub(' ', data['original air date']).strip()
             data['original air date'] = oid

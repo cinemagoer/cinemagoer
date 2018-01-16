@@ -763,6 +763,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                 data['rating'] = float(data['rating'].replace('/10', ''))
             except (TypeError, ValueError):
                 pass
+            if data['rating'] == 0:
+                del data['rating']
         if 'votes' in data:
             try:
                 votes = data['votes'].replace('(', '').replace(')', '').replace(',', '').replace('votes', '')

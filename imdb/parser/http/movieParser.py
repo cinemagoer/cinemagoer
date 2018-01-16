@@ -1640,6 +1640,104 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
     ]
 
 
+class DOMHTMLReviewsParser(DOMParserBase):
+    """Parser for the "reviews" pages of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        osparser = DOMHTMLReviewsParser()
+        result = osparser.parse(officialsites_html_string)
+    """
+    kind = 'reviews'
+
+    extractors = [
+        Extractor(
+            label='review',
+            path="//div[@class='review-container']",
+            attrs=Attribute(
+                key='self.kind',
+                multi=True,
+                path={
+                    'text': ".//div[@class='text']//text()",
+                    'helpful': ".//div[@class='text-muted']/text()[1]",
+                    'title': ".//div[@class='title']//text()",
+                    'author': ".//span[@class='display-name-link']/a/@href",
+                    'date': ".//span[@class='review-date']//text()",
+                    'rating': ".//span[@class='point-scale']/preceding-sibling::span[1]/text()"
+                },
+                postprocess=lambda x: ({
+                    'content': (x['text'] or u'').replace(u"\n", u" ").replace(u'  ', u' ').strip(),
+                    'helpful': [int(s) for s in (x.get('helpful') or u'').split() if s.isdigit()],
+                    'title': (x.get('title') or u'').strip(),
+                    'author': analyze_imdbid(x.get('author')),
+                    'date': (x.get('date') or u'').strip(),
+                    'rating': (x.get('rating') or u'').strip()
+                })
+            )
+        )
+    ]
+
+    preprocessors = [('<br>', '<br>\n')]
+
+    def postprocess_data(self, data):
+        for review in data.get('reviews', []):
+            if review.get('rating') and len(review['rating']) == 2:
+                review['rating'] = int(review['rating'][0])
+            else:
+                review['rating'] = None
+
+            if review.get('helpful') and len(review['helpful']) == 2:
+                review['not_helpful'] = review['helpful'][1] - review['helpful'][0]
+                review['helpful'] = review['helpful'][0]
+            else:
+                review['helpful'] = 0
+                review['not_helpful'] = 0
+
+            review['author'] = u"ur%s" % review['author']
+
+        return data
+
+
+class DOMHTMLFullCreditsParser(DOMParserBase):
+    """Parser for the "full credits" (series cast section) page of a given movie.
+    The page should be provided as a string, as taken from
+    the akas.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example:
+        osparser = DOMHTMLFullCreditsParser()
+        result = osparser.parse(officialsites_html_string)
+    """
+    kind = 'full credits'
+
+    extractors = [
+        Extractor(
+            label='cast',
+            path="//table[@class='cast_list']//tr[@class='odd' or @class='even']",
+            attrs=Attribute(
+                key="cast",
+                multi=True,
+                path={
+                    'person': ".//text()",
+                    'link': "td[2]/a/@href",
+                    'roleID': "td[4]//div[@class='_imdbpyrole']/@roleid"
+                },
+                postprocess=lambda x: build_person(
+                    x.get('person') or u'',
+                    personID=analyze_imdbid(x.get('link')),
+                    roleID=(x.get('roleID') or u'').split('/')
+                )
+            )
+        ),
+    ]
+
+    preprocessors = [
+        (_reRolesMovie, _manageRoles)
+    ]
+
+
 class DOMHTMLOfficialsitesParser(DOMParserBase):
     """Parser for the "official sites", "external reviews", "newsgroup
     reviews", "miscellaneous links", "sound clips", "video clips" and

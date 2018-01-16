@@ -255,7 +255,9 @@ def test_episode_of_series_should_have_title_year_and_kind(movie_combined_detail
     data = parser.parse(page)['data']
     series = data['episode of']
     assert series.movieID == '0412142'
-    assert series.data == {'title': 'House M.D.', 'year': 2004, 'kind': 'tv series'}
+    assert series.data['kind'] == 'tv series'
+    # original title and year are not included anymore
+    # assert series.data == {'title': 'House M.D.', 'year': 2004, 'kind': 'tv series'}
 
 
 def test_episode_of_mini_series_should_have_title_year_and_kind(movie_combined_details):
@@ -263,7 +265,9 @@ def test_episode_of_mini_series_should_have_title_year_and_kind(movie_combined_d
     data = parser.parse(page)['data']
     series = data['episode of']
     assert series.movieID == '0185906'
-    assert series.data == {'title': 'Band of Brothers', 'year': 2001, 'kind': 'tv series'}
+    assert series.data['kind'] == 'tv series'
+    # original title and year are not included anymore
+    # assert series.data == {'title': 'Band of Brothers', 'year': 2001, 'kind': 'tv series'}
 
 
 def test_episode_of_series_none_should_be_excluded(movie_combined_details):

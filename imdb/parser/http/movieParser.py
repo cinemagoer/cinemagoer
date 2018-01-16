@@ -10,7 +10,7 @@ pages would be:
     ...and so on...
 
 Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
-               2008 H. Turgut Uyar <uyar@tekir.org>
+          2008-2018 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -195,6 +195,7 @@ def analyze_og_title(og_title):
 
         if data['kind'] == 'episode' and data['title'][0] == '"':
             quote_end = data['title'].find('"', 1)
+            data['tv series title'] = data['title'][1:quote_end]
             data['title'] = data['title'][quote_end + 1:].strip()
 
     return data
@@ -401,17 +402,10 @@ class DOMHTMLMovieParser(DOMParserBase):
                 Attribute(
                     key='original air date',
                     path=".//td[starts-with(text(), 'Original Air Date')]/../div/text()"
-                ),
-                Attribute(
-                    key='tv series link',
-                    path=".//td[starts-with(text(), 'TV Series')]/..//a/@href"
-                ),
-                Attribute(
-                    key='tv series title',
-                    path=".//td[starts-with(text(), 'TV Series')]/..//a/text()"
                 )
             ]
         ),
+
 
         Extractor(
             label='creator',
@@ -522,6 +516,15 @@ class DOMHTMLMovieParser(DOMParserBase):
                 key='next episode',
                 path="./@href",
                 postprocess=lambda x: analyze_imdbid(x)
+            )
+        ),
+
+        Extractor(
+            label='tv series link',
+            path=".//a[starts-with(text(), 'All Episodes')]",
+            attrs=Attribute(
+                key='tv series link',
+                path="./@href"
             )
         ),
 
@@ -750,6 +753,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                                            movieID=analyze_imdbid(data['tv series link']),
                                            accessSystem=self._as,
                                            modFunct=self._modFunct)
+                data['episode of']['kind'] = 'tv series'
                 del data['tv series title']
             del data['tv series link']
         if 'rating' in data:

@@ -2630,7 +2630,7 @@ _OBJECTS = {
     'releasedates_parser': ((DOMHTMLReleaseinfoParser,), None),
     'ratings_parser': ((DOMHTMLRatingsParser,), None),
     'criticrev_parser': ((DOMHTMLCriticReviewsParser,), {'kind': 'critic reviews'}),
-    'reviews_parser':  ((DOMHTMLReviewsParser,), {'kind': 'reviews'}),
+    'reviews_parser': ((DOMHTMLReviewsParser,), {'kind': 'reviews'}),
     'externalsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'externalrev_parser': ((DOMHTMLOfficialsitesParser,), None),

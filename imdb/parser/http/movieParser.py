@@ -485,11 +485,11 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='number of episodes',
-            path="//a[@title='Full Episode List']",
+            path="//a[starts-with(text(), 'All Episodes')]",
             attrs=Attribute(
                 key='number of episodes',
                 path="./text()",
-                postprocess=lambda x: _toInt(x, [(' Episodes', '')])
+                postprocess=lambda x: int(x.replace('All Episodes', '').strip()[1:-1])
             )
         ),
 

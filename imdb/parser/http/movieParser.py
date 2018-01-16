@@ -2641,6 +2641,8 @@ _OBJECTS = {
     'ratings_parser': ((DOMHTMLRatingsParser,), None),
     'officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'criticrev_parser': ((DOMHTMLCriticReviewsParser,), {'kind': 'critic reviews'}),
+    'reviews_parser': ((DOMHTMLReviewsParser,), {'kind': 'reviews'}),
+    'externalsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'externalrev_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'external reviews'}),
     'misclinks_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'misc links'}),
     'soundclips_parser': ((DOMHTMLOfficialsitesParser,), {'kind': 'sound clips'}),

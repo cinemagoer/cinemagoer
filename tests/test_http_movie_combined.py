@@ -212,12 +212,14 @@ def test_number_of_episodes_none_should_be_excluded(movie_combined_details):
     assert 'number of episodes' not in data
 
 
+@mark.skip(reason="total episode number is not included anymore")
 def test_episode_number_should_be_an_integer(movie_combined_details):
     page = movie_combined_details('house md ep middle')
     data = parser.parse(page)['data']
     assert data['episode number'] == 175
 
 
+@mark.skip(reason="total episode number is not included anymore")
 def test_episode_number_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('house md')
     data = parser.parse(page)['data']

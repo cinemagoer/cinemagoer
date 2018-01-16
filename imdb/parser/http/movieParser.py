@@ -460,7 +460,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='top 250/bottom 100',
-            path="//div[@class='starbar-special']/a[starts-with(@href, '/chart/')]",
+            path="//li[@class='ipl-inline-list__item']//a[starts-with(@href, '/chart/')]",
             attrs=Attribute(
                 key='top/bottom rank',
                 path="./text()"
@@ -738,10 +738,10 @@ class DOMHTMLMovieParser(DOMParserBase):
             tbVal = data['top/bottom rank'].lower()
             if tbVal.startswith('top'):
                 tbKey = 'top 250 rank'
-                tbVal = _toInt(tbVal, [('top 250: #', '')])
+                tbVal = _toInt(tbVal, [('top rated movies: #', '')])
             else:
                 tbKey = 'bottom 100 rank'
-                tbVal = _toInt(tbVal, [('bottom 100: #', '')])
+                tbVal = _toInt(tbVal, [('bottom rated movies: #', '')])
             if tbVal:
                 data[tbKey] = tbVal
             del data['top/bottom rank']

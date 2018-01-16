@@ -323,7 +323,9 @@ def test_rank_none_should_be_excluded(movie_combined_details):
 def test_series_season_titles_should_be_a_list_of_season_titles(movie_combined_details):
     page = movie_combined_details('dr who')
     data = parser.parse(page)['data']
-    assert data['seasons'] == [str(i) for i in range(1, 12)] + ['unknown']
+    assert data['seasons'] == [str(i) for i in range(1, 12)]
+    # unknown doesn't show up in the reference page
+    # assert data['seasons'] == [str(i) for i in range(1, 12)] + ['unknown']
 
 
 def test_series_season_titles_none_should_be_excluded(movie_combined_details):

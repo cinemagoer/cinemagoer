@@ -516,7 +516,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='number of seasons',
-            path=".//section[@class='titlereference-section-overview']/div/a[1]",
+            path=".//span[@class='titlereference-overview-years-links']/../a[1]",
             attrs=Attribute(
                 key='number of seasons',
                 path="./text()",
@@ -706,7 +706,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             data['runtimes'] = [x.replace(' min', '')
                                 for x in data['runtimes']]
         if 'number of seasons' in data:
-            data['seasons'] = [i for i in range(1, data['number of seasons'] + 1)]
+            data['seasons'] = [str(i) for i in range(1, data['number of seasons'] + 1)]
             # data['number of seasons'] = seasons[-1] if seasons else len(data['seasons'])
         if 'original air date' in data:
             oid = self.re_space.sub(' ', data['original air date']).strip()

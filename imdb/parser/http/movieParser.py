@@ -716,30 +716,30 @@ class DOMHTMLMovieParser(DOMParserBase):
         if 'number of seasons' in data:
             data['seasons'] = [unicode(i) for i in range(1, data['number of seasons'] + 1)]
             # data['number of seasons'] = seasons[-1] if seasons else len(data['seasons'])
-        if 'original air date' in data:
-            oid = self.re_space.sub(' ', data['original air date']).strip()
-            data['original air date'] = oid
-            aid = self.re_airdate.findall(oid)
-            if aid and len(aid[0]) == 3:
-                date, season, episode = aid[0]
-                date = date.strip()
-                try:
-                    season = int(season)
-                except:
-                    pass
-                try:
-                    episode = int(episode)
-                except:
-                    pass
-                if date and date != '????':
-                    data['original air date'] = date
-                else:
-                    del data['original air date']
-                # Handle also "episode 0".
-                if season or isinstance(season, int):
-                    data['season'] = season
-                if episode or isinstance(season, int):
-                    data['episode'] = episode
+        # if 'original air date' in data:
+        #     oid = self.re_space.sub(' ', data['original air date']).strip()
+        #     data['original air date'] = oid
+        #     aid = self.re_airdate.findall(oid)
+        #     if aid and len(aid[0]) == 3:
+        #         date, season, episode = aid[0]
+        #         date = date.strip()
+        #         try:
+        #             season = int(season)
+        #         except ValueError:
+        #             pass
+        #         try:
+        #             episode = int(episode)
+        #         except ValueError:
+        #             pass
+        #         if date and date != '????':
+        #             data['original air date'] = date
+        #         else:
+        #             del data['original air date']
+        #         # Handle also "episode 0".
+        #         if season or isinstance(season, int):
+        #             data['season'] = season
+        #         if episode or isinstance(season, int):
+        #             data['episode'] = episode
         for k in ('writer', 'director'):
             t_k = 'thin %s' % k
             if t_k not in data:

@@ -507,7 +507,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='previous episode',
-            path=".//a[@title='Previous Episode']",
+            path=".//span[@class='titlereference-overview-episodes-links']//a[contains(text(), 'Previous')]",
             attrs=Attribute(
                 key='previous episode',
                 path="./@href",
@@ -517,7 +517,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='next episode',
-            path=".//a[@title='Next Episode']",
+            path=".//span[@class='titlereference-overview-episodes-links']//a[contains(text(), 'Next')]",
             attrs=Attribute(
                 key='next episode',
                 path="./@href",

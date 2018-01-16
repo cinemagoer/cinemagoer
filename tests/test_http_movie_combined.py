@@ -350,7 +350,7 @@ def test_series_number_of_seasons_should_exclude_non_numeric_season_titles(movie
 def test_original_air_date_should_be_a_date(movie_combined_details):
     page = movie_combined_details('dr who ep blink')
     data = parser.parse(page)['data']
-    assert data['original air date'] == '9 June 2007'
+    assert data['original air date'] == '09 Jun 2007'
 
 
 def test_original_air_date_none_should_be_excluded(movie_combined_details):

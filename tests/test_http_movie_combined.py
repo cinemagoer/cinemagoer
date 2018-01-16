@@ -282,10 +282,10 @@ def test_rating_should_be_between_1_and_10(movie_combined_details):
     assert 1.0 <= data['rating'] <= 10.0
 
 
-def test_rating_none_should_be_excluded(movie_combined_details):
+def test_rating_none_should_be_zero(movie_combined_details):
     page = movie_combined_details('ates parcasi')
     data = parser.parse(page)['data']
-    assert 'rating' not in data
+    assert data['rating'] == 0
 
 
 def test_votes_should_be_an_integer(movie_combined_details):

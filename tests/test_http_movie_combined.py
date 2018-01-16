@@ -101,12 +101,14 @@ def test_year_none_should_be_excluded(movie_combined_details):
     assert 'year' not in data
 
 
+@mark.skip(reason="imdb index is not included anymore")
 def test_imdb_index_should_be_a_roman_number(movie_combined_details):
     page = movie_combined_details('mothers day iv')
     data = parser.parse(page)['data']
     assert data['imdbIndex'] == 'IV'
 
 
+@mark.skip(reason="imdb index is not included anymore")
 def test_imdb_index_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']

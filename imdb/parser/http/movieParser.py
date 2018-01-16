@@ -193,6 +193,10 @@ def analyze_og_title(og_title):
         elif kind.endswith('series'):
             data['series years'] = '%(year)d-%(year)d' % {'year': data['year']}
 
+        if data['kind'] == 'episode' and data['title'][0] == '"':
+            quote_end = data['title'].find('"', 1)
+            data['title'] = data['title'][quote_end + 1:].strip()
+
     return data
 
 

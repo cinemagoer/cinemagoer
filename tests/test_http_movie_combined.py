@@ -101,12 +101,14 @@ def test_year_none_should_be_excluded(movie_combined_details):
     assert 'year' not in data
 
 
+@mark.skip(reason="imdb index is not included anymore")
 def test_imdb_index_should_be_a_roman_number(movie_combined_details):
     page = movie_combined_details('mothers day iv')
     data = parser.parse(page)['data']
     assert data['imdbIndex'] == 'IV'
 
 
+@mark.skip(reason="imdb index is not included anymore")
 def test_imdb_index_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
@@ -210,12 +212,14 @@ def test_number_of_episodes_none_should_be_excluded(movie_combined_details):
     assert 'number of episodes' not in data
 
 
+@mark.skip(reason="total episode number is not included anymore")
 def test_episode_number_should_be_an_integer(movie_combined_details):
     page = movie_combined_details('house md ep middle')
     data = parser.parse(page)['data']
     assert data['episode number'] == 175
 
 
+@mark.skip(reason="total episode number is not included anymore")
 def test_episode_number_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('house md')
     data = parser.parse(page)['data']
@@ -251,7 +255,9 @@ def test_episode_of_series_should_have_title_year_and_kind(movie_combined_detail
     data = parser.parse(page)['data']
     series = data['episode of']
     assert series.movieID == '0412142'
-    assert series.data == {'title': 'House M.D.', 'year': 2004, 'kind': 'tv series'}
+    assert series.data['kind'] == 'tv series'
+    # original title and year are not included anymore
+    # assert series.data == {'title': 'House M.D.', 'year': 2004, 'kind': 'tv series'}
 
 
 def test_episode_of_mini_series_should_have_title_year_and_kind(movie_combined_details):
@@ -259,7 +265,9 @@ def test_episode_of_mini_series_should_have_title_year_and_kind(movie_combined_d
     data = parser.parse(page)['data']
     series = data['episode of']
     assert series.movieID == '0185906'
-    assert series.data == {'title': 'Band of Brothers', 'year': 2001, 'kind': 'tv series'}
+    assert series.data['kind'] == 'tv series'
+    # original title and year are not included anymore
+    # assert series.data == {'title': 'Band of Brothers', 'year': 2001, 'kind': 'tv series'}
 
 
 def test_episode_of_series_none_should_be_excluded(movie_combined_details):
@@ -315,7 +323,9 @@ def test_rank_none_should_be_excluded(movie_combined_details):
 def test_series_season_titles_should_be_a_list_of_season_titles(movie_combined_details):
     page = movie_combined_details('dr who')
     data = parser.parse(page)['data']
-    assert data['seasons'] == [str(i) for i in range(1, 12)] + ['unknown']
+    assert data['seasons'] == [str(i) for i in range(1, 12)]
+    # unknown doesn't show up in the reference page
+    # assert data['seasons'] == [str(i) for i in range(1, 12)] + ['unknown']
 
 
 def test_series_season_titles_none_should_be_excluded(movie_combined_details):
@@ -340,7 +350,7 @@ def test_series_number_of_seasons_should_exclude_non_numeric_season_titles(movie
 def test_original_air_date_should_be_a_date(movie_combined_details):
     page = movie_combined_details('dr who ep blink')
     data = parser.parse(page)['data']
-    assert data['original air date'] == '9 June 2007'
+    assert data['original air date'] == '09 Jun 2007'
 
 
 def test_original_air_date_none_should_be_excluded(movie_combined_details):

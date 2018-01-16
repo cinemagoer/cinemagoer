@@ -74,8 +74,11 @@ scripts = [
 #      path seems a recipe for a disaster (with bdist_egg, at least).
 data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
 
-featSQLAlchemy = setuptools.dist.Feature('SQLAlchemy dependency',
-        standard=True, install_requires=['sqlalchemy-migrate', 'SQLAlchemy'])
+featSQLAlchemy = setuptools.dist.Feature(
+    'SQLAlchemy dependency',
+    standard=True,
+    install_requires=['sqlalchemy-migrate', 'SQLAlchemy']
+)
 
 params = {
     # Meta-information.

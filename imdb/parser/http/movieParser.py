@@ -10,7 +10,7 @@ pages would be:
     ...and so on...
 
 Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
-               2008 H. Turgut Uyar <uyar@tekir.org>
+          2008-2018 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+import functools
 import re
 import urllib.error
 import urllib.parse
@@ -193,7 +194,30 @@ def analyze_og_title(og_title):
         elif kind.endswith('series'):
             data['series years'] = '%(year)d-%(year)d' % {'year': data['year']}
 
+        if data['kind'] == 'episode' and data['title'][0] == '"':
+            quote_end = data['title'].find('"', 1)
+            data['tv series title'] = data['title'][1:quote_end]
+            data['title'] = data['title'][quote_end + 1:].strip()
+
     return data
+
+
+def analyze_certificates(certificates):
+    def reducer(acc, el):
+        cert_re = re.compile(r'^(.+):(.+)$', re.UNICODE)
+
+        if cert_re.match(el):
+            acc.append(el)
+        elif acc:
+            acc[-1] = u'{}::{}'.format(
+                acc[-1],
+                el,
+            )
+
+        return acc
+
+    certificates = [el.strip() for el in certificates.split('\n') if el.strip()]
+    return functools.reduce(reducer, certificates, [])
 
 
 class DOMHTMLMovieParser(DOMParserBase):
@@ -373,6 +397,16 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='certificates',
+            path=".//td[starts-with(text(), 'Certificat')]/..",
+            attrs=Attribute(
+                key='certificates',
+                path=".//text()",
+                postprocess=analyze_certificates
+            )
+        ),
+
+        Extractor(
             label='h5sections',
             path="//section[contains(@class, 'listo')]",
             attrs=[
@@ -383,31 +417,10 @@ class DOMHTMLMovieParser(DOMParserBase):
                     postprocess=makeSplitter(
                         sep='::', origNotesSep='" - ', newNotesSep='::', strip='"'
                     )
-                ),
-                Attribute(
-                    key='certificates',
-                    path=".//td[starts-with(text(), 'Certificat')]/..//text()",
-                    postprocess=makeSplitter('Certification:', sep='\n')
-                ),
-                Attribute(
-                    key='seasons',
-                    path=".//td[starts-with(text(), 'Seasons')]/..//text()",
-                    postprocess=makeSplitter('Seasons:')
-                ),
-                Attribute(
-                    key='original air date',
-                    path=".//td[starts-with(text(), 'Original Air Date')]/../div/text()"
-                ),
-                Attribute(
-                    key='tv series link',
-                    path=".//td[starts-with(text(), 'TV Series')]/..//a/@href"
-                ),
-                Attribute(
-                    key='tv series title',
-                    path=".//td[starts-with(text(), 'TV Series')]/..//a/text()"
                 )
             ]
         ),
+
 
         Extractor(
             label='creator',
@@ -462,9 +475,18 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='top 250/bottom 100',
-            path="//div[@class='starbar-special']/a[starts-with(@href, '/chart/')]",
+            path="//li[@class='ipl-inline-list__item']//a[starts-with(@href, '/chart/')]",
             attrs=Attribute(
                 key='top/bottom rank',
+                path="./text()"
+            )
+        ),
+
+        Extractor(
+            label='original air date',
+            path="//span[@imdbpy='airdate']",
+            attrs=Attribute(
+                key='original air date',
                 path="./text()"
             )
         ),
@@ -480,12 +502,22 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
 
         Extractor(
+            label='season/episode',
+            path="//div[@class='titlereference-overview-season-episode-section']/ul",
+            attrs=Attribute(
+                key='season/episode',
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
             label='number of episodes',
-            path="//a[@title='Full Episode List']",
+            path="//a[starts-with(text(), 'All Episodes')]",
             attrs=Attribute(
                 key='number of episodes',
                 path="./text()",
-                postprocess=lambda x: _toInt(x, [(' Episodes', '')])
+                postprocess=lambda x: int(x.replace('All Episodes', '').strip()[1:-1])
             )
         ),
 
@@ -503,7 +535,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='previous episode',
-            path=".//a[@title='Previous Episode']",
+            path=".//span[@class='titlereference-overview-episodes-links']//a[contains(text(), 'Previous')]",
             attrs=Attribute(
                 key='previous episode',
                 path="./@href",
@@ -513,11 +545,30 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='next episode',
-            path=".//a[@title='Next Episode']",
+            path=".//span[@class='titlereference-overview-episodes-links']//a[contains(text(), 'Next')]",
             attrs=Attribute(
                 key='next episode',
                 path="./@href",
                 postprocess=lambda x: analyze_imdbid(x)
+            )
+        ),
+
+        Extractor(
+            label='number of seasons',
+            path=".//span[@class='titlereference-overview-years-links']/../a[1]",
+            attrs=Attribute(
+                key='number of seasons',
+                path="./text()",
+                postprocess=lambda x: int(x)
+            )
+        ),
+
+        Extractor(
+            label='tv series link',
+            path=".//a[starts-with(text(), 'All Episodes')]",
+            attrs=Attribute(
+                key='tv series link',
+                path="./@href"
             )
         ),
 
@@ -626,6 +677,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     ]
 
     preprocessors = [
+        ('/releaseinfo">', '"><span imdbpy="airdate">'),
         (re.compile(r'(<b class="blackcatheader">.+?</b>)', re.I), r'</div><div>\1'),
         ('<small>Full cast and crew for<br>', ''),
         ('<td> </td>', '<td>...</td>'),
@@ -693,33 +745,38 @@ class DOMHTMLMovieParser(DOMParserBase):
         if 'runtimes' in data:
             data['runtimes'] = [x.replace(' min', '')
                                 for x in data['runtimes']]
-        if 'seasons' in data:
-            seasons = [int(s) for s in data['seasons'] if s.isdigit()]
-            data['number of seasons'] = seasons[-1] if seasons else len(data['seasons'])
-        if 'original air date' in data:
-            oid = self.re_space.sub(' ', data['original air date']).strip()
-            data['original air date'] = oid
-            aid = self.re_airdate.findall(oid)
-            if aid and len(aid[0]) == 3:
-                date, season, episode = aid[0]
-                date = date.strip()
-                try:
-                    season = int(season)
-                except ValueError:
-                    pass
-                try:
-                    episode = int(episode)
-                except ValueError:
-                    pass
-                if date and date != '????':
-                    data['original air date'] = date
-                else:
-                    del data['original air date']
-                # Handle also "episode 0".
-                if season or isinstance(season, int):
-                    data['season'] = season
-                if episode or isinstance(season, int):
-                    data['episode'] = episode
+        if 'number of seasons' in data:
+            data['seasons'] = [str(i) for i in range(1, data['number of seasons'] + 1)]
+            # data['number of seasons'] = seasons[-1] if seasons else len(data['seasons'])
+        if 'season/episode' in data:
+            tokens = data['season/episode'].split('Episode')
+            data['season'] = int(tokens[0].split('Season')[1])
+            data['episode'] = int(tokens[1])
+            del data['season/episode']
+        # if 'original air date' in data:
+        #     oid = self.re_space.sub(' ', data['original air date']).strip()
+        #     data['original air date'] = oid
+        #     aid = self.re_airdate.findall(oid)
+        #     if aid and len(aid[0]) == 3:
+        #         date, season, episode = aid[0]
+        #         date = date.strip()
+        #         try:
+        #             season = int(season)
+        #         except ValueError:
+        #             pass
+        #         try:
+        #             episode = int(episode)
+        #         except ValueError:
+        #             pass
+        #         if date and date != '????':
+        #             data['original air date'] = date
+        #         else:
+        #             del data['original air date']
+        #         # Handle also "episode 0".
+        #         if season or isinstance(season, int):
+        #             data['season'] = season
+        #         if episode or isinstance(season, int):
+        #             data['episode'] = episode
         for k in ('writer', 'director'):
             t_k = 'thin %s' % k
             if t_k not in data:
@@ -731,10 +788,10 @@ class DOMHTMLMovieParser(DOMParserBase):
             tbVal = data['top/bottom rank'].lower()
             if tbVal.startswith('top'):
                 tbKey = 'top 250 rank'
-                tbVal = _toInt(tbVal, [('top 250: #', '')])
+                tbVal = _toInt(tbVal, [('top rated movies: #', '')])
             else:
                 tbKey = 'bottom 100 rank'
-                tbVal = _toInt(tbVal, [('bottom 100: #', '')])
+                tbVal = _toInt(tbVal, [('bottom rated movies: #', '')])
             if tbVal:
                 data[tbKey] = tbVal
             del data['top/bottom rank']
@@ -746,6 +803,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                                            movieID=analyze_imdbid(data['tv series link']),
                                            accessSystem=self._as,
                                            modFunct=self._modFunct)
+                data['episode of']['kind'] = 'tv series'
                 del data['tv series title']
             del data['tv series link']
         if 'rating' in data:
@@ -753,6 +811,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                 data['rating'] = float(data['rating'].replace('/10', ''))
             except (TypeError, ValueError):
                 pass
+            if data['rating'] == 0:
+                del data['rating']
         if 'votes' in data:
             try:
                 votes = data['votes'].replace('(', '').replace(')', '').replace(',', '').replace('votes', '')
@@ -1583,27 +1643,30 @@ class DOMHTMLReviewsParser(DOMParserBase):
     kind = 'reviews'
 
     extractors = [
-        Extractor(label='review',
-                path="//div[@class='reviews']/div/div/div[@class='yn']",
-                attrs=Attribute(key='self.kind',
-                    multi=True,
-                    path={
-                        'text': "./preceding::p[1]/text()",
-                        'helpful': "./preceding::div[1]/small[1]/text()",
-                        'title': "./preceding::div[1]/h2/text()",
-                        'author': "./preceding::div[1]/a[1]/@href",
-                        'date': "./preceding::div[1]/small[3]/text()",
-                        'rating': "./preceding::div[1]/img/@alt"
-                    },
-                    postprocess=lambda x: ({
-                        'content': (x['text'] or '').replace("\n", " ").replace('  ', ' ').strip(),
-                        'helpful': [int(s) for s in (x.get('helpful') or '').split() if s.isdigit()],
-                        'title': (x.get('title') or '').strip(),
-                        'author': analyze_imdbid(x.get('author')),
-                        'date': (x.get('date') or '').strip(),
-                        'rating': (x.get('rating') or '').strip().split('/')
-                    })
-                ))
+        Extractor(
+            label='review',
+            path="//div[@class='review-container']",
+            attrs=Attribute(
+                key='self.kind',
+                multi=True,
+                path={
+                    'text': ".//div[@class='text']//text()",
+                    'helpful': ".//div[@class='text-muted']/text()[1]",
+                    'title': ".//div[@class='title']//text()",
+                    'author': ".//span[@class='display-name-link']/a/@href",
+                    'date': ".//span[@class='review-date']//text()",
+                    'rating': ".//span[@class='point-scale']/preceding-sibling::span[1]/text()"
+                },
+                postprocess=lambda x: ({
+                    'content': (x['text'] or '').replace("\n", " ").replace('  ', ' ').strip(),
+                    'helpful': [int(s) for s in (x.get('helpful') or '').split() if s.isdigit()],
+                    'title': (x.get('title') or '').strip(),
+                    'author': analyze_imdbid(x.get('author')),
+                    'date': (x.get('date') or '').strip(),
+                    'rating': (x.get('rating') or '').strip()
+                })
+            )
+        )
     ]
 
     preprocessors = [('<br>', '<br>\n')]
@@ -2567,7 +2630,7 @@ _OBJECTS = {
     'releasedates_parser': ((DOMHTMLReleaseinfoParser,), None),
     'ratings_parser': ((DOMHTMLRatingsParser,), None),
     'criticrev_parser': ((DOMHTMLCriticReviewsParser,), {'kind': 'critic reviews'}),
-    'reviews_parser':  ((DOMHTMLReviewsParser,), {'kind': 'reviews'}),
+    'reviews_parser': ((DOMHTMLReviewsParser,), {'kind': 'reviews'}),
     'externalsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'externalrev_parser': ((DOMHTMLOfficialsitesParser,), None),

@@ -51,7 +51,7 @@ class DOMHTMLTop250Parser(DOMParserBase):
                     key=None,
                     multi=True,
                     path={
-                        self.ranktext: "./td[2]//text()",
+                        self.ranktext: "./td[2]/text()",
                         'rating': "./td[3]//strong//text()",
                         'title': "./td[2]//a//text()",
                         'year': "./td[2]//span//text()",

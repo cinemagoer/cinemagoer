@@ -91,7 +91,7 @@ def build_table(fn, headers):
     for header in headers:
         col_info = table_map.get(header) or {}
         col_type = col_info.get('type') or sqlalchemy.UnicodeText
-        col_obj = sqlalchemy.Column(header, col_type)
+        col_obj = sqlalchemy.Column(header, col_type, index=col_info.get('index', False))
         columns.append(col_obj)
     return sqlalchemy.Table(table_name, metadata, *columns)
 
@@ -109,6 +109,7 @@ def import_file(fn, engine):
     count = 0
     with gzip.GzipFile(fn, 'r') as gz_file:
         headers = gz_file.readline().decode('utf-8').strip().split('\t')
+        logging.debug('headers of file %s: %s' % (fn, ','.join(headers)))
         table = build_table(os.path.basename(fn), headers)
         insert = table.insert()
         metadata.create_all(tables=[table])

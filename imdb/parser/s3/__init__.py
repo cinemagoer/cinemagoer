@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import logging
 import sqlalchemy
 from imdb import IMDbBase
-from .utils import DB_TRANSFORM
+from .utils import DB_TRANSFORM, title_soundex, name_soundexes
 
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -167,11 +167,21 @@ class IMDbS3AccessSystem(IMDbBase):
     def get_person_main(self, personID):
         personID = int(personID)
         data = self._base_person_info(personID)
-        _movies_cache = {}
-        _persons_cache = {personID: data}
         self._clean(data, ('personID',))
         return {'data': data, 'infosets': self.get_person_infoset()}
 
     get_person_filmography = get_person_main
     get_person_biography = get_person_main
+
+    def _search_movie(self, title, results, _episodes=False):
+        title = title.strip()
+        if not title:
+            return []
+        results = []
+        t_soundex = title_soundex(title)
+        tb = self.T['title_basics']
+        results = tb.select(tb.c.t_soundex == t_soundex).execute().fetchall()
+        print(len(results))
+        print(results)
+        return results
 

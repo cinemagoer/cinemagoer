@@ -29,7 +29,7 @@ import logging
 import argparse
 import sqlalchemy
 
-from imdb.parser.s3.utils import DB_TRANSFORM
+from imdb.parser.s3.utils import DB_TRANSFORM, title_soundex, name_soundexes
 
 TSV_EXT = '.tsv.gz'
 # how many entries to write to the database at a time.
@@ -55,7 +55,8 @@ def generate_content(fd, headers, table):
     data = []
     headers_len = len(headers)
     data_transf = {}
-    for column, conf in DB_TRANSFORM.get(table.name, {}).items():
+    table_name = table.name
+    for column, conf in DB_TRANSFORM.get(table_name, {}).items():
         if 'transform' in conf:
             data_transf[column] = conf['transform']
     for line in fd:
@@ -67,6 +68,10 @@ def generate_content(fd, headers, table):
             if key not in info:
                 continue
             info[key] = tranf(info[key])
+        if table_name == 'title_basics':
+            info['t_soundex'] = title_soundex(info['primaryTitle'])
+        elif table_name == 'name_basics':
+            info['ns_soundex'], info['sn_soundex'], info['s_soundex'] = name_soundexes(info['primaryName'])
         data.append(info)
         if len(data) >= BLOCK_SIZE:
             yield data
@@ -88,10 +93,19 @@ def build_table(fn, headers):
     table_name = fn.replace(TSV_EXT, '').replace('.', '_')
     table_map = DB_TRANSFORM.get(table_name) or {}
     columns = []
-    for header in headers:
+    all_headers = set(headers)
+    all_headers.update(table_map.keys())
+    for header in all_headers:
         col_info = table_map.get(header) or {}
         col_type = col_info.get('type') or sqlalchemy.UnicodeText
-        col_obj = sqlalchemy.Column(header, col_type, index=col_info.get('index', False))
+        if 'length' in col_info and col_type is sqlalchemy.String:
+            col_type = sqlalchemy.String(length=col_info['length'])
+        col_args = {
+            'name': header,
+            'type_': col_type,
+            'index': col_info.get('index', False)
+        }
+        col_obj = sqlalchemy.Column(**col_args)
         columns.append(col_obj)
     return sqlalchemy.Table(table_name, metadata, *columns)
 

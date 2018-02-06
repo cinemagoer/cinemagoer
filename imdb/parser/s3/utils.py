@@ -11,6 +11,8 @@ def transf_imdbid(x):
 
 
 def transf_multi_imdbid(x):
+    if not x:
+        return x
     return re_imdbids.sub('', x)
 
 
@@ -30,7 +32,7 @@ def transf_float(x):
 
 def transf_bool(x):
     try:
-        return bool(x)
+        return x == '1'
     except:
         return None
 
@@ -39,19 +41,24 @@ DB_TRANSFORM = {
     'title_basics': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
                    'rename': 'movieID'},
-        'isAdult': {'type': sqlalchemy.Boolean, 'transform': transf_bool},
+        'titleType': {'rename': 'kind'},
+        'primaryTitle': {'rename': 'title'},
+        'originalTitle': {'rename': 'original title'},
+        'isAdult': {'type': sqlalchemy.Boolean, 'transform': transf_bool, 'rename': 'adult'},
         'startYear': {'type': sqlalchemy.Integer, 'transform': transf_int},
         'endYear': {'type': sqlalchemy.Integer, 'transform': transf_int},
         'runtimeMinutes': {'type': sqlalchemy.Integer, 'transform': transf_int,
-                           'rename': 'runtime'}
+                           'rename': 'runtimes'}
     },
     'name_basics': {
         'nconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
                    'rename': 'personID'},
+        'primaryName': {'rename': 'name'},
         'birthYear': {'type': sqlalchemy.Integer, 'transform': transf_int,
                       'rename': 'birth date'},
         'deathYear': {'type': sqlalchemy.Integer, 'transform': transf_int,
-                      'rename': 'death date'}
+                      'rename': 'death date'},
+        'knownForTitles': {'transform': transf_multi_imdbid, 'rename': 'known for'}
     },
     'title_crew': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
@@ -71,7 +78,7 @@ DB_TRANSFORM = {
     'title_principals': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
                    'rename': 'movieID'},
-        'principalCast': {'transform': transf_multi_imdbid}
+        'principalCast': {'transform': transf_multi_imdbid, 'rename': 'cast'}
     },
     'title_ratings': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,

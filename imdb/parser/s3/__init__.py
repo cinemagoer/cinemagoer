@@ -62,7 +62,7 @@ class IMDbS3AccessSystem(IMDbBase):
         if keys_to_remove is None:
             keys_to_remove = []
         for key in list(data.keys()):
-            if key in keys_to_remove:# or not data[key]:
+            if key in keys_to_remove or data[key] in (None, '', []):
                 del data[key]
         return data
 
@@ -76,7 +76,7 @@ class IMDbS3AccessSystem(IMDbBase):
         tb = self.T['title_basics']
         movie = tb.select(tb.c.tconst == movieID).execute().fetchone() or {}
         data = self._rename('title_basics', dict(movie))
-        data['year'] = data.get('startYear') or ''
+        data['year'] = str(data.get('startYear') or '')
         if 'endYear' in data and data['endYear']:
             data['year'] += '-%s' % data['endYear']
         genres = data.get('genres') or ''
@@ -159,7 +159,19 @@ class IMDbS3AccessSystem(IMDbBase):
         data.update(tr_data)
 
         self._clean(data, ('movieID',))
-        return {'data': data}
+        return {'data': data, 'infosets': self.get_movie_infoset()}
 
-    def get_movie_plot(self, movieID):
-        return {}
+    # we don't really have plot information, yet
+    get_movie_plot = get_movie_main
+
+    def get_person_main(self, personID):
+        personID = int(personID)
+        data = self._base_person_info(personID)
+        _movies_cache = {}
+        _persons_cache = {personID: data}
+        self._clean(data, ('personID',))
+        return {'data': data, 'infosets': self.get_person_infoset()}
+
+    get_person_filmography = get_person_main
+    get_person_biography = get_person_main
+

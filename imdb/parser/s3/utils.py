@@ -2,9 +2,12 @@
 import re
 import logging
 import sqlalchemy
+from difflib import SequenceMatcher
 from imdb.utils import canonicalName, canonicalTitle, _unicodeArticles
 
 
+RO_THRESHOLD = 0.6
+STRING_MAXLENDIFFER = 0.7
 re_imdbids = re.compile(r'(nm|tt)')
 
 
@@ -39,11 +42,24 @@ def transf_bool(x):
         return None
 
 
+KIND = {
+    'tvEpisode': 'episode',
+    'tvMiniSeries': 'tv mini series',
+    'tvSeries': 'tv series',
+    'tvShort': 'tv short',
+    'tvSpecial': 'tv special',
+    'videoGame': 'video game'
+}
+
+def transf_kind(x):
+    return KIND.get(x, x)
+
+
 DB_TRANSFORM = {
     'title_basics': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
-        'titleType': {'rename': 'kind'},
+        'titleType': {'transform': transf_kind, 'rename': 'kind'},
         'primaryTitle': {'rename': 'title'},
         'originalTitle': {'rename': 'original title'},
         'isAdult': {'type': sqlalchemy.Boolean, 'transform': transf_bool, 'rename': 'adult', 'index': True},
@@ -124,8 +140,7 @@ def soundex(s, length=5):
 
 
 def title_soundex(title):
-    """Return the soundex code for the given title; the (optional) starting
-    article is pruned."""
+    """Return the soundex code for the given title; the (optional) starting article is pruned."""
     if not title:
         return None
     title = canonicalTitle(title)
@@ -156,31 +171,16 @@ def name_soundexes(name):
     return s1, s2, s3
 
 
-def titleVariations(title):
-    """Build title variations useful for searches."""
-    title2 = canonicalTitle(title)
-    t2s = title2.split(', ')
-    if t2s[-1].lower() in _unicodeArticles:
-        title2 = ', '.join(t2s[:-1])
-    logging.debug('title variations: 1:[%s] 2:[%s]',
-                  title, title2)
-    return title, title2
-
-
-def nameVariations(name, fromPtdf=False):
+def nameVariations(name):
     """Build name variations useful for searches."""
-    # name1 is the name in the canonical format.
-    name2 = cnonicalName(name)
-    if name1 == name2:
-        name2 = ''
+    canonical_name = canonicalName(name)
     logging.debug('name variations: 1:[%s] 2:[%s]',
-                      name, name2)
-    return name, name2
+                      name, canonical_name)
+    return name, canonical_name
 
 
 def ratcliff(s1, s2, sm):
     """Ratcliff-Obershelp similarity."""
-    STRING_MAXLENDIFFER = 0.7
     s1len = len(s1)
     s2len = len(s2)
     if s1len < s2len:
@@ -193,49 +193,22 @@ def ratcliff(s1, s2, sm):
     return sm.ratio()
 
 
-def scan_names(name_list, name1, name2, results=0, ro_thresold=None):
+def scan_names(name_list, name, results=0, ro_threshold=RO_THRESHOLD):
     """Scan a list of names, searching for best matches against
     the given variations."""
-    if ro_thresold is not None:
-        RO_THRESHOLD = ro_thresold
-    else:
-        RO_THRESHOLD = 0.6
+    canonical_name = canonicalName(name).replace(',', '')
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
-    sm1.set_seq1(name1.lower())
-    if name2:
-        sm2.set_seq1(name2.lower())
+    sm1.set_seq1(name.lower())
+    sm2.set_seq1(canonical_name.lower())
     resd = {}
     for i, n_data in name_list:
         nil = n_data['name']
         # Distance with the canonical name.
-        ratios = [ratcliff(name1, nil, sm1) + 0.05]
-        namesurname = ''
-        if not _scan_character:
-            nils = nil.split(', ', 1)
-            surname = nils[0]
-            if len(nils) == 2:
-                namesurname = '%s %s' % (nils[1], surname)
-        else:
-            nils = nil.split(' ', 1)
-            surname = nils[-1]
-            namesurname = nil
-        if surname != nil:
-            # Distance with the "Surname" in the database.
-            ratios.append(ratcliff(name1, surname, sm1))
-            if not _scan_character:
-                ratios.append(ratcliff(name1, namesurname, sm1))
-            if name2:
-                ratios.append(ratcliff(name2, surname, sm2))
-                # Distance with the "Name Surname" in the database.
-                if namesurname:
-                    ratios.append(ratcliff(name2, namesurname, sm2))
-        if name3:
-            # Distance with the long imdb canonical name.
-            ratios.append(ratcliff(name3,
-                                   build_name(n_data, canonical=1), sm3) + 0.1)
+        ratios = [ratcliff(name, nil, sm1) + 0.1,
+                  ratcliff(name, canonicalName(nil).replace(',', ''), sm2)]
         ratio = max(ratios)
-        if ratio >= RO_THRESHOLD:
+        if ratio >= ro_threshold:
             if i in resd:
                 if ratio > resd[i][0]:
                     resd[i] = (ratio, (i, n_data))
@@ -249,75 +222,31 @@ def scan_names(name_list, name1, name2, results=0, ro_thresold=None):
     return res
 
 
-def scan_titles(titles_list, title1, title2, results=0,
-                searchingEpisode=0, onlyEpisodes=0, ro_thresold=None):
+def strip_article(title):
+    no_article_title = canonicalTitle(title)
+    t2s = no_article_title.split(', ')
+    if t2s[-1].lower() in _unicodeArticles:
+        no_article_title = ', '.join(t2s[:-1])
+    return no_article_title
+
+
+def scan_titles(titles_list, title, results=0, ro_threshold=RO_THRESHOLD):
     """Scan a list of titles, searching for best matches against
     the given variations."""
-    if ro_thresold is not None:
-        RO_THRESHOLD = ro_thresold
-    else:
-        RO_THRESHOLD = 0.6
+    no_article_title = strip_article(title)
     sm1 = SequenceMatcher()
+    sm1.set_seq1(title.lower())
     sm2 = SequenceMatcher()
-    sm3 = SequenceMatcher()
-    sm1.set_seq1(title1.lower())
-    sm2.set_seq2(title2.lower())
-    if title3:
-        sm3.set_seq1(title3.lower())
-        if title3[-1] == '}':
-            searchingEpisode = 1
-    hasArt = 0
-    if title2 != title1:
-        hasArt = 1
+    sm2.set_seq2(no_article_title.lower())
     resd = {}
     for i, t_data in titles_list:
-        if onlyEpisodes:
-            if t_data.get('kind') != 'episode':
-                continue
-            til = t_data['title']
-            if til[-1] == ')':
-                dateIdx = til.rfind('(')
-                if dateIdx != -1:
-                    til = til[:dateIdx].rstrip()
-            if not til:
-                continue
-            ratio = ratcliff(title1, til, sm1)
-            if ratio >= RO_THRESHOLD:
-                resd[i] = (ratio, (i, t_data))
-            continue
-        if searchingEpisode:
-            if t_data.get('kind') != 'episode':
-                continue
-        elif t_data.get('kind') == 'episode':
-            continue
         til = t_data['title']
-        # Distance with the canonical title (with or without article).
-        #   titleS      -> titleR
-        #   titleS, the -> titleR, the
-        if not searchingEpisode:
-            til = canonicalTitle(til)
-            ratios = [ratcliff(title1, til, sm1) + 0.05]
-            # til2 is til without the article, if present.
-            til2 = til
-            tils = til2.split(', ')
-            matchHasArt = 0
-            if tils[-1].lower() in _unicodeArticles:
-                til2 = ', '.join(tils[:-1])
-                matchHasArt = 1
-            if hasArt and not matchHasArt:
-                #   titleS[, the]  -> titleR
-                ratios.append(ratcliff(title2, til, sm2))
-            elif matchHasArt and not hasArt:
-                #   titleS  -> titleR[, the]
-                ratios.append(ratcliff(title1, til2, sm1))
-        else:
-            ratios = [0.0]
-        if title3:
-            # Distance with the long imdb canonical title.
-            ratios.append(ratcliff(title3,
-                                   build_title(t_data, canonical=1, ptdf=1), sm3) + 0.1)
+        ratios = [ratcliff(title, til, sm1) + 0.1,
+                  ratcliff(no_article_title, strip_article(til), sm2)]
         ratio = max(ratios)
-        if ratio >= RO_THRESHOLD:
+        if t_data.get('kind') == 'episode':
+            ratio -= .2
+        if ratio >= ro_threshold:
             if i in resd:
                 if ratio > resd[i][0]:
                     resd[i] = (ratio, (i, t_data))
@@ -329,5 +258,4 @@ def scan_titles(titles_list, title1, title2, results=0,
     if results > 0:
         res[:] = res[:results]
     return res
-
 

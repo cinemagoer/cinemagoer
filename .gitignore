@@ -3,6 +3,7 @@
 *.egg-info
 *.mo
 *.so
+.pytest_cache/
 build/
 __pycache__
 dist/

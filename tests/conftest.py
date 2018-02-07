@@ -29,7 +29,7 @@ class CachedURLOpener(IMDbURLopener):
         return content
 
 
-BASE_URL = 'http://akas.imdb.com'
+BASE_URL = 'http://www.imdb.com'
 
 MOVIES = {
     '0043338': 'ace in the hole',           # multiple languages, single sound mix with note

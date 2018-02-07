@@ -6,7 +6,7 @@ a person from the IMDb database.
 It can fetch data through different media (e.g.: the IMDb web pages,
 a SQL database, etc.)
 
-Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -56,34 +56,34 @@ _aux_logger = logging.getLogger('imdbpy.aux')
 
 
 # URLs of the main pages for movies, persons, characters and queries.
-imdbURL_base = 'http://akas.imdb.com/'
+imdbURL_base = 'http://www.imdb.com/'
 
 # NOTE: the urls below will be removed in a future version.
 #       please use the values in the 'urls' attribute
 #       of the IMDbBase subclass instance.
-# http://akas.imdb.com/title/
+# http://www.imdb.com/title/
 imdbURL_movie_base = '%stitle/' % imdbURL_base
-# http://akas.imdb.com/title/tt%s/
+# http://www.imdb.com/title/tt%s/
 imdbURL_movie_main = imdbURL_movie_base + 'tt%s/'
-# http://akas.imdb.com/name/
+# http://www.imdb.com/name/
 imdbURL_person_base = '%sname/' % imdbURL_base
-# http://akas.imdb.com/name/nm%s/
+# http://www.imdb.com/name/nm%s/
 imdbURL_person_main = imdbURL_person_base + 'nm%s/'
-# http://akas.imdb.com/character/
+# http://www.imdb.com/character/
 imdbURL_character_base = '%scharacter/' % imdbURL_base
-# http://akas.imdb.com/character/ch%s/
+# http://www.imdb.com/character/ch%s/
 imdbURL_character_main = imdbURL_character_base + 'ch%s/'
-# http://akas.imdb.com/company/
+# http://www.imdb.com/company/
 imdbURL_company_base = '%scompany/' % imdbURL_base
-# http://akas.imdb.com/company/co%s/
+# http://www.imdb.com/company/co%s/
 imdbURL_company_main = imdbURL_company_base + 'co%s/'
-# http://akas.imdb.com/keyword/%s/
+# http://www.imdb.com/keyword/%s/
 imdbURL_keyword_main = imdbURL_base + 'keyword/%s/'
-# http://akas.imdb.com/chart/top
+# http://www.imdb.com/chart/top
 imdbURL_top250 = imdbURL_base + 'chart/top'
-# http://akas.imdb.com/chart/bottom
+# http://www.imdb.com/chart/bottom
 imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
-# http://akas.imdb.com/find?%s
+# http://www.imdb.com/find?%s
 imdbURL_find = imdbURL_base + 'find?%s'
 
 # Name of the configuration file.
@@ -293,30 +293,30 @@ class IMDbBase:
             imdbURL_base = 'http://%s' % imdbURL_base
         if not imdbURL_base.endswith('/'):
             imdbURL_base = '%s/' % imdbURL_base
-        # http://akas.imdb.com/title/
-        imdbURL_movie_base='%stitle/' % imdbURL_base
-        # http://akas.imdb.com/title/tt%s/
-        imdbURL_movie_main=imdbURL_movie_base + 'tt%s/'
-        # http://akas.imdb.com/name/
-        imdbURL_person_base='%sname/' % imdbURL_base
-        # http://akas.imdb.com/name/nm%s/
-        imdbURL_person_main=imdbURL_person_base + 'nm%s/'
-        # http://akas.imdb.com/character/
-        imdbURL_character_base='%scharacter/' % imdbURL_base
-        # http://akas.imdb.com/character/ch%s/
-        imdbURL_character_main=imdbURL_character_base + 'ch%s/'
-        # http://akas.imdb.com/company/
-        imdbURL_company_base='%scompany/' % imdbURL_base
-        # http://akas.imdb.com/company/co%s/
-        imdbURL_company_main=imdbURL_company_base + 'co%s/'
-        # http://akas.imdb.com/keyword/%s/
-        imdbURL_keyword_main=imdbURL_base + 'keyword/%s/'
-        # http://akas.imdb.com/chart/top
-        imdbURL_top250=imdbURL_base + 'chart/top'
-        # http://akas.imdb.com/chart/bottom
-        imdbURL_bottom100=imdbURL_base + 'chart/bottom'
-        # http://akas.imdb.com/find?%s
-        imdbURL_find=imdbURL_base + 'find?%s'
+        # http://www.imdb.com/title/
+        imdbURL_movie_base = '%stitle/' % imdbURL_base
+        # http://www.imdb.com/title/tt%s/
+        imdbURL_movie_main = imdbURL_movie_base + 'tt%s/'
+        # http://www.imdb.com/name/
+        imdbURL_person_base = '%sname/' % imdbURL_base
+        # http://www.imdb.com/name/nm%s/
+        imdbURL_person_main = imdbURL_person_base + 'nm%s/'
+        # http://www.imdb.com/character/
+        imdbURL_character_base = '%scharacter/' % imdbURL_base
+        # http://www.imdb.com/character/ch%s/
+        imdbURL_character_main = imdbURL_character_base + 'ch%s/'
+        # http://www.imdb.com/company/
+        imdbURL_company_base = '%scompany/' % imdbURL_base
+        # http://www.imdb.com/company/co%s/
+        imdbURL_company_main = imdbURL_company_base + 'co%s/'
+        # http://www.imdb.com/keyword/%s/
+        imdbURL_keyword_main = imdbURL_base + 'keyword/%s/'
+        # http://www.imdb.com/chart/top
+        imdbURL_top250 = imdbURL_base + 'chart/top'
+        # http://www.imdb.com/chart/bottom
+        imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
+        # http://www.imdb.com/find?%s
+        imdbURL_find = imdbURL_base + 'find?%s'
         self.urls = dict(
             movie_base=imdbURL_movie_base,
             movie_main=imdbURL_movie_main,
@@ -834,9 +834,7 @@ class IMDbBase:
         raise NotImplementedError('override this method')
 
     def _searchIMDb(self, kind, ton, title_kind=None):
-        """Search the IMDb akas server for the given title or name."""
-        # The Exact Primary search system has gone AWOL, so we resort
-        # to the mobile search. :-/
+        """Search the IMDb www server for the given title or name."""
         if not ton:
             return None
         ton = ton.strip('"')

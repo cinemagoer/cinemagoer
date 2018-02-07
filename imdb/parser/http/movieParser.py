@@ -4,11 +4,11 @@
 parser.http.movieParser module (imdb package).
 
 This module provides the classes (and the instances), used to parse the
-IMDb pages on the akas.imdb.com server about a movie.
+IMDb pages on the www.imdb.com server about a movie.
 E.g., for Brian De Palma's "The Untouchables", the referred
 pages would be:
-    combined details:   http://akas.imdb.com/title/tt0094226/reference
-    plot summary:       http://akas.imdb.com/title/tt0094226/plotsummary
+    combined details:   http://www.imdb.com/title/tt0094226/reference
+    plot summary:       http://www.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
 Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
@@ -228,7 +228,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     """Parser for the "combined details" (and if instance.mdparse is
     True also for the "main details") page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -840,7 +840,7 @@ def _process_plotsummary(x):
 class DOMHTMLPlotParser(DOMParserBase):
     """Parser for the "plot summary" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a 'plot' key, containing a list
     of string with the structure: 'summary::summary_author <author@email>'.
 
@@ -898,7 +898,7 @@ def _process_award(x):
 class DOMHTMLAwardsParser(DOMParserBase):
     """Parser for the "awards" page of a given person or movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1017,7 +1017,7 @@ class DOMHTMLAwardsParser(DOMParserBase):
 class DOMHTMLTaglinesParser(DOMParserBase):
     """Parser for the "taglines" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1052,7 +1052,7 @@ class DOMHTMLTaglinesParser(DOMParserBase):
 class DOMHTMLKeywordsParser(DOMParserBase):
     """Parser for the "keywords" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1075,7 +1075,7 @@ class DOMHTMLKeywordsParser(DOMParserBase):
 class DOMHTMLAlternateVersionsParser(DOMParserBase):
     """Parser for the "alternate versions" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1101,7 +1101,7 @@ class DOMHTMLAlternateVersionsParser(DOMParserBase):
 class DOMHTMLTriviaParser(DOMParserBase):
     """Parser for the "trivia" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1191,7 +1191,7 @@ class DOMHTMLSoundtrackParser(DOMParserBase):
 class DOMHTMLCrazyCreditsParser(DOMParserBase):
     """Parser for the "crazy credits" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1224,7 +1224,7 @@ def _process_goof(x):
 class DOMHTMLGoofsParser(DOMParserBase):
     """Parser for the "goofs" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1254,7 +1254,7 @@ class DOMHTMLGoofsParser(DOMParserBase):
 class DOMHTMLQuotesParser(DOMParserBase):
     """Parser for the "memorable quotes" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1318,7 +1318,7 @@ class DOMHTMLQuotesParser(DOMParserBase):
 class DOMHTMLReleaseinfoParser(DOMParserBase):
     """Parser for the "release dates" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1403,7 +1403,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
 class DOMHTMLRatingsParser(DOMParserBase):
     """Parser for the "user ratings" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1528,7 +1528,7 @@ class DOMHTMLRatingsParser(DOMParserBase):
 class DOMHTMLEpisodesRatings(DOMParserBase):
     """Parser for the "episode ratings ... by date" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1614,7 +1614,7 @@ def _normalize_href(href):
 class DOMHTMLCriticReviewsParser(DOMParserBase):
     """Parser for the "critic reviews" pages of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1647,7 +1647,7 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
 class DOMHTMLReviewsParser(DOMParserBase):
     """Parser for the "reviews" pages of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1707,7 +1707,7 @@ class DOMHTMLReviewsParser(DOMParserBase):
 class DOMHTMLFullCreditsParser(DOMParserBase):
     """Parser for the "full credits" (series cast section) page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1747,7 +1747,7 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
     reviews", "miscellaneous links", "sound clips", "video clips" and
     "photographs" pages of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1779,7 +1779,7 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
 class DOMHTMLConnectionParser(DOMParserBase):
     """Parser for the "connections" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1836,7 +1836,7 @@ class DOMHTMLConnectionParser(DOMParserBase):
 class DOMHTMLLocationsParser(DOMParserBase):
     """Parser for the "locations" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1869,7 +1869,7 @@ class DOMHTMLTechParser(DOMParserBase):
     """Parser for the "technical", "publicity" (for people) and "contacts" (for people)
     pages of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1932,7 +1932,7 @@ class DOMHTMLTechParser(DOMParserBase):
 class DOMHTMLBusinessParser(DOMParserBase):
     """Parser for the "business" and "literature" pages of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -1975,7 +1975,7 @@ class DOMHTMLBusinessParser(DOMParserBase):
 class DOMHTMLRecParser(DOMParserBase):
     """Parser for the "recommendations" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -2021,7 +2021,7 @@ class DOMHTMLRecParser(DOMParserBase):
 class DOMHTMLNewsParser(DOMParserBase):
     """Parser for the "news" page of a given movie or person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -2102,7 +2102,7 @@ def _parse_review(x):
 class DOMHTMLSeasonEpisodesParser(DOMParserBase):
     """Parser for the "episode list" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -2275,7 +2275,7 @@ def _build_episode(x):
 class DOMHTMLEpisodesParser(DOMParserBase):
     """Parser for the "episode list" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -2416,7 +2416,7 @@ class DOMHTMLEpisodesParser(DOMParserBase):
 class DOMHTMLEpisodesCastParser(DOMHTMLEpisodesParser):
     """Parser for the "episodes cast" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -2431,7 +2431,7 @@ class DOMHTMLEpisodesCastParser(DOMHTMLEpisodesParser):
 class DOMHTMLFaqsParser(DOMParserBase):
     """Parser for the "FAQ" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -2472,7 +2472,7 @@ class DOMHTMLFaqsParser(DOMParserBase):
 class DOMHTMLAiringParser(DOMParserBase):
     """Parser for the "airing" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -2564,7 +2564,7 @@ class DOMHTMLAiringParser(DOMParserBase):
 class DOMHTMLSynopsisParser(DOMParserBase):
     """Parser for the "synopsis" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -2591,7 +2591,7 @@ class DOMHTMLSynopsisParser(DOMParserBase):
 class DOMHTMLParentsGuideParser(DOMParserBase):
     """Parser for the "parents guide" page of a given movie.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:

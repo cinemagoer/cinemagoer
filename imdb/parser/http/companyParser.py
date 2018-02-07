@@ -2,9 +2,9 @@
 parser.http.companyParser module (imdb package).
 
 This module provides the classes (and the instances), used to parse
-the IMDb pages on the akas.imdb.com server about a company.
+the IMDb pages on the www.imdb.com server about a company.
 E.g., for "Columbia Pictures [us]" the referred page would be:
-    main details:   http://akas.imdb.com/company/co0071509/
+    main details:   http://www.imdb.com/company/co0071509/
 
 Copyright 2008-2017 Davide Alberani <da@erlug.linux.it>
           2008-2017 H. Turgut Uyar <uyar@tekir.org>
@@ -34,7 +34,7 @@ from imdb.utils import analyze_company_name
 class DOMCompanyParser(DOMParserBase):
     """Parser for the main page of a given company.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:

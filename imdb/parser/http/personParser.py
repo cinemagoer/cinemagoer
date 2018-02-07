@@ -2,10 +2,10 @@
 parser.http.personParser module (imdb package).
 
 This module provides the classes (and the instances), used to parse
-the IMDb pages on the akas.imdb.com server about a person.
+the IMDb pages on the www.imdb.com server about a person.
 E.g., for "Mel Gibson" the referred pages would be:
-    categorized:    http://akas.imdb.com/name/nm0000154/maindetails
-    biography:      http://akas.imdb.com/name/nm0000154/bio
+    categorized:    http://www.imdb.com/name/nm0000154/maindetails
+    biography:      http://www.imdb.com/name/nm0000154/bio
     ...and so on...
 
 Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
@@ -52,7 +52,7 @@ def build_date(date):
 class DOMHTMLMaindetailsParser(DOMParserBase):
     """Parser for the "categorized" (maindetails) page of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -192,7 +192,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
 class DOMHTMLBioParser(DOMParserBase):
     """Parser for the "biography" page of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -394,7 +394,7 @@ class DOMHTMLBioParser(DOMParserBase):
 class DOMHTMLResumeParser(DOMParserBase):
     """Parser for the "resume" page of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -494,7 +494,7 @@ class DOMHTMLResumeParser(DOMParserBase):
 class DOMHTMLOtherWorksParser(DOMParserBase):
     """Parser for the "other works" and "agent" pages of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -568,7 +568,7 @@ def _build_episode(link, title, minfo, role, roleA, roleAID):
 class DOMHTMLSeriesParser(DOMParserBase):
     """Parser for the "by TV series" page of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -623,7 +623,7 @@ class DOMHTMLSeriesParser(DOMParserBase):
 class DOMHTMLPersonGenresParser(DOMParserBase):
     """Parser for the "by genre" and "by keywords" pages of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:

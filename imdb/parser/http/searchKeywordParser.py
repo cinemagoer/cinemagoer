@@ -5,7 +5,7 @@ This module provides the HTMLSearchKeywordParser class (and the
 search_company_parser instance), used to parse the results of a search
 for a given keyword.
 E.g., when searching for the keyword "alabama", the parsed page would be:
-    http://akas.imdb.com/find?s=kw;mx=20;q=alabama
+    http://www.imdb.com/find?s=kw;mx=20;q=alabama
 
 Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
 

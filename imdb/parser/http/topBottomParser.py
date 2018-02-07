@@ -4,8 +4,8 @@ parser.http.topBottomParser module (imdb package).
 This module provides the classes (and the instances), used to parse the
 lists of top 250 and bottom 100 movies.
 E.g.:
-    http://akas.imdb.com/chart/top
-    http://akas.imdb.com/chart/bottom
+    http://www.imdb.com/chart/top
+    http://www.imdb.com/chart/bottom
 
 Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
 
@@ -32,7 +32,7 @@ from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid
 class DOMHTMLTop250Parser(DOMParserBase):
     """Parser for the "top 250" page.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -108,7 +108,7 @@ class DOMHTMLTop250Parser(DOMParserBase):
 class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):
     """Parser for the "bottom 100" page.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:

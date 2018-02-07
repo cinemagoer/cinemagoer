@@ -736,7 +736,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def _search_keyword(self, keyword, results):
         # XXX: the IMDb web server seems to have some serious problem with
         #      non-ascii keyword.
-        #      E.g.: http://akas.imdb.com/keyword/fianc%E9/
+        #      E.g.: http://www.imdb.com/keyword/fianc%E9/
         #      will return a 500 Internal Server Error: Redirect Recursion.
         try:
             cont = self._get_search_content('kw', keyword, results)

@@ -2,7 +2,7 @@
 parser.http.characterParser module (imdb package).
 
 This module provides the classes (and the instances), used to parse
-the IMDb pages on the akas.imdb.com server about a character.
+the IMDb pages on the www.imdb.com server about a character.
 E.g., for "Jesse James" the referred pages would be:
     main details:   http://www.imdb.com/character/ch0000001/
     biography:      http://www.imdb.com/character/ch0000001/bio
@@ -40,7 +40,7 @@ _personIDs = re.compile(r'/name/nm([0-9]{7})')
 class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
     """Parser for the "filmography" page of a given character.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -155,7 +155,7 @@ class DOMHTMLCharacterMaindetailsParser(DOMHTMLMaindetailsParser):
 class DOMHTMLCharacterBioParser(DOMParserBase):
     """Parser for the "biography" page of a given character.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -207,7 +207,7 @@ class DOMHTMLCharacterBioParser(DOMParserBase):
 class DOMHTMLCharacterQuotesParser(DOMParserBase):
     """Parser for the "quotes" page of a given character.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:

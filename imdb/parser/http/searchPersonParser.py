@@ -5,7 +5,7 @@ This module provides the HTMLSearchPersonParser class (and the
 search_person_parser instance), used to parse the results of a search
 for a given person.
 E.g., when searching for the name "Mel Gibson", the parsed page would be:
-    http://akas.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
+    http://www.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
 
 Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>

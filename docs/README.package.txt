@@ -31,7 +31,7 @@ the basic invocation is:
 
 If you're accessing a sql installation of the IMDb's data,
 you must do:
-  imdb_access = imdb.IMDb('sql', uri='URI_TO_YOUR_DB')
+  imdb_access = imdb.IMDb('s3', uri='URI_TO_YOUR_DB')
 where 'URI_TO_YOUR_DB' points to your SQL database (see README.sqldb
 for more information).
 
@@ -48,16 +48,18 @@ have a local copy of the database (see http://www.imdb.com/interfaces/),
 you can access movie data through the e-mail interface, etc. etc.
 
 
-  Supported access systems  |  Aliases  |  Description
- ---------------------------+-----------+------------------------------------
-  (default) 'http'          |   'web',  | information are fetched through
-                            |   'html'  | the http://akas.imdb.com web server.
- ---------------------------+-----------+------------------------------------
-             'sql'          |   'db',   | information are fetched through
-                            | 'database'| a SQL database (every database
-                            |           | supported by SQLAlchemy
-                            |           | is available).
- ---------------------------+-----------+------------------------------------
+  Supported access systems  |   Aliases   |  Description
+ ---------------------------+------------+------------------------------------
+  (default) 'http'          |    'web',   | information are fetched through
+                            |    'html'   | the http://www.imdb.com web server.
+ ---------------------------+-------------+------------------------------------
+             'sql'          |    'db',    | information are fetched through
+                            |  'database' | a SQL database (every database
+                            |             | supported by SQLAlchemy
+                            |             | is available). OLD DATASET NOT UPDATED!
+ ---------------------------+-------------+------------------------------------
+             's3'           | 's3dataset' | new imdb database
+ ---------------------------+-------------+------------------------------------
 
 NOTE ON THE 'DEFAULT' ACCESS SYSTEM: since release 3.4, the 'imdbpy.cfg'
 configuration file is available, so that you can set a system-wide (or

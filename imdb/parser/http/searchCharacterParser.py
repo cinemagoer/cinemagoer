@@ -5,7 +5,7 @@ This module provides the HTMLSearchCharacterParser class (and the
 search_character_parser instance), used to parse the results of a search
 for a given character.
 E.g., when searching for the name "Jesse James", the parsed page would be:
-    http://akas.imdb.com/find?s=ch;mx=20;q=Jesse+James
+    http://www.imdb.com/find?s=ch;mx=20;q=Jesse+James
 
 Copyright 2007-2017 Davide Alberani <da@erlug.linux.it>
                2008 H. Turgut Uyar <uyar@tekir.org>

@@ -5,7 +5,7 @@ This module provides the HTMLSearchCompanyParser class (and the
 search_company_parser instance), used to parse the results of a search
 for a given company.
 E.g., when searching for the name "Columbia Pictures", the parsed page would be:
-    http://akas.imdb.com/find?s=co;mx=20;q=Columbia+Pictures
+    http://www.imdb.com/find?s=co;mx=20;q=Columbia+Pictures
 
 Copyright 2008-2017 Davide Alberani <da@erlug.linux.it>
           2008 H. Turgut Uyar <uyar@tekir.org>

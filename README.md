@@ -80,7 +80,7 @@ Whenever it's possible, please always use the latest version from the repository
 
 IMDb distributes some data in their [s3 database][interface]; using IMDbPY, you can easily import them using the **bin/s32imdbpy.py** script. Download the files [from here][s3dataset], create an empty database in your favorite db server, and then run:
 
-    ./bin/s32imdbpy.py /path/to/the/directory/with/the/tsv.gz/files/ uri
+    ./bin/s32imdbpy.py /path/to/the/tsv.gz/files/ uri
 
 where *uri* is the identifier used to access a SQL database amongst the ones supported by [SQLAlchemy][sqlalchemy], for example *postgres://user:password@localhost/imdb*
 

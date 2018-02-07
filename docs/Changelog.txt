@@ -5,12 +5,16 @@
   [general]
   - documentation updates
   - introduced the 'imdbpy' CLI
+  - s3 accessSystem to access the new dataset from IMDb
 
   [http]
   - fixes for IMDb site redesign
   - Person parser fixes
   - users review parser
   - improve external sites parser
+
+  [s3]
+  - ability to import and access all the information
 
 
 * What's the new in release 6.2 "Justice League" (19 Nov 2017)

@@ -180,7 +180,10 @@ class IMDbS3AccessSystem(IMDbBase):
         results = []
         t_soundex = title_soundex(title)
         tb = self.T['title_basics']
-        results = tb.select(tb.c.t_soundex == t_soundex).execute().fetchall()
+        conditions = [tb.c.t_soundex == t_soundex]
+        if _episodes:
+            conditions.append(tb.c.titleType == 'episode')
+        results = tb.select(sqlalchemy.and_(*conditions)).execute().fetchall()
         results = [(x['tconst'], self._clean(self._rename('title_basics', dict(x)), ('t_soundex',)))
                    for x in results]
         results = scan_titles(results, title)

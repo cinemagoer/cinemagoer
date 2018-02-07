@@ -86,14 +86,14 @@ DB_TRANSFORM = {
     'title_basics': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
-        'titleType': {'transform': transf_kind, 'rename': 'kind'},
+        'titleType': {'transform': transf_kind, 'rename': 'kind', 'index': True},
         'primaryTitle': {'rename': 'title'},
         'originalTitle': {'rename': 'original title'},
         'isAdult': {'type': sqlalchemy.Boolean, 'transform': transf_bool, 'rename': 'adult', 'index': True},
         'startYear': {'type': sqlalchemy.Integer, 'transform': transf_int, 'index': True},
         'endYear': {'type': sqlalchemy.Integer, 'transform': transf_int},
         'runtimeMinutes': {'type': sqlalchemy.Integer, 'transform': transf_int,
-                           'rename': 'runtimes'},
+                           'rename': 'runtimes', 'index': True},
         't_soundex': {'type': sqlalchemy.String, 'length': 5, 'index': True}
     },
     'name_basics': {

@@ -27,7 +27,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 import logging
 import sqlalchemy
 from imdb import IMDbBase
-from .utils import DB_TRANSFORM, title_soundex, name_soundexes
+from .utils import DB_TRANSFORM, title_soundex, name_soundexes, scan_titles, scan_names
 
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -158,7 +158,7 @@ class IMDbS3AccessSystem(IMDbBase):
         tr_data = self._rename('title_ratings', dict(movie))
         data.update(tr_data)
 
-        self._clean(data, ('movieID',))
+        self._clean(data, ('movieID', 't_soundex'))
         return {'data': data, 'infosets': self.get_movie_infoset()}
 
     # we don't really have plot information, yet
@@ -181,7 +181,32 @@ class IMDbS3AccessSystem(IMDbBase):
         t_soundex = title_soundex(title)
         tb = self.T['title_basics']
         results = tb.select(tb.c.t_soundex == t_soundex).execute().fetchall()
-        print(len(results))
-        print(results)
+        results = [(x['tconst'], self._clean(self._rename('title_basics', dict(x)), ('t_soundex',)))
+                   for x in results]
+        results = scan_titles(results, title)
+        results = [x[1] for x in results]
+        return results
+
+    def _search_episode(self, title, results):
+        return self._search_movie(title, results=results, _episodes=True)
+
+    def _search_person(self, name, results):
+        name = name.strip()
+        if not name:
+            return []
+        results = []
+        ns_soundex, sn_soundex, s_soundex = name_soundexes(name)
+        nb = self.T['name_basics']
+        conditions = [nb.c.ns_soundex == ns_soundex]
+        if sn_soundex:
+            conditions.append(nb.c.sn_soundex == sn_soundex)
+        if s_soundex:
+            conditions.append(nb.c.s_soundex == s_soundex)
+        results = nb.select(sqlalchemy.or_(*conditions)).execute().fetchall()
+        results = [(x['nconst'], self._clean(self._rename('name_basics', dict(x)),
+                                             ('ns_soundex', 'sn_soundex', 's_soundex')))
+                   for x in results]
+        results = scan_names(results, name)
+        results = [x[1] for x in results]
         return results
 

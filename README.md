@@ -76,6 +76,21 @@ Whenever it's possible, please always use the latest version from the repository
     bottom100 = ia.get_bottom100_movies()
 
 
+## S3 database
+
+IMDb distributes some data in their [s3 database][interface]; using IMDbPY, you can easily import them using the **bin/s32imdbpy.py** script. Download the files [from here][s3dataset], create an empty database in your favorite db server, and then run:
+
+    ./bin/s32imdbpy.py /path/to/the/directory/with/the/tsv.gz/files/ uri
+
+where *uri* is the identifier used to access a SQL database amongst the ones supported by [SQLAlchemy][sqlalchemy], for example *postgres://user:password@localhost/imdb*
+
+You will use the same uri with the "s3" *accessSystem* to create an instance of the IMDb object that is able to access the database:
+
+    ia = IMDb('s3', 'uri')
+
+For more information, see **docs/README.s3.txt**
+
+
 ## Main objects and methods
 
 > **ia = imdb.IMDb()**
@@ -149,3 +164,6 @@ IMDbPY is released under the terms of the GNU GPL v2 (or later) license.
 [imdb]: http://imdb.com
 [ecosystem]: http://imdbpy.sourceforge.net/ecosystem.html
 [testsuite]: https://sourceforge.net/p/imdbpy/mailman/message/36107729/
+[interface]: http://www.imdb.com/interfaces/
+[s3dataset]: https://datasets.imdbws.com/
+[sqlalchemy]: https://www.sqlalchemy.org/

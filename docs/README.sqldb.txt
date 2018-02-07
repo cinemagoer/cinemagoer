@@ -2,6 +2,7 @@
 
 The data used by the "sql" access system is no longer updated.
 In the future, we'll support the new data from http://www.imdb.com/interfaces/
+See README.s3.txt for more information
 
 
 # REQUIREMENTS

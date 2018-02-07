@@ -7,7 +7,7 @@ IMDb's data through the web interface.
 the imdb.IMDb function will return an instance of this class when
 called with the 'accessSystem' argument set to "s3" or "s3dataset".
 
-Copyright 2017 Davide Alberani <da@erlug.linux.it>
+Copyright 2017-2018 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ class IMDbS3AccessSystem(IMDbBase):
             movie = Movie(movieID=movieID, data=movie_data, accessSystem=self.accessSystem)
             movies.append(movie)
         data['known for'] = movies
-        self._clean(data)
+        self._clean(data, ('ns_soundex', 'sn_soundex', 's_soundex', 'personID'))
         persons_cache[personID] = data
         return data
 

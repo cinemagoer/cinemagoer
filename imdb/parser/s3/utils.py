@@ -1,11 +1,32 @@
+# -*- coding: utf-8 -*-
+"""
+parser.s3.utils module (imdb.parser.s3 package).
+
+This package provides utilities for the s3 dataset.
+
+Copyright 2018 Davide Alberani <da@erlug.linux.it>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+"""
 
 import re
-import logging
 import sqlalchemy
 from difflib import SequenceMatcher
 from imdb.utils import canonicalName, canonicalTitle, _unicodeArticles
 
-
+SOUNDEX_LENGTH = 5
 RO_THRESHOLD = 0.6
 STRING_MAXLENDIFFER = 0.7
 re_imdbids = re.compile(r'(nm|tt)')
@@ -55,6 +76,12 @@ def transf_kind(x):
     return KIND.get(x, x)
 
 
+# Database mapping.
+# 'type' force a conversion to a specific SQL type
+# 'transform' applies a conversion to the content (changes the data in the database)
+# 'rename' is applied when reading the column names (the columns names are unchanged, in the database)
+# 'index' mark the columns that need to be indexed
+# 'length' is applied to VARCHAR fields
 DB_TRANSFORM = {
     'title_basics': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
@@ -121,8 +148,15 @@ _translateget = _translate.get
 _re_non_ascii = re.compile(r'^[^a-z]*', re.I)
 
 
-def soundex(s, length=5):
-    """Return the soundex code for the given string."""
+def soundex(s, length=SOUNDEX_LENGTH):
+    """Return the soundex code for the given string.
+
+    :param s: the string to convert to soundex
+    :type s: str
+    :param length: length of the soundx code to generate
+    :type length: int
+    :returns: the soundex code
+    :rtype: str"""
     s = _re_non_ascii.sub('', s)
     if not s:
         return None
@@ -140,7 +174,13 @@ def soundex(s, length=5):
 
 
 def title_soundex(title):
-    """Return the soundex code for the given title; the (optional) starting article is pruned."""
+    """Return the soundex code for the given title; the (optional) starting article is pruned.
+
+    :param title: movie title
+    :type title: str
+    :returns: soundex of the title (without the article, if any)
+    :rtype: str
+    """
     if not title:
         return None
     title = canonicalTitle(title)
@@ -151,13 +191,12 @@ def title_soundex(title):
 
 
 def name_soundexes(name):
-    """Return three soundex codes for the given name; the name is assumed
-    to be in the 'Name Surname' format.
-    The first one is the soundex of the name in the normal format.
-    The second is the soundex of the name in the canonical format, if different
-    from the first one.
-    The third is the soundex of the surname alone, if different from the
-    other two values."""
+    """Return three soundex codes for the given name.
+    :param name: person name
+    :type name: str
+    :returns: tuple of soundex codes: (S(Name Surname), S(Surname Name), S(Surname))
+    :rtype: tuple
+    """
     if not name:
         return None, None, None
     s1 = soundex(name)
@@ -171,16 +210,17 @@ def name_soundexes(name):
     return s1, s2, s3
 
 
-def nameVariations(name):
-    """Build name variations useful for searches."""
-    canonical_name = canonicalName(name)
-    logging.debug('name variations: 1:[%s] 2:[%s]',
-                      name, canonical_name)
-    return name, canonical_name
-
-
 def ratcliff(s1, s2, sm):
-    """Ratcliff-Obershelp similarity."""
+    """Ratcliff-Obershelp similarity.
+
+    :param s1: first string to compare
+    :type s1: str
+    :param s2: second string to compare
+    :type s2: str
+    :param sm: sequence matcher to use for the comparison
+    :type sm: :class:`difflib.SequenceMatcher`
+    :returns: 0.0-1.0 similarity
+    :rtype: float"""
     s1len = len(s1)
     s2len = len(s2)
     if s1len < s2len:
@@ -194,8 +234,18 @@ def ratcliff(s1, s2, sm):
 
 
 def scan_names(name_list, name, results=0, ro_threshold=RO_THRESHOLD):
-    """Scan a list of names, searching for best matches against
-    the given variations."""
+    """Scan a list of names, searching for best matches against some variations.
+
+    :param name_list: list of (personID, {person_data}) tuples
+    :type name_list: list
+    :param name: searched name
+    :type name: str
+    :results: returns at most as much results (all, if 0)
+    :type results: int
+    :param ro_threshold: ignore results with a score lower than this value
+    :type ro_threshold: float
+    :returns: list of results sorted by similarity
+    :rtype: list"""
     canonical_name = canonicalName(name).replace(',', '')
     sm1 = SequenceMatcher()
     sm2 = SequenceMatcher()
@@ -231,8 +281,18 @@ def strip_article(title):
 
 
 def scan_titles(titles_list, title, results=0, ro_threshold=RO_THRESHOLD):
-    """Scan a list of titles, searching for best matches against
-    the given variations."""
+    """Scan a list of titles, searching for best matches amongst some variations.
+
+    :param titles_list: list of (movieID, {movie_data}) tuples
+    :type titles_list: list
+    :param title: searched title
+    :type title: str
+    :results: returns at most as much results (all, if 0)
+    :type results: int
+    :param ro_threshold: ignore results with a score lower than this value
+    :type ro_threshold: float
+    :returns: list of results sorted by similarity
+    :rtype: list"""
     no_article_title = strip_article(title)
     sm1 = SequenceMatcher()
     sm1.set_seq1(title.lower())

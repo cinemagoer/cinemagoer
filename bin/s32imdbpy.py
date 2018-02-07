@@ -5,7 +5,7 @@ s32imdbpy.py script.
 
 This script imports the s3 dataset distributed by IMDb into a SQL database.
 
-Copyright 2017 Davide Alberani <da@erlug.linux.it>
+Copyright 2017-2018 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -125,15 +125,23 @@ def import_file(fn, engine):
         headers = gz_file.readline().decode('utf-8').strip().split('\t')
         logging.debug('headers of file %s: %s' % (fn, ','.join(headers)))
         table = build_table(os.path.basename(fn), headers)
+        try:
+            table.drop()
+            logging.debug('table %s dropped' % table.name)
+        except sqlalchemy.exc.OperationalError:
+            pass
         insert = table.insert()
         metadata.create_all(tables=[table])
-        block = []
         try:
             for block in generate_content(gz_file, headers, table):
-                connection.execute(insert, block)
+                try:
+                    connection.execute(insert, block)
+                except Exception as e:
+                    logging.error('error processing data: %d entries lost: %s' % (len(block), e))
+                    continue
                 count += len(block)
         except Exception as e:
-            logging.error('error processing data: %d entries lost: %s' % (len(block), e))
+            logging.error('error processing data on table %s: %s' % (table.name, e))
         logging.info('end processing file %s: %d entries' % (fn, count))
 
 

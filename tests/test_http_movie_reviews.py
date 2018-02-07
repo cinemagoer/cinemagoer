@@ -18,5 +18,5 @@ parser = DOMHTMLReviewsParser()
 def test_number_of_reviews_should_be_correct(movie_reviews_details):
     page = movie_reviews_details('dust devil')
     data = parser.parse(page)['data']
-    assert len(data.get('reviews', [])) == 15   # should be 25
+    assert len(data.get('reviews', [])) == 25   # should be 25
 

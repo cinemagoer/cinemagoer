@@ -128,7 +128,7 @@ def import_file(fn, engine):
         try:
             table.drop()
             logging.debug('table %s dropped' % table.name)
-        except sqlalchemy.exc.OperationalError:
+        except:
             pass
         insert = table.insert()
         metadata.create_all(tables=[table])

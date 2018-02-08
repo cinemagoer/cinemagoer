@@ -11,7 +11,7 @@ pages would be:
     plot summary:       http://www.imdb.com/title/tt0094226/plotsummary
     ...and so on...
 
-Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -270,7 +270,7 @@ class DOMHTMLMovieParser(DOMParserBase):
 
         Extractor(
             label='cast',
-            path="//table[@class='cast']//tr",
+            path="//table[@class='cast_list']//tr",
             attrs=Attribute(
                 key="cast",
                 multi=True,

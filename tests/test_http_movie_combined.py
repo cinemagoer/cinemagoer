@@ -605,6 +605,12 @@ def test_sound_mix_multiple_with_notes_should_include_notes(movie_combined_detai
     assert data['sound mix'] == ['DTS::(Digital DTS Sound)', 'Dolby Digital', 'SDDS']
 
 
+def test_cast_must_contain_items(movie_combined_details):
+    page = movie_combined_details('matrix')
+    data = parser.parse(page)['data']
+    assert len(data['cast']) > 20
+
+
 def test_sound_mix_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('ates parcasi')
     data = parser.parse(page)['data']

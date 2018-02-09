@@ -247,12 +247,13 @@ class DOMHTMLMovieParser(DOMParserBase):
             )
         ),
 
+        # parser for misc sections like 'casting department', 'stunts', ...
         Extractor(
             label='glossarysections',
-            group="//a[@class='glossary']",
+            group="//h4[contains(@class, 'ipl-header__content')]",
             group_key="./@name",
             group_key_normalize=lambda x: x.replace('_', ' '),
-            path="../../../..//tr",
+            path="../../following-sibling::table[1]//tr",
             attrs=Attribute(
                 key=None,
                 multi=True,
@@ -423,7 +424,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                 )
             ]
         ),
-
 
         Extractor(
             label='creator',

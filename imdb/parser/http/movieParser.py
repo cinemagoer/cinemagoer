@@ -170,7 +170,10 @@ def analyze_og_title(og_title):
     match = _re_og_title.match(og_title)
     if match:
         data['title'] = match.group(1)
-        data['year'] = int(match.group(3)) if match.group(3) else None
+
+        if match.group(3):
+            data['year'] = int(match.group(3))
+
         kind = match.group(2) or match.group(6)
         if kind is None:
             kind = 'movie'
@@ -191,12 +194,8 @@ def analyze_og_title(og_title):
             elif kind.endswith('series'):
                 data['series years'] = '%(year)d-' % {'year': data['year']}
         # No year separator and series, so assume that it ended the same year
-        elif kind.endswith('series'):
-            data['series years'] = (
-                '%(year)d-%(year)d' % {'year': data['year']}
-                if data['year'] else
-                None
-            )
+        elif kind.endswith('series') and 'year' in data:
+            data['series years'] = '%(year)d-%(year)d' % {'year': data['year']}
 
         if data['kind'] == 'episode' and data['title'][0] == '"':
             quote_end = data['title'].find('"', 1)

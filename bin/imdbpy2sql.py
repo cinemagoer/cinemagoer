@@ -39,8 +39,7 @@ from gzip import GzipFile
 from types import UnicodeType
 
 #from imdb.parser.sql.dbschema import *
-from imdb.parser.sql.dbschema import DB_SCHEMA, dropTables, createTables, \
-    createIndexes, createForeignKeys
+from imdb.parser.sql.dbschema import dropTables, createTables, createIndexes
 from imdb.parser.sql import soundex
 from imdb.utils import analyze_title, analyze_name, date_and_notes, \
         build_name, build_title, normalizeName, normalizeTitle, _articles, \
@@ -2878,13 +2877,7 @@ def buildIndexesAndFK():
     for idx_error in idx_errors:
         print 'ERROR caught exception creating an index: %s' % idx_error
     t('createIndexes()')
-    print 'adding foreign keys (this may take a while)'
     sys.stdout.flush()
-    # Add FK.
-    fk_errors = createForeignKeys(DB_TABLES)
-    for fk_error in fk_errors:
-        print 'ERROR caught exception creating a foreign key: %s' % fk_error
-    t('createForeignKeys()')
 
 
 def restoreCSV():

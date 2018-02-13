@@ -13,6 +13,7 @@
   - users review parser
   - improve external sites parser
   - switch from akas.imdb.com domain to www.imdb.com
+  - fix for synopsis
 
   [s3]
   - ability to import and access all the information

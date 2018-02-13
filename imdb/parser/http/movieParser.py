@@ -862,6 +862,15 @@ class DOMHTMLPlotParser(DOMParserBase):
                 },
                 postprocess=_process_plotsummary
             )
+        ),
+        Extractor(
+            label='synopsis',
+            path="//ul[@id='plot-synopsis-content']",
+            attrs=Attribute(
+                key='synopsis',
+                multi=True,
+                path=".//li//text()"
+            )
         )
     ]
 
@@ -2549,33 +2558,6 @@ class DOMHTMLAiringParser(DOMParserBase):
         return data
 
 
-class DOMHTMLSynopsisParser(DOMParserBase):
-    """Parser for the "synopsis" page of a given movie.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        sparser = HTMLSynopsisParser()
-        result = sparser.parse(synopsis_html_string)
-    """
-    extractors = [
-        Extractor(
-            label='synopsis',
-            path="//ul[@id='plot-synopsis-content'][not(@style)]",
-            attrs=Attribute(
-                key='synopsis',
-                path=".//text()",
-                postprocess=lambda x: '\n\n'.join(x.strip().split('||'))
-            )
-        )
-    ]
-
-    preprocessors = [
-        (re.compile('<br/><br/>', re.I), r'||')
-    ]
-
-
 class DOMHTMLParentsGuideParser(DOMParserBase):
     """Parser for the "parents guide" page of a given movie.
     The page should be provided as a string, as taken from
@@ -2654,6 +2636,5 @@ _OBJECTS = {
     'eprating_parser': ((DOMHTMLEpisodesRatings,), None),
     'movie_faqs_parser': ((DOMHTMLFaqsParser,), None),
     'airing_parser': ((DOMHTMLAiringParser,), None),
-    'synopsis_parser': ((DOMHTMLSynopsisParser,), None),
     'parentsguide_parser': ((DOMHTMLParentsGuideParser,), None)
 }

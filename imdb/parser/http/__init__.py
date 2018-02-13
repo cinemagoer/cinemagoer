@@ -438,7 +438,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_plot(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'plotsummary')
-        return self.mProxy.plot_parser.parse(cont, getRefs=self._getRefs)
+        ret = self.mProxy.plot_parser.parse(cont, getRefs=self._getRefs)
+        ret['info sets'] = ('plot', 'synopsis')
+        return ret
 
     def get_movie_awards(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'awards')
@@ -634,8 +636,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     get_movie_tv_schedule = get_movie_airing
 
     def get_movie_synopsis(self, movieID):
-        cont = self._retrieve(self.urls['movie_main'] % movieID + 'synopsis')
-        return self.mProxy.synopsis_parser.parse(cont)
+        return self.get_movie_plot(movieID)
 
     def get_movie_parents_guide(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'parentalguide')

@@ -4,6 +4,10 @@ The data used by the "sql" access system is no longer updated.
 In the future, we'll support the new data from http://www.imdb.com/interfaces/
 See README.s3.txt for more information
 
+It's also worth noting that the version of the imdbpy2sql.py script
+in this branch will not create any foreign keys, but only indexes;
+if you need them, try using the version in the imdbpy-legacy branch.
+
 
 # REQUIREMENTS
 

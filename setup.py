@@ -54,6 +54,7 @@ keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
 scripts = [
     './bin/get_first_movie.py',
     './bin/imdbpy2sql.py',
+    './bin/s32imdbpy.py',
     './bin/get_movie.py',
     './bin/search_movie.py',
     './bin/get_first_person.py',

@@ -16,7 +16,7 @@ Starting on November 2017 many things were improved and simplified:
 
 ## Main features
 
-* written in pure Python 3
+* written in Python 3
 * platform-independent
 * can retrieve data from both the IMDb's web server and a local copy of the whole database
 * a simple and complete API

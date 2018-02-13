@@ -429,21 +429,3 @@ def createIndexes(tables, ifNotExists=True):
             errors.append(e)
             continue
     return errors
-
-
-def createForeignKeys(tables, ifNotExists=True):
-    """Create Foreign Keys.
-    Return a list of errors, if any."""
-    errors = []
-    mapTables = {}
-    for table in tables:
-        mapTables[table._imdbpyName] = table
-    globCounter = 0
-    for table in tables:
-        _dbschema_logger.info('creating foreign keys for table %s', table._imdbpyName)
-        try:
-            globCounter = table.addForeignKeys(mapTables, ifNotExists=ifNotExists, _counter=globCounter)
-        except Exception as e:
-            errors.append(e)
-            continue
-    return errors

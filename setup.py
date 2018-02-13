@@ -77,7 +77,7 @@ data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
 featSQLAlchemy = setuptools.dist.Feature(
     'SQLAlchemy dependency',
     standard=True,
-    install_requires=['sqlalchemy-migrate', 'SQLAlchemy']
+    install_requires=['SQLAlchemy']
 )
 
 params = {
@@ -100,7 +100,7 @@ params = {
     'download_url': dwnl_url,
     'scripts': scripts,
     'data_files': data_files,
-    'install_requires': ['sqlalchemy-migrate', 'SQLAlchemy', 'lxml'],
+    'install_requires': ['SQLAlchemy', 'lxml'],
     'extras_require': {
         'dev': ['flake8', 'flake8-isort'],
         'test': ['pytest', 'pytest-cov', 'pytest-profiling']

@@ -32,13 +32,6 @@ except ImportError:
 
 _alchemy_logger = logging.getLogger('imdbpy.parser.sql.alchemy')
 
-try:
-    import migrate.changeset
-    HAS_MC = True
-except ImportError:
-    HAS_MC = False
-    _alchemy_logger.warn('Unable to import migrate.changeset: Foreign '
-                         'Keys will not be created.')
 
 from imdb._exceptions import IMDbDataAccessError
 from .dbschema import *
@@ -354,41 +347,6 @@ class TableAdapter(object):
         for col in self._imdbpySchema.cols:
             if col.index:
                 self._createIndex(col, checkfirst=ifNotExists)
-
-    def addForeignKeys(self, mapTables, ifNotExists=True, _counter=0):
-        """Create all required foreign keys."""
-        if not HAS_MC:
-            return
-        # It seems that there's no reason to prevent the creation of
-        # indexes for columns with FK constrains: if there's already
-        # an index, the FK index is not created.
-        for col in self._imdbpySchema.cols:
-            if not col.foreignKey:
-                continue
-            _counter += 1
-            fks = col.foreignKey.split('.', 1)
-            foreignTableName = fks[0]
-            if len(fks) == 2:
-                foreignColName = fks[1]
-            else:
-                foreignColName = 'id'
-            foreignColName = mapTables[foreignTableName].colMap.get(
-                foreignColName, foreignColName)
-            thisColName = self.colMap.get(col.name, col.name)
-            thisCol = self.table.columns[thisColName]
-            foreignTable = mapTables[foreignTableName].table
-            foreignCol = getattr(foreignTable.c, foreignColName)
-            # Need to explicitly set an unique name, otherwise it will
-            # explode, if two cols points to the same table.
-            fkName = 'fk_%s_%s_%s_%d' % (self.table.name, foreignTable.name, foreignColName, _counter)
-            constrain = migrate.changeset.ForeignKeyConstraint([thisCol],
-                                                               [foreignCol],
-                                                               name=fkName)
-            try:
-                constrain.create()
-            except exc.OperationalError:
-                continue
-        return _counter
 
     def __call__(self, *args, **kwds):
         """To insert a new row with the syntax: TableClass(key=value, ...)"""

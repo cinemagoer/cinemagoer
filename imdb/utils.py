@@ -3,7 +3,7 @@ utils module (imdb package).
 
 This module provides basic utilities for the imdb package.
 
-Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
                2009 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -864,13 +864,13 @@ _re_amp = re.compile(r'&(?![^a-zA-Z0-9_#]{1,5};)')
 
 def escape4xml(value):
     """Escape some chars that can't be present in a XML value."""
-    if isinstance(value, int):
+    if isinstance(value, (int, float)):
         value = str(value)
     value = _re_amp.sub('&amp;', value)
     value = value.replace('"', '&quot;').replace("'", '&apos;')
     value = value.replace('<', '&lt;').replace('>', '&gt;')
-    if isinstance(value, str):
-        value = value.encode('ascii', 'xmlcharrefreplace')
+    if isinstance(value, bytes):
+        value = value.decode('utf-8', 'xmlcharrefreplace')
     return value
 
 
@@ -1016,7 +1016,7 @@ def _tagAttr(key, fullpath):
         attrs['keytype'] = strType
         tagName = str(key)
     else:
-        tagName = str(bytes((key, 'ascii', 'ignore')))
+        tagName = str((key, 'ascii', 'ignore'))
     if isinstance(key, int):
         attrs['keytype'] = 'int'
     origTagName = tagName
@@ -1598,7 +1598,7 @@ def flatten(seq, toDescend=(list, dict, tuple), yieldDictKeys=False,
                                  yieldDictKeys=yieldDictKeys,
                                  onlyKeysType=onlyKeysType, scalar=scalar):
                     yield v
-        elif not isinstance(seq, (str, int, float)):
+        elif not isinstance(seq, (str, bytes, int, float)):
             for item in seq:
                 for i in flatten(item, toDescend=toDescend,
                                  yieldDictKeys=yieldDictKeys,

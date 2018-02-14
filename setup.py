@@ -138,6 +138,9 @@ params = {
         # Requirements.  XXX: maybe we can use extras_require?
         #'install_requires': install_requires,
         #'extras_require': extras_require,
+        'extras_require': {
+            'test': ['pytest']
+        },
         'features': features,
         # Packages.
         'packages': setuptools.find_packages()

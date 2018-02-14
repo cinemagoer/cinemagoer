@@ -5,6 +5,7 @@
 *.so
 build/
 __pycache__
+.pytest_cache/
 dist/
 .cache/
 .tox/

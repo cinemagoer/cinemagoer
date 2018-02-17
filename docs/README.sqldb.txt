@@ -8,6 +8,9 @@ It's also worth noting that the version of the imdbpy2sql.py script
 in this branch will not create any foreign keys, but only indexes;
 if you need them, try using the version in the imdbpy-legacy branch.
 
+Otherwise, if you need instructions on how to manually build the foreign keys
+for this version, see this comment by Andrew D Bate: https://github.com/alberanid/imdbpy/issues/130#issuecomment-365707620
+
 
 # REQUIREMENTS
 

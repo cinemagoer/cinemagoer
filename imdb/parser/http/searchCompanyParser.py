@@ -5,7 +5,7 @@ This module provides the HTMLSearchCompanyParser class (and the
 search_company_parser instance), used to parse the results of a search
 for a given company.
 E.g., when searching for the name "Columbia Pictures", the parsed page would be:
-    http://akas.imdb.com/find?s=co;mx=20;q=Columbia+Pictures
+    http://www.imdb.com/find?s=co;mx=20;q=Columbia+Pictures
 
 Copyright 2008-2012 Davide Alberani <da@erlug.linux.it>
           2008 H. Turgut Uyar <uyar@tekir.org>
@@ -46,22 +46,29 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
     _titleBuilder = lambda self, x: build_company_name(x)
     _linkPrefix = '/company/co'
 
-    _attrs = [Attribute(key='data',
-                        multi=True,
-                        path={
-                            'link': "./a[1]/@href",
-                            'name': "./a[1]/text()",
-                            'notes': "./text()[1]"
-                            },
-                        postprocess=lambda x: (
-                            analyze_imdbid(x.get('link')),
-                            analyze_company_name(x.get('name')+(x.get('notes')
-                                                or u''), stripNotes=True)
-                        ))]
-    extractors = [Extractor(label='search',
-                            path="//td[@class='result_text']/a[starts-with(@href, " \
-                                    "'/company/co')]/..",
-                            attrs=_attrs)]
+    _attrs = [
+        Attribute(
+            key='data',
+            multi=True,
+            path={
+                'link': "./a[1]/@href",
+                'name': "./a[1]/text()",
+                'notes': "./text()[1]"
+            },
+            postprocess=lambda x: (
+                analyze_imdbid(x.get('link')),
+                analyze_company_name(x.get('name') + (x.get('notes') or u''), stripNotes=True)
+            )
+        )
+    ]
+
+    extractors = [
+        Extractor(
+            label='search',
+            path="//td[@class='result_text']/a[starts-with(@href, '/company/co')]/..",
+            attrs=_attrs
+        )
+    ]
 
 
 _OBJECTS = {

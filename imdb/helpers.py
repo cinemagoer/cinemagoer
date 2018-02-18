@@ -269,8 +269,8 @@ for k, v in {'lt':u'<','gt':u'>','amp':u'&','quot':u'"','apos':u'\''}.items():
     everyentcharrefs[k] = v
     everyentcharrefs['#%s' % ord(v)] = v
 everyentcharrefsget = everyentcharrefs.get
-re_everyentcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' %
-                            '|'.join(map(re.escape, everyentcharrefs)))
+re_everyentcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' % '|'.join(map(re.escape,
+                                                                         everyentcharrefs)))
 re_everyentcharrefssub = re_everyentcharrefs.sub
 
 def _replAllXMLRef(match):

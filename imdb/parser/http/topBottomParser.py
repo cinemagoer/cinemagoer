@@ -4,8 +4,8 @@ parser.http.topBottomParser module (imdb package).
 This module provides the classes (and the instances), used to parse the
 lists of top 250 and bottom 100 movies.
 E.g.:
-    http://akas.imdb.com/chart/top
-    http://akas.imdb.com/chart/bottom
+    http://www.imdb.com/chart/top
+    http://www.imdb.com/chart/bottom
 
 Copyright 2009-2015 Davide Alberani <da@erlug.linux.it>
 
@@ -31,7 +31,7 @@ from utils import DOMParserBase, Attribute, Extractor, analyze_imdbid
 class DOMHTMLTop250Parser(DOMParserBase):
     """Parser for the "top 250" page.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -42,17 +42,24 @@ class DOMHTMLTop250Parser(DOMParserBase):
     ranktext = 'top 250 rank'
 
     def _init(self):
-        self.extractors = [Extractor(label=self.label,
-                        path="//div[@id='main']//div[1]//div//table//tbody//tr",
-                        attrs=Attribute(key=None,
-                                multi=True,
-                                path={self.ranktext: "./td[2]//text()",
-                                        'rating': "./td[3]//strong//text()",
-                                        'title': "./td[2]//a//text()",
-                                        'year': "./td[2]//span//text()",
-                                        'movieID': "./td[2]//a/@href",
-                                        'votes': "./td[3]//strong/@title"
-                                        }))]
+        self.extractors = [
+            Extractor(
+                label=self.label,
+                path="//div[@id='main']//div[1]//div//table//tbody//tr",
+                attrs=Attribute(
+                    key=None,
+                    multi=True,
+                    path={
+                        self.ranktext: "./td[2]/text()",
+                        'rating': "./td[3]//strong//text()",
+                        'title': "./td[2]//a//text()",
+                        'year': "./td[2]//span//text()",
+                        'movieID': "./td[2]//a/@href",
+                        'votes': "./td[3]//strong/@title"
+                    }
+                )
+            )
+        ]
 
     def postprocess_data(self, data):
         if not data or self.label not in data:
@@ -73,9 +80,11 @@ class DOMHTMLTop250Parser(DOMParserBase):
             if theID in seenIDs:
                 continue
             seenIDs.append(theID)
-            minfo = analyze_title(d['title']+" "+d['year'])
-            try: minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
-            except: pass
+            minfo = analyze_title(d['title'] + ' ' + d['year'])
+            try:
+                minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
+            except:
+                pass
             if 'votes' in d:
                 try:
                     votes = d['votes'].replace(' votes','')
@@ -93,7 +102,7 @@ class DOMHTMLTop250Parser(DOMParserBase):
 class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):
     """Parser for the "bottom 100" page.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:

@@ -2,10 +2,10 @@
 parser.http.personParser module (imdb package).
 
 This module provides the classes (and the instances), used to parse
-the IMDb pages on the akas.imdb.com server about a person.
+the IMDb pages on the www.imdb.com server about a person.
 E.g., for "Mel Gibson" the referred pages would be:
-    categorized:    http://akas.imdb.com/name/nm0000154/maindetails
-    biography:      http://akas.imdb.com/name/nm0000154/bio
+    categorized:    http://www.imdb.com/name/nm0000154/maindetails
+    biography:      http://www.imdb.com/name/nm0000154/bio
     ...and so on...
 
 Copyright 2004-2013 Davide Alberani <da@erlug.linux.it>
@@ -52,7 +52,7 @@ def build_date(date):
 class DOMHTMLMaindetailsParser(DOMParserBase):
     """Parser for the "categorized" (maindetails) page of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -192,7 +192,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
 class DOMHTMLBioParser(DOMParserBase):
     """Parser for the "biography" page of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -225,92 +225,157 @@ class DOMHTMLBioParser(DOMParserBase):
                         # TODO: check if this slicing is always correct
                         postprocess=lambda x: u''.join(x).strip()[2:])]
     extractors = [
-            Extractor(label='headshot',
-                        path="//a[@name='headshot']",
-                        attrs=Attribute(key='headshot',
-                            path="./img/@src")),
-            Extractor(label='birth info',
-                        path="//table[@id='overviewTable']//td[text()='Date of Birth']/following-sibling::td[1]",
-                        attrs=_birth_attrs),
-            Extractor(label='death info',
-                        path="//table[@id='overviewTable']//td[text()='Date of Death']/following-sibling::td[1]",
-                        attrs=_death_attrs),
-            Extractor(label='nick names',
-                        path="//table[@id='overviewTable']//td[text()='Nickenames']/following-sibling::td[1]",
-                        attrs=Attribute(key='nick names',
-                            path="./text()",
-                            joiner='|',
-                            postprocess=lambda x: [n.strip().replace(' (',
-                                    '::(', 1) for n in x.split('|')
-                                    if n.strip()])),
-            Extractor(label='birth name',
-                        path="//table[@id='overviewTable']//td[text()='Birth Name']/following-sibling::td[1]",
-                        attrs=Attribute(key='birth name',
-                            path="./text()",
-                            postprocess=lambda x: canonicalName(x.strip()))),
-            Extractor(label='height',
-                path="//table[@id='overviewTable']//td[text()='Height']/following-sibling::td[1]",
-                        attrs=Attribute(key='height',
-                            path="./text()",
-                            postprocess=lambda x: x.strip())),
-            Extractor(label='mini biography',
-                        path="//a[@name='mini_bio']/following-sibling::div[1 = count(preceding-sibling::a[1] | ../a[@name='mini_bio'])]",
-                        attrs=Attribute(key='mini biography',
-                            multi=True,
-                            path={
-                                'bio': ".//text()",
-                                'by': ".//a[@name='ba']//text()"
-                                },
-                            postprocess=lambda x: "%s::%s" % \
-                                ((x.get('bio') or u'').split('- IMDb Mini Biography By:')[0].strip(),
-                                (x.get('by') or u'').strip() or u'Anonymous'))),
-            Extractor(label='spouse',
-                        path="//div[h5='Spouse']/table/tr",
-                        attrs=Attribute(key='spouse',
-                            multi=True,
-                            path={
-                                'name': "./td[1]//text()",
-                                'info': "./td[2]//text()"
-                                },
-                            postprocess=lambda x: ("%s::%s" % \
-                                (x.get('name').strip(),
-                                (x.get('info') or u'').strip())).strip(':'))),
-            Extractor(label='trade mark',
-                        path="//div[h5='Trade Mark']/p",
-                        attrs=Attribute(key='trade mark',
-                            multi=True,
-                            path=".//text()",
-                            postprocess=lambda x: x.strip())),
-            Extractor(label='trivia',
-                        path="//div[h5='Trivia']/p",
-                        attrs=Attribute(key='trivia',
-                            multi=True,
-                            path=".//text()",
-                            postprocess=lambda x: x.strip())),
-            Extractor(label='quotes',
-                        path="//div[h5='Personal Quotes']/p",
-                        attrs=Attribute(key='quotes',
-                            multi=True,
-                            path=".//text()",
-                            postprocess=lambda x: x.strip())),
-            Extractor(label='salary',
-                        path="//div[h5='Salary']/table/tr",
-                        attrs=Attribute(key='salary history',
-                            multi=True,
-                            path={
-                                'title': "./td[1]//text()",
-                                'info': "./td[2]/text()",
-                                },
-                            postprocess=lambda x: "%s::%s" % \
-                                    (x.get('title').strip(),
-                                        x.get('info').strip()))),
-            Extractor(label='where now',
-                        path="//div[h5='Where Are They Now']/p",
-                        attrs=Attribute(key='where now',
-                            multi=True,
-                            path=".//text()",
-                            postprocess=lambda x: x.strip())),
-            ]
+        Extractor(
+            label='headshot',
+            path="//a[@name='headshot']",
+            attrs=Attribute(
+                key='headshot',
+                path="./img/@src"
+            )
+        ),
+
+        Extractor(
+            label='birth info',
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Date of Birth']/following-sibling::td[1]",
+            attrs=_birth_attrs
+        ),
+
+        Extractor(
+            label='death info',
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Date of Death']/following-sibling::td[1]",
+            attrs=_death_attrs
+        ),
+
+        Extractor(
+            label='nick names',
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Nickenames']/following-sibling::td[1]",
+            attrs=Attribute(
+                key='nick names',
+                path="./text()",
+                joiner='|',
+                postprocess=lambda x: [n.strip().replace(' (', '::(', 1) for n in x.split('|')
+                                       if n.strip()]
+            )
+        ),
+
+        Extractor(
+            label='birth name',
+            path="//table[@id='overviewTable']"
+                 "//td[text()='Birth Name']/following-sibling::td[1]",
+            attrs=Attribute(
+                key='birth name',
+                path="./text()",
+                postprocess=lambda x: canonicalName(x.strip())
+            )
+        ),
+
+        Extractor(
+            label='height',
+            path="//table[@id='overviewTable']//td[text()='Height']/following-sibling::td[1]",
+            attrs=Attribute(
+                key='height',
+                path="./text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
+            label='mini biography',
+            path="//a[@name='mini_bio']/following-sibling::"
+                 "div[1 = count(preceding-sibling::a[1] | ../a[@name='mini_bio'])]",
+            attrs=Attribute(
+                key='mini biography',
+                multi=True,
+                path={
+                    'bio': ".//text()",
+                    'by': ".//a[@name='ba']//text()"
+                },
+                postprocess=lambda x: "%s::%s" % (
+                    (x.get('bio') or u'').split('- IMDb Mini Biography By:')[0].strip(),
+                    (x.get('by') or u'').strip() or u'Anonymous'
+                )
+            )
+        ),
+
+        Extractor(
+            label='spouse',
+            path="//div[h5='Spouse']/table/tr",
+            attrs=Attribute(
+                key='spouse',
+                multi=True,
+                path={
+                    'name': "./td[1]//text()",
+                    'info': "./td[2]//text()"
+                },
+                postprocess=lambda x: ("%s::%s" % (
+                    x.get('name').strip(),
+                    (x.get('info') or u'').strip())).strip(':')
+            )
+        ),
+
+        Extractor(
+            label='trade mark',
+            path="//div[h5='Trade Mark']/p",
+            attrs=Attribute(
+                key='trade mark',
+                multi=True,
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
+            label='trivia',
+            path="//div[h5='Trivia']/p",
+            attrs=Attribute(
+                key='trivia',
+                multi=True,
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
+            label='quotes',
+            path="//div[h5='Personal Quotes']/p",
+            attrs=Attribute(
+                key='quotes',
+                multi=True,
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        ),
+
+        Extractor(
+            label='salary',
+            path="//div[h5='Salary']/table/tr",
+            attrs=Attribute(
+                key='salary history',
+                multi=True,
+                path={
+                    'title': "./td[1]//text()",
+                    'info': "./td[2]/text()",
+                },
+                postprocess=lambda x: "%s::%s" % (
+                    x.get('title').strip(),
+                    x.get('info').strip())
+            )
+        ),
+
+        Extractor(
+            label='where now',
+            path="//div[h5='Where Are They Now']/p",
+            attrs=Attribute(
+                key='where now',
+                multi=True,
+                path=".//text()",
+                postprocess=lambda x: x.strip()
+            )
+        )
+    ]
 
     preprocessors = [
         (re.compile('(<h5>)', re.I), r'</div><div class="_imdbpy">\1'),
@@ -329,7 +394,7 @@ class DOMHTMLBioParser(DOMParserBase):
 class DOMHTMLResumeParser(DOMParserBase):
     """Parser for the "resume" page of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -429,7 +494,7 @@ class DOMHTMLResumeParser(DOMParserBase):
 class DOMHTMLOtherWorksParser(DOMParserBase):
     """Parser for the "other works" and "agent" pages of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -465,7 +530,7 @@ def _build_episode(link, title, minfo, role, roleA, roleAID):
     minidx = minfo.find(' -')
     # Sometimes, for some unknown reason, the role is left in minfo.
     if minidx != -1:
-        slfRole = minfo[minidx+3:].lstrip()
+        slfRole = minfo[minidx + 3:].lstrip()
         minfo = minfo[:minidx].rstrip()
         if slfRole.endswith(')'):
             commidx = slfRole.rfind('(')
@@ -503,7 +568,7 @@ def _build_episode(link, title, minfo, role, roleA, roleAID):
 class DOMHTMLSeriesParser(DOMParserBase):
     """Parser for the "by TV series" page of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:
@@ -558,7 +623,7 @@ class DOMHTMLSeriesParser(DOMParserBase):
 class DOMHTMLPersonGenresParser(DOMParserBase):
     """Parser for the "by genre" and "by keywords" pages of a given person.
     The page should be provided as a string, as taken from
-    the akas.imdb.com server.  The final result will be a
+    the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example:

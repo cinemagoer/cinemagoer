@@ -8,7 +8,7 @@ E.g., for "Mel Gibson" the referred pages would be:
     biography:      http://www.imdb.com/name/nm0000154/bio
     ...and so on...
 
-Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
           2008-2017 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@ from .movieParser import (
 from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_movie
 
 
+_re_spaces = re.compile(r'\s+')
 _reRoles = re.compile(r'(<li>.*? \.\.\.\. )(.*?)(</li>|<br>)', re.I | re.M | re.S)
 
 
@@ -345,7 +346,7 @@ class DOMHTMLBioParser(DOMParserBase):
 
         Extractor(
             label='spouse',
-            path="//div[h5='Spouse']/table/tr",
+            path="//a[@name='spouse']/following-sibling::table[1]//tr",
             attrs=Attribute(
                 key='spouse',
                 multi=True,
@@ -355,7 +356,7 @@ class DOMHTMLBioParser(DOMParserBase):
                 },
                 postprocess=lambda x: ("%s::%s" % (
                     x.get('name').strip(),
-                    (x.get('info') or '').strip())).strip(':')
+                    (_re_spaces.sub(' ', x.get('info') or '')).strip())).strip(':')
             )
         ),
 

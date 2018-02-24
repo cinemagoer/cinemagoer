@@ -89,6 +89,10 @@ def test_height_should_be_in_inches_and_meters(person_bio):
     data = parser.parse(page)['data']
     assert data['height'] == '5\' 8" (1.73 m)'
 
+def test_spouse(person_bio):
+    page = person_bio('julia roberts')
+    data = parser.parse(page)['data']
+    assert len(data['spouse']) == 2
 
 def test_height_none_should_be_excluded(person_bio):
     page = person_bio('georges melies')

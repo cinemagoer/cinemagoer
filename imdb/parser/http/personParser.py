@@ -346,7 +346,7 @@ class DOMHTMLBioParser(DOMParserBase):
 
         Extractor(
             label='spouse',
-            path="//a[@name='spouse']/following-sibling::table[1]//tr",
+            path="//a[@name='spouse']/following::table[1]//tr",
             attrs=Attribute(
                 key='spouse',
                 multi=True,
@@ -362,7 +362,8 @@ class DOMHTMLBioParser(DOMParserBase):
 
         Extractor(
             label='trade mark',
-            path="//div[h5='Trade Mark']/p",
+            path="//div[@class='_imdbpyh4']/h4[starts-with(text(), 'Trade Mark')]" +
+                    "/.././div[contains(@class, 'soda')]",
             attrs=Attribute(
                 key='trade mark',
                 multi=True,
@@ -373,7 +374,8 @@ class DOMHTMLBioParser(DOMParserBase):
 
         Extractor(
             label='trivia',
-            path="//div[h5='Trivia']/p",
+            path="//div[@class='_imdbpyh4']/h4[starts-with(text(), 'Trivia')]" +
+                    "/.././div[contains(@class, 'soda')]",
             attrs=Attribute(
                 key='trivia',
                 multi=True,
@@ -384,7 +386,8 @@ class DOMHTMLBioParser(DOMParserBase):
 
         Extractor(
             label='quotes',
-            path="//div[h5='Personal Quotes']/p",
+            path="//div[@class='_imdbpyh4']/h4[starts-with(text(), 'Personal Quotes')]" +
+                    "/.././div[contains(@class, 'soda')]",
             attrs=Attribute(
                 key='quotes',
                 multi=True,
@@ -395,34 +398,24 @@ class DOMHTMLBioParser(DOMParserBase):
 
         Extractor(
             label='salary',
-            path="//div[h5='Salary']/table/tr",
+            path="//a[@name='salary']/following::table[1]//tr",
             attrs=Attribute(
                 key='salary history',
                 multi=True,
                 path={
                     'title': "./td[1]//text()",
-                    'info': "./td[2]/text()",
+                    'info': "./td[2]//text()",
                 },
                 postprocess=lambda x: "%s::%s" % (
                     x.get('title').strip(),
-                    x.get('info').strip())
-            )
-        ),
-
-        Extractor(
-            label='where now',
-            path="//div[h5='Where Are They Now']/p",
-            attrs=Attribute(
-                key='where now',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+                    _re_spaces.sub(' ', (x.get('info') or '')).strip())
             )
         )
     ]
 
     preprocessors = [
         (re.compile('(<h5>)', re.I), r'</div><div class="_imdbpy">\1'),
+        (re.compile('(<h4)', re.I), r'</div><div class="_imdbpyh4">\1'),
         (re.compile('(</table>\n</div>\s+)</div>', re.I + re.DOTALL), r'\1'),
         (re.compile('(<div id="tn15bot">)'), r'</div>\1'),
         (re.compile('\.<br><br>([^\s])', re.I), r'. \1')

@@ -94,6 +94,26 @@ def test_spouse(person_bio):
     data = parser.parse(page)['data']
     assert len(data['spouse']) == 2
 
+def test_trade_mark(person_bio):
+    page = person_bio('julia roberts')
+    data = parser.parse(page)['data']
+    assert len(data['trade mark']) == 2
+
+def test_trivia(person_bio):
+    page = person_bio('julia roberts')
+    data = parser.parse(page)['data']
+    assert len(data['trivia']) > 90
+
+def test_quotes(person_bio):
+    page = person_bio('julia roberts')
+    data = parser.parse(page)['data']
+    assert len(data['quotes']) > 30
+
+def test_salary(person_bio):
+    page = person_bio('julia roberts')
+    data = parser.parse(page)['data']
+    assert len(data['salary history']) > 25
+
 def test_height_none_should_be_excluded(person_bio):
     page = person_bio('georges melies')
     data = parser.parse(page)['data']

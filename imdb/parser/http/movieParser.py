@@ -1529,83 +1529,6 @@ class DOMHTMLRatingsParser(DOMParserBase):
         return nd
 
 
-class DOMHTMLEpisodesRatings(DOMParserBase):
-    """Parser for the "episode ratings ... by date" page of a given movie.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        erparser = DOMHTMLEpisodesRatings()
-        result = erparser.parse(eprating_html_string)
-    """
-    _containsObjects = True
-
-    extractors = [
-        Extractor(
-            label='title',
-            path="//title",
-            attrs=Attribute(
-                key='title',
-                path="./text()"
-            )
-        ),
-
-        Extractor(
-            label='ep ratings',
-            path="//th/../..//tr",
-            attrs=Attribute(
-                key='episodes',
-                multi=True,
-                path={
-                    'nr': ".//td[1]/text()",
-                    'ep title': ".//td[2]//text()",
-                    'movieID': ".//td[2]/a/@href",
-                    'rating': ".//td[3]/text()",
-                    'votes': ".//td[4]/text()"
-                }
-            )
-        )
-    ]
-
-    def postprocess_data(self, data):
-        if 'title' not in data or 'episodes' not in data:
-            return {}
-        nd = []
-        title = data['title']
-        for i in data['episodes']:
-            ept = i['ep title']
-            movieID = analyze_imdbid(i['movieID'])
-            votes = i['votes']
-            rating = i['rating']
-            if not (ept and movieID and votes and rating):
-                continue
-            try:
-                votes = int(votes.replace(',', '').replace('.', ''))
-            except ValueError:
-                pass
-            try:
-                rating = float(rating)
-            except ValueError:
-                pass
-            ept = ept.strip()
-            ept = '%s {%s' % (title, ept)
-            nr = i['nr']
-            if nr:
-                ept += ' (#%s)' % nr.strip()
-            ept += '}'
-            if movieID is not None:
-                movieID = str(movieID)
-            m = Movie(title=ept, movieID=movieID, accessSystem=self._as,
-                      modFunct=self._modFunct)
-            epofdict = m.get('episode of')
-            if epofdict is not None:
-                m['episode of'] = Movie(data=epofdict, accessSystem=self._as,
-                                        modFunct=self._modFunct)
-            nd.append({'episode': m, 'votes': votes, 'rating': rating})
-        return {'episodes rating': nd}
-
-
 def _normalize_href(href):
     if (href is not None) and (not href.lower().startswith('http://')):
         if href.startswith('/'):
@@ -2175,6 +2098,10 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                         "link": ".//strong//a[@href][1]/@href",
                         "original air date": ".//div[@class='airdate']/text()",
                         "title": ".//strong//text()",
+                        "rating": ".//div[@class='ipl-rating-star '][1]" +
+                                    "/span[@class='ipl-rating-star__rating'][1]/text()",
+                        "votes": ".//div[contains(@class, 'ipl-rating-star')][1]" +
+                                    "/span[@class='ipl-rating-star__total-votes'][1]/text()",
                         "plot": ".//div[@class='item_description']//text()"
                     }
                 )
@@ -2219,6 +2146,8 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             episode_air_date = episode.get('original air date', '').strip()
             episode_title = episode.get('title', '').strip()
             episode_plot = episode.get('plot', '')
+            episode_rating = episode.get('rating', '')
+            episode_votes = episode.get('votes', '')
             if not (episode_nr is not None and episode_id and episode_title):
                 continue
             ep_obj = Movie(movieID=episode_id, title=episode_title,
@@ -2227,6 +2156,17 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             ep_obj['episode of'] = series
             ep_obj['season'] = selected_season
             ep_obj['episode'] = episode_nr
+            if episode_rating:
+                try:
+                    ep_obj['rating'] = float(episode_rating)
+                except:
+                    pass
+            if episode_votes:
+                try:
+                    ep_obj['votes'] = int(episode_votes.replace(',', '')
+                                          .replace('.', '').replace('(', '').replace(')', ''))
+                except:
+                    pass
             if episode_air_date:
                 ep_obj['original air date'] = episode_air_date
                 if episode_air_date[-4:].isdigit():
@@ -2639,7 +2579,6 @@ _OBJECTS = {
     'episodes_parser': ((DOMHTMLEpisodesParser,), None),
     'season_episodes_parser': ((DOMHTMLSeasonEpisodesParser,), None),
     'episodes_cast_parser': ((DOMHTMLEpisodesCastParser,), None),
-    'eprating_parser': ((DOMHTMLEpisodesRatings,), None),
     'movie_faqs_parser': ((DOMHTMLFaqsParser,), None),
     'airing_parser': ((DOMHTMLAiringParser,), None),
     'parentsguide_parser': ((DOMHTMLParentsGuideParser,), None)

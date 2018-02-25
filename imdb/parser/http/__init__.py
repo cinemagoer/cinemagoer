@@ -615,16 +615,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         data_d['data']['number of episodes'] = nr_eps
         return data_d
 
-    def get_movie_episodes_rating(self, movieID):
-        cont = self._retrieve(self.urls['movie_main'] % movieID + 'epdate', _noCookies=True)
-        data_d = self.mProxy.eprating_parser.parse(cont)
-        # set movie['episode of'].movieID for every episode.
-        if 'episodes rating' in data_d.get('data', {}):
-            for item in data_d['data']['episodes rating']:
-                episode = item['episode']
-                episode['episode of'].movieID = movieID
-        return data_d
-
     def get_movie_faqs(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'faq')
         return self.mProxy.movie_faqs_parser.parse(cont, getRefs=self._getRefs)

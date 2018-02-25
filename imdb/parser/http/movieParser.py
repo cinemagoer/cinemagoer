@@ -753,8 +753,14 @@ class DOMHTMLMovieParser(DOMParserBase):
             # data['number of seasons'] = seasons[-1] if seasons else len(data['seasons'])
         if 'season/episode' in data:
             tokens = data['season/episode'].split('Episode')
-            data['season'] = int(tokens[0].split('Season')[1])
-            data['episode'] = int(tokens[1])
+            try:
+                data['season'] = int(tokens[0].split('Season')[1])
+            except:
+                data['season'] = 'unknown'
+            try:
+                data['episode'] = int(tokens[1])
+            except:
+                data['episode'] = 'unknown'
             del data['season/episode']
         # if 'original air date' in data:
         #     oid = self.re_space.sub(' ', data['original air date']).strip()

@@ -1,4 +1,4 @@
-from pytest import fixture, mark
+from pytest import fixture
 
 import re
 
@@ -53,11 +53,10 @@ def test_death_date_none_should_be_excluded(person_bio):
     assert 'death date' not in data
 
 
-@mark.skip('not working yet')
 def test_death_notes_should_contain_death_place_and_reason(person_bio):
     page = person_bio('fred astaire')
     data = parser.parse(page)['data']
-    assert data['death notes'] == 'Los Angeles, California, USA (pneumonia)'
+    assert data['death notes'] == 'in Los Angeles, California, USA (pneumonia)'
 
 
 def test_death_notes_none_should_be_excluded(person_bio):

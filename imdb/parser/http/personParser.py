@@ -261,10 +261,16 @@ class DOMHTMLBioParser(DOMParserBase):
         ),
 
         Attribute(
-            key='death notes',
+            key='death cause',
             path="./text()",
             # TODO: check if this slicing is always correct
-            postprocess=lambda x: ''.join(x).strip()[2:]
+            postprocess=lambda x: ''.join(x).strip()[2:].lstrip()
+        ),
+
+        Attribute(
+            key='death notes',
+            path="..//text()",
+            postprocess=lambda x: _re_spaces.sub(' ', (x or '').strip().split('\n')[-1])
         )
     ]
 
@@ -422,7 +428,7 @@ class DOMHTMLBioParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
-        for what in 'birth date', 'death date':
+        for what in 'birth date', 'death date', 'death cause':
             if what in data and not data[what]:
                 del data[what]
         return data

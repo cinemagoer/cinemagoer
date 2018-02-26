@@ -440,23 +440,10 @@ def test_runtimes_single_should_be_a_list_in_minutes(movie_combined_details):
     assert data['runtimes'] == ['136']
 
 
-@mark.skip(reason='only a single runtime is included now')
 def test_runtimes_with_countries_should_include_context(movie_combined_details):
     page = movie_combined_details('suspiria')
     data = parser.parse(page)['data']
-    assert data['runtimes'] == ['98', 'Germany:88', 'USA:92', 'Argentina:95']
-
-
-@mark.skip(reason='only a single runtime is included now')
-def test_runtimes_multiple_with_notes_should_include_notes(movie_combined_details):
-    page = movie_combined_details('shining')
-    data = parser.parse(page)['data']
-    assert data['runtimes'] == [
-        '144::(cut)',
-        '119::(cut) (European version)',
-        '146::(original version)',
-        'USA:142::(US dvd release: B002VWNIDG)'
-    ]
+    assert data['runtimes'] == ['98']
 
 
 def test_runtimes_none_should_be_excluded(movie_combined_details):
@@ -559,24 +546,16 @@ def test_colors_single_should_be_a_list_of_color_types(movie_combined_details):
     assert data['color info'] == ['Color']
 
 
-@mark.skip('only a single color is listed now')
 def test_colors_multiple_should_be_a_list_of_color_types(movie_combined_details):
     page = movie_combined_details('pleasantville')
     data = parser.parse(page)['data']
-    assert data['color info'] == ['Black and White', 'Color']
+    assert data['color info'] == ['Black and White']
 
 
 def test_colors_single_with_notes_should_include_notes(movie_combined_details):
     page = movie_combined_details('manos')
     data = parser.parse(page)['data']
     assert data['color info'] == ['Color::(Eastmancolor)']
-
-
-@mark.skip('only a single color is listed now')
-def test_colors_multiple_with_notes_should_include_notes(movie_combined_details):
-    page = movie_combined_details('if....')
-    data = parser.parse(page)['data']
-    assert data['color info'] == ['Black and White', 'Color::(Eastmancolor) (uncredited)']
 
 
 def test_colors_none_should_be_excluded(movie_combined_details):

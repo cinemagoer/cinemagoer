@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.3dev20180225b'
+__version__ = VERSION = '6.3'
 
 VERSION_NOTICE = """This version of IMDbPY requires Python 3.
 For a version compatible with Python 2.7, see the imdbpy-legacy branch:

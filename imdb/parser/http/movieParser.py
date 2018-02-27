@@ -885,6 +885,11 @@ class DOMHTMLPlotParser(DOMParserBase):
             no_summary.drop_tree()
         return dom
 
+    def postprocess_data(self, data):
+        if 'synopsis' in data and data['synopsis'][0] and 'a Synopsis for this title' in data['synopsis'][0]:
+            del data['synopsis']
+        return data
+
 
 def _process_award(x):
     award = {}

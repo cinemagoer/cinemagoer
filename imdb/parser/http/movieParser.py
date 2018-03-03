@@ -1862,95 +1862,6 @@ class DOMHTMLTechParser(DOMParserBase):
         return data
 
 
-class DOMHTMLBusinessParser(DOMParserBase):
-    """Parser for the "business" and "literature" pages of a given movie.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        bparser = DOMHTMLBusinessParser()
-        result = bparser.parse(business_html_string)
-    """
-    re_space = re.compile(r'\s+')
-
-    extractors = [
-        Extractor(
-            label='business',
-            path="//div[@id='tn15content']//h5",
-            attrs=Attribute(
-                key='./text()',
-                path="./following-sibling::div[1]//text()"
-            )
-        )
-    ]
-
-    preprocessors = [
-        ('</h5>', '</h5><div class="_imdbpy">'),
-        ('<div id="tn15content">', '<div id="tn15content"><div>'),
-        ('<h5>', '</div><h5>'),
-        ('<hr/><h3>', '</div><hr/><h3>'),
-        ('<br/>', ':::')
-    ]
-
-    def postprocess_data(self, data):
-        newData = {}
-        for key, value in data.items():
-            value = value.strip().split(':::')
-            value = [v.strip() for v in value]
-            value = [_f for _f in value if _f]
-            if not value:
-                continue
-            newData[key.lower().strip()] = value
-        return newData
-
-
-class DOMHTMLRecParser(DOMParserBase):
-    """Parser for the "recommendations" page of a given movie.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        rparser = HTMLRecParser()
-        result = rparser.parse(recommendations_html_string)
-    """
-    _containsObjects = True
-
-    extractors = [
-        Extractor(
-            label='recommendations',
-            path="//td[@valign='middle'][1]",
-            attrs=Attribute(
-                key='../../tr/td[1]//text()',
-                multi=True,
-                path={
-                    'title': ".//text()",
-                    'movieID': ".//a/@href"
-                }
-            )
-        )
-    ]
-
-    def postprocess_data(self, data):
-        for key in list(data.keys()):
-            n_key = key
-            n_keyl = n_key.lower()
-            if n_keyl == 'suggested by the database':
-                n_key = 'database'
-            elif n_keyl == 'imdb users recommend':
-                n_key = 'users'
-            data[n_key] = [
-                Movie(title=x['title'], movieID=analyze_imdbid(x['movieID']),
-                      accessSystem=self._as, modFunct=self._modFunct)
-                for x in data[key]
-            ]
-            del data[key]
-        if data:
-            return {'recommendations': data}
-        return data
-
-
 class DOMHTMLNewsParser(DOMParserBase):
     """Parser for the "news" page of a given movie or person.
     The page should be provided as a string, as taken from
@@ -2363,21 +2274,6 @@ class DOMHTMLEpisodesParser(DOMParserBase):
         return {'episodes': nd}
 
 
-class DOMHTMLEpisodesCastParser(DOMHTMLEpisodesParser):
-    """Parser for the "episodes cast" page of a given movie.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        eparser = DOMHTMLEpisodesParser()
-        result = eparser.parse(episodes_html_string)
-    """
-    kind = 'episodes cast'
-    _episodes_path = "..//h4"
-    _oad_path = "./following-sibling::b[1]/text()"
-
-
 class DOMHTMLFaqsParser(DOMParserBase):
     """Parser for the "FAQ" page of a given movie.
     The page should be provided as a string, as taken from
@@ -2576,14 +2472,10 @@ _OBJECTS = {
     'photosites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'connections_parser': ((DOMHTMLConnectionParser,), None),
     'tech_parser': ((DOMHTMLTechParser,), None),
-    'business_parser': ((DOMHTMLBusinessParser,), {'kind': 'business', '_defGetRefs': 1}),
-    'literature_parser': ((DOMHTMLBusinessParser,), None),
     'locations_parser': ((DOMHTMLLocationsParser,), None),
-    'rec_parser': ((DOMHTMLRecParser,), None),
     'news_parser': ((DOMHTMLNewsParser,), None),
     'episodes_parser': ((DOMHTMLEpisodesParser,), None),
     'season_episodes_parser': ((DOMHTMLSeasonEpisodesParser,), None),
-    'episodes_cast_parser': ((DOMHTMLEpisodesCastParser,), None),
     'movie_faqs_parser': ((DOMHTMLFaqsParser,), None),
     'airing_parser': ((DOMHTMLAiringParser,), None),
     'parentsguide_parser': ((DOMHTMLParentsGuideParser,), None)

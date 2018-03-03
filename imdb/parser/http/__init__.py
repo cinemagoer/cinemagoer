@@ -496,14 +496,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'technical')
         return self.mProxy.tech_parser.parse(cont)
 
-    def get_movie_business(self, movieID):
-        cont = self._retrieve(self.urls['movie_main'] % movieID + 'business')
-        return self.mProxy.business_parser.parse(cont, getRefs=self._getRefs)
-
-    def get_movie_literature(self, movieID):
-        cont = self._retrieve(self.urls['movie_main'] % movieID + 'literature')
-        return self.mProxy.literature_parser.parse(cont)
-
     def get_movie_locations(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'locations')
         return self.mProxy.locations_parser.parse(cont)
@@ -511,10 +503,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_soundtrack(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'soundtrack')
         return self.mProxy.soundtrack_parser.parse(cont)
-
-    def get_movie_recommendations(self, movieID):
-        cont = self._retrieve(self.urls['movie_main'] % movieID + 'recommendations')
-        return self.mProxy.rec_parser.parse(cont)
 
     def get_movie_reviews(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'reviews?count=9999999&start=0')
@@ -574,12 +562,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'news')
         return self.mProxy.news_parser.parse(cont, getRefs=self._getRefs)
 
-    def get_movie_guests(self, movieID):
-        cont = self._retrieve(self.urls['movie_main'] % movieID + 'epcast')
-        return self.mProxy.episodes_cast_parser.parse(cont)
-
-    get_movie_episodes_cast = get_movie_guests
-
     def _purge_seasons_data(self, data_d):
         if '_current_season' in data_d['data']:
             del data_d['data']['_current_season']
@@ -637,7 +619,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.spProxy.search_person_parser.parse(cont, results=results)['data']
 
     def get_person_main(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'maindetails')
+        cont = self._retrieve(self.urls['person_main'] % personID)
         ret = self.pProxy.maindetails_parser.parse(cont)
         ret['info sets'] = ('main', 'filmography')
         return ret
@@ -649,10 +631,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(self.urls['person_main'] % personID + 'bio')
         return self.pProxy.bio_parser.parse(cont, getRefs=self._getRefs)
 
-    def get_person_resume(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'resume')
-        return self.pProxy.resume_parser.parse(cont, getRefs=self._getRefs)
-
     def get_person_awards(self, personID):
         cont = self._retrieve(self.urls['person_main'] % personID + 'awards')
         return self.pProxy.person_awards_parser.parse(cont)
@@ -660,10 +638,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_person_other_works(self, personID):
         cont = self._retrieve(self.urls['person_main'] % personID + 'otherworks')
         return self.pProxy.otherworks_parser.parse(cont, getRefs=self._getRefs)
-
-    # def get_person_agent(self, personID):
-    #     cont = self._retrieve(self.urls['person_main'] % personID + 'agent')
-    #     return self.pProxy.agent_parser.parse(cont)
 
     def get_person_publicity(self, personID):
         cont = self._retrieve(self.urls['person_main'] % personID + 'publicity')
@@ -676,10 +650,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_person_news(self, personID):
         cont = self._retrieve(self.urls['person_main'] % personID + 'news')
         return self.pProxy.news_parser.parse(cont)
-
-    def get_person_episodes(self, personID):
-        cont = self._retrieve(self.urls['person_main'] % personID + 'filmoseries')
-        return self.pProxy.person_series_parser.parse(cont)
 
     def get_person_genres_links(self, personID):
         cont = self._retrieve(self.urls['person_main'] % personID + 'filmogenre')

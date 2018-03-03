@@ -2,6 +2,8 @@
   ====================
 
 * What's the new in release 6.4
+  [http]
+  - remove obsolete parsers
 
 
 * What's the new in release 6.3 "Altered Carbon" (27 Feb 2018)

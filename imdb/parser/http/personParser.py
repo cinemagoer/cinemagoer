@@ -434,135 +434,6 @@ class DOMHTMLBioParser(DOMParserBase):
         return data
 
 
-class DOMHTMLResumeParser(DOMParserBase):
-    """Parser for the "resume" page of a given person.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        resumeparser = DOMHTMLResumeParser()
-        result = resumeparser.parse(resume_html_string)
-    """
-    _defGetRefs = True
-
-    extractors = [
-        Extractor(
-            label='info',
-            group="//div[@class='section_box']",
-            group_key="./h3/text()",
-            group_key_normalize=lambda x: x.lower().replace(' ', '_'),
-            path="./ul[@class='resume_section_multi_list']//li",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'title': ".//b//text()",
-                    'desc': ".//text()",
-                },
-                postprocess=lambda x: (
-                    x.get('title'), x.get('desc').strip().replace('\n', ' '))
-            )
-        ),
-
-        Extractor(
-            label='other_info',
-            group="//div[@class='section_box']",
-            group_key="./h3/text()",
-            group_key_normalize=lambda x: x.lower().replace(' ', '_'),
-            path="./ul[@class='_imdbpy']//li",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip().replace('\n', ' '))
-        ),
-
-        Extractor(
-            label='credits',
-            group="//div[@class='section_box']",
-            group_key="./h3/text()",
-            group_key_normalize=lambda x: x.lower().replace(' ', '_'),
-            path="./table[@class='credits']//tr",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    '0': ".//td[1]//text()",
-                    '1': ".//td[2]//text()",
-                    '2': ".//td[3]//text()",
-                },
-                postprocess=lambda x: [x.get('0'), x.get('1'), x.get('2')]
-            )
-        ),
-
-        Extractor(
-            label='mini_info',
-            path="//div[@class='center']",
-            attrs=Attribute(
-                key='mini_info',
-                path=".//text()",
-                postprocess=lambda x: x.strip().replace('\n', ' ')
-            )
-        ),
-
-        Extractor(
-            label='name',
-            path="//div[@class='center']/h1[@id='preview_user_name']",
-            attrs=Attribute(
-                key='name',
-                path=".//text()",
-                postprocess=lambda x: x.strip().replace('\n', ' ')
-            )
-        ),
-
-        Extractor(
-            label='resume_bio',
-            path="//div[@id='resume_rendered_html']//p",
-            attrs=Attribute(
-                key='resume_bio',
-                multi=True,
-                path=".//text()"
-            )
-        )
-    ]
-
-    preprocessors = [
-        (re.compile('(<ul>)', re.I), r'<ul class="_imdbpy">\1'),
-    ]
-
-    def postprocess_data(self, data):
-
-        for key in list(data.keys()):
-            if data[key] == '':
-                del data[key]
-            if key in ('mini_info', 'name', 'resume_bio'):
-                if key == 'resume_bio':
-                    data[key] = "".join(data[key]).strip()
-                continue
-            if len(data[key][0]) == 3:
-                for item in data[key]:
-                    item[:] = [x for x in item if x is not None]
-                continue
-
-            if len(data[key][0]) == 2:
-                new_key = {}
-                for item in data[key]:
-                    if item[0] is None:
-                        continue
-                    if ':' in item[0]:
-                        if item[1].replace(item[0], '')[1:].strip() == '':
-                            continue
-                        new_key[item[0].strip().replace(':', '')] = \
-                            item[1].replace(item[0], '')[1:].strip()
-                    else:
-                        new_key[item[0]] = item[1]
-                data[key] = new_key
-
-        new_data = {'resume': data}
-        return new_data
-
-
 class DOMHTMLOtherWorksParser(DOMParserBase):
     """Parser for the "other works" page of a given person.
     The page should be provided as a string, as taken from
@@ -630,67 +501,6 @@ def _build_episode(link, title, minfo, role, roleA, roleAID):
     return e
 
 
-class DOMHTMLSeriesParser(DOMParserBase):
-    """Parser for the "by TV series" page of a given person.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        sparser = DOMHTMLSeriesParser()
-        result = sparser.parse(filmoseries_html_string)
-    """
-    _containsObjects = True
-
-    extractors = [
-        Extractor(
-            label='series',
-            group="//div[@class='filmo']/span[1]",
-            group_key="./a[1]",
-            path="./following-sibling::ol[1]/li/a[1]",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'link': "./@href",
-                    'title': "./text()",
-                    'info': "./following-sibling::text()",
-                    'role': "./following-sibling::i[1]/text()",
-                    'roleA': "./following-sibling::a[1]/text()",
-                    'roleAID': "./following-sibling::a[1]/@href"
-                },
-                postprocess=lambda x: _build_episode(
-                    x.get('link'),
-                    x.get('title'),
-                    (x.get('info') or '').strip(),
-                    x.get('role'),
-                    x.get('roleA'),
-                    x.get('roleAID')
-                )
-            )
-        )
-    ]
-
-    def postprocess_data(self, data):
-        if len(data) == 0:
-            return {}
-        nd = {}
-        for key in list(data.keys()):
-            dom = self.get_dom(key)
-            link = self.xpath(dom, "//a/@href")[0]
-            title = self.xpath(dom, "//a/text()")[0][1:-1]
-            series = Movie(movieID=analyze_imdbid(link),
-                           data=analyze_title(title),
-                           accessSystem=self._as, modFunct=self._modFunct)
-            nd[series] = []
-            for episode in data[key]:
-                # XXX: should we create a copy of 'series', to avoid
-                #      circular references?
-                episode['episode of'] = series
-                nd[series].append(episode)
-        return {'episodes': nd}
-
-
 class DOMHTMLPersonGenresParser(DOMParserBase):
     """Parser for the "by genre" and "by keywords" pages of a given person.
     The page should be provided as a string, as taken from
@@ -735,12 +545,10 @@ class DOMHTMLPersonGenresParser(DOMParserBase):
 _OBJECTS = {
     'maindetails_parser': ((DOMHTMLMaindetailsParser,), None),
     'bio_parser': ((DOMHTMLBioParser,), None),
-    'resume_parser': ((DOMHTMLResumeParser,), None),
     'otherworks_parser': ((DOMHTMLOtherWorksParser,), None),
     'person_officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'person_awards_parser': ((DOMHTMLAwardsParser,), {'subject': 'name'}),
     'publicity_parser': ((DOMHTMLTechParser,), {'kind': 'publicity'}),
-    'person_series_parser': ((DOMHTMLSeriesParser,), None),
     'person_contacts_parser': ((DOMHTMLTechParser,), {'kind': 'contacts'}),
     'person_genres_parser': ((DOMHTMLPersonGenresParser,), None),
     'person_keywords_parser': ((DOMHTMLPersonGenresParser,), {'kind': 'keywords'}),

@@ -30,7 +30,6 @@ from html.entities import entitydefs
 import lxml.etree
 import lxml.html
 
-from imdb.Character import Character
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
@@ -42,7 +41,7 @@ re_yearKind_index = re.compile(
 )
 
 # Match imdb ids in href tags
-re_imdbid = re.compile(r'(title/tt|name/nm|character/ch|company/co|user/ur)([0-9]+)')
+re_imdbid = re.compile(r'(title/tt|name/nm|company/co|user/ur)([0-9]+)')
 
 
 def analyze_imdbid(href):
@@ -58,7 +57,7 @@ def analyze_imdbid(href):
 _modify_keys = list(Movie.keys_tomodify_list) + list(Person.keys_tomodify_list)
 
 
-def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
+def _putRefs(d, re_titles, re_names, lastKey=None):
     """Iterate over the strings inside list items or dictionary values,
     substitutes movie titles and person names with the (qv) references."""
     if isinstance(d, list):
@@ -69,10 +68,8 @@ def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
                         d[i] = re_names.sub(r"'\1' (qv)", d[i])
                     if re_titles:
                         d[i] = re_titles.sub(r'_\1_ (qv)', d[i])
-                    if re_characters:
-                        d[i] = re_characters.sub(r'#\1# (qv)', d[i])
             elif isinstance(d[i], (list, dict)):
-                _putRefs(d[i], re_titles, re_names, re_characters, lastKey=lastKey)
+                _putRefs(d[i], re_titles, re_names, lastKey=lastKey)
     elif isinstance(d, dict):
         for k, v in list(d.items()):
             lastKey = k
@@ -82,10 +79,8 @@ def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
                         d[k] = re_names.sub(r"'\1' (qv)", v)
                     if re_titles:
                         d[k] = re_titles.sub(r'_\1_ (qv)', v)
-                    if re_characters:
-                        d[k] = re_characters.sub(r'#\1# (qv)', v)
             elif isinstance(v, (list, dict)):
-                _putRefs(d[k], re_titles, re_names, re_characters, lastKey=lastKey)
+                _putRefs(d[k], re_titles, re_names, lastKey=lastKey)
 
 
 # Handle HTML/XML/SGML entities.
@@ -304,9 +299,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
     # FIXME: Oook, lets face it: build_movie and build_person are now
     # two horrible sets of patches to support the new IMDb design.  They
     # must be rewritten from scratch.
-    if _parsingCharacter:
-        _defSep = ' Played by '
-    elif _parsingCompany:
+    if _parsingCompany:
         _defSep = ' ... '
     else:
         _defSep = ' .... '
@@ -377,8 +370,6 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
                     notes = title[fpIdx:]
                 title = title[:fpIdx].rstrip()
         title = '%s (%s)' % (title, year)
-    if _parsingCharacter and roleID and not role:
-        roleID = None
     if not roleID:
         roleID = None
     elif len(roleID) == 1:
@@ -479,7 +470,6 @@ class DOMParserBase(object):
         # Names and titles references.
         self._namesRefs = {}
         self._titlesRefs = {}
-        self._charactersRefs = {}
         self._reset()
 
     def _init(self):
@@ -492,7 +482,7 @@ class DOMParserBase(object):
 
     def parse(self, html_string, getRefs=None, **kwds):
         """Return the dictionary generated from the given html string;
-        getRefs can be used to force the gathering of movies/persons/characters
+        getRefs can be used to force the gathering of movies/persons
         references."""
         self.reset()
         if getRefs is not None:
@@ -611,7 +601,6 @@ class DOMParserBase(object):
         refs = grParser.postprocess_data(refs)
         self._namesRefs = refs['names refs']
         self._titlesRefs = refs['titles refs']
-        self._charactersRefs = refs['characters refs']
 
     def preprocess_dom(self, dom):
         """Last chance to modify the dom, before the rules in self.extractors
@@ -730,18 +719,11 @@ class DOMParserBase(object):
                 re_names = re.compile(nam_re, re.U)
             else:
                 re_names = None
-            chr_re = r'(%s)' % '|'.join(
-                [re.escape(x) for x in list(self._charactersRefs.keys())]
-            )
-            if chr_re != r'()':
-                re_characters = re.compile(chr_re, re.U)
-            else:
-                re_characters = None
-            _putRefs(data, re_titles, re_names, re_characters)
+            _putRefs(data, re_titles, re_names)
         return {'data': data,
                 'titlesRefs': self._titlesRefs,
-                'namesRefs': self._namesRefs,
-                'charactersRefs': self._charactersRefs}
+                'namesRefs': self._namesRefs
+                }
 
 
 class Extractor(object):
@@ -818,7 +800,7 @@ def _parse_ref(text, link, info):
 
 
 class GatherRefs(DOMParserBase):
-    """Parser used to gather references to movies, persons and characters."""
+    """Parser used to gather references to movies, persons."""
     _attrs = [
         Attribute(
             key=None,
@@ -847,18 +829,12 @@ class GatherRefs(DOMParserBase):
             label='titles refs',
             path="//a[starts-with(@href, '/title/tt')][string-length(@href)=17]",
             attrs=_attrs
-        ),
-
-        Extractor(
-            label='characters refs',
-            path="//a[starts-with(@href, '/character/ch')][string-length(@href)=21]",
-            attrs=_attrs
-        ),
+        )
     ]
 
     def postprocess_data(self, data):
         result = {}
-        for item in ('names refs', 'titles refs', 'characters refs'):
+        for item in ('names refs', 'titles refs'):
             result[item] = {}
             for k, v in data.get(item, []):
                 k = k.strip()
@@ -874,9 +850,6 @@ class GatherRefs(DOMParserBase):
                 elif item == 'titles refs':
                     obj = Movie(movieID=imdbID, title=k,
                                 accessSystem=self._as, modFunct=self._modFunct)
-                else:
-                    obj = Character(characterID=imdbID, name=k,
-                                    accessSystem=self._as, modFunct=self._modFunct)
                 # XXX: companies aren't handled: are they ever found in text,
                 #      as links to their page?
                 result[item][k] = obj

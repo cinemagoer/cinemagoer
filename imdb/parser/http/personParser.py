@@ -28,8 +28,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 import re
 
-from imdb.Movie import Movie
-from imdb.utils import analyze_name, analyze_title, canonicalName
+from imdb.utils import analyze_name, canonicalName
 
 from .movieParser import (
     DOMHTMLAwardsParser,
@@ -92,8 +91,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                 'year': "./span[@class='year_column']/text()",
                 'status': "./a[@class='in_production']/text()",
                 'rolesNoChar': './/br/following-sibling::text()',
-                'chrRoles': "./a[@imdbpyname]/@imdbpyname",
-                'roleID': "./a[starts-with(@href, '/character/')]/@href"
+                'chrRoles': "./a[@imdbpyname]/@imdbpyname"
             },
             postprocess=lambda x: build_movie(
                 x.get('title') or '',
@@ -102,7 +100,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                 rolesNoChar=(x.get('rolesNoChar') or '').strip(),
                 chrRoles=(x.get('chrRoles') or '').strip(),
                 additionalNotes=x.get('notes'),
-                roleID=(x.get('roleID') or ''),
                 status=x.get('status') or None
             )
         )
@@ -189,9 +186,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
     ]
 
     preprocessors = [
-        ('<div class="clear"/> </div>', ''), ('<br/>', '<br />'),
-        (re.compile(r'(<a href="/character/ch[0-9]{7}")>(.*?)</a>'),
-         r'\1 imdbpyname="\2@@">\2</a>')
+        ('<div class="clear"/> </div>', ''), ('<br/>', '<br />')
     ]
 
     def postprocess_data(self, data):
@@ -458,47 +453,6 @@ class DOMHTMLOtherWorksParser(DOMParserBase):
             )
         )
     ]
-
-
-def _build_episode(link, title, minfo, role, roleA, roleAID):
-    """Build an Movie object for a given episode of a series."""
-    episode_id = analyze_imdbid(link)
-    notes = ''
-    minidx = minfo.find(' -')
-    # Sometimes, for some unknown reason, the role is left in minfo.
-    if minidx != -1:
-        slfRole = minfo[minidx + 3:].lstrip()
-        minfo = minfo[:minidx].rstrip()
-        if slfRole.endswith(')'):
-            commidx = slfRole.rfind('(')
-            if commidx != -1:
-                notes = slfRole[commidx:]
-                slfRole = slfRole[:commidx]
-        if slfRole and role is None and roleA is None:
-            role = slfRole
-    eps_data = analyze_title(title)
-    eps_data['kind'] = 'episode'
-    # FIXME: it's wrong for multiple characters (very rare on tv series?).
-    if role is None:
-        role = roleA    # At worse, it's None.
-    if role is None:
-        roleAID = None
-    if roleAID is not None:
-        roleAID = analyze_imdbid(roleAID)
-    e = Movie(movieID=episode_id, data=eps_data, currentRole=role, roleID=roleAID, notes=notes)
-    # XXX: are we missing some notes?
-    # XXX: does it parse things as "Episode dated 12 May 2005 (12 May 2005)"?
-    if minfo.startswith('('):
-        pe = minfo.find(')')
-        if pe != -1:
-            date = minfo[1:pe]
-            if date != '????':
-                e['original air date'] = date
-                if eps_data.get('year', '????') == '????':
-                    syear = date.split()[-1]
-                    if syear.isdigit():
-                        e['year'] = int(syear)
-    return e
 
 
 class DOMHTMLPersonGenresParser(DOMParserBase):

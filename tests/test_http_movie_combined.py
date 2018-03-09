@@ -2,6 +2,9 @@ from pytest import fixture, mark
 
 import re
 
+months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+re_date = re.compile(r'[0-9]{1,2} (%s) [0-9]{4}' % '|'.join(months), re.I)
+
 from imdb.parser.http.movieParser import DOMHTMLMovieParser, DOMHTMLSeasonEpisodesParser
 
 
@@ -366,7 +369,7 @@ def test_series_number_of_seasons_should_exclude_non_numeric_season_titles(movie
 def test_original_air_date_should_be_a_date(movie_combined_details):
     page = movie_combined_details('dr who ep blink')
     data = parser.parse(page)['data']
-    assert data['original air date'] == '09 Jun 2007'
+    assert re_date.match(data['original air date'])
 
 
 def test_original_air_date_none_should_be_excluded(movie_combined_details):

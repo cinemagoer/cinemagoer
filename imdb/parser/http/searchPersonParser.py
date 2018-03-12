@@ -25,11 +25,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-import re
-
 from imdb.utils import analyze_name, build_name
 
-from .searchMovieParser import DOMBasicMovieParser, DOMHTMLSearchMovieParser
+from .searchMovieParser import DOMHTMLSearchMovieParser
 from .utils import Attribute, Extractor, analyze_imdbid
 
 
@@ -41,23 +39,9 @@ def _cleanName(n):
     return n
 
 
-class DOMBasicPersonParser(DOMBasicMovieParser):
-    """Simply get the name of a person and the imdbID.
-
-    It's used by the DOMHTMLSearchPersonParser class to return a result
-    for a direct match (when a search on IMDb results in a single
-    person, the web server sends directly the movie page."""
-    _titleFunct = lambda self, x: analyze_name(_cleanName(x), canonical=1)
-
-
-_reAKASp = re.compile(r'(?:aka|birth name) (<em>")(.*?)"(<br>|<\/em>|<\/td>)', re.I | re.M)
-
-
 class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, for persons."""
-    _BaseParser = DOMBasicPersonParser
-    _notDirectHitTitle = '<title>find - imdb'
     _titleBuilder = lambda self, x: build_name(x, canonical=True)
     _linkPrefix = '/name/nm'
 
@@ -87,16 +71,7 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
         )
     ]
 
-    def preprocess_string(self, html_string):
-        if self._notDirectHitTitle in html_string[:10240].lower():
-            html_string = _reAKASp.sub(
-                r'\1<div class="_imdbpyAKA">\2::</div>\3',
-                html_string
-            )
-        return DOMHTMLSearchMovieParser.preprocess_string(self, html_string)
-
 
 _OBJECTS = {
-    'search_person_parser': ((DOMHTMLSearchPersonParser,),
-                             {'kind': 'person', '_basic_parser': DOMBasicPersonParser})
+    'search_person_parser': ((DOMHTMLSearchPersonParser,), {'kind': 'person'})
 }

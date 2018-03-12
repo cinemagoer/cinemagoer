@@ -7,7 +7,7 @@ for a given company.
 E.g., when searching for the name "Columbia Pictures", the parsed page would be:
     http://www.imdb.com/find?s=co;mx=20;q=Columbia+Pictures
 
-Copyright 2008-2017 Davide Alberani <da@erlug.linux.it>
+Copyright 2008-2018 Davide Alberani <da@erlug.linux.it>
           2008 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -27,23 +27,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from imdb.utils import analyze_company_name, build_company_name
 
-from .searchMovieParser import DOMBasicMovieParser, DOMHTMLSearchMovieParser
+from .searchMovieParser import DOMHTMLSearchMovieParser
 from .utils import Attribute, Extractor, analyze_imdbid
 
 
-class DOMBasicCompanyParser(DOMBasicMovieParser):
-    """Simply get the name of a company and the imdbID.
-
-    It's used by the DOMHTMLSearchCompanyParser class to return a result
-    for a direct match (when a search on IMDb results in a single
-    company, the web server sends directly the company page.
-    """
-    _titleFunct = lambda self, x: analyze_company_name(x or '')
-
-
 class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
-    _BaseParser = DOMBasicCompanyParser
-    _notDirectHitTitle = '<title>find - imdb'
     _titleBuilder = lambda self, x: build_company_name(x)
     _linkPrefix = '/company/co'
 
@@ -73,6 +61,5 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
 
 
 _OBJECTS = {
-    'search_company_parser': ((DOMHTMLSearchCompanyParser,),
-                              {'kind': 'company', '_basic_parser': DOMBasicCompanyParser})
+    'search_company_parser': ((DOMHTMLSearchCompanyParser,), {'kind': 'company'})
 }

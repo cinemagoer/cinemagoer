@@ -7,7 +7,7 @@ for a given keyword.
 E.g., when searching for the keyword "alabama", the parsed page would be:
     http://www.imdb.com/find?s=kw;mx=20;q=alabama
 
-Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
+Copyright 2009-2018 Davide Alberani <da@erlug.linux.it>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,31 +24,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.utils import analyze_company_name, analyze_title
+from imdb.utils import analyze_title
 
-from .searchMovieParser import DOMBasicMovieParser, DOMHTMLSearchMovieParser
+from .searchMovieParser import DOMHTMLSearchMovieParser
 from .utils import Attribute, Extractor, analyze_imdbid
-
-
-class DOMBasicKeywordParser(DOMBasicMovieParser):
-    """Simply get the name of a keyword.
-
-    It's used by the DOMHTMLSearchKeywordParser class to return a result
-    for a direct match (when a search on IMDb results in a single
-    keyword, the web server sends directly the keyword page.
-    """
-    # XXX: it's still to be tested!
-    # I'm not even sure there can be a direct hit, searching for keywords.
-    _titleFunct = lambda self, x: analyze_company_name(x or '')
 
 
 class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, searching for keywords similar to
     the one given."""
-
-    _BaseParser = DOMBasicKeywordParser
-    _notDirectHitTitle = '<title>find - imdb'
     _titleBuilder = lambda self, x: x
     _linkPrefix = '/keyword/'
 
@@ -87,9 +72,6 @@ class DOMHTMLSearchMovieKeywordParser(DOMHTMLSearchMovieParser):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, searching for movies with the given
     keyword."""
-
-    _notDirectHitTitle = '<title>most'
-
     _attrs = [
         Attribute(
             key='data',
@@ -119,7 +101,6 @@ class DOMHTMLSearchMovieKeywordParser(DOMHTMLSearchMovieParser):
 
 
 _OBJECTS = {
-    'search_keyword_parser': ((DOMHTMLSearchKeywordParser,),
-                              {'kind': 'keyword', '_basic_parser': DOMBasicKeywordParser}),
+    'search_keyword_parser': ((DOMHTMLSearchKeywordParser,), {'kind': 'keyword'}),
     'search_moviekeyword_parser': ((DOMHTMLSearchMovieKeywordParser,), None)
 }

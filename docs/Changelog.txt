@@ -1,6 +1,9 @@
   Changelog for IMDbPY
   ====================
 
+* What's the new in release 6.5
+
+
 * What's the new in release 6.4 "Electric Dreams" (14 Mar 2018)
   [http]
   - remove obsolete parsers

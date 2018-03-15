@@ -88,7 +88,6 @@ entitydefsget = entitydefs.get
 entitydefs['nbsp'] = ' '
 
 sgmlentity = {'lt': '<', 'gt': '>', 'amp': '&', 'quot': '"', 'apos': '\'', 'ndash': '-'}
-sgmlentityget = sgmlentity.get
 _sgmlentkeys = list(sgmlentity.keys())
 
 entcharrefs = {}
@@ -121,8 +120,6 @@ re_entcharrefssub = re_entcharrefs.sub
 
 sgmlentity.update(dict([('#34', '"'), ('#38', '&'),
                         ('#60', '<'), ('#62', '>'), ('#39', "'")]))
-re_sgmlref = re.compile('&(%s);' % '|'.join(map(re.escape, sgmlentity)))
-re_sgmlrefsub = re_sgmlref.sub
 
 # Matches XML-only single tags, like <br/> ; they are invalid in HTML,
 # but widely used by IMDb web site. :-/
@@ -152,19 +149,6 @@ def subXMLRefs(s):
     """Return the given html string with entity and char references
     replaced."""
     return re_entcharrefssub(_replXMLRef, s)
-
-
-# XXX: no more used here; move it to mobile (they are imported by helpers, too)?
-def _replSGMLRefs(match):
-    """Replace the matched SGML entity."""
-    ref = match.group(1)
-    return sgmlentityget(ref, ref)
-
-
-def subSGMLRefs(s):
-    """Return the given html string with sgml entity and char references
-    replaced."""
-    return re_sgmlrefsub(_replSGMLRefs, s)
 
 
 _b_p_logger = logging.getLogger('imdbpy.parser.http.build_person')

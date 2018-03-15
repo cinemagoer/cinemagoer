@@ -32,6 +32,7 @@ from imdb.Person import Person
 from imdb.utils import _Container, flatten
 
 from .piculet import ElementTree, build_tree
+from .piculet import xpath as piculet_xpath
 
 
 # Year, imdbIndex and kind.
@@ -521,13 +522,7 @@ class DOMParserBase(object):
     def xpath(self, element, path):
         """Return elements matching the given XPath."""
         try:
-            xpath_result = element.xpath(path)
-            result = []
-            for item in xpath_result:
-                if isinstance(item, str):
-                    item = str(item)
-                result.append(item)
-            return result
+            return piculet_xpath(element, path)
         except Exception:
             self._logger.error('%s: caught exception extracting XPath "%s"',
                                self._cname, path, exc_info=True)

@@ -39,6 +39,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, KIND_MAP
 
+from .piculet import preprocess
 from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_person
 
 
@@ -700,13 +701,18 @@ class DOMHTMLMovieParser(DOMParserBase):
                 if name:
                     a.set('name', 'series %s' % name)
         # Remove links to IMDbPro.
-        for proLink in self.xpath(dom, "//span[@class='pro-link']"):
-            proLink.drop_tree()
         # Remove some 'more' links (keep others, like the one around
         # the number of votes).
-        for tn15more in self.xpath(dom,
-                                   "//a[@class='tn15more'][starts-with(@href, '/title/')]"):
-            tn15more.drop_tree()
+        preprocess(dom, [
+            {
+                'op': 'remove',
+                'path': '//span[@class="pro-link"]'
+            },
+            {
+                'op': 'remove',
+                'path': '//a[@class="tn15more"][starts-with(@href, "/title/")]'
+            }
+        ])
         return dom
 
     re_space = re.compile(r'\s+')
@@ -881,8 +887,12 @@ class DOMHTMLPlotParser(DOMParserBase):
     ]
 
     def preprocess_dom(self, dom):
-        for no_summary in self.xpath(dom, "//li[@id='no-summary-content']"):
-            no_summary.drop_tree()
+        preprocess(dom, [
+            {
+                'op': 'remove',
+                'path': '//li[@id="no-summary-content"]'
+            }
+        ])
         return dom
 
     def postprocess_data(self, data):
@@ -1057,10 +1067,16 @@ class DOMHTMLTaglinesParser(DOMParserBase):
     ]
 
     def preprocess_dom(self, dom):
-        for node in self.xpath(dom, "//div[@id='taglines_content']/div[@class='header']"):
-            node.drop_tree()
-        for node in self.xpath(dom, "//div[@id='taglines_content']/div[@id='no_content']"):
-            node.drop_tree()
+        preprocess(dom, [
+            {
+                'op': 'remove',
+                'path': '//div[@id="taglines_content"]/div[@class="header"]'
+            },
+            {
+                'op': 'remove',
+                'path': '//div[@id="taglines_content"]/div[@id="no_content"]'
+            }
+        ])
         return dom
 
     def postprocess_data(self, data):
@@ -1144,8 +1160,12 @@ class DOMHTMLTriviaParser(DOMParserBase):
 
     def preprocess_dom(self, dom):
         # Remove "link this quote" links.
-        for qLink in self.xpath(dom, "//span[@class='linksoda']"):
-            qLink.drop_tree()
+        preprocess(dom, [
+            {
+                'op': 'remove',
+                'path': '//span[@class="linksoda"]'
+            }
+        ])
         return dom
 
 
@@ -1321,10 +1341,16 @@ class DOMHTMLQuotesParser(DOMParserBase):
 
     def preprocess_dom(self, dom):
         # Remove "link this quote" links.
-        for qLink in self.xpath(dom, "//span[@class='linksoda']"):
-            qLink.drop_tree()
-        for qLink in self.xpath(dom, "//div[@class='sharesoda_pre']"):
-            qLink.drop_tree()
+        preprocess(dom, [
+            {
+                'op': 'remove',
+                'path': '//span[@class="linksoda"]'
+            },
+            {
+                'op': 'remove',
+                'path': '//div[@class="sharesoda_pre"]'
+            }
+        ])
         return dom
 
     def postprocess_data(self, data):

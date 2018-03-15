@@ -553,9 +553,6 @@ class DOMParserBase(object):
         """Here we can modify the text, before it's parsed."""
         if not html_string:
             return html_string
-        # Remove silly &nbsp;&raquo; and &ndash; chars.
-        html_string = html_string.replace(' \xbb', '')
-        html_string = html_string.replace('&ndash;', '-')
         try:
             preprocessors = self.preprocessors
         except AttributeError:

@@ -122,10 +122,6 @@ re_entcharrefssub = re_entcharrefs.sub
 sgmlentity.update(dict([('#34', '"'), ('#38', '&'),
                         ('#60', '<'), ('#62', '>'), ('#39', "'")]))
 
-# Matches XML-only single tags, like <br/> ; they are invalid in HTML,
-# but widely used by IMDb web site. :-/
-re_xmltags = re.compile('<([a-zA-Z]+)/>')
-
 
 def _replXMLRef(match):
     """Replace the matched XML/HTML entities and references;

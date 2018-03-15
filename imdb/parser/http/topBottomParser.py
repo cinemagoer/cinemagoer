@@ -8,6 +8,7 @@ E.g.:
     http://www.imdb.com/chart/bottom
 
 Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
+               2018 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,7 +27,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from imdb.utils import analyze_title
 
-from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid
+from .piculet import Path, Rule, Rules
+from .utils import DOMParserBase, analyze_imdbid
 
 
 class DOMHTMLTop250Parser(DOMParserBase):
@@ -43,21 +45,37 @@ class DOMHTMLTop250Parser(DOMParserBase):
     ranktext = 'top 250 rank'
 
     def _init(self):
-        self.extractors = [
-            Extractor(
-                label=self.label,
-                path="//div[@id='main']//div[1]//div//table//tbody//tr",
-                attrs=Attribute(
-                    key=None,
-                    multi=True,
-                    path={
-                        self.ranktext: "./td[2]/text()",
-                        'rating': "./td[3]//strong//text()",
-                        'title': "./td[2]//a//text()",
-                        'year': "./td[2]//span//text()",
-                        'movieID': "./td[2]//a/@href",
-                        'votes': "./td[3]//strong/@title"
-                    }
+        self.rules = [
+            Rule(
+                key=self.label,
+                extractor=Rules(
+                    foreach='//div[@id="main"]//div[1]//div//table//tbody//tr',
+                    rules=[
+                        Rule(
+                            key=self.ranktext,
+                            extractor=Path('./td[2]/text()')
+                        ),
+                        Rule(
+                            key='rating',
+                            extractor=Path('./td[3]//strong//text()')
+                        ),
+                        Rule(
+                            key='title',
+                            extractor=Path('./td[2]//a//text()')
+                        ),
+                        Rule(
+                            key='year',
+                            extractor=Path('./td[2]//span//text()')
+                        ),
+                        Rule(
+                            key='movieID',
+                            extractor=Path('./td[2]//a/@href')
+                        ),
+                        Rule(
+                            key='votes',
+                            extractor=Path('./td[3]//strong/@title')
+                        )
+                    ]
                 )
             )
         ]

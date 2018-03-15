@@ -31,7 +31,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
 
-from .piculet import ElementTree, build_tree
+from .piculet import ElementTree, Rules, build_tree
 from .piculet import xpath as piculet_xpath
 
 
@@ -434,6 +434,7 @@ class DOMParserBase(object):
 
     preprocessors = []
     extractors = []
+    rules = []
 
     _logger = logging.getLogger('imdbpy.parser.http.domparser')
 
@@ -487,6 +488,10 @@ class DOMParserBase(object):
                     self._logger.warn('%s: unable to gather refs: %s',
                                       self._cname, exc_info=True)
             data = self.parse_dom(dom)
+
+            if self.rules:
+                piculet_data = Rules(self.rules).extract(dom)
+                data.update(piculet_data)
         else:
             data = {}
         try:

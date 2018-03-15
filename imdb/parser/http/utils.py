@@ -27,12 +27,11 @@ import logging
 import re
 from html.entities import entitydefs
 
-import lxml.etree
-import lxml.html
-
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
+
+from .piculet import ElementTree, build_tree
 
 
 # Year, imdbIndex and kind.
@@ -525,15 +524,15 @@ class DOMParserBase(object):
     def get_dom(self, html_string):
         """Return a dom object, from the given string."""
         try:
-            dom = lxml.html.fromstring(html_string)
+            dom = build_tree(html_string, force_html=True)
             if dom is None:
-                dom = lxml.html.fromstring('')
+                dom = build_tree('')
                 self._logger.error('%s: using a fake empty DOM', self._cname)
             return dom
         except Exception:
             self._logger.error('%s: caught exception parsing DOM',
                                self._cname, exc_info=True)
-            return lxml.html.fromstring('')
+            return build_tree('')
 
     def xpath(self, element, path):
         """Return elements matching the given XPath."""
@@ -556,7 +555,7 @@ class DOMParserBase(object):
             return str(element)
         else:
             try:
-                return lxml.etree.tostring(element, encoding='utf8')
+                return ElementTree.tostring(element, encoding='utf8')
             except Exception:
                 self._logger.error('%s: unable to convert to string',
                                    self._cname, exc_info=True)
@@ -564,7 +563,7 @@ class DOMParserBase(object):
 
     def clone(self, element):
         """Clone an element."""
-        return lxml.html.fromstring(self.tostring(element))
+        return build_tree(self.tostring(element))
 
     def preprocess_string(self, html_string):
         """Here we can modify the text, before it's parsed."""

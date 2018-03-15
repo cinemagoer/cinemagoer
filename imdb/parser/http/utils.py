@@ -473,9 +473,6 @@ class DOMParserBase(object):
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
-        # Useful only for the testsuite.
-        if not isinstance(html_string, str):
-            html_string = str(html_string, 'utf8', 'replace')
         html_string = subXMLRefs(html_string)
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)

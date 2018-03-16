@@ -8,7 +8,7 @@ E.g., when searching for the name "Mel Gibson", the parsed page would be:
     http://www.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
 
 Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
-               2008 H. Turgut Uyar <uyar@tekir.org>
+          2008-2018 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,8 +27,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from imdb.utils import analyze_name, build_name
 
+from .piculet import Path, Rule, Rules
 from .searchMovieParser import DOMHTMLSearchMovieParser
-from .utils import Attribute, Extractor, analyze_imdbid
+from .utils import analyze_imdbid
 
 
 def _cleanName(n):
@@ -45,29 +46,35 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     _titleBuilder = lambda self, x: build_name(x, canonical=True)
     _linkPrefix = '/name/nm'
 
-    _attrs = [
-        Attribute(
+    rules = [
+        Rule(
             key='data',
-            multi=True,
-            path={
-                'link': "./a[1]/@href",
-                'name': "./a[1]/text()",
-                'index': "./text()[1]",
-                'akas': ".//div[@class='_imdbpyAKA']/text()"
-            },
-            postprocess=lambda x: (
-                analyze_imdbid(x.get('link') or ''),
-                analyze_name((x.get('name') or '') + (x.get('index') or ''),
-                             canonical=1), x.get('akas')
+            extractor=Rules(
+                foreach='//td[@class="result_text"]/a[starts-with(@href, "/name/nm")]/..',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('./a[1]/@href')
+                    ),
+                    Rule(
+                        key='name',
+                        extractor=Path('./a[1]/text()')
+                    ),
+                    Rule(
+                        key='index',
+                        extractor=Path('./text()[1]')
+                    ),
+                    Rule(
+                        key='akas',
+                        extractor=Path('.//div[@class="_imdbpyAKA"]/text()')
+                    )
+                ],
+                transform=lambda x: (
+                    analyze_imdbid(x.get('link') or ''),
+                    analyze_name((x.get('name') or '') + (x.get('index') or ''),
+                                 canonical=1), x.get('akas')
+                )
             )
-        )
-    ]
-
-    extractors = [
-        Extractor(
-            label='search',
-            path="//td[@class='result_text']/a[starts-with(@href, '/name/nm')]/..",
-            attrs=_attrs
         )
     ]
 

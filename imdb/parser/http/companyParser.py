@@ -55,12 +55,12 @@ class DOMCompanyParser(DOMParserBase):
         Rule(
             key='filmography',
             extractor=Rules(
-                foreach="//b/a[@name]",
+                foreach='//b/a[@name]',
                 rules=[
                     Rule(
                         key=Path('./text()', transform=str.lower),
                         extractor=Rules(
-                            foreach="../following-sibling::ol[1]/li",
+                            foreach='../following-sibling::ol[1]/li',
                             rules=[
                                 Rule(
                                     key='link',

@@ -8,6 +8,7 @@ E.g., when searching for the keyword "alabama", the parsed page would be:
     http://www.imdb.com/find?s=kw;mx=20;q=alabama
 
 Copyright 2009-2018 Davide Alberani <da@erlug.linux.it>
+               2018 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,8 +27,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from imdb.utils import analyze_title
 
+from .piculet import Path, Rule, Rules
 from .searchMovieParser import DOMHTMLSearchMovieParser
-from .utils import Attribute, Extractor, analyze_imdbid
+from .utils import analyze_imdbid
 
 
 class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
@@ -37,19 +39,13 @@ class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
     _titleBuilder = lambda self, x: x
     _linkPrefix = '/keyword/'
 
-    _attrs = [
-        Attribute(
+    rules = [
+        Rule(
             key='data',
-            multi=True,
-            path="./a[1]/text()"
-        )
-    ]
-
-    extractors = [
-        Extractor(
-            label='search',
-            path="//a[starts-with(@href, '/keyword/')]/..",
-            attrs=_attrs
+            extractor=Path(
+                foreach='//a[starts-with(@href, "/keyword/")]/..',
+                path='./a[1]/text()'
+            )
         )
     ]
 
@@ -72,30 +68,37 @@ class DOMHTMLSearchMovieKeywordParser(DOMHTMLSearchMovieParser):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, searching for movies with the given
     keyword."""
-    _attrs = [
-        Attribute(
-            key='data',
-            multi=True,
-            path={
-                'link': "./a[1]/@href",
-                'info': "./a[1]//text()",
-                'ynote': "./span[@class='lister-item-year text-muted unbold']/text()",
-                'outline': "./span[@class='outline']//text()"
-            },
-            postprocess=lambda x: (
-                analyze_imdbid(x.get('link') or ''),
-                custom_analyze_title4kwd(x.get('info') or '',
-                                         x.get('ynote') or '',
-                                         x.get('outline') or '')
-            )
-        )
-    ]
 
-    extractors = [
-        Extractor(
-            label='search',
-            path="//div[@class='lister-list']//h3//a[starts-with(@href, '/title/tt')]/..",
-            attrs=_attrs
+    rules = [
+        Rule(
+            key='data',
+            extractor=Rules(
+                foreach='//div[@class="lister-list"]//h3//a[starts-with(@href, "/title/tt")]/..',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('./a[1]/@href')
+                    ),
+                    Rule(
+                        key='info',
+                        extractor=Path('./a[1]//text()')
+                    ),
+                    Rule(
+                        key='ynote',
+                        extractor=Path('./span[@class="lister-item-year text-muted unbold"]/text()')
+                    ),
+                    Rule(
+                        key='outline',
+                        extractor=Path('./span[@class="outline"]//text()')
+                    )
+                ],
+                transform=lambda x: (
+                    analyze_imdbid(x.get('link') or ''),
+                    custom_analyze_title4kwd(x.get('info') or '',
+                                             x.get('ynote') or '',
+                                             x.get('outline') or '')
+                )
+            )
         )
     ]
 

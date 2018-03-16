@@ -2073,74 +2073,72 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
         result = sparser.parse(episodes_html_string)
     """
 
-    extractors = [
-        Extractor(
-            label='series link',
-            path="//div[@class='parent']",
-            attrs=[
-                Attribute(
-                    key='series link',
-                    path=".//a/@href"
-                )
-            ]
+    rules = [
+        Rule(
+            key='series link',
+            extractor=Path('//div[@class="parent"]//a/@href')
         ),
-
-        Extractor(
-            label='series title',
-            path="//head/meta[@property='og:title']",
-            attrs=[
-                Attribute(
-                    key='series title',
-                    path="./@content"
-                )
-            ]
+        Rule(
+            key='series title',
+            extractor=Path('//head/meta[@property="og:title"]/@content')
         ),
-
-        Extractor(
-            label='seasons list',
-            path="//select[@id='bySeason']//option",
-            attrs=[
-                Attribute(
-                    key='_seasons',
-                    multi=True,
-                    path="./@value"
-                )
-            ]
+        Rule(
+            key='_seasons',
+            extractor=Path(
+                foreach='//select[@id="bySeason"]//option',
+                path='/@value'
+            )
         ),
-
-        Extractor(
-            label='selected season',
-            path="//select[@id='bySeason']//option[@selected]",
-            attrs=[
-                Attribute(
-                    key='_current_season',
-                    path='./@value'
-                )
-            ]
+        Rule(
+            key='_current_season',
+            extractor=Path('//select[@id="bySeason"]//option[@selected]/@value')
         ),
-
-        Extractor(
-            label='episodes',
-            path=".",
-            group="//div[@class='info']",
-            group_key=".//meta/@content",
-            group_key_normalize=lambda x: 'episode %s' % x,
-            attrs=[
-                Attribute(
-                    key=None,
-                    multi=True,
-                    path={
-                        "link": ".//strong//a[@href][1]/@href",
-                        "original air date": ".//div[@class='airdate']/text()",
-                        "title": ".//strong//text()",
-                        "rating": ".//div[@class='ipl-rating-star '][1]" +
-                                    "/span[@class='ipl-rating-star__rating'][1]/text()",
-                        "votes": ".//div[contains(@class, 'ipl-rating-star')][1]" +
-                                    "/span[@class='ipl-rating-star__total-votes'][1]/text()",
-                        "plot": ".//div[@class='item_description']//text()"
-                    }
-                )
-            ]
+        Rule(
+            key='episodes',
+            extractor=Rules(
+                foreach='//div[@class="info"]',
+                rules=[
+                    Rule(
+                        key=Path('.//meta/@content',
+                                 transform=lambda x: 'episode %s' % x),
+                        extractor=Rules(
+                            foreach='.',
+                            rules=[
+                                Rule(
+                                    key='link',
+                                    extractor=Path('.//strong//a[@href][1]/@href')
+                                ),
+                                Rule(
+                                    key='original air date',
+                                    extractor=Path('.//div[@class="airdate"]/text()')
+                                ),
+                                Rule(
+                                    key='title',
+                                    extractor=Path('.//strong//text()')
+                                ),
+                                Rule(
+                                    key='rating',
+                                    extractor=Path(
+                                        './/div[@class="ipl-rating-star "][1]'
+                                        '/span[@class="ipl-rating-star__rating"][1]/text()'
+                                    )
+                                ),
+                                Rule(
+                                    key='votes',
+                                    extractor=Path(
+                                        './/div[contains(@class, "ipl-rating-star")][1]'
+                                        '/span[@class="ipl-rating-star__total-votes"][1]/text()'
+                                    )
+                                ),
+                                Rule(
+                                    key='plot',
+                                    extractor=Path('.//div[@class="item_description"]//text()')
+                                )
+                            ]
+                        )
+                    )
+                ]
+            )
         )
     ]
 

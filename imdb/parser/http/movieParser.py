@@ -1457,42 +1457,47 @@ class DOMHTMLRatingsParser(DOMParserBase):
     """
     re_means = re.compile('mean\s*=\s*([0-9]\.[0-9])\s*median\s*=\s*([0-9])', re.I)
 
-    extractors = [
-        Extractor(
-            label='number of votes',
-            path="//th[@class='firstTableCoulmn']/../../tr",
-            attrs=[
-                Attribute(
-                    key='votes',
-                    multi=True,
-                    path={
-                        'ordinal': "td[1]/div//text()",
-                        'votes': "td[3]/div/div//text()"
-                    }
-                )
-            ]
-        ),
-
-        Extractor(
-            label='mean and median',
-            path="//div[starts-with(normalize-space(text()), 'Arithmetic mean')]",
-            attrs=Attribute(
-                key='mean and median',
-                path="normalize-space(text())"
+    rules = [
+        Rule(
+            key='votes',
+            extractor=Rules(
+                foreach='//th[@class="firstTableCoulmn"]/../../tr',
+                rules=[
+                    Rule(
+                        key='ordinal',
+                        extractor=Path('./td[1]/div//text()')
+                    ),
+                    Rule(
+                        key='votes',
+                        extractor=Path('./td[3]/div/div//text()')
+                    )
+                ]
             )
         ),
-
-        Extractor(
-            label='demographics',
-            path="//div[@class='smallcell']",
-            attrs=Attribute(
-                key='demographics',
-                multi=True,
-                path={
-                    'link': "a/@href",
-                    'rating': "..//div[@class='bigcell']//text()",
-                    'votes': "a/text()"
-                }
+        Rule(
+            key='mean and median',
+            extractor=Path(
+                '//div[starts-with(normalize-space(text()), "Arithmetic mean")]/text()'
+            )
+        ),
+        Rule(
+            key='demographics',
+            extractor=Rules(
+                foreach='//div[@class="smallcell"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('./a/@href')
+                    ),
+                    Rule(
+                        key='rating',
+                        extractor=Path('..//div[@class="bigcell"]//text()')
+                    ),
+                    Rule(
+                        key='votes',
+                        extractor=Path('./a/text()')
+                    )
+                ]
             )
         )
     ]

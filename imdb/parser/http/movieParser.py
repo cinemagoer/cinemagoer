@@ -1236,15 +1236,13 @@ class DOMHTMLCrazyCreditsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='crazy credits',
-            path="//ul/li/tt",
-            attrs=Attribute(
-                key='crazy credits',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.replace('\n', ' ').replace('  ', ' ')
+    rules = [
+        Rule(
+            key='crazy credits',
+            extractor=Path(
+                foreach='//ul/li/tt',
+                path='.//text()',
+                transform=lambda x: x.replace('\n', ' ').replace('  ', ' ')
             )
         )
     ]

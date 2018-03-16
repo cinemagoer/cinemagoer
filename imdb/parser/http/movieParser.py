@@ -1267,19 +1267,26 @@ class DOMHTMLGoofsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='goofs',
-            path="//div[@class='soda odd']",
-            attrs=Attribute(
-                key='goofs',
-                multi=True,
-                path={
-                    'text': "./text()",
-                    'category': './preceding-sibling::h4[1]/text()',
-                    'spoiler_category': './h4/text()'
-                },
-                postprocess=_process_goof
+    rules = [
+        Rule(
+            key='goofs',
+            extractor=Rules(
+                foreach='//div[@class="soda odd"]',
+                rules=[
+                    Rule(
+                        key='text',
+                        extractor=Path('./text()')
+                    ),
+                    Rule(
+                        key='category',
+                        extractor=Path('./preceding-sibling::h4[1]/text()')
+                    ),
+                    Rule(
+                        key='spoiler_category',
+                        extractor=Path('./h4/text()')
+                    )
+                ],
+                transform=_process_goof
             )
         )
     ]

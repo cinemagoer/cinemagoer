@@ -1814,20 +1814,29 @@ class DOMHTMLConnectionParser(DOMParserBase):
     """
     _containsObjects = True
 
-    extractors = [
-        Extractor(
-            label='connection',
-            group="//div[@class='_imdbpy']",
-            group_key="./h5/text()",
-            group_key_normalize=lambda x: x.lower(),
-            path="./a",
-            attrs=Attribute(
-                key=None,
-                path={
-                    'title': "./text()",
-                    'movieID': "./@href"
-                },
-                multi=True
+    rules = [
+        Rule(
+            key='connection',
+            extractor=Rules(
+                foreach='//div[@class="_imdbpy"]',
+                rules=[
+                    Rule(
+                        key=Path('./h5/text()', transform=str.lower),
+                        extractor=Rules(
+                            foreach='./a',
+                            rules=[
+                                Rule(
+                                    key='title',
+                                    extractor=Path('./text()')
+                                ),
+                                Rule(
+                                    key='movieID',
+                                    extractor=Path('./@href')
+                                )
+                            ]
+                        )
+                    )
+                ]
             )
         )
     ]

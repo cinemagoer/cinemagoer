@@ -2464,18 +2464,26 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
         pgparser = HTMLParentsGuideParser()
         result = pgparser.parse(parentsguide_html_string)
     """
-    extractors = [
-        Extractor(
-            label='parents guide',
-            group="//div[@class='section']",
-            group_key="./h3/a/span/text()",
-            group_key_normalize=lambda x: x.lower(),
-            path="../following-sibling::div[1]/p",
-            attrs=Attribute(
-                key=None,
-                path=".//text()",
-                postprocess=lambda x: [
-                    t.strip().replace('\n', ' ') for t in x.split('||') if t.strip()
+    rules = [
+        Rule(
+            key='parents guide',
+            extractor=Rules(
+                foreach='//div[@class="section"]',
+                rules=[
+                    Rule(
+                        key=Path(
+                            './h3/a/span/text()',
+                            transform=str.lower
+                        ),
+                        extractor=Path(
+                            foreach='../following-sibling::div[1]/p',
+                            path='.//text()',
+                            transform=lambda x: [
+                                t.strip().replace('\n', ' ')
+                                for t in x.split('||') if t.strip()
+                            ]
+                        )
+                    )
                 ]
             )
         )

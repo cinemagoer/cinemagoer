@@ -39,7 +39,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, KIND_MAP
 
-from .piculet import preprocess
+from .piculet import Path, Rule, Rules, preprocess
 from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_person
 
 
@@ -861,27 +861,29 @@ class DOMHTMLPlotParser(DOMParserBase):
 
     # Notice that recently IMDb started to put the email of the
     # author only in the link, that we're not collecting, here.
-    extractors = [
-        Extractor(
-            label='plot',
-            path="//ul[@id='plot-summaries-content']/li",
-            attrs=Attribute(
-                key='plot',
-                multi=True,
-                path={
-                    'plot': "./p//text()",
-                    'author': ".//div[@class='author-container']//a/text()"
-                },
-                postprocess=_process_plotsummary
+    rules = [
+        Rule(
+            key='plot',
+            extractor=Rules(
+                foreach='//ul[@id="plot-summaries-content"]/li',
+                rules=[
+                    Rule(
+                        key='plot',
+                        extractor=Path('./p//text()')
+                    ),
+                    Rule(
+                        key='author',
+                        extractor=Path('.//div[@class="author-container"]//a/text()')
+                    )
+                ],
+                transform=_process_plotsummary
             )
         ),
-        Extractor(
-            label='synopsis',
-            path="//ul[@id='plot-synopsis-content']",
-            attrs=Attribute(
-                key='synopsis',
-                multi=True,
-                path=".//li//text()"
+        Rule(
+            key='synopsis',
+            extractor=Path(
+                foreach='//ul[@id="plot-synopsis-content"]',
+                path='.//li//text()'
             )
         )
     ]

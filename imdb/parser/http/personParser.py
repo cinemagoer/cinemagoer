@@ -37,7 +37,7 @@ from .movieParser import (
     DOMHTMLTechParser
 )
 from .piculet import Path, Rule, Rules
-from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_movie
+from .utils import DOMParserBase, analyze_imdbid, build_movie
 
 
 _re_spaces = re.compile(r'\s+')
@@ -480,24 +480,36 @@ class DOMHTMLPersonGenresParser(DOMParserBase):
     kind = 'genres'
     _containsObjects = True
 
-    extractors = [
-        Extractor(
-            label='genres',
-            group="//b/a[@name]/following-sibling::a[1]",
-            group_key="./text()",
-            group_key_normalize=lambda x: x.lower(),
-            path="../../following-sibling::ol[1]/li//a[1]",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'link': "./@href",
-                    'title': "./text()",
-                    'info': "./following-sibling::text()"
-                },
-                postprocess=lambda x: build_movie(
-                    x.get('title') + x.get('info').split('[')[0],
-                    analyze_imdbid(x.get('link')))
+    rules = [
+        Rule(
+            key='genres',
+            extractor=Rules(
+                foreach='//b/a[@name]/following-sibling::a[1]',
+                rules=[
+                    Rule(
+                        key=Path('./text()', transform=str.lower),
+                        extractor=Rules(
+                            foreach='../../following-sibling::ol[1]/li//a[1]',
+                            rules=[
+                                Rule(
+                                    key='link',
+                                    extractor=Path('./@href')
+                                ),
+                                Rule(
+                                    key='title',
+                                    extractor=Path('./text()')
+                                ),
+                                Rule(
+                                    key='info',
+                                    extractor=Path('./following-sibling::text()')
+                                )
+                            ],
+                            transform=lambda x: build_movie(
+                                x.get('title') + x.get('info').split('[')[0],
+                                analyze_imdbid(x.get('link')))
+                        )
+                    )
+                ]
             )
         )
     ]

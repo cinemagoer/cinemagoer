@@ -4,7 +4,7 @@ parser.http.utils module (imdb package).
 This module provides miscellaneous utilities used by
 the imdb.parser.http classes.
 
-Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
+Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@ from imdb.utils import _Container, flatten
 
 from .piculet import ElementTree, Rules, build_tree
 from .piculet import xpath as piculet_xpath
+from .piculet import Rule, Path
 
 
 # Year, imdbIndex and kind.
@@ -774,34 +775,43 @@ def _parse_ref(text, link, info):
 
 class GatherRefs(DOMParserBase):
     """Parser used to gather references to movies, persons."""
-    _attrs = [
-        Attribute(
-            key=None,
-            multi=True,
-            path={
-                'text': './text()',
-                'link': './@href',
-                'info': './following::text()[1]'
-            },
-            postprocess=lambda x: _parse_ref(
-                x.get('text') or '',
-                x.get('link') or '',
-                (x.get('info') or '').strip()
-            )
+    _common_rules=[
+        Rule(
+            key='text',
+            extractor=Path("./text()")
+        ),
+        Rule(
+            key='link',
+            extractor=Path("./@href")
+        ),
+        Rule(
+            key='info',
+            extractor=Path("./following::text()[1]")
         )
     ]
 
-    extractors = [
-        Extractor(
-            label='names refs',
-            path="//a[starts-with(@href, '/name/nm')][string-length(@href)=16]",
-            attrs=_attrs
-        ),
+    _common_transform = lambda x: _parse_ref(
+        x.get('text') or '',
+        x.get('link') or '',
+        (x.get('info') or '').strip()
+    )
 
-        Extractor(
-            label='titles refs',
-            path="//a[starts-with(@href, '/title/tt')][string-length(@href)=17]",
-            attrs=_attrs
+    rules = [
+        Rule(
+            key='names refs',
+            extractor=Rules(
+                foreach="//a[starts-with(@href, '/name/nm')]",
+                rules=_common_rules,
+                transform=_common_transform
+            )
+        ),
+        Rule(
+            key='titles refs',
+            extractor=Rules(
+                foreach="//a[starts-with(@href, '/title/tt')]",
+                rules=_common_rules,
+                transform=_common_transform
+            )
         )
     ]
 
@@ -814,8 +824,6 @@ class GatherRefs(DOMParserBase):
                 v = v.strip()
                 if not (k and v):
                     continue
-                if not v.endswith('/'):
-                    continue
                 imdbID = analyze_imdbid(v)
                 if item == 'names refs':
                     obj = Person(personID=imdbID, name=k,
@@ -823,8 +831,6 @@ class GatherRefs(DOMParserBase):
                 elif item == 'titles refs':
                     obj = Movie(movieID=imdbID, title=k,
                                 accessSystem=self._as, modFunct=self._modFunct)
-                # XXX: companies aren't handled: are they ever found in text,
-                #      as links to their page?
                 result[item][k] = obj
         return result
 

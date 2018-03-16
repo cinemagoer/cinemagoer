@@ -1095,14 +1095,13 @@ class DOMHTMLKeywordsParser(DOMParserBase):
         kwparser = DOMHTMLKeywordsParser()
         result = kwparser.parse(keywords_html_string)
     """
-    extractors = [
-        Extractor(
-            label='keywords',
-            path="//a[starts-with(@href, '/keyword/')]",
-            attrs=Attribute(
-                key='keywords',
-                path="./text()", multi=True,
-                postprocess=lambda x: x.lower().replace(' ', '-')
+    rules = [
+        Rule(
+            key='keywords',
+            extractor=Path(
+                foreach='//a[starts-with(@href, "/keyword/")]',
+                path='./text()',
+                transform=lambda x: x.lower().replace(' ', '-')
             )
         )
     ]

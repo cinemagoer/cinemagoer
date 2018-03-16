@@ -1143,15 +1143,14 @@ class DOMHTMLTriviaParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='alternate versions',
-            path="//div[@class='sodatext']",
-            attrs=Attribute(
-                key='trivia',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip())
+    rules = [
+        Rule(
+            key='trivia',
+            extractor=Path(
+                foreach='//div[@class="sodatext"]',
+                path='.//text()',
+                transform=str.strip
+            )
         )
     ]
 

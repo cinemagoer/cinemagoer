@@ -1405,30 +1405,41 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         rdparser = DOMHTMLReleaseinfoParser()
         result = rdparser.parse(releaseinfo_html_string)
     """
-    extractors = [
-        Extractor(
-            label='release dates',
-            path="//table[@id='release_dates']//tr",
-            attrs=Attribute(
-                key='release dates',
-                multi=True,
-                path={
-                    'country': ".//td[1]//text()",
-                    'date': ".//td[2]//text()",
-                    'notes': ".//td[3]//text()"
-                }
+    rules = [
+        Rule(
+            key='release dates',
+            extractor=Rules(
+                foreach='//table[@id="release_dates"]//tr',
+                rules=[
+                    Rule(
+                        key='country',
+                        extractor=Path('.//td[1]//text()')
+                    ),
+                    Rule(
+                        key='date',
+                        extractor=Path('.//td[2]//text()')
+                    ),
+                    Rule(
+                        key='notes',
+                        extractor=Path('.//td[3]//text()')
+                    )
+                ]
             )
         ),
-
-        Extractor(
-            label='akas',
-            path="//table[@id='akas']//tr",
-            attrs=Attribute(
-                key='akas',
-                multi=True,
-                path={
-                    'title': "./td[1]/text()",
-                    'countries': "./td[2]/text()"}
+        Rule(
+            key='akas',
+            extractor=Rules(
+                foreach='//table[@id="akas"]//tr',
+                rules=[
+                    Rule(
+                        key='title',
+                        extractor=Path('./td[1]/text()')
+                    ),
+                    Rule(
+                        key='countries',
+                        extractor=Path('./td[2]/text()')
+                    )
+                ]
             )
         )
     ]

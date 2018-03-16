@@ -81,7 +81,6 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         self.url = ''
 
     def postprocess_data(self, data):
-        print(data)
         if 'data' not in data:
             data['data'] = []
         results = getattr(self, 'results', None)

@@ -1611,30 +1611,44 @@ class DOMHTMLReviewsParser(DOMParserBase):
         osparser = DOMHTMLReviewsParser()
         result = osparser.parse(officialsites_html_string)
     """
-    kind = 'reviews'
-
-    extractors = [
-        Extractor(
-            label='review',
-            path="//div[@class='review-container']",
-            attrs=Attribute(
-                key='self.kind',
-                multi=True,
-                path={
-                    'text': ".//div[@class='text']//text()",
-                    'helpful': ".//div[@class='text-muted']/text()[1]",
-                    'title': ".//div[@class='title']//text()",
-                    'author': ".//span[@class='display-name-link']/a/@href",
-                    'date': ".//span[@class='review-date']//text()",
-                    'rating': ".//span[@class='point-scale']/preceding-sibling::span[1]/text()"
-                },
-                postprocess=lambda x: ({
-                    'content': (x['text'] or '').replace("\n", " ").replace('  ', ' ').strip(),
-                    'helpful': [int(s) for s in (x.get('helpful') or '').split() if s.isdigit()],
-                    'title': (x.get('title') or '').strip(),
+    rules = [
+        Rule(
+            key='reviews',
+            extractor=Rules(
+                foreach='//div[@class="review-container"]',
+                rules=[
+                    Rule(
+                        key='text',
+                        extractor=Path('.//div[@class="text"]//text()')
+                    ),
+                    Rule(
+                        key='helpful',
+                        extractor=Path('.//div[@class="text-muted"]/text()[1]')
+                    ),
+                    Rule(
+                        key='title',
+                        extractor=Path('.//div[@class="title"]//text()')
+                    ),
+                    Rule(
+                        key='author',
+                        extractor=Path('.//span[@class="display-name-link"]/a/@href')
+                    ),
+                    Rule(
+                        key='date',
+                        extractor=Path('.//span[@class="review-date"]//text()')
+                    ),
+                    Rule(
+                        key='rating',
+                        extractor=Path('.//span[@class="point-scale"]/preceding-sibling::span[1]/text()')
+                    )
+                ],
+                transform=lambda x: ({
+                    'content': x.get('text', '').replace('\n', ' ').replace('  ', ' ').strip(),
+                    'helpful': [int(s) for s in x.get('helpful', '').split() if s.isdigit()],
+                    'title': x.get('title', '').strip(),
                     'author': analyze_imdbid(x.get('author')),
-                    'date': (x.get('date') or '').strip(),
-                    'rating': (x.get('rating') or '').strip()
+                    'date': x.get('date', '').strip(),
+                    'rating': x.get('rating', '').strip()
                 })
             )
         )

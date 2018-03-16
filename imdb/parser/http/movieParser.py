@@ -2448,41 +2448,49 @@ class DOMHTMLAiringParser(DOMParserBase):
     """
     _containsObjects = True
 
-    extractors = [
-        Extractor(
-            label='series title',
-            path="//title",
-            attrs=Attribute(
-                key='series title',
-                path="./text()",
-                postprocess=lambda x: x.replace(' - TV schedule', '')
+    rules = [
+        Rule(
+            key='series title',
+            extractor=Path(
+                '//title/text()',
+                transform=lambda x: x.replace(' - TV schedule', '')
             )
         ),
-
-        Extractor(
-            label='series id',
-            path="//h1/a[@href]",
-            attrs=Attribute(
-                key='series id',
-                path="./@href"
-            )
+        Rule(
+            key='series id',
+            extractor=Path('//h1/a[@href]/@href')
         ),
-
-        Extractor(
-            label='tv airings',
-            path="//tr[@class]",
-            attrs=Attribute(
-                key='airing',
-                multi=True,
-                path={
-                    'date': "./td[1]//text()",
-                    'time': "./td[2]//text()",
-                    'channel': "./td[3]//text()",
-                    'link': "./td[4]/a[1]/@href",
-                    'title': "./td[4]//text()",
-                    'season': "./td[5]//text()",
-                },
-                postprocess=lambda x: {
+        Rule(
+            key='tv airings',
+            extractor=Rules(
+                foreach='//tr[@class]',
+                rules=[
+                    Rule(
+                        key='date',
+                        extractor=Path('./td[1]//text()')
+                    ),
+                    Rule(
+                        key='time',
+                        extractor=Path('./td[2]//text()')
+                    ),
+                    Rule(
+                        key='channel',
+                        extractor=Path('./td[3]//text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('./td[4]/a[1]/@href')
+                    ),
+                    Rule(
+                        key='title',
+                        extractor=Path('./td[4]//text()')
+                    ),
+                    Rule(
+                        key='season',
+                        extractor=Path('./td[5]//text()')
+                    )
+                ],
+                transform=lambda x: {
                     'date': x.get('date'),
                     'time': x.get('time'),
                     'channel': x.get('channel').strip(),

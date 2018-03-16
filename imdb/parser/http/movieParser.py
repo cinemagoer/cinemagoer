@@ -1167,16 +1167,16 @@ class DOMHTMLTriviaParser(DOMParserBase):
 
 class DOMHTMLSoundtrackParser(DOMParserBase):
     _defGetRefs = True
+
     preprocessors = [('<br />', '\n'), ('<br>', '\n')]
-    extractors = [
-        Extractor(
-            label='soundtrack',
-            path="//div[@class='list']//div",
-            attrs=Attribute(
-                key='soundtrack',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+
+    rules = [
+        Rule(
+            key='soundtrack',
+            extractor=Path(
+                foreach='//div[@class="list"]//div',
+                path='.//text()',
+                transform=str.strip
             )
         )
     ]

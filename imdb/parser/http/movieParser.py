@@ -2335,18 +2335,22 @@ class DOMHTMLFaqsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='faqs',
-            path="//div[@class='section']",
-            attrs=Attribute(
-                key='faqs',
-                multi=True,
-                path={
-                    'question': "./h3/a/span/text()",
-                    'answer': "../following-sibling::div[1]//text()"
-                },
-                postprocess=lambda x: '%s::%s' % (
+    rules = [
+        Rule(
+            key='faqs',
+            extractor=Rules(
+                foreach='//div[@class="section"]',
+                rules=[
+                    Rule(
+                        key='question',
+                        extractor=Path('./h3/a/span/text()')
+                    ),
+                    Rule(
+                        key='answer',
+                        extractor=Path('../following-sibling::div[1]//text()')
+                    )
+                ],
+                transform=lambda x: '%s::%s' % (
                     x.get('question').strip(),
                     '\n\n'.join(x.get('answer').replace('\n\n', '\n').strip().split('||'))
                 )

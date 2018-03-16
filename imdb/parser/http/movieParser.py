@@ -1119,15 +1119,13 @@ class DOMHTMLAlternateVersionsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='alternate versions',
-            path="//ul[@class='trivia']/li",
-            attrs=Attribute(
-                key='alternate versions',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+    rules = [
+        Rule(
+            key='alternate versions',
+            extractor=Path(
+                foreach='//ul[@class="trivia"]/li',
+                path='.//text()',
+                transform=str.strip
             )
         )
     ]

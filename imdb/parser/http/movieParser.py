@@ -1725,21 +1725,26 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
         osparser = DOMHTMLOfficialsitesParser()
         result = osparser.parse(officialsites_html_string)
     """
-    extractors = [
-        Extractor(
-            label='site',
-            group="//h4[@class='li_group']",
-            group_key="./text()",
-            group_key_normalize=lambda x: x.strip().lower(),
-            path="./following::ul[1]/li/a",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'link': "./@href",
-                    'info': "./text()"
-                },
-                postprocess=lambda x: (
+    rules = [
+        Rule(
+            foreach='//h4[@class="li_group"]',
+            key=Path(
+                './text()',
+                transform=lambda x: x.strip().lower()
+            ),
+            extractor=Rules(
+                foreach='./following::ul[1]/li/a',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('./@href')
+                    ),
+                    Rule(
+                        key='info',
+                        extractor=Path('./text()')
+                    )
+                ],
+                transform=lambda x: (
                     x.get('info').strip(),
                     urllib.parse.unquote(_normalize_href(x.get('link')))
                 )

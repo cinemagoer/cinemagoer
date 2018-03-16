@@ -47,6 +47,9 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, for movies."""
 
+    _titleBuilder = lambda self, x: build_title(x)
+    _linkPrefix = '/title/tt'
+
     rules = [
         Rule(
             key='data',

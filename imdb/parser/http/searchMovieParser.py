@@ -9,7 +9,7 @@ page would be:
     http://www.imdb.com/find?q=the+passion&tt=on&mx=20
 
 Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
-               2008 H. Turgut Uyar <uyar@tekir.org>
+          2008-2018 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,7 +28,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from imdb.utils import analyze_title, build_title
 
-from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid
+from .piculet import Path, Rule, Rules
+from .utils import DOMParserBase, analyze_imdbid
 
 
 def custom_analyze_title(title):
@@ -49,28 +50,31 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
     _titleBuilder = lambda self, x: build_title(x)
     _linkPrefix = '/title/tt'
 
-    _attrs = [
-        Attribute(
+    rules = [
+        Rule(
             key='data',
-            multi=True,
-            path={
-                'link': "./a[1]/@href",
-                'info': ".//text()",
-                'akas': "./i//text()"
-            },
-            postprocess=lambda x: (
-                analyze_imdbid(x.get('link') or ''),
-                custom_analyze_title(x.get('info') or ''),
-                x.get('akas')
+            extractor=Rules(
+                foreach='//td[@class="result_text"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('./a[1]/@href')
+                    ),
+                    Rule(
+                        key='info',
+                        extractor=Path('.//text()')
+                    ),
+                    Rule(
+                        key='akas',
+                        extractor=Path('./i//text()')
+                    )
+                ],
+                transform=lambda x: (
+                    analyze_imdbid(x.get('link') or ''),
+                    custom_analyze_title(x.get('info') or ''),
+                    x.get('akas')
+                )
             )
-        )
-    ]
-
-    extractors = [
-        Extractor(
-            label='search',
-            path="//td[@class='result_text']",
-            attrs=_attrs
         )
     ]
 

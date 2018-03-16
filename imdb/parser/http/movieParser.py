@@ -1056,14 +1056,12 @@ class DOMHTMLTaglinesParser(DOMParserBase):
         tparser = DOMHTMLTaglinesParser()
         result = tparser.parse(taglines_html_string)
     """
-    extractors = [
-        Extractor(
-            label='taglines',
-            path="//div[@id='taglines_content']/div",
-            attrs=Attribute(
-                key='taglines',
-                multi=True,
-                path=".//text()"
+    rules = [
+        Rule(
+            key='taglines',
+            extractor=Path(
+                foreach='//div[@id="taglines_content"]/div',
+                path='.//text()'
             )
         )
     ]

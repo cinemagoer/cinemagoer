@@ -25,7 +25,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.utils import analyze_name, build_name
+from imdb.utils import analyze_name
 
 from .piculet import Path, Rule, Rules
 from .searchMovieParser import DOMHTMLSearchMovieParser
@@ -43,7 +43,6 @@ def _cleanName(n):
 class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, for persons."""
-    _titleBuilder = lambda self, x: build_name(x, canonical=True)
     _linkPrefix = '/name/nm'
 
     rules = [

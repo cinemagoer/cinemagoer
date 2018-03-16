@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.utils import analyze_title, build_title
+from imdb.utils import analyze_title
 
 from .piculet import Path, Rule, Rules
 from .utils import DOMParserBase, analyze_imdbid
@@ -47,7 +47,6 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, for movies."""
 
-    _titleBuilder = lambda self, x: build_title(x)
     _linkPrefix = '/title/tt'
 
     rules = [

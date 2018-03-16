@@ -25,7 +25,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.utils import analyze_company_name, build_company_name
+from imdb.utils import analyze_company_name
 
 from .piculet import Path, Rule, Rules
 from .searchMovieParser import DOMHTMLSearchMovieParser
@@ -33,7 +33,6 @@ from .utils import analyze_imdbid
 
 
 class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
-    _titleBuilder = lambda self, x: build_company_name(x)
     _linkPrefix = '/company/co'
 
     rules = [

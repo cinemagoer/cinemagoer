@@ -455,15 +455,13 @@ class DOMHTMLOtherWorksParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='other works',
-            path="//li[@class='ipl-zebra-list__item']",
-            attrs=Attribute(
-                key='other works',
-                path=".//text()",
-                multi=True,
-                postprocess=lambda x: x.strip()
+    rules = [
+        Rule(
+            key='other works',
+            extractor=Path(
+                foreach='//li[@class="ipl-zebra-list__item"]',
+                path='.//text()',
+                transform=str.strip
             )
         )
     ]

@@ -7,7 +7,7 @@ import setuptools
 
 # version of the software; in the code repository this represents
 # the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
-version = '6.4'
+version = '6.4.1'
 
 home_page = 'https://imdbpy.sourceforge.io/'
 

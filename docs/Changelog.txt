@@ -6,6 +6,7 @@
   - remove obsolete parsers
   - remove Character objects
   - fix for search parsers
+  - 6.4.1: removed debug code
 
 
 * What's the new in release 6.3 "Altered Carbon" (27 Feb 2018)

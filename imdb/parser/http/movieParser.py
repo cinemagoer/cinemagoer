@@ -1982,23 +1982,34 @@ class DOMHTMLNewsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='news',
-            path="//h2",
-            attrs=Attribute(
-                key='news',
-                multi=True,
-                path={
-                    'title': "./text()",
-                    'fromdate': "../following-sibling::p[1]/small//text()",
-                    # FIXME: sometimes (see The Matrix (1999)) <p> is found
-                    #        inside news text.
-                    'body': "../following-sibling::p[2]//text()",
-                    'link': "../..//a[text()='Permalink']/@href",
-                    'fulllink': "../..//a[starts-with(text(), 'See full article at')]/@href"
-                },
-                postprocess=lambda x: {
+    rules = [
+        Rule(
+            key='news',
+            extractor=Rules(
+                foreach='//h2',
+                rules=[
+                    Rule(
+                        key='title',
+                        extractor=Path('./text()')
+                    ),
+                    Rule(
+                        key='fromdate',
+                        extractor=Path('./following-sibling::p[1]/small//text()')
+                    ),
+                    Rule(
+                        key='body',
+                        extractor=Path('../following-sibling::p[2]//text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('../..//a[text()="Permalink"]/@href')
+                    ),
+                    Rule(
+                        key='fulllink',
+                        extractor=Path('../..//a[starts-with(text(), "See full article at")]/@href')
+                    )
+                ],
+                transform=lambda x: {
                     'title': x.get('title').strip(),
                     'date': x.get('fromdate').split('|')[0].strip(),
                     'from': x.get('fromdate').split('|')[1].replace('From ', '').strip(),

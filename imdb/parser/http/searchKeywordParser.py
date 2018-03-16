@@ -36,8 +36,6 @@ class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, searching for keywords similar to
     the one given."""
-    _titleBuilder = lambda self, x: x
-    _linkPrefix = '/keyword/'
 
     rules = [
         Rule(

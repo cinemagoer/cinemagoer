@@ -43,8 +43,6 @@ def _cleanName(n):
 class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     """Parse the html page that the IMDb web server shows when the
     "new search system" is used, for persons."""
-    _titleBuilder = lambda self, x: build_name(x, canonical=True)
-    _linkPrefix = '/name/nm'
 
     rules = [
         Rule(

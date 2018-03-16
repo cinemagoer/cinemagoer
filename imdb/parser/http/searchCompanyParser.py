@@ -33,8 +33,6 @@ from .utils import analyze_imdbid
 
 
 class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
-    _titleBuilder = lambda self, x: build_company_name(x)
-    _linkPrefix = '/company/co'
 
     rules = [
         Rule(

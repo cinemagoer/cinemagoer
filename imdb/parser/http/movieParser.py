@@ -1878,23 +1878,23 @@ class DOMHTMLLocationsParser(DOMParserBase):
         lparser = DOMHTMLLocationsParser()
         result = lparser.parse(locations_html_string)
     """
-    extractors = [
-        Extractor(
-            label='locations',
-            path="//dt",
-            attrs=Attribute(
-                key='locations',
-                multi=True,
-                path={
-                    'place': ".//text()",
-                    'note': "./following-sibling::dd[1]//text()"
-                },
-                postprocess=lambda x: (
-                    '%s::%s' % (
-                        x['place'].strip(),
-                        (x['note'] or '').strip()
+    rules = [
+        Rule(
+            key='locations',
+            extractor=Rules(
+                foreach='//dt',
+                rules=[
+                    Rule(
+                        key='place',
+                        extractor=Path('.//text()')
+                    ),
+                    Rule(
+                        key='note',
+                        extractor=Path('./following-sibling::dd[1]//text()')
                     )
-                ).strip(':')
+                ],
+                transform=lambda x: ('%s::%s' % (x['place'].strip(),
+                                                 (x['note'] or '').strip())).strip(':')
             )
         )
     ]

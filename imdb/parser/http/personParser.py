@@ -254,177 +254,169 @@ class DOMHTMLBioParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    _birth_attrs = [
-        Attribute(
+    _birth_rules = [
+        Rule(
             key='birth date',
-            path="./time[@itemprop='birthDate']/@datetime"
+            extractor=Path('./time[@itemprop="birthDate"]/@datetime')
         ),
-
-        Attribute(
+        Rule(
             key='birth notes',
-            path="./a[starts-with(@href, '/search/name?birth_place=')]/text()"
+            extractor=Path('./a[starts-with(@href, "/search/name?birth_place=")]/text()')
         )
     ]
 
-    _death_attrs = [
-        Attribute(
+    _death_rules = [
+        Rule(
             key='death date',
-            path="./time[@itemprop='deathDate']/@datetime"
+            extractor=Path('./time[@itemprop="deathDate"]/@datetime')
         ),
-
-        Attribute(
+        Rule(
             key='death cause',
-            path="./text()",
-            # TODO: check if this slicing is always correct
-            postprocess=lambda x: ''.join(x).strip()[2:].lstrip()
+            extractor=Path(
+                './text()',
+                transform=lambda x: ''.join(x).strip()[2:].lstrip()
+            )
         ),
-
-        Attribute(
+        Rule(
             key='death notes',
-            path="..//text()",
-            postprocess=lambda x: _re_spaces.sub(' ', (x or '').strip().split('\n')[-1])
+            extractor=Path(
+                '..//text()',
+                transform=lambda x: _re_spaces.sub(' ', (x or '').strip().split('\n')[-1])
+            )
         )
     ]
 
-    extractors = [
-        Extractor(
-            label='headshot',
-            path="//img[@class='poster']",
-            attrs=Attribute(
-                key='headshot',
-                path="./@src"
+    rules = [
+        Rule(
+            key='headshot',
+            extractor=Path('//img[@class="poster"]/@src')
+        ),
+        Rule(
+            key='birth info',
+            extractor=Rules(
+                section='//table[@id="overviewTable"]'
+                        '//td[text()="Born"]/following-sibling::td[1]',
+                rules=_birth_rules
             )
         ),
-
-        Extractor(
-            label='birth info',
-            path="//table[@id='overviewTable']"
-                 "//td[text()='Born']/following-sibling::td[1]",
-            attrs=_birth_attrs
-        ),
-
-        Extractor(
-            label='death info',
-            path="//table[@id='overviewTable']"
-                 "//td[text()='Died']/following-sibling::td[1]",
-            attrs=_death_attrs
-        ),
-
-        Extractor(
-            label='nick names',
-            path="//table[@id='overviewTable']"
-                 "//td[starts-with(text(), 'Nickname')]/following-sibling::td[1]",
-            attrs=Attribute(
-                key='nick names',
-                path="./text()",
-                joiner='|',
-                postprocess=lambda x: [n.strip().replace(' (', '::(', 1) for n in x.split('|')
-                                       if n.strip()]
+        Rule(
+            key='death info',
+            extractor=Rules(
+                section='//table[@id="overviewTable"]'
+                        '//td[text()="Died"]/following-sibling::td[1]',
+                rules=_death_rules
             )
         ),
-
-        Extractor(
-            label='birth name',
-            path="//table[@id='overviewTable']"
-                 "//td[text()='Birth Name']/following-sibling::td[1]",
-            attrs=Attribute(
-                key='birth name',
-                path="./text()",
-                postprocess=lambda x: canonicalName(x.strip())
+        Rule(
+            key='nick names',
+            extractor=Path(
+                '//table[@id="overviewTable"]'
+                '//td[starts-with(text(), "Nickname")]/following-sibling::td[1]/text()',
+                reduce=lambda xs: '|'.join(xs),
+                transform=lambda x: [
+                    n.strip().replace(' (', '::(', 1)
+                    for n in x.split('|') if n.strip()
+                ]
             )
         ),
-
-        Extractor(
-            label='height',
-            path="//table[@id='overviewTable']//td[text()='Height']/following-sibling::td[1]",
-            attrs=Attribute(
-                key='height',
-                path="./text()",
-                postprocess=lambda x: x.strip()
+        Rule(
+            key='birth name',
+            extractor=Path(
+                '//table[@id="overviewTable"]'
+                '//td[text()="Birth Name"]/following-sibling::td[1]/text()',
+                transform=lambda x: canonicalName(x.strip())
             )
         ),
-
-        Extractor(
-            label='mini biography',
-            path="//a[@name='mini_bio']/following-sibling::"
-                 "div[1 = count(preceding-sibling::a[1] | ../a[@name='mini_bio'])]",
-            attrs=Attribute(
-                key='mini biography',
-                multi=True,
-                path={
-                    'bio': ".//text()",
-                    'by': ".//a[@name='ba']//text()"
-                },
-                postprocess=lambda x: "%s::%s" % (
+        Rule(
+            key='height',
+            extractor=Path(
+                '//table[@id="overviewTable"]'
+                '//td[text()="Height"]/following-sibling::td[1]/text()',
+                transform=str.strip
+            )
+        ),
+        Rule(
+            key='mini biography',
+            extractor=Rules(
+                foreach='//a[@name="mini_bio"]/following-sibling::'
+                        'div[1 = count(preceding-sibling::a[1] | ../a[@name="mini_bio"])]',
+                rules=[
+                    Rule(
+                        key='bio',
+                        extractor=Path('.//text()')
+                    ),
+                    Rule(
+                        key='by',
+                        extractor=Path('.//a[@name="ba"]//text()')
+                    )
+                ],
+                transform=lambda x: "%s::%s" % (
                     (x.get('bio') or '').split('- IMDb Mini Biography By:')[0].strip(),
                     (x.get('by') or '').strip() or 'Anonymous'
                 )
             )
         ),
-
-        Extractor(
-            label='spouse',
-            path="//a[@name='spouse']/following::table[1]//tr",
-            attrs=Attribute(
-                key='spouse',
-                multi=True,
-                path={
-                    'name': "./td[1]//text()",
-                    'info': "./td[2]//text()"
-                },
-                postprocess=lambda x: ("%s::%s" % (
+        Rule(
+            key='spouse',
+            extractor=Rules(
+                foreach='//a[@name="spouse"]/following::table[1]//tr',
+                rules=[
+                    Rule(
+                        key='name',
+                        extractor=Path('./td[1]//text()')
+                    ),
+                    Rule(
+                        key='info',
+                        extractor=Path('./td[2]//text()')
+                    )
+                ],
+                transform=lambda x: ("%s::%s" % (
                     x.get('name').strip(),
                     (_re_spaces.sub(' ', x.get('info') or '')).strip())).strip(':')
             )
         ),
-
-        Extractor(
-            label='trade mark',
-            path="//div[@class='_imdbpyh4']/h4[starts-with(text(), 'Trade Mark')]" +
-                    "/.././div[contains(@class, 'soda')]",
-            attrs=Attribute(
-                key='trade mark',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+        Rule(
+            key='trade mark',
+            extractor=Path(
+                foreach='//div[@class="_imdbpyh4"]/h4[starts-with(text(), "Trade Mark")]'
+                        '/.././div[contains(@class, "soda")]',
+                path='.//text()',
+                transform=str.strip
             )
         ),
-
-        Extractor(
-            label='trivia',
-            path="//div[@class='_imdbpyh4']/h4[starts-with(text(), 'Trivia')]" +
-                    "/.././div[contains(@class, 'soda')]",
-            attrs=Attribute(
-                key='trivia',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+        Rule(
+            key='trivia',
+            extractor=Path(
+                foreach='//div[@class="_imdbpyh4"]/h4[starts-with(text(), "Trivia")]'
+                        '/.././div[contains(@class, "soda")]',
+                path='.//text()',
+                transform=str.strip
             )
         ),
-
-        Extractor(
-            label='quotes',
-            path="//div[@class='_imdbpyh4']/h4[starts-with(text(), 'Personal Quotes')]" +
-                    "/.././div[contains(@class, 'soda')]",
-            attrs=Attribute(
-                key='quotes',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+        Rule(
+            key='quotes',
+            extractor=Path(
+                foreach='//div[@class="_imdbpyh4"]/h4[starts-with(text(), "Personal Quotes")]'
+                        '/.././div[contains(@class, "soda")]',
+                path='.//text()',
+                transform=str.strip
             )
         ),
-
-        Extractor(
-            label='salary',
-            path="//a[@name='salary']/following::table[1]//tr",
-            attrs=Attribute(
-                key='salary history',
-                multi=True,
-                path={
-                    'title': "./td[1]//text()",
-                    'info': "./td[2]//text()",
-                },
-                postprocess=lambda x: "%s::%s" % (
+        Rule(
+            key='salary history',
+            extractor=Rules(
+                foreach='//a[@name="salary"]/following::table[1]//tr',
+                rules=[
+                    Rule(
+                        key='title',
+                        extractor=Path('./td[1]//text()')
+                    ),
+                    Rule(
+                        key='info',
+                        extractor=Path('./td[2]//text()')
+                    )
+                ],
+                transform=lambda x: "%s::%s" % (
                     x.get('title').strip(),
                     _re_spaces.sub(' ', (x.get('info') or '')).strip())
             )
@@ -440,6 +432,11 @@ class DOMHTMLBioParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
+        for key in ['birth info', 'death info']:
+            if key in data and isinstance(data[key], dict):
+                subdata = data[key]
+                del data[key]
+                data.update(subdata)
         for what in 'birth date', 'death date', 'death cause':
             if what in data and not data[what]:
                 del data[what]

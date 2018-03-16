@@ -943,44 +943,82 @@ class DOMHTMLAwardsParser(DOMParserBase):
     subject = 'title'
     _containsObjects = True
 
-    extractors = [
-        Extractor(
-            label='awards',
-            group="//table//big",
-            group_key="./a",
-            path="./ancestor::tr[1]/following-sibling::tr/td[last()][not(@colspan)]",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'year': "../td[1]/a/text()",
-                    'result': "../td[2]/b/text()",
-                    'award': "../td[3]/text()",
-                    'category': "./text()[1]",
-                    # FIXME: takes only the first co-recipient
-                    'with': "./small[starts-with(text(), 'Shared with:')]/"
-                            "following-sibling::a[1]/text()",
-                    'notes': "./small[last()]//text()",
-                    'anchor': ".//text()"
-                },
-                postprocess=_process_award
+    rules = [
+        Rule(
+            key='awards',
+            extractor=Rules(
+                foreach='//table//big',
+                rules=[
+                    Rule(
+                        key=Path('./a'),
+                        extractor=Rules(
+                            foreach='./ancestor::tr[1]/following-sibling::tr/td[last()][not(@colspan)]',
+                            rules=[
+                                Rule(
+                                    key='year',
+                                    extractor=Path('./td[1]/a/text()')
+                                ),
+                                Rule(
+                                    key='result',
+                                    extractor=Path('../td[2]/b/text()')
+                                ),
+                                Rule(
+                                    key='award',
+                                    extractor=Path('./td[3]/text()')
+                                ),
+                                Rule(
+                                    key='category',
+                                    extractor=Path('./text()[1]')
+                                ),
+                                Rule(
+                                    key='with',
+                                    extractor=Path(
+                                        './small[starts-with(text(), "Shared with:")]/'
+                                        'following-sibling::a[1]/text()'
+                                    )
+                                ),
+                                Rule(
+                                    key='notes',
+                                    extractor=Path('./small[last()]//text()')
+                                ),
+                                Rule(
+                                    key='anchor',
+                                    extractor=Path('.//text()')
+                                )
+                            ],
+                            transform=_process_award
+                        )
+                    )
+                ]
             )
         ),
-
-        Extractor(
-            label='recipients',
-            group="//table//big",
-            group_key="./a",
-            path="./ancestor::tr[1]/following-sibling::tr"
-                 "/td[last()]/small[1]/preceding-sibling::a",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'name': "./text()",
-                    'link': "./@href",
-                    'anchor': "..//text()"
-                }
+        Rule(
+            key='recipients',
+            extractor=Rules(
+                foreach='//table//big',
+                rules=[
+                    Rule(
+                        key=Path('./a'),
+                        extractor=Rules(
+                            foreach='./ancestor::tr[1]/following-sibling::tr'
+                                    '/td[last()]/small[1]/preceding-sibling::a',
+                            rules=[
+                                Rule(
+                                    key='name',
+                                    extractor=Path('./text()')
+                                ),
+                                Rule(
+                                    key='link',
+                                    extractor=Path('./@href')
+                                ),
+                                Rule(
+                                    key='anchor',
+                                    extractor=Path('..//text()')
+                                )
+                            ]
+                        )
+                    )
+                ]
             )
         )
     ]

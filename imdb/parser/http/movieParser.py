@@ -2102,7 +2102,6 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                         key=Path('.//meta/@content',
                                  transform=lambda x: 'episode %s' % x),
                         extractor=Rules(
-                            foreach='.',
                             rules=[
                                 Rule(
                                     key='link',
@@ -2165,11 +2164,13 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                 k = 'episode %d' % counter
                 data[k] = [episode]
             del data['episode -1']
-        for episode_nr, episode in data.items():
-            if not (episode and episode[0] and
-                    episode_nr.startswith('episode ')):
+        episodes = data.get('episodes', [])
+        for ep in episodes:
+            if not ep:
                 continue
-            episode = episode[0]
+            episode_nr, episode = list(ep.items())[0]
+            if not episode_nr.startswith('episode '):
+                continue
             episode_nr = episode_nr[8:].rstrip()
             try:
                 episode_nr = int(episode_nr)

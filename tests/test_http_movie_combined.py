@@ -2,10 +2,11 @@ from pytest import fixture, mark
 
 import re
 
+from imdb.parser.http.movieParser import DOMHTMLMovieParser, DOMHTMLSeasonEpisodesParser
+
+
 months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 re_date = re.compile(r'[0-9]{1,2} (%s) [0-9]{4}' % '|'.join(months), re.I)
-
-from imdb.parser.http.movieParser import DOMHTMLMovieParser, DOMHTMLSeasonEpisodesParser
 
 
 @fixture(scope='module')
@@ -16,6 +17,7 @@ def movie_combined_details(url_opener, movies):
         return url_opener.retrieve_unicode(url)
     return retrieve
 
+
 @fixture(scope='module')
 def movie_episodes(url_opener, movies):
     """A function to retrieve the episodes page of a test movie."""
@@ -23,6 +25,7 @@ def movie_episodes(url_opener, movies):
         url = movies[movie_key] + '/episodes'
         return url_opener.retrieve_unicode(url)
     return retrieve
+
 
 parser = DOMHTMLMovieParser()
 episodes_parser = DOMHTMLSeasonEpisodesParser()
@@ -167,12 +170,13 @@ def test_kind_tv_series_episode_should_be_episode(movie_combined_details):
     data = parser.parse(page)['data']
     assert data['kind'] == 'episode'
 
+
 def test_kind_tv_series_episodes_must_contain_rating_and_votes(movie_episodes):
     page = movie_episodes('band of brothers')
     data = episodes_parser.parse(page)['data']
     rating = data['episodes'][1][1]['rating']
     votes = data['episodes'][1][1]['votes']
-    assert rating >= 8.3 and rating <= 9.0
+    assert 8.3 <= rating <= 9.0
     assert votes > 4400
 
 

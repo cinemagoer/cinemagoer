@@ -1914,17 +1914,23 @@ class DOMHTMLTechParser(DOMParserBase):
     kind = 'tech'
     re_space = re.compile(r'\s+')
 
-    extractors = [
-        Extractor(
-            label='tech',
-            group="//table//tr/td[@class='label']",
-            group_key="./text()",
-            group_key_normalize=lambda x: x.lower().strip(),
-            path=".",
-            attrs=Attribute(
-                key=None,
-                path="..//td[2]//text()",
-                postprocess=lambda x: [t.strip() for t in x.split(':::') if t.strip()]
+    rules = [
+        Rule(
+            key='tech',
+            extractor=Rules(
+                foreach='//table//tr/td[@class="label"]',
+                rules=[
+                    Rule(
+                        key=Path(
+                            './text()',
+                            transform=lambda x: x.lower().strip()),
+                        extractor=Path(
+                            '..//td[2]//text()',
+                            transform=lambda x: [t.strip()
+                                                 for t in x.split(':::') if t.strip()]
+                        )
+                    )
+                ]
             )
         )
     ]

@@ -1304,30 +1304,25 @@ class DOMHTMLQuotesParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='quotes_odd',
-            path="//div[@class='quote soda odd']",
-            attrs=Attribute(
-                key='quotes_odd',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x
+    rules = [
+        Rule(
+            key='quotes_odd',
+            extractor=Path(
+                foreach='//div[@class="quote soda odd"]',
+                path='.//text()',
+                transform=lambda x: x
                     .strip()
                     .replace(' \n', '::')
                     .replace('::\n', '::')
                     .replace('\n', ' ')
             )
         ),
-
-        Extractor(
-            label='quotes_even',
-            path="//div[@class='quote soda even']",
-            attrs=Attribute(
-                key='quotes_even',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x
+        Rule(
+            key='quotes_even',
+            extractor=Path(
+                foreach='//div[@class="quote soda even"]',
+                path='.//text()',
+                transform=lambda x: x
                     .strip()
                     .replace(' \n', '::')
                     .replace('::\n', '::')

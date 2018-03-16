@@ -2271,66 +2271,98 @@ class DOMHTMLEpisodesParser(DOMParserBase):
     _oad_path = "./following-sibling::span/strong[1]/text()"
 
     def _init(self):
-        self.extractors = [
-            Extractor(
-                label='series',
-                path="//html",
-                attrs=[
-                    Attribute(
-                        key='series title',
-                        path=".//title/text()"
-                    ),
-                    Attribute(
-                        key='series movieID',
-                        path=".//h1/a[@class='main']/@href",
-                        postprocess=analyze_imdbid
-                    )
-                ]
+        self.extractors = []
+
+        self.rules = [
+            Rule(
+                key='series title',
+                extractor=Path('//title/text()')
             ),
-            Extractor(
-                label='episodes',
-                group="//div[@class='_imdbpy']/h3",
-                group_key="./a/@name",
-                path=self._episodes_path,
-                attrs=Attribute(
-                    key=None,
-                    multi=True,
-                    path={
-                        'link': "./a/@href",
-                        'title': "./a/text()",
-                        'year': "./preceding-sibling::a[1]/@name",
-                        'episode': "./text()[1]",
-                        'oad': self._oad_path,
-                        'plot': "./following-sibling::text()[1]"
-                    },
-                    postprocess=_build_episode
+            Rule(
+                key='series movieID',
+                extractor=Path(
+                    './/h1/a[@class="main"]/@href',
+                    transform=analyze_imdbid
+                )
+            ),
+            Rule(
+                key='episodes',
+                extractor=Rules(
+                    foreach='//div[@class="_imdbpy"]/h3',
+                    rules=[
+                        Rule(
+                            key='./a/@name',
+                            extractor=Rules(
+                                foreach=self._episodes_path,
+                                rules=[
+                                    Rule(
+                                        key='link',
+                                        extractor=Path('./a/@href')
+                                    ),
+                                    Rule(
+                                        key='title',
+                                        extractor=Path('./a/text()')
+                                    ),
+                                    Rule(
+                                        key='year',
+                                        extractor=Path('./preceding-sibling::a[1]/@name')
+                                    ),
+                                    Rule(
+                                        key='episode',
+                                        extractor=Path('./text()[1]')
+                                    ),
+                                    Rule(
+                                        key='oad',
+                                        extractor=Path(self._oad_path)
+                                    ),
+                                    Rule(
+                                        key='plot',
+                                        extractor=Path('./following-sibling::text()[1]')
+                                    )
+                                ],
+                                transform=_build_episode
+                            )
+                        )
+                    ]
                 )
             )
         ]
 
         if self.kind == 'episodes cast':
-            self.extractors += [
-                Extractor(
-                    label='cast',
-                    group="//h4",
-                    group_key="./text()[1]",
-                    group_key_normalize=lambda x: x.strip(),
-                    path="./following-sibling::table[1]//td[@class='nm']",
-                    attrs=Attribute(
-                        key=None,
-                        multi=True,
-                        path={
-                            'person': "..//text()",
-                            'link': "./a/@href",
-                            'roleID': "../td[4]//div[@class='_imdbpyrole']/@roleid"
-                        },
-                        postprocess=lambda x: build_person(
-                            x.get('person') or '',
-                            personID=analyze_imdbid(x.get('link')),
-                            roleID=(x.get('roleID') or '').split('/'),
-                            accessSystem=self._as,
-                            modFunct=self._modFunct
-                        )
+            self.rules += [
+                Rule(
+                    key='cast',
+                    extractor=Rules(
+                        foreach='//h4',
+                        rules=[
+                            Rule(
+                                key=Path('./text()[1]', transform=str.strip),
+                                extractor=Rules(
+                                    foreach='./following-sibling::table[1]//td[@class="nm"]',
+                                    rules=[
+                                        Rule(
+                                            key='person',
+                                            extractor=Path('..//text()')
+                                        ),
+                                        Rule(
+                                            key='link',
+                                            extractor=Path('./a/@href')
+                                        ),
+                                        Rule(
+                                            key='roleID',
+                                            extractor=Path('../td[4]//div[@class="_imdbpyrole"]/@roleid')
+                                        )
+                                    ],
+                                    transform=lambda x: build_person(
+                                        x.get('person') or '',
+                                        personID=analyze_imdbid(x.get('link')),
+                                        roleID=(x.get('roleID') or '').split('/'),
+                                        accessSystem=self._as,
+                                        modFunct=self._modFunct
+                                    )
+                                )
+                            )
+                        ]
                     )
                 )
             ]

@@ -1631,23 +1631,14 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
     """
     kind = 'critic reviews'
 
-    extractors = [
-        Extractor(
-            label='metascore',
-            path="//div[@class='metascore_wrap']/div/span",
-            attrs=Attribute(
-                key='metascore',
-                path=".//text()"
-            )
+    rules = [
+        Rule(
+            key='metascore',
+            extractor=Path('//div[@class="metascore_wrap"]/div/span//text()')
         ),
-
-        Extractor(
-            label='metacritic url',
-            path="//div[@class='article']/div[@class='see-more']/a",
-            attrs=Attribute(
-                key='metacritic url',
-                path="./@href"
-            )
+        Rule(
+            key='metacritic url',
+            extractor=Path('//div[@class="article"]/div[@class="see-more"]/a/@href')
         )
     ]
 

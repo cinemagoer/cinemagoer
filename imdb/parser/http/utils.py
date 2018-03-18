@@ -775,18 +775,18 @@ def _parse_ref(text, link, info):
 
 class GatherRefs(DOMParserBase):
     """Parser used to gather references to movies, persons."""
-    _common_rules=[
+    _common_rules = [
         Rule(
             key='text',
-            extractor=Path("./text()")
+            extractor=Path('./text()')
         ),
         Rule(
             key='link',
-            extractor=Path("./@href")
+            extractor=Path('./@href')
         ),
         Rule(
             key='info',
-            extractor=Path("./following::text()[1]")
+            extractor=Path('./following::text()[1]')
         )
     ]
 
@@ -800,7 +800,7 @@ class GatherRefs(DOMParserBase):
         Rule(
             key='names refs',
             extractor=Rules(
-                foreach="//a[starts-with(@href, '/name/nm')]",
+                foreach='//a[starts-with(@href, "/name/nm")]',
                 rules=_common_rules,
                 transform=_common_transform
             )
@@ -808,7 +808,7 @@ class GatherRefs(DOMParserBase):
         Rule(
             key='titles refs',
             extractor=Rules(
-                foreach="//a[starts-with(@href, '/title/tt')]",
+                foreach='//a[starts-with(@href, "/title/tt")]',
                 rules=_common_rules,
                 transform=_common_transform
             )

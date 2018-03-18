@@ -106,15 +106,6 @@ for _k, _v in list(entitydefs.items()):
         entcharrefs[dec_code] = _v
     entcharrefs[_k] = _v
 del _sgmlentkeys, _k, _v
-entcharrefs['#160'] = ' '
-entcharrefs['#xA0'] = ' '
-entcharrefs['#xa0'] = ' '
-entcharrefs['#XA0'] = ' '
-entcharrefs['#x22'] = '"'
-entcharrefs['#X22'] = '"'
-entcharrefs['#38'] = '&amp;'
-entcharrefs['#x26'] = '&amp;'
-entcharrefs['#x26'] = '&amp;'
 
 re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5}|\#x[0-9a-f]{1,4});' %
                             '|'.join(map(re.escape, entcharrefs)), re.I)

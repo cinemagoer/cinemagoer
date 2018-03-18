@@ -237,17 +237,15 @@ class DOMHTMLMovieParser(DOMParserBase):
     """
     _containsObjects = True
 
-    extractors = [
-        Extractor(
-            label='title',
-            path="//meta[@property='og:title']",
-            attrs=Attribute(
-                key='title',
-                path="@content",
-                postprocess=analyze_og_title
-            )
-        ),
+    rules = [
+        Rule(
+            key='title',
+            extractor=Path('//meta[@property="og:title"]/@content',
+                           transform=analyze_og_title)
+        )
+    ]
 
+    extractors = [
         # parser for misc sections like 'casting department', 'stunts', ...
         Extractor(
             label='glossarysections',
@@ -735,6 +733,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                     for obj in data[key]:
                         obj.accessSystem = self._as
                         obj.modFunct = self._modFunct
+        for key in ['title']:
+            if key in data:
+                subdata = data[key]
+                del data[key]
+                data.update(subdata)
         if 'akas' in data or 'other akas' in data:
             akas = data.get('akas') or []
             other_akas = data.get('other akas') or []

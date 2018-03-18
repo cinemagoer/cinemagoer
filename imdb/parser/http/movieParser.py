@@ -297,134 +297,94 @@ class DOMHTMLMovieParser(DOMParserBase):
                     roleID=(x.get('roleID') or '').split('/')
                 )
             )
+        ),
+        Rule(
+            key='myrating',
+            extractor=Path('//span[@id="voteuser"]//text()')
+        ),
+        Rule(
+            key='plot summary',
+            extractor=Path('//td[starts-with(text(), "Plot")]/..//p/text()',
+                           transform=lambda x: x.strip().rstrip('|').rstrip())
+        ),
+        Rule(
+            key='genres',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Genre")]/..//li/a',
+                path='./text()'
+            )
+        ),
+        Rule(
+            key='runtimes',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Runtime")]/..//li',
+                path='./text()',
+                transform=lambda x: x.strip().replace(' min', '')
+            )
+        ),
+        Rule(
+            key='countries',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Countr")]/..//li/a',
+                path='./text()'
+            )
+        ),
+        Rule(
+            key='country codes',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Countr")]/..//li/a',
+                path='./@href',
+                transform=lambda x: x.split('/')[2].strip().lower()
+            )
+        ),
+        Rule(
+            key='language',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Language")]/..//li/a',
+                path='./text()'
+            )
+        ),
+        Rule(
+            key='language codes',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Language")]/..//li/a',
+                path='./@href',
+                transform=lambda x: x.split('/')[2].strip()
+            )
+        ),
+        Rule(
+            key='color info',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Color")]/..//li/a',
+                path='./text()',
+                transform=lambda x: x.replace(' (', '::(')
+            )
+        ),
+        Rule(
+            key='aspect ratio',
+            extractor=Path(
+                '//td[starts-with(text(), "Aspect")]/..//li/text()',
+                transform=str.strip
+            )
+        ),
+        Rule(
+            key='sound mix',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Sound Mix")]/..//li/a',
+                path='./text()',
+                transform=lambda x: x.replace(' (', '::(')
+            )
+        ),
+        Rule(
+            key='certificates',
+            extractor=Path(
+                '//td[starts-with(text(), "Certificat")]/..//text()',
+                transform=analyze_certificates
+            )
         )
     ]
 
     extractors = [
-        Extractor(
-            label='myrating',
-            path="//span[@id='voteuser']",
-            attrs=Attribute(
-                key='myrating',
-                path=".//text()"
-            )
-        ),
-
-        Extractor(
-            label='plot summary',
-            path=".//td[starts-with(text(), 'Plot')]/..//p",
-            attrs=Attribute(
-                key='plot summary',
-                path='./text()',
-                postprocess=lambda x: x.strip().rstrip('|').rstrip()
-            )
-        ),
-
-        Extractor(
-            label='genres',
-            path="//td[starts-with(text(), 'Genre')]/..//li/a",
-            attrs=Attribute(
-                key="genres",
-                multi=True,
-                path="./text()"
-            )
-        ),
-
-        Extractor(
-            label='runtimes',
-            path="//td[starts-with(text(), 'Runtime')]/..//li",
-            attrs=Attribute(
-                key='runtimes',
-                path="./text()",
-                multi=True,
-                postprocess=lambda x: x.strip().replace(' min', '')
-            )
-        ),
-
-        Extractor(
-            label='countries',
-            path="//td[starts-with(text(), 'Countr')]/..//li/a",
-            attrs=Attribute(
-                key='countries',
-                path="./text()",
-                multi=True
-            )
-        ),
-
-        Extractor(
-            label='country codes',
-            path="//td[starts-with(text(), 'Countr')]/..//li/a",
-            attrs=Attribute(
-                key='country codes',
-                path="./@href",
-                multi=True,
-                postprocess=lambda x: x.split('/')[2].strip().lower()
-            )
-        ),
-
-        Extractor(
-            label='language',
-            path="//td[starts-with(text(), 'Language')]/..//li/a",
-            attrs=Attribute(
-                key='language',
-                path="./text()",
-                multi=True
-            )
-        ),
-
-        Extractor(
-            label='language codes',
-            path="//td[starts-with(text(), 'Language')]/..//li/a",
-            attrs=Attribute(
-                key='language codes',
-                path="./@href",
-                multi=True,
-                postprocess=lambda x: x.split('/')[2].strip()
-            )
-        ),
-
-        Extractor(
-            label='color info',
-            path="//td[starts-with(text(), 'Color')]/..//li/a",
-            attrs=Attribute(
-                key='color info',
-                path="./text()",
-                multi=True,
-                postprocess=lambda x: x.replace(' (', '::(')
-            )
-        ),
-
-        Extractor(
-            label='aspect ratio',
-            path="//td[starts-with(text(), 'Aspect')]/..",
-            attrs=Attribute(
-                key='aspect ratio',
-                path=".//li/text()",
-                postprocess=lambda x: x.strip()
-            )
-        ),
-
-        Extractor(
-            label='sound mix',
-            path="//td[starts-with(text(), 'Sound Mix')]/..//li/a",
-            attrs=Attribute(
-                key='sound mix',
-                path="./text()",
-                multi=True,
-                postprocess=lambda x: x.replace(' (', '::(')
-            )
-        ),
-
-        Extractor(
-            label='certificates',
-            path=".//td[starts-with(text(), 'Certificat')]/..",
-            attrs=Attribute(
-                key='certificates',
-                path=".//text()",
-                postprocess=analyze_certificates
-            )
-        ),
-
         Extractor(
             label='h5sections',
             path="//section[contains(@class, 'listo')]",

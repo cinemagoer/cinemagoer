@@ -242,31 +242,40 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='title',
             extractor=Path('//meta[@property="og:title"]/@content',
                            transform=analyze_og_title)
+        ),
+
+        # parser for misc sections like 'casting department', 'stunts', ...
+        Rule(
+            key='misc sections',
+            extractor=Rules(
+                foreach='//h4[contains(@class, "ipl-header__content")]',
+                rules=[
+                    Rule(
+                        key=Path('./@name', transform=lambda x: x.replace('_', ' ')),
+                        extractor=Rules(
+                            foreach='../../following-sibling::table[1]//tr',
+                            rules=[
+                                Rule(
+                                    key='person',
+                                    extractor=Path('.//text()')
+                                ),
+                                Rule(
+                                    key='link',
+                                    extractor=Path('./td[1]/a[@href]/@href')
+                                )
+                            ],
+                            transform=lambda x: build_person(
+                                x.get('person') or '',
+                                personID=analyze_imdbid(x.get('link'))
+                            )
+                        )
+                    )
+                ]
+            )
         )
     ]
 
     extractors = [
-        # parser for misc sections like 'casting department', 'stunts', ...
-        Extractor(
-            label='glossarysections',
-            group="//h4[contains(@class, 'ipl-header__content')]",
-            group_key="./@name",
-            group_key_normalize=lambda x: x.replace('_', ' '),
-            path="../../following-sibling::table[1]//tr",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'person': ".//text()",
-                    'link': "./td[1]/a[@href]/@href"
-                },
-                postprocess=lambda x: build_person(
-                    x.get('person') or '',
-                    personID=analyze_imdbid(x.get('link'))
-                )
-            )
-        ),
-
         Extractor(
             label='cast',
             path="//table[@class='cast_list']//tr",
@@ -738,6 +747,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                 subdata = data[key]
                 del data[key]
                 data.update(subdata)
+        misc_sections = data.get('misc sections')
+        if misc_sections is not None:
+            for section in misc_sections:
+                data.update(section)
+            del data['misc sections']
         if 'akas' in data or 'other akas' in data:
             akas = data.get('akas') or []
             other_akas = data.get('other akas') or []

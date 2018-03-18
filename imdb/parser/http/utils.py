@@ -115,31 +115,6 @@ sgmlentity.update(dict([('#34', '"'), ('#38', '&'),
                         ('#60', '<'), ('#62', '>'), ('#39', "'")]))
 
 
-def _replXMLRef(match):
-    """Replace the matched XML/HTML entities and references;
-    replace everything except sgml entities like &lt;, &gt;, ..."""
-    ref = match.group(1)
-    value = entcharrefsget(ref)
-    if value is None:
-        if ref[0] == '#':
-            ref_code = ref[1:]
-            if ref_code in ('34', '38', '60', '62', '39'):
-                return match.group(0)
-            elif ref_code[0].lower() == 'x':
-                return chr(int(ref[2:], 16))
-            else:
-                return chr(int(ref[1:]))
-        else:
-            return ref
-    return value
-
-
-def subXMLRefs(s):
-    """Return the given html string with entity and char references
-    replaced."""
-    return re_entcharrefssub(_replXMLRef, s)
-
-
 _b_p_logger = logging.getLogger('imdbpy.parser.http.build_person')
 
 
@@ -462,7 +437,9 @@ class DOMParserBase(object):
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
-        html_string = subXMLRefs(html_string)
+        # html_string = subXMLRefs(html_string)
+        # TODO: get rid of the special entity handling
+        html_string = html_string.replace('&nbsp;', ' ')
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
         html_string = html_string.strip()

@@ -15,9 +15,8 @@ def person_bio(url_opener, people):
 parser = GatherRefs()
 
 
-def test_movies_and_persons_refs(person_bio):
+def test_movies_and_persons_refs_should_be_lists(person_bio):
     page = person_bio('julia roberts')
     data = parser.parse(page)
     assert len(data['names refs']) > 100
     assert len(data['titles refs']) > 70
-

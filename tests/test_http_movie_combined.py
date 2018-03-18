@@ -612,10 +612,12 @@ def test_cast_must_contain_items(movie_combined_details):
     data = parser.parse(page)['data']
     assert len(data['cast']) > 20
 
+
 def test_misc_sections_must_contain_items(movie_combined_details):
     page = movie_combined_details('matrix')
     data = parser.parse(page)['data']
     assert len(data['casting department']) == 2
+
 
 def test_sound_mix_none_should_be_excluded(movie_combined_details):
     page = movie_combined_details('ates parcasi')

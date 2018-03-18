@@ -92,10 +92,11 @@ class DOMCompanyParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
-        if 'name' in data and isinstance(data['name'], dict):
-            subdata = data['name']
-            del data['name']
-            data.update(subdata)
+        for key in ['name']:
+            if (key in data) and isinstance(data[key], dict):
+                subdata = data[key]
+                del data[key]
+                data.update(subdata)
         for key in list(data.keys()):
             new_key = key.replace('company', 'companies')
             new_key = new_key.replace('other', 'miscellaneous')

@@ -734,7 +734,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                         obj.accessSystem = self._as
                         obj.modFunct = self._modFunct
         for key in ['title']:
-            if key in data:
+            if (key in data) and isinstance(data[key], dict):
                 subdata = data[key]
                 del data[key]
                 data.update(subdata)

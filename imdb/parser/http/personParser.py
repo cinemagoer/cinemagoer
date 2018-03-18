@@ -203,10 +203,11 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
-        if 'name' in data and isinstance(data['name'], dict):
-            subdata = data['name']
-            del data['name']
-            data.update(subdata)
+        for key in ['name']:
+            if (key in data) and isinstance(data[key], dict):
+                subdata = data[key]
+                del data[key]
+                data.update(subdata)
         for what in 'birth date', 'death date':
             if what in data and not data[what]:
                 del data[what]

@@ -272,28 +272,35 @@ class DOMHTMLMovieParser(DOMParserBase):
                     )
                 ]
             )
+        ),
+        Rule(
+            key='cast',
+            extractor=Rules(
+                foreach='//table[@class="cast_list"]//tr',
+                rules=[
+                    Rule(
+                        key='person',
+                        extractor=Path('.//text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('./td[2]/a/@href')
+                    ),
+                    Rule(
+                        key='roleID',
+                        extractor=Path('./td[4]//div[@class="_imdbpyrole"]/@roleid')
+                    )
+                ],
+                transform=lambda x: build_person(
+                    x.get('person') or '',
+                    personID=analyze_imdbid(x.get('link')),
+                    roleID=(x.get('roleID') or '').split('/')
+                )
+            )
         )
     ]
 
     extractors = [
-        Extractor(
-            label='cast',
-            path="//table[@class='cast_list']//tr",
-            attrs=Attribute(
-                key="cast",
-                multi=True,
-                path={
-                    'person': ".//text()",
-                    'link': "td[2]/a/@href",
-                    'roleID': "td[4]//div[@class='_imdbpyrole']/@roleid"
-                },
-                postprocess=lambda x: build_person(
-                    x.get('person') or '',
-                    personID=analyze_imdbid(x.get('link')),
-                    roleID=(x.get('roleID') or '').split('/'))
-            )
-        ),
-
         Extractor(
             label='myrating',
             path="//span[@id='voteuser']",

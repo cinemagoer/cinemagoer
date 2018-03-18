@@ -400,7 +400,6 @@ class DOMParserBase(object):
     _containsObjects = False
 
     preprocessors = []
-    extractors = []
     rules = []
 
     _logger = logging.getLogger('imdbpy.parser.http.domparser')
@@ -456,11 +455,7 @@ class DOMParserBase(object):
                 except Exception:
                     self._logger.warn('%s: unable to gather refs: %s',
                                       self._cname, exc_info=True)
-            data = self.parse_dom(dom)
-
-            if self.rules:
-                piculet_data = Rules(self.rules).extract(dom)
-                data.update(piculet_data)
+            data = Rules(self.rules).extract(dom)
         else:
             data = {}
         try:
@@ -545,93 +540,8 @@ class DOMParserBase(object):
         self._titlesRefs = refs['titles refs']
 
     def preprocess_dom(self, dom):
-        """Last chance to modify the dom, before the rules in self.extractors
-        are applied by the parse_dom method."""
+        """Last chance to modify the dom, before the rules are applied."""
         return dom
-
-    def parse_dom(self, dom):
-        """Parse the given dom according to the rules specified
-        in self.extractors."""
-        result = {}
-        for extractor in self.extractors:
-            # print extractor.label
-            if extractor.group is None:
-                elements = [(extractor.label, element)
-                            for element in self.xpath(dom, extractor.path)]
-            else:
-                groups = self.xpath(dom, extractor.group)
-                elements = []
-                for group in groups:
-                    group_key = self.xpath(group, extractor.group_key)
-                    if not group_key:
-                        continue
-                    group_key = group_key[0]
-                    group_key = self.tostring(group_key)
-                    normalizer = extractor.group_key_normalize
-                    if normalizer is not None:
-                        if isinstance(normalizer, collections.Callable):
-                            try:
-                                group_key = normalizer(group_key)
-                            except Exception:
-                                _m = '%s: unable to apply group_key normalizer'
-                                self._logger.error(_m, self._cname, exc_info=True)
-                    group_elements = self.xpath(group, extractor.path)
-                    elements.extend([(group_key, element) for element in group_elements])
-            for group_key, element in elements:
-                for attr in extractor.attrs:
-                    if isinstance(attr.path, dict):
-                        data = {}
-                        for field in list(attr.path.keys()):
-                            path = attr.path[field]
-                            value = self.xpath(element, path)
-                            if not value:
-                                data[field] = None
-                            else:
-                                # XXX: use u'' , to join?
-                                data[field] = ''.join(value)
-
-                        # If the value is to be ignored, set data to empty dict.
-                        # It will be skipped later.
-                        for key, value in attr.ignore.items():
-                            if data[key] == value:
-                                data = {}
-                    else:
-                        data = self.xpath(element, attr.path)
-                        if not data:
-                            data = None
-                        else:
-                            data = attr.joiner.join(data)
-                    if not data:
-                        continue
-                    attr_postprocess = attr.postprocess
-                    if isinstance(attr_postprocess, collections.Callable):
-                        try:
-                            data = attr_postprocess(data)
-                        except Exception:
-                            _m = '%s: unable to apply attr postprocess'
-                            self._logger.error(_m, self._cname, exc_info=True)
-                    key = attr.key
-                    if key is None:
-                        key = group_key
-                    elif key.startswith('.'):
-                        # assuming this is an xpath
-                        try:
-                            key = self.xpath(element, key)[0]
-                        except IndexError:
-                            self._logger.error('%s: XPath returned no items',
-                                               self._cname, exc_info=True)
-                    elif key.startswith('self.'):
-                        key = getattr(self, key[5:])
-                    if attr.multi:
-                        if key not in result:
-                            result[key] = []
-                        result[key].append(data)
-                    else:
-                        if isinstance(data, dict):
-                            result.update(data)
-                        else:
-                            result[key] = data
-        return result
 
     def postprocess_data(self, data):
         """Here we can modify the data."""
@@ -666,70 +576,6 @@ class DOMParserBase(object):
                 'titlesRefs': self._titlesRefs,
                 'namesRefs': self._namesRefs
                 }
-
-
-class Extractor(object):
-    """Instruct the DOM parser about how to parse a document."""
-    def __init__(self, label, path, attrs, group=None, group_key=None,
-                 group_key_normalize=None):
-        """Initialize an Extractor object, used to instruct the DOM parser
-        about how to parse a document."""
-        # rarely (never?) used, mostly for debugging purposes.
-        self.label = label
-        self.group = group
-        if group_key is None:
-            self.group_key = ".//text()"
-        else:
-            self.group_key = group_key
-        self.group_key_normalize = group_key_normalize
-        self.path = path
-        # A list of attributes to fetch.
-        if isinstance(attrs, Attribute):
-            attrs = [attrs]
-        self.attrs = attrs
-
-    def __repr__(self):
-        """String representation of an Extractor object."""
-        t = '<Extractor id:%s (label=%s, path=%s, attrs=%s, group=%s, group_key=%s' + \
-            ', group_key_normalize=%s)>'
-        r = t % (id(self), self.label, self.path, repr(self.attrs), self.group,
-                 self.group_key, self.group_key_normalize)
-        return r
-
-
-class Attribute(object):
-    """The attribute to consider, for a given node."""
-    def __init__(self, key, multi=False, path=None, joiner=None,
-                 postprocess=None, ignore=None):
-        """Initialize an Attribute object, used to specify the
-        attribute to consider, for a given node."""
-        # The key under which information will be saved; can be a string or an
-        # XPath. If None, the label of the containing extractor will be used.
-        self.key = key
-        self.multi = multi
-        self.path = path
-        if joiner is None:
-            joiner = ''
-        self.joiner = joiner
-        # Post-process this set of information.
-        self.postprocess = postprocess
-
-        if ignore is not None:
-            # If there is no explicit mapping for values to ignore for particular fields,
-            # use the value for all fields.
-            if not isinstance(ignore, dict):
-                ignore = {k: ignore for k in self.path}
-        else:
-            ignore = {}
-        self.ignore = ignore
-
-    def __repr__(self):
-        """String representation of an Attribute object."""
-        r = '<Attribute id:%s (key=%s, multi=%s, path=%s, joiner=%s, postprocess=%s)>' % (
-            id(self), self.key, self.multi, repr(self.path), self.joiner,
-            repr(self.postprocess)
-        )
-        return r
 
 
 def _parse_ref(text, link, info):

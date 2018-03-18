@@ -2209,8 +2209,6 @@ class DOMHTMLEpisodesParser(DOMParserBase):
     _oad_path = "./following-sibling::span/strong[1]/text()"
 
     def _init(self):
-        self.extractors = []
-
         self.rules = [
             Rule(
                 key='series title',

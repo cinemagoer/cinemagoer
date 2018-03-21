@@ -39,7 +39,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, KIND_MAP
 
-from .piculet import Path, Rule, Rules, preprocess
+from .piculet import Path, Rule, Rules, preprocessors
 from .utils import DOMParserBase, analyze_imdbid, build_person
 
 
@@ -630,18 +630,10 @@ class DOMHTMLMovieParser(DOMParserBase):
                 if name:
                     a.set('name', 'series %s' % name)
         # Remove links to IMDbPro.
+        preprocessors.remove(dom, '//span[@class="pro-link"]')
         # Remove some 'more' links (keep others, like the one around
         # the number of votes).
-        preprocess(dom, [
-            {
-                'op': 'remove',
-                'path': '//span[@class="pro-link"]'
-            },
-            {
-                'op': 'remove',
-                'path': '//a[@class="tn15more"][starts-with(@href, "/title/")]'
-            }
-        ])
+        preprocessors.remove(dom, '//a[@class="tn15more"][starts-with(@href, "/title/")]')
         return dom
 
     re_space = re.compile(r'\s+')
@@ -828,12 +820,7 @@ class DOMHTMLPlotParser(DOMParserBase):
     ]
 
     def preprocess_dom(self, dom):
-        preprocess(dom, [
-            {
-                'op': 'remove',
-                'path': '//li[@id="no-summary-content"]'
-            }
-        ])
+        preprocessors.remove(dom, '//li[@id="no-summary-content"]')
         return dom
 
     def postprocess_data(self, data):
@@ -1044,16 +1031,8 @@ class DOMHTMLTaglinesParser(DOMParserBase):
     ]
 
     def preprocess_dom(self, dom):
-        preprocess(dom, [
-            {
-                'op': 'remove',
-                'path': '//div[@id="taglines_content"]/div[@class="header"]'
-            },
-            {
-                'op': 'remove',
-                'path': '//div[@id="taglines_content"]/div[@id="no_content"]'
-            }
-        ])
+        preprocessors.remove(dom, '//div[@id="taglines_content"]/div[@class="header"]')
+        preprocessors.remove(dom, '//div[@id="taglines_content"]/div[@id="no_content"]')
         return dom
 
     def postprocess_data(self, data):
@@ -1133,12 +1112,7 @@ class DOMHTMLTriviaParser(DOMParserBase):
 
     def preprocess_dom(self, dom):
         # Remove "link this quote" links.
-        preprocess(dom, [
-            {
-                'op': 'remove',
-                'path': '//span[@class="linksoda"]'
-            }
-        ])
+        preprocessors.remove(dom, '//span[@class="linksoda"]')
         return dom
 
 
@@ -1314,16 +1288,8 @@ class DOMHTMLQuotesParser(DOMParserBase):
 
     def preprocess_dom(self, dom):
         # Remove "link this quote" links.
-        preprocess(dom, [
-            {
-                'op': 'remove',
-                'path': '//span[@class="linksoda"]'
-            },
-            {
-                'op': 'remove',
-                'path': '//div[@class="sharesoda_pre"]'
-            }
-        ])
+        preprocessors.remove(dom, '//span[@class="linksoda"]')
+        preprocessors.remove(dom, '//div[@class="sharesoda_pre"]')
         return dom
 
     def postprocess_data(self, data):

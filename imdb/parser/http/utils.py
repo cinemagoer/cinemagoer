@@ -436,7 +436,6 @@ class DOMParserBase(object):
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
-        # html_string = subXMLRefs(html_string)
         # TODO: get rid of the special entity handling
         html_string = html_string.replace('&nbsp;', ' ')
         # Temporary fix: self.parse_dom must work even for empty strings.

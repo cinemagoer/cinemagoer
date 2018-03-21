@@ -322,64 +322,6 @@ else:
     xpath = lambda e, p: XPath(p)(e)
 
 
-class Registry:
-    """A simple, attribute-based namespace."""
-
-    def __init__(self, entries):
-        """Initialize this registry.
-
-        :sig: (Mapping[str, Any]) -> None
-        :param entries: Entries to add to this registry.
-        """
-        self.__dict__.update(entries)
-
-    def get(self, item):
-        """Get the value of an entry from this registry.
-
-        :sig: (str) -> Any
-        :param item: Entry to get the value for.
-        :return: Value of entry.
-        """
-        return self.__dict__.get(item)
-
-    def register(self, key, value):
-        """Register a new entry in this registry.
-
-        :sig: (str, Any) -> None
-        :param key: Key to search the entry in this registry.
-        :param value: Value to store for the entry.
-        """
-        self.__dict__[key] = value
-
-
-_REDUCERS = {
-    'first': itemgetter(0),
-    'concat': partial(str.join, ''),
-    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
-    'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
-}
-
-reducers = Registry(_REDUCERS)          # sig: Registry
-"""Predefined reducers."""
-
-
-_TRANSFORMERS = {
-    'int': int,
-    'float': float,
-    'bool': bool,
-    'len': len,
-    'lower': str.lower,
-    'upper': str.upper,
-    'capitalize': str.capitalize,
-    'lstrip': str.lstrip,
-    'rstrip': str.rstrip,
-    'strip': str.strip
-}
-
-transformers = Registry(_TRANSFORMERS)  # sig: Registry
-"""Predefined transformers."""
-
-
 _EMPTY = {}     # empty result singleton
 
 
@@ -642,14 +584,21 @@ class Rule:
         return data
 
 
-def remove_elements(root, path, get_parent):
+def remove_elements(root, path):
     """Remove selected elements from the tree.
 
-    :sig: (Element, str, Callable[[Element], Element]) -> None
+    :sig: (Element, str) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to remove.
-    :param get_parent: Function to get the parent of an element.
     """
+    if _USE_LXML:
+        get_parent = ElementTree._Element.getparent
+    else:
+        # ElementTree doesn't support parent queries, so we'll build a map for it
+        get_parent = root.attrib.get('_get_parent')
+        if get_parent is None:
+            get_parent = {e: p for p in root.iter() for e in p}.get
+            root.attrib['_get_parent'] = get_parent
     elements = XPath(path)(root)
     _logger.debug('removing %s elements using path: "%s"', len(elements), path)
     if len(elements) > 0:
@@ -728,6 +677,74 @@ def build_tree(document, force_html=False):
     return ElementTree.fromstring(content)
 
 
+class Registry:
+    """A simple, attribute-based namespace."""
+
+    def __init__(self, entries):
+        """Initialize this registry.
+
+        :sig: (Mapping[str, Any]) -> None
+        :param entries: Entries to add to this registry.
+        """
+        self.__dict__.update(entries)
+
+    def get(self, item):
+        """Get the value of an entry from this registry.
+
+        :sig: (str) -> Any
+        :param item: Entry to get the value for.
+        :return: Value of entry.
+        """
+        return self.__dict__.get(item)
+
+    def register(self, key, value):
+        """Register a new entry in this registry.
+
+        :sig: (str, Any) -> None
+        :param key: Key to search the entry in this registry.
+        :param value: Value to store for the entry.
+        """
+        self.__dict__[key] = value
+
+
+_PREPROCESSORS = {
+    'remove': remove_elements,
+    'set_attr': set_element_attr,
+    'set_text': set_element_text
+}
+
+preprocessors = Registry(_PREPROCESSORS)    # sig: Registry
+"""Predefined preprocessors."""
+
+
+_REDUCERS = {
+    'first': itemgetter(0),
+    'concat': partial(str.join, ''),
+    'clean': lambda xs: re.sub('\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
+    'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
+}
+
+reducers = Registry(_REDUCERS)              # sig: Registry
+"""Predefined reducers."""
+
+
+_TRANSFORMERS = {
+    'int': int,
+    'float': float,
+    'bool': bool,
+    'len': len,
+    'lower': str.lower,
+    'upper': str.upper,
+    'capitalize': str.capitalize,
+    'lstrip': str.lstrip,
+    'rstrip': str.rstrip,
+    'strip': str.strip
+}
+
+transformers = Registry(_TRANSFORMERS)      # sig: Registry
+"""Predefined transformers."""
+
+
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
@@ -735,16 +752,10 @@ def preprocess(root, pre):
     :param root: Root of tree to process.
     :param pre: Descriptions for processing operations.
     """
-    get_parent = None
-
     for step in pre:
         op = step['op']
         if op == 'remove':
-            if get_parent is None:
-                # ElementTree doesn't support parent queries, so we'll build a map for it
-                get_parent = ElementTree._Element.getparent if _USE_LXML else \
-                    {e: p for p in root.iter() for e in p}.get
-            remove_elements(root, step['path'], get_parent=get_parent)
+            remove_elements(root, step['path'])
         elif op == 'set_attr':
             set_element_attr(root, step['path'], name=step['name'], value=step['value'])
         elif op == 'set_text':
@@ -855,7 +866,7 @@ def make_parser(prog):
     :return: Parser for arguments.
     """
     parser = ArgumentParser(prog=prog)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0b6')
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0b7')
     parser.add_argument('--debug', action='store_true', help='enable debug messages')
 
     commands = parser.add_subparsers(metavar='command', dest='command')

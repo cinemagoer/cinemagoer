@@ -1,5 +1,5 @@
-Changelog for IMDbPY
-====================
+Changelog
+=========
 
 * What's new in release 6.5
 

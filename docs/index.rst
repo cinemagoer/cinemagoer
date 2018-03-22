@@ -7,6 +7,7 @@ IMDbPY
    :maxdepth: 2
    :caption: Contents:
 
+   FAQS
    DISCLAIMER
    CONTRIBUTORS
    CREDITS

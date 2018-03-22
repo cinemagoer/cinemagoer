@@ -8,6 +8,7 @@ IMDbPY
    :caption: Contents:
 
    INSTALLATION
+   README.s3
    README.adult
    FAQS
    DEPLOY

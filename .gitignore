@@ -5,6 +5,7 @@
 *.so
 .pytest_cache/
 build/
+_build/
 __pycache__
 dist/
 .idea

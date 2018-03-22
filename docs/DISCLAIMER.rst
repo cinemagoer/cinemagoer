@@ -1,5 +1,5 @@
 Disclaimer
-----------
+==========
 
 IMDbPY and the authors are not affiliated with Internet Movie Database Inc.
 

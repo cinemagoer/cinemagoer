@@ -9,6 +9,7 @@ IMDbPY
 
    DISCLAIMER
    CONTRIBUTORS
+   CREDITS
 
 Indices and tables
 ==================

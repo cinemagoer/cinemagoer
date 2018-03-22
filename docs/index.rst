@@ -10,6 +10,7 @@ IMDbPY
    DISCLAIMER
    CONTRIBUTORS
    CREDITS
+   Changelog
 
 Indices and tables
 ==================

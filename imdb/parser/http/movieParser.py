@@ -39,7 +39,8 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, KIND_MAP
 
-from .utils import Attribute, DOMParserBase, Extractor, analyze_imdbid, build_person
+from .piculet import Path, Rule, Rules, preprocessors
+from .utils import DOMParserBase, analyze_imdbid, build_person
 
 
 # Dictionary used to convert some section's names.
@@ -236,353 +237,293 @@ class DOMHTMLMovieParser(DOMParserBase):
     """
     _containsObjects = True
 
-    extractors = [
-        Extractor(
-            label='title',
-            path="//meta[@property='og:title']",
-            attrs=Attribute(
-                key='title',
-                path="@content",
-                postprocess=analyze_og_title
-            )
+    rules = [
+        Rule(
+            key='title',
+            extractor=Path('//meta[@property="og:title"]/@content',
+                           transform=analyze_og_title)
         ),
 
         # parser for misc sections like 'casting department', 'stunts', ...
-        Extractor(
-            label='glossarysections',
-            group="//h4[contains(@class, 'ipl-header__content')]",
-            group_key="./@name",
-            group_key_normalize=lambda x: x.replace('_', ' '),
-            path="../../following-sibling::table[1]//tr",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'person': ".//text()",
-                    'link': "./td[1]/a[@href]/@href"
-                },
-                postprocess=lambda x: build_person(
-                    x.get('person') or '',
-                    personID=analyze_imdbid(x.get('link'))
-                )
+        Rule(
+            key='misc sections',
+            extractor=Rules(
+                foreach='//h4[contains(@class, "ipl-header__content")]',
+                rules=[
+                    Rule(
+                        key=Path('./@name', transform=lambda x: x.replace('_', ' ')),
+                        extractor=Rules(
+                            foreach='../../following-sibling::table[1]//tr',
+                            rules=[
+                                Rule(
+                                    key='person',
+                                    extractor=Path('.//text()')
+                                ),
+                                Rule(
+                                    key='link',
+                                    extractor=Path('./td[1]/a[@href]/@href')
+                                )
+                            ],
+                            transform=lambda x: build_person(
+                                x.get('person') or '',
+                                personID=analyze_imdbid(x.get('link'))
+                            )
+                        )
+                    )
+                ]
             )
         ),
-
-        Extractor(
-            label='cast',
-            path="//table[@class='cast_list']//tr",
-            attrs=Attribute(
-                key="cast",
-                multi=True,
-                path={
-                    'person': ".//text()",
-                    'link': "td[2]/a/@href",
-                    'roleID': "td[4]//div[@class='_imdbpyrole']/@roleid"
-                },
-                postprocess=lambda x: build_person(
+        Rule(
+            key='cast',
+            extractor=Rules(
+                foreach='//table[@class="cast_list"]//tr',
+                rules=[
+                    Rule(
+                        key='person',
+                        extractor=Path('.//text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('./td[2]/a/@href')
+                    ),
+                    Rule(
+                        key='roleID',
+                        extractor=Path('./td[4]//div[@class="_imdbpyrole"]/@roleid')
+                    )
+                ],
+                transform=lambda x: build_person(
                     x.get('person') or '',
                     personID=analyze_imdbid(x.get('link')),
-                    roleID=(x.get('roleID') or '').split('/'))
+                    roleID=(x.get('roleID') or '').split('/')
+                )
             )
         ),
-
-        Extractor(
-            label='myrating',
-            path="//span[@id='voteuser']",
-            attrs=Attribute(
-                key='myrating',
-                path=".//text()"
+        Rule(
+            key='myrating',
+            extractor=Path('//span[@id="voteuser"]//text()')
+        ),
+        Rule(
+            key='plot summary',
+            extractor=Path('//td[starts-with(text(), "Plot")]/..//p/text()',
+                           transform=lambda x: x.strip().rstrip('|').rstrip())
+        ),
+        Rule(
+            key='genres',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Genre")]/..//li/a',
+                path='./text()'
             )
         ),
-
-        Extractor(
-            label='plot summary',
-            path=".//td[starts-with(text(), 'Plot')]/..//p",
-            attrs=Attribute(
-                key='plot summary',
+        Rule(
+            key='runtimes',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Runtime")]/..//li',
                 path='./text()',
-                postprocess=lambda x: x.strip().rstrip('|').rstrip()
+                transform=lambda x: x.strip().replace(' min', '')
             )
         ),
-
-        Extractor(
-            label='genres',
-            path="//td[starts-with(text(), 'Genre')]/..//li/a",
-            attrs=Attribute(
-                key="genres",
-                multi=True,
-                path="./text()"
+        Rule(
+            key='countries',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Countr")]/..//li/a',
+                path='./text()'
             )
         ),
-
-        Extractor(
-            label='runtimes',
-            path="//td[starts-with(text(), 'Runtime')]/..//li",
-            attrs=Attribute(
-                key='runtimes',
-                path="./text()",
-                multi=True,
-                postprocess=lambda x: x.strip().replace(' min', '')
+        Rule(
+            key='country codes',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Countr")]/..//li/a',
+                path='./@href',
+                transform=lambda x: x.split('/')[2].strip().lower()
             )
         ),
-
-        Extractor(
-            label='countries',
-            path="//td[starts-with(text(), 'Countr')]/..//li/a",
-            attrs=Attribute(
-                key='countries',
-                path="./text()",
-                multi=True
+        Rule(
+            key='language',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Language")]/..//li/a',
+                path='./text()'
             )
         ),
-
-        Extractor(
-            label='country codes',
-            path="//td[starts-with(text(), 'Countr')]/..//li/a",
-            attrs=Attribute(
-                key='country codes',
-                path="./@href",
-                multi=True,
-                postprocess=lambda x: x.split('/')[2].strip().lower()
+        Rule(
+            key='language codes',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Language")]/..//li/a',
+                path='./@href',
+                transform=lambda x: x.split('/')[2].strip()
             )
         ),
-
-        Extractor(
-            label='language',
-            path="//td[starts-with(text(), 'Language')]/..//li/a",
-            attrs=Attribute(
-                key='language',
-                path="./text()",
-                multi=True
+        Rule(
+            key='color info',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Color")]/..//li/a',
+                path='./text()',
+                transform=lambda x: x.replace(' (', '::(')
             )
         ),
-
-        Extractor(
-            label='language codes',
-            path="//td[starts-with(text(), 'Language')]/..//li/a",
-            attrs=Attribute(
-                key='language codes',
-                path="./@href",
-                multi=True,
-                postprocess=lambda x: x.split('/')[2].strip()
+        Rule(
+            key='aspect ratio',
+            extractor=Path(
+                '//td[starts-with(text(), "Aspect")]/..//li/text()',
+                transform=str.strip
             )
         ),
-
-        Extractor(
-            label='color info',
-            path="//td[starts-with(text(), 'Color')]/..//li/a",
-            attrs=Attribute(
-                key='color info',
-                path="./text()",
-                multi=True,
-                postprocess=lambda x: x.replace(' (', '::(')
+        Rule(
+            key='sound mix',
+            extractor=Path(
+                foreach='//td[starts-with(text(), "Sound Mix")]/..//li/a',
+                path='./text()',
+                transform=lambda x: x.replace(' (', '::(')
             )
         ),
-
-        Extractor(
-            label='aspect ratio',
-            path="//td[starts-with(text(), 'Aspect')]/..",
-            attrs=Attribute(
-                key='aspect ratio',
-                path=".//li/text()",
-                postprocess=lambda x: x.strip()
+        Rule(
+            key='certificates',
+            extractor=Path(
+                '//td[starts-with(text(), "Certificat")]/..//text()',
+                transform=analyze_certificates
             )
         ),
-
-        Extractor(
-            label='sound mix',
-            path="//td[starts-with(text(), 'Sound Mix')]/..//li/a",
-            attrs=Attribute(
-                key='sound mix',
-                path="./text()",
-                multi=True,
-                postprocess=lambda x: x.replace(' (', '::(')
+        # Collects akas not encosed in <i> tags.
+        Rule(
+            key='other akas',
+            extractor=Path(
+                '//section[contains(@class, "listo")]'
+                '//td[starts-with(text(), "Also Known As")]/..//ul//text()',
+                transform=makeSplitter(
+                    sep='::', origNotesSep='" - ', newNotesSep='::', strip='"'
+                )
             )
         ),
-
-        Extractor(
-            label='certificates',
-            path=".//td[starts-with(text(), 'Certificat')]/..",
-            attrs=Attribute(
-                key='certificates',
-                path=".//text()",
-                postprocess=analyze_certificates
-            )
-        ),
-
-        Extractor(
-            label='h5sections',
-            path="//section[contains(@class, 'listo')]",
-            attrs=[
-                # Collects akas not encosed in <i> tags.
-                Attribute(
-                    key='other akas',
-                    path=".//td[starts-with(text(), 'Also Known As')]/..//ul//text()",
-                    postprocess=makeSplitter(
-                        sep='::', origNotesSep='" - ', newNotesSep='::', strip='"'
+        Rule(
+            key='creator',
+            extractor=Rules(
+                foreach='//td[starts-with(text(), "Creator")]/..//a',
+                rules=[
+                    Rule(
+                        key='name',
+                        extractor=Path('./text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('./@href')
                     )
-                )
-            ]
-        ),
-
-        Extractor(
-            label='creator',
-            path="//td[starts-with(text(), 'Creator')]/..//a",
-            attrs=Attribute(
-                key='creator',
-                multi=True,
-                path={
-                    'name': "./text()",
-                    'link': "./@href"
-                },
-                postprocess=lambda x: build_person(
+                ],
+                transform=lambda x: build_person(
                     x.get('name') or '',
                     personID=analyze_imdbid(x.get('link'))
                 )
             )
         ),
-
-        Extractor(
-            label='thin writer',
-            path="//div[starts-with(normalize-space(text()), 'Writer')]/ul/li[1]/a",
-            attrs=Attribute(
-                key='thin writer',
-                multi=True,
-                path={
-                    'name': "./text()",
-                    'link': "./@href"
-                },
-                postprocess=lambda x: build_person(
+        Rule(
+            key='thin writer',
+            extractor=Rules(
+                foreach='//div[starts-with(normalize-space(text()), "Writer")]/ul/li[1]/a',
+                rules=[
+                    Rule(
+                        key='name',
+                        extractor=Path('./text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('./@href')
+                    )
+                ],
+                transform=lambda x: build_person(
                     x.get('name') or '',
                     personID=analyze_imdbid(x.get('link'))
                 )
             )
         ),
-
-        Extractor(
-            label='thin director',
-            path="//div[starts-with(normalize-space(text()), 'Director')]/ul/li[1]/a",
-            attrs=Attribute(
-                key='thin director',
-                multi=True,
-                path={
-                    'name': "./text()",
-                    'link': "./@href"
-                },
-                postprocess=lambda x: build_person(
+        Rule(
+            key='thin director',
+            extractor=Rules(
+                foreach='//div[starts-with(normalize-space(text()), "Director")]/ul/li[1]/a',
+                rules=[
+                    Rule(
+                        key='name',
+                        extractor=Path('./text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('./@href')
+                    )
+                ],
+                transform=lambda x: build_person(
                     x.get('name') or '',
                     personID=analyze_imdbid(x.get('link'))
                 )
             )
         ),
-
-        Extractor(
-            label='top 250/bottom 100',
-            path="//li[@class='ipl-inline-list__item']//a[starts-with(@href, '/chart/')]",
-            attrs=Attribute(
-                key='top/bottom rank',
-                path="./text()"
+        Rule(
+            key='top/bottom rank',
+            extractor=Path(
+                '//li[@class="ipl-inline-list__item"]//a[starts-with(@href, "/chart/")]/text()'
             )
         ),
-
-        Extractor(
-            label='original air date',
-            path="//span[@imdbpy='airdate']",
-            attrs=Attribute(
-                key='original air date',
-                path="./text()"
+        Rule(
+            key='original air date',
+            extractor=Path('//span[@imdbpy="airdate"]/text()')
+        ),
+        Rule(
+            key='series years',
+            extractor=Path(
+                '//div[@id="tn15title"]//span[starts-with(text(), "TV series")]/text()',
+                transform=lambda x: x.replace('TV series', '').strip()
             )
         ),
-
-        Extractor(
-            label='series years',
-            path="//div[@id='tn15title']//span[starts-with(text(), 'TV series')]",
-            attrs=Attribute(
-                key='series years',
-                path="./text()",
-                postprocess=lambda x: x.replace('TV series', '').strip()
+        Rule(
+            key='season/episode',
+            extractor=Path(
+                '//div[@class="titlereference-overview-season-episode-section"]/ul//text()',
+                transform=str.strip
             )
         ),
-
-        Extractor(
-            label='season/episode',
-            path="//div[@class='titlereference-overview-season-episode-section']/ul",
-            attrs=Attribute(
-                key='season/episode',
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+        Rule(
+            key='number of episodes',
+            extractor=Path(
+                '//a[starts-with(text(), "All Episodes")]/text()',
+                transform=lambda x: int(x.replace('All Episodes', '').strip()[1:-1])
             )
         ),
-
-        Extractor(
-            label='number of episodes',
-            path="//a[starts-with(text(), 'All Episodes')]",
-            attrs=Attribute(
-                key='number of episodes',
-                path="./text()",
-                postprocess=lambda x: int(x.replace('All Episodes', '').strip()[1:-1])
+        Rule(
+            key='episode number',
+            extractor=Path(
+                '//div[@id="tn15epnav"]/text()',
+                transform=lambda x: int(re.sub(r'[^a-z0-9 ]', '',
+                                               x.lower()).strip().split()[0]))
+        ),
+        Rule(
+            key='previous episode',
+            extractor=Path(
+                '//span[@class="titlereference-overview-episodes-links"]'
+                '//a[contains(text(), "Previous")]/@href',
+                transform=analyze_imdbid
             )
         ),
-
-        Extractor(
-            label='episode number',
-            path=".//div[@id='tn15epnav']",
-            attrs=Attribute(
-                key='episode number',
-                path="./text()",
-                postprocess=lambda x: int(re.sub(r'[^a-z0-9 ]', '', x.lower())
-                                          .strip()
-                                          .split()[0])
+        Rule(
+            key='next episode',
+            extractor=Path(
+                '//span[@class="titlereference-overview-episodes-links"]'
+                '//a[contains(text(), "Next")]/@href',
+                transform=analyze_imdbid
             )
         ),
-
-        Extractor(
-            label='previous episode',
-            path=".//span[@class='titlereference-overview-episodes-links']//a[contains(text(), 'Previous')]",
-            attrs=Attribute(
-                key='previous episode',
-                path="./@href",
-                postprocess=lambda x: analyze_imdbid(x)
+        Rule(
+            key='number of seasons',
+            extractor=Path(
+                '//span[@class="titlereference-overview-years-links"]/../a[1]/text()',
+                transform=int
             )
         ),
-
-        Extractor(
-            label='next episode',
-            path=".//span[@class='titlereference-overview-episodes-links']//a[contains(text(), 'Next')]",
-            attrs=Attribute(
-                key='next episode',
-                path="./@href",
-                postprocess=lambda x: analyze_imdbid(x)
-            )
+        Rule(
+            key='tv series link',
+            extractor=Path('//a[starts-with(text(), "All Episodes")]/@href')
         ),
-
-        Extractor(
-            label='number of seasons',
-            path=".//span[@class='titlereference-overview-years-links']/../a[1]",
-            attrs=Attribute(
-                key='number of seasons',
-                path="./text()",
-                postprocess=lambda x: int(x)
-            )
-        ),
-
-        Extractor(
-            label='tv series link',
-            path=".//a[starts-with(text(), 'All Episodes')]",
-            attrs=Attribute(
-                key='tv series link',
-                path="./@href"
-            )
-        ),
-
-        Extractor(
-            label='akas',
-            path="//i[@class='transl']",
-            attrs=Attribute(
-                key='akas',
-                multi=True,
-                path='text()',
-                postprocess=lambda x: x
+        Rule(
+            key='akas',
+            extractor=Path(
+                foreach='//i[@class="transl"]',
+                path='./text()',
+                transform=lambda x: x
                     .replace('  ', ' ')
                     .rstrip('-')
                     .replace('" - ', '"::', 1)
@@ -590,92 +531,81 @@ class DOMHTMLMovieParser(DOMParserBase):
                     .replace('  ', ' ')
             )
         ),
-
-        Extractor(
-            label='production notes/status',
-            path="//td[starts-with(text(), 'Status:')]/..//div[@class='info-content']",
-            attrs=Attribute(
-                key='production status',
-                path=".//text()",
-                postprocess=lambda x: x.strip().split('|')[0].strip().lower()
+        Rule(
+            key='production status',
+            extractor=Path(
+                '//td[starts-with(text(), "Status:")]/..//div[@class="info-content"]//text()',
+                transform=lambda x: x.strip().split('|')[0].strip().lower()
             )
         ),
-
-        Extractor(
-            label='production notes/status updated',
-            path="//td[starts-with(text(), 'Status Updated:')]/..//div[@class='info-content']",
-            attrs=Attribute(
-                key='production status updated',
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+        Rule(
+            key='production status updated',
+            extractor=Path(
+                '//td[starts-with(text(), "Status Updated:")]/'
+                '..//div[@class="info-content"]//text()',
+                transform=str.strip
             )
         ),
-
-        Extractor(
-            label='production notes/comments',
-            path="//td[starts-with(text(), 'Comments:')]/..//div[@class='info-content']",
-            attrs=Attribute(
-                key='production comments',
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+        Rule(
+            key='production comments',
+            extractor=Path(
+                '//td[starts-with(text(), "Comments:")]/'
+                '..//div[@class="info-content"]//text()',
+                transform=str.strip
             )
         ),
-
-        Extractor(
-            label='production notes/note',
-            path="//td[starts-with(text(), 'Note:')]/..//div[@class='info-content']",
-            attrs=Attribute(
-                key='production note',
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+        Rule(
+            key='production note',
+            extractor=Path(
+                '//td[starts-with(text(), "Note:")]/'
+                '..//div[@class="info-content"]//text()',
+                transform=str.strip
             )
         ),
-
-        Extractor(
-            label='blackcatheader',
-            group="//b[@class='blackcatheader']",
-            group_key="./text()",
-            group_key_normalize=lambda x: x.lower(),
-            path="../ul/li",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'name': "./a//text()",
-                    'comp-link': "./a/@href",
-                    'notes': "./text()"
-                },
-                postprocess=lambda x: Company(name=x.get('name') or '',
-                                              companyID=analyze_imdbid(x.get('comp-link')),
-                                              notes=(x.get('notes') or '').strip())
+        Rule(
+            key='blackcatheader',
+            extractor=Rules(
+                foreach='//b[@class="blackcatheader"]',
+                rules=[
+                    Rule(
+                        key=Path('./text()', transform=str.lower),
+                        extractor=Rules(
+                            foreach='../ul/li',
+                            rules=[
+                                Rule(
+                                    key='name',
+                                    extractor=Path('./a//text()')
+                                ),
+                                Rule(
+                                    key='comp-link',
+                                    extractor=Path('./a/@href')
+                                ),
+                                Rule(
+                                    key='notes',
+                                    extractor=Path('./text()')
+                                )
+                            ],
+                            transform=lambda x: Company(
+                                name=x.get('name') or '',
+                                companyID=analyze_imdbid(x.get('comp-link')),
+                                notes=(x.get('notes') or '').strip()
+                            )
+                        )
+                    )
+                ]
             )
         ),
-
-        Extractor(
-            label='rating',
-            path="(//span[@class='ipl-rating-star__rating'])[1]",
-            attrs=Attribute(
-                key='rating',
-                path="./text()"
-            )
+        Rule(
+            key='rating',
+            extractor=Path('(//span[@class="ipl-rating-star__rating"])[1]/text()')
         ),
-
-        Extractor(
-            label='votes',
-            path="//span[@class='ipl-rating-star__total-votes'][1]",
-            attrs=Attribute(
-                key='votes',
-                path="./text()"
-            )
+        Rule(
+            key='votes',
+            extractor=Path('//span[@class="ipl-rating-star__total-votes"][1]/text()')
         ),
-
-        Extractor(
-            label='cover url',
-            path="//img[@alt='Poster']",
-            attrs=Attribute(
-                key='cover url',
-                path="@src"
-            )
+        Rule(
+            key='cover url',
+            extractor=Path('//img[@alt="Poster"]/@src')
         )
     ]
 
@@ -700,13 +630,10 @@ class DOMHTMLMovieParser(DOMParserBase):
                 if name:
                     a.set('name', 'series %s' % name)
         # Remove links to IMDbPro.
-        for proLink in self.xpath(dom, "//span[@class='pro-link']"):
-            proLink.drop_tree()
+        preprocessors.remove(dom, '//span[@class="pro-link"]')
         # Remove some 'more' links (keep others, like the one around
         # the number of votes).
-        for tn15more in self.xpath(dom,
-                                   "//a[@class='tn15more'][starts-with(@href, '/title/')]"):
-            tn15more.drop_tree()
+        preprocessors.remove(dom, '//a[@class="tn15more"][starts-with(@href, "/title/")]')
         return dom
 
     re_space = re.compile(r'\s+')
@@ -729,6 +656,16 @@ class DOMHTMLMovieParser(DOMParserBase):
                     for obj in data[key]:
                         obj.accessSystem = self._as
                         obj.modFunct = self._modFunct
+        for key in ['title']:
+            if (key in data) and isinstance(data[key], dict):
+                subdata = data[key]
+                del data[key]
+                data.update(subdata)
+        misc_sections = data.get('misc sections')
+        if misc_sections is not None:
+            for section in misc_sections:
+                data.update(section)
+            del data['misc sections']
         if 'akas' in data or 'other akas' in data:
             akas = data.get('akas') or []
             other_akas = data.get('other akas') or []
@@ -855,34 +792,35 @@ class DOMHTMLPlotParser(DOMParserBase):
 
     # Notice that recently IMDb started to put the email of the
     # author only in the link, that we're not collecting, here.
-    extractors = [
-        Extractor(
-            label='plot',
-            path="//ul[@id='plot-summaries-content']/li",
-            attrs=Attribute(
-                key='plot',
-                multi=True,
-                path={
-                    'plot': "./p//text()",
-                    'author': ".//div[@class='author-container']//a/text()"
-                },
-                postprocess=_process_plotsummary
+    rules = [
+        Rule(
+            key='plot',
+            extractor=Rules(
+                foreach='//ul[@id="plot-summaries-content"]/li',
+                rules=[
+                    Rule(
+                        key='plot',
+                        extractor=Path('./p//text()')
+                    ),
+                    Rule(
+                        key='author',
+                        extractor=Path('.//div[@class="author-container"]//a/text()')
+                    )
+                ],
+                transform=_process_plotsummary
             )
         ),
-        Extractor(
-            label='synopsis',
-            path="//ul[@id='plot-synopsis-content']",
-            attrs=Attribute(
-                key='synopsis',
-                multi=True,
-                path=".//li//text()"
+        Rule(
+            key='synopsis',
+            extractor=Path(
+                foreach='//ul[@id="plot-synopsis-content"]',
+                path='.//li//text()'
             )
         )
     ]
 
     def preprocess_dom(self, dom):
-        for no_summary in self.xpath(dom, "//li[@id='no-summary-content']"):
-            no_summary.drop_tree()
+        preprocessors.remove(dom, '//li[@id="no-summary-content"]')
         return dom
 
     def postprocess_data(self, data):
@@ -931,44 +869,82 @@ class DOMHTMLAwardsParser(DOMParserBase):
     subject = 'title'
     _containsObjects = True
 
-    extractors = [
-        Extractor(
-            label='awards',
-            group="//table//big",
-            group_key="./a",
-            path="./ancestor::tr[1]/following-sibling::tr/td[last()][not(@colspan)]",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'year': "../td[1]/a/text()",
-                    'result': "../td[2]/b/text()",
-                    'award': "../td[3]/text()",
-                    'category': "./text()[1]",
-                    # FIXME: takes only the first co-recipient
-                    'with': "./small[starts-with(text(), 'Shared with:')]/"
-                            "following-sibling::a[1]/text()",
-                    'notes': "./small[last()]//text()",
-                    'anchor': ".//text()"
-                },
-                postprocess=_process_award
+    rules = [
+        Rule(
+            key='awards',
+            extractor=Rules(
+                foreach='//table//big',
+                rules=[
+                    Rule(
+                        key=Path('./a'),
+                        extractor=Rules(
+                            foreach='./ancestor::tr[1]/following-sibling::tr/td[last()][not(@colspan)]',
+                            rules=[
+                                Rule(
+                                    key='year',
+                                    extractor=Path('./td[1]/a/text()')
+                                ),
+                                Rule(
+                                    key='result',
+                                    extractor=Path('../td[2]/b/text()')
+                                ),
+                                Rule(
+                                    key='award',
+                                    extractor=Path('./td[3]/text()')
+                                ),
+                                Rule(
+                                    key='category',
+                                    extractor=Path('./text()[1]')
+                                ),
+                                Rule(
+                                    key='with',
+                                    extractor=Path(
+                                        './small[starts-with(text(), "Shared with:")]/'
+                                        'following-sibling::a[1]/text()'
+                                    )
+                                ),
+                                Rule(
+                                    key='notes',
+                                    extractor=Path('./small[last()]//text()')
+                                ),
+                                Rule(
+                                    key='anchor',
+                                    extractor=Path('.//text()')
+                                )
+                            ],
+                            transform=_process_award
+                        )
+                    )
+                ]
             )
         ),
-
-        Extractor(
-            label='recipients',
-            group="//table//big",
-            group_key="./a",
-            path="./ancestor::tr[1]/following-sibling::tr"
-                 "/td[last()]/small[1]/preceding-sibling::a",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'name': "./text()",
-                    'link': "./@href",
-                    'anchor': "..//text()"
-                }
+        Rule(
+            key='recipients',
+            extractor=Rules(
+                foreach='//table//big',
+                rules=[
+                    Rule(
+                        key=Path('./a'),
+                        extractor=Rules(
+                            foreach='./ancestor::tr[1]/following-sibling::tr'
+                                    '/td[last()]/small[1]/preceding-sibling::a',
+                            rules=[
+                                Rule(
+                                    key='name',
+                                    extractor=Path('./text()')
+                                ),
+                                Rule(
+                                    key='link',
+                                    extractor=Path('./@href')
+                                ),
+                                Rule(
+                                    key='anchor',
+                                    extractor=Path('..//text()')
+                                )
+                            ]
+                        )
+                    )
+                ]
             )
         )
     ]
@@ -1044,23 +1020,19 @@ class DOMHTMLTaglinesParser(DOMParserBase):
         tparser = DOMHTMLTaglinesParser()
         result = tparser.parse(taglines_html_string)
     """
-    extractors = [
-        Extractor(
-            label='taglines',
-            path="//div[@id='taglines_content']/div",
-            attrs=Attribute(
-                key='taglines',
-                multi=True,
-                path=".//text()"
+    rules = [
+        Rule(
+            key='taglines',
+            extractor=Path(
+                foreach='//div[@id="taglines_content"]/div',
+                path='.//text()'
             )
         )
     ]
 
     def preprocess_dom(self, dom):
-        for node in self.xpath(dom, "//div[@id='taglines_content']/div[@class='header']"):
-            node.drop_tree()
-        for node in self.xpath(dom, "//div[@id='taglines_content']/div[@id='no_content']"):
-            node.drop_tree()
+        preprocessors.remove(dom, '//div[@id="taglines_content"]/div[@class="header"]')
+        preprocessors.remove(dom, '//div[@id="taglines_content"]/div[@id="no_content"]')
         return dom
 
     def postprocess_data(self, data):
@@ -1079,14 +1051,13 @@ class DOMHTMLKeywordsParser(DOMParserBase):
         kwparser = DOMHTMLKeywordsParser()
         result = kwparser.parse(keywords_html_string)
     """
-    extractors = [
-        Extractor(
-            label='keywords',
-            path="//a[starts-with(@href, '/keyword/')]",
-            attrs=Attribute(
-                key='keywords',
-                path="./text()", multi=True,
-                postprocess=lambda x: x.lower().replace(' ', '-')
+    rules = [
+        Rule(
+            key='keywords',
+            extractor=Path(
+                foreach='//a[starts-with(@href, "/keyword/")]',
+                path='./text()',
+                transform=lambda x: x.lower().replace(' ', '-')
             )
         )
     ]
@@ -1104,15 +1075,13 @@ class DOMHTMLAlternateVersionsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='alternate versions',
-            path="//ul[@class='trivia']/li",
-            attrs=Attribute(
-                key='alternate versions',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+    rules = [
+        Rule(
+            key='alternate versions',
+            extractor=Path(
+                foreach='//ul[@class="trivia"]/li',
+                path='.//text()',
+                transform=str.strip
             )
         )
     ]
@@ -1130,37 +1099,35 @@ class DOMHTMLTriviaParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='alternate versions',
-            path="//div[@class='sodatext']",
-            attrs=Attribute(
-                key='trivia',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip())
+    rules = [
+        Rule(
+            key='trivia',
+            extractor=Path(
+                foreach='//div[@class="sodatext"]',
+                path='.//text()',
+                transform=str.strip
+            )
         )
     ]
 
     def preprocess_dom(self, dom):
         # Remove "link this quote" links.
-        for qLink in self.xpath(dom, "//span[@class='linksoda']"):
-            qLink.drop_tree()
+        preprocessors.remove(dom, '//span[@class="linksoda"]')
         return dom
 
 
 class DOMHTMLSoundtrackParser(DOMParserBase):
     _defGetRefs = True
+
     preprocessors = [('<br />', '\n'), ('<br>', '\n')]
-    extractors = [
-        Extractor(
-            label='soundtrack',
-            path="//div[@class='list']//div",
-            attrs=Attribute(
-                key='soundtrack',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.strip()
+
+    rules = [
+        Rule(
+            key='soundtrack',
+            extractor=Path(
+                foreach='//div[@class="list"]//div',
+                path='.//text()',
+                transform=str.strip
             )
         )
     ]
@@ -1220,15 +1187,13 @@ class DOMHTMLCrazyCreditsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='crazy credits',
-            path="//ul/li/tt",
-            attrs=Attribute(
-                key='crazy credits',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x.replace('\n', ' ').replace('  ', ' ')
+    rules = [
+        Rule(
+            key='crazy credits',
+            extractor=Path(
+                foreach='//ul/li/tt',
+                path='.//text()',
+                transform=lambda x: x.replace('\n', ' ').replace('  ', ' ')
             )
         )
     ]
@@ -1253,19 +1218,26 @@ class DOMHTMLGoofsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='goofs',
-            path="//div[@class='soda odd']",
-            attrs=Attribute(
-                key='goofs',
-                multi=True,
-                path={
-                    'text': "./text()",
-                    'category': './preceding-sibling::h4[1]/text()',
-                    'spoiler_category': './h4/text()'
-                },
-                postprocess=_process_goof
+    rules = [
+        Rule(
+            key='goofs',
+            extractor=Rules(
+                foreach='//div[@class="soda odd"]',
+                rules=[
+                    Rule(
+                        key='text',
+                        extractor=Path('./text()')
+                    ),
+                    Rule(
+                        key='category',
+                        extractor=Path('./preceding-sibling::h4[1]/text()')
+                    ),
+                    Rule(
+                        key='spoiler_category',
+                        extractor=Path('./h4/text()')
+                    )
+                ],
+                transform=_process_goof
             )
         )
     ]
@@ -1283,30 +1255,25 @@ class DOMHTMLQuotesParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='quotes_odd',
-            path="//div[@class='quote soda odd']",
-            attrs=Attribute(
-                key='quotes_odd',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x
+    rules = [
+        Rule(
+            key='quotes_odd',
+            extractor=Path(
+                foreach='//div[@class="quote soda odd"]',
+                path='.//text()',
+                transform=lambda x: x
                     .strip()
                     .replace(' \n', '::')
                     .replace('::\n', '::')
                     .replace('\n', ' ')
             )
         ),
-
-        Extractor(
-            label='quotes_even',
-            path="//div[@class='quote soda even']",
-            attrs=Attribute(
-                key='quotes_even',
-                multi=True,
-                path=".//text()",
-                postprocess=lambda x: x
+        Rule(
+            key='quotes_even',
+            extractor=Path(
+                foreach='//div[@class="quote soda even"]',
+                path='.//text()',
+                transform=lambda x: x
                     .strip()
                     .replace(' \n', '::')
                     .replace('::\n', '::')
@@ -1321,10 +1288,8 @@ class DOMHTMLQuotesParser(DOMParserBase):
 
     def preprocess_dom(self, dom):
         # Remove "link this quote" links.
-        for qLink in self.xpath(dom, "//span[@class='linksoda']"):
-            qLink.drop_tree()
-        for qLink in self.xpath(dom, "//div[@class='sharesoda_pre']"):
-            qLink.drop_tree()
+        preprocessors.remove(dom, '//span[@class="linksoda"]')
+        preprocessors.remove(dom, '//div[@class="sharesoda_pre"]')
         return dom
 
     def postprocess_data(self, data):
@@ -1345,30 +1310,41 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         rdparser = DOMHTMLReleaseinfoParser()
         result = rdparser.parse(releaseinfo_html_string)
     """
-    extractors = [
-        Extractor(
-            label='release dates',
-            path="//table[@id='release_dates']//tr",
-            attrs=Attribute(
-                key='release dates',
-                multi=True,
-                path={
-                    'country': ".//td[1]//text()",
-                    'date': ".//td[2]//text()",
-                    'notes': ".//td[3]//text()"
-                }
+    rules = [
+        Rule(
+            key='release dates',
+            extractor=Rules(
+                foreach='//table[@id="release_dates"]//tr',
+                rules=[
+                    Rule(
+                        key='country',
+                        extractor=Path('.//td[1]//text()')
+                    ),
+                    Rule(
+                        key='date',
+                        extractor=Path('.//td[2]//text()')
+                    ),
+                    Rule(
+                        key='notes',
+                        extractor=Path('.//td[3]//text()')
+                    )
+                ]
             )
         ),
-
-        Extractor(
-            label='akas',
-            path="//table[@id='akas']//tr",
-            attrs=Attribute(
-                key='akas',
-                multi=True,
-                path={
-                    'title': "./td[1]/text()",
-                    'countries': "./td[2]/text()"}
+        Rule(
+            key='akas',
+            extractor=Rules(
+                foreach='//table[@id="akas"]//tr',
+                rules=[
+                    Rule(
+                        key='title',
+                        extractor=Path('./td[1]/text()')
+                    ),
+                    Rule(
+                        key='countries',
+                        extractor=Path('./td[2]/text()')
+                    )
+                ]
             )
         )
     ]
@@ -1432,42 +1408,47 @@ class DOMHTMLRatingsParser(DOMParserBase):
     """
     re_means = re.compile('mean\s*=\s*([0-9]\.[0-9])\s*median\s*=\s*([0-9])', re.I)
 
-    extractors = [
-        Extractor(
-            label='number of votes',
-            path="//th[@class='firstTableCoulmn']/../../tr",
-            attrs=[
-                Attribute(
-                    key='votes',
-                    multi=True,
-                    path={
-                        'ordinal': "td[1]/div//text()",
-                        'votes': "td[3]/div/div//text()"
-                    }
-                )
-            ]
-        ),
-
-        Extractor(
-            label='mean and median',
-            path="//div[starts-with(normalize-space(text()), 'Arithmetic mean')]",
-            attrs=Attribute(
-                key='mean and median',
-                path="normalize-space(text())"
+    rules = [
+        Rule(
+            key='votes',
+            extractor=Rules(
+                foreach='//th[@class="firstTableCoulmn"]/../../tr',
+                rules=[
+                    Rule(
+                        key='ordinal',
+                        extractor=Path('./td[1]/div//text()')
+                    ),
+                    Rule(
+                        key='votes',
+                        extractor=Path('./td[3]/div/div//text()')
+                    )
+                ]
             )
         ),
-
-        Extractor(
-            label='demographics',
-            path="//div[@class='smallcell']",
-            attrs=Attribute(
-                key='demographics',
-                multi=True,
-                path={
-                    'link': "a/@href",
-                    'rating': "..//div[@class='bigcell']//text()",
-                    'votes': "a/text()"
-                }
+        Rule(
+            key='mean and median',
+            extractor=Path(
+                '//div[starts-with(normalize-space(text()), "Arithmetic mean")]/text()'
+            )
+        ),
+        Rule(
+            key='demographics',
+            extractor=Rules(
+                foreach='//div[@class="smallcell"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('./a/@href')
+                    ),
+                    Rule(
+                        key='rating',
+                        extractor=Path('..//div[@class="bigcell"]//text()')
+                    ),
+                    Rule(
+                        key='votes',
+                        extractor=Path('./a/text()')
+                    )
+                ]
             )
         )
     ]
@@ -1555,23 +1536,14 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
     """
     kind = 'critic reviews'
 
-    extractors = [
-        Extractor(
-            label='metascore',
-            path="//div[@class='metascore_wrap']/div/span",
-            attrs=Attribute(
-                key='metascore',
-                path=".//text()"
-            )
+    rules = [
+        Rule(
+            key='metascore',
+            extractor=Path('//div[@class="metascore_wrap"]/div/span//text()')
         ),
-
-        Extractor(
-            label='metacritic url',
-            path="//div[@class='article']/div[@class='see-more']/a",
-            attrs=Attribute(
-                key='metacritic url',
-                path="./@href"
-            )
+        Rule(
+            key='metacritic url',
+            extractor=Path('//div[@class="article"]/div[@class="see-more"]/a/@href')
         )
     ]
 
@@ -1586,30 +1558,44 @@ class DOMHTMLReviewsParser(DOMParserBase):
         osparser = DOMHTMLReviewsParser()
         result = osparser.parse(officialsites_html_string)
     """
-    kind = 'reviews'
-
-    extractors = [
-        Extractor(
-            label='review',
-            path="//div[@class='review-container']",
-            attrs=Attribute(
-                key='self.kind',
-                multi=True,
-                path={
-                    'text': ".//div[@class='text']//text()",
-                    'helpful': ".//div[@class='text-muted']/text()[1]",
-                    'title': ".//div[@class='title']//text()",
-                    'author': ".//span[@class='display-name-link']/a/@href",
-                    'date': ".//span[@class='review-date']//text()",
-                    'rating': ".//span[@class='point-scale']/preceding-sibling::span[1]/text()"
-                },
-                postprocess=lambda x: ({
-                    'content': (x['text'] or '').replace("\n", " ").replace('  ', ' ').strip(),
-                    'helpful': [int(s) for s in (x.get('helpful') or '').split() if s.isdigit()],
-                    'title': (x.get('title') or '').strip(),
+    rules = [
+        Rule(
+            key='reviews',
+            extractor=Rules(
+                foreach='//div[@class="review-container"]',
+                rules=[
+                    Rule(
+                        key='text',
+                        extractor=Path('.//div[@class="text"]//text()')
+                    ),
+                    Rule(
+                        key='helpful',
+                        extractor=Path('.//div[@class="text-muted"]/text()[1]')
+                    ),
+                    Rule(
+                        key='title',
+                        extractor=Path('.//div[@class="title"]//text()')
+                    ),
+                    Rule(
+                        key='author',
+                        extractor=Path('.//span[@class="display-name-link"]/a/@href')
+                    ),
+                    Rule(
+                        key='date',
+                        extractor=Path('.//span[@class="review-date"]//text()')
+                    ),
+                    Rule(
+                        key='rating',
+                        extractor=Path('.//span[@class="point-scale"]/preceding-sibling::span[1]/text()')
+                    )
+                ],
+                transform=lambda x: ({
+                    'content': x.get('text', '').replace('\n', ' ').replace('  ', ' ').strip(),
+                    'helpful': [int(s) for s in x.get('helpful', '').split() if s.isdigit()],
+                    'title': x.get('title', '').strip(),
                     'author': analyze_imdbid(x.get('author')),
-                    'date': (x.get('date') or '').strip(),
-                    'rating': (x.get('rating') or '').strip()
+                    'date': x.get('date', '').strip(),
+                    'rating': x.get('rating', '').strip()
                 })
             )
         )
@@ -1648,25 +1634,32 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
     """
     kind = 'full credits'
 
-    extractors = [
-        Extractor(
-            label='cast',
-            path="//table[@class='cast_list']//tr[@class='odd' or @class='even']",
-            attrs=Attribute(
-                key="cast",
-                multi=True,
-                path={
-                    'person': ".//text()",
-                    'link': "td[2]/a/@href",
-                    'roleID': "td[4]//div[@class='_imdbpyrole']/@roleid"
-                },
-                postprocess=lambda x: build_person(
+    rules = [
+        Rule(
+            key='cast',
+            extractor=Rules(
+                foreach='//table[@class="cast_list"]//tr[@class="odd" or @class="even"]',
+                rules=[
+                    Rule(
+                        key='person',
+                        extractor=Path('.//text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('./td[2]/a/@href')
+                    ),
+                    Rule(
+                        key='roleID',
+                        extractor=Path('./td[4]//div[@class="_imdbpyrole"]/@roleid')
+                    )
+                ],
+                transform=lambda x: build_person(
                     x.get('person') or '',
                     personID=analyze_imdbid(x.get('link')),
                     roleID=(x.get('roleID') or '').split('/')
                 )
             )
-        ),
+        )
     ]
 
     preprocessors = [
@@ -1686,21 +1679,26 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
         osparser = DOMHTMLOfficialsitesParser()
         result = osparser.parse(officialsites_html_string)
     """
-    extractors = [
-        Extractor(
-            label='site',
-            group="//h4[@class='li_group']",
-            group_key="./text()",
-            group_key_normalize=lambda x: x.strip().lower(),
-            path="./following::ul[1]/li/a",
-            attrs=Attribute(
-                key=None,
-                multi=True,
-                path={
-                    'link': "./@href",
-                    'info': "./text()"
-                },
-                postprocess=lambda x: (
+    rules = [
+        Rule(
+            foreach='//h4[@class="li_group"]',
+            key=Path(
+                './text()',
+                transform=lambda x: x.strip().lower()
+            ),
+            extractor=Rules(
+                foreach='./following::ul[1]/li/a',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('./@href')
+                    ),
+                    Rule(
+                        key='info',
+                        extractor=Path('./text()')
+                    )
+                ],
+                transform=lambda x: (
                     x.get('info').strip(),
                     urllib.parse.unquote(_normalize_href(x.get('link')))
                 )
@@ -1721,20 +1719,29 @@ class DOMHTMLConnectionParser(DOMParserBase):
     """
     _containsObjects = True
 
-    extractors = [
-        Extractor(
-            label='connection',
-            group="//div[@class='_imdbpy']",
-            group_key="./h5/text()",
-            group_key_normalize=lambda x: x.lower(),
-            path="./a",
-            attrs=Attribute(
-                key=None,
-                path={
-                    'title': "./text()",
-                    'movieID': "./@href"
-                },
-                multi=True
+    rules = [
+        Rule(
+            key='connection',
+            extractor=Rules(
+                foreach='//div[@class="_imdbpy"]',
+                rules=[
+                    Rule(
+                        key=Path('./h5/text()', transform=str.lower),
+                        extractor=Rules(
+                            foreach='./a',
+                            rules=[
+                                Rule(
+                                    key='title',
+                                    extractor=Path('./text()')
+                                ),
+                                Rule(
+                                    key='movieID',
+                                    extractor=Path('./@href')
+                                )
+                            ]
+                        )
+                    )
+                ]
             )
         )
     ]
@@ -1776,23 +1783,23 @@ class DOMHTMLLocationsParser(DOMParserBase):
         lparser = DOMHTMLLocationsParser()
         result = lparser.parse(locations_html_string)
     """
-    extractors = [
-        Extractor(
-            label='locations',
-            path="//dt",
-            attrs=Attribute(
-                key='locations',
-                multi=True,
-                path={
-                    'place': ".//text()",
-                    'note': "./following-sibling::dd[1]//text()"
-                },
-                postprocess=lambda x: (
-                    '%s::%s' % (
-                        x['place'].strip(),
-                        (x['note'] or '').strip()
+    rules = [
+        Rule(
+            key='locations',
+            extractor=Rules(
+                foreach='//dt',
+                rules=[
+                    Rule(
+                        key='place',
+                        extractor=Path('.//text()')
+                    ),
+                    Rule(
+                        key='note',
+                        extractor=Path('./following-sibling::dd[1]//text()')
                     )
-                ).strip(':')
+                ],
+                transform=lambda x: ('%s::%s' % (x['place'].strip(),
+                                                 (x['note'] or '').strip())).strip(':')
             )
         )
     ]
@@ -1812,17 +1819,23 @@ class DOMHTMLTechParser(DOMParserBase):
     kind = 'tech'
     re_space = re.compile(r'\s+')
 
-    extractors = [
-        Extractor(
-            label='tech',
-            group="//table//tr/td[@class='label']",
-            group_key="./text()",
-            group_key_normalize=lambda x: x.lower().strip(),
-            path=".",
-            attrs=Attribute(
-                key=None,
-                path="..//td[2]//text()",
-                postprocess=lambda x: [t.strip() for t in x.split(':::') if t.strip()]
+    rules = [
+        Rule(
+            key='tech',
+            extractor=Rules(
+                foreach='//table//tr/td[@class="label"]',
+                rules=[
+                    Rule(
+                        key=Path(
+                            './text()',
+                            transform=lambda x: x.lower().strip()),
+                        extractor=Path(
+                            '..//td[2]//text()',
+                            transform=lambda x: [t.strip()
+                                                 for t in x.split(':::') if t.strip()]
+                        )
+                    )
+                ]
             )
         )
     ]
@@ -1874,23 +1887,34 @@ class DOMHTMLNewsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='news',
-            path="//h2",
-            attrs=Attribute(
-                key='news',
-                multi=True,
-                path={
-                    'title': "./text()",
-                    'fromdate': "../following-sibling::p[1]/small//text()",
-                    # FIXME: sometimes (see The Matrix (1999)) <p> is found
-                    #        inside news text.
-                    'body': "../following-sibling::p[2]//text()",
-                    'link': "../..//a[text()='Permalink']/@href",
-                    'fulllink': "../..//a[starts-with(text(), 'See full article at')]/@href"
-                },
-                postprocess=lambda x: {
+    rules = [
+        Rule(
+            key='news',
+            extractor=Rules(
+                foreach='//h2',
+                rules=[
+                    Rule(
+                        key='title',
+                        extractor=Path('./text()')
+                    ),
+                    Rule(
+                        key='fromdate',
+                        extractor=Path('./following-sibling::p[1]/small//text()')
+                    ),
+                    Rule(
+                        key='body',
+                        extractor=Path('../following-sibling::p[2]//text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('../..//a[text()="Permalink"]/@href')
+                    ),
+                    Rule(
+                        key='fulllink',
+                        extractor=Path('../..//a[starts-with(text(), "See full article at")]/@href')
+                    )
+                ],
+                transform=lambda x: {
                     'title': x.get('title').strip(),
                     'date': x.get('fromdate').split('|')[0].strip(),
                     'from': x.get('fromdate').split('|')[1].replace('From ', '').strip(),
@@ -1954,74 +1978,71 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
         result = sparser.parse(episodes_html_string)
     """
 
-    extractors = [
-        Extractor(
-            label='series link',
-            path="//div[@class='parent']",
-            attrs=[
-                Attribute(
-                    key='series link',
-                    path=".//a/@href"
-                )
-            ]
+    rules = [
+        Rule(
+            key='series link',
+            extractor=Path('//div[@class="parent"]//a/@href')
         ),
-
-        Extractor(
-            label='series title',
-            path="//head/meta[@property='og:title']",
-            attrs=[
-                Attribute(
-                    key='series title',
-                    path="./@content"
-                )
-            ]
+        Rule(
+            key='series title',
+            extractor=Path('//head/meta[@property="og:title"]/@content')
         ),
-
-        Extractor(
-            label='seasons list',
-            path="//select[@id='bySeason']//option",
-            attrs=[
-                Attribute(
-                    key='_seasons',
-                    multi=True,
-                    path="./@value"
-                )
-            ]
+        Rule(
+            key='_seasons',
+            extractor=Path(
+                foreach='//select[@id="bySeason"]//option',
+                path='/@value'
+            )
         ),
-
-        Extractor(
-            label='selected season',
-            path="//select[@id='bySeason']//option[@selected]",
-            attrs=[
-                Attribute(
-                    key='_current_season',
-                    path='./@value'
-                )
-            ]
+        Rule(
+            key='_current_season',
+            extractor=Path('//select[@id="bySeason"]//option[@selected]/@value')
         ),
-
-        Extractor(
-            label='episodes',
-            path=".",
-            group="//div[@class='info']",
-            group_key=".//meta/@content",
-            group_key_normalize=lambda x: 'episode %s' % x,
-            attrs=[
-                Attribute(
-                    key=None,
-                    multi=True,
-                    path={
-                        "link": ".//strong//a[@href][1]/@href",
-                        "original air date": ".//div[@class='airdate']/text()",
-                        "title": ".//strong//text()",
-                        "rating": ".//div[@class='ipl-rating-star '][1]" +
-                                    "/span[@class='ipl-rating-star__rating'][1]/text()",
-                        "votes": ".//div[contains(@class, 'ipl-rating-star')][1]" +
-                                    "/span[@class='ipl-rating-star__total-votes'][1]/text()",
-                        "plot": ".//div[@class='item_description']//text()"
-                    }
-                )
-            ]
+        Rule(
+            key='episodes',
+            extractor=Rules(
+                foreach='//div[@class="info"]',
+                rules=[
+                    Rule(
+                        key=Path('.//meta/@content',
+                                 transform=lambda x: 'episode %s' % x),
+                        extractor=Rules(
+                            rules=[
+                                Rule(
+                                    key='link',
+                                    extractor=Path('.//strong//a[@href][1]/@href')
+                                ),
+                                Rule(
+                                    key='original air date',
+                                    extractor=Path('.//div[@class="airdate"]/text()')
+                                ),
+                                Rule(
+                                    key='title',
+                                    extractor=Path('.//strong//text()')
+                                ),
+                                Rule(
+                                    key='rating',
+                                    extractor=Path(
+                                        './/div[@class="ipl-rating-star "][1]'
+                                        '/span[@class="ipl-rating-star__rating"][1]/text()'
+                                    )
+                                ),
+                                Rule(
+                                    key='votes',
+                                    extractor=Path(
+                                        './/div[contains(@class, "ipl-rating-star")][1]'
+                                        '/span[@class="ipl-rating-star__total-votes"][1]/text()'
+                                    )
+                                ),
+                                Rule(
+                                    key='plot',
+                                    extractor=Path('.//div[@class="item_description"]//text()')
+                                )
+                            ]
+                        )
+                    )
+                ]
+            )
         )
     ]
 
@@ -2048,11 +2069,13 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                 k = 'episode %d' % counter
                 data[k] = [episode]
             del data['episode -1']
-        for episode_nr, episode in data.items():
-            if not (episode and episode[0] and
-                    episode_nr.startswith('episode ')):
+        episodes = data.get('episodes', [])
+        for ep in episodes:
+            if not ep:
                 continue
-            episode = episode[0]
+            episode_nr, episode = list(ep.items())[0]
+            if not episode_nr.startswith('episode '):
+                continue
             episode_nr = episode_nr[8:].rstrip()
             try:
                 episode_nr = int(episode_nr)
@@ -2152,66 +2175,96 @@ class DOMHTMLEpisodesParser(DOMParserBase):
     _oad_path = "./following-sibling::span/strong[1]/text()"
 
     def _init(self):
-        self.extractors = [
-            Extractor(
-                label='series',
-                path="//html",
-                attrs=[
-                    Attribute(
-                        key='series title',
-                        path=".//title/text()"
-                    ),
-                    Attribute(
-                        key='series movieID',
-                        path=".//h1/a[@class='main']/@href",
-                        postprocess=analyze_imdbid
-                    )
-                ]
+        self.rules = [
+            Rule(
+                key='series title',
+                extractor=Path('//title/text()')
             ),
-            Extractor(
-                label='episodes',
-                group="//div[@class='_imdbpy']/h3",
-                group_key="./a/@name",
-                path=self._episodes_path,
-                attrs=Attribute(
-                    key=None,
-                    multi=True,
-                    path={
-                        'link': "./a/@href",
-                        'title': "./a/text()",
-                        'year': "./preceding-sibling::a[1]/@name",
-                        'episode': "./text()[1]",
-                        'oad': self._oad_path,
-                        'plot': "./following-sibling::text()[1]"
-                    },
-                    postprocess=_build_episode
+            Rule(
+                key='series movieID',
+                extractor=Path(
+                    './/h1/a[@class="main"]/@href',
+                    transform=analyze_imdbid
+                )
+            ),
+            Rule(
+                key='episodes',
+                extractor=Rules(
+                    foreach='//div[@class="_imdbpy"]/h3',
+                    rules=[
+                        Rule(
+                            key='./a/@name',
+                            extractor=Rules(
+                                foreach=self._episodes_path,
+                                rules=[
+                                    Rule(
+                                        key='link',
+                                        extractor=Path('./a/@href')
+                                    ),
+                                    Rule(
+                                        key='title',
+                                        extractor=Path('./a/text()')
+                                    ),
+                                    Rule(
+                                        key='year',
+                                        extractor=Path('./preceding-sibling::a[1]/@name')
+                                    ),
+                                    Rule(
+                                        key='episode',
+                                        extractor=Path('./text()[1]')
+                                    ),
+                                    Rule(
+                                        key='oad',
+                                        extractor=Path(self._oad_path)
+                                    ),
+                                    Rule(
+                                        key='plot',
+                                        extractor=Path('./following-sibling::text()[1]')
+                                    )
+                                ],
+                                transform=_build_episode
+                            )
+                        )
+                    ]
                 )
             )
         ]
 
         if self.kind == 'episodes cast':
-            self.extractors += [
-                Extractor(
-                    label='cast',
-                    group="//h4",
-                    group_key="./text()[1]",
-                    group_key_normalize=lambda x: x.strip(),
-                    path="./following-sibling::table[1]//td[@class='nm']",
-                    attrs=Attribute(
-                        key=None,
-                        multi=True,
-                        path={
-                            'person': "..//text()",
-                            'link': "./a/@href",
-                            'roleID': "../td[4]//div[@class='_imdbpyrole']/@roleid"
-                        },
-                        postprocess=lambda x: build_person(
-                            x.get('person') or '',
-                            personID=analyze_imdbid(x.get('link')),
-                            roleID=(x.get('roleID') or '').split('/'),
-                            accessSystem=self._as,
-                            modFunct=self._modFunct
-                        )
+            self.rules += [
+                Rule(
+                    key='cast',
+                    extractor=Rules(
+                        foreach='//h4',
+                        rules=[
+                            Rule(
+                                key=Path('./text()[1]', transform=str.strip),
+                                extractor=Rules(
+                                    foreach='./following-sibling::table[1]//td[@class="nm"]',
+                                    rules=[
+                                        Rule(
+                                            key='person',
+                                            extractor=Path('..//text()')
+                                        ),
+                                        Rule(
+                                            key='link',
+                                            extractor=Path('./a/@href')
+                                        ),
+                                        Rule(
+                                            key='roleID',
+                                            extractor=Path('../td[4]//div[@class="_imdbpyrole"]/@roleid')
+                                        )
+                                    ],
+                                    transform=lambda x: build_person(
+                                        x.get('person') or '',
+                                        personID=analyze_imdbid(x.get('link')),
+                                        roleID=(x.get('roleID') or '').split('/'),
+                                        accessSystem=self._as,
+                                        modFunct=self._modFunct
+                                    )
+                                )
+                            )
+                        ]
                     )
                 )
             ]
@@ -2286,18 +2339,22 @@ class DOMHTMLFaqsParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    extractors = [
-        Extractor(
-            label='faqs',
-            path="//div[@class='section']",
-            attrs=Attribute(
-                key='faqs',
-                multi=True,
-                path={
-                    'question': "./h3/a/span/text()",
-                    'answer': "../following-sibling::div[1]//text()"
-                },
-                postprocess=lambda x: '%s::%s' % (
+    rules = [
+        Rule(
+            key='faqs',
+            extractor=Rules(
+                foreach='//div[@class="section"]',
+                rules=[
+                    Rule(
+                        key='question',
+                        extractor=Path('./h3/a/span/text()')
+                    ),
+                    Rule(
+                        key='answer',
+                        extractor=Path('../following-sibling::div[1]//text()')
+                    )
+                ],
+                transform=lambda x: '%s::%s' % (
                     x.get('question').strip(),
                     '\n\n'.join(x.get('answer').replace('\n\n', '\n').strip().split('||'))
                 )
@@ -2325,41 +2382,49 @@ class DOMHTMLAiringParser(DOMParserBase):
     """
     _containsObjects = True
 
-    extractors = [
-        Extractor(
-            label='series title',
-            path="//title",
-            attrs=Attribute(
-                key='series title',
-                path="./text()",
-                postprocess=lambda x: x.replace(' - TV schedule', '')
+    rules = [
+        Rule(
+            key='series title',
+            extractor=Path(
+                '//title/text()',
+                transform=lambda x: x.replace(' - TV schedule', '')
             )
         ),
-
-        Extractor(
-            label='series id',
-            path="//h1/a[@href]",
-            attrs=Attribute(
-                key='series id',
-                path="./@href"
-            )
+        Rule(
+            key='series id',
+            extractor=Path('//h1/a[@href]/@href')
         ),
-
-        Extractor(
-            label='tv airings',
-            path="//tr[@class]",
-            attrs=Attribute(
-                key='airing',
-                multi=True,
-                path={
-                    'date': "./td[1]//text()",
-                    'time': "./td[2]//text()",
-                    'channel': "./td[3]//text()",
-                    'link': "./td[4]/a[1]/@href",
-                    'title': "./td[4]//text()",
-                    'season': "./td[5]//text()",
-                },
-                postprocess=lambda x: {
+        Rule(
+            key='tv airings',
+            extractor=Rules(
+                foreach='//tr[@class]',
+                rules=[
+                    Rule(
+                        key='date',
+                        extractor=Path('./td[1]//text()')
+                    ),
+                    Rule(
+                        key='time',
+                        extractor=Path('./td[2]//text()')
+                    ),
+                    Rule(
+                        key='channel',
+                        extractor=Path('./td[3]//text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('./td[4]/a[1]/@href')
+                    ),
+                    Rule(
+                        key='title',
+                        extractor=Path('./td[4]//text()')
+                    ),
+                    Rule(
+                        key='season',
+                        extractor=Path('./td[5]//text()')
+                    )
+                ],
+                transform=lambda x: {
                     'date': x.get('date'),
                     'time': x.get('time'),
                     'channel': x.get('channel').strip(),
@@ -2415,18 +2480,26 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
         pgparser = HTMLParentsGuideParser()
         result = pgparser.parse(parentsguide_html_string)
     """
-    extractors = [
-        Extractor(
-            label='parents guide',
-            group="//div[@class='section']",
-            group_key="./h3/a/span/text()",
-            group_key_normalize=lambda x: x.lower(),
-            path="../following-sibling::div[1]/p",
-            attrs=Attribute(
-                key=None,
-                path=".//text()",
-                postprocess=lambda x: [
-                    t.strip().replace('\n', ' ') for t in x.split('||') if t.strip()
+    rules = [
+        Rule(
+            key='parents guide',
+            extractor=Rules(
+                foreach='//div[@class="section"]',
+                rules=[
+                    Rule(
+                        key=Path(
+                            './h3/a/span/text()',
+                            transform=str.lower
+                        ),
+                        extractor=Path(
+                            foreach='../following-sibling::div[1]/p',
+                            path='.//text()',
+                            transform=lambda x: [
+                                t.strip().replace('\n', ' ')
+                                for t in x.split('||') if t.strip()
+                            ]
+                        )
+                    )
                 ]
             )
         )

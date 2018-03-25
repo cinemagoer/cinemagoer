@@ -8,7 +8,7 @@ E.g., when searching for the name "Columbia Pictures", the parsed page would be:
     http://www.imdb.com/find?s=co;mx=20;q=Columbia+Pictures
 
 Copyright 2008-2018 Davide Alberani <da@erlug.linux.it>
-          2008 H. Turgut Uyar <uyar@tekir.org>
+          2008-2018 H. Turgut Uyar <uyar@tekir.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,37 +25,41 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-from imdb.utils import analyze_company_name, build_company_name
+from imdb.utils import analyze_company_name
 
+from .piculet import Path, Rule, Rules
 from .searchMovieParser import DOMHTMLSearchMovieParser
-from .utils import Attribute, Extractor, analyze_imdbid
+from .utils import analyze_imdbid
 
 
 class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
-    _titleBuilder = lambda self, x: build_company_name(x)
     _linkPrefix = '/company/co'
 
-    _attrs = [
-        Attribute(
+    rules = [
+        Rule(
             key='data',
-            multi=True,
-            path={
-                'link': "./a[1]/@href",
-                'name': "./a[1]/text()",
-                'notes': "./text()[1]"
-            },
-            postprocess=lambda x: (
-                analyze_imdbid(x.get('link')),
-                analyze_company_name(x.get('name') + (x.get('notes') or ''), stripNotes=True)
+            extractor=Rules(
+                foreach='//td[@class="result_text"]/a[starts-with(@href, "/company/co")]/..',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('./a[1]/@href')
+                    ),
+                    Rule(
+                        key='name',
+                        extractor=Path('./a[1]/text()')
+                    ),
+                    Rule(
+                        key='notes',
+                        extractor=Path('./text()[1]')
+                    )
+                ],
+                transform=lambda x: (
+                    analyze_imdbid(x.get('link')),
+                    analyze_company_name(x.get('name') + (x.get('notes') or ''),
+                                         stripNotes=True)
+                )
             )
-        )
-    ]
-
-    extractors = [
-        Extractor(
-            label='search',
-            path="//td[@class='result_text']/a[starts-with(@href, '/company/co')]/..",
-            attrs=_attrs
         )
     ]
 

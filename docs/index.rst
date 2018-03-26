@@ -11,6 +11,7 @@ IMDbPY
    README.series
    README.s3
    README.adult
+   README.info2xml
    FAQS
    DEPLOY
    DISCLAIMER

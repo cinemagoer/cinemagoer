@@ -1,4 +1,4 @@
-Adult Movies
+Adult movies
 ============
 
 IMDbPY for (too) sensitive people.

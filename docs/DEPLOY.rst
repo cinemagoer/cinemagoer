@@ -48,8 +48,7 @@ How to deploy and release a new version of IMDbPY.
     The date of the release has to be added.
 
 
-How to release
---------------
+**How to release**
 
 - Commit the above changes.
 

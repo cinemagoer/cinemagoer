@@ -9,6 +9,7 @@ IMDbPY
 
    INSTALLATION
    README.series
+   README.currentRole
    README.s3
    README.adult
    README.info2xml

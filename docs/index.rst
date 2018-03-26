@@ -12,6 +12,7 @@ IMDbPY
    README.s3
    README.adult
    README.info2xml
+   README.locale
    FAQS
    DEPLOY
    DISCLAIMER

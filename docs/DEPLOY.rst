@@ -1,5 +1,5 @@
-Development and release
-=======================
+Deployment and release
+======================
 
 How to deploy and release a new version of IMDbPY.
 

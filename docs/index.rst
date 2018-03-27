@@ -8,6 +8,7 @@ IMDbPY
    :caption: Contents:
 
    INSTALLATION
+   README.package
    README.series
    README.currentRole
    README.s3

@@ -12,6 +12,7 @@ IMDbPY
    README.series
    README.currentRole
    README.s3
+   README.sqldb
    README.adult
    README.info2xml
    README.locale

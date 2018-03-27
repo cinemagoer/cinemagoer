@@ -15,6 +15,7 @@ IMDbPY
    README.info2xml
    README.locale
    FAQS
+   README.devel
    DEPLOY
    DISCLAIMER
    CONTRIBUTORS

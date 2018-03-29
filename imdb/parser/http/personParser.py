@@ -1,29 +1,33 @@
+# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+#           2008-2018 H. Turgut Uyar <uyar@tekir.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 """
-parser.http.personParser module (imdb package).
-
-This module provides the classes (and the instances), used to parse
+This module provides the classes (and the instances) that are used to parse
 the IMDb pages on the www.imdb.com server about a person.
-E.g., for "Mel Gibson" the referred pages would be:
-    categorized:    http://www.imdb.com/name/nm0000154/maindetails
-    biography:      http://www.imdb.com/name/nm0000154/bio
-    ...and so on...
 
-Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
-          2008-2018 H. Turgut Uyar <uyar@tekir.org>
+For example, for "Mel Gibson" the referred pages would be:
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+categorized
+    http://www.imdb.com/name/nm0000154/maindetails
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+biography
+    http://www.imdb.com/name/nm0000154/bio
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+...and so on.
 """
 
 import re
@@ -50,7 +54,8 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         cparser = DOMHTMLMaindetailsParser()
         result = cparser.parse(categorized_html_string)
     """
@@ -249,7 +254,8 @@ class DOMHTMLBioParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         bioparser = DOMHTMLBioParser()
         result = bioparser.parse(biography_html_string)
     """
@@ -450,7 +456,8 @@ class DOMHTMLOtherWorksParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         owparser = DOMHTMLOtherWorksParser()
         result = owparser.parse(otherworks_html_string)
     """
@@ -474,7 +481,8 @@ class DOMHTMLPersonGenresParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         gparser = DOMHTMLPersonGenresParser()
         result = gparser.parse(bygenre_html_string)
     """

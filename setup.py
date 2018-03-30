@@ -104,16 +104,16 @@ params = {
     'install_requires': ['SQLAlchemy', 'lxml'],
     'extras_require': {
         'dev': [
-            'flake8', 
+            'flake8',
             'flake8-isort'
         ],
         'doc': [
-            'sphinx', 
+            'sphinx',
             'sphinx_rtd_theme'
         ],
         'test': [
-            'pytest', 
-            'pytest-cov', 
+            'pytest',
+            'pytest-cov',
             'pytest-profiling'
         ]
     },

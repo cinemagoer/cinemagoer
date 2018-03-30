@@ -31,7 +31,6 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
 
-from .piculet import _USE_LXML
 from .piculet import ElementTree, Rules, build_tree, html_to_xhtml
 from .piculet import xpath as piculet_xpath
 from .piculet import Rule, Path
@@ -412,10 +411,7 @@ class DOMParserBase(object):
         html_string = self.preprocess_string(html_string)
         html_string = html_string.strip()
         if html_string:
-            if PY2 or (not _USE_LXML):
-                html_string = html_to_xhtml(html_string)
-            else:
-                html_string = html_string.replace('&nbsp;', ' ')
+            html_string = html_string.replace('&nbsp;', ' ')
             dom = self.get_dom(html_string)
             try:
                 dom = self.preprocess_dom(dom)

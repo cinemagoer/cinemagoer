@@ -30,9 +30,8 @@ import logging
 import socket
 import ssl
 from codecs import lookup
-from urllib.parse import quote_plus
-from urllib.request import FancyURLopener
 
+from imdb import PY2
 from imdb import IMDbBase
 from imdb.utils import analyze_title
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -47,6 +46,13 @@ from . import (
     searchKeywordParser
 )
 from . import topBottomParser
+
+if PY2:
+    from urllib import quote_plus
+    from urllib import FancyURLopener
+else:
+    from urllib.parse import quote_plus
+    from urllib.request import FancyURLopener
 
 # Logger for miscellaneous functions.
 _aux_logger = logging.getLogger('imdbpy.parser.http.aux')

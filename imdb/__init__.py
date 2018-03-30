@@ -28,7 +28,6 @@ __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
 __version__ = VERSION = '6.5dev20180316'
 
 
-import configparser
 import logging
 import os
 import sys
@@ -42,6 +41,12 @@ from imdb.utils import build_company_name, build_name, build_title
 
 
 PY2 = sys.hexversion < 0x3000000
+
+
+if PY2:
+    import ConfigParser as configparser
+else:
+    import configparser
 
 
 _imdb_logger = logging.getLogger('imdbpy')

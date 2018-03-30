@@ -35,10 +35,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import functools
 import re
-import urllib.error
-import urllib.parse
-import urllib.request
 
+from imdb import PY2
 from imdb import imdbURL_base
 from imdb.Company import Company
 from imdb.Movie import Movie
@@ -47,6 +45,12 @@ from imdb.utils import _Container, KIND_MAP
 
 from .piculet import Path, Rule, Rules, preprocessors
 from .utils import DOMParserBase, analyze_imdbid, build_person
+
+
+if PY2:
+    from urllib import unquote
+else:
+    from urllib.parse import unquote
 
 
 # Dictionary used to convert some section's names.
@@ -1732,7 +1736,7 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
                 ],
                 transform=lambda x: (
                     x.get('info').strip(),
-                    urllib.parse.unquote(_normalize_href(x.get('link')))
+                    unquote(_normalize_href(x.get('link')))
                 )
             )
         )

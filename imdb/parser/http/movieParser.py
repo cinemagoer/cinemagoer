@@ -45,7 +45,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, KIND_MAP
 
-from .piculet import Path, Rule, Rules, preprocessors
+from .piculet import Path, Rule, Rules, preprocessors, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_person
 
 
@@ -377,7 +377,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='aspect ratio',
             extractor=Path(
                 '//td[starts-with(text(), "Aspect")]/..//li/text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -487,7 +487,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='season/episode',
             extractor=Path(
                 '//div[@class="titlereference-overview-season-episode-section"]/ul//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -556,7 +556,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             extractor=Path(
                 '//td[starts-with(text(), "Status Updated:")]/'
                 '..//div[@class="info-content"]//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -564,7 +564,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             extractor=Path(
                 '//td[starts-with(text(), "Comments:")]/'
                 '..//div[@class="info-content"]//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -572,7 +572,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             extractor=Path(
                 '//td[starts-with(text(), "Note:")]/'
                 '..//div[@class="info-content"]//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -1099,7 +1099,7 @@ class DOMHTMLAlternateVersionsParser(DOMParserBase):
             extractor=Path(
                 foreach='//ul[@class="trivia"]/li',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         )
     ]
@@ -1124,7 +1124,7 @@ class DOMHTMLTriviaParser(DOMParserBase):
             extractor=Path(
                 foreach='//div[@class="sodatext"]',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         )
     ]
@@ -1156,7 +1156,7 @@ class DOMHTMLSoundtrackParser(DOMParserBase):
             extractor=Path(
                 foreach='//div[@class="list"]//div',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         )
     ]
@@ -2282,7 +2282,7 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                         foreach='//h4',
                         rules=[
                             Rule(
-                                key=Path('./text()[1]', transform=str.strip),
+                                key=Path('./text()[1]', transform=transformers.strip),
                                 extractor=Rules(
                                     foreach='./following-sibling::table[1]//td[@class="nm"]',
                                     rules=[

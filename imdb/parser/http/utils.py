@@ -27,6 +27,7 @@ import logging
 import re
 
 from imdb import PY2
+from imdb.Character import Character
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
@@ -193,7 +194,8 @@ def build_person(txt, personID=None, billingPos=None,
         for idx, role in enumerate(person.currentRole):
             if roleNotes[idx]:
                 role.notes = roleNotes[idx]
-    elif person.currentRole and not person.currentRole.notes and notes:
+    elif person.currentRole and isinstance(person.currentRole, Character) and \
+            not person.currentRole.notes and notes:
         person.currentRole.notes = notes
     return person
 

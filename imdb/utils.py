@@ -1213,13 +1213,19 @@ class _Container(object):
                 self.currentRole.characterID = roleID
             else:
                 for index, item in enumerate(roleID):
-                    self.__role[index].characterID = item
+                    r = self.__role[index]
+                    if PY2 and isinstance(r, unicode):
+                        continue
+                    r.characterID = item
         else:
             if not isinstance(roleID, (list, tuple)):
                 self.currentRole.personID = roleID
             else:
                 for index, item in enumerate(roleID):
-                    self.__role[index].personID = item
+                    r = self.__role[index]
+                    if PY2 and isinstance(r, unicode):
+                        continue
+                    r.personID = item
 
     roleID = property(_get_roleID, _set_roleID,
                       doc="the characterID or personID of the currentRole object.")

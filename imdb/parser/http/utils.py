@@ -411,6 +411,7 @@ class DOMParserBase(object):
         html_string = html_string.strip()
         if html_string:
             if PY2 or (not _USE_LXML):
+                html_string = html_string.decode('utf-8')
                 html_string = html_to_xhtml(html_string)
             else:
                 html_string = html_string.replace('&nbsp;', ' ')

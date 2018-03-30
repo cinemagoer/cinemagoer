@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #

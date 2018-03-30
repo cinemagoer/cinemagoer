@@ -406,12 +406,13 @@ class DOMParserBase(object):
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
+        if PY2:
+            html_string = html_string.decode('utf-8')
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
         html_string = html_string.strip()
         if html_string:
             if PY2 or (not _USE_LXML):
-                html_string = html_string.decode('utf-8')
                 html_string = html_to_xhtml(html_string)
             else:
                 html_string = html_string.replace('&nbsp;', ' ')

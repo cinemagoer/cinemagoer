@@ -25,7 +25,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import collections
 import logging
 import re
-from html.entities import entitydefs
 
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -82,37 +81,6 @@ def _putRefs(d, re_titles, re_names, lastKey=None):
                         d[k] = re_titles.sub(r'_\1_ (qv)', v)
             elif isinstance(v, (list, dict)):
                 _putRefs(d[k], re_titles, re_names, lastKey=lastKey)
-
-
-# Handle HTML/XML/SGML entities.
-entitydefs = entitydefs.copy()
-entitydefsget = entitydefs.get
-entitydefs['nbsp'] = ' '
-
-sgmlentity = {'lt': '<', 'gt': '>', 'amp': '&', 'quot': '"', 'apos': '\'', 'ndash': '-'}
-_sgmlentkeys = list(sgmlentity.keys())
-
-entcharrefs = {}
-entcharrefsget = entcharrefs.get
-for _k, _v in list(entitydefs.items()):
-    if _k in _sgmlentkeys:
-        continue
-    if _v[0:2] == '&#':
-        dec_code = _v[1:-1]
-        _v = chr(int(_v[2:-1]))
-        entcharrefs[dec_code] = _v
-    else:
-        dec_code = '#' + str(ord(_v))
-        entcharrefs[dec_code] = _v
-    entcharrefs[_k] = _v
-del _sgmlentkeys, _k, _v
-
-re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5}|\#x[0-9a-f]{1,4});' %
-                            '|'.join(map(re.escape, entcharrefs)), re.I)
-re_entcharrefssub = re_entcharrefs.sub
-
-sgmlentity.update(dict([('#34', '"'), ('#38', '&'),
-                        ('#60', '<'), ('#62', '>'), ('#39', "'")]))
 
 
 _b_p_logger = logging.getLogger('imdbpy.parser.http.build_person')

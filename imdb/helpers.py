@@ -37,7 +37,6 @@ from imdb.Character import Character
 from imdb.Company import Company
 from imdb.linguistics import COUNTRY_LANG
 from imdb.Movie import Movie
-from imdb.parser.http.utils import entcharrefs
 from imdb.Person import Person
 from imdb.utils import _Container, _tagAttr, re_characterRef, re_nameRef, re_titleRef
 from imdb.utils import TAGS_TO_MODIFY
@@ -269,34 +268,6 @@ modHtmlLinks = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt,
 modHtmlLinksASCII = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt,
                                     characterTxt=_characterTxt,
                                     encoding='ascii')
-
-
-everyentcharrefs = entcharrefs.copy()
-for k, v in list({'lt': '<', 'gt': '>', 'amp': '&', 'quot': '"', 'apos': '\''}.items()):
-    everyentcharrefs[k] = v
-    everyentcharrefs['#%s' % ord(v)] = v
-everyentcharrefsget = everyentcharrefs.get
-re_everyentcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' % '|'.join(map(re.escape,
-                                                                         everyentcharrefs)))
-re_everyentcharrefssub = re_everyentcharrefs.sub
-
-
-def _replAllXMLRef(match):
-    """Replace the matched XML reference."""
-    ref = match.group(1)
-    value = everyentcharrefsget(ref)
-    if value is None:
-        if ref[0] == '#':
-            return chr(int(ref[1:]))
-        else:
-            return ref
-    return value
-
-
-def subXMLHTMLSGMLRefs(s):
-    """Return the given string with XML/HTML/SGML entity and char references
-    replaced."""
-    return re_everyentcharrefssub(_replAllXMLRef, s)
 
 
 def sortedSeasons(m):

@@ -31,7 +31,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
 
-from .piculet import ElementTree, Rules, build_tree, html_to_xhtml
+from .piculet import ElementTree, Rules, build_tree
 from .piculet import xpath as piculet_xpath
 from .piculet import Rule, Path
 

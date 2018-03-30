@@ -18,6 +18,8 @@
 This module provides the command line interface for IMDbPY.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import sys
 from argparse import ArgumentParser
 

@@ -20,9 +20,13 @@ from the IMDb database. It can fetch data through different media such as
 the IMDb web pages, or a SQL database.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
 __version__ = VERSION = '6.5dev20180316'
+
 
 import configparser
 import logging

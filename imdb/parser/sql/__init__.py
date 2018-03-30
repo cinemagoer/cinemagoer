@@ -24,6 +24,8 @@ when called with the ``accessSystem`` parameter is set to "sql",
 "database" or "db".
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import re
 import logging
 from difflib import SequenceMatcher

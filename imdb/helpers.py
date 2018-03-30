@@ -22,6 +22,8 @@ but useful for IMDbPY-based programs.
 
 # XXX: Find better names for the functions in this module.
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import difflib
 import gettext
 import re

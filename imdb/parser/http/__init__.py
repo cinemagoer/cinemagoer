@@ -24,6 +24,8 @@ called with the ``accessSystem`` argument is set to "http" or "web"
 or "html" (this is the default).
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import logging
 import socket
 import ssl

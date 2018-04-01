@@ -138,7 +138,7 @@ The ``search_keyword(string)`` method returns a list of strings that are
 valid keywords, similar to the one given.
 
 The ``get_keyword(keyword)`` method returns a list of Movie instances that
-are tagged with the given keyword. For more information see README.keywords.
+are tagged with the given keyword.
 
 The ``get_imdbMovieID(movieID)``, ``get_imdbPersonID(personID)``,
 ``get_imdbCharacterID(characterID)``, and ``get_imdbCompanyID(companyID)``

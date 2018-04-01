@@ -3,6 +3,10 @@ Changelog
 
 * What's new in release 6.5
 
+  [general]
+
+  - converted the documentation to Sphinx rst format
+
   [http]
 
   - fix title parser for in-production movies

@@ -2,6 +2,8 @@
   ====================
 
 * What's the new in release 6.5
+  [http]
+  - fix title parser for in-production movies
 
 
 * What's the new in release 6.4 "Electric Dreams" (14 Mar 2018)

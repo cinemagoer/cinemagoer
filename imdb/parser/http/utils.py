@@ -452,7 +452,7 @@ class DOMParserBase(object):
                 except Exception:
                     self._logger.warn('%s: unable to gather refs: %s',
                                       self._cname, exc_info=True)
-            data = Rules(self.rules).extract(dom)
+            data = self.parse_dom(dom)
         else:
             data = {}
         try:
@@ -539,6 +539,10 @@ class DOMParserBase(object):
     def preprocess_dom(self, dom):
         """Last chance to modify the dom, before the rules are applied."""
         return dom
+
+    def parse_dom(self, dom):
+        """Parse the given dom according to the rules specified in self.rules."""
+        return Rules(self.rules).extract(dom)
 
     def postprocess_data(self, data):
         """Here we can modify the data."""

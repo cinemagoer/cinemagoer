@@ -1,51 +1,50 @@
-# CREDITS
+Credits
+=======
 
-See also CONTRIBUTORS.txt for a list of the most important developers
+See also the `Contributors`_ document for a list of the major developers
 who share the copyright on some portions of the code.
 
-First of all, I want to thank all the maintainers of the
-packages and especially Ana Guerrero.
-Another big thank to the developers who used IMDbPY for their
-projects and researches; they can be found here:
-  https://imdbpy.sourceforge.io/ecosystem.html
+First of all, I want to thank all the package maintainers, and especially
+Ana Guerrero. Another big thanks to the developers who used IMDbPY
+for their projects and research; they can be found here:
+https://imdbpy.sourceforge.io/ecosystem.html
 
-Other very special thanks go to some people who followed very
-closely the development of IMDbPY, providing hints and insights:
-Ori Cohen, James Rubino, Tero Saarni and Jesper Noer (for a lot
-of help, and also for the wonderful http://bitbucket.org), and
-let's not forget all the translators on https://www.transifex.com/davide_alberani/imdbpy/
+Other very special thanks go to some people who followed the development
+of IMDbPY very closely, providing hints and insights: Ori Cohen, James Rubino,
+Tero Saarni, and Jesper Noer (for a lot of help, and also for the wonderful
+https://bitbucket.org/); and let's not forget all the translators
+on https://www.transifex.com/davide_alberani/imdbpy/.
 
+Below is a list of people who contributed with bug reports, small patches,
+and hints (kept in reverse order since IMDbPY 4.5):
 
-Below, a list of persons who contributed with bug reports, small
-patches and hints (kept in a reverse order since IMDbPY 4.5):
+* Tim Belcher for a report about forgotten debug code.
 
-* Tim Belcher for a report about forgotten debug code
+* Paul Jensen for many bug reports about tv series.
 
-* Paul Jensen for many bug reports about tv series
+* Andrew D Bate for documentation on how to reintroduce foreign keys.
 
-* Andrew D Bate for documentation on how to reintroduce foreign keys
+* yiqingzhu007 for a bug report about synopsis.
 
-* yiqingzhu007 for a bug report about synopsis
+* David Runge for managing the Arch Linux package.
 
-* David Runge for managing the Arch Linux package
+* enriqueav for fixes after the IMDb redesign.
 
-* enriqueav for fixes after the IMDb redesign
+* Piotr Staszewski for a fix for external sites parser.
 
-* Piotr Staszewski for a fix for external sites parser
+* Mike Christopher for the user reviews parser.
 
-* Mike Christopher for the user reviews parser
+* apelord for a parser for full credits.
 
-* apelord for a parser for full credits
-
-* Mike Christopher for a patch for synopsis parser
+* Mike Christopher for a patch for synopsis parser.
 
 * Damon Brodie for a bug report about technical parser.
 
-* Sam Petulla for a bug report about searching for keywords
+* Sam Petulla for a bug report about searching for keywords.
 
 * zoomorph for an improvement for parsing your own votes.
 
-* Fabrice Laporte for a bug report on setup.py
+* Fabrice Laporte for a bug report on setup.py.
 
 * Wael Sinno for a patch for parsing movie-links.
 
@@ -55,7 +54,7 @@ patches and hints (kept in a reverse order since IMDbPY 4.5):
 
 * Derek Duoba for a bug report about XML output.
 
-* Cody Hatfield for a parser for the Persons's resume page
+* Cody Hatfield for a parser for the Persons's resume page.
 
 * Mystfit for a fix handling company names.
 
@@ -85,7 +84,7 @@ patches and hints (kept in a reverse order since IMDbPY 4.5):
 
 * Ian Havelock for a bug report on charset identification.
 
-* Mikael Puhakka for a bug report about foreign languages results doing a search.
+* Mikael Puhakka for a bug report about foreign language results in a search.
 
 * Wu Mao for a bug report on the GAE environment.
 
@@ -165,7 +164,7 @@ patches and hints (kept in a reverse order since IMDbPY 4.5):
 
 * David Kaufman for an idea to make the 'update' method more robust.
 
-* Dustin Wyatt for a bug with SQLite of Python 2.6. 
+* Dustin Wyatt for a bug with SQLite of Python 2.6.
 
 * Julian Scheid for bug reports about garbage in the ptdf.
 
@@ -336,3 +335,5 @@ patches and hints (kept in a reverse order since IMDbPY 4.5):
 
 * Davide for a bug report.
 
+
+.. _Contributors: CONTRIBUTORS.html

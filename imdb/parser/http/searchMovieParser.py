@@ -1,29 +1,28 @@
+# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+#           2008-2018 H. Turgut Uyar <uyar@tekir.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 """
-parser.http.searchMovieParser module (imdb package).
+This module provides the classes (and the instances) that are used to parse
+the results of a search for a given title.
 
-This module provides the HTMLSearchMovieParser class (and the
-search_movie_parser instance), used to parse the results of a search
-for a given title.
-E.g., for when searching for the title "the passion", the parsed
-page would be:
-    http://www.imdb.com/find?q=the+passion&tt=on&mx=20
+For example, when searching for the title "the passion", the parsed page
+would be:
 
-Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
-          2008-2018 H. Turgut Uyar <uyar@tekir.org>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+http://www.imdb.com/find?q=the+passion&tt=on&mx=20
 """
 
 from imdb.utils import analyze_title

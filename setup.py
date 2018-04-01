@@ -103,8 +103,19 @@ params = {
     'data_files': data_files,
     'install_requires': ['SQLAlchemy', 'lxml'],
     'extras_require': {
-        'dev': ['flake8', 'flake8-isort'],
-        'test': ['pytest', 'pytest-cov', 'pytest-profiling']
+        'dev': [
+            'flake8',
+            'flake8-isort'
+        ],
+        'doc': [
+            'sphinx',
+            'sphinx_rtd_theme'
+        ],
+        'test': [
+            'pytest',
+            'pytest-cov',
+            'pytest-profiling'
+        ]
     },
     'features': {'sqlalchemy': featSQLAlchemy},
     'packages': setuptools.find_packages(),

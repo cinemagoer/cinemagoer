@@ -1,25 +1,32 @@
-  Changelog for IMDbPY
-  ====================
+Changelog
+=========
 
-* What's the new in release 6.5
+* What's new in release 6.5
+
   [http]
+
   - fix title parser for in-production movies
 
 
-* What's the new in release 6.4 "Electric Dreams" (14 Mar 2018)
+* What's new in release 6.4 "Electric Dreams" (14 Mar 2018)
+
   [http]
+
   - remove obsolete parsers
   - remove Character objects
   - fix for search parsers
 
 
-* What's the new in release 6.3 "Altered Carbon" (27 Feb 2018)
+* What's new in release 6.3 "Altered Carbon" (27 Feb 2018)
+
   [general]
+
   - documentation updates
   - introduced the 'imdbpy' CLI
   - s3 accessSystem to access the new dataset from IMDb
 
   [http]
+
   - fixes for IMDb site redesign
   - Person parser fixes
   - users review parser
@@ -29,27 +36,34 @@
   - fix for tv series episodes
 
   [s3]
+
   - ability to import and access all the information
 
 
-* What's the new in release 6.2 "Justice League" (19 Nov 2017)
+* What's new in release 6.2 "Justice League" (19 Nov 2017)
+
   [general]
+
   - introduce check for Python version
   - SQLAlchemy can be disabled using --without-sqlalchemy
   - fix #88: configuration file parser
   - update documentation
 
   [http]
+
   - fixed ratings parser
   - moved cookies from json to Python source
 
 
-* What's the new in release 6.1
+* What's new in release 6.1
+
   - skipped version 6.1 due to a wrong release on pypi
 
 
-* What's the new in release 6.0 "Life is Strange" (12 Nov 2017)
+* What's new in release 6.0 "Life is Strange" (12 Nov 2017)
+
   [general]
+
   - now IMDbPY is a Python 3 package
   - simplified the code base: #61
   - remove dependencies: SQLObject, BeautifulSoup, C compiler
@@ -57,13 +71,16 @@
   - fix various parsers
 
 
-* What's the new in release 5.1 "Westworld" (13 Nov 2016)
+* What's new in release 5.1 "Westworld" (13 Nov 2016)
+
   [general]
+
   - fix for company names containing square brackets.
   - fix XML output when imdb long name is missing.
   - fixes #33: unable to use --without-sql
 
   [http]
+
   - fix birth/death dates parsing.
   - fix top/bottom lists.
   - Persons's resume page parser (courtesy of codynhat)
@@ -71,13 +88,16 @@
   - parser for "my rating" (you have to use your own cookies)
 
   [sql]
+
   - sound track list correctly identified.
   - fixes #50: process splitted data in order
   - fixes #53: parser for movie-links
 
 
-* What's the new in release 5.0 "House of Cards" (02 May 2014)
+* What's new in release 5.0 "House of Cards" (02 May 2014)
+
   [general]
+
   - Spanish, French, Arabic, Bulgarian and German translations.
   - Introduced the list of French articles.
   - fix for GAE.
@@ -86,6 +106,7 @@
   - renamed README.utf8 to README.unicode
 
   [http]
+
   - fixed searches (again).
   - search results are always in English.
   - updated the cookies.
@@ -101,14 +122,18 @@
   - new cookie.
 
   [mobile]
+
   - fixed searches.
 
   [sql]
+
   - fix for MSSQL
 
 
-* What's the new in release 4.9 "Iron Sky" (15 Jun 2012)
+* What's new in release 4.9 "Iron Sky" (15 Jun 2012)
+
   [general]
+
   - urls used to access the IMDb site can be configured.
   - helpers function to handle movie AKAs in various
     languages (code by Alberto Malagoli).
@@ -117,6 +142,7 @@
     evey caught exception.
 
   [http]
+
   - fix for changed search parameters.
   - introduced a 'timeout' parameter for connections to the web server.
   - fix for business information.
@@ -125,6 +151,7 @@
   - fix for garbage in AKA titles.
 
   [sql]
+
   - vastly improved the store/restore of imdbIDs; now it should be faster
     and more accurate.
   - now the 'name' table contains a 'gender' field that can be 'm', 'f' or NULL.
@@ -136,16 +163,21 @@
   - excluded {{SUSPENDED}} titles.
 
 
-* What's the new in release 4.8.2 "The Big Bang Theory" (02 Nov 2011)
+* What's new in release 4.8.2 "The Big Bang Theory" (02 Nov 2011)
+
   [general]
+
   - fixed install path of locales.
-  
+
   [http]
+
   - removed debug code.
 
 
-* What's the new in release 4.8 "Super" (01 Nov 2011)
+* What's new in release 4.8 "Super" (01 Nov 2011)
+
   [general]
+
   - fix for a problem managing exceptions with Python 2.4.
   - converted old-style exceptions to instances.
   - enanchements for the reduce.sh script.
@@ -154,6 +186,7 @@
   - improvements in the parser of person names.
 
   [http]
+
   - potential fix for GAE environment.
   - handled the new style of "in production" information.
   - fix for 'episodes' list.
@@ -167,38 +200,47 @@
   - now the beautiful parses work again.
 
   [httpThin]
+
   - removed "httpThin", falling back to "http".
 
   [mobile]
+
   - fix for missing headshots.
   - fix for rating and number of votes.
   - fix for missing genres.
   - many other fixes to keep up-to-date with the IMDb site.
 
   [sql]
+
   - fix for a nasty bug parsing notes about character names.
   - fixes for SQLite with SQLOjbect.
 
 
-* What's the new in release 4.7 "Saw VI" (23 Jan 2011)
- [http]
- - first fixes for the new set of parsers.
- - first changes to support the new set of web pages.
- - fix for lists of uncategorized episodes.
- - fix for movies with multiple countries.
- - fix for the currentRole property.
- - more robust handling for vote details.
+* What's new in release 4.7 "Saw VI" (23 Jan 2011)
 
- [mobile]
- - first fixes for the new set of parsers.
+  [http]
 
- [sql]
- - the tables containing titles and names (and akas) now
-   include a 'md5sum' column calculated on the "long imdb canonical title/name".
+  - first fixes for the new set of parsers.
+  - first changes to support the new set of web pages.
+  - fix for lists of uncategorized episodes.
+  - fix for movies with multiple countries.
+  - fix for the currentRole property.
+  - more robust handling for vote details.
+
+  [mobile]
+
+  - first fixes for the new set of parsers.
+
+  [sql]
+
+  - the tables containing titles and names (and akas) now
+    include a 'md5sum' column calculated on the "long imdb canonical title/name".
 
 
-* What's the new in release 4.6 "The Road" (19 Jun 2010)
+* What's new in release 4.6 "The Road" (19 Jun 2010)
+
   [general]
+
   - introduced the 'full-size cover url' and 'full-size headshot'
     keys for Movie, Person and Character instances.
   - moved the development to a Mercurial repository.
@@ -209,25 +251,31 @@
     an unknown info set.
 
   [http/mobile]
+
   - removed new garbage from the imdb pages.
   - support new style of akas.
   - fix for the "trivia" page.
   - fixes for searches with too many results.
 
   [sql]
+
   - fixes for garbage in the plain text data files.
   - support for SQLite shipped with Python 2.6.
 
 
-* What's the new in release 4.5.1 "Dollhouse" (01 Mar 2010)
+* What's new in release 4.5.1 "Dollhouse" (01 Mar 2010)
+
   [general]
+
   - reintroduced the ez_setup.py file.
   - fixes for AKAs on 'release dates'.
   - added the dtd.
 
 
-* What's the new in release 4.5 "Invictus" (28 Feb 2010)
+* What's new in release 4.5 "Invictus" (28 Feb 2010)
+
   [general]
+
   - moved to setuptools 0.6c11.
   - trying to make the SVN release versions work fine.
   - http/mobile should work in GAE (Google App Engine).
@@ -235,34 +283,42 @@
     docs/goodies directory).
 
   [http/mobile]
+
   - removed urllib-based User-Agent header.
   - fixes for some minor changes to IMDb's html.
   - fixes for garbage in movie quotes.
   - improvements in the handling of AKAs.
 
   [mobile]
-  - fixe for AKAs in search results.
+
+  - fixes for AKAs in search results.
 
   [sql]
+
   - fixes for bugs restoring imdbIDs.
   - first steps to split CSV creation/insertion.
 
 
-* What's the new in release 4.4 "Gandhi" (06 Jan 2010)
+* What's new in release 4.4 "Gandhi" (06 Jan 2010)
+
   [general]
+
   - introduced a logging facility; see README.logging.
   - the 'http' and 'mobile' should be a lot more robust.
 
   [http]
+
   - fixes for the n-th set of changes to IMDb's HTML.
   - improvements to perfect-match searches.
   - slightly simplified the parsers for search results.
 
   [mobile]
+
   - fixes for the n-th set of changes to IMDb's HTML.
   - slightly simplified the parsers for search results.
 
   [sql]
+
   - movies' keywords are now correctly imported, using CSV files.
   - minor fixes to handle crap in the plain text data files.
   - removed an outdate parameter passed to SQLObject.
@@ -270,8 +326,10 @@
   - fixes for the Windows environment.
 
 
-* What's the new in release 4.3 "Public Enemies" (18 Nov 2009)
+* What's new in release 4.3 "Public Enemies" (18 Nov 2009)
+
   [general]
+
   - the installer now takes care of .mo files.
   - introduced, in the helpers module, the functions keyToXML and
     translateKey, useful to translate dictionary keys.
@@ -279,6 +337,7 @@
   - updated the DTD.
 
   [http]
+
   - fixed a lot of bugs introduced by the new IMDb.com design.
   - nicer handling of HTTP 404 response code.
   - fixed parsers for top250 and bottom100 lists.
@@ -286,16 +345,20 @@
   - fixed misc bugs.
 
   [mobile]
+
   - removed duplicates in list of genres.
 
   [sql]
+
   - fixed a bug in the imdbpy2sql.py script using CSV files;
     the 'movie_info_idx' and 'movie_keyword' were left
     empty/with wrong data.
 
 
-* What's the new in release 4.2 "Battlestar Galactica" (31 Aug 2009)
+* What's new in release 4.2 "Battlestar Galactica" (31 Aug 2009)
+
   [general]
+
   - the 'local' data access system is gone.  See README.local.
   - the imdb.parser.common package was removed, and its code integrated
     in imdb.parser.sql and in the imdbpy2sql.py script.
@@ -310,6 +373,7 @@
   - updated the DTD to version 4.2.
 
   [http]
+
   - removed garbage at the end of quotes.
   - fixed problems parsing company names and notes.
   - keys in character's quotes dictionary are now Movie instances.
@@ -318,14 +382,17 @@
   - top250 is now correctly parsed by BeautifulSoup.
 
   [sql]
+
   - fixed DB2 call for loading blobs/cblobs.
   - information from obsolete files are now used if and only if they
     refer to still existing titles.
   - the --fix-old-style-titles argument is now obsolete.
 
 
-* What's the new in release 4.1 "State Of Play" (02 May 2009)
+* What's new in release 4.1 "State Of Play" (02 May 2009)
+
   [general]
+
   - DTD definition.
   - support for locale.
   - support for the new style for movie titles ("The Title" and no
@@ -333,6 +400,7 @@
   - minor fix to XML code to work with the test-suite.
 
   [http]
+
   - char references in the &#xHEXCODE; format are handled.
   - fixed a bug with movies containing '....' in titles.  And I'm
     talking about Malcolm McDowell's filmography!
@@ -342,6 +410,7 @@
   - minor fixes for empty/wrong strings.
 
   [sql]
+
   - in the database, soundex values for titles are always calculated
     after the article is stripped (if any).
   - imdbpy2sql.py has the --fix-old-style-titles option, to handle
@@ -349,12 +418,15 @@
   - fixed a bug saving imdbIDs.
 
   [local]
+
   - the 'local' data access system should be considered obsolete, and
     will probably be removed in the next release.
 
 
-* What's the new in release 4.0 "Watchmen" (12 Mar 2009)
+* What's new in release 4.0 "Watchmen" (12 Mar 2009)
+
   [general]
+
   - the installer is now based on setuptools.
   - new functions get_keyword and search_keyword to handle movie's keywords
     (example scripts included).
@@ -371,6 +443,7 @@
   - updates to the documentation.
 
   [http]
+
   - adapted BeautifulSoup to lxml (internally, the lxml API is used).
   - currentRole is no longer populated, for non-cast entries (everything
     ends up into .notes).
@@ -384,6 +457,7 @@
   - removed the 'agent' page.
 
   [sql]
+
   - searching for a movie, the original titles are returned, instead
     of AKAs.
   - support for Foreign Keys.
@@ -392,12 +466,15 @@
   - imdbpy2sql.py shows user time and system time, along with wall time.
 
   [local]
+
   - searching for a movie, the original titles are returned, instead
     of AKAs.
 
 
-* What's the new in release 3.9 "The Strangers" (06 Jan 2009)
+* What's new in release 3.9 "The Strangers" (06 Jan 2009)
+
   [general]
+
   - introduced the search_episode method, to search for episodes' titles.
   - movie['year'] is now an integer, and no more a string.
   - fixed a bug parsing company names.
@@ -405,11 +482,13 @@
     strings in the 'TEXT::NOTE' format.
 
   [http]
+
   - fixed a bug regarding movies listed in the Bottom 100.
   - fixed bugs about tv mini-series.
   - fixed a bug about 'series cast' using BeautifulSoup.
 
   [sql]
+
   - fixes for DB2 (with SQLAlchemy).
   - improved support for movies' aka titles (for series).
   - made imdbpy2sql.py more robust, catching exceptions even when huge
@@ -417,8 +496,10 @@
   - introduced CSV support in the imdbpy2sql.py script.
 
 
-* What's the new in release 3.8 "Quattro Carogne a Malopasso" (03 Nov 2008)
+* What's new in release 3.8 "Quattro Carogne a Malopasso" (03 Nov 2008)
+
   [http]
+
   - fixed search system for direct hits.
   - fixed IDs so that they always are str and not unicode.
   - fixed a bug about plot without authors.
@@ -429,39 +510,49 @@
   - first changes to remove old parsers.
 
   [sql]
+
   - introduced support for SQLAlchemy.
 
   [mobile]
+
   - fixed multiple 'nick names'.
   - added 'aspect ratio'.
   - fixed a "direct hit" bug searching for people.
 
   [global]
+
   - fixed search_* example scripts.
   - updated the documentation.
 
 
-* What's the new in release 3.7 "Burn After Reading" (22 Sep 2008)
+* What's new in release 3.7 "Burn After Reading" (22 Sep 2008)
+
   [http]
+
   - introduced a new set of parsers, active by default, based on DOM/XPath.
   - old parsers fixed; 'news', 'genres', 'keywords', 'ratings', 'votes',
     'tech', 'taglines' and 'episodes'.
 
   [sql]
+
   - the pure python soundex function now behaves correctly.
 
   [general]
+
   - minor updates to the documentation, with an introduction to the
     new set of parsers and notes for packagers.
 
 
-* What's the new in release 3.6 "RahXephon" (08 Jun 2008)
+* What's new in release 3.6 "RahXephon" (08 Jun 2008)
+
   [general]
+
   - support for company objects for every data access systems.
   - introduced example scripts for companies.
   - updated the documentation.
 
   [http and mobile]
+
   - changes to support the new HTML for "plot outline" and some lists
     of values (languages, genres, ...)
   - introduced the set_cookies method to set cookies for IMDb's account and
@@ -472,22 +563,28 @@
   - fixed minor bug fetching movie/person/character references.
 
   [http]
+
   - fixed a search problem, while not using the IMDbPYweb's account.
   - fixed bugs searching for characters.
 
   [mobile]
+
   - fixed minor bugs parsing search results.
 
   [sql]
+
   - fixed a bug handling movieIDs, when there are some
     inconsistencies in the plain text data files.
 
   [local]
+
   - access to 'mpaa' and 'miscellaneous companies' information.
 
 
-* What's the new in release 3.5 "Blade Runner" (19 Apr 2008)
+* What's new in release 3.5 "Blade Runner" (19 Apr 2008)
+
   [general]
+
   - first changes to work on Symbian mobile phones.
   - now there is an imdb.available_access_systems() function, that can
     be used to get a list of available data access systems.
@@ -504,6 +601,7 @@
   - documentation updated.
 
   [sql]
+
   - fixed minor bugs in imdbpy2sql.py.
   - restores imdbIDs for characters.
   - now CharactersCache honors custom queries.
@@ -512,6 +610,7 @@
   - added some warnings to the imdbpy2sql.py script.
 
   [local]
+
   - fixed a bug in the fall-back function used to scan movie titles,
     when the cutils module is not available.
   - mini biographies are cut up to 2**16-1 chars, to prevent troubles
@@ -519,36 +618,44 @@
   - fixed bug in characters4local.py, dealing with some garbage in the files.
 
 
-* What's the new in release 3.4 "Flatliners" (16 Dec 2007)
+* What's new in release 3.4 "Flatliners" (16 Dec 2007)
+
   [general]
+
   - *** NOTE FOR PACKAGERS *** in the docs directory there is the
     "imdbpy.cfg" configuration file, which should be installed in /etc
-    or equivalent directory; the setup.py script _doesn't_ manage its
+    or equivalent directory; the setup.py script *doesn't* manage its
     installation.
   - introduced a global configuration file to set IMDbPY's parameters.
   - supported characters using "sql" and "local" data access systems.
   - fixed a bug retrieving characterID from a character's name.
 
   [http]
+
   - fixed a bug in "release dates" parser.
   - fixed bugs in "episodes" parser.
   - fixed bugs reading "series years".
   - stricter definition for ParserBase._re_imdbIDmatch regular expression.
 
   [mobile]
+
   - fixed bugs reading "series years".
   - fixed bugs reading characters' filmography.
 
   [sql]
+
   - support for characters.
 
   [local]
+
   - support for characters.
   - introduced the characters4local.py script.
 
 
-* What's the new in release 3.3 "Heroes" (18 Nov 2007)
+* What's new in release 3.3 "Heroes" (18 Nov 2007)
+
   [general]
+
   - first support for character pages; only for "http" and "mobile", so far.
   - support for multiple characters.
   - introduced an helper function to pretty-print objects.
@@ -559,6 +666,7 @@
     get_first_character.py example scripts.
 
   [http]
+
   - full support for character pages.
   - fixed a bug retrieving some 'cover url'.
   - fixed a bug with multi-paragraphs biographies.
@@ -567,9 +675,11 @@
     and Character object instanced.
 
   [mobile]
+
   - full support for character pages.
 
   [sql]
+
   - extended functionality of the custom queries support for the
     imdbpy2sql.py script to circumvent a problem with MS SQLServer.
   - introducted the "--mysql-innodb" and "--ms-sqlserver" shortcuts
@@ -580,42 +690,51 @@
   - fixed a minor bug with top/bottom ratings, in the imdbpy2sql.py script.
 
   [local]
+
   - filtered out some crap in the "quotes" plain text data files, which
     also affected sql, importing the data.
 
 
-* What's the new in release 3.2 "Videodrome" (25 Sep 2007)
+* What's new in release 3.2 "Videodrome" (25 Sep 2007)
+
   [global]
+
   - now there's an unique place where "akas.imdb.com" is set, in the
     main module.
   - introduced __version__ and VERSION in the main module.
   - minor improvements to the documentation.
 
   [http]
+
   - updated the main movie parser to retrieve the recently modified
     cast section.
   - updated the crazy credits parser.
   - fixed a bug retrieving 'cover url'.
 
   [mobile]
+
   - fixed a bug parsing people's filmography when only one duty
     was listed.
   - updated to retrieve series' creator.
 
   [sql]
+
   - added the ability to perform custom SQL queries at the command
     line of the imdbpy2sql.py script.
   - minor fixes for the imdbpy2sql.py script.
 
 
-* What's the new in release 3.1 "The Snake King" (18 Jul 2007)
+* What's new in release 3.1 "The Snake King" (18 Jul 2007)
+
   [global]
+
   - the IMDbPYweb account now returns a single item, when a search
     returns only one "good enough" match (this is the IMDb's default).
   - updated the documentation.
   - updated list of contributors and developers.
 
   [http]
+
   - supported the new result page for searches.
   - supported the 'synopsis' page.
   - supported the 'parents guide' page.
@@ -633,12 +752,14 @@
   - fixed 2 bugs in persons' other works.
 
   [sql]
+
   - hypothetical fix for a unicode problem in the imdbpy2sql.py script.
   - now the 'imdbID' fields in the Title and Name tables are restored,
     updating from an older version.
   - fixed a nasty bug handling utf-8 strings in the imdbpy2sql.py script.
 
   [mobile]
+
   - supported the new result page for searches.
   - fixed a bug for python2.2 (s60 mobile phones).
   - fixed a bug searching for persons with single match and no
@@ -646,8 +767,10 @@
   - fixed a bug parsing role/duty and notes.
 
 
-* What's the new in release 3.0 "Spider-Man 3" (03 May 2007)
+* What's new in release 3.0 "Spider-Man 3" (03 May 2007)
+
   [global]
+
   - IMDbPY now works with the new IMDb's site design; a new account is
     used to access data; this affect a lot of code, especially in the
     'http', 'httpThin' and 'mobile' data access systems.
@@ -658,6 +781,7 @@
     numbers.
 
   [http]
+
   - introduced the _in_content instance variable for objects instances of
     ParserBase, True when inside the <div id="tn15content"> tag.
     Opening and closing this pair of tags two methods, named _begin_content()
@@ -677,6 +801,7 @@
   - "connections" parser now handles the recently introduced notes.
 
   [http parser conversion]
+
   - these parsers worked out-of-the-box; airing, eprating, alternateversions,
     dvd, goofs, keywords, movie_awards, movie_faqs, person_awards, rec,
     releasedates, search_movie, search_person, soundclips, soundtrack, trivia,
@@ -687,16 +812,20 @@
     literature, publicity, trivia, videoclips, maindetails, movie.
 
   [mobile]
+
   - fixed to work with the new design.
   - a lot of code is now shared amongst 'http' and 'mobile'.
 
   [sql]
+
   - fixes for other bugs related to unicode support.
   - minor changes to slightly improve performances.
 
 
-* What's the new in release 2.9 "Rodan! The Flying Monster" (21 Feb 2007)
+* What's new in release 2.9 "Rodan! The Flying Monster" (21 Feb 2007)
+
   [global]
+
   - on 19 February IMDb has redesigned its site; this is the last
     IMDbPY's release to parse the "old layout" pages; from now on,
     the development will be geared to support the new web pages.
@@ -704,35 +833,44 @@
   - minor clean-ups and functions added to the helpers module.
 
   [http]
+
   - fixed some unicode-related problems searching for movie titles and
     person names; also changed the queries used to search titles/names.
   - fixed a bug parsing episodes for tv series.
   - fixed a bug retrieving movieID for tv series, searching for titles.
 
   [mobile]
+
   - fixed a problem searching exact matches (movie titles only).
   - fixed a bug with cast entries, after minor changes to the IMDb's
     web site HTML.
 
   [local and sql]
+
   - fixed a bug parsing birth/death dates and notes.
 
   [sql]
+
   - (maybe) fixed another unicode-related bug fetching data from a
     MySQL database.  Maybe.  Maybe.  Maybe.
 
 
-* What's the new in release 2.8 "Apollo 13" (14 Dec 2006)
+* What's new in release 2.8 "Apollo 13" (14 Dec 2006)
+
   [general]
+
   - fix for environments where sys.stdin was overridden by a custom object.
 
   [http data access system]
+
   - added support for the movies' "FAQ" page.
   - now the "full credits" (aka "full cast and crew") page can be parsed;
     it's mostly useful for tv series, because this page is complete while
     "combined details" contains only partial data.
     E.g.
+
         ia.update(tvSeries, 'full credits')
+
   - added support for the movies' "on television" (ia.update(movie, "airing"))
   - fixed a bug with 'miscellaneous companies'.
   - fixed a bug retrieving the list of episodes for tv series.
@@ -741,17 +879,21 @@
   - fixed a minor bug with 'original air date'.
 
   [sql data access system]
+
   - fix for a unicode bug with recent versions of SQLObject and MySQL.
   - fix for a nasty bug in imdbpy2sql.py that will show up splitting a
     data set too large to be sent in a single shot to the database.
 
   [mobile data access system]
+
   - fixed a bug searching titles and names, where XML char references
     were not converted.
 
 
-* What's the new in release 2.7 "Pitch Black" (26 Sep 2006)
+* What's new in release 2.7 "Pitch Black" (26 Sep 2006)
+
   [general]
+
   - fixed search_movie.py and search_person.py scripts; now they return
     both the movieID/personID and the imdbID.
   - the IMDbPY account was configured to hide the mini-headshots.
@@ -759,6 +901,7 @@
     with too many results.
 
   [http data access system]
+
   - fixed a minor bug retrieving information about persons, with movies
     in production.
   - fixed support for cast list of tv series.
@@ -766,6 +909,7 @@
   - some left out company credits are now properly handled.
 
   [mobile data access system]
+
   - fixed a major bug with the cast list, after the changes to the
     IMDb web site.
   - fixed support for cast list of tv series.
@@ -774,21 +918,26 @@
   - now every AKA title is correctly parsed.
 
   [sql data access system]
+
   - fixed a(nother) bug updating imdbID for movies and persons.
   - fixed a bug retrieving personID, while handling names references.
 
   [local data access system]
+
   - "where now" information now correctly handles multiple lines (also
     affecting the imdbpy2sql.py script).
 
 
-* What's the new in release 2.6 "They Live" (04 Jul 2006)
+* What's new in release 2.6 "They Live" (04 Jul 2006)
+
   [general]
+
   - renamed sortMovies to cmpMovies and sortPeople to cmpPeople; these
     function are now used to compare Movie/Person objects.
     The cmpMovies also handles tv series episodes.
 
   [http data access system]
+
   - now information about "episodes rating" are retrieved.
   - fixed a bug retrieving runtimes and akas information.
   - fixed an obscure bug trying an Exact Primary Title/Name search when
@@ -796,6 +945,7 @@
   - support for the new format of the "DVD details" page.
 
   [sql data access system]
+
   - now at insert-time the tables doesn't have indexes, which are
     added later, resulting in a huge improvement of the performances
     of the imdbpy2sql.py script.
@@ -814,8 +964,10 @@
   - improved the exceptions handling.
 
 
-* What's the new in release 2.5 "Ninja Thunderbolt" (15 May 2006)
+* What's new in release 2.5 "Ninja Thunderbolt" (15 May 2006)
+
   [general]
+
   - support for tv series episodes; see the README.series file.
   - modified the DISCLAIMER.txt file to be compliant to the debian guidelines.
   - fixed a bug in the get_first_movie.py script.
@@ -840,30 +992,37 @@
   - added CONTRIBUTORS.txt file.
 
   [http data access system]
+
   - fixed a bug regarding currentRole for tv series.
   - fixed a bug about the "merchandising links" page.
 
   [http and mobile data access systems]
+
   - fixed a bug retrieving cover url for tv (mini) series.
 
   [mobile data access system]
+
   - fixed a bug with tv series titles.
   - retrieves the number of episodes for tv series.
 
   [local data access system]
+
   - new get_episodes function in the cutils/ratober C module.
   - search functions (both C and pure python) are now a lot faster.
   - updated the documentation with work-arounds to make the mkdb program
     works with a recent set of plain text data files.
 
   [sql data access system]
+
   - uses the SQLObject ORM to support a wide range of database engines.
   - added in the cutils C module the soundex() function, and a fall back
     Python only version in the parser.sql package.
 
 
-* What's the new in release 2.4 "Munich" (09 Feb 2006)
+* What's new in release 2.4 "Munich" (09 Feb 2006)
+
   [general]
+
   - strings are now unicode/utf8.
   - unified Movie and Person classes.
   - the strings used to store every kind of information about movies and
@@ -887,6 +1046,7 @@
   - new doc file README.utf8, about unicode support.
 
   [http data access system]
+
   - the ParserBase class now inherits from sgmllib.SGMLParser,
     instead of htmllib.HTMLParser, resulting in a little improvement
     in parsing speed.
@@ -902,6 +1062,7 @@
   - fixed a horrible bug retrieving guests information for tv series.
 
   [sql data access system]
+
   - fixed the imdbpy2sql.py script, to handle files with spurious lines.
   - searches for names and titles are now much faster, if the
     imdb.parser.common.ratober C module is compiled and installed.
@@ -913,24 +1074,29 @@
   - should works if the database is set to unicode/utf-8.
 
   [mobile data access system]
+
   - fixed bugs related to non-ascii chars.
   - fixed a bug retrieving the URL of the cover.
   - retrieve currentRole/notes also for tv guest appearances.
 
   [local data access system]
+
   - it can work even if the "ratober" C module is not compiled;
     obviously the pure python substitute is painfully slow (a
     warning is issued).
 
 
-* What's the new in release 2.3 "Big Fish" (03 Dec 2005)
+* What's new in release 2.3 "Big Fish" (03 Dec 2005)
+
   [general]
+
   - uniformed numerous keys for Movie and Person objects.
   - 'birth name' is now always in canonical form, and 'nick names'
     are always normalized; these changes also affect the sql data
     access system.
 
   [http data access system]
+
   - removed the 'imdb mini-biography by' key; the name of the author
     is now prepended to the 'mini biography' key.
   - fixed an obscure bug using more than one access system (http in
@@ -938,16 +1104,20 @@
   - fixed a bug in amazon reviews.
 
   [mobile data access system]
+
   - corrected some bugs retrieving filmography and cast list.
 
   [sql data access system]
+
   - remove 'birth name' and 'nick names' from the list of 'akas'.
   - in the SQL database, 'crewmembers' is now 'miscellaneous crew'.
   - fixed a bug retrieving "guests" for TV Series.
 
 
-* What's the new in release 2.2 "The Thing" (17 Oct 2005)
+* What's new in release 2.2 "The Thing" (17 Oct 2005)
+
   [general]
+
   - now the Person class has a 'billingPos' instance variable used to
     keep record of the position of the person in the list of credits (as
     an example, "Laurence Fishburne" is billed in 2nd position in the
@@ -969,6 +1139,7 @@
     of 'personID').
 
   [http data access system]
+
   - retrieves the 'guest appearances' page for TV series.
   - fixed a bug retrieving newsgroup reviews urls.
   - fixed a bug managing non-breaking spaces (they're truly a damnation!)
@@ -976,10 +1147,12 @@
   - now keywords are in format 'bullet-time' and no more 'Bullet Time'.
 
   [mobile data access system]
+
   - fixed a bug with direct hits, searching for a person's name.
   - fixed a bug with languages and countries.
 
   [local data access system]
+
   - now cast entries are correctly sorted.
   - new search system; it should return better matches in less
     time (searching people's name is still somewhat slow); it's
@@ -993,6 +1166,7 @@
   - writers are sorted in the right order.
 
   [sql data access system]
+
   - search results are now sorted in correct order; difflib is used to
     calculate strings similarity.
   - new search SQL query and comparison algorithm; it should return
@@ -1005,8 +1179,10 @@
   - put also the 'birth name' and the 'nick names' in the akanames table.
 
 
-* What's the new in release 2.1 "Madagascar" (30 Aug 2005)
+* What's new in release 2.1 "Madagascar" (30 Aug 2005)
+
   [general]
+
   - introduced the "sql data access system"; now you can transfer the
     whole content of the plain text data files (distributed by IMDb)
     into a SQL database (MySQL, so far).
@@ -1016,6 +1192,7 @@
   - unified portions of code shared between "local" and "sql".
 
   [http data access system]
+
   - fixed a bug in the search_movie() and search_person() methods.
   - parse the "external reviews", "newsgroup reviews", "newsgroup reviews",
     "misc links", "sound clips", "video clips", "amazon reviews", "news" and
@@ -1025,18 +1202,21 @@
     and titlesRefs.
 
   [local data access system]
+
   - fixed a bug; 'producer' data where scanned two times.
   - some tags were missing for the laserdisc entries.
 
   [mobile data access system]
+
   - fixed a bug retrieving cast information (sometimes introduced
     with "Cast overview" and sometimes with "Credited cast").
   - fixed a bug in the search_movie() and search_person() methods.
 
 
-* What's the new in release 2.0 "Land Of The Dead" (16 Jul 2005)
+* What's new in release 2.0 "Land Of The Dead" (16 Jul 2005)
 
   [general]
+
   - WARNING! Now, using http and mobile access methods, movie/person
     searches will include by default adult movie titles/pornstar names.
     You can still deactivate this feature by setting the adultSearch
@@ -1045,6 +1225,7 @@
   - fixed a bug using the 'all' keyword of the 'update' method.
 
   [http data access system]
+
   - added the "recommendations" page.
   - the 'notes' instance variable is now correctly used to store
     miscellaneous information about people in non-cast roles, replacing
@@ -1062,15 +1243,19 @@
   - fixed a bug with empty 'location' information.
 
   [mobile data access system]
+
   - number of votes, rating and top 250 rank are now integers/floats.
   - retrieve the "plot outline" information.
 
   [local data access system]
+
   - number of votes, rating and top 250 rank are now integers/floats.
 
 
-* What's the new in release 1.9 "Ed Wood" (02 May 2005)
+* What's new in release 1.9 "Ed Wood" (02 May 2005)
+
   [general]
+
   - introduced the new "mobile" data access system, useful for
     small systems.  It should be from 2 to 20 times faster than "http"
     or "httpThin".
@@ -1081,11 +1266,14 @@
   - unified some keywords amongst differents data access systems.
 
   [http data access system]
+
   - fixed some bugs; now it retrieves names akas correctly.
 
 
-* What's the new in release 1.8 "Paths Of Glory" (24 Mar 2005)
+* What's new in release 1.8 "Paths Of Glory" (24 Mar 2005)
+
   [general]
+
   - introduced a new data access system "httpThin", useful for
     systems with limited bandwidth and CPU power, like PDA,
     hand-held devices and mobile phones.
@@ -1104,19 +1292,23 @@
   - documentation for small/mobile systems.
 
   [Movie class]
+
   - renamed the m['notes'] item of Movie objects to m['episodes'].
 
   [Person class]
+
   - the p.__contains__(m) method can be used to check if the p
     Person has worked in the m Movie.
 
   [local data access system]
+
   - gather information about "laserdisc", "literature" and "business".
   - fixed a bug in ratober.c; now the search_name() function
     handles search strings already in the "Surname, Name" format.
   - two new methods, get_lastMovieID() and get_lastPersonID().
 
   [http data access system]
+
   - limit the number of results for the query; this will save a
     lot of bandwidth.
   - fixed a bug retrieving the number of episodes of tv series.
@@ -1125,8 +1317,10 @@
   - retrieves people information about "publicity" and "agent".
 
 
-* What's the new in release 1.7 "Saw" (04 Feb 2005)
+* What's new in release 1.7 "Saw" (04 Feb 2005)
+
   [general]
+
   - Person class has two new keys; 'canonical name' and
     'long imdb canonical name', like "Gibson, Mel" and
     "Gibson, Mel (I)".
@@ -1142,12 +1336,14 @@
   - some performance improvements.
 
   [http data access system]
+
   - fixed bugs retrieving the currentRole.
   - try to handle unicode chars; return unicode strings when required.
   - now the searches return also "popular titles" and
     "popular names" from the new IMDb's search system.
 
   [local data access system]
+
   - information about movie connections are retrieved.
   - support for multiple biographies.
   - now it works with Python 2.2 or previous versions.
@@ -1160,8 +1356,10 @@
   - fixed a bug getting the "long imdb canonical title".
 
 
-* What's the new in release 1.6 "Ninja Commandments" (04 Jan 2005)
+* What's new in release 1.6 "Ninja Commandments" (04 Jan 2005)
+
   [general]
+
   - now inside Movie and Person object, the text strings (biography,
     movie plot, etc.) contain titles and names references, like
     "_Movie, The (1999)_ (qv)" or "'A Person' (qv)"; these reference
@@ -1174,28 +1372,34 @@
   - fixed some bugs.
 
   [Movie class]
+
   - now you can access the 'canonical title' and
     'long imdb canonical title' attributes, to get the movie title
     in the format "Movie Title, The".
 
   [local data access system]
+
   - title and name aliases now work correctly.
   - now get_imdbMovieID and get_imdbPersonID methods should
     work in almost every case.
   - people's akas are handled.
 
   [http data access system]
+
   - now the BasicMovieParser class can correctly gather the imdbID.
 
 
-* What's the new in release 1.5 "The Incredibles" (23 Dec 2004)
+* What's new in release 1.5 "The Incredibles" (23 Dec 2004)
+
   [local database]
+
   - support a local installation of the IMDb database!
     WOW!  Now you can download the plain text data files from
     http://imdb.com/interfaces.html and access those
     information through IMDbPY!
 
   [general]
+
   - movie titles and person names are "fully normalized";
     Not "Matrix, The (1999)", but "The Matrix (1999)";
     Not "Cruise, Tom" but "Tom Cruise".
@@ -1203,6 +1407,7 @@
     dictionary data and a list of information sets they provided.
 
   [http data access system]
+
   - support for the new search system (yes, another one...)
   - a lot of small fixes to stay up-to-date with the html
     of the IMDb web server.
@@ -1215,31 +1420,40 @@
     empty entries.
 
 
-* What's the new in release 1.4 "The Village" (10 Nov 2004)
+* What's new in release 1.4 "The Village" (10 Nov 2004)
+
   [http data access system]
+
   - modified the personParser.HTMLMaindetailsParser class,
     because IMDb has changed the img tag for the headshot.
   - now 'archive footage' is handled correctly.
 
   [IMDb class]
+
   - fixed minor glitches (missing "self" parameter in a
     couple of methods).
 
   [misc]
+
   - now distutils installs also the example scripts in ./bin/*
 
 
-* What's the new in release 1.3 "House of 1000 Corpses" (6 Jul 2004)
+* What's new in release 1.3 "House of 1000 Corpses" (6 Jul 2004)
+
   [http data access system]
+
   - modified the BasicMovieParser and BasicPersonParser classes,
     because IMDb has removed the "pageflicker" from the html pages.
 
   [general]
+
   - the test suite was moved outside the tgz package.
 
 
-* What's the new in release 1.2 "Kill Bill" (2 May 2004)
+* What's new in release 1.2 "Kill Bill" (2 May 2004)
+
   [general]
+
   - now it retrieves almost every available information about movie
     and people!
   - introduced the concept of "data set", to retrieve different sets
@@ -1260,6 +1474,7 @@
     information (i.e.: no 'kind' or 'year' key, if they're not set)
 
   [http data access system]
+
   - removed all non-greedy regular expressions.
   - removed all regular expressions in the movieParser module; now
     self.rawdata is no more used to search "strange" matches.
@@ -1275,17 +1490,21 @@
     the BasicPersonParser class in the searchPersonParse module.
 
   [Movie class]
+
   - fixed a bug in isSameTitle method, now the accessSystem is correctly
     checked.
   - fixed some typos.
 
   [Person class]
+
   - minor changes to the isSamePerson method (now it uses the build_name
     function).
 
 
-* What's the new in release 1.1 "Gigli" (17 Apr 2004)
+* What's new in release 1.1 "Gigli" (17 Apr 2004)
+
   [general]
+
   - added support for persons (search & retrieve information about people).
   - removed the dataSets module.
   - removed the MovieTitle and the SearchMovieResults classes; now information
@@ -1297,11 +1516,13 @@
     given long imdb name string.
 
   [http data access system]
+
   - http search uses the new search system.
   - moved the plotParser module content inside the movieParser module.
   - fixed a minor bug handling AKAs for movie titles.
 
   [IMDb class]
+
   - introduced the update(obj) method of the IMDb class, to update
     the information of the given object (a Movie or Person instance).
   - added the get_imdbURL(obj) method if the IMDb class, which returns
@@ -1309,6 +1530,7 @@
   - renamed the 'kind' parameter of the IMDb class to 'accessSystem'.
 
   [Movie class]
+
   - now __str__() returns only the short name; the summary() method
     returns a pretty-printed string for the Movie object.
   - persons are no more simple strings, but Person objects (the role/duty
@@ -1318,14 +1540,15 @@
   - new __contains__() method, to check is a given person was in a movie.
 
   [misc]
+
   - updated the documentation.
   - corrected some syntax/grammar errors.
 
 
-* What's the new in release 1.0 "Equilibrium" (01 Apr 2004)
+* What's new in release 1.0 "Equilibrium" (01 Apr 2004)
+
   [general]
+
   - first public release.
   - retrieve data only from the web server.
   - search only for movie titles.
-
-

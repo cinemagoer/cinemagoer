@@ -1,30 +1,34 @@
+# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+#           2008-2018 H. Turgut Uyar <uyar@tekir.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 """
-parser.http.movieParser module (imdb package).
+This module provides the classes (and the instances) that are used to parse
+the IMDb pages on the www.imdb.com server about a movie.
 
-This module provides the classes (and the instances), used to parse the
-IMDb pages on the www.imdb.com server about a movie.
-E.g., for Brian De Palma's "The Untouchables", the referred
-pages would be:
-    combined details:   http://www.imdb.com/title/tt0094226/reference
-    plot summary:       http://www.imdb.com/title/tt0094226/plotsummary
-    ...and so on...
+For example, for Brian De Palma's "The Untouchables", the referred pages
+would be:
 
-Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
-          2008-2018 H. Turgut Uyar <uyar@tekir.org>
+combined details
+    http://www.imdb.com/title/tt0094226/reference
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+plot summary
+    http://www.imdb.com/title/tt0094226/plotsummary
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+...and so on.
 """
 
 import functools
@@ -229,7 +233,8 @@ class DOMHTMLMovieParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         mparser = DOMHTMLMovieParser()
         result = mparser.parse(combined_details_html_string)
     """
@@ -782,7 +787,8 @@ class DOMHTMLPlotParser(DOMParserBase):
     dictionary, with a 'plot' key, containing a list
     of string with the structure: 'summary::summary_author <author@email>'.
 
-    Example:
+    Example::
+
         pparser = HTMLPlotParser()
         result = pparser.parse(plot_summary_html_string)
     """
@@ -860,7 +866,8 @@ class DOMHTMLAwardsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         awparser = HTMLAwardsParser()
         result = awparser.parse(awards_html_string)
     """
@@ -1014,7 +1021,8 @@ class DOMHTMLTaglinesParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         tparser = DOMHTMLTaglinesParser()
         result = tparser.parse(taglines_html_string)
     """
@@ -1045,7 +1053,8 @@ class DOMHTMLKeywordsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         kwparser = DOMHTMLKeywordsParser()
         result = kwparser.parse(keywords_html_string)
     """
@@ -1067,8 +1076,9 @@ class DOMHTMLAlternateVersionsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
-        avparser = HTMLAlternateVersionsParser()
+    Example::
+
+        avparser = DOMHTMLAlternateVersionsParser()
         result = avparser.parse(alternateversions_html_string)
     """
     _defGetRefs = True
@@ -1091,9 +1101,10 @@ class DOMHTMLTriviaParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
-        avparser = HTMLAlternateVersionsParser()
-        result = avparser.parse(alternateversions_html_string)
+    Example::
+
+        tparser = DOMHTMLTriviaParser()
+        result = tparser.parse(trivia_html_string)
     """
     _defGetRefs = True
 
@@ -1115,6 +1126,16 @@ class DOMHTMLTriviaParser(DOMParserBase):
 
 
 class DOMHTMLSoundtrackParser(DOMParserBase):
+    """Parser for the "soundtrack" page of a given movie.
+    The page should be provided as a string, as taken from
+    the www.imdb.com server.  The final result will be a
+    dictionary, with a key for every relevant section.
+
+    Example::
+
+        stparser = DOMHTMLSoundtrackParser()
+        result = stparser.parse(soundtrack_html_string)
+    """
     _defGetRefs = True
 
     preprocessors = [('<br />', '\n'), ('<br>', '\n')]
@@ -1179,7 +1200,8 @@ class DOMHTMLCrazyCreditsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         ccparser = DOMHTMLCrazyCreditsParser()
         result = ccparser.parse(crazycredits_html_string)
     """
@@ -1210,7 +1232,8 @@ class DOMHTMLGoofsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         gparser = DOMHTMLGoofsParser()
         result = gparser.parse(goofs_html_string)
     """
@@ -1247,7 +1270,8 @@ class DOMHTMLQuotesParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         qparser = DOMHTMLQuotesParser()
         result = qparser.parse(quotes_html_string)
     """
@@ -1304,7 +1328,8 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         rdparser = DOMHTMLReleaseinfoParser()
         result = rdparser.parse(releaseinfo_html_string)
     """
@@ -1400,7 +1425,8 @@ class DOMHTMLRatingsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         rparser = DOMHTMLRatingsParser()
         result = rparser.parse(userratings_html_string)
     """
@@ -1528,9 +1554,10 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
-        osparser = DOMHTMLCriticReviewsParser()
-        result = osparser.parse(officialsites_html_string)
+    Example::
+
+        crparser = DOMHTMLCriticReviewsParser()
+        result = crparser.parse(criticreviews_html_string)
     """
     kind = 'critic reviews'
 
@@ -1552,9 +1579,10 @@ class DOMHTMLReviewsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
-        osparser = DOMHTMLReviewsParser()
-        result = osparser.parse(officialsites_html_string)
+    Example::
+
+        rparser = DOMHTMLReviewsParser()
+        result = rparser.parse(reviews_html_string)
     """
     rules = [
         Rule(
@@ -1626,9 +1654,10 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
-        osparser = DOMHTMLFullCreditsParser()
-        result = osparser.parse(officialsites_html_string)
+    Example::
+
+        fcparser = DOMHTMLFullCreditsParser()
+        result = fcparser.parse(fullcredits_html_string)
     """
     kind = 'full credits'
 
@@ -1673,7 +1702,8 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         osparser = DOMHTMLOfficialsitesParser()
         result = osparser.parse(officialsites_html_string)
     """
@@ -1711,7 +1741,8 @@ class DOMHTMLConnectionParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         connparser = DOMHTMLConnectionParser()
         result = connparser.parse(connections_html_string)
     """
@@ -1777,7 +1808,8 @@ class DOMHTMLLocationsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         lparser = DOMHTMLLocationsParser()
         result = lparser.parse(locations_html_string)
     """
@@ -1810,8 +1842,9 @@ class DOMHTMLTechParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
-        tparser = HTMLTechParser()
+    Example::
+
+        tparser = DOMHTMLTechParser()
         result = tparser.parse(technical_html_string)
     """
     kind = 'tech'
@@ -1879,7 +1912,8 @@ class DOMHTMLNewsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         nwparser = DOMHTMLNewsParser()
         result = nwparser.parse(news_html_string)
     """
@@ -1971,7 +2005,8 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         sparser = DOMHTMLSeasonEpisodesParser()
         result = sparser.parse(episodes_html_string)
     """
@@ -2160,7 +2195,8 @@ class DOMHTMLEpisodesParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         eparser = DOMHTMLEpisodesParser()
         result = eparser.parse(episodes_html_string)
     """
@@ -2331,7 +2367,8 @@ class DOMHTMLFaqsParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         fparser = DOMHTMLFaqsParser()
         result = fparser.parse(faqs_html_string)
     """
@@ -2374,7 +2411,8 @@ class DOMHTMLAiringParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         aparser = DOMHTMLAiringParser()
         result = aparser.parse(airing_html_string)
     """
@@ -2474,7 +2512,8 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
-    Example:
+    Example::
+
         pgparser = HTMLParentsGuideParser()
         result = pgparser.parse(parentsguide_html_string)
     """

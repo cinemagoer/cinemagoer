@@ -181,40 +181,38 @@ _re_og_title = re.compile(
 def analyze_og_title(og_title):
     data = {}
     match = _re_og_title.match(og_title)
-    if match:
-        data['title'] = match.group(1)
+    if og_title and not match:
+        # assume it's a title in production, missing release date information
+        return {'title': og_title}
+    data['title'] = match.group(1)
+    if match.group(3):
+        data['year'] = int(match.group(3))
+    kind = match.group(2) or match.group(6)
+    if kind is None:
+        kind = 'movie'
+    else:
+        kind = kind.lower()
+        kind = KIND_MAP.get(kind, kind)
+    data['kind'] = kind
+    year_separator = match.group(4)
+    # There is a year separator so assume an ongoing or ended series
+    if year_separator is not None:
+        end_year = match.group(5)
+        if end_year is not None:
+            data['series years'] = '%(year)d-%(end_year)s' % {
+                'year': data['year'],
+                'end_year': end_year.strip(),
+            }
+        elif kind.endswith('series'):
+            data['series years'] = '%(year)d-' % {'year': data['year']}
+    # No year separator and series, so assume that it ended the same year
+    elif kind.endswith('series') and 'year' in data:
+        data['series years'] = '%(year)d-%(year)d' % {'year': data['year']}
 
-        if match.group(3):
-            data['year'] = int(match.group(3))
-
-        kind = match.group(2) or match.group(6)
-        if kind is None:
-            kind = 'movie'
-        else:
-            kind = kind.lower()
-            kind = KIND_MAP.get(kind, kind)
-        data['kind'] = kind
-
-        year_separator = match.group(4)
-        # There is a year separator so assume an ongoing or ended series
-        if year_separator is not None:
-            end_year = match.group(5)
-            if end_year is not None:
-                data['series years'] = '%(year)d-%(end_year)s' % {
-                    'year': data['year'],
-                    'end_year': end_year.strip(),
-                }
-            elif kind.endswith('series'):
-                data['series years'] = '%(year)d-' % {'year': data['year']}
-        # No year separator and series, so assume that it ended the same year
-        elif kind.endswith('series') and 'year' in data:
-            data['series years'] = '%(year)d-%(year)d' % {'year': data['year']}
-
-        if data['kind'] == 'episode' and data['title'][0] == '"':
-            quote_end = data['title'].find('"', 1)
-            data['tv series title'] = data['title'][1:quote_end]
-            data['title'] = data['title'][quote_end + 1:].strip()
-
+    if data['kind'] == 'episode' and data['title'][0] == '"':
+        quote_end = data['title'].find('"', 1)
+        data['tv series title'] = data['title'][1:quote_end]
+        data['title'] = data['title'][quote_end + 1:].strip()
     return data
 
 

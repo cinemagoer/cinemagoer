@@ -3,6 +3,14 @@ Changelog
 
 * What's new in release 6.5
 
+  [general]
+
+  - converted the documentation to Sphinx rst format
+
+  [http]
+
+  - fix title parser for in-production movies
+
 
 * What's new in release 6.4 "Electric Dreams" (14 Mar 2018)
 

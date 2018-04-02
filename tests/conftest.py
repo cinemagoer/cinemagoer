@@ -25,7 +25,7 @@ class CachedURLOpener(IMDbURLopener):
             with open(cache_file, 'r') as f:
                 content = f.read()
         else:
-            content = super().retrieve_unicode(url, size=size)
+            content = IMDbURLopener.retrieve_unicode(self, url, size=size)
             with open(cache_file, 'w') as f:
                 f.write(content)
         return content

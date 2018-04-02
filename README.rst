@@ -253,4 +253,3 @@ Check whether a person worked in a given movie or not:
 .. _IMDb: https://www.imdb.com/
 .. _please help with it!: https://sourceforge.net/p/imdbpy/mailman/message/36107729/
 .. _Curious about that: https://imdbpy.sourceforge.io/ecosystem.html
-.. _SQLAlchemy: https://www.sqlalchemy.org/

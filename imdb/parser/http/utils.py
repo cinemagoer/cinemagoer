@@ -489,7 +489,7 @@ class DOMParserBase(object):
             # re._pattern_type is present only since Python 2.5.
             if isinstance(getattr(src, 'sub', None), collections.Callable):
                 html_string = src.sub(sub, html_string)
-            elif isinstance(src, str):
+            elif isinstance(src, str) or isinstance(src, unicode):
                 html_string = html_string.replace(src, sub)
             elif isinstance(src, collections.Callable):
                 try:

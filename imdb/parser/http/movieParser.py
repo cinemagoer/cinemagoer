@@ -645,6 +645,8 @@ class DOMHTMLMovieParser(DOMParserBase):
         # Remove some 'more' links (keep others, like the one around
         # the number of votes).
         preprocessors.remove(dom, '//a[@class="tn15more"][starts-with(@href, "/title/")]')
+        # Remove the "rest of list" in cast.
+        preprocessors.remove(dom, '//td[@colspan="4"]/..')
         return dom
 
     re_space = re.compile(r'\s+')

@@ -275,12 +275,6 @@ Check whether a person worked in a given movie or not:
     person in movie
     movie in person
 
-
-License
--------
-
-IMDbPY is released under the terms of the GNU GPL v2 (or later) license.
-
 .. _IMDb: https://www.imdb.com/
 .. _please help with it!: https://sourceforge.net/p/imdbpy/mailman/message/36107729/
 .. _Curious about that: https://imdbpy.sourceforge.io/ecosystem.html

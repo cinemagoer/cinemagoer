@@ -7,7 +7,6 @@ IMDbPY
    :maxdepth: 2
    :caption: Contents:
 
-   INSTALLATION
    README.package
    README.series
    README.currentRole

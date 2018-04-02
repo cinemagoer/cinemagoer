@@ -30,7 +30,7 @@ Main features
 - can retrieve data from both the IMDb's web server, or a local copy
   of the database
 
-- a simple and complete API
+- simple and complete API
 
 - released under the terms of the GPL 2 license
 
@@ -41,12 +41,14 @@ IMDbPY powers many other software and has been used in various research papers.
 Installation
 ------------
 
-Whenever it's possible, please always use the latest version
-from the repository. To install it using ``pip``:
+The latest release can be installed using ``pip``::
 
-.. code-block:: sh
+   pip install imdbpy
 
-    pip3 install git+https://github.com/alberanid/imdbpy
+
+But whenever possible, please use the latest version from the repository::
+
+   pip install git+https://github.com/alberanid/imdbpy
 
 
 Code example
@@ -97,6 +99,11 @@ Code example
     top250 = ia.get_top250_movies()
     bottom100 = ia.get_bottom100_movies()
 
+Getting help
+------------
+
+Refer to the web site https://imdbpy.sourceforge.io/ and
+subscribe to the mailing list: https://imdbpy.sourceforge.io/support.html
 
 S3 database
 -----------

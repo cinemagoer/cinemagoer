@@ -10,7 +10,7 @@ IMDbPY
    README.package
    README.series
    README.currentRole
-   README.s3
+   s3
    README.sqldb
    README.adult
    README.info2xml

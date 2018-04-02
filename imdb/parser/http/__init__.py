@@ -185,7 +185,10 @@ class IMDbURLopener(FancyURLopener):
             content = uopener.read(**kwds)
             self._last_url = uopener.url
             # Maybe the server is so nice to tell us the charset...
-            server_encode = uopener.headers.getparam('charset')
+            if PY2:
+                server_encode = uopener.headers.getparam('charset')
+            else:
+                server_encode = (uopener.info().get_charsets() or [None])[0]
             # Otherwise, look at the content-type HTML meta tag.
             if server_encode is None and content:
                 begin_h = content.find(b'text/html; charset=')

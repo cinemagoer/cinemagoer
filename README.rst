@@ -51,53 +51,100 @@ But whenever possible, please use the latest version from the repository::
    pip install git+https://github.com/alberanid/imdbpy
 
 
-Code example
-------------
+Usage examples
+--------------
 
 .. code-block:: python
 
-    from imdb import IMDb
+   >>> from imdb import IMDb
 
-    # create an instance of the IMDb class
-    ia = IMDb()
+Create an instance of the IMDb class:
 
-    # get a movie and print its director(s)
-    the_matrix = ia.get_movie('0133093')
-    print(the_matrix['director'])
+.. code-block:: python
 
-    # show all the information sets avaiable for Movie objects
-    print(ia.get_movie_infoset())
+    >>> ia = IMDb()
 
-    # update a Movie object with more information
-    ia.update(the_matrix, ['technical'])
-    # show which keys were added by the information set
-    print(the_matrix.infoset2keys['technical'])
-    # print one of the new keys
-    print(the_matrix.get('cinematographic process'))
+Get a movie and check its director(s):
 
-    # search for a person
-    for person in ia.search_person('Mel Gibson'):
-        print(person.personID, person['name'])
+.. code-block:: python
 
-    # get the first result of a company search,
-    # update it to get the basic information
-    ladd_company = ia.search_company('The Ladd Company')[0]
-    ia.update(ladd_company)
-    # show the available information and print some
-    print(ladd_company.keys())
-    print(ladd_company.get('production companies'))
+   >>> matrix = ia.get_movie('0133093')
+   >>> matrix['director']
+   [<Person id:0905154[http] name:_Wachowski, Lana_>,
+    <Person id:0905152[http] name:_Wachowski, Lilly_>]
 
-    # get 5 movies tagged with a keyword
-    dystopia = ia.get_keyword('dystopia', results=5)
+Show all the information sets avaiable for movies:
 
-    # get a Character object
-    deckard = ia.search_character('Rick Deckard')[0]
-    ia.update(deckard)
-    print(deckard['full-size headshot'])
+.. code-block:: python
 
-    # get top250 and bottom100 movies
-    top250 = ia.get_top250_movies()
-    bottom100 = ia.get_bottom100_movies()
+   >>> ia.get_movie_infoset()
+   ['airing', 'akas', 'alternate versions', 'awards', 'connections',
+    'crazy credits', 'critic reviews', 'episodes', 'external reviews',
+    'external sites', 'faqs', 'full credits', 'goofs', 'keywords', 'locations',
+    'main', 'misc sites', 'news', 'official sites', 'parents guide',
+    'photo sites', 'plot', 'quotes', 'release dates', 'release info',
+    'reviews', 'sound clips', 'soundtrack', 'synopsis', 'taglines',
+    'technical', 'trivia', 'tv schedule', 'video clips', 'vote details']
+
+Update a movie with more information and show which keys were added:
+
+.. code-block:: python
+
+   >>> ia.update(matrix, ['vote details'])
+   >>> matrix.infoset2keys['vote details']
+   [['demographics', 'number of votes', 'arithmetic mean', 'median']]
+   >>> matrix.get('median')
+   9
+
+
+Search for a person:
+
+.. code-block:: python
+
+   >>> for person in ia.search_person('Mel Gibson'):
+   ...     print(person.personID, person['name'])
+   ...
+   0000154 Mel Gibson
+   2153167 Mel Gibson
+   0317112 Mel Gibson
+   3323885 Adam Taylor
+   2800055 Mel Gibson
+   ...
+
+
+Get the first result of a company search and update it to get the basic
+information:
+
+.. code-block:: python
+
+   >>> ladd_company = ia.search_company('The Ladd Company')[0]
+   >>> ia.update(ladd_company)
+   >>> ladd_company.keys()
+   >>> ladd_company.get('production companies')
+
+Get 5 movies tagged with a keyword:
+
+.. code-block:: python
+
+   >>> dystopia = ia.get_keyword('dystopia', results=5)
+   >>> dystopia
+   [<Movie id:1677720[http] title:_Ready Player One (2018)_>,
+    <Movie id:2085059[http] title:_Black Mirror (2011–) (None)_>,
+    <Movie id:5834204[http] title:_The Handmaid's Tale (2017–) (None)_>,
+    <Movie id:1663662[http] title:_Pacific Rim (2013)_>,
+    <Movie id:1856101[http] title:_Blade Runner 2049 (2017)_>]
+
+Get top 250 and bottom 100 movies:
+
+.. code-block:: python
+
+   >>> top250 = ia.get_top250_movies()
+   >>> top250[0]
+   <Movie id:0111161[http] title:_The Shawshank Redemption (1994)_>
+   >>> bottom100 = ia.get_bottom100_movies()
+   >>> bottom100[0]
+   <Movie id:4458206[http] title:_Code Name: K.O.Z. (2015)_>
+
 
 Getting help
 ------------

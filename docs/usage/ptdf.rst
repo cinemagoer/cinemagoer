@@ -337,7 +337,8 @@ as follows::
 The created CSV files will be imported near the end of processing. After the import
 is finished, you can safely remove these files.
 
-It is possible to separate the two steps involved when using CSV files:
+Since version 4.5, it's possible to separate the two steps involved
+when using CSV files:
 
 - With the ``--csv-only-write`` command line option, the old database will be
   truncated and the CSV files saved, along with imdbID information.

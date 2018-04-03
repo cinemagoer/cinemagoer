@@ -7,10 +7,10 @@ IMDbPY
    :maxdepth: 2
    :caption: Contents:
 
+   usage/index
    README.package
    README.series
    README.currentRole
-   s3
    README.sqldb
    README.adult
    README.info2xml

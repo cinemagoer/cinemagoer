@@ -1,110 +1,104 @@
-The SQL data access system
---------------------------
+.. _ptdf:
+
+Old data files
+==============
 
 .. warning::
 
-   The data used by the "sql" access system is no longer updated.
-   In the future, we'll support the new data from http://www.imdb.com/interfaces/
-   See README.s3.txt for more information.
+   Since the end of 2017, IMDb is no longer updating the data files which are
+   described in this document. For working with the updated
+   -but less comprehensive- downloadable data, check the :ref:`s3` document.
 
-It's also worth noting that the version of the imdbpy2sql.py script
-in this branch will not create any foreign keys, but only indexes;
-if you need them, try using the version in the imdbpy-legacy branch.
+Until the end of 2017, IMDb used to distribute some of its data as downloadable
+text files. IMDbPY can import this data into a database and make it
+accessible through its API.
 
-Otherwise, if you need instructions on how to manually build the foreign keys
-for this version, see this comment by Andrew D Bate:
-https://github.com/alberanid/imdbpy/issues/130#issuecomment-365707620
+For this, you will first need to install `SQLAlchemy`_ and the libraries
+that are needed for the database server you want to use. Check out
+the `SQLAlchemy dialects`_ documentation for more detail.
 
+Then, follow these steps:
 
-Requirements
-------------
+#. Download the files from the following address and put all of them
+   in the same directory:
+   ftp://ftp.funet.fi/pub/mirrors/ftp.imdb.com/pub/frozendata/
 
-You need `SQLAlchemy <https://www.sqlalchemy.org/>`_.
+   You can just download the files you need instead of downloading all files.
+   The files that are not downloaded will be skipped during import.
+   This feature is still quite untested, so please report any bugs.
 
-**Other required modules**
+   .. warning::
 
-SQLAlchemy accesses databases through other modules/packages that you need
-to have installed, e.g.: 'mysql-python' for MySQL, 'psycopg' for PostgreSQL,
-and so on.
+      Beware that the :file:`diffs` subdirectory contains
+      **a lot** of files you **don't** need, so don't start mirroring
+      everything!
 
+#. Create a database. Use a collation like ``utf8_unicode_ci``.
 
-SQL database installation
--------------------------
+#. Import the data using the :file:`imdbpy2sql.py` script::
 
-Select a mirror of the "The Plain Text Data Files" from
-the http://www.imdb.com/interfaces/ page and download every file
-in the main directory. *Beware that the "diffs" subdirectory contains
-**a lot** of files you **don't** need, so don't start mirroring everything!.*
+     imdbpy2sql.py -d /path/to/the/data_files_dir/ -u URI
 
-Starting from release 2.4, you can just download the files you need,
-instead of every single file. The files that are not downloaded
-will be skipped. This feature is still quite untested,
-so please report any bug.
+   *URI* is the identifier used to access the SQL database. For example::
 
-Create a database named "imdb" (or whatever you like), using the tool provided
-by your database; as an example, for MySQL you can use the 'mysqladmin'
-command::
+      imdbpy2sql.py -d ~/Download/imdb-frozendata/ \
+          -u postgres://user:password@localhost/imdb
 
-  mysqladmin -p create imdb
+Once the import is finished, you will have a SQL database with all
+the information and you can use the normal IMDbPY API:
 
-For PostgreSQL, you can use the "createdb" command::
+.. code-block:: python
 
-  createdb -W imdb
+   from imdb import IMDb
 
-To create the tables and to populate the database, you have to run the
-imdbpy2sql.py script::
+   ia = IMDb('sql', uri='postgres://user:password@localhost/imdb')
 
-  imdbpy2sql.py -d /dir/with/plainTextDataFiles/ -u 'URI'
+   results = ia.search_movie('the matrix')
+   for result in results:
+       print(result.movieID, result)
 
-where the 'URI' argument is a string representing the connection
-to your database, with the schema:
-
-  ``scheme://[user[:password]@]host[:port]/database[?parameters]``
-
-where 'scheme' is one of "sqlite", "mysql", "postgres", "firebird",
-"interbase", "maxdb", "sapdb", "mssql", "sybase", "ibm_db_sa".
-
-Some examples::
-
-    mysql://user:password@host/database
-    postgres://user:password@host/database
-    mysql://host/database?debug=1
-    postgres:///full/path/to/socket/database
-    postgres://host:5432/database
-    sqlite:///full/path/to/database
-    sqlite:/C|/full/path/to/database
-    sqlite:/:memory:
-
-For other information you can read the SQLAlchemy documentation.
+   matrix = results[0]
+   ia.update(matrix)
+   print(matrix.keys())
 
 
-Timing
-------
+.. note::
 
-The performance hugely depends on the underlying Python module/package
-used to access the database. The imdbpy2sql.py script has a number
-of command line arguments, for choosing presets that can improve performance,
-using specific database servers.
+   It should be noted that the :file:`imdbpy2sql.py` script will not create
+   any foreign keys, but only indexes. If you need foreign keys, try using
+   the version in the "imdbpy-legacy" branch.
 
-The fastest database appears to be MySQL, with about 200 minutes to
-complete on my test system (read below). A lot of memory (RAM or swap space)
+   If you need instructions on how to manually build the foreign keys,
+   see `this comment by Andrew D Bate`_.
+
+
+Performance
+-----------
+
+The import performance hugely depends on the underlying module used to access
+the database. The :file:`imdbpy2sql.py` script has a number of command line
+arguments for choosing presets that can improve performance in specific
+database servers.
+
+The fastest database appears to be MySQL, with about 200 minutes to complete
+on my test system (read below). A lot of memory (RAM or swap space)
 is required, in the range of at least 250/500 megabytes (plus more
-for the database server). In the end, the database will require between
+for the database server). In the end, the database requires between
 2.5GB and 5GB of disk space.
 
-As said, the performance varies greatly using one database server or another:
+As said, the performance varies greatly using one database server or another.
 MySQL, for instance, has an ``executemany()`` method of the cursor object
-that accept multiple data insertion with a single SQL statement; other
+that accepts multiple data insertion with a single SQL statement; other
 databases require a call to the ``execute()`` method for every single row
 of data, and they will be much slower -2 to 7 times slower than MySQL.
 
-There are generic suggestions that can lead to better performances,
-like turning off your filesystem journaling (so it can be a good idea to
-remount an ext3 filesystem as ext2). Another option is using a ramdisk/tmpfs,
-if you have enough RAM.  Obviously these have effect only at insert-time:
-during day-to-day use, you can turn journaling on again. You can also consider
-using CSV output, explained below (but be sure that your database server
-is able to import CSV files).
+There are generic suggestions that can lead to better performance, such as
+turning off your filesystem journaling (so it can be a good idea to remount
+an ext3 filesystem as ext2 for example). Another option is using
+a ramdisk/tmpfs, if you have enough RAM. Obviously these have effect only at
+insert-time; during day-to-day use, you can turn journaling on again.
+You can also consider using CSV output as explained below, if your database
+server can import CSV files.
 
 I've done some tests, using an AMD Athlon 1800+, 1GB of RAM, over a complete
 plain text data files set (as of 11 Apr 2008, with more than 1.200.000 titles
@@ -135,10 +129,11 @@ and over 2.200.000 names):
 
 If you have different experiences, please tell me!
 
-As expected, the most important things that you can do to improve performances are:
+As expected, the most important things that you can do to improve performance
+are:
 
 #. Use an in-memory filesystem or an SSD disk.
-#. Use the -c /path/to/empty/dir argument to use CSV files.
+#. Use the ``-c /path/to/empty/dir`` argument to use CSV files.
 #. Follow the specific notes about your database server.
 
 
@@ -254,25 +249,6 @@ screaming "daddy! daddy! what kind of animals does Rocco train in the
 documentary 'Rocco: Animal Trainer 17'???"... well, it's not my fault! ;-)
 
 
-SQL usage
----------
-
-Now you can use IMDbPY with the database:
-
-.. code-block:: python
-
-   from imdb import IMDb
-   i = IMDb('sql', uri='YOUR_URI_STRING')
-   resList = i.search_movie('the incredibles')
-   for x in resList:
-       print(x)
-   ti = resList[0]
-   i.update(ti)
-   print(ti['director'][0])
-
-and so on...
-
-
 Advanced features
 -----------------
 
@@ -344,30 +320,37 @@ does.
 CSV files
 ---------
 
-Keep in mind that only MySQL, PostgreSQL and IBM DB2 are supported.
-Moreover, you may run into problems, for example your postgres server process
-must have read access to the directory you're storing the CSV files.
+.. note::
 
-To create (and import) a set of CSV files, run imdbpy2sql.py with the
-syntax::
+   Keep in mind that not all database servers support this.
 
-  ./imdbpy2sql.py -d /dir/with/plainTextDataFiles/ -u URI -c /directory/where/to/store/CSVfiles
+   Moreover, you can run into problems. For example, if you're using
+   PostgreSQL, your server process will need read access to the directory
+   where the CSV files are stored.
 
-The created files will be imported near the end of the imdbpy2sql.py
-processing. Notice that after that, you can safely remove these files.
+To create the database using a set of CSV files, run :file:`imdbpy2sql.py`
+as follows::
 
+   imdbpy2sql.py -d /dir/with/plainTextDataFiles/ -u URI \
+         -c /path/to/the/csv_files_dir/
 
-CSV partial processing
-----------------------
+The created CSV files will be imported near the end of processing. After the import
+is finished, you can safely remove these files.
 
-Since IMDbPY 4.5, it's possible to separate the two steps involved using
-CSV files. With the "--csv-only-write" command line option the old database will
-be truncated and the CSV files saved (along with imdbID information).
-Using the "--csv-only-load" option you can load these saved files into
-an existing database (this database MUST be the one left almost empty
-by the previous run).
+It is possible to separate the two steps involved when using CSV files:
+
+- With the ``--csv-only-write`` command line option, the old database will be
+  truncated and the CSV files saved, along with imdbID information.
+
+- With the ``--csv-only-load`` option, these saved files can be loaded
+  into an existing database (this database MUST be the one left almost empty
+  by the previous run).
 
 Beware that right now the whole procedure is not very well tested.
-Using both commands, on the command line you still have to specify
-the whole "-u URI -d /path/plainTextDataFiles/ -c /path/CSVfiles/"
-series of arguments.
+For both commands, you still have to specify the whole
+``-u URI -d /path/plainTextDataFiles/ -c /path/CSVfiles/`` arguments.
+
+
+.. _SQLAlchemy: https://www.sqlalchemy.org/
+.. _SQLAlchemy dialects: http://docs.sqlalchemy.org/en/latest/dialects/
+.. _this comment by Andrew D Bate: https://github.com/alberanid/imdbpy/issues/130#issuecomment-365707620

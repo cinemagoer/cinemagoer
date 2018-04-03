@@ -6,13 +6,6 @@ started distributing `datasets`_ that are much easier to parse, but also
 contain much less information. You can access this data in IMDbPY
 by first importing them into a database.
 
-You will use the same URI with the "s3" *accessSystem* to create an instance
-of the IMDb object that is able to access the database:
-
-.. code-block:: python
-
-   ia = IMDb('s3', uri)
-
 Here are the steps:
 
 #. Create a database (let's call it ``imdb``), using a database server

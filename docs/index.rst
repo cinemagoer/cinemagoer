@@ -12,7 +12,6 @@ IMDbPY
    :caption: Contents:
 
    usage/index
-   README.package
    README.series
    README.currentRole
    README.info2xml

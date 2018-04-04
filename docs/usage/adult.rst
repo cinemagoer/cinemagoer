@@ -42,10 +42,6 @@ To find the strings you need to use, see your "cookie" or "cookie.txt" files.
 Obviously, you'll need to activate the "adult movies" option for your account;
 see http://imdb.com/find/preferences?_adult=1
 
-
-Other data access systems
--------------------------
-
 Since version 2.2 all data access systems (sql) support
 the same behavior (i.e.: you can set the ``adultSearch`` argument and
 use the ``do_adult_search`` method).

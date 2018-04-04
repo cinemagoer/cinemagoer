@@ -66,9 +66,10 @@ SQL based access systems.
    role
    infosets
    series
+   adult
+   info2xml
    s3
    ptdf
-   adult
 
 
 Other sources of information

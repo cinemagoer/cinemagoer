@@ -17,8 +17,8 @@ IMDbPY
    README.currentRole
    README.info2xml
    README.locale
-   FAQS
    devel/index
+   faqs
    contributors/index
    Changelog
 

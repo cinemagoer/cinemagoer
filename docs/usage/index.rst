@@ -63,6 +63,7 @@ SQL based access systems.
    person
    character
    company
+   role
    infosets
    s3
    ptdf

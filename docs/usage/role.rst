@@ -1,5 +1,5 @@
-The currentRole Attribute and the Character Class
-=================================================
+Role
+====
 
 Since version 3.3, IMDbPY supports the character pages of the IMDb database;
 this required some substantial changes to how actors' and acresses' roles

@@ -13,7 +13,6 @@ IMDbPY
 
    usage/index
    README.series
-   README.currentRole
    README.info2xml
    README.locale
    devel/index

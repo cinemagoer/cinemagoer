@@ -63,20 +63,26 @@ Here's an example that demonstrates how to use IMDbPY:
    # create an instance of the IMDb class
    ia = IMDb()
 
-   # get a movie and check its director(s)
-   matrix = ia.get_movie('0133093')
+   # get a movie
+   movie = ia.get_movie('0133093')
 
    # print the names of the directors of the movie
    print('Directors:')
-   for director in matrix['director']:
+   for director in movie['directors']:
        print(director['name'])
 
    # print the genres of the movie
    print('Genres:')
-   for genre in matrix['genre']:
+   for genre in movie['genres']:
        print(genre)
 
-Show all the information sets avaiable for movies:
+   # search for a person name
+   people = ia.search_person('Mel Gibson')
+   for person in people:
+      print(person.personID, person['name'])
+
+
+Show all the information sets available for movies:
 
 .. code-block:: python
 
@@ -98,21 +104,6 @@ Update a movie with more information and show which keys were added:
    [['demographics', 'number of votes', 'arithmetic mean', 'median']]
    >>> matrix.get('median')
    9
-
-
-Search for a person:
-
-.. code-block:: python
-
-   >>> for person in ia.search_person('Mel Gibson'):
-   ...     print(person.personID, person['name'])
-   ...
-   0000154 Mel Gibson
-   2153167 Mel Gibson
-   0317112 Mel Gibson
-   3323885 Adam Taylor
-   2800055 Mel Gibson
-   ...
 
 
 Get the first result of a company search and update it to get the basic

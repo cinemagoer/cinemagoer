@@ -1,5 +1,5 @@
-Character
-=========
+Characters
+==========
 
 It works mostly like the Person class. :-)
 

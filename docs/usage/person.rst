@@ -1,5 +1,5 @@
-Person
-======
+Persons
+=======
 
 It works mostly like the Movie class. :-)
 

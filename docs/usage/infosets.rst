@@ -264,14 +264,3 @@ something like:
        movie = i.get_movie('0335345')
    except IMDbError, err:
        print(err)
-
-
-Other sources of information
-----------------------------
-
-Once the IMDbPY package is installed, you can read the docstrings for packages,
-modules, functions, classes, objects, methods using the pydoc program;
-e.g.: "pydoc imdb.IMDb" will show the documentation about the imdb.IMDb class.
-
-The code contains a lot of comments, try reading it, if you canunderstand
-my English!

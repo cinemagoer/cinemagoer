@@ -1,5 +1,5 @@
-Company
-=======
+Companies
+=========
 
 It works mostly like the Person class. :-)
 

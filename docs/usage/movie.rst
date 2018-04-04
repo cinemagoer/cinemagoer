@@ -1,5 +1,5 @@
-Movie
-=====
+Movies
+======
 
 The main use of a Movie object is to access to the info it contains
 using a dictionary-like interface, like "movieObject[key]" where 'key'

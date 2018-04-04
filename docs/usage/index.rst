@@ -7,3 +7,4 @@ Usage
 
    s3
    ptdf
+   adult

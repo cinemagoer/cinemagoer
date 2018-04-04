@@ -4,27 +4,21 @@ Localization
 Since version 4.1 it's easy to translate the labels that describe
 sets of information.
 
+.. admonition:: Limitation
 
-Limitation
-----------
+   So far no internal message or exception is translated, the internationalization
+   is limited to the "tags" returned by the ``getAsXML`` and ``asXML`` methods
+   of the Movie, Person, Character, or Company classes.  Beware that in many cases
+   these "tags" are not the same as the "keys" used to access information
+   in the same classes, as if they are dictionaries.
 
-So far no internal message or exception is translated, the internationalization
-is limited to the "tags" returned by the ``getAsXML`` and ``asXML`` methods
-of the Movie, Person, Character, or Company classes.  Beware that in many cases
-these "tags" are not the same as the "keys" used to access information
-in the same classes, as if they are dictionaries.
+   E.g.: you can translate "long-imdb-name" -the tag returned by the call
+   ``person.getAsXML('long imdb name')``- but not "long imdb name" directly.
+   To translate keys, you can use the ``helpers.translateKey`` function in
+   the 'helpers' module.
 
-E.g.: you can translate "long-imdb-name" -the tag returned by the call
-``person.getAsXML('long imdb name')``- but not "long imdb name" directly.
-To translate keys, you can use the ``helpers.translateKey`` function in
-the 'helpers' module.
-
-
-Usage
------
-
-If you want to add i18n to your IMDbPY-based application, all you need
-to do is to switch to the 'imdbpy' text domain:
+If you want to add i18n to your IMDbPY-based application, all you need to do
+is to switch to the ``imdbpy`` text domain:
 
 .. code-block:: python
 

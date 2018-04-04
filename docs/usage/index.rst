@@ -68,6 +68,7 @@ SQL based access systems.
    series
    adult
    info2xml
+   l10n
    s3
    ptdf
 

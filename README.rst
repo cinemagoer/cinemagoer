@@ -51,27 +51,30 @@ But if you want, you can also install the latest release from PyPI::
    pip install imdbpy
 
 
-Usage examples
---------------
+Example
+-------
+
+Here's an example that demonstrates how to use IMDbPY:
 
 .. code-block:: python
 
-   >>> from imdb import IMDb
+   from imdb import IMDb
 
-Create an instance of the IMDb class:
+   # create an instance of the IMDb class
+   ia = IMDb()
 
-.. code-block:: python
+   # get a movie and check its director(s)
+   matrix = ia.get_movie('0133093')
 
-    >>> ia = IMDb()
+   # print the names of the directors of the movie
+   print('Directors:')
+   for director in matrix['director']:
+       print(director['name'])
 
-Get a movie and check its director(s):
-
-.. code-block:: python
-
-   >>> matrix = ia.get_movie('0133093')
-   >>> matrix['director']
-   [<Person id:0905154[http] name:_Wachowski, Lana_>,
-    <Person id:0905152[http] name:_Wachowski, Lilly_>]
+   # print the genres of the movie
+   print('Genres:')
+   for genre in matrix['genre']:
+       print(genre)
 
 Show all the information sets avaiable for movies:
 

@@ -1,5 +1,8 @@
+Contributors
+============
+
 Authors
-=======
+-------
 
 People who contributed a substantial amount of work and share the copyright
 over some portions of the code:

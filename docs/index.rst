@@ -3,7 +3,7 @@ IMDbPY
 
 .. include:: ../README.rst
 
-.. important:: Disclaimer
+.. admonition:: Disclaimer
 
    .. include:: disclaimer.rst
 

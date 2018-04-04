@@ -18,8 +18,7 @@ IMDbPY
    README.info2xml
    README.locale
    FAQS
-   README.devel
-   DEPLOY
+   devel/index
    contributors/index
    Changelog
 

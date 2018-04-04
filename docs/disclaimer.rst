@@ -1,6 +1,3 @@
-Disclaimer
-==========
-
 IMDbPY and the authors are not affiliated with Internet Movie Database Inc.
 
 IMDb is a trademark of Internet Movie Database Inc. and all content and data

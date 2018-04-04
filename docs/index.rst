@@ -3,6 +3,10 @@ IMDbPY
 
 .. include:: ../README.rst
 
+.. important:: Disclaimer
+
+   .. include:: disclaimer.rst
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -16,7 +20,6 @@ IMDbPY
    FAQS
    README.devel
    DEPLOY
-   DISCLAIMER
    contributors/index
    Changelog
 

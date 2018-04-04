@@ -1,9 +1,7 @@
-Deployment and release
-======================
+How to make a release
+=====================
 
-How to deploy and release a new version of IMDbPY.
-
-**While development is ongoing**
+**During development**
 
 *setup.cfg*
 

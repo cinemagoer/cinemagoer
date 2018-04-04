@@ -14,7 +14,7 @@ and companies.
    - moved the package to Python 3
    - removed dependencies: SQLObject, C compiler, BeautifulSoup
    - removed the "mobile" and "httpThin" parsers
-   - introduced a testsuite (`please help with it!`_)
+   - introduced a test suite (`please help with it!`_)
 
    The Python 2 version is available in the *imdbpy-legacy* branch
    (mostly unsupported).
@@ -41,14 +41,14 @@ IMDbPY powers many other software and has been used in various research papers.
 Installation
 ------------
 
-The latest release can be installed using ``pip``::
-
-   pip install imdbpy
-
-
-But whenever possible, please use the latest version from the repository::
+Whenever possible, please use the latest version from the repository::
 
    pip install git+https://github.com/alberanid/imdbpy
+
+
+But if you want, you can also install the latest release from PyPI::
+
+   pip install imdbpy
 
 
 Usage examples

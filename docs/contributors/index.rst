@@ -78,6 +78,9 @@ Additional translations were provided by:
 - Raphael (German)
 
 
+.. include:: credits.rst
+
+
 Donations
 ---------
 

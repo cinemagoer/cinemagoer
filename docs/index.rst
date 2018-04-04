@@ -17,8 +17,7 @@ IMDbPY
    README.devel
    DEPLOY
    DISCLAIMER
-   contributors
-   CREDITS
+   contributors/index
    Changelog
 
 Indices and tables

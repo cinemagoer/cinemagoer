@@ -1,8 +1,5 @@
 Credits
-=======
-
-See also the `Contributors`_ document for a list of the major developers
-who share the copyright on some portions of the code.
+-------
 
 First of all, I want to thank all the package maintainers, and especially
 Ana Guerrero. Another big thanks to the developers who used IMDbPY

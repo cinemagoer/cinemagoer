@@ -65,6 +65,7 @@ SQL based access systems.
    company
    role
    infosets
+   series
    s3
    ptdf
    adult

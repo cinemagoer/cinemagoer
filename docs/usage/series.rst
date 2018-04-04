@@ -1,20 +1,6 @@
 Series
 ======
 
-Summary of this file:
-
-- Managing series episodes
-- Titles
-- Series
-- FULL CREDITS
-- RATINGS
-- PEOPLE
-- GOODIES
-
-
-Managing series episodes
-------------------------
-
 Since January 2006, IMDb changed the way it handles TV episodes:
 now every episode is treated as full title. Starting with version 2.5,
 IMDbPY also supports this behavior.

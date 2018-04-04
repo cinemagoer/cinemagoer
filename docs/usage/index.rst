@@ -8,63 +8,64 @@ or programs.
 
    This document is far from complete: the code is the final documentation! ;-)
 
-To use the IMDbPY package, you have to import the imdb package and
-call the IMDb function:
+
+To use the IMDbPY package, you have to import :mod:`imdb` and call
+the :mod:`imdb.IMDb` function:
 
 .. code-block:: python
 
-   import imdb
-   imdb_access = imdb.IMDb()
+   >>> import imdb
+   >>> imdb_access = imdb.IMDb()
 
-If you're accessing a SQL installation of the IMDb's data, you have to use
-the following:
 
-.. code-block:: python
+IMDbPY supports different ways of accessing the IMDb data:
 
-   imdb_access = imdb.IMDb('s3', uri='URI_TO_YOUR_DB')
+- Fetching data directly from the web server.
 
-where ``URI_TO_YOUR_DB`` points to your SQL database (see README.sqldb
-for more information).
+- Getting the data from a SQL database that can be created from
+  the downloadable data sets provided by the IMDb.
+
++------------------+-------------+----------------------+
+| access system    | aliases     | data source          |
++==================+=============+======================+
+| (default) 'http' | 'web'       | imdb.com web server  |
+|                  |             |                      |
+|                  | 'html'      |                      |
++------------------+-------------+----------------------+
+|            's3'  | 's3dataset' | downloadable dataset |
+|                  |             |                      |
+|                  |             | after Dec 2017       |
++------------------+-------------+----------------------+
+|            'sql' | 'db'        | downloadable dataset |
+|                  |             |                      |
+|                  | 'database'  | before Dec 2017      |
++------------------+-------------+----------------------+
+
+.. note::
+
+   Since release 3.4, the :file:`imdbpy.cfg` configuration file is available,
+   so that you can set a system-wide (or per-user) default. The file is
+   commented with indication of the location where it can be put,
+   and how to modify it.
+
+   If no :file:`imdbpy.cfg` file is found (or is not readable or
+   it can't be parsed), 'http' will be used the default.
+
+See the :ref:`s3` and :ref:`ptdf` documents for more information about
+SQL based access systems.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   s3
+   ptdf
+   adult
 
 Now you have the "imdb_access" object, instance of a subclass of
 the ``imdb.IMDbBase`` class, which can be used to search for a given
 title/name and to retrieve information about the referred movie, person,
 or character.
-
-The ``IMDb`` function can be called with a 'accessSystem' keyword argument,
-which must be a string representing the type of data access you want to use.
-That's because different systems to access the IMDb data are available:
-you can directly fetch data from the web server; you can have a local copy
-of the database (see http://www.imdb.com/interfaces/); you can access data
-through the e-mail interface, etc.
-
-+---------------------------+-------------+-----------------------------------+
-| Supported access systems  |   Aliases   |  Description                      |
-+===========================+=============+===================================+
-| (default) 'http'          |    'web',   | information fetched through       |
-|                           |             |                                   |
-|                           |    'html'   | imdb.com web server               |
-+---------------------------+-------------+-----------------------------------+
-|            'sql'          |    'db',    | information fetched through       |
-|                           |             |                                   |
-|                           |  'database' | a SQL database (any database      |
-|                           |             |                                   |
-|                           |             | supported by SQLAlchemy).         |
-|                           |             |                                   |
-|                           |             | OLD DATASET NOT UPDATED!          |
-+---------------------------+-------------+-----------------------------------+
-|            's3'           | 's3dataset' | new imdb database                 |
-+---------------------------+-------------+-----------------------------------+
-
-.. note::
-
-   Since release 3.4, the 'imdbpy.cfg' configuration file is available,
-   so that you can set a system-wide (or per-user) default. The file is
-   commented with indication of the location where it can be put,
-   and how to modify it.
-
-   If no imdbpy.cfg file is found (or is not readable or it can't be parsed),
-   'http' is the default.
 
 
 The imdb_access object has 10 main methods: ``search_movie(title)``,
@@ -659,11 +660,3 @@ e.g.: "pydoc imdb.IMDb" will show the documentation about the imdb.IMDb class.
 
 The code contains a lot of comments, try reading it, if you canunderstand
 my English!
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   s3
-   ptdf
-   adult

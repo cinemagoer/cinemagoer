@@ -1,18 +1,6 @@
 Querying data
 =============
 
-Now you have the "imdb_access" object, instance of a subclass of
-the ``imdb.IMDbBase`` class, which can be used to search for a given
-title/name and to retrieve information about the referred movie, person,
-or character.
-
-
-The imdb_access object has 10 main methods: ``search_movie(title)``,
-``get_movie(movieID)``, ``search_person(name)``, ``get_person(personID)``,
-``search_character(name)``, ``get_character(characterID)``,
-``search_company(name)``, ``get_company(companyID)``, ``search_episode()``,
-``update(MovieOrPersonObject)``.
-
 Method descriptions:
 
 ``search_movie(title)``
@@ -98,12 +86,6 @@ Example:
 
 .. code-block:: python
 
-   i = IMDb()
-   # movie_list is a list of Movie objects, with only attributes like 'title'
-   # and 'year' defined.
-   movie_list = i.search_movie('the passion')
-   # the first movie in the list.
-   first_match = movie_list[0]
    # only basic information like the title will be printed.
    print(first_match.summary())
    # update the information for this movie.

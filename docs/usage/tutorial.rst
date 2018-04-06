@@ -1,57 +1,18 @@
 Tutorial
 ========
 
-To use the IMDbPY package, you have to import :mod:`imdb` and call
-the :mod:`imdb.IMDb` function:
+To use the IMDbPY package, import :mod:`imdb` and call the :mod:`imdb.IMDb`
+function:
 
 .. code-block:: python
 
    >>> import imdb
-   >>> imdb_access = imdb.IMDb()
+   >>> conn = imdb.IMDb()
 
 
-IMDbPY supports different ways of accessing the IMDb data:
-
-- Fetching data directly from the web server.
-
-- Getting the data from a SQL database that can be created from
-  the downloadable data sets provided by the IMDb.
-
-+------------------+-------------+----------------------+
-| access system    | aliases     | data source          |
-+==================+=============+======================+
-| (default) 'http' | 'web'       | imdb.com web server  |
-|                  |             |                      |
-|                  | 'html'      |                      |
-+------------------+-------------+----------------------+
-|            's3'  | 's3dataset' | downloadable dataset |
-|                  |             |                      |
-|                  |             | after Dec 2017       |
-+------------------+-------------+----------------------+
-|            'sql' | 'db'        | downloadable dataset |
-|                  |             |                      |
-|                  | 'database'  | before Dec 2017      |
-+------------------+-------------+----------------------+
-
-.. note::
-
-   Since release 3.4, the :file:`imdbpy.cfg` configuration file is available,
-   so that you can set a system-wide (or per-user) default. The file is
-   commented with indication of the location where it can be put,
-   and how to modify it.
-
-   If no :file:`imdbpy.cfg` file is found (or is not readable or
-   it can't be parsed), 'http' will be used the default.
-
-See the :ref:`s3` and :ref:`ptdf` documents for more information about
-SQL based access systems.
-
-Create an instance of the IMDb class, to access information from the web
-or a SQL database:
-
-.. code-block:: python
-
-    ia = imdb.IMDb()
+This will give you a connection through which you can access IMDb data.
+By default it will use the IMDb web server but there are other options.
+See the :ref:`access` document for more information.
 
 Return an instance of a Movie, Person, Company, or Character class.
 The objects have the basic information:

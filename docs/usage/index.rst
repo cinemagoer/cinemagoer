@@ -1,7 +1,7 @@
 Usage
 =====
 
-Here you can find information about how to use IMDbPY to write your own scripts
+Here you can find information about how to use IMDbPY in your own scripts
 or programs.
 
 .. warning::
@@ -25,5 +25,6 @@ or programs.
    adult
    info2xml
    l10n
+   access
    s3
    ptdf

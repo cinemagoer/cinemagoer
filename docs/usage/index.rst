@@ -71,14 +71,3 @@ SQL based access systems.
    l10n
    s3
    ptdf
-
-
-Other sources of information
-----------------------------
-
-Once the IMDbPY package is installed, you can read the docstrings for packages,
-modules, functions, classes, objects, methods using the pydoc program;
-e.g.: "pydoc imdb.IMDb" will show the documentation about the imdb.IMDb class.
-
-The code contains a lot of comments, try reading it, if you can understand
-my English!

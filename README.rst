@@ -5,6 +5,8 @@ and companies.
 :Homepage: https://imdbpy.sourceforge.io/
 :PyPI: https://pypi.python.org/pypi/imdbpy/
 :Repository: https://github.com/alberanid/imdbpy
+:Documentation: https://imdbpy.readthedocs.io/
+:Support: https://imdbpy.sourceforge.io/support.html
 
 .. admonition:: Revamp notice
    :class: note
@@ -138,13 +140,6 @@ Get top 250 and bottom 100 movies:
    >>> bottom100 = ia.get_bottom100_movies()
    >>> bottom100[0]
    <Movie id:4458206[http] title:_Code Name: K.O.Z. (2015)_>
-
-
-Getting help
-------------
-
-Refer to the web site https://imdbpy.sourceforge.io/ and
-subscribe to the mailing list: https://imdbpy.sourceforge.io/support.html
 
 
 Main objects and methods

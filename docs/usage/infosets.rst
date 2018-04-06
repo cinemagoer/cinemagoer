@@ -1,6 +1,51 @@
 Information sets
 ================
 
+Update a Movie, Person, Company, or Character instance with basic information,
+or any other specified info set:
+
+.. code-block:: python
+
+    ia.update(obj, info=infoset)
+
+Return all info sets available for a movie; similar methods are available
+for other objects:
+
+.. code-block:: python
+
+    ia.get_movie_infoset()
+
+Mapping between the fetched info sets and the keywords they provide;
+similar methods are available for other objects:
+
+.. code-block:: python
+
+    movie.infoset2keys
+
+
+Show all the information sets available for movies:
+
+.. code-block:: python
+
+   >>> ia.get_movie_infoset()
+   ['airing', 'akas', 'alternate versions', 'awards', 'connections',
+    'crazy credits', 'critic reviews', 'episodes', 'external reviews',
+    'external sites', 'faqs', 'full credits', 'goofs', 'keywords', 'locations',
+    'main', 'misc sites', 'news', 'official sites', 'parents guide',
+    'photo sites', 'plot', 'quotes', 'release dates', 'release info',
+    'reviews', 'sound clips', 'soundtrack', 'synopsis', 'taglines',
+    'technical', 'trivia', 'tv schedule', 'video clips', 'vote details']
+
+Update a movie with more information and show which keys were added:
+
+.. code-block:: python
+
+   >>> ia.update(matrix, ['vote details'])
+   >>> matrix.infoset2keys['vote details']
+   [['demographics', 'number of votes', 'arithmetic mean', 'median']]
+   >>> matrix.get('median')
+   9
+
 Since release 1.2, it's possible to retrieve almost every piece of information
 about a given movie or person. This can be a problem, because (at least for
 the 'http' data access system) it means that a lot of web pages must be fetched

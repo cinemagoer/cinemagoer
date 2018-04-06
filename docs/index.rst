@@ -3,9 +3,11 @@ IMDbPY
 
 .. include:: ../README.rst
 
+
 .. admonition:: Disclaimer
 
    .. include:: disclaimer.rst
+
 
 .. toctree::
    :maxdepth: 2
@@ -16,6 +18,7 @@ IMDbPY
    faqs
    contributors/index
    Changelog
+
 
 Indices and tables
 ==================

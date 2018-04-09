@@ -87,10 +87,6 @@ PEOPLE = {
     '0000210': 'julia roberts'              # IMDb index
 }
 
-COMPANIES = {
-    '0017902': 'pixar'
-}
-
 
 @fixture(scope='session')
 def url_opener():

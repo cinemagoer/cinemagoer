@@ -1,51 +1,30 @@
-from pytest import fixture
-
-from imdb.parser.http.topBottomParser import DOMHTMLTop250Parser
-
-
-@fixture(scope='module')
-def chart_top(url_opener, base_url):
-    """A function to retrieve the top movies page."""
-    def retrieve():
-        url = base_url + '/chart/top'
-        return url_opener.retrieve_unicode(url)
-    return retrieve
-
-
-parser = DOMHTMLTop250Parser()
-
-
-def test_chart_should_contain_250_movies(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
+def test_chart_should_contain_250_movies(ia):
+    data = ia.get_top250_movies()
     assert len(data) == 250
 
 
-def test_all_movies_should_have_rating_and_votes(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    for movie in dict(data).values():
+def test_all_movies_should_have_rating_and_votes(ia):
+    data = ia.get_top250_movies()
+    for movie in data:
         assert {'title', 'kind', 'year', 'rating', 'votes'}.issubset(set(movie.keys()))
 
 
-def test_ranks_should_proceed_in_order(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    ranks = [m['top 250 rank'] for m_id, m in data]
+def test_ranks_should_proceed_in_order(ia):
+    data = ia.get_top250_movies()
+    ranks = [m['top 250 rank'] for m in data]
     assert ranks == list(range(1, 251))
 
 
-def test_chart_should_contain_matrix(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    assert '0133093' in dict(data)
+def test_chart_should_contain_matrix(ia):
+    data = ia.get_top250_movies()
+    movieIDs = [m.movieID for m in data]
+    assert '0133093' in movieIDs
 
 
-def test_shawshank_should_be_top_movie(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    top_id, top_movie = data[0]
-    assert top_id == '0111161'
+def test_shawshank_should_be_top_movie(ia):
+    data = ia.get_top250_movies()
+    top_movie = data[0]
+    assert top_movie.movieID == '0111161'
     assert top_movie['title'] == 'The Shawshank Redemption'
     assert top_movie['year'] == 1994
     assert top_movie['rating'] > 9

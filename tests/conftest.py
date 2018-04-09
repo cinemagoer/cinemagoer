@@ -30,25 +30,6 @@ class CachedURLOpener(IMDbURLopener):
         return content
 
 
-retrieve_unicode_orig = IMDbURLopener.retrieve_unicode
-
-
-def retrieve_unicode_cached(self, url, size=-1):
-    key = md5(url.encode('utf-8')).hexdigest()
-    cache_file = os.path.join(cache_dir, key)
-    if os.path.exists(cache_file):
-        with open(cache_file, 'r') as f:
-            content = f.read()
-    else:
-        content = retrieve_unicode_orig(self, url, size=size)
-        with open(cache_file, 'w') as f:
-            f.write(content)
-    return content
-
-
-IMDbURLopener.retrieve_unicode = retrieve_unicode_cached
-
-
 BASE_URL = 'http://www.imdb.com'
 
 MOVIES = {
@@ -79,24 +60,33 @@ MOVIES = {
     '0076786': 'suspiria'                   # multiple country runtimes
 }
 
-PEOPLE = {
-    '0000001': 'fred astaire',              # name with dates
-    '0330139': 'deni gordon',               # no headshot
-    '0617588': 'georges melies',            # no height
-    '0000206': 'keanu reeves',              # no IMDb index
-    '0000210': 'julia roberts'              # IMDb index
-}
-
 
 @fixture(scope='session')
 def url_opener():
     return CachedURLOpener()
 
 
+retrieve_unicode_orig = IMDbURLopener.retrieve_unicode
+
+def retrieve_unicode_cached(self, url, size=-1):
+    key = md5(url.encode('utf-8')).hexdigest()
+    cache_file = os.path.join(cache_dir, key)
+    if os.path.exists(cache_file):
+        with open(cache_file, 'r') as f:
+            content = f.read()
+    else:
+        content = retrieve_unicode_orig(self, url, size=size)
+        with open(cache_file, 'w') as f:
+            f.write(content)
+    return content
+
+
 @fixture
 def ia():
     """Access to IMDb data."""
-    return IMDb()
+    IMDbURLopener.retrieve_unicode = retrieve_unicode_cached
+    yield IMDb()
+    IMDbURLopener.retrieve_unicode = retrieve_unicode_orig
 
 
 @fixture(scope='session')
@@ -110,13 +100,6 @@ def movies(base_url):
     """Base addresses of all test movies."""
     return {v: '%(base)s/title/tt%(key)s' % {'base': base_url, 'key': k}
             for k, v in MOVIES.items()}
-
-
-@fixture(scope='session')
-def people(base_url):
-    """Base addresses of all test people."""
-    return {v: '%(base)s/name/nm%(key)s' % {'base': base_url, 'key': k}
-            for k, v in PEOPLE.items()}
 
 
 @fixture(scope='session')

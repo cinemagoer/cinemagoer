@@ -40,7 +40,7 @@ def retrieve_unicode_cached(self, url, size=-1):
         with open(cache_file, 'r') as f:
             content = f.read()
     else:
-        content = retrieve_unicode_orig(url, size=size)
+        content = retrieve_unicode_orig(self, url, size=size)
         with open(cache_file, 'w') as f:
             f.write(content)
     return content

@@ -4,6 +4,7 @@ import logging
 import os
 from hashlib import md5
 
+from imdb import IMDb
 from imdb.parser.http import IMDbURLopener
 
 
@@ -27,6 +28,25 @@ class CachedURLOpener(IMDbURLopener):
             with open(cache_file, 'w') as f:
                 f.write(content)
         return content
+
+
+retrieve_unicode_orig = IMDbURLopener.retrieve_unicode
+
+
+def retrieve_unicode_cached(self, url, size=-1):
+    key = md5(url.encode('utf-8')).hexdigest()
+    cache_file = os.path.join(cache_dir, key)
+    if os.path.exists(cache_file):
+        with open(cache_file, 'r') as f:
+            content = f.read()
+    else:
+        content = retrieve_unicode_orig(url, size=size)
+        with open(cache_file, 'w') as f:
+            f.write(content)
+    return content
+
+
+IMDbURLopener.retrieve_unicode = retrieve_unicode_cached
 
 
 BASE_URL = 'http://www.imdb.com'
@@ -75,6 +95,12 @@ COMPANIES = {
 @fixture(scope='session')
 def url_opener():
     return CachedURLOpener()
+
+
+@fixture
+def ia():
+    """Access to IMDb data."""
+    return IMDb()
 
 
 @fixture(scope='session')

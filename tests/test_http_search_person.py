@@ -9,12 +9,12 @@ def test_search_person_limited_should_list_requested_number_of_people(ia):
 
 
 def test_search_person_unlimited_should_list_correct_number_of_people(ia):
-    people = ia.search_person('engelbart', results=-1)
+    people = ia.search_person('engelbart', results=500)
     assert 120 <= len(people) <= 150
 
 
 def test_search_person_if_too_many_should_list_upper_limit_of_people(ia):
-    people = ia.search_person('john', results=-1)
+    people = ia.search_person('john', results=500)
     assert len(people) == 200
 
 

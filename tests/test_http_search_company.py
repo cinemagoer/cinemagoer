@@ -1,22 +1,13 @@
-from pytest import fixture, mark
-
-from imdb.parser.http.searchCompanyParser import DOMHTMLSearchCompanyParser
-
-
-@fixture(scope='module')
-def search_company(url_opener, search):
-    """A function to retrieve the search result for a company."""
-    def retrieve(term):
-        url = search + '?s=co&q=' + term.replace(' ', '+')
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_default_search_should_return_default_number_of_companies(ia):
+    data = ia.search_company('pixar')
+    assert len(data) == 20
 
 
-parser = DOMHTMLSearchCompanyParser()
+def test_limited_search_should_return_given_number_of_companies(ia):
+    data = ia.search_company('pixar', results=7)
+    assert len(data) == 7
 
 
-@mark.fragile
-def test_found_many_result_should_contain_correct_number_of_companies(search_company):
-    page = search_company('pixar')
-    data = parser.parse(page)['data']
+def test_unlimited_search_should_contain_correct_number_of_companies(ia):
+    data = ia.search_company('pixar', results=-1)
     assert len(data) >= 38

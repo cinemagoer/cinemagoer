@@ -1,35 +1,24 @@
-from pytest import fixture, mark
-
-from imdb.parser.http.searchKeywordParser import DOMHTMLSearchMovieKeywordParser
+from pytest import mark
 
 
-@fixture(scope='module')
-def search_movie_keyword(url_opener, base_url):
-    """A function to retrieve the search result for movies with a keyword."""
-    def retrieve(term):
-        url = base_url + '/search/keyword?keywords=' + term.replace(' ', '+')
-        return url_opener.retrieve_unicode(url)
-    return retrieve
-
-
-parser = DOMHTMLSearchMovieKeywordParser()
-
-
+@mark.skip('no method for searching movie by keyword')
 @mark.fragile
-def test_found_many_result_should_contain_correct_number_of_movies(search_movie_keyword):
-    page = search_movie_keyword('colander')
-    data = parser.parse(page)['data']
+def test_found_many_result_should_contain_correct_number_of_movies(ia):
+    data = ia.search_movie_by_keyword('colander')
     assert len(data) == 4
 
 
-def test_found_too_many_result_should_contain_50_movies(search_movie_keyword):
-    page = search_movie_keyword('computer')
-    data = parser.parse(page)['data']
+@mark.skip('no method for searching movie by keyword')
+def test_found_too_many_result_should_contain_50_movies(ia):
+    data = ia.search_movie_by_keyword('computer')
     assert len(data) == 50
 
 
-def test_found_many_result_should_contain_correct_movie(search_movie_keyword):
-    page = search_movie_keyword('colander')
-    data = parser.parse(page)['data']
-    movies = dict(data)
-    assert movies['0382932'] == {'title': 'Ratatouille', 'kind': 'movie', 'year': 2007}
+@mark.skip('no method for searching movie by keyword')
+def test_found_many_result_should_contain_correct_movie(ia):
+    data = ia.search_movie_by_keyword('colander')
+    movie = [m for m in data if m.movieID == '0382932']
+    assert len(movie) == 1
+    assert movie[0]['title'] == 'Ratatouille'
+    assert movie[0]['kind'] == 'movie'
+    assert movie[0]['year'] == 2007

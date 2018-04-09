@@ -42,55 +42,57 @@ class DOMHTMLTop250Parser(DOMParserBase):
         tparser = DOMHTMLTop250Parser()
         result = tparser.parse(top250_html_string)
     """
+    label = 'top 250'
     ranktext = 'top 250 rank'
 
-    rules = [
-        Rule(
-            key='chart',
-            extractor=Rules(
-                foreach='//div[@id="main"]//div[1]//div//table//tbody//tr',
-                rules=[
-                    Rule(
-                        key='rank',
-                        extractor=Path('./td[2]/text()')
-                    ),
-                    Rule(
-                        key='rating',
-                        extractor=Path('./td[3]//strong//text()')
-                    ),
-                    Rule(
-                        key='title',
-                        extractor=Path('./td[2]//a//text()')
-                    ),
-                    Rule(
-                        key='year',
-                        extractor=Path('./td[2]//span//text()')
-                    ),
-                    Rule(
-                        key='movieID',
-                        extractor=Path('./td[2]//a/@href')
-                    ),
-                    Rule(
-                        key='votes',
-                        extractor=Path('./td[3]//strong/@title')
-                    )
-                ]
+    def _init(self):
+        self.rules = [
+            Rule(
+                key=self.label,
+                extractor=Rules(
+                    foreach='//div[@id="main"]//div[1]//div//table//tbody//tr',
+                    rules=[
+                        Rule(
+                            key=self.ranktext,
+                            extractor=Path('./td[2]/text()')
+                        ),
+                        Rule(
+                            key='rating',
+                            extractor=Path('./td[3]//strong//text()')
+                        ),
+                        Rule(
+                            key='title',
+                            extractor=Path('./td[2]//a//text()')
+                        ),
+                        Rule(
+                            key='year',
+                            extractor=Path('./td[2]//span//text()')
+                        ),
+                        Rule(
+                            key='movieID',
+                            extractor=Path('./td[2]//a/@href')
+                        ),
+                        Rule(
+                            key='votes',
+                            extractor=Path('./td[3]//strong/@title')
+                        )
+                    ]
+                )
             )
-        )
-    ]
+        ]
 
     def postprocess_data(self, data):
-        if (not data) or ('chart' not in data):
+        if not data or self.label not in data:
             return []
         mlist = []
-        data = data['chart']
+        data = data[self.label]
         # Avoid duplicates.  A real fix, using XPath, is auspicabile.
         # XXX: probably this is no more needed.
         seenIDs = []
         for d in data:
             if 'movieID' not in d:
                 continue
-            if 'rank' not in d:
+            if self.ranktext not in d:
                 continue
             if 'title' not in d:
                 continue
@@ -103,7 +105,7 @@ class DOMHTMLTop250Parser(DOMParserBase):
             seenIDs.append(theID)
             minfo = analyze_title(d['title'] + ' ' + d['year'])
             try:
-                minfo[self.ranktext] = int(d['rank'].replace('.', ''))
+                minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
             except ValueError:
                 pass
             if 'votes' in d:
@@ -132,6 +134,7 @@ class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):
         tparser = DOMHTMLBottom100Parser()
         result = tparser.parse(bottom100_html_string)
     """
+    label = 'bottom 100'
     ranktext = 'bottom 100 rank'
 
 

@@ -13,7 +13,7 @@ def test_bottom_chart_all_movies_should_have_rating_and_votes(ia):
 
 
 def test_bottom_chart_ranks_should_proceed_in_order(ia):
-    data = ia.get_top250_movies()
+    data = ia.get_bottom100_movies()
     ranks = [m['bottom 100 rank'] for m in data]
     assert ranks == list(range(1, 101))
 

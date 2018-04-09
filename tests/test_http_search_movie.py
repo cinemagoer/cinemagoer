@@ -56,5 +56,5 @@ def test_search_movie_found_movie_should_have_imdb_index(ia):
 
 
 def test_search_movie_if_none_should_be_empty(ia):
-    movies = ia.search_movie('%e3%82%a2', results=500)
+    movies = ia.search_movie('%e4%82%a2', results=500)
     assert movies == []

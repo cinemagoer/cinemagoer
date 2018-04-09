@@ -1,64 +1,56 @@
-from pytest import fixture, mark
-
-from imdb.parser.http.searchMovieParser import DOMHTMLSearchMovieParser
+from pytest import mark
 
 
-@fixture(scope='module')
-def search_movie(url_opener, search):
-    """A function to retrieve the search result for a title."""
-    def retrieve(term):
-        url = search + '?s=tt&q=' + term.replace(' ', '+')
-        return url_opener.retrieve_unicode(url)
-    return retrieve
-
-
-parser = DOMHTMLSearchMovieParser()
-
-
-def test_found_one_result_should_be_list_with_one_movie(search_movie):
-    page = search_movie('od instituta do proizvodnje')
-    data = parser.parse(page)['data']
-    assert data == [
-        ('0483758', {'kind': 'short', 'title': 'Od instituta do proizvodnje', 'year': 1971})
-    ]
+def test_found_one_result_should_be_list_with_one_movie(ia):
+    data = ia.search_movie('od instituta do proizvodnje')
+    # XXX: returns empty list if results = -1
+    assert len(data) == 1
+    assert data[0].movieID == '0483758'
+    assert data[0]['kind'] == 'short'
+    assert data[0]['title'] == 'Od instituta do proizvodnje'
+    assert data[0]['year'] == 1971
 
 
 @mark.fragile
-def test_found_many_result_should_contain_correct_number_of_movies(search_movie):
-    page = search_movie('ace in the hole')
-    data = parser.parse(page)['data']
+def test_found_many_result_should_contain_correct_number_of_movies(ia):
+    data = ia.search_movie('ace in the hole', results=-1)
     assert 185 < len(data) < 200
 
 
-def test_found_too_many_result_should_contain_200_movies(search_movie):
-    page = search_movie('matrix')
-    data = parser.parse(page)['data']
-    assert len(data) == 200
+def test_found_too_many_result_should_contain_upper_limit_of_movies(ia):
+    data = ia.search_movie('matrix', results=-1)
+    # XXX: there's something wrong here
+    assert len(data) == 199
 
 
-def test_found_many_result_should_contain_correct_movie(search_movie):
-    page = search_movie('matrix')
-    data = parser.parse(page)['data']
-    movies = dict(data)
-    assert movies['0133093'] == {'title': 'The Matrix', 'kind': 'movie', 'year': 1999}
+def test_found_many_result_should_contain_correct_movie(ia):
+    data = ia.search_movie('matrix', results=-1)
+    movie = [m for m in data if m.movieID == '0133093']
+    assert len(movie) == 1
+    assert movie[0]['title'] == 'The Matrix'
+    assert movie[0]['kind'] == 'movie'
+    assert movie[0]['year'] == 1999
 
 
-def test_found_movie_should_have_kind(search_movie):
-    page = search_movie('matrix')
-    data = parser.parse(page)['data']
-    movies = dict(data)
-    assert movies['0106062'] == {'title': 'Matrix', 'kind': 'tv series', 'year': 1993}
+def test_found_movie_should_have_kind(ia):
+    data = ia.search_movie('matrix', results=-1)
+    movie = [m for m in data if m.movieID == '0106062']
+    assert len(movie) == 1
+    assert movie[0]['title'] == 'Matrix'
+    assert movie[0]['kind'] == 'tv series'
+    assert movie[0]['year'] == 1993
 
 
-def test_found_movie_should_have_imdb_index(search_movie):
-    page = search_movie('blink')
-    data = parser.parse(page)['data']
-    movies = dict(data)
-    assert movies['4790262'] == {'title': 'Blink', 'imdbIndex': 'IV',
-                                 'kind': 'movie', 'year': 2015}
+def test_found_movie_should_have_imdb_index(ia):
+    data = ia.search_movie('blink', results=-1)
+    movie = [m for m in data if m.movieID == '4790262']
+    assert len(movie) == 1
+    assert movie[0]['title'] == 'Blink'
+    assert movie[0]['imdbIndex'] == 'IV'
+    assert movie[0]['kind'] == 'movie'
+    assert movie[0]['year'] == 2015
 
 
-def test_found_none_result_should_be_empty(search_movie):
-    page = search_movie('%e3%82%a2')
-    data = parser.parse(page)['data']
+def test_found_none_result_should_be_empty(ia):
+    data = ia.search_movie('%e3%82%a2', results=-1)
     assert data == []

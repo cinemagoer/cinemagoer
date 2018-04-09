@@ -1,53 +1,33 @@
-from pytest import fixture
-
 import re
 
-from imdb.parser.http.personParser import DOMHTMLMaindetailsParser
 
-
-@fixture(scope='module')
-def person_main_details(url_opener, people):
-    """A function to retrieve the main details page of a test person."""
-    def retrieve(person_key):
-        url = people[person_key]
-        return url_opener.retrieve_unicode(url)
-    return retrieve
-
-
-parser = DOMHTMLMaindetailsParser()
-
-
-def test_headshot_should_be_an_image_link(person_main_details):
-    page = person_main_details('keanu reeves')
-    data = parser.parse(page)['data']
+def test_headshot_should_be_an_image_link(ia):
+    data = ia.get_person('0000206', info=['main'])     # Keanu Reeves
     assert re.match(r'^https?://.*\.jpg$', data['headshot'])
 
 
-def test_headshot_none_should_be_excluded(person_main_details):
-    page = person_main_details('deni gordon')
-    data = parser.parse(page)['data']
+def test_headshot_none_should_be_excluded(ia):
+    data = ia.get_person('0330139', info=['main'])     # Deni Gordon
     assert 'headshot' not in data
 
 
-def test_name_should_be_canonical(person_main_details):
-    page = person_main_details('keanu reeves')
-    data = parser.parse(page)['data']
-    assert data['name'] == 'Reeves, Keanu'
+def test_name_should_not_be_canonical(ia):
+    data = ia.get_person('0000206', info=['main'])     # Keanu Reeves
+    # XXX: inconsistent with bio page parser
+    assert data['name'] == 'Keanu Reeves'
 
 
-def test_name_should_not_have_year(person_main_details):
-    page = person_main_details('fred astaire')
-    data = parser.parse(page)['data']
-    assert data['name'] == 'Astaire, Fred'
+def test_name_should_not_have_year(ia):
+    data = ia.get_person('0000001', info=['main'])     # Fred Astaire
+    # XXX: inconsistent with bio page parser
+    assert data['name'] == 'Fred Astaire'
 
 
-def test_imdb_index_should_be_a_roman_number(person_main_details):
-    page = person_main_details('julia roberts')
-    data = parser.parse(page)['data']
+def test_imdb_index_should_be_a_roman_number(ia):
+    data = ia.get_person('0000210', info=['main'])     # Julia Roberts
     assert data['imdbIndex'] == 'I'
 
 
-def test_imdb_index_none_should_be_excluded(person_main_details):
-    page = person_main_details('keanu reeves')
-    data = parser.parse(page)['data']
+def test_imdb_index_none_should_be_excluded(ia):
+    data = ia.get_person('0000206', info=['main'])     # Keanu Reeves
     assert 'imdbIndex' not in data

@@ -2,7 +2,6 @@ from pytest import mark
 
 
 @mark.skip('no method for searching movie by keyword')
-@mark.fragile
 def test_found_many_result_should_contain_correct_number_of_movies(ia):
     data = ia.search_movie_by_keyword('colander')
     assert len(data) == 4

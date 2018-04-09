@@ -120,13 +120,6 @@ def people(base_url):
 
 
 @fixture(scope='session')
-def companies(base_url):
-    """Base addresses of all test companies."""
-    return {v: '%(base)s/company/co%(key)s' % {'base': base_url, 'key': k}
-            for k, v in COMPANIES.items()}
-
-
-@fixture(scope='session')
 def search(base_url):
     """Base address for search pages."""
     return '%(base)s/find' % {'base': base_url}

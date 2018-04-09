@@ -95,7 +95,10 @@ class ConfigParserWithCase(configparser.ConfigParser):
 
         *defaults* -- defaults values.
         *confFile* -- the file (or list of files) to parse."""
-        super(configparser.ConfigParser, self).__init__(defaults=defaults)
+        if PY2:
+            configparser.ConfigParser.__init__(self, defaults=defaults)
+        else:
+            super(configparser.ConfigParser, self).__init__(defaults=defaults)
         if confFile is None:
             dotFileName = '.' + confFileName
             # Current and home directory.

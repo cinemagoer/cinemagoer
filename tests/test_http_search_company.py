@@ -1,13 +1,13 @@
-def test_default_search_should_return_default_number_of_companies(ia):
-    data = ia.search_company('pixar')
-    assert len(data) == 20
+def test_search_company_should_list_20_companies_by_default(ia):
+    companies = ia.search_company('pixar')
+    assert len(companies) == 20
 
 
-def test_limited_search_should_return_given_number_of_companies(ia):
-    data = ia.search_company('pixar', results=7)
-    assert len(data) == 7
+def test_search_company_limited_should_list_requested_number_of_companies(ia):
+    companies = ia.search_company('pixar', results=7)
+    assert len(companies) == 7
 
 
-def test_unlimited_search_should_contain_correct_number_of_companies(ia):
-    data = ia.search_company('pixar', results=-1)
-    assert len(data) >= 38
+def test_search_company_unlimited_should_list_correct_number_of_companies(ia):
+    companies = ia.search_company('pixar', results=-1)
+    assert len(companies) >= 38

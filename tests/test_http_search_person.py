@@ -2,6 +2,6 @@ from pytest import mark
 
 
 @mark.fragile
-def test_found_many_result_should_contain_correct_number_of_people(ia):
-    data = ia.search_person('keanu reeves')
-    assert len(data) == 4
+def test_search_person_unlimited_should_list_contain_correct_number_of_people(ia):
+    people = ia.search_person('engelbart', results=-1)
+    assert 120 <= len(people) <= 150

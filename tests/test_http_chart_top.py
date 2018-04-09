@@ -1,5 +1,3 @@
-from pytest import mark
-
 from imdb.Movie import Movie
 
 
@@ -41,7 +39,6 @@ def test_top_chart_should_contain_matrix(ia):
     assert '0133093' in movieIDs
 
 
-@mark.fragile
 def test_top_chart_shawshank_should_be_top_movie(ia):
     movie = ia.get_top250_movies()[0]
     assert movie.movieID == '0111161'

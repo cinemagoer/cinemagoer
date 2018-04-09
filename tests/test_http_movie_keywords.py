@@ -1,7 +1,3 @@
-from pytest import mark
-
-
-@mark.fragile
 def test_movie_keywords_should_be_a_list_of_keywords(ia):
     movie = ia.get_movie('0133093', info=['keywords'])  # Matrix
     keywords = movie.get('keywords', [])

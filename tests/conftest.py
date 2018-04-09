@@ -68,6 +68,7 @@ def url_opener():
 
 retrieve_unicode_orig = IMDbURLopener.retrieve_unicode
 
+
 def retrieve_unicode_cached(self, url, size=-1):
     key = md5(url.encode('utf-8')).hexdigest()
     cache_file = os.path.join(cache_dir, key)

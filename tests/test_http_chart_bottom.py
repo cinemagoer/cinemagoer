@@ -1,5 +1,3 @@
-from pytest import mark
-
 from imdb.Movie import Movie
 
 
@@ -41,7 +39,6 @@ def test_bottom_chart_should_contain_manos(ia):
     assert '0060666' in movieIDs
 
 
-@mark.fragile
 def test_bottom_chart_koz_should_be_bottom_movie(ia):
     movie = ia.get_bottom100_movies()[0]
     assert movie.movieID == '4458206'

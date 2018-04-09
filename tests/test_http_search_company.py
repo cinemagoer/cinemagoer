@@ -1,24 +1,23 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from pytest import fixture, mark
-
-from imdb.parser.http.searchCompanyParser import DOMHTMLSearchCompanyParser
+def test_search_company_should_list_default_number_of_companies(ia):
+    companies = ia.search_company('pixar')
+    assert len(companies) == 20
 
 
-@fixture(scope='module')
-def search_company(url_opener, search):
-    """A function to retrieve the search result for a company."""
-    def retrieve(term):
-        url = search + '?s=co&q=' + term.replace(' ', '+')
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_search_company_limited_should_list_requested_number_of_companies(ia):
+    companies = ia.search_company('pixar', results=7)
+    assert len(companies) == 7
 
 
-parser = DOMHTMLSearchCompanyParser()
+def test_search_company_unlimited_should_list_correct_number_of_companies(ia):
+    companies = ia.search_company('pixar', results=500)
+    assert 35 <= len(companies) <= 50
 
 
-@mark.fragile
-def test_found_many_result_should_contain_correct_number_of_companies(search_company):
-    page = search_company('pixar')
-    data = parser.parse(page)['data']
-    assert len(data) >= 38
+def test_search_company_too_many_should_list_upper_limit_of_companies(ia):
+    companies = ia.search_company('pictures', results=500)
+    assert len(companies) == 200
+
+
+def test_search_company_if_none_result_should_be_empty(ia):
+    companies = ia.search_company('%e3%82%a2')
+    assert companies == []

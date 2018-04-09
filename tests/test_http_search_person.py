@@ -1,24 +1,23 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from pytest import fixture, mark
-
-from imdb.parser.http.searchPersonParser import DOMHTMLSearchPersonParser
+def test_search_person_should_list_default_number_of_people(ia):
+    people = ia.search_person('julia')
+    assert len(people) == 20
 
 
-@fixture(scope='module')
-def search_person(url_opener, search):
-    """A function to retrieve the search result for a person."""
-    def retrieve(term):
-        url = search + '?s=nm&q=' + term.replace(' ', '+')
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_search_person_limited_should_list_requested_number_of_people(ia):
+    people = ia.search_person('julia', results=11)
+    assert len(people) == 11
 
 
-parser = DOMHTMLSearchPersonParser()
+def test_search_person_unlimited_should_list_correct_number_of_people(ia):
+    people = ia.search_person('engelbart', results=500)
+    assert 120 <= len(people) <= 150
 
 
-@mark.fragile
-def test_found_many_result_should_contain_correct_number_of_people(search_person):
-    page = search_person('keanu reeves')
-    data = parser.parse(page)['data']
-    assert len(data) == 4
+def test_search_person_if_too_many_should_list_upper_limit_of_people(ia):
+    people = ia.search_person('john', results=500)
+    assert len(people) == 200
+
+
+def test_search_person_if_none_result_should_be_empty(ia):
+    people = ia.search_person('%e3%82%a2')
+    assert people == []

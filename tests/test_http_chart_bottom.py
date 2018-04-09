@@ -9,7 +9,7 @@ def test_all_movies_should_have_rating_and_votes(ia):
         assert {'title', 'kind', 'year', 'rating', 'votes'}.issubset(set(movie.keys()))
 
 
-def test_chart_should_contain_correct_movie(ia):
+def test_chart_should_contain_manos(ia):
     data = ia.get_bottom100_movies()
     movieIDs = [m.movieID for m in data]
-    assert '0060666' in movieIDs            # Manos
+    assert '0060666' in movieIDs

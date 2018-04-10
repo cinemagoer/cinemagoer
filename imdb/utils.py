@@ -1127,7 +1127,7 @@ class _Container(object):
     cmpFunct = None
 
     # Regular expression used to build the 'full-size (headshot|cover url)'.
-    _re_fullsizeURL = re.compile(r'\._V1\._SX(\d+)_SY(\d+)_')
+    _re_fullsizeURL = re.compile(r'(?<=@).*?$')
 
     def __init__(self, myID=None, data=None, notes='',
                  currentRole='', roleID=None, roleIsPerson=False,

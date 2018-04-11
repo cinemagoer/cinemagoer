@@ -22,7 +22,7 @@ the IMDb web pages, or a SQL database.
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.5dev20180401'
+__version__ = VERSION = '6.5dev20180410'
 
 VERSION_NOTICE = """This version of IMDbPY requires Python 3.
 For a version compatible with Python 2.7, see the imdbpy-legacy branch:

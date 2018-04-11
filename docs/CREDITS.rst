@@ -18,6 +18,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/.
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* Adrien C. and Markus-at-GitHub for improvements to full-size covers
+
 * Tim Belcher for a report about forgotten debug code.
 
 * Paul Jensen for many bug reports about tv series.

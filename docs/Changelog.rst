@@ -10,6 +10,8 @@ Changelog
   [http]
 
   - fix title parser for in-production movies
+  - parsers are based on piculet
+  - improve collection of full-size cover images
 
 
 * What's new in release 6.4 "Electric Dreams" (14 Mar 2018)

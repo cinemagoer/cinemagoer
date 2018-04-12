@@ -1,6 +1,19 @@
 Development
 ===========
 
+If you intend to do development on the IMDbPY package, it's recommended
+that you create a virtual environment for it. For example::
+
+   python -m venv ~/.virtualenvs/imdbpy
+   . ~/.virtualenvs/imdbpy/bin/activate
+
+In the virtual environment, install IMDbPY in editable mode and include
+the extra packages. In the top level directory of the project (where
+the :file:`setup.py` file resides), run::
+
+   pip install -e .[dev,doc,test]
+
+
 .. packages
   imdb (package)
         Contains the IMDb function, the IMDbBase class and imports
@@ -61,16 +74,19 @@ Development
   The helpers module contains functions and other goodies not directly used
   by the IMDbPY package, but that can be useful to develop IMDbPY-based programs.
 
-I wanted to stay independent from the source of the data for a given
-movie/person/character/company, and so the imdb.IMDb function returns
-an instance of a class that provides specific methods to access a given
-data source (web server, SQL database, etc.)
 
-Unfortunately that means that the movieID in the Movie class, the personID
-in the Person class and the characterID in the Character class are dependent
-on the data access system used. So, when a Movie, a Person or a Character
-object is instantiated, the accessSystem instance variable is set to a string
-used to identify the used data access system.
+I wanted to stay independent from the source of the data for a given
+movie/person/character/company, so the :func:`imdb.IMDb` function returns
+an instance of a class that provides specific methods to access a given
+data source (web server, SQL database, etc.).
+
+Unfortunately this means that the ``movieID``
+in the :class:`Movie <imdb.Movie.Movie>` class, the ``personID``
+in the :class:`Person <imdb.Person.Person>` class, and the ``characterID``
+in the :class:`Character <imdb.Character.Character>` class depend on
+the data access system being used. So, when a movie, person, or character
+object is instantiated, the ``accessSystem`` instance variable is set
+to a string used to identify the used data access system.
 
 
 .. toctree::

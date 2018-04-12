@@ -13,7 +13,7 @@ or programs.
    :maxdepth: 2
    :caption: Contents:
 
-   tutorial
+   quickstart
    query
    movie
    person

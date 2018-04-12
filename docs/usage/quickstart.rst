@@ -1,5 +1,5 @@
-Tutorial
-========
+Quick Start
+===========
 
 The first thing to do is to import :mod:`imdb` and call the :mod:`imdb.IMDb`
 function to get an access object through which IMDb data can be retrieved:

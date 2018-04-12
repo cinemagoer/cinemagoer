@@ -94,9 +94,6 @@ and retrieving :class:`Company <imdb.Company.Company>` data:
    >>> pixar['name']
    'Pixar Animation Studios'
 
-Keywords
---------
-
 You can search for keywords similar to the one provided:
 
 .. code-block:: python
@@ -116,9 +113,6 @@ And fetch movies that match a given keyword:
    >>> movies[0]
    <Movie id:1677720[http] title:_Ready Player One (2018)_>
 
-Top / bottom charts
--------------------
-
 IMDbPY also supports getting the top 250 and bottom 100 movies:
 
 .. code-block:: python
@@ -129,61 +123,3 @@ IMDbPY also supports getting the top 250 and bottom 100 movies:
    >>> bottom = ia.get_bottom100_movies()
    >>> bottom[0]
    <Movie id:4458206[http] title:_Code Name: K.O.Z. (2015)_>
-
-Character associated to a person who starred in a movie, and its notes:
-
-.. code-block:: python
-
-    person_in_cast = movie['cast'][0]
-    notes = person_in_cast.notes
-    character = person_in_cast.currentRole
-
-Check whether a person worked in a given movie or not:
-
-.. code-block:: python
-
-    person in movie
-    movie in person
-
-
-Get 5 movies tagged with a keyword:
-
-.. code-block:: python
-
-   >>> dystopia = ia.get_keyword('dystopia', results=5)
-   >>> dystopia
-   [<Movie id:1677720[http] title:_Ready Player One (2018)_>,
-    <Movie id:2085059[http] title:_Black Mirror (2011–) (None)_>,
-    <Movie id:5834204[http] title:_The Handmaid's Tale (2017–) (None)_>,
-    <Movie id:1663662[http] title:_Pacific Rim (2013)_>,
-    <Movie id:1856101[http] title:_Blade Runner 2049 (2017)_>]
-
-Get top 250 and bottom 100 movies:
-
-.. code-block:: python
-
-   >>> top250 = ia.get_top250_movies()
-   >>> top250[0]
-   <Movie id:0111161[http] title:_The Shawshank Redemption (1994)_>
-   >>> bottom100 = ia.get_bottom100_movies()
-   >>> bottom100[0]
-   <Movie id:4458206[http] title:_Code Name: K.O.Z. (2015)_>
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   query
-   movie
-   person
-   character
-   company
-   role
-   infosets
-   series
-   adult
-   info2xml
-   l10n
-   s3
-   ptdf

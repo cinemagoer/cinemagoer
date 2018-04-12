@@ -1,4 +1,4 @@
-Quick Start
+Quick start
 ===========
 
 The first thing to do is to import :mod:`imdb` and call the :mod:`imdb.IMDb`

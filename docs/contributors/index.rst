@@ -12,7 +12,7 @@ Davide Alberani <da --> erlug.linux.it>
   Main author and project leader.
 
 
-H. Turgut Uyar <uyar --> tekir.org>
+\H. Turgut Uyar <uyar --> tekir.org>
 
   The whole "http" data access system (using a DOM and XPath-based
   approach) is based on his work. The imdbpykit interface was mostly written

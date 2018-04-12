@@ -32,12 +32,7 @@ def retrieve_unicode_cached(self, url, size=-1):
     return content
 
 
-s3_cfg = os.path.join(os.path.dirname(__file__), 's3.cfg')
-try:
-    with open(s3_cfg) as f:
-        s3_uri = f.read()
-except FileNotFoundError:
-    s3_uri = None
+s3_uri = os.getenv('IMDBPY_S3_URI')
 
 
 @fixture

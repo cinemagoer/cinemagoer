@@ -14,4 +14,3 @@ dist/
 .tox
 .coverage
 prof
-tests/s3.cfg

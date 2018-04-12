@@ -10,12 +10,13 @@ function to get an access object through which IMDb data can be retrieved:
    >>> ia = imdb.IMDb()
 
 By default this will fetch the data from the IMDb web server but there are
-other options. See the :ref:`access` document for more information.
+other options. See the :ref:`access systems <access>` document
+for more information.
 
-On the access object, you can use the
-:meth:`search_movie <imdb.IMDbBase.search_movie>` method to search for movies
-with a given (or similar) title. For example, to search for movies
-with titles like "matrix":
+On the access object, you can use
+the :meth:`search_movie <imdb.IMDbBase.search_movie>` method to search
+for movies with a given (or similar) title. For example, to search
+for movies with titles like "matrix":
 
 .. code-block:: python
 
@@ -23,9 +24,9 @@ with titles like "matrix":
    >>> movies[0]
    <Movie id:0133093[http] title:_The Matrix (1999)_>
 
-As the example indicates, the result is a list of :class:`Movie <imdb.Movie>`
-objects. These behave like dictionaries, i.e. they can be queried by giving
-the key of the data you want to obtain:
+As the example indicates, the result is a list of
+:class:`Movie <imdb.Movie.Movie>` objects. These behave like dictionaries,
+i.e. they can be queried by giving the key of the data you want to obtain:
 
 .. code-block:: python
 
@@ -57,7 +58,7 @@ For example, the movie "The Untouchables" by Brian De Palma has the id
 
 Similarly, the :meth:`search_person <imdb.IMDbBase.search_person>` and
 :meth:`get_person <imdb.IMDbBase.get_person>` methods can be used for searching
-and retrieving :class:`Person <imdb.Person>` data:
+and retrieving :class:`Person <imdb.Person.Person>` data:
 
 .. code-block:: python
 
@@ -77,7 +78,7 @@ and retrieving :class:`Person <imdb.Person>` data:
 
 And :meth:`search_company <imdb.IMDbBase.search_company>` and
 :meth:`get_company <imdb.IMDbBase.get_company>` methods for searching
-and retrieving :class:`Company <imdb.Company>` data:
+and retrieving :class:`Company <imdb.Company.Company>` data:
 
 .. code-block:: python
 

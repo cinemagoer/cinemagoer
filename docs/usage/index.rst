@@ -14,13 +14,13 @@ or programs.
    :caption: Contents:
 
    quickstart
+   infosets
    query
    movie
    person
    character
    company
    role
-   infosets
    series
    adult
    info2xml

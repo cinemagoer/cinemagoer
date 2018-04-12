@@ -94,20 +94,41 @@ and retrieving :class:`Company <imdb.Company.Company>` data:
    >>> pixar['name']
    'Pixar Animation Studios'
 
-Search for keywords similar to the one provided, and fetch movies matching
-a given keyword:
+Keywords
+--------
+
+You can search for keywords similar to the one provided:
 
 .. code-block:: python
 
-    keywords = ia.search_keyword(keyword)
-    movies = ia.get_keyword(keyword)
+   >>> keywords = ia.get_keyword('dystopia')
+   >>> keywords
+   ['dystopia', 'dystopian-future', 'dystopian-society', 'dystopian',
+    'dystopian-fantasy', 'corporate-dystopia', 'dystopic-future']
 
-Get the top 250 and bottom 100 movies:
+And fetch movies that match a given keyword:
 
 .. code-block:: python
 
-    ia.get_top250_movies()
-    ia.get_bottom100_movies()
+   >>> movies = ia.get_keyword('dystopia')
+   >>> len(movies)
+   50
+   >>> movies[0]
+   <Movie id:1677720[http] title:_Ready Player One (2018)_>
+
+Top / bottom charts
+-------------------
+
+IMDbPY also supports getting the top 250 and bottom 100 movies:
+
+.. code-block:: python
+
+   >>> top = ia.get_top250_movies()
+   >>> top[0]
+   <Movie id:0111161[http] title:_The Shawshank Redemption (1994)_>
+   >>> bottom = ia.get_bottom100_movies()
+   >>> bottom[0]
+   <Movie id:4458206[http] title:_Code Name: K.O.Z. (2015)_>
 
 Character associated to a person who starred in a movie, and its notes:
 

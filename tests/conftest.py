@@ -32,10 +32,21 @@ def retrieve_unicode_cached(self, url, size=-1):
     return content
 
 
+s3_cfg = os.path.join(os.path.dirname(__file__), 's3.cfg')
+try:
+    with open(s3_cfg) as f:
+        s3_uri = f.read()
+except FileNotFoundError:
+    s3_uri = None
+
+
 @fixture
-def ia():
+def ia(request):
     """Access to IMDb data."""
     IMDbURLopener.retrieve_unicode = retrieve_unicode_cached
-    yield IMDb()
+    yield IMDb('http')
 
     IMDbURLopener.retrieve_unicode = retrieve_unicode_orig
+
+    if s3_uri is not None:
+        yield IMDb('s3', uri=s3_uri)

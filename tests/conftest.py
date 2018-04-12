@@ -41,7 +41,7 @@ except FileNotFoundError:
 
 
 @fixture
-def ia(request):
+def ia():
     """Access to IMDb data."""
     IMDbURLopener.retrieve_unicode = retrieve_unicode_cached
     yield IMDb('http')

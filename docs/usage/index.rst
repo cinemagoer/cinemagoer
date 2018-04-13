@@ -15,7 +15,6 @@ or programs.
 
    quickstart
    infosets
-   query
    movie
    person
    character

@@ -1,20 +1,7 @@
+:orphan:
+
 Movies
 ======
-
-The main use of a Movie object is to access the info it contains
-using a dictionary-like interface where the key identifies the information
-you want to get.
-
-At this point, I have really bad news: what the keys are is a little unclear!
-
-In general, the key is the label of the section as used by the IMDb web server
-to present the data. If the information is grouped into subsections,
-such as cast members, certifications, distributor companies, etc.,
-the subsection label in the HTML page is used as the key.
-
-The section name (the key) is always (with some minor exceptions) lowercase;
-underscores and dashes are replaced with spaces. Some other keys aren't taken
-from the HTML page, but are defined within the Movie class.
 
 Below is a list of each main key, the type of its value, and a short
 description or an example:

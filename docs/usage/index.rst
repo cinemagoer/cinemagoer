@@ -15,10 +15,6 @@ or programs.
 
    quickstart
    infosets
-   movie
-   person
-   character
-   company
    role
    series
    adult

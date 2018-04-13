@@ -1,9 +1,9 @@
-Information sets
-================
+Data interface
+==============
 
-The main use of a Movie object is to access the info it contains
-using a dictionary-like interface where the key identifies the information
-you want to get.
+The IMDbPY objects that represent movies, people, and companies provide
+a dictionary-like interface where the key identifies the information
+you want to get out of the object.
 
 At this point, I have really bad news: what the keys are is a little unclear!
 
@@ -14,7 +14,11 @@ the subsection label in the HTML page is used as the key.
 
 The section name (the key) is always (with some minor exceptions) lowercase;
 underscores and dashes are replaced with spaces. Some other keys aren't taken
-from the HTML page, but are defined within the Movie class.
+from the HTML page, but are defined within the respective object class.
+
+
+Information sets
+----------------
 
 Since release 1.2, it's possible to retrieve almost every piece of information
 about a given movie, person, or company. This can be a problem, because

@@ -14,7 +14,7 @@ or programs.
    :caption: Contents:
 
    quickstart
-   infosets
+   data-interface
    role
    series
    adult

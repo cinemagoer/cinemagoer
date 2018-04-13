@@ -1,39 +1,23 @@
 Movies
 ======
 
-The main use of a Movie object is to access to the info it contains
-using a dictionary-like interface, like "movieObject[key]" where 'key'
-is a string that identifies the information you want to get.
+The main use of a Movie object is to access the info it contains
+using a dictionary-like interface where the key identifies the information
+you want to get.
 
-I've really bad news for you: at this time, what 'key' is, is a
-little unclear! <g>
+At this point, I have really bad news: what the keys are is a little unclear!
 
-In general, it's the name of the section as used by the IMDb web server
-to show the data. When the information is a list of people with a role
-(an actor, a stunt, a writer, etc.) the relative section in the HTML page
-starts with a link to a "/Glossary/X#SectName" page; here "sectname"
-is used as 'key'.
-
-When the info regards companies (distributors, special effects, etc.)
-or the movie itself (sound mix, certifications, etc.), the section in the HTML
-page begins with a link to a "/List?SectName=" page, so we use "sectname"
-as a 'key'.
+In general, the key is the label of the section as used by the IMDb web server
+to present the data. If the information is grouped into subsections,
+such as cast members, certifications, distributor companies, etc.,
+the subsection label in the HTML page is used as the key.
 
 The section name (the key) is always (with some minor exceptions) lowercase;
 underscores and dashes are replaced with spaces. Some other keys aren't taken
 from the HTML page, but are defined within the Movie class.
 
-To get the complete list of keys available for a given Movie object, you can
-use the ``movieObject.keys()`` method (obviously only keys that refer
-to some existing information are defined. So a movie without an art director
-will raise a KeyError exception is you try ``movieObject['art director'])``.
-To avoid the exception, you can test if a Movie object has a given key using
-``key in movieObject``, or get the value with the ``get(key)`` method,
-which returns the value or None if the key is not found (an optional parameter
-can modify the default value returned if the key isn't found).
-
-Below is a list of the main keys you can encounter, the type of the value
-returned by movieObject[key], and a short description/example:
+Below is a list of each main key, the type of its value, and a short
+description or an example:
 
 title (string)
   The "usual" title of the movie, like "The Untouchables".

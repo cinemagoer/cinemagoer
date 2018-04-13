@@ -230,33 +230,3 @@ or:
    import imdb
    i = imdb.IMDb()
    i.get_person('0000154', modFunct=imdb.utils.modHtmlLinks)
-
-
-Exceptions
-----------
-
-The ``imdb._exceptions`` module contains the exceptions raised by the imdb
-package. Every exception is a subclass of ``IMDbError``, which is available
-from the imdb package.
-
-You can catch any type of errors raised by the IMDbPY package with
-something like:
-
-.. code-block:: python
-
-   from imdb import IMDb, IMDbError
-
-   try:
-       i = IMDb()
-   except IMDbError, err:
-       print(err)
-
-   try:
-       results = i.search_person('Mel Gibson')
-   except IMDbError, err:
-       print(err)
-
-   try:
-       movie = i.get_movie('0335345')
-   except IMDbError, err:
-       print(err)

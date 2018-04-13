@@ -1,10 +1,6 @@
 Roles
 =====
 
-
-Persons in movies and Movies in persons
----------------------------------------
-
 Parsing the information about a movie, you'll encounter a lot of references
 to the people who worked on it, like the cast, the director, the stunts,
 and so on.

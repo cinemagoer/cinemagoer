@@ -113,7 +113,8 @@ And fetch movies that match a given keyword:
    >>> movies[0]
    <Movie id:1677720[http] title:_Ready Player One (2018)_>
 
-IMDbPY also supports getting the top 250 and bottom 100 movies:
+Since IMDbPY 4.0, it's possible to retrieve the list of top 250 and bottom 100
+movies: [#sql_bottom]_
 
 .. code-block:: python
 
@@ -123,3 +124,9 @@ IMDbPY also supports getting the top 250 and bottom 100 movies:
    >>> bottom = ia.get_bottom100_movies()
    >>> bottom[0]
    <Movie id:4458206[http] title:_Code Name: K.O.Z. (2015)_>
+
+
+.. [#sql_bottom]
+
+   Beware that in an SQL-based access system, the bottom 100 list is limited
+   to the first 10 results.

@@ -176,28 +176,24 @@ information (without major performance drawbacks).
 The (not so) "universal" "::" separator
 ---------------------------------------
 
-Sometimes I've used "::" to separate a set of different data inside a string,
-like the name of a company and what it has done for the movie, the information
-in the "Also Known As" section, and so on.
-
-It's easier to understand if you look at it; look at the output of:
+In some data, the ``::`` separator is used between different parts
+of the data inside a string, like the plot of a movie and its author:
 
 .. code-block:: python
 
-   import imdb
-   i = imdb.IMDb()
-   m = i.get_movie('0094226')
-   print(m['akas'])
+   >>> movie = ia.get_movie('0094226')
+   >>> plot = movie['plot'][0]
+   >>> plot[:30] + '...' + plot[-30:]
+   "1920's prohibition Chicago is ...y to get him.::Jeremy Perkins"
 
-As a rule, there's at most one '::' separator inside a string. Splitting it
-will result in two logical pieces: "TEXT::NOTE".
-In the helpers module there's the ``makeTextNotes`` function that can be used
-to create a custom function to pretty-print this kind of information.
-See its documentation for more info.
+As a rule, there's at most one such separator inside a string. Splitting it
+will result in two logical pieces as in ``TEXT::NOTE``.
+The :func:`imdb.helpers.makeTextNotes` function can be used to create a custom
+function to pretty-print this kind of information.
 
 
-Movie titles and Person/Character names references
---------------------------------------------------
+Movie and person references
+---------------------------
 
 Sometimes in Movie, Person and Character attributes, there are strings
 with references to other movies or persons, e.g. in the plot, in the biography,

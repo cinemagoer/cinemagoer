@@ -1,32 +1,29 @@
 Information sets
 ================
 
-Update a Movie, Person, Company, or Character instance with basic information,
-or any other specified info set:
+Since release 1.2, it's possible to retrieve almost every piece of information
+about a given movie, person, or company. This can be a problem, because
+(at least for the "http" data access system) it means that a lot of web pages
+must be fetched and parsed. This can be time- and bandwidth consuming,
+especially if you're interested only in a small part of the information.
+
+The :meth:`get_movie <imdb.IMDbBase.get_movie>`,
+:meth:`get_person <imdb.IMDbBase.get_person>`, and
+:meth:`get_company <imdb.IMDbBase.get_company>` methods take an optional
+``info`` parameter, which can be used to specify the kinds of data to fetch.
+Each group of data that gets fetched together is called an "information set".
+
+Different types of objects have their own available information sets.
+For example, the movie objects have a set called "vote details" for
+the number of votes and their demographic breakdowns, whereas person objects
+have a set called "other works" for miscellaneous works of the person.
+Available information sets for each object type can be queried
+using the access object:
 
 .. code-block:: python
 
-    ia.update(obj, info=infoset)
-
-Return all info sets available for a movie; similar methods are available
-for other objects:
-
-.. code-block:: python
-
-    ia.get_movie_infoset()
-
-Mapping between the fetched info sets and the keywords they provide;
-similar methods are available for other objects:
-
-.. code-block:: python
-
-    movie.infoset2keys
-
-
-Show all the information sets available for movies:
-
-.. code-block:: python
-
+   >>> from imdb import IMDb
+   >>> ia = IMDb()
    >>> ia.get_movie_infoset()
    ['airing', 'akas', 'alternate versions', 'awards', 'connections',
     'crazy credits', 'critic reviews', 'episodes', 'external reviews',
@@ -35,75 +32,145 @@ Show all the information sets available for movies:
     'photo sites', 'plot', 'quotes', 'release dates', 'release info',
     'reviews', 'sound clips', 'soundtrack', 'synopsis', 'taglines',
     'technical', 'trivia', 'tv schedule', 'video clips', 'vote details']
+   >>> ia.get_person_infoset()
+   ['awards', 'biography', 'filmography', 'genres links', 'keywords links',
+    'main', 'news', 'official sites', 'other works', 'publicity']
+   >>> ia.get_company_infoset()
+   ['main']
 
-Update a movie with more information and show which keys were added:
+For each object type, only the important information will be retrieved
+by default:
+
+- for a movie: "main", "plot"
+- for a person: "main", "filmography", "biography"
+- for a company: "main"
+
+The defaults can be retrieved from the ``default_info`` attributes:
 
 .. code-block:: python
 
-   >>> ia.update(matrix, ['vote details'])
-   >>> matrix.infoset2keys['vote details']
-   [['demographics', 'number of votes', 'arithmetic mean', 'median']]
-   >>> matrix.get('median')
+   >>> from imdb.Person import Person
+   >>> Person.default_info
+   ('main', 'filmography', 'biography')
+
+Each instance also has a ``current_info`` variable for tracking
+the information sets already retrieved.
+
+.. code-block:: python
+
+   >>> movie = ia.get_movie('0133093')
+   >>> movie.current_info
+   ['main', 'plot', 'synopsis']
+
+The list of fetched information sets and the keys they provide can be
+taken from the ``infoset2keys`` attribute:
+
+.. code-block:: python
+
+   >>> movie = ia.get_movie('0133093')
+   >>> pprint(movie.infoset2keys)
+   {'main': ['cast',
+          'genres',
+          'runtimes',
+          'countries',
+          'country codes',
+          'language codes',
+          'color info',
+          'aspect ratio',
+          'sound mix',
+          'certificates',
+          'original air date',
+          'rating',
+          'votes',
+          'cover url',
+          'plot outline',
+          'languages',
+          'title',
+          'year',
+          'kind',
+          'directors',
+          'writers',
+          'producers',
+          'composers',
+          'cinematographers',
+          'editors',
+          'editorial department',
+          'casting directors',
+          'production designers',
+          'art directors',
+          'set decorators',
+          'costume designers',
+          'make up department',
+          'production managers ',
+          'assistant directors',
+          'art department',
+          'sound department',
+          'special effects',
+          'visual effects',
+          'stunts',
+          'camera department',
+          'animation department',
+          'casting department',
+          'costume departmen',
+          'location management',
+          'music department',
+          'transportation department',
+          'miscellaneous',
+          'akas',
+          'writer',
+          'director',
+          'top 250 rank'],
+    'plot': ['plot', 'synopsis']}
+   >>> movie = ia.get_movie('0094226', info=['taglines', 'plot'])
+   >>> movie.infoset2keys
+   {'taglines': ['taglines'], 'plot': ['plot', 'synopsis']}
+   >>> movie.get('title')
+   >>> movie.get('taglines')[0]
+   'The Chicago Dream is that big'
+
+Search operations retrieve a fixed set of data and don't have the concept
+of information sets. Therefore objects listed in searches will have even less
+information than the defaults. For example, if you do a movie search operation,
+the movie objects in the result won't have many of the keys that would be
+available on a movie get operation:
+
+.. code-block:: python
+
+   >>> movies = ia.search_movie('matrix')
+   >>> movie = movies[0]
+   >>> movie
+   <Movie id:0133093[http] title:_The Matrix (1999)_>
+   >>> movie.current_info
+   []
+   >>> movie.keys()
+   ['title', 'kind', 'year', 'canonical title', 'long imdb title',
+    'long imdb canonical title', 'smart canonical title',
+    'smart long imdb canonical title']
+
+Once an object is retrieved (through a get or a search), its data can be
+updated using the :meth:`update <imdb.IMDbBase.update>` method with the desired
+information sets. Continuing from the example above:
+
+.. code-block:: python
+
+   >>> ia.update(movie, info=['taglines', 'vote details'])
+   >>> movie.current_info
+   ['taglines', 'vote details']
+   >>> movie.keys()
+   ['title', 'kind', 'year', 'taglines', 'demographics',
+    'number of votes', 'arithmetic mean', 'median', 'canonical title',
+    'long imdb title', 'long imdb canonical title', 'smart canonical title',
+    'smart long imdb canonical title']
+   >>> movie['median']
    9
+   >>> ia.update(movie, info=['plot'])
+   >>> movie.current_info
+   ['taglines', 'vote details', 'plot', 'synopsis']
 
-Since release 1.2, it's possible to retrieve almost every piece of information
-about a given movie or person. This can be a problem, because (at least for
-the 'http' data access system) it means that a lot of web pages must be fetched
-and parsed, and this can be time and bandwidth consuming, especially if you're
-interested only in a small set of the information.
-
-Now the ``get_person``, ``get_movie``, ``get_character``, ``get_company``,
-and ``update`` methods have an optional 'info' argument, which can be set
-to a list of strings, each one representing an "information set".
-Movie/Person/Character/Company objects have, respectively, their own list
-of available "information sets". For example, the Movie class has a set called
-'taglines' for the taglines of the movie, a set called 'vote details'
-for the number of votes for rating [1-10], demographic breakdowns and
-top 250 rank. The Person class has a set called 'other works' for miscellaneous
-works of this person and so on.
-
-By default only important information are retrieved/updated, i.e. for a Movie
-object, only 'main' and 'plot'; for a Person/Character object only 'main',
-'filmography', and 'biography'.
-
-Example:
-
-.. code-block:: python
-
-   >>> i = imdb.IMDb(accessSystem='http')
-
-   >>> m = i.get_movie('0133093')  # only default info set are retrieved.
-   >>> 'demographic' in m          # returns false, since no demographic breakdowns
-                                   # aren't available by default
-
-   >>> i.update(m, info=('vote details',))  # retrieve the vote details info set
-   >>> print(m['demographic']               # demographic breakdowns.
-
-Another example:
-
-.. code-block:: python
-
-   i = imdb.IMDb(accessSystem='http')
-
-   # retrieve only the biography and the "other works" page
-   p = i.get_person('0000154', info=['biography', 'other works'])
-   print(p['salary'])
-   print(p['other works'])
-
-To see which information sets are available and what the defaults are,
-see the all_info and default_info instance variables of Movie, Person,
-and Character classes. Each instance of Movie, Person, or Character,
-also have a current_info instance variable, for tracking the information sets
-already retrieved.
-
-Beware that the information sets vary from an access system to another:
-locally not every data is accessible, while -for example for SQL-
+Beware that the information sets vary between access systems:
+locally not every piece of data is accessible, whereas -for example for SQL-
 accessing one set of data means automatically accessing a number of other
-information (without major performace drawbacks).
-
-You can get the list of available info set with the methods:
-``i.get_movie_infoset()``, ``i.get_person_infoset()``,
-``i.get_character_infoset()``, and ``i.get_company_infoset()``.
+information (without major performance drawbacks).
 
 
 Top 250 / Bottom 100 lists

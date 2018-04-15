@@ -1,4 +1,4 @@
-# Copyright 2006-2017 Davide Alberani <da@erlug.linux.it>
+# Copyright 2006-2018 Davide Alberani <da@erlug.linux.it>
 #                2012 Alberto Malagoli <albemala AT gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@ from imdb.linguistics import COUNTRY_LANG
 from imdb.Movie import Movie
 from imdb.parser.http.utils import entcharrefs
 from imdb.Person import Person
-from imdb.utils import _Container, _tagAttr, re_characterRef, re_nameRef, re_titleRef
+from imdb.utils import _tagAttr, re_characterRef, re_nameRef, re_titleRef
 from imdb.utils import TAGS_TO_MODIFY
 
 
@@ -362,15 +362,7 @@ def fullSizeCoverURL(obj):
     or None otherwise.  This function is obsolete: the same information
     are available as keys: 'full-size cover url' and 'full-size headshot',
     respectively for movies and persons/characters."""
-    if isinstance(obj, Movie):
-        coverUrl = obj.get('cover url')
-    elif isinstance(obj, (Person, Character)):
-        coverUrl = obj.get('headshot')
-    else:
-        coverUrl = obj
-    if not coverUrl:
-        return None
-    return _Container._re_fullsizeURL.sub('', coverUrl)
+    return obj.get_fullsizeURL()
 
 
 def keyToXML(key):

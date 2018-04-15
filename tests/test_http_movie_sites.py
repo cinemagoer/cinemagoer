@@ -1,22 +1,20 @@
-from pytest import fixture
-
-from imdb.parser.http.movieParser import DOMHTMLOfficialsitesParser
-
-
-@fixture(scope='module')
-def movie_official_sites(url_opener, movies):
-    """A function to retrieve the official sites page of a test movie."""
-    def retrieve(movie_key):
-        url = movies[movie_key] + '/externalsites'
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_movie_official_sites_should_be_a_list(ia):
+    movie = ia.get_movie('0133093', info=['official sites'])    # Matrix
+    official_sites = movie.get('official sites', [])
+    assert len(official_sites) == 1
 
 
-parser = DOMHTMLOfficialsitesParser()
+def test_movie_official_sites_if_none_should_be_excluded(ia):
+    movie = ia.get_movie('1863157', info=['official sites'])    # Ates Parcasi
+    assert 'official sites' not in movie
 
 
-def test_sites_should_be_lists(movie_official_sites):
-    page = movie_official_sites('matrix')
-    data = parser.parse(page)['data']
-    assert len(data.get('official sites', [])) == 1
-    assert len(data.get('sound clips', [])) == 3
+def test_movie_sound_clips_should_be_a_list(ia):
+    movie = ia.get_movie('0133093', info=['official sites'])    # Matrix
+    sound_clips = movie.get('sound clips', [])
+    assert len(sound_clips) == 3
+
+
+def test_movie_sound_clips_if_none_should_be_excluded(ia):
+    movie = ia.get_movie('1863157', info=['official sites'])    # Ates Parcasi
+    assert 'sound clips' not in movie

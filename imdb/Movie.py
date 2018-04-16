@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -139,6 +139,8 @@ class Movie(_Container):
         'video review', 'faqs'
     )
 
+    _image_key = 'cover url'
+
     cmpFunct = cmpMovies
 
     def _init(self, **kwds):
@@ -255,8 +257,8 @@ class Movie(_Container):
                 return build_title(self.data, canonical=True)
             elif key == 'smart long imdb canonical title':
                 return build_title(self.data, canonical=True, lang=self.guessLanguage())
-        if key == 'full-size cover url' and 'cover url' in self.data:
-            return self._re_fullsizeURL.sub('', self.data.get('cover url', ''))
+        if key == 'full-size cover url':
+            return self.get_fullsizeURL()
         return None
 
     def getID(self):

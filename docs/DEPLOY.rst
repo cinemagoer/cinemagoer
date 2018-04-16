@@ -23,7 +23,7 @@ How to deploy and release a new version of IMDbPY.
     ``__version__`` variables must be updated to something in the form
     *{next.version}devISO8601DATE* (not mandatory, but...)
 
-*docs/Changelog.txt*
+*docs/Changelog.rst*
 
     When a major fix or feature is committed, the changelog must be updated.
 
@@ -43,7 +43,7 @@ How to deploy and release a new version of IMDbPY.
 
     The *devISO8601DATE* part must be removed from the version variables.
 
-*docs/Changelog.txt*
+*docs/Changelog.rst*
 
     The date of the release has to be added.
 
@@ -73,6 +73,19 @@ How to deploy and release a new version of IMDbPY.
   to https://sourceforge.net/projects/imdbpy/ (along with a new "news").
 
 
+**communication**
+
+- access the web site with: `sftp ${your-sourceforge-username}@frs.sourceforge.net` and move to the *imdbpy_web/htdocs/*
+
+- download *index.html* and add an *article* section, removing the one or more of the old ones
+
+- upload the page
+
+- add a news on https://sourceforge.net/p/imdbpy/news/new
+
+- send an email to imdbpy-devel@lists.sourceforge.net and imdbpy-help@lists.sourceforge.net
+
+
 **After the release**
 
 *setup.cfg*
@@ -87,6 +100,8 @@ How to deploy and release a new version of IMDbPY.
 
     Bump the ``VERSION`` and ``__version__`` variables.
 
-*docs/Changelog.txt*
+*docs/Changelog.rst*
 
     Add a new section for the next release, on top.
+
+After that, you can commit the above changes with a message like "version bump"

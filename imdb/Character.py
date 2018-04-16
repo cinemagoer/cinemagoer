@@ -1,4 +1,4 @@
-# Copyright 2007-2017 Davide Alberani <da@erlug.linux.it>
+# Copyright 2007-2018 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -111,8 +111,6 @@ class Character(_Container):
         if 'name' in self.data:
             if key == 'long imdb name':
                 return build_name(self.data)
-        if key == 'full-size headshot' and 'headshot' in self.data:
-            return self._re_fullsizeURL.sub('', self.data.get('headshot', ''))
         return None
 
     def getID(self):

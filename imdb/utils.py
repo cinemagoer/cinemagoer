@@ -1133,8 +1133,8 @@ class _Container(object):
     # Function used to compare two instances of this class.
     cmpFunct = None
 
-    # Regular expression used to build the 'full-size (headshot|cover url)'.
-    _re_fullsizeURL = re.compile(r'(?<=@).*?$')
+    # key that contains the cover/headshot
+    _image_key = None
 
     def __init__(self, myID=None, data=None, notes='',
                  currentRole='', roleID=None, roleIsPerson=False,
@@ -1264,6 +1264,14 @@ class _Container(object):
 
     def _init(self, **kwds):
         pass
+
+    def get_fullsizeURL(self):
+        """Return the full-size URL for this object."""
+        if not (self._image_key and self._image_key in self.data):
+            return None
+        url = self.data[self._image_key] or ''
+        ext_idx = url.rfind('.')
+        return url[:url.rindex('@')+1] + url[ext_idx:]
 
     def reset(self):
         """Reset the object."""

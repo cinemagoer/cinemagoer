@@ -1,34 +1,49 @@
-from pytest import fixture
-
-from imdb.parser.http.topBottomParser import DOMHTMLBottom100Parser
+from imdb.Movie import Movie
 
 
-@fixture(scope='module')
-def chart_bottom(url_opener, base_url):
-    """A function to retrieve the bottom movies page."""
-    def retrieve():
-        url = base_url + '/chart/bottom'
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+chart_keys = {'bottom 100 rank', 'title', 'kind', 'year', 'rating', 'votes'}
 
 
-parser = DOMHTMLBottom100Parser()
+def test_bottom_chart_should_contain_100_entries(ia):
+    chart = ia.get_bottom100_movies()
+    assert len(chart) == 100
 
 
-def test_chart_should_contain_100_movies(chart_bottom):
-    page = chart_bottom()
-    data = parser.parse(page)['data']
-    assert len(data) == 100
+def test_bottom_chart_all_entries_should_be_movies(ia):
+    chart = ia.get_bottom100_movies()
+    for movie in chart:
+        assert isinstance(movie, Movie)
 
 
-def test_all_movies_should_have_rating_and_votes(chart_bottom):
-    page = chart_bottom()
-    data = parser.parse(page)['data']
-    for movie in dict(data).values():
-        assert {'title', 'kind', 'year', 'rating', 'votes'}.issubset(set(movie.keys()))
+def test_bottom_chart_all_movies_should_have_movie_ids(ia):
+    chart = ia.get_bottom100_movies()
+    for movie in chart:
+        assert hasattr(movie, 'movieID')
 
 
-def test_chart_should_contain_correct_movie(chart_bottom):
-    page = chart_bottom()
-    data = parser.parse(page)['data']
-    assert '0060666' in dict(data)          # Manos
+def test_bottom_chart_all_movies_should_have_same_keys(ia):
+    chart = ia.get_bottom100_movies()
+    for movie in chart:
+        assert chart_keys.issubset(set(movie.keys()))
+
+
+def test_bottom_chart_ranks_should_proceed_in_order(ia):
+    chart = ia.get_bottom100_movies()
+    ranks = [m['bottom 100 rank'] for m in chart]
+    assert ranks == list(range(1, 101))
+
+
+def test_bottom_chart_should_contain_manos(ia):
+    chart = ia.get_bottom100_movies()
+    movieIDs = [m.movieID for m in chart]
+    assert '0060666' in movieIDs
+
+
+def test_bottom_chart_koz_should_be_bottom_movie(ia):
+    movie = ia.get_bottom100_movies()[0]
+    assert movie.movieID == '4458206'
+    assert movie['title'] == 'Code Name: K.O.Z.'
+    assert movie['kind'] == 'movie'
+    assert movie['year'] == 2015
+    assert movie['rating'] < 1.6
+    assert movie['votes'] > 25000

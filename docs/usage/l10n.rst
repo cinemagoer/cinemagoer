@@ -1,38 +1,38 @@
 Localization
 ============
 
-Since version 4.1 it's easy to translate the labels that describe
-sets of information.
+Since version 4.1 the labels that describe the information are translatable.
 
 .. admonition:: Limitation
 
-   So far no internal message or exception is translated, the internationalization
-   is limited to the "tags" returned by the ``getAsXML`` and ``asXML`` methods
-   of the Movie, Person, Character, or Company classes.  Beware that in many cases
-   these "tags" are not the same as the "keys" used to access information
-   in the same classes, as if they are dictionaries.
+   Internal messages or exceptions are not translatable,
+   the internationalization is limited to the "tags" returned by
+   the ``getAsXML`` and ``asXML`` methods of the Movie, Person, Character,
+   or Company classes.
 
-   E.g.: you can translate "long-imdb-name" -the tag returned by the call
-   ``person.getAsXML('long imdb name')``- but not "long imdb name" directly.
-   To translate keys, you can use the ``helpers.translateKey`` function in
-   the 'helpers' module.
+   Beware that in many cases these "tags" are not the same as the "keys" used
+   to access information in the same class. For example, you can translate
+   the tag "long-imdb-name" -the tag returned by the call
+   ``person.getAsXML('long imdb name')``, but not the key "long imdb name"
+   itself. To translate keys, you can use
+   the :func:`helpers.translateKey <imdb.helpers.translateKey>` function.
 
 If you want to add i18n to your IMDbPY-based application, all you need to do
 is to switch to the ``imdbpy`` text domain:
 
 .. code-block:: python
 
-   import imdb.locale
-
-   # Standard gettext stuff.
-   import gettext
-   from gettext import gettext as _
-
-   # Switch to the imdbpy domain.
-   gettext.textdomain('imdbpy')
-
-   # Request a translation.
-   print(_(u'long-imdb-name'))
+   >>> import imdb.locale
+   >>> import gettext
+   >>> gettext.textdomain('imdbpy')
+   'imdbpy'
+   >>> from gettext import gettext as _
+   >>> _('art-department')
+   'Art department'
+   >>> import os
+   >>> os.environ['LANG'] = 'it_IT'
+   >>> _('art-department')
+   'Dipartimento artistico'
 
 
 Adding a new language

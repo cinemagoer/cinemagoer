@@ -16,16 +16,13 @@ and companies.
    - moved the package to Python 3
    - removed dependencies: SQLObject, C compiler, BeautifulSoup
    - removed the "mobile" and "httpThin" parsers
-   - introduced a test suite (`please help with it!`_)
-
-   The Python 2 version is available in the *imdbpy-legacy* branch
-   (mostly unsupported).
+   - introduced a test suite (:ref:`please help with it! <testing>`)
 
 
 Main features
 -------------
 
-- written in Python 3
+- written in Python 3, also with support for Python 2.7
 
 - platform-independent
 

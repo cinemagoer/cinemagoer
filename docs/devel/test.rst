@@ -1,3 +1,5 @@
+.. _testing:
+
 How to test
 ===========
 

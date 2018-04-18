@@ -227,8 +227,7 @@ def analyze_certificates(certificates):
 
 
 class DOMHTMLMovieParser(DOMParserBase):
-    """Parser for the "combined details" (and if instance.mdparse is
-    True also for the "main details") page of a given movie.
+    """Parser for the "reference" page of a given movie.
     The page should be provided as a string, as taken from
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -236,7 +235,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     Example::
 
         mparser = DOMHTMLMovieParser()
-        result = mparser.parse(combined_details_html_string)
+        result = mparser.parse(reference_html_string)
     """
     _containsObjects = True
 
@@ -254,7 +253,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 foreach='//h4[contains(@class, "ipl-header__content")]',
                 rules=[
                     Rule(
-                        key=Path('./@name', transform=lambda x: x.replace('_', ' ')),
+                        key=Path('./@name', transform=lambda x: x.replace('_', ' ').strip()),
                         extractor=Rules(
                             foreach='../../following-sibling::table[1]//tr',
                             rules=[

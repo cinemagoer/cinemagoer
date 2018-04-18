@@ -34,60 +34,33 @@ is to switch to the ``imdbpy`` text domain:
    >>> _('art-department')
    'Dipartimento artistico'
 
-
-Adding a new language
----------------------
-
-You can (but you're not forced to) use Transifex to manage/coordinate
-your translations; see: http://www.transifex.net/projects/p/imdbpy/c/default/
-Below are the generic instruction about how translation works.
-
-In the ``imdb.locale`` package, you'll find some scripts useful to build
-your own internationalization files.
-
-If you create a new translation or update an existing one, you can send
-it to the <imdbpy-devel@lists.sourceforge.net> mailing list, for
-inclusion in the next releases.
-
-- The generatepot.py script should be used only when the DTD is changed;
-  it's used to create the imdbpy.pot file (the one shipped is always
-  up-to-date).
-
-- You can copy the imdbpy.pot file to your language's .po file (e.g.
-  imdbpy-fr.po for French) and modify it accordingly to your needs.
-
-- Then you must run rebuildmo.py (which is automatically called
-  at install time, by the setup.py script) to create the .mo files.
-
-If you need to upgrade an existing .po file, after changes to the .pot
-file (usually because the DTD was changed), you can use the msgmerge
-tool, part of the GNU gettext suite::
-
-  msgmerge -N imdbpy-fr.po imdbpy.pot > new-imdbpy-fr.po
+If you want to translate IMDbPY into another language, see
+the :ref:`translate` document for instructions.
 
 
 Articles in titles
 ------------------
 
-Converting a title to its 'Title, The' canonical format, IMDbPY does
-some assumptions about what is an article and what not, and this could
-lead to some wrong canonical titles.  E.g.: "Hard, Die" instead of
-"Die Hard", since 'Die' is guessed as an article (and it is, in Germany...)
+To convert a title to its canonical format as in "Title, The", IMDbPY makes
+some assumptions about what is an article and what isn't, and this can lead
+to some wrong canonical titles. For example, it can canonicalize the title
+"Die Hard" as "Hard, Die" because it guesses "Die" as an article (and it is,
+in Germany...).
+
 To solve this problem, there are other keys: "smart canonical title",
 "smart long imdb canonical title", "smart canonical series title",
 "smart canonical episode title" which can be used to do a better job
 converting a title into its canonical format.
 
-It works, but it needs to know something about articles in various
-languages: if you want to help, see the LANG_ARTICLES and LANG_COUNTRIES
-dictionaries in the 'linguistics' module.
+This works, but it needs to know about articles in various languages:
+if you want to help, see the :attr:`linguistics.LANG_ARTICLES` and
+:attr:`linguistics.LANG_COUNTRIES` dictionaries.
 
-To know what the language in which a movie title is assumed to be,
-call its 'guessLanguage' method (it will return None, if unable to guess).
+To guess the language of a movie title, call its 'guessLanguage' method
+(it will return None, if unable to guess).
 If you want to force a given language instead of the guessed one, you
 can call its 'smartCanonicalTitle' method, setting the 'lang' argument
 appropriately.
-
 
 Alternative titles
 ------------------

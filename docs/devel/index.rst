@@ -52,4 +52,5 @@ to a string used to identify the used data access system.
 
    extend
    test
+   translate
    release

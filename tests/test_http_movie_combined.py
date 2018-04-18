@@ -541,3 +541,8 @@ def test_movie_cast_must_contain_items(ia):
 def test_movie_misc_sections_must_contain_items(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix
     assert len(movie.get('casting department', [])) == 2
+
+
+def test_movie_companies_sections_must_contain_items(ia):
+    movie = ia.get_movie('0133093', info=['main'])      # Matrix
+    assert len(movie.get('special effects companies', [])) == 7

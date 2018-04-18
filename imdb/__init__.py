@@ -20,26 +20,17 @@ from the IMDb database. It can fetch data through different media such as
 the IMDb web pages, or a SQL database.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
 __version__ = VERSION = '6.6dev20180415'
 
-VERSION_NOTICE = """This version of IMDbPY requires Python 3.
-For a version compatible with Python 2.7, see the imdbpy-legacy branch:
-    https://github.com/alberanid/imdbpy/tree/imdbpy-legacy
 
-Please notice that the imdbpy-legacy branch is mostly unsupported.
-"""
-
-import sys
-
-if sys.hexversion < 0x3000000:
-    print(VERSION_NOTICE)
-    sys.exit(1)
-
-import configparser
 import logging
 import os
+import sys
 from pkgutil import find_loader
 from types import MethodType, FunctionType
 
@@ -47,6 +38,15 @@ import imdb._logging
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb import Character, Company, Movie, Person
 from imdb.utils import build_company_name, build_name, build_title
+
+
+PY2 = sys.hexversion < 0x3000000
+
+
+if PY2:
+    import ConfigParser as configparser
+else:
+    import configparser
 
 
 _imdb_logger = logging.getLogger('imdbpy')
@@ -95,7 +95,10 @@ class ConfigParserWithCase(configparser.ConfigParser):
 
         *defaults* -- defaults values.
         *confFile* -- the file (or list of files) to parse."""
-        super(configparser.ConfigParser, self).__init__(defaults=defaults)
+        if PY2:
+            configparser.ConfigParser.__init__(self, defaults=defaults)
+        else:
+            super(configparser.ConfigParser, self).__init__(defaults=defaults)
         if confFile is None:
             dotFileName = '.' + confFileName
             # Current and home directory.

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
@@ -31,12 +33,12 @@ plot summary
 ...and so on.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import functools
 import re
-import urllib.error
-import urllib.parse
-import urllib.request
 
+from imdb import PY2
 from imdb import imdbURL_base
 from imdb.Company import Company
 from imdb.Movie import Movie
@@ -45,6 +47,12 @@ from imdb.utils import _Container, KIND_MAP
 
 from .piculet import Path, Rule, Rules, preprocessors, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_person
+
+
+if PY2:
+    from urllib import unquote
+else:
+    from urllib.parse import unquote
 
 
 # Dictionary used to convert some section's names.
@@ -366,7 +374,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='aspect ratio',
             extractor=Path(
                 '//td[starts-with(text(), "Aspect")]/..//li/text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -476,7 +484,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='season/episode',
             extractor=Path(
                 '//div[@class="titlereference-overview-season-episode-section"]/ul//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -545,7 +553,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             extractor=Path(
                 '//td[starts-with(text(), "Status Updated:")]/'
                 '..//div[@class="info-content"]//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -553,7 +561,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             extractor=Path(
                 '//td[starts-with(text(), "Comments:")]/'
                 '..//div[@class="info-content"]//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -561,7 +569,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             extractor=Path(
                 '//td[starts-with(text(), "Note:")]/'
                 '..//div[@class="info-content"]//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -1074,7 +1082,7 @@ class DOMHTMLAlternateVersionsParser(DOMParserBase):
             extractor=Path(
                 foreach='//ul[@class="trivia"]/li',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         )
     ]
@@ -1099,7 +1107,7 @@ class DOMHTMLTriviaParser(DOMParserBase):
             extractor=Path(
                 foreach='//div[@class="sodatext"]',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         )
     ]
@@ -1131,7 +1139,7 @@ class DOMHTMLSoundtrackParser(DOMParserBase):
             extractor=Path(
                 foreach='//div[@class="list"]//div',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         )
     ]
@@ -1713,7 +1721,7 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
                 ],
                 transform=lambda x: (
                     x.get('info').strip(),
-                    urllib.parse.unquote(_normalize_href(x.get('link')))
+                    unquote(_normalize_href(x.get('link')))
                 )
             )
         )
@@ -2257,7 +2265,7 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                         foreach='//h4',
                         rules=[
                             Rule(
-                                key=Path('./text()[1]', transform=str.strip),
+                                key=Path('./text()[1]', transform=transformers.strip),
                                 extractor=Rules(
                                     foreach='./following-sibling::table[1]//td[@class="nm"]',
                                     rules=[

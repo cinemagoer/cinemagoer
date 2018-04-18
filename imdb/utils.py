@@ -19,9 +19,12 @@
 This module provides basic utilities for the imdb package.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import logging
 import re
 import string
+import sys
 from copy import copy, deepcopy
 from functools import total_ordering
 from time import strftime, strptime
@@ -29,6 +32,9 @@ from time import strftime, strptime
 from imdb import VERSION
 from imdb import linguistics
 from imdb._exceptions import IMDbParserError
+
+
+PY2 = sys.hexversion < 0x3000000
 
 
 # Logger for imdb.utils module.
@@ -995,7 +1001,8 @@ TAGS_TO_MODIFY = {
 
 
 _valid_chars = string.ascii_lowercase + '-' + string.digits
-_translator = str.maketrans(_valid_chars, _valid_chars)
+_translator = str.maketrans(_valid_chars, _valid_chars) if not PY2 else \
+    string.maketrans(_valid_chars, _valid_chars)
 
 
 def _tagAttr(key, fullpath):
@@ -1206,13 +1213,19 @@ class _Container(object):
                 self.currentRole.characterID = roleID
             else:
                 for index, item in enumerate(roleID):
-                    self.__role[index].characterID = item
+                    r = self.__role[index]
+                    if PY2 and isinstance(r, unicode):
+                        continue
+                    r.characterID = item
         else:
             if not isinstance(roleID, (list, tuple)):
                 self.currentRole.personID = roleID
             else:
                 for index, item in enumerate(roleID):
-                    self.__role[index].personID = item
+                    r = self.__role[index]
+                    if PY2 and isinstance(r, unicode):
+                        continue
+                    r.personID = item
 
     roleID = property(_get_roleID, _set_roleID,
                       doc="the characterID or personID of the currentRole object.")

@@ -1,4 +1,6 @@
-# Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
+# -*- coding: utf-8 -*-
+
+#  Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
 #           2012 Alberto Malagoli <albemala AT gmail.com>
 #           2009 H. Turgut Uyar <uyar@tekir.org>
 #
@@ -20,6 +22,8 @@
 This module provides functions and data to handle languages and articles
 (in various languages) at the beginning of movie titles in a smart way.
 """
+
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 # List of generic articles used when the language of the title is unknown (or
 # we don't have information about articles in that language).

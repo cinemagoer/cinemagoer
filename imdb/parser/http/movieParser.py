@@ -43,7 +43,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, KIND_MAP
 
-from .piculet import Path, Rule, Rules, preprocessors
+from .piculet import Path, Rule, Rules, preprocessors, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_person
 
 
@@ -570,7 +570,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 foreach="//ul[@class='simpleList']",
                 rules=[
                     Rule(
-                        key=Path('preceding-sibling::header[1]/div/h4/text()', transform=str.lower),
+                        key=Path('preceding-sibling::header[1]/div/h4/text()', transform=transformers.lower),
                         extractor=Rules(
                             foreach='./li',
                             rules=[
@@ -1740,7 +1740,7 @@ class DOMHTMLConnectionParser(DOMParserBase):
                 foreach='//div[@class="_imdbpy"]',
                 rules=[
                     Rule(
-                        key=Path('./h5/text()', transform=str.lower),
+                        key=Path('./h5/text()', transform=transformers.lower),
                         extractor=Rules(
                             foreach='./a',
                             rules=[
@@ -2511,7 +2511,7 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
                     Rule(
                         key=Path(
                             './h3/a/span/text()',
-                            transform=str.lower
+                            transform=transformers.lower
                         ),
                         extractor=Path(
                             foreach='../following-sibling::div[1]/p',

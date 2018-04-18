@@ -30,6 +30,8 @@ biography
 ...and so on.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import re
 
 from imdb.utils import analyze_name, canonicalName
@@ -40,7 +42,7 @@ from .movieParser import (
     DOMHTMLOfficialsitesParser,
     DOMHTMLTechParser
 )
-from .piculet import Path, Rule, Rules
+from .piculet import Path, Rule, Rules, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_movie
 
 
@@ -339,7 +341,7 @@ class DOMHTMLBioParser(DOMParserBase):
             extractor=Path(
                 '//table[@id="overviewTable"]'
                 '//td[text()="Height"]/following-sibling::td[1]/text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -388,7 +390,7 @@ class DOMHTMLBioParser(DOMParserBase):
                 foreach='//div[@class="_imdbpyh4"]/h4[starts-with(text(), "Trade Mark")]'
                         '/.././div[contains(@class, "soda")]',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -397,7 +399,7 @@ class DOMHTMLBioParser(DOMParserBase):
                 foreach='//div[@class="_imdbpyh4"]/h4[starts-with(text(), "Trivia")]'
                         '/.././div[contains(@class, "soda")]',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -406,7 +408,7 @@ class DOMHTMLBioParser(DOMParserBase):
                 foreach='//div[@class="_imdbpyh4"]/h4[starts-with(text(), "Personal Quotes")]'
                         '/.././div[contains(@class, "soda")]',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         ),
         Rule(
@@ -469,7 +471,7 @@ class DOMHTMLOtherWorksParser(DOMParserBase):
             extractor=Path(
                 foreach='//li[@class="ipl-zebra-list__item"]',
                 path='.//text()',
-                transform=str.strip
+                transform=transformers.strip
             )
         )
     ]

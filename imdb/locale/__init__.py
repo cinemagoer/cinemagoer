@@ -18,6 +18,8 @@
 This package provides scripts and files for internationalization of IMDbPY.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import gettext
 import os
 

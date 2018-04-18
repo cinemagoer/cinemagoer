@@ -24,13 +24,14 @@ called with the ``accessSystem`` argument is set to "http" or "web"
 or "html" (this is the default).
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import logging
 import socket
 import ssl
 from codecs import lookup
-from urllib.parse import quote_plus
-from urllib.request import FancyURLopener
 
+from imdb import PY2
 from imdb import IMDbBase
 from imdb.utils import analyze_title
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -45,6 +46,13 @@ from . import (
     searchKeywordParser
 )
 from . import topBottomParser
+
+if PY2:
+    from urllib import quote_plus
+    from urllib import FancyURLopener
+else:
+    from urllib.parse import quote_plus
+    from urllib.request import FancyURLopener
 
 # Logger for miscellaneous functions.
 _aux_logger = logging.getLogger('imdbpy.parser.http.aux')
@@ -177,7 +185,10 @@ class IMDbURLopener(FancyURLopener):
             content = uopener.read(**kwds)
             self._last_url = uopener.url
             # Maybe the server is so nice to tell us the charset...
-            server_encode = (uopener.info().get_charsets() or [None])[0]
+            if PY2:
+                server_encode = uopener.headers.getparam('charset')
+            else:
+                server_encode = (uopener.info().get_charsets() or [None])[0]
             # Otherwise, look at the content-type HTML meta tag.
             if server_encode is None and content:
                 begin_h = content.find(b'text/html; charset=')

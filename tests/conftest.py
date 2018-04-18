@@ -35,13 +35,12 @@ def retrieve_unicode_cached(self, url, size=-1):
 s3_uri = os.getenv('IMDBPY_S3_URI')
 
 
-@fixture
-def ia():
+@fixture(params=['http'] + (['s3'] if s3_uri is not None else []))
+def ia(request):
     """Access to IMDb data."""
-    IMDbURLopener.retrieve_unicode = retrieve_unicode_cached
-    yield IMDb('http')
-
-    IMDbURLopener.retrieve_unicode = retrieve_unicode_orig
-
-    if s3_uri is not None:
+    if request.param == 'http':
+        IMDbURLopener.retrieve_unicode = retrieve_unicode_cached
+        yield IMDb('http')
+        IMDbURLopener.retrieve_unicode = retrieve_unicode_orig
+    elif request.param == 's3':
         yield IMDb('s3', uri=s3_uri)

@@ -235,8 +235,7 @@ def analyze_certificates(certificates):
 
 
 class DOMHTMLMovieParser(DOMParserBase):
-    """Parser for the "combined details" (and if instance.mdparse is
-    True also for the "main details") page of a given movie.
+    """Parser for the "reference" page of a given movie.
     The page should be provided as a string, as taken from
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -244,7 +243,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     Example::
 
         mparser = DOMHTMLMovieParser()
-        result = mparser.parse(combined_details_html_string)
+        result = mparser.parse(reference_html_string)
     """
     _containsObjects = True
 
@@ -262,7 +261,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 foreach='//h4[contains(@class, "ipl-header__content")]',
                 rules=[
                     Rule(
-                        key=Path('./@name', transform=lambda x: x.replace('_', ' ')),
+                        key=Path('./@name', transform=lambda x: x.replace('_', ' ').strip()),
                         extractor=Rules(
                             foreach='../../following-sibling::table[1]//tr',
                             rules=[
@@ -574,14 +573,14 @@ class DOMHTMLMovieParser(DOMParserBase):
             )
         ),
         Rule(
-            key='blackcatheader',
+            key='companies',
             extractor=Rules(
-                foreach='//b[@class="blackcatheader"]',
+                foreach="//ul[@class='simpleList']",
                 rules=[
                     Rule(
-                        key=Path('./text()', transform=str.lower),
+                        key=Path('preceding-sibling::header[1]/div/h4/text()', transform=transformers.lower),
                         extractor=Rules(
-                            foreach='../ul/li',
+                            foreach='./li',
                             rules=[
                                 Rule(
                                     key='name',
@@ -598,6 +597,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                             ],
                             transform=lambda x: Company(
                                 name=x.get('name') or '',
+                                accessSystem='http',
                                 companyID=analyze_imdbid(x.get('comp-link')),
                                 notes=(x.get('notes') or '').strip()
                             )
@@ -700,7 +700,6 @@ class DOMHTMLMovieParser(DOMParserBase):
                                 for x in data['runtimes']]
         if 'number of seasons' in data:
             data['seasons'] = [str(i) for i in range(1, data['number of seasons'] + 1)]
-            # data['number of seasons'] = seasons[-1] if seasons else len(data['seasons'])
         if 'season/episode' in data:
             tokens = data['season/episode'].split('Episode')
             try:
@@ -712,30 +711,6 @@ class DOMHTMLMovieParser(DOMParserBase):
             except:
                 data['episode'] = 'unknown'
             del data['season/episode']
-        # if 'original air date' in data:
-        #     oid = self.re_space.sub(' ', data['original air date']).strip()
-        #     data['original air date'] = oid
-        #     aid = self.re_airdate.findall(oid)
-        #     if aid and len(aid[0]) == 3:
-        #         date, season, episode = aid[0]
-        #         date = date.strip()
-        #         try:
-        #             season = int(season)
-        #         except ValueError:
-        #             pass
-        #         try:
-        #             episode = int(episode)
-        #         except ValueError:
-        #             pass
-        #         if date and date != '????':
-        #             data['original air date'] = date
-        #         else:
-        #             del data['original air date']
-        #         # Handle also "episode 0".
-        #         if season or isinstance(season, int):
-        #             data['season'] = season
-        #         if episode or isinstance(season, int):
-        #             data['episode'] = episode
         for k in ('writer', 'director'):
             t_k = 'thin %s' % k
             if t_k not in data:
@@ -778,6 +753,14 @@ class DOMHTMLMovieParser(DOMParserBase):
                 data['votes'] = int(votes)
             except (TypeError, ValueError):
                 pass
+        companies = data.get('companies')
+        if companies:
+            for section in companies:
+                for key, value in section.items():
+                    if key in data:
+                        key = '%s companies' % key
+                    data.update({key: value})
+            del data['companies']
         return data
 
 
@@ -1765,7 +1748,7 @@ class DOMHTMLConnectionParser(DOMParserBase):
                 foreach='//div[@class="_imdbpy"]',
                 rules=[
                     Rule(
-                        key=Path('./h5/text()', transform=str.lower),
+                        key=Path('./h5/text()', transform=transformers.lower),
                         extractor=Rules(
                             foreach='./a',
                             rules=[
@@ -2536,7 +2519,7 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
                     Rule(
                         key=Path(
                             './h3/a/span/text()',
-                            transform=str.lower
+                            transform=transformers.lower
                         ),
                         extractor=Path(
                             foreach='../following-sibling::div[1]/p',

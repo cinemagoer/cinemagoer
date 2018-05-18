@@ -7,6 +7,8 @@ configuration options.
 
 download-from-s3: download the new alternative interface dataset.
 
+s3-reduce: create smaller versions of .tsv.gz files.
+
 applydiffs.sh: Bash script useful apply patches to a set of
 IMDb's plain text data files.
 You can use this script to apply the diffs files distributed

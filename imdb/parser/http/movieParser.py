@@ -72,6 +72,7 @@ _SECT_CONV = {
     'production management': 'production manager',
     'second unit director or assistant director': 'assistant director',
     'costume and wardrobe department': 'costume department',
+    'costume departmen': 'costume department',
     'sound department': 'sound crew',
     'stunts': 'stunt performer',
     'other crew': 'miscellaneous crew',
@@ -1877,26 +1878,15 @@ class DOMHTMLTechParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
-        for key in data:
-            data[key] = [x for x in data[key] if x != '|']
-            data[key] = [self.re_space.sub(' ', x).strip() for x in data[key]]
-            data[key] = [_f for _f in data[key] if _f]
-        if self.kind == 'contacts' and data:
-            data = {self.kind: data}
-        else:
-            if self.kind == 'publicity':
-                if 'biography (print)' in data:
-                    data['biography-print'] = data['biography (print)']
-                    del data['biography (print)']
-            # Tech info.
-            for key in list(data.keys()):
-                if key.startswith('film negative format'):
-                    data['film negative format'] = data[key]
-                    del data[key]
-                elif key.startswith('film length'):
-                    data['film length'] = data[key]
-                    del data[key]
-        return data
+        info = {}
+        for section in data.get('tech', []):
+            info.update(section)
+        for key, value in info.items():
+            if isinstance(value, list):
+                info[key] = [self.re_space.sub(' ', x).strip() for x in value]
+            else:
+                info[key] = self.re_space.sub(' ', value).strip()
+        return {self.kind: info}
 
 
 class DOMHTMLNewsParser(DOMParserBase):

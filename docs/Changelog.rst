@@ -3,6 +3,10 @@ Changelog
 
 * What's new in release 6.6
 
+  [http]
+
+  - #156: fix tech parser
+
 
 * What's new in release 6.5 "Poultrygeist: Night of the Chicken Dead" (15 Apr 2018)
 

@@ -191,7 +191,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             logging.config.fileConfig(os.path.expanduser(logCfg))
         except Exception as e:
             _imdb_logger.warn('unable to read logger config: %s' % e)
-    if accessSystem in ('http', 'web', 'html'):
+    if accessSystem in ('http', 'https', 'web', 'html'):
         from .parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
     if accessSystem in ('s3', 's3dataset'):

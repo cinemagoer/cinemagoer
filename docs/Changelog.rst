@@ -3,6 +3,10 @@ Changelog
 
 * What's new in release 6.6
 
+  [general]
+
+  - introduce 'https' as an alias for 'http'
+
   [http]
 
   - #156: fix tech parser

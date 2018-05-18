@@ -11,6 +11,7 @@ Changelog
   [http]
 
   - #156: fix tech parser
+  - #157: full-size headshot for persons
 
 
 * What's new in release 6.5 "Poultrygeist: Night of the Chicken Dead" (15 Apr 2018)

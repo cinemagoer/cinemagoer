@@ -6,6 +6,11 @@ def test_person_headshot_should_be_an_image_link(ia):
     assert re.match(r'^https?://.*\.jpg$', person['headshot'])
 
 
+def test_person_full_size_headshot_should_be_an_image_link(ia):
+    person = ia.get_person('0000206', info=['biography'])   # Keanu Reeves
+    assert re.match(r'^https?://.*\.jpg$', person['full-size headshot'])
+
+
 def test_person_headshot_if_none_should_be_excluded(ia):
     person = ia.get_person('0330139', info=['biography'])   # Deni Gordon
     assert 'headshot' not in person

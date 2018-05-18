@@ -18,6 +18,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/.
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* Filip Bačić for a report about full-size headshot
+
 * Matthew Clapp for a report about pip installation
 
 * Jannik S for a report on tech parser

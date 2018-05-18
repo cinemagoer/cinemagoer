@@ -109,6 +109,19 @@ DB_TRANSFORM = {
         'sn_soundex': {'type': sqlalchemy.String, 'length': 5, 'index': True},
         's_soundex': {'type': sqlalchemy.String, 'length': 5, 'index': True},
     },
+    'title_akas': {
+        'titleId': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+                   'rename': 'movieID', 'index': True},
+        'ordering': {'type': sqlalchemy.Integer, 'transform': transf_int},
+        'title': {'index': True},
+        'region': {'type': sqlalchemy.String, 'length': 5, 'index': True},
+        'language': {'type': sqlalchemy.String, 'length': 5, 'index': True},
+        'types': {'type': sqlalchemy.String, 'length': 31, 'index': True},
+        'attributes': {'type': sqlalchemy.String, 'length': 127},
+        'isOriginalTitle': {'type': sqlalchemy.Boolean, 'transform': transf_bool,
+                            'rename': 'original', 'index': True},
+        't_soundex': {'type': sqlalchemy.String, 'length': 5, 'index': True}
+    },
     'title_crew': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},

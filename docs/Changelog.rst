@@ -5,6 +5,7 @@ Changelog
 
   [general]
 
+  - #154: exclude docs and etc directories from packaging
   - introduce 'https' as an alias for 'http'
 
   [http]

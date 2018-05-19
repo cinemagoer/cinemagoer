@@ -224,9 +224,18 @@ class IMDbS3AccessSystem(IMDbBase):
         conditions = [tb.c.t_soundex == t_soundex]
         if _episodes:
             conditions.append(tb.c.titleType == 'episode')
-        results = tb.select(sqlalchemy.and_(*conditions)).execute().fetchall()
+        results = tb.select(sqlalchemy.and_(*conditions)).execute()
         results = [(x['tconst'], self._clean(self._rename('title_basics', dict(x)), ('t_soundex',)))
                    for x in results]
+
+        # Also search the AKAs
+        ta = self.T['title_akas']
+        ta_conditions = [ta.c.t_soundex == t_soundex]
+        ta_results = ta.select(sqlalchemy.and_(*ta_conditions)).execute()
+        ta_results = [(x['titleId'], self._clean(self._rename('title_akas', dict(x)), ('t_soundex',)))
+                      for x in ta_results]
+        results += ta_results
+
         results = scan_titles(results, title)
         results = [x[1] for x in results]
         return results
@@ -246,7 +255,7 @@ class IMDbS3AccessSystem(IMDbBase):
             conditions.append(nb.c.sn_soundex == sn_soundex)
         if s_soundex:
             conditions.append(nb.c.s_soundex == s_soundex)
-        results = nb.select(sqlalchemy.or_(*conditions)).execute().fetchall()
+        results = nb.select(sqlalchemy.or_(*conditions)).execute()
         results = [(x['nconst'], self._clean(self._rename('name_basics', dict(x)),
                                              ('ns_soundex', 'sn_soundex', 's_soundex')))
                    for x in results]

@@ -1,5 +1,9 @@
-The currentRole Attribute and the Character Class
-=================================================
+# NOTICE
+
+Since the end of 2017, IMDb has removed the Character kind of information.
+This document is still valid, but only for the obsolete "sql" data access system.
+
+# The currentRole Attribute and the Character Class
 
 Since version 3.3, IMDbPY supports the character pages of the IMDb database;
 this required some substantial changes to how actors' and acresses' roles

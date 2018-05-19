@@ -1,6 +1,5 @@
 **IMDbPY** is a Python package for retrieving and managing the data
-of the `IMDb`_ movie database about movies, people, characters,
-and companies.
+of the `IMDb`_ movie database about movies, people and companies.
 
 .. admonition:: Revamp notice
    :class: note
@@ -84,11 +83,6 @@ Code example
     # get 5 movies tagged with a keyword
     dystopia = ia.get_keyword('dystopia', results=5)
 
-    # get a Character object
-    deckard = ia.search_character('Rick Deckard')[0]
-    ia.update(deckard)
-    print(deckard['full-size headshot'])
-
     # get top250 and bottom100 movies
     top250 = ia.get_top250_movies()
     bottom100 = ia.get_bottom100_movies()
@@ -130,7 +124,7 @@ or a SQL database:
 
     ia = imdb.IMDb()
 
-Return an instance of a Movie, Person, Company, or Character class.
+Return an instance of a Movie, Person or Company class.
 The objects have the basic information:
 
 .. code-block:: python
@@ -138,9 +132,8 @@ The objects have the basic information:
    movie = ia.get_movie(movieID)
    person = ia.get_person(personID)
    company = ia.get_company(companyID)
-   character = ia.get_character(characterID)
 
-Return a list of Movie, Person, Company or Character instances. These objects
+Return a list of Movie, Person or Company instances. These objects
 have only bare information, like title and movieID:
 
 .. code-block:: python
@@ -148,9 +141,8 @@ have only bare information, like title and movieID:
     movies = ia.search_movie(title)
     persons = ia.search_person(name)
     companies = ia.search_company(name)
-    characters = ia.search_characters(name)
 
-Update a Movie, Person, Company, or Character instance with basic information,
+Update a Movie, Person or Company instance with basic information,
 or any other specified info set:
 
 .. code-block:: python
@@ -178,7 +170,6 @@ The ID of the object:
     movie.movieID
     person.personID
     company.companyID
-    character.characterID
 
 Get a key of an object:
 
@@ -201,14 +192,6 @@ Get the top 250 and bottom 100 movies:
 
     ia.get_top250_movies()
     ia.get_bottom100_movies()
-
-Character associated to a person who starred in a movie, and its notes:
-
-.. code-block:: python
-
-    person_in_cast = movie['cast'][0]
-    notes = person_in_cast.notes
-    character = person_in_cast.currentRole
 
 Check whether a person worked in a given movie or not:
 

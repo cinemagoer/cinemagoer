@@ -6,19 +6,19 @@ of the `IMDb`_ movie database about movies, people and companies.
 
    Starting on November 2017, many things were improved and simplified:
 
-   - moved the package to Python 3
+   - moved the package to Python 3 (compatible with Python 2.7)
    - removed dependencies: SQLObject, C compiler, BeautifulSoup
    - removed the "mobile" and "httpThin" parsers
    - introduced a testsuite (`please help with it!`_)
 
-   The Python 2 version is available in the *imdbpy-legacy* branch
+   The original Python 2 version is available in the *imdbpy-legacy* branch
    (mostly unsupported).
 
 
 Main features
 -------------
 
-- written in Python 3
+- written in Python 3 (compatible with Python 2.7)
 
 - platform-independent
 

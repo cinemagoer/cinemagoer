@@ -25,7 +25,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.6dev20180518c'
+__version__ = VERSION = '6.6dev20180519'
 
 
 import logging
@@ -194,7 +194,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
     if accessSystem in ('http', 'https', 'web', 'html'):
         from .parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
-    if accessSystem in ('s3', 's3dataset'):
+    if accessSystem in ('s3', 's3dataset', 'imdbws'):
         from .parser.s3 import IMDbS3AccessSystem
         return IMDbS3AccessSystem(*arguments, **keywords)
     elif accessSystem in ('sql', 'db', 'database'):

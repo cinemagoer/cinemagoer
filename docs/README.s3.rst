@@ -17,7 +17,7 @@ To use the new data set with IMDbPY you have to:
 #. Download the files on https://datasets.imdbws.com/ and put all of them
    in the same directory.
 
-#. Import the data using the ``bin/s32imdbpy.py`` script. For example::
+#. Import the data using the ``bin/s32imdbpy.py`` script. For example:
 
      ./bin/s32imdbpy.py ~/Download/imdb-s3-dataset-2018-02-07/ \
             postgres://user:password@localhost/imdb

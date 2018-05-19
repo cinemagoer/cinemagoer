@@ -13,6 +13,10 @@ Changelog
   - #156: fix tech parser
   - #157: full-size headshot for persons
 
+  [s3]
+
+  - #158: fetch and search AKAs
+
 
 * What's new in release 6.5 "Poultrygeist: Night of the Chicken Dead" (15 Apr 2018)
 

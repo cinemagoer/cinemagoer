@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2017-2018 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -31,6 +32,21 @@ from .utils import DB_TRANSFORM, title_soundex, name_soundexes, scan_titles, sca
 
 from imdb.Movie import Movie
 from imdb.Person import Person
+
+
+def split_array(text):
+    """Split a string assuming it's an array.
+
+    :param text: the text to split
+    :type text: str
+    :returns: list of splitted strings
+    :rtype: list
+    """
+    if not isinstance(text, str):
+        return text
+    # for some reason, titles.akas.tsv.gz contains \x02 as a separator
+    sep = ',' if ',' in text else '\x02'
+    return text.split(sep)
 
 
 class IMDbS3AccessSystem(IMDbBase):
@@ -80,7 +96,7 @@ class IMDbS3AccessSystem(IMDbBase):
         if 'endYear' in data and data['endYear']:
             data['year'] += '-%s' % data['endYear']
         genres = data.get('genres') or ''
-        data['genres'] = genres.lower().split(',')
+        data['genres'] = split_array(genres.lower())
         if 'runtimes' in data and data['runtimes']:
             data['runtimes'] = [data['runtimes']]
         self._clean(data, ('startYear', 'endYear', 'movieID'))
@@ -98,7 +114,7 @@ class IMDbS3AccessSystem(IMDbBase):
         person = nb.select(nb.c.nconst == personID).execute().fetchone() or {}
         data = self._rename('name_basics', dict(person))
         movies = []
-        for movieID in (data.get('known for') or '').split(','):
+        for movieID in split_array(data.get('known for') or ''):
             if not movieID:
                 continue
             movieID = int(movieID)
@@ -122,7 +138,7 @@ class IMDbS3AccessSystem(IMDbBase):
         writers = []
         directors = []
         for key, target in (('director', directors), ('writer', writers)):
-            for personID in (tc_data.get(key) or '').split(','):
+            for personID in split_array(tc_data.get(key) or ''):
                 if not personID:
                     continue
                 personID = int(personID)
@@ -147,7 +163,7 @@ class IMDbS3AccessSystem(IMDbBase):
         movie = tp.select(tp.c.tconst == movieID).execute().fetchone() or {}
         tp_data = self._rename('title_principals', dict(movie))
         cast = []
-        for personID in (tp_data.get('cast') or '').split(','):
+        for personID in split_array(tp_data.get('cast') or ''):
             if not personID:
                 continue
             personID = int(personID)
@@ -168,7 +184,20 @@ class IMDbS3AccessSystem(IMDbBase):
         akas = ta.select(ta.c.titleId == movieID).execute()
         akas_list = []
         for aka in akas:
-            ta_data = self._rename('title_akas', dict(aka))
+            ta_data = self._rename('title_akas', dict(aka)) or {}
+            for key in list(ta_data.keys()):
+                if not ta_data[key]:
+                    del ta_data[key]
+            for key in 't_soundex', 'movieID':
+                if key in ta_data:
+                    del ta_data[key]
+            for key in 'types', 'attributes':
+                if key not in ta_data:
+                    continue
+                ta_data[key] = split_array(ta_data[key])
+            akas_list.append(ta_data)
+        if akas_list:
+            data['akas'] = akas_list
 
         self._clean(data, ('movieID', 't_soundex'))
         return {'data': data, 'info sets': self.get_movie_infoset()}

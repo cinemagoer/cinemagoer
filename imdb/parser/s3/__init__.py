@@ -99,6 +99,8 @@ class IMDbS3AccessSystem(IMDbBase):
         data = self._rename('name_basics', dict(person))
         movies = []
         for movieID in (data.get('known for') or '').split(','):
+            if not movieID:
+                continue
             movieID = int(movieID)
             movie_data = self._base_title_info(movieID, movies_cache=movies_cache, persons_cache=persons_cache)
             movie = Movie(movieID=movieID, data=movie_data, accessSystem=self.accessSystem)
@@ -121,6 +123,8 @@ class IMDbS3AccessSystem(IMDbBase):
         directors = []
         for key, target in (('director', directors), ('writer', writers)):
             for personID in (tc_data.get(key) or '').split(','):
+                if not personID:
+                    continue
                 personID = int(personID)
                 person_data = self._base_person_info(personID,
                                                      movies_cache=_movies_cache,
@@ -144,6 +148,8 @@ class IMDbS3AccessSystem(IMDbBase):
         tp_data = self._rename('title_principals', dict(movie))
         cast = []
         for personID in (tp_data.get('cast') or '').split(','):
+            if not personID:
+                continue
             personID = int(personID)
             person_data = self._base_person_info(personID,
                                                     movies_cache=_movies_cache,
@@ -158,8 +164,14 @@ class IMDbS3AccessSystem(IMDbBase):
         tr_data = self._rename('title_ratings', dict(movie))
         data.update(tr_data)
 
+        ta = self.T['title_akas']
+        akas = ta.select(ta.c.titleId == movieID).execute()
+        akas_list = []
+        for aka in akas:
+            ta_data = self._rename('title_akas', dict(aka))
+
         self._clean(data, ('movieID', 't_soundex'))
-        return {'data': data, 'infosets': self.get_movie_infoset()}
+        return {'data': data, 'info sets': self.get_movie_infoset()}
 
     # we don't really have plot information, yet
     get_movie_plot = get_movie_main
@@ -168,7 +180,7 @@ class IMDbS3AccessSystem(IMDbBase):
         personID = int(personID)
         data = self._base_person_info(personID)
         self._clean(data, ('personID',))
-        return {'data': data, 'infosets': self.get_person_infoset()}
+        return {'data': data, 'info sets': self.get_person_infoset()}
 
     get_person_filmography = get_person_main
     get_person_biography = get_person_main

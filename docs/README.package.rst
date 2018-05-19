@@ -229,7 +229,7 @@ use the ``movieObject.keys()`` method (obviously only keys that refer
 to some existing information are defined. So a movie without an art director
 will raise a KeyError exception is you try ``movieObject['art director'])``.
 To avoid the exception, you can test if a Movie object has a given key using
-``key in movieObject``, or get the value with the ``get(key)`` method,
+``movieObject.has_key(key)``, or get the value with the ``get(key)`` method,
 which returns the value or None if the key is not found (an optional parameter
 can modify the default value returned if the key isn't found).
 

@@ -307,6 +307,8 @@ class Movie(_Container):
                              toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(c):
                     return True
+        elif isinstance(item, str):
+            return item in self.data
         return False
 
     def __deepcopy__(self, memo):

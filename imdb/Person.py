@@ -192,6 +192,8 @@ class Person(_Container):
             for m in flatten(self.data, yieldDictKeys=True, scalar=Movie):
                 if item.isSame(m.currentRole):
                     return True
+        elif isinstance(item, str):
+            return item in self.data
         return False
 
     def isSameName(self, other):

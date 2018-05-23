@@ -200,6 +200,13 @@ Check whether a person worked in a given movie or not:
     person in movie
     movie in person
 
+Check whether a key is present for a movie (or person) or not:
+
+.. code-block:: python
+
+    'cast' in movie
+    'filmography' in person
+
 
 License
 -------

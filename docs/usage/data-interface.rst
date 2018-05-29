@@ -1,7 +1,7 @@
 Data interface
 ==============
 
-The IMDbPY objects that represent movies, people, and companies provide
+The IMDbPY objects that represent movies, people and companies provide
 a dictionary-like interface where the key identifies the information
 you want to get out of the object.
 
@@ -12,22 +12,22 @@ to present the data. If the information is grouped into subsections,
 such as cast members, certifications, distributor companies, etc.,
 the subsection label in the HTML page is used as the key.
 
-The section name (the key) is always (with some minor exceptions) lowercase;
-underscores and dashes are replaced with spaces. Some other keys aren't taken
-from the HTML page, but are defined within the respective object class.
+The key is almost always lowercase; underscores and dashes are replaced
+with spaces. Some keys aren't taken from the HTML page, but are defined
+within the respective class.
 
 
 Information sets
 ----------------
 
-Since release 1.2 it's possible to retrieve almost every piece of information
-about a given movie, person or company. This can be a problem, because
-(at least for the "http" data access system) it means that a lot of web pages
-must be fetched and parsed. This can be time- and bandwidth consuming,
-especially if you're interested only in a small part of the information.
+IMDbPY can retrieve almost every piece of information of a movie, person or
+company. This can be a problem, because (at least for the "http" data access
+system) it means that a lot of web pages must be fetched and parsed.
+This can be both time- and bandwidth-consuming, especially if you're interested
+in only a small part of the information.
 
 The :meth:`get_movie <imdb.IMDbBase.get_movie>`,
-:meth:`get_person <imdb.IMDbBase.get_person>`, and
+:meth:`get_person <imdb.IMDbBase.get_person>` and
 :meth:`get_company <imdb.IMDbBase.get_company>` methods take an optional
 ``info`` parameter, which can be used to specify the kinds of data to fetch.
 Each group of data that gets fetched together is called an "information set".
@@ -57,7 +57,8 @@ by default:
 - for a person: "main", "filmography", "biography"
 - for a company: "main"
 
-The defaults can be retrieved from the ``default_info`` attributes:
+These defaults can be retrieved from the ``default_info`` attributes
+of the classes:
 
 .. code-block:: python
 
@@ -65,8 +66,8 @@ The defaults can be retrieved from the ``default_info`` attributes:
    >>> Person.default_info
    ('main', 'filmography', 'biography')
 
-Each instance also has a ``current_info`` variable for tracking
-the information sets already retrieved.
+Each instance also has a ``current_info`` attribute for tracking
+the information sets that have already been retrieved:
 
 .. code-block:: python
 
@@ -74,14 +75,14 @@ the information sets already retrieved.
    >>> movie.current_info
    ['main', 'plot', 'synopsis']
 
-The list of fetched information sets and the keys they provide can be
+The list of retrieved information sets and the keys they provide can be
 taken from the ``infoset2keys`` attribute:
 
 .. code-block:: python
 
    >>> movie = ia.get_movie('0133093')
    >>> movie.infoset2keys
-   {'main': ['cast', 'genres',..., 'top 250 rank'], 'plot': ['plot', 'synopsis']}
+   {'main': ['cast', 'genres', ..., 'top 250 rank'], 'plot': ['plot', 'synopsis']}
    >>> movie = ia.get_movie('0094226', info=['taglines', 'plot'])
    >>> movie.infoset2keys
    {'taglines': ['taglines'], 'plot': ['plot', 'synopsis']}
@@ -103,8 +104,8 @@ available on a movie get operation:
    <Movie id:0133093[http] title:_The Matrix (1999)_>
    >>> movie.current_info
    []
-   >>> movie.keys()
-   ['title', 'kind', 'year', ..., 'smart long imdb canonical title']
+   >>> 'genres' in movie
+   False
 
 Once an object is retrieved (through a get or a search), its data can be
 updated using the :meth:`update <imdb.IMDbBase.update>` method with the desired
@@ -112,11 +113,11 @@ information sets. Continuing from the example above:
 
 .. code-block:: python
 
+   >>> 'median' in movie
+   False
    >>> ia.update(movie, info=['taglines', 'vote details'])
    >>> movie.current_info
    ['taglines', 'vote details']
-   >>> movie.keys()
-   ['title', 'kind', 'year', 'taglines'..., 'smart long imdb canonical title']
    >>> movie['median']
    9
    >>> ia.update(movie, info=['plot'])
@@ -142,14 +143,14 @@ parts of the data inside a string, like the plot of a movie and its author:
    >>> plot
    "1920's prohibition ... way to get him.::Jeremy Perkins <jwp@aber.ac.uk>"
 
-As a rule, there's at most one such separator inside a string. Splitting it
-will result in two logical pieces as in ``TEXT::NOTE``.
+As a rule, there's at most one such separator inside a string. Splitting
+the string will result in two logical pieces as in ``TEXT::NOTE``.
 The :func:`imdb.helpers.makeTextNotes` function can be used to create a custom
 function to pretty-print this kind of information.
 
 
-Movie and person references
----------------------------
+References
+----------
 
 Sometimes the collected data contains strings with references to other movies
 or persons, e.g. in the plot of a movie or the biography of a person.

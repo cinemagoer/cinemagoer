@@ -3,6 +3,22 @@ Changelog
 
 * What's new in release 6.6
 
+  [general]
+
+  - #154: exclude docs and etc directories from packaging
+  - introduce 'https' as an alias for 'http'
+  - #151: the 'in' operator also considers key names
+
+  [http]
+
+  - #156: fix tech parser
+  - #157: full-size headshot for persons
+
+  [s3]
+
+  - #158: fetch and search AKAs
+  - update the goodies/download-from-s3 script to use the datasets.imdbws.com site
+
 
 * What's new in release 6.5 "Poultrygeist: Night of the Chicken Dead" (15 Apr 2018)
 

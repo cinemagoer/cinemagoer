@@ -1,6 +1,5 @@
 IMDbPY is a Python package for retrieving and managing the data
-of the `IMDb`_ movie database about movies, people, characters,
-and companies.
+of the `IMDb`_ movie database about movies, people, and companies.
 
 :Homepage: https://imdbpy.sourceforge.io/
 :PyPI: https://pypi.python.org/pypi/imdbpy/
@@ -13,7 +12,7 @@ and companies.
 
    Starting on November 2017, many things were improved and simplified:
 
-   - moved the package to Python 3
+   - moved the package to Python 3 (compatible with Python 2.7)
    - removed dependencies: SQLObject, C compiler, BeautifulSoup
    - removed the "mobile" and "httpThin" parsers
    - introduced a test suite (:ref:`please help with it! <testing>`)
@@ -22,7 +21,7 @@ and companies.
 Main features
 -------------
 
-- written in Python 3, also with support for Python 2.7
+- written in Python 3 (compatible with Python 2.7)
 
 - platform-independent
 

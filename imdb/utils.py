@@ -1271,7 +1271,15 @@ class _Container(object):
             return None
         url = self.data[self._image_key] or ''
         ext_idx = url.rfind('.')
-        return url[:url.rindex('@')+1] + url[ext_idx:]
+        if ext_idx == -1:
+            return url
+        if '@' in url:
+            return url[:url.rindex('@')+1] + url[ext_idx:]
+        else:
+            prev_dot = url[:ext_idx].rfind('.')
+            if prev_dot == -1:
+                return url
+            return url[:prev_dot] + url[ext_idx:]
 
     def reset(self):
         """Reset the object."""

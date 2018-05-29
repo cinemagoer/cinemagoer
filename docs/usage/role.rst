@@ -90,6 +90,13 @@ like the title and the year; the latest movie with Julia Roberts:
     # name of the first director
     print(last['director'][0]['name'])
 
+
+.. note::
+
+   Since the end of 2017, IMDb has removed the Character kind of information.
+   This document is still valid, but only for the obsolete "sql" data access
+   system.
+
 Since version 3.3, IMDbPY supports the character pages of the IMDb database;
 this required some substantial changes to how actors' and acresses' roles
 were handled. Starting with release 3.4, "sql" data access system is supported,

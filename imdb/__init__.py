@@ -25,7 +25,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.6dev20180415'
+__version__ = VERSION = '6.6dev20180523'
 
 
 import logging
@@ -191,10 +191,10 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             logging.config.fileConfig(os.path.expanduser(logCfg))
         except Exception as e:
             _imdb_logger.warn('unable to read logger config: %s' % e)
-    if accessSystem in ('http', 'web', 'html'):
+    if accessSystem in ('http', 'https', 'web', 'html'):
         from .parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
-    if accessSystem in ('s3', 's3dataset'):
+    if accessSystem in ('s3', 's3dataset', 'imdbws'):
         from .parser.s3 import IMDbS3AccessSystem
         return IMDbS3AccessSystem(*arguments, **keywords)
     elif accessSystem in ('sql', 'db', 'database'):

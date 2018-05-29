@@ -77,9 +77,7 @@ scripts = [
     './bin/get_top_bottom_movies.py'
 ]
 
-# XXX: I'm not sure that 'etc' is a good idea.  Making it an absolute
-#      path seems a recipe for a disaster (with bdist_egg, at least).
-data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
+data_files = []
 
 featSQLAlchemy = setuptools.dist.Feature(
     'SQLAlchemy dependency',

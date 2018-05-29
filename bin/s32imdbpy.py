@@ -70,6 +70,8 @@ def generate_content(fd, headers, table):
             info[key] = tranf(info[key])
         if table_name == 'title_basics':
             info['t_soundex'] = title_soundex(info['primaryTitle'])
+        elif table_name == 'title_akas':
+            info['t_soundex'] = title_soundex(info['title'])
         elif table_name == 'name_basics':
             info['ns_soundex'], info['sn_soundex'], info['s_soundex'] = name_soundexes(info['primaryName'])
         data.append(info)

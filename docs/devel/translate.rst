@@ -1,7 +1,7 @@
 .. _translate:
 
-How to add a new language
--------------------------
+How to translate
+----------------
 
 .. note::
 

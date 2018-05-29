@@ -40,7 +40,7 @@ clean
    Clean everything.
 
 
-Tox
+tox
 ---
 
 Multiple test environments can be tested using tox::

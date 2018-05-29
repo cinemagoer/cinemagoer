@@ -1,60 +1,65 @@
 Roles
 =====
 
-Parsing the information about a movie, you'll encounter a lot of references
-to the people who worked on it, like the cast, the director, the stunts,
-and so on.
+When parsing data of a movie, you'll encounter references to the people
+who worked on it, like its cast, director and crew members.
 
-For people in the cast (actors/actresses), the "currentRole" instance
-variable is set to the name of the character they played (e.g.: "Roy Neary"
-for the role played by Richard Dreyfuss in Close Encounters of the Third Kind).
-In this case currentRole will be a Character instance.
-
-Another instance variable of a Person object is "notes", used to store
-miscellaneous information (like an aka name for the actor, an "uncredited"
-notice and so on).
-
-It's also used, for non-cast people, to describe the job of the person
-(e.g.: "assistant dialogue staff" for a person of the sound department).
-
-It's possible to test, using the ``in`` operator, if a person worked
-in a given movie, or vice-versa; the following are all valid tests:
+For people in the cast (actors and actresses),
+the :attr:`currentRole <imdb.Person.Person.currentRole>` attribute is set to the name
+of the character they played:
 
 .. code-block:: python
 
-   movie in person
-   movie in character
-   person in movie
-   person in character
-   character in movie
-   character in person
+   >>> movie = ia.get_movie('0075860')
+   >>> movie
+   <Movie id:0075860[http] title:_Close Encounters of the Third Kind (1977)_>
+   >>> actor = movie['cast'][6]
+   >>> actor
+   <Person id:0447230[http] name:_Kemmerling, Warren J._>
+   >>> actor['name']
+   'Warren J. Kemmerling'
+   >>> actor.currentRole
+   'Wild Bill'
 
-Similar usage can be considered for Character instances: please read
-the README.currentRole file for more information.
+Miscellaneous data, such as an AKA name for the actor or an "uncredited"
+notice, is stored in the :attr:`notes <imdb.Person.Person.notes>` attribute:
 
 .. code-block:: python
 
-    # retrieve data for Steven Spielberg's "Close Encounters of the Third Kind"
-    import imdb
-    i =  imdb.IMDb(accessSystem='http')
-    movie = i.get_movie('0075860')
+   >>> actor.notes
+   '(as Warren Kemmerling)'
 
-    # Get the 7th Person object in the cast list
-    cast = movie['cast'][6]
-    # "Warren J. Kemmerling"
-    print(cast['name'])
-    # "Wild Bill"
-    print(cast.currentRole)
-    # "(as Warren Kemmerling)"
-    print(cast.notes)
+For crew members other than the cast,
+the :attr:`notes <imdb.Person.Person.notes>` attribute contains the description
+of the person's job:
 
-    # Get the 5th Person object in the list of writers
-    writer = movie['writer'][4]
-    # "Steven Spielberg"
-    print(writer['name'])
-    # "written by", because that was the duty of Steven Spielberg,
-    # as a writer for the movie.
-    print(writer.notes)
+.. code-block:: python
+
+    >>> crew_member = movie['art department'][0]
+    >>> crew_member
+    <Person id:0330589[http] name:_Gordon, Sam_>
+    >>> crew_member.notes
+    'property master'
+
+The ``in`` operator can be used to check whether a person worked in a given
+movie or not:
+
+.. code-block:: python
+
+   >>> movie
+   <Movie id:0075860[http] title:_Close Encounters of the Third Kind (1977)_>
+   >>> actor
+   <Person id:0447230[http] name:_Kemmerling, Warren J._>
+   >>> actor in movie
+   True
+   >>> crew_member
+   <Person id:0330589[http] name:_Gordon, Sam_>
+   >>> crew_member in movie
+   True
+   >>> person
+   <Person id:0000210[http] name:_Roberts, Julia (I)_>
+   >>> person in movie
+   False
 
 Obviously these Person objects contain only information directly
 available upon parsing the movie pages, e.g.: the name, an imdbID, the role.

@@ -4,7 +4,6 @@ of the `IMDb`_ movie database about movies, people and companies.
 :Homepage: https://imdbpy.sourceforge.io/
 :PyPI: https://pypi.org/project/IMDbPY/
 :Repository: https://github.com/alberanid/imdbpy
-:Documentation: https://imdbpy.readthedocs.io/
 :Support: https://imdbpy.sourceforge.io/support.html
 
 .. admonition:: Revamp notice

@@ -1,8 +1,8 @@
 IMDbPY is a Python package for retrieving and managing the data
-of the `IMDb`_ movie database about movies, people, and companies.
+of the `IMDb`_ movie database about movies, people and companies.
 
 :Homepage: https://imdbpy.sourceforge.io/
-:PyPI: https://pypi.python.org/pypi/imdbpy/
+:PyPI: https://pypi.org/project/IMDbPY/
 :Repository: https://github.com/alberanid/imdbpy
 :Documentation: https://imdbpy.readthedocs.io/
 :Support: https://imdbpy.sourceforge.io/support.html

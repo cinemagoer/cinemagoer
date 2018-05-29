@@ -20,8 +20,8 @@ from the HTML page, but are defined within the respective object class.
 Information sets
 ----------------
 
-Since release 1.2, it's possible to retrieve almost every piece of information
-about a given movie, person, or company. This can be a problem, because
+Since release 1.2 it's possible to retrieve almost every piece of information
+about a given movie, person or company. This can be a problem, because
 (at least for the "http" data access system) it means that a lot of web pages
 must be fetched and parsed. This can be time- and bandwidth consuming,
 especially if you're interested only in a small part of the information.
@@ -44,16 +44,9 @@ using the access object:
    >>> from imdb import IMDb
    >>> ia = IMDb()
    >>> ia.get_movie_infoset()
-   ['airing', 'akas', 'alternate versions', 'awards', 'connections',
-    'crazy credits', 'critic reviews', 'episodes', 'external reviews',
-    'external sites', 'faqs', 'full credits', 'goofs', 'keywords', 'locations',
-    'main', 'misc sites', 'news', 'official sites', 'parents guide',
-    'photo sites', 'plot', 'quotes', 'release dates', 'release info',
-    'reviews', 'sound clips', 'soundtrack', 'synopsis', 'taglines',
-    'technical', 'trivia', 'tv schedule', 'video clips', 'vote details']
+   ['airing', 'akas', ..., 'video clips', 'vote details']
    >>> ia.get_person_infoset()
-   ['awards', 'biography', 'filmography', 'genres links', 'keywords links',
-    'main', 'news', 'official sites', 'other works', 'publicity']
+   ['awards', 'biography', ..., 'other works', 'publicity']
    >>> ia.get_company_infoset()
    ['main']
 
@@ -87,59 +80,8 @@ taken from the ``infoset2keys`` attribute:
 .. code-block:: python
 
    >>> movie = ia.get_movie('0133093')
-   >>> pprint(movie.infoset2keys)
-   {'main': ['cast',
-          'genres',
-          'runtimes',
-          'countries',
-          'country codes',
-          'language codes',
-          'color info',
-          'aspect ratio',
-          'sound mix',
-          'certificates',
-          'original air date',
-          'rating',
-          'votes',
-          'cover url',
-          'plot outline',
-          'languages',
-          'title',
-          'year',
-          'kind',
-          'directors',
-          'writers',
-          'producers',
-          'composers',
-          'cinematographers',
-          'editors',
-          'editorial department',
-          'casting directors',
-          'production designers',
-          'art directors',
-          'set decorators',
-          'costume designers',
-          'make up department',
-          'production managers ',
-          'assistant directors',
-          'art department',
-          'sound department',
-          'special effects',
-          'visual effects',
-          'stunts',
-          'camera department',
-          'animation department',
-          'casting department',
-          'costume departmen',
-          'location management',
-          'music department',
-          'transportation department',
-          'miscellaneous',
-          'akas',
-          'writer',
-          'director',
-          'top 250 rank'],
-    'plot': ['plot', 'synopsis']}
+   >>> movie.infoset2keys
+   {'main': ['cast', 'genres',..., 'top 250 rank'], 'plot': ['plot', 'synopsis']}
    >>> movie = ia.get_movie('0094226', info=['taglines', 'plot'])
    >>> movie.infoset2keys
    {'taglines': ['taglines'], 'plot': ['plot', 'synopsis']}
@@ -162,9 +104,7 @@ available on a movie get operation:
    >>> movie.current_info
    []
    >>> movie.keys()
-   ['title', 'kind', 'year', 'canonical title', 'long imdb title',
-    'long imdb canonical title', 'smart canonical title',
-    'smart long imdb canonical title']
+   ['title', 'kind', 'year', ..., 'smart long imdb canonical title']
 
 Once an object is retrieved (through a get or a search), its data can be
 updated using the :meth:`update <imdb.IMDbBase.update>` method with the desired
@@ -176,10 +116,7 @@ information sets. Continuing from the example above:
    >>> movie.current_info
    ['taglines', 'vote details']
    >>> movie.keys()
-   ['title', 'kind', 'year', 'taglines', 'demographics',
-    'number of votes', 'arithmetic mean', 'median', 'canonical title',
-    'long imdb title', 'long imdb canonical title', 'smart canonical title',
-    'smart long imdb canonical title']
+   ['title', 'kind', 'year', 'taglines'..., 'smart long imdb canonical title']
    >>> movie['median']
    9
    >>> ia.update(movie, info=['plot'])
@@ -192,18 +129,18 @@ accessing one set of data means automatically accessing a number of other
 information (without major performance drawbacks).
 
 
-The (not so) "universal" "::" separator
----------------------------------------
+Composite data
+--------------
 
-In some data, the ``::`` separator is used between different parts
-of the data inside a string, like the plot of a movie and its author:
+In some data, the (not-so) universal ``::`` separator is used to delimit
+parts of the data inside a string, like the plot of a movie and its author:
 
 .. code-block:: python
 
    >>> movie = ia.get_movie('0094226')
    >>> plot = movie['plot'][0]
-   >>> plot[:30] + '...' + plot[-30:]
-   "1920's prohibition Chicago is ...y to get him.::Jeremy Perkins"
+   >>> plot
+   "1920's prohibition ... way to get him.::Jeremy Perkins <jwp@aber.ac.uk>"
 
 As a rule, there's at most one such separator inside a string. Splitting it
 will result in two logical pieces as in ``TEXT::NOTE``.
@@ -214,10 +151,10 @@ function to pretty-print this kind of information.
 Movie and person references
 ---------------------------
 
-Sometimes in Movie, Person and Character attributes, there are strings
-with references to other movies or persons, e.g. in the plot, in the biography,
-etc. These references are stored in the Movie, Person, and Character
-instances; in the strings you will find values like _A Movie (2003)_ (qv)
+Sometimes the collected data contains strings with references to other movies
+or persons, e.g. in the plot of a movie or the biography of a person.
+These references are stored in the Movie, Person, and Character instances;
+in the strings you will find values like _A Movie (2003)_ (qv)
 or 'A Person' (qv) or '#A Character# (qv)'. When these strings are accessed
 (like movie['plot'] or person['biography']), they will be modified using
 a provided function, which must take the string and two dictionaries

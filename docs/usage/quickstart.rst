@@ -108,8 +108,7 @@ You can search for keywords similar to the one provided:
 
    >>> keywords = ia.search_keyword('dystopia')
    >>> keywords
-   ['dystopia', 'dystopian-future', 'dystopian-society', 'dystopian',
-    'dystopian-fantasy', 'corporate-dystopia', 'dystopic-future']
+   ['dystopia', 'dystopian-future', ..., 'dystopic-future']
 
 And fetch movies that match a given keyword:
 

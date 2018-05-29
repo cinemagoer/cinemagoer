@@ -106,7 +106,7 @@ You can search for keywords similar to the one provided:
 
 .. code-block:: python
 
-   >>> keywords = ia.get_keyword('dystopia')
+   >>> keywords = ia.search_keyword('dystopia')
    >>> keywords
    ['dystopia', 'dystopian-future', 'dystopian-society', 'dystopian',
     'dystopian-fantasy', 'corporate-dystopia', 'dystopic-future']

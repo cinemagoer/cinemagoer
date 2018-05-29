@@ -13,17 +13,19 @@ IMDbPY supports different ways of accessing the IMDb data:
 +------------------+-------------+----------------------+
 | access system    | aliases     | data source          |
 +==================+=============+======================+
-| (default) 'http' | 'web'       | imdb.com web server  |
+| (default) 'http' | 'https'     | imdb.com web server  |
+|                  |             |                      |
+|                  | 'web'       |                      |
 |                  |             |                      |
 |                  | 'html'      |                      |
 +------------------+-------------+----------------------+
 |            's3'  | 's3dataset' | downloadable dataset |
 |                  |             |                      |
-|                  |             | after Dec 2017       |
+|                  |             | *after Dec 2017*     |
 +------------------+-------------+----------------------+
 |            'sql' | 'db'        | downloadable dataset |
 |                  |             |                      |
-|                  | 'database'  | before Dec 2017      |
+|                  | 'database'  | *until Dec 2017*     |
 +------------------+-------------+----------------------+
 
 .. note::

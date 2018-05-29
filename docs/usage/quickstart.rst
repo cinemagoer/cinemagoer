@@ -150,7 +150,6 @@ the :class:`imdb.IMDbError` exception:
    try:
        ia = IMDb()
        people = ia.search_person('Mel Gibson')
-       movie = ia.get_movie('0335345')
    except IMDbError as e:
        print(e)
 

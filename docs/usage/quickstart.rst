@@ -80,12 +80,13 @@ For example, the movie "The Untouchables" by Brian De Palma has the id
 .. code-block:: python
 
    >>> movie = ia.get_movie('0094226')
-   >>> movie['year']
-   1987
+   >>> movie
+   <Movie id:0094226[http] title:_The Untouchables (1987)_>
 
 Similarly, the :meth:`get_person <imdb.IMDbBase.get_person>` and
 the :meth:`get_company <imdb.IMDbBase.get_company>` methods can be used
-for retrieving  data:
+for retrieving :class:`Person <imdb.Person.Person>` and
+:class:`Company <imdb.Company.Company>` data:
 
 .. code-block:: python
 
@@ -110,7 +111,7 @@ You can search for keywords similar to the one provided:
    >>> keywords
    ['dystopia', 'dystopian-future', ..., 'dystopic-future']
 
-And fetch movies that match a given keyword:
+And movies that match a given keyword:
 
 .. code-block:: python
 
@@ -124,8 +125,7 @@ And fetch movies that match a given keyword:
 Top / bottom movies
 -------------------
 
-Since IMDbPY 4.0, it's possible to retrieve the list of top 250 and bottom 100
-movies: [#sql_bottom]_
+It's possible to retrieve the list of top 250 and bottom 100 movies: [#sql_bottom]_
 
 .. code-block:: python
 

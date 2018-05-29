@@ -1,8 +1,8 @@
 Usage
 =====
 
-Here you can find information about how to use IMDbPY in your own scripts
-or programs.
+Here you can find information about how you can use IMDbPY in your own
+programs.
 
 .. warning::
 

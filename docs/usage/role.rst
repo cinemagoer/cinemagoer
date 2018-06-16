@@ -1,9 +1,106 @@
-# NOTICE
+Roles
+=====
 
-Since the end of 2017, IMDb has removed the Character kind of information.
-This document is still valid, but only for the obsolete "sql" data access system.
+When parsing data of a movie, you'll encounter references to the people
+who worked on it, like its cast, director and crew members.
 
-# The currentRole Attribute and the Character Class
+For people in the cast (actors and actresses),
+the :attr:`currentRole <imdb.Person.Person.currentRole>` attribute is set to the name
+of the character they played:
+
+.. code-block:: python
+
+   >>> movie = ia.get_movie('0075860')
+   >>> movie
+   <Movie id:0075860[http] title:_Close Encounters of the Third Kind (1977)_>
+   >>> actor = movie['cast'][6]
+   >>> actor
+   <Person id:0447230[http] name:_Kemmerling, Warren J._>
+   >>> actor['name']
+   'Warren J. Kemmerling'
+   >>> actor.currentRole
+   'Wild Bill'
+
+Miscellaneous data, such as an AKA name for the actor or an "uncredited"
+notice, is stored in the :attr:`notes <imdb.Person.Person.notes>` attribute:
+
+.. code-block:: python
+
+   >>> actor.notes
+   '(as Warren Kemmerling)'
+
+For crew members other than the cast,
+the :attr:`notes <imdb.Person.Person.notes>` attribute contains the description
+of the person's job:
+
+.. code-block:: python
+
+    >>> crew_member = movie['art department'][0]
+    >>> crew_member
+    <Person id:0330589[http] name:_Gordon, Sam_>
+    >>> crew_member.notes
+    'property master'
+
+The ``in`` operator can be used to check whether a person worked in a given
+movie or not:
+
+.. code-block:: python
+
+   >>> movie
+   <Movie id:0075860[http] title:_Close Encounters of the Third Kind (1977)_>
+   >>> actor
+   <Person id:0447230[http] name:_Kemmerling, Warren J._>
+   >>> actor in movie
+   True
+   >>> crew_member
+   <Person id:0330589[http] name:_Gordon, Sam_>
+   >>> crew_member in movie
+   True
+   >>> person
+   <Person id:0000210[http] name:_Roberts, Julia (I)_>
+   >>> person in movie
+   False
+
+Obviously these Person objects contain only information directly
+available upon parsing the movie pages, e.g.: the name, an imdbID, the role.
+So if now you write::
+
+    print(writer['actor'])
+
+to get a list of movies acted by Mel Gibson, you'll get a KeyError exception,
+because the Person object doesn't contain this kind of information.
+
+
+The same is true when parsing person data: you'll find a list of movie
+the person worked on and, for every movie, the currentRole instance variable
+is set to a string describing the role of the considered person:
+
+.. code-block:: python
+
+    # Julia Roberts
+    julia = i.get_person('0000210')
+    # Output a list of movies she acted in and the played role
+    # separated by '::'
+    print([movie['title'] + '::' + movie.currentRole
+           for movie in julia['actress']])
+
+Here the various Movie objects only contain minimal information,
+like the title and the year; the latest movie with Julia Roberts:
+
+.. code-block:: python
+
+    last = julia['actress'][0]
+    # Retrieve full information
+    i.update(last)
+    # name of the first director
+    print(last['director'][0]['name'])
+
+
+.. note::
+
+   Since the end of 2017, IMDb has removed the Character kind of information.
+   This document is still valid, but only for the obsolete "sql" data access
+   system.
 
 Since version 3.3, IMDbPY supports the character pages of the IMDb database;
 this required some substantial changes to how actors' and acresses' roles

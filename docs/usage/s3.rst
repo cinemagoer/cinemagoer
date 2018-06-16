@@ -1,0 +1,65 @@
+.. _s3:
+
+S3 datasets
+===========
+
+IMDb distributes some of its data as downloadable `datasets`_. IMDbPY can
+import this data into a database and make it accessible through its API.
+[#ptdf]_
+
+For this, you will first need to install `SQLAlchemy`_ and the libraries
+that are needed for the database server you want to use. Check out
+the `SQLAlchemy dialects`_ documentation for more detail.
+
+Then, follow these steps:
+
+#. Download the files from the following address and put all of them
+   in the same directory: https://datasets.imdbws.com/
+
+#. Create a database. Use a collation like ``utf8_unicode_ci``.
+
+#. Import the data using the :file:`s32imdbpy.py` script::
+
+      s32imdbpy.py /path/to/the/tsv.gz/files/ URI
+
+   *URI* is the identifier used to access the SQL database. For example::
+
+      s32imdbpy.py ~/Download/imdb-s3-dataset-2018-02-07/ \
+          postgres://user:password@localhost/imdb
+
+Once the import is finished -which should take about an hour or less
+on a modern system- you will have a SQL database with all the information
+and you can use the normal IMDbPY API:
+
+.. code-block:: python
+
+   from imdb import IMDb
+
+   ia = IMDb('s3', 'postgres://user:password@localhost/imdb')
+
+   results = ia.search_movie('the matrix')
+   for result in results:
+       print(result.movieID, result)
+
+   matrix = results[0]
+   ia.update(matrix)
+   print(matrix.keys())
+
+
+.. note::
+
+   Running the script again will drop the current tables and import
+   the data again.
+
+
+.. [#ptdf]
+
+   Until the end of 2017, IMDb used to distribute a more comprehensive subset
+   of its data in a different format. IMDbPY can also import that data
+   but note that the data is not being updated anymore. For more information,
+   see :ref:`ptdf`.
+
+
+.. _datasets: https://www.imdb.com/interfaces/
+.. _SQLAlchemy: https://www.sqlalchemy.org/
+.. _SQLAlchemy dialects: http://docs.sqlalchemy.org/en/latest/dialects/

@@ -3,26 +3,22 @@ IMDbPY
 
 .. include:: ../README.rst
 
+
+.. admonition:: Disclaimer
+
+   .. include:: disclaimer.rst
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   INSTALLATION
-   README.package
-   README.series
-   README.currentRole
-   README.s3
-   README.sqldb
-   README.adult
-   README.info2xml
-   README.locale
-   FAQS
-   README.devel
-   DEPLOY
-   DISCLAIMER
-   CONTRIBUTORS
-   CREDITS
+   usage/index
+   devel/index
+   faqs
+   contributors/index
    Changelog
+
 
 Indices and tables
 ==================

@@ -1,23 +1,64 @@
 Series
 ======
 
-Summary of this file:
+As on the IMDb site, each TV series and also each of a TV series' episodes is
+treated as a regular title, just like a movie. The ``kind`` key can be used
+to distinguish series and episodes from movies:
 
-- Managing series episodes
-- Titles
-- Series
-- FULL CREDITS
-- RATINGS
-- PEOPLE
-- GOODIES
+.. code-block:: python
 
+   >>> series = ia.get_movie('0389564')
+   >>> series
+   <Movie id:0389564[http] title:_"The 4400" (2004)_>
+   >>> series['kind']
+   'tv series'
+   >>> episode = ia.get_movie('0502803')
+   >>> episode
+   <Movie id:0502803[http] title:_"The 4400" Pilot (2004)_>
+   >>> episode['kind']
+   'episode'
 
-Managing series episodes
-------------------------
+The episodes of a series can be fetched using the "episodes" infoset. This
+infoset adds an ``episodes`` key which is a dictionary from season numbers
+to episodes. And each season is a dictionary from episode numbers within
+the season to the episodes. Note that the season and episode numbers don't
+start from 0; they are the numbers given by the IMDb:
 
-Since January 2006, IMDb changed the way it handles TV episodes:
-now every episode is treated as full title. Starting with version 2.5,
-IMDbPY also supports this behavior.
+.. code-block:: python
+
+   >>> ia.update(series, 'episodes')
+   >>> sorted(series['episodes'].keys())
+   [1, 2, 3, 4]
+   >>> season4 = series['episodes'][4]
+   >>> len(season4)
+   13
+   >>> episode = series['episodes'][4][2]
+   >>> episode
+   <Movie id:1038701[http] title:_"The 4400" Fear Itself (2007)_>
+   >>> episode['season']
+   4
+   >>> episode['episode']
+   2
+
+The title of the episode doesn't contain the title of the series:
+
+.. code-block:: python
+
+   >>> episode['title']
+   'Fear Itself'
+   >>> episode['series title']
+   'The 4400'
+
+The episode also contains a key that refers to the series, but beware that,
+to avoid circular references, it's not the same object as the series object
+we started with:
+
+.. code-block:: python
+
+   >>> episode['episode of']
+   <Movie id:0389564[http] title:_"The 4400" (None)_>
+   >>> series
+   <Movie id:0389564[http] title:_"The 4400" (2004)_>
 
 
 Titles
@@ -57,89 +98,32 @@ by the plain text data files (something like
 "The Series" (2004) {An Episode (#2.5)})
 
 
-Series
-------
-
-You can retrieve information about seasons and episodes for a TV series
-or a mini-series:
-
-.. code-block:: python
-
-   >>> from imdb import IMDb
-   >>> i = IMDb()
-   >>> m = i.get_movie('0389564')   # The 4400
-   >>> m['kind']                    # kind is 'tv series'
-   >>> i.update(m, 'episodes')      # retrieves episodes information.
-   >>> m['episodes']    # a dictionary with the format:
-                        #    {#season_number: {
-                        #                      #episode_number: Movie object,
-                        #                      #episode_number: Movie object,
-                        #                      ...
-                        #                     },
-                        #     ...
-                        #    }
-                        # season_number always starts with 1, episode_number
-                        # depends on the series' numbering schema: some series
-                        # have a 'episode 0', while others starts counting from 1
-   >>> m['episodes'][1][1] # <Movie id:0502803[http] title:_"The 4400" Pilot (2004)_>
-   >>> e = m['episodes'][1][2]      # second episode of the first season
-   >>> e['kind']                    # kind is 'episode'
-   >>> e['season'], e['episode']    # return 1, 2
-   >>> e['episode of']  # <Movie id:0389564[http] title:_"4400, The" (2004)_>
-                        # XXX: beware that e['episode of'] and m _are not_ the
-                        #      same object, while both represents the same series.
-                        #      This is to avoid circular references; the
-                        #      e['episode of'] object only contains basics
-                        #      information (title, movieID, year, ....)
-   >>> i.update(e)      # retrieve normal information about this episode (cast, ...)
-
-   >>> e['title']                   # 'The New and Improved Carl Morrissey'
-   >>> e['series title']            # 'The 4400'
-   >>> e['long imdb episode title'] # '"The 4400" The New and Improved Carl Morrissey (2004)'
-
-
-Summary of keys of the Movie object for a series episode:
-
-- ``kind``: Set to 'episode'.
-- ``episode of``: Set to a movie object, this is a reference to the series.
-- ``season``: Number of the season (int).
-- ``episode``: Number of the episode in the season (int).
-- ``long imdb episode title``: Combines series and episode title.
-- ``series title``: Title of the series.
-- ``canonical series title``: Title of the series, in canonical format.
-
-Summary of keys of the Movie object for a series:
-
-- ``kind``: Set to 'tv series'.
-- ``episodes``: Dictionary (seasons) of dictionary (episodes in the season).
-
-
 Full credits
 ------------
 
-Retrieving credits for a TV series or mini-series, you may notice that
-many long lists (like "cast", "writers", ...) are incomplete.
-You can fetch the complete list of cast and crew with the "full credits"
-data set; e.g.:
+When retrieving credits for a TV series or mini-series, you may notice that
+many long lists (like "cast" and "writers") are incomplete. You can fetch
+the complete list of cast and crew with the "full credits" data set:
 
 .. code-block:: python
 
-   from imdb import IMDb
-   i = IMDb()
-   m = i.get_movie('0285331')  # 24.
-   print(len(m['cast'])) # wooah!  Only 7 person in the cast of 24?!?!
-   i.update(m, 'full credits')
-   print(len(m['cast'])) # yup!  More than 300 persons!
+   >>> series = ia.get_movie('0285331')
+   >>> series
+   <Movie id:0285331[http] title:_"24" (2001)_>
+   >>> len(series['cast'])
+   50
+   >>> ia.update(series, 'full credits')
+   >>> len(series['cast'])
+   2514
 
-If you prefer, you can retrieve the complete cast of every episode,
-keeping the lists separated for every episode; instead of retrieving
-the list of episodes with::
+If you prefer, you can retrieve the complete cast of every episode, keeping
+the lists separated for each episode. Instead of retrieving with::
 
-  i.update(m, 'episodes')
+  ia.update(series, 'episodes')
 
-use instead::
+use::
 
-  i.update('episodes cast')
+  ia.update(series, 'episodes cast')
 
 or the equivalent::
 

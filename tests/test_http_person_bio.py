@@ -80,7 +80,7 @@ def test_person_spouse_should_be_a_list(ia):
 def test_person_trade_mark_should_be_a_list(ia):
     person = ia.get_person('0000210', info=['biography'])   # Julia Roberts
     trade_mark = person.get('trade mark', [])
-    assert len(trade_mark) == 2
+    assert len(trade_mark) == 3
 
 
 def test_person_trivia_should_be_a_list(ia):

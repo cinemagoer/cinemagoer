@@ -109,7 +109,8 @@ params = {
     'extras_require': {
         'dev': [
             'flake8',
-            'flake8-isort'
+            'flake8-isort',
+            'readme_renderer'
         ],
         'doc': [
             'sphinx',

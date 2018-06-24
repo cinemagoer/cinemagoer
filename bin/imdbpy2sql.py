@@ -24,6 +24,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
+from __future__ import print_function, unicode_literals
+
 import os
 import sys
 import getopt
@@ -39,6 +41,7 @@ except ImportError:
     from md5 import md5
 from gzip import GzipFile
 
+from imdb import PY2
 from imdb.parser.sql.dbschema import DB_SCHEMA, dropTables, createTables, createIndexes
 from imdb.parser.sql import soundex
 from imdb.utils import analyze_title, analyze_name, date_and_notes, \
@@ -819,13 +822,19 @@ class SourceFile(GzipFile):
 
     def readline_NOcheckEnd(self, size=-1):
         line = GzipFile.readline(self, size)
-        return str(line, 'latin_1', 'ignore')
+        if PY2:
+            return unicode(line, 'latin_1').encode('utf_8')
+        else:
+            return str(line, 'latin_1', 'ignore')
 
     def readline_checkEnd(self, size=-1):
         line = GzipFile.readline(self, size)
         if self.stop is not None and line[:self.stoplen] == self.stop:
             return ''
-        return str(line, 'latin_1', 'ignore')
+        if PY2:
+            return unicode(line, 'latin_1').encode('utf_8')
+        else:
+            return str(line, 'latin_1', 'ignore')
 
     def getByHashSections(self):
         return getSectionHash(self)
@@ -2078,8 +2087,12 @@ _bus = {'BT': 'budget',
         'CP': 'copyright holder'
         }
 _usd = '$'
-_gbp = chr(0x00a3)
-_eur = chr(0x20ac)
+if PY2:
+    _gbp = unichr(0x00a3).encode('utf_8')
+    _eur = unichr(0x20ac).encode('utf_8')
+else:
+    _gbp = chr(0x00a3)
+    _eur = chr(0x20ac)
 
 
 def getBusiness(lines):

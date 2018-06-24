@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2005-2017 Davide Alberani <da@erlug.linux.it>
 #                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
 #

@@ -394,6 +394,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         finally:
             if _noCookies and _cookies:
                 self.urlOpener.set_header('Cookie', _cookies)
+        if PY2 and isinstance(ret, str):
+            ret = ret.decode('utf-8')
         return ret
 
     def _get_search_content(self, kind, ton, results):

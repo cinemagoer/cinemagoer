@@ -407,7 +407,7 @@ class DOMParserBase(object):
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
-        if PY2:
+        if PY2 and isinstance(html_string, str):
             html_string = html_string.decode('utf-8')
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)

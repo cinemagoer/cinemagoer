@@ -11,8 +11,10 @@ Changelog
 
   [http]
 
+  - #155: ignore certificate to prevent validation errors
   - #156: fix tech parser
   - #157: full-size headshot for persons
+  - #161: fix string/unicode conversion in Python 2.7
 
   [s3]
 

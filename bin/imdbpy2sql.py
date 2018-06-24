@@ -2728,6 +2728,17 @@ CCAST_TYPES = {}
 COMP_TYPES = {}
 
 
+def _cmpfunc(x, y):
+    """Sort a list of tuples, by the length of the first item (in reverse)."""
+    lx = len(x[0])
+    ly = len(y[0])
+    if lx > ly:
+        return -1
+    elif lx < ly:
+        return 1
+    return 0
+
+
 def readConstants():
     """Read constants from the database."""
     global INFO_TYPES, MOVIELINK_IDS, KIND_IDS, KIND_STRS, \
@@ -2738,7 +2749,10 @@ def readConstants():
 
     for x in LinkType.select():
         MOVIELINK_IDS.append((x.link, len(x.link), x.id))
-    MOVIELINK_IDS.sort(key=lambda x: operator.length_hint(x[0]), reverse=True)
+    if PY2:
+        MOVIELINK_IDS.sort(_cmpfunc)
+    else:
+        MOVIELINK_IDS.sort(key=lambda x: operator.length_hint(x[0]), reverse=True)
 
     for x in KindType.select():
         KIND_IDS[x.kind] = x.id

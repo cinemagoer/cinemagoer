@@ -122,7 +122,10 @@ class IMDbURLopener(FancyURLopener):
 
     def __init__(self, *args, **kwargs):
         self._last_url = ''
-        kwargs['context'] = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        kwargs['context'] = context
         FancyURLopener.__init__(self, *args, **kwargs)
         # Headers to add to every request.
         # XXX: IMDb's web server doesn't like urllib-based programs,

@@ -4,6 +4,7 @@ of the `IMDb`_ movie database about movies, people and companies.
 :Homepage: https://imdbpy.sourceforge.io/
 :PyPI: https://pypi.org/project/IMDbPY/
 :Repository: https://github.com/alberanid/imdbpy
+:Documentation: https://imdbpy.readthedocs.io/
 :Support: https://imdbpy.sourceforge.io/support.html
 
 .. admonition:: Revamp notice
@@ -14,7 +15,7 @@ of the `IMDb`_ movie database about movies, people and companies.
    - moved the package to Python 3 (compatible with Python 2.7)
    - removed dependencies: SQLObject, C compiler, BeautifulSoup
    - removed the "mobile" and "httpThin" parsers
-   - introduced a test suite (please help with it! see "how to test" in docs)
+   - introduced a test suite (`please help with it!`_)
 
 
 Main features
@@ -80,4 +81,5 @@ Here's an example that demonstrates how to use IMDbPY:
 
 
 .. _IMDb: https://www.imdb.com/
+.. _please help with it!: http://imdbpy.readthedocs.io/en/latest/devel/test.html
 .. _Curious about that: https://imdbpy.sourceforge.io/ecosystem.html

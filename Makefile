@@ -31,13 +31,13 @@ lint:
 	python setup.py flake8
 
 test:
-	py.test
+	pytest
 
 test-all:
 	tox
 
 coverage:
-	py.test --cov-report term-missing --cov=imdb tests
+	pytest --cov-report term-missing --cov=imdb tests
 
 docs:
 	$(MAKE) -C docs clean

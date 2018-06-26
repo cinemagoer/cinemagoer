@@ -6,15 +6,15 @@ How to test
 IMDbPY has a test suite based on `pytest`_. The simplest way to run the tests
 is to run the following command in the top level directory of the project::
 
-   py.test
+   pytest
 
 You can execute a specific test module::
 
-   py.test tests/test_http_movie_combined.py
+   pytest tests/test_http_movie_combined.py
 
 Or execute test functions that match a given keyword::
 
-   py.test -k cover
+   pytest -k cover
 
 
 make
@@ -57,7 +57,7 @@ You can supply commands that will be executed in the given environment.
 For example, to run the test function that have the string "cover" in them
 using pypy3, execute::
 
-   tox -e pypy3 -- py.test -k cover
+   tox -e pypy3 -- pytest -k cover
 
 Or to get a Python prompt under Python 3.5 (with IMDbPY and all dependencies
 already installed), execute::
@@ -72,7 +72,7 @@ The tests will use the HTTP access system by default. If you would also like
 to test the database generated from the S3 dataset, define the ``IMDBPY_S3_URI``
 environment variable::
 
-   IMDBPY_S3_URI='postgres://imdb@localhost/imdb' py.test
+   IMDBPY_S3_URI='postgres://imdb@localhost/imdb' pytest
 
 This will run the tests for both HTTP and S3 access systems.
 

@@ -21,6 +21,11 @@ def test_person_birth_date_should_be_in_ymd_format(ia):
     assert person.get('birth date') == '1899-5-10'
 
 
+def test_person_birth_date_without_itemprop_should_be_in_ymd_format(ia):
+    person = ia.get_person('0000007', info=['biography'])   # Humphrey Bogart
+    assert person.get('birth date') == '1899-12-25'
+
+
 def test_person_birth_notes_should_contain_birth_place(ia):
     person = ia.get_person('0000001', info=['biography'])   # Fred Astaire
     assert person.get('birth notes') == 'Omaha, Nebraska, USA'
@@ -29,6 +34,11 @@ def test_person_birth_notes_should_contain_birth_place(ia):
 def test_person_death_date_should_be_in_ymd_format(ia):
     person = ia.get_person('0000001', info=['biography'])   # Fred Astaire
     assert person.get('death date') == '1987-6-22'
+
+
+def test_person_death_date_without_itemprop_should_be_in_ymd_format(ia):
+    person = ia.get_person('0000007', info=['biography'])   # Humphrey Bogart
+    assert person.get('death date') == '1957-1-14'
 
 
 def test_person_death_date_if_none_should_be_excluded(ia):

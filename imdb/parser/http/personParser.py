@@ -266,7 +266,7 @@ class DOMHTMLBioParser(DOMParserBase):
     _birth_rules = [
         Rule(
             key='birth date',
-            extractor=Path('./time[@itemprop="birthDate"]/@datetime')
+            extractor=Path('./time/@datetime')
         ),
         Rule(
             key='birth notes',
@@ -277,7 +277,7 @@ class DOMHTMLBioParser(DOMParserBase):
     _death_rules = [
         Rule(
             key='death date',
-            extractor=Path('./time[@itemprop="deathDate"]/@datetime')
+            extractor=Path('./time/@datetime')
         ),
         Rule(
             key='death cause',

@@ -11,6 +11,7 @@ Changelog
 
   [http]
 
+  - #166: fix birth and death dates without itemprop attributes
   - #160: fix series seasons list
   - #155: ignore certificate to prevent validation errors
   - #156: fix tech parser

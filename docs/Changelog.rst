@@ -11,6 +11,7 @@ Changelog
 
   [http]
 
+  - #160: fix series seasons list
   - #155: ignore certificate to prevent validation errors
   - #156: fix tech parser
   - #157: full-size headshot for persons

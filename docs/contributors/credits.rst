@@ -15,6 +15,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/.
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* Lars Gustäbel for a report about series seasons.
+
 * Filip Bačić for a report about full-size headshot
 
 * Matthew Clapp for a report about pip installation

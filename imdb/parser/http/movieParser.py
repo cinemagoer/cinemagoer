@@ -2007,7 +2007,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             key='_seasons',
             extractor=Path(
                 foreach='//select[@id="bySeason"]//option',
-                path='/@value'
+                path='./@value'
             )
         ),
         Rule(

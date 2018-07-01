@@ -172,15 +172,6 @@ def test_movie_kind_tv_series_episode_should_be_episode(ia):
 #     assert movie.get('kind') == 'tv special'
 
 
-def test_series_episodes_must_contain_rating_and_votes(ia):
-    movie = ia.get_movie_episodes('0185906')            # Band of Brothers
-    episodes = movie['data']['episodes']
-    rating = episodes[1][1]['rating']
-    votes = episodes[1][1]['votes']
-    assert 8.3 <= rating <= 9.0
-    assert votes > 4400
-
-
 def test_series_years_if_continuing_should_be_open_range(ia):
     movie = ia.get_movie('0436992', info=['main'])      # Doctor Who
     assert movie.get('series years') == '2005-'

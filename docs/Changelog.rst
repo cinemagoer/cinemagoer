@@ -11,6 +11,7 @@ Changelog
 
   [http]
 
+  - #149: store person birth and death dates in ISO8601 format
   - #166: fix birth and death dates without itemprop attributes
   - #160: fix series seasons list
   - #155: ignore certificate to prevent validation errors

@@ -266,7 +266,10 @@ class DOMHTMLBioParser(DOMParserBase):
     _birth_rules = [
         Rule(
             key='birth date',
-            extractor=Path('./time/@datetime')
+            extractor=Path(
+                './time/@datetime',
+                transform=lambda s: '%4d-%02d-%02d' % tuple(map(int, s.split('-')))
+            )
         ),
         Rule(
             key='birth notes',
@@ -277,7 +280,10 @@ class DOMHTMLBioParser(DOMParserBase):
     _death_rules = [
         Rule(
             key='death date',
-            extractor=Path('./time/@datetime')
+            extractor=Path(
+                './time/@datetime',
+                transform=lambda s: '%4d-%02d-%02d' % tuple(map(int, s.split('-')))
+            )
         ),
         Rule(
             key='death cause',

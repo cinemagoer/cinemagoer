@@ -18,7 +18,12 @@ def test_person_headshot_if_none_should_be_excluded(ia):
 
 def test_person_birth_date_should_be_in_ymd_format(ia):
     person = ia.get_person('0000001', info=['biography'])   # Fred Astaire
-    assert person.get('birth date') == '1899-5-10'
+    assert person.get('birth date') == '1899-05-10'
+
+
+def test_person_birth_date_without_month_and_date_should_be_in_y00_format(ia):
+    person = ia.get_person('0565883', info=['biography'])   # Belinda McClory
+    assert person.get('birth date') == '1968-00-00'
 
 
 def test_person_birth_date_without_itemprop_should_be_in_ymd_format(ia):
@@ -33,12 +38,12 @@ def test_person_birth_notes_should_contain_birth_place(ia):
 
 def test_person_death_date_should_be_in_ymd_format(ia):
     person = ia.get_person('0000001', info=['biography'])   # Fred Astaire
-    assert person.get('death date') == '1987-6-22'
+    assert person.get('death date') == '1987-06-22'
 
 
 def test_person_death_date_without_itemprop_should_be_in_ymd_format(ia):
     person = ia.get_person('0000007', info=['biography'])   # Humphrey Bogart
-    assert person.get('death date') == '1957-1-14'
+    assert person.get('death date') == '1957-01-14'
 
 
 def test_person_death_date_if_none_should_be_excluded(ia):

@@ -29,7 +29,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from imdb.utils import analyze_title
 
-from .piculet import Path, Rule, Rules
+from .piculet import Path, Rule, Rules, reducers
 from .utils import DOMParserBase, analyze_imdbid
 
 
@@ -45,8 +45,7 @@ def custom_analyze_title(title):
 
 
 class DOMHTMLSearchMovieParser(DOMParserBase):
-    """Parse the html page that the IMDb web server shows when the
-    "new search system" is used, for movies."""
+    """A parser for the title search page."""
 
     _linkPrefix = '/title/tt'
 
@@ -58,7 +57,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./a[1]/@href')
+                        extractor=Path('./a/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='info',
@@ -66,12 +65,12 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                     ),
                     Rule(
                         key='akas',
-                        extractor=Path('./i//text()')
+                        extractor=Path(foreach='./i', path='./text()')
                     )
                 ],
                 transform=lambda x: (
-                    analyze_imdbid(x.get('link') or ''),
-                    custom_analyze_title(x.get('info') or ''),
+                    analyze_imdbid(x.get('link')),
+                    custom_analyze_title(x.get('info', '')),
                     x.get('akas')
                 )
             )
@@ -99,7 +98,6 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                 if not datum[0] and datum[1]:
                     continue
                 if datum[2] is not None:
-                    # XXX (HTU): couldn't find a result with multiple akas
                     akas = [aka[1:-1] for aka in datum[2]]  # remove the quotes
                     datum[1]['akas'] = akas
                     data['data'][idx] = (datum[0], datum[1])

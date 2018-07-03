@@ -65,3 +65,13 @@ def test_search_movie_entries_should_include_imdb_index(ia):
 def test_search_movie_entries_missing_imdb_index_should_be_excluded(ia):
     movies = ia.search_movie('matrix')
     assert 'imdbIndex' not in movies[0]
+
+
+def test_search_movie_entries_should_include_akas(ia):
+    movies = ia.search_movie('matrix')
+    assert movies[6]['akas'] == ['Matrix Hunter']
+
+
+def test_search_movie_entries_missing_akas_should_be_excluded(ia):
+    movies = ia.search_movie('matrix')
+    assert 'akas' not in movies[0]

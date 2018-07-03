@@ -100,6 +100,9 @@ class DOMHTMLSearchMovieKeywordParser(DOMHTMLSearchMovieParser):
         )
     ]
 
+    def preprocess_string(self, html_string):
+        return html_string.replace(' + >', '>')
+
 
 _OBJECTS = {
     'search_keyword_parser': ((DOMHTMLSearchKeywordParser,), {'kind': 'keyword'}),

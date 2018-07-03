@@ -27,34 +27,41 @@ def test_search_movie_if_too_many_result_should_list_upper_limit_of_movies(ia):
     assert len(movies) == 200
 
 
-def test_search_movie_should_contain_correct_movie(ia):
-    movies = ia.search_movie('matrix', results=500)
-    movie = [m for m in movies if m.movieID == '0133093']
-    assert len(movie) == 1
-    assert movie[0]['title'] == 'The Matrix'
-    assert movie[0]['kind'] == 'movie'
-    assert movie[0]['year'] == 1999
-
-
-def test_search_movie_found_movie_should_have_kind(ia):
-    movies = ia.search_movie('matrix', results=500)
-    movie = [m for m in movies if m.movieID == '0106062']
-    assert len(movie) == 1
-    assert movie[0]['title'] == 'Matrix'
-    assert movie[0]['kind'] == 'tv series'
-    assert movie[0]['year'] == 1993
-
-
-def test_search_movie_found_movie_should_have_imdb_index(ia):
-    movies = ia.search_movie('blink', results=500)
-    movie = [m for m in movies if m.movieID == '4790262']
-    assert len(movie) == 1
-    assert movie[0]['title'] == 'Blink'
-    assert movie[0]['imdbIndex'] == 'IV'
-    assert movie[0]['kind'] == 'movie'
-    assert movie[0]['year'] == 2015
-
-
 def test_search_movie_if_none_should_be_empty(ia):
     movies = ia.search_movie('%e4%82%a2', results=500)
     assert movies == []
+
+
+def test_search_movie_entries_should_include_movie_id(ia):
+    movies = ia.search_movie('matrix')
+    assert movies[0].movieID == '0133093'
+
+
+def test_search_movie_entries_should_include_movie_title(ia):
+    movies = ia.search_movie('matrix')
+    assert movies[0]['title'] == 'The Matrix'
+
+
+def test_search_movie_entries_should_include_movie_kind(ia):
+    movies = ia.search_movie('matrix')
+    assert movies[0]['kind'] == 'movie'
+
+
+def test_search_movie_entries_should_include_movie_kind_if_other_than_movie(ia):
+    movies = ia.search_movie('matrix')
+    assert movies[1]['kind'] == 'tv series'
+
+
+def test_search_movie_entries_should_include_movie_year(ia):
+    movies = ia.search_movie('matrix')
+    assert movies[0]['year'] == 1999
+
+
+def test_search_movie_entries_should_include_imdb_index(ia):
+    movies = ia.search_movie('blink')
+    assert movies[2]['imdbIndex'] == 'III'
+
+
+def test_search_movie_entries_missing_imdb_index_should_be_excluded(ia):
+    movies = ia.search_movie('matrix')
+    assert 'imdbIndex' not in movies[0]

@@ -315,7 +315,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
         canonicalSeries = canonicalEpisode = canonical
     original_t = title
     result = {}
-    title = title.strip()
+    title = title.split(' aka ')[0].strip()
     year = ''
     kind = ''
     imdbIndex = ''

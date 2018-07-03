@@ -33,17 +33,6 @@ from .piculet import Path, Rule, Rules, reducers
 from .utils import DOMParserBase, analyze_imdbid
 
 
-def custom_analyze_title(title):
-    """Remove garbage notes after the (year), (year/imdbIndex) or (year) (TV)"""
-    # XXX: very crappy. :-(
-    nt = title.split(' aka ')[0]
-    if nt:
-        title = nt
-    if not title:
-        return {}
-    return analyze_title(title)
-
-
 class DOMHTMLSearchMovieParser(DOMParserBase):
     """A parser for the title search page."""
 
@@ -70,7 +59,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                 ],
                 transform=lambda x: (
                     analyze_imdbid(x.get('link')),
-                    custom_analyze_title(x.get('info', '')),
+                    analyze_title(x.get('info', '')),
                     x.get('akas')
                 )
             )

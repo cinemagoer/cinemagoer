@@ -8,10 +8,21 @@ def test_get_keyword_if_too_many_should_list_upper_limit_of_movies(ia):
     assert len(movies) == 50
 
 
-def test_get_keyword_should_contain_correct_movie(ia):
+def test_get_keyword_entries_should_include_movie_id(ia):
     movies = ia.get_keyword('colander')
-    movie = [m for m in movies if m.movieID == '0382932']
-    assert len(movie) == 1
-    assert movie[0]['title'] == 'Ratatouille'
-    assert movie[0]['kind'] == 'movie'
-    assert movie[0]['year'] == 2007
+    assert movies[0].movieID == '0382932'
+
+
+def test_get_keyword_entries_should_include_movie_title(ia):
+    movies = ia.get_keyword('colander')
+    assert movies[0]['title'] == 'Ratatouille'
+
+
+def test_get_keyword_entries_should_include_movie_kind(ia):
+    movies = ia.get_keyword('colander')
+    assert movies[0]['kind'] == 'movie'
+
+
+def test_get_keyword_entries_should_include_movie_year(ia):
+    movies = ia.get_keyword('colander')
+    assert movies[0]['year'] == 2007

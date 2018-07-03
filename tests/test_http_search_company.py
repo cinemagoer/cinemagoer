@@ -21,3 +21,18 @@ def test_search_company_too_many_should_list_upper_limit_of_companies(ia):
 def test_search_company_if_none_result_should_be_empty(ia):
     companies = ia.search_company('%e3%82%a2')
     assert companies == []
+
+
+def test_search_company_entries_should_include_company_id(ia):
+    companies = ia.search_company('pixar')
+    assert companies[0].companyID == '0348691'
+
+
+def test_search_company_entries_should_include_company_name(ia):
+    companies = ia.search_company('pixar')
+    assert companies[0]['name'] == 'Pixar'
+
+
+def test_search_company_entries_should_include_company_country(ia):
+    companies = ia.search_company('pixar')
+    assert companies[0]['country'] == '[ca]'    # shouldn't this be just 'ca'?

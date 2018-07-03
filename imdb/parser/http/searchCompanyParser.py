@@ -29,36 +29,38 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from imdb.utils import analyze_company_name
 
-from .piculet import Path, Rule, Rules
+from .piculet import Path, Rule, Rules, reducers
 from .searchMovieParser import DOMHTMLSearchMovieParser
 from .utils import analyze_imdbid
 
 
 class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
+    """A parser for the company search page."""
+
     _linkPrefix = '/company/co'
 
     rules = [
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//td[@class="result_text"]/a[starts-with(@href, "/company/co")]/..',
+                foreach='.//td[@class="result_text"]',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./a[1]/@href')
+                        extractor=Path('./a/@href')
                     ),
                     Rule(
                         key='name',
-                        extractor=Path('./a[1]/text()')
+                        extractor=Path('./a/text()')
                     ),
                     Rule(
                         key='notes',
-                        extractor=Path('./text()[1]')
+                        extractor=Path('./text()')
                     )
                 ],
                 transform=lambda x: (
                     analyze_imdbid(x.get('link')),
-                    analyze_company_name(x.get('name') + (x.get('notes') or ''),
+                    analyze_company_name(x.get('name') + x.get('notes', ''),
                                          stripNotes=True)
                 )
             )

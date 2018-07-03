@@ -47,7 +47,7 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./a/@href')
+                        extractor=Path('./a/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='name',
@@ -60,8 +60,7 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
                 ],
                 transform=lambda x: (
                     analyze_imdbid(x.get('link')),
-                    analyze_company_name(x.get('name') + x.get('notes', ''),
-                                         stripNotes=True)
+                    analyze_company_name(x.get('name') + x.get('notes', ''), stripNotes=True)
                 )
             )
         )

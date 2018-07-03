@@ -1,6 +1,3 @@
-from pytest import mark
-
-
 def test_search_company_should_list_default_number_of_companies(ia):
     companies = ia.search_company('pixar')
     assert len(companies) == 20
@@ -39,3 +36,8 @@ def test_search_company_entries_should_include_company_name(ia):
 def test_search_company_entries_should_include_company_country(ia):
     companies = ia.search_company('pixar')
     assert companies[0]['country'] == '[ca]'    # shouldn't this be just 'ca'?
+
+
+def test_search_company_entries_missing_country_should_be_excluded(ia):
+    companies = ia.search_company('pixar', results=500)
+    assert 'country' not in companies[35]

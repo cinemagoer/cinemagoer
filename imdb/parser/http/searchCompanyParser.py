@@ -22,7 +22,7 @@ the results of a search for a given company.
 For example, when searching for the name "Columbia Pictures", the parsed page
 would be:
 
-http://www.imdb.com/find?s=co;mx=20;q=Columbia+Pictures
+http://www.imdb.com/find?q=Columbia+Pictures&s=co
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals

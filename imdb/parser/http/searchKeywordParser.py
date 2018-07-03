@@ -22,7 +22,7 @@ the results of a search for a given keyword.
 For example, when searching for the keyword "alabama", the parsed page
 would be:
 
-http://www.imdb.com/find?s=kw;mx=20;q=alabama
+http://www.imdb.com/find?q=alabama&s=kw
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals

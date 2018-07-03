@@ -22,7 +22,7 @@ the results of a search for a given person.
 For example, when searching for the name "Mel Gibson", the parsed page
 would be:
 
-http://www.imdb.com/find?q=Mel+Gibson&nm=on&mx=20
+http://www.imdb.com/find?q=Mel+Gibson&s=nm
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals

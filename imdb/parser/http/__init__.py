@@ -404,7 +404,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         or 'co' (for companies).
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
-        params = 'q=%s&s=%s&mx=%s' % (quote_plus(ton, safe=''), kind, str(results))
+        params = 'q=%s&s=%s' % (quote_plus(ton, safe=''), kind)
         if kind == 'ep':
             params = params.replace('s=ep&', 's=tt&ttype=ep&', 1)
         cont = self._retrieve(self.urls['find'] % params)

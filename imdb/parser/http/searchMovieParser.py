@@ -22,7 +22,7 @@ the results of a search for a given title.
 For example, when searching for the title "the passion", the parsed page
 would be:
 
-http://www.imdb.com/find?q=the+passion&tt=on&mx=20
+http://www.imdb.com/find?q=the+passion&s=tt
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals

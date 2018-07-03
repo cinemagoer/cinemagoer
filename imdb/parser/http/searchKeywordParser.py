@@ -35,16 +35,14 @@ from .utils import analyze_imdbid
 
 
 class DOMHTMLSearchKeywordParser(DOMHTMLSearchMovieParser):
-    """Parse the html page that the IMDb web server shows when the
-    "new search system" is used, searching for keywords similar to
-    the one given."""
+    """A parser for the keyword search page."""
 
     rules = [
         Rule(
             key='data',
             extractor=Path(
-                foreach='//a[starts-with(@href, "/keyword/")]/..',
-                path='./a[1]/text()'
+                foreach='//td[@class="result_text"]',
+                path='./a/text()'
             )
         )
     ]

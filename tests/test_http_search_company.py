@@ -39,9 +39,3 @@ def test_search_company_entries_should_include_company_name(ia):
 def test_search_company_entries_should_include_company_country(ia):
     companies = ia.search_company('pixar')
     assert companies[0]['country'] == '[ca]'    # shouldn't this be just 'ca'?
-
-
-@mark.skip('company name analyzer explicitly strips notes')
-def test_search_company_entries_should_include_notes(ia):
-    companies = ia.search_company('pixar')
-    assert companies[0]['notes'] == '(Production)'

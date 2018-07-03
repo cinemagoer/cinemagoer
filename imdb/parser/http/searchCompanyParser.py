@@ -37,8 +37,6 @@ from .utils import analyze_imdbid
 class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
     """A parser for the company search page."""
 
-    _linkPrefix = '/company/co'
-
     rules = [
         Rule(
             key='data',

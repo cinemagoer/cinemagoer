@@ -36,8 +36,6 @@ from .utils import DOMParserBase, analyze_imdbid
 class DOMHTMLSearchMovieParser(DOMParserBase):
     """A parser for the title search page."""
 
-    _linkPrefix = '/title/tt'
-
     rules = [
         Rule(
             key='data',

@@ -37,8 +37,6 @@ from .utils import analyze_imdbid
 class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     """A parser for the name search page."""
 
-    _linkPrefix = '/name/nm'
-
     rules = [
         Rule(
             key='data',

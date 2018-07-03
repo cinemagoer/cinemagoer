@@ -43,7 +43,7 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
         Rule(
             key='data',
             extractor=Rules(
-                foreach='.//td[@class="result_text"]',
+                foreach='//td[@class="result_text"]',
                 rules=[
                     Rule(
                         key='link',

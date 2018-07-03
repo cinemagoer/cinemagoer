@@ -29,7 +29,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from imdb.utils import analyze_name
 
-from .piculet import Path, Rule, Rules
+from .piculet import Path, Rule, Rules,reducers
 from .searchMovieParser import DOMHTMLSearchMovieParser
 from .utils import analyze_imdbid
 
@@ -43,27 +43,27 @@ def _cleanName(n):
 
 
 class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
-    """Parse the html page that the IMDb web server shows when the
-    "new search system" is used, for persons."""
+    """A parser for the name search page."""
+
     _linkPrefix = '/name/nm'
 
     rules = [
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//td[@class="result_text"]/a[starts-with(@href, "/name/nm")]/..',
+                foreach='//td[@class="result_text"]',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./a[1]/@href')
+                        extractor=Path('./a/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='name',
-                        extractor=Path('./a[1]/text()')
+                        extractor=Path('./a/text()')
                     ),
                     Rule(
                         key='index',
-                        extractor=Path('./text()[1]')
+                        extractor=Path('./text()')
                     ),
                     Rule(
                         key='akas',
@@ -71,9 +71,8 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
                     )
                 ],
                 transform=lambda x: (
-                    analyze_imdbid(x.get('link') or ''),
-                    analyze_name((x.get('name') or '') + (x.get('index') or ''),
-                                 canonical=1), x.get('akas')
+                    analyze_imdbid(x.get('link')),
+                    analyze_name(x.get('name', '') + x.get('index', ''), canonical=1), x.get('akas')
                 )
             )
         )

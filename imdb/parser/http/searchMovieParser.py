@@ -91,23 +91,16 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         if results is not None:
             data['data'][:] = data['data'][:results]
         # Horrible hack to support AKAs.
-        if data and data['data'] and len(data['data'][0]) == 3 and \
-                isinstance(data['data'][0], tuple):
             data['data'] = [x for x in data['data'] if x[0] and x[1]]
+        if data and data['data'] and len(data['data'][0]) == 3 and isinstance(data['data'][0], tuple):
             for idx, datum in enumerate(data['data']):
                 if not isinstance(datum, tuple):
                     continue
                 if not datum[0] and datum[1]:
                     continue
                 if datum[2] is not None:
-                    # akas = filter(None, datum[2].split('::'))
-                    if self._linkPrefix == '/title/tt':
-                        # XXX (HTU): couldn't find a result with multiple akas
-                        aka = datum[2]
-                        akas = [aka[1:-1]]      # remove the quotes
-                        # akas = [a.replace('" - ', '::').rstrip() for a in akas]
-                        # akas = [a.replace('aka "', '', 1).replace('aka  "',
-                        #         '', 1).lstrip() for a in akas]
+                    # XXX (HTU): couldn't find a result with multiple akas
+                    akas = [aka[1:-1] for aka in datum[2]]  # remove the quotes
                     datum[1]['akas'] = akas
                     data['data'][idx] = (datum[0], datum[1])
                 else:

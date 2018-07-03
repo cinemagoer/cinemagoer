@@ -33,6 +33,26 @@ def test_search_person_entries_should_include_person_name(ia):
     assert people[0]['name'] == 'Julia Roberts'
 
 
+def test_search_person_entries_with_aka_should_exclude_name_in_aka(ia):
+    people = ia.search_person('julia roberts')
+    assert people[3]['name'] == 'Jules Robertson'
+
+
 def test_search_person_entries_should_include_person_index(ia):
     people = ia.search_person('julia roberts')
     assert people[0]['imdbIndex'] == 'I'
+
+
+def test_search_person_entries_missing_index_should_be_excluded(ia):
+    people = ia.search_person('julia roberts')
+    assert 'imdbIndex' not in people[3]
+
+
+def test_search_person_entries_should_include_akas(ia):
+    people = ia.search_person('julia roberts')
+    assert people[3]['akas'] == ['Julia Robertson']
+
+
+def test_search_person_entries_missing_akas_should_be_excluded(ia):
+    people = ia.search_person('julia roberts')
+    assert 'akas' not in people[0]

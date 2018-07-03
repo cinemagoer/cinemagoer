@@ -59,7 +59,7 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
                     ),
                     Rule(
                         key='akas',
-                        extractor=Path('.//div[@class="_imdbpyAKA"]/text()')
+                        extractor=Path(foreach='./i', path='./text()')
                     )
                 ],
                 transform=lambda x: (

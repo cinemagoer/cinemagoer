@@ -156,7 +156,7 @@ def analyze_name(name, canonical=None):
     raise an IMDbParserError exception if the name is not valid.
     """
     original_n = name
-    name = name.strip()
+    name = name.split(' aka ')[0].strip()
     res = {}
     imdbIndex = ''
     opi = name.rfind('(')

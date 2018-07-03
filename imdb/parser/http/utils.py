@@ -411,7 +411,6 @@ class DOMParserBase(object):
             html_string = html_string.decode('utf-8')
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
-        html_string = html_string.strip()
         if html_string:
             html_string = html_string.replace('&nbsp;', ' ')
             dom = self.get_dom(html_string)

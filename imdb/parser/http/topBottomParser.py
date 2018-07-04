@@ -30,7 +30,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from imdb.utils import analyze_title
 
-from .piculet import Path, Rule, Rules
+from .piculet import Path, Rule, Rules, reducers
 from .utils import DOMParserBase, analyze_imdbid
 
 
@@ -42,31 +42,36 @@ class DOMHTMLTop250Parser(DOMParserBase):
         Rule(
             key='chart',
             extractor=Rules(
-                foreach='//div[@id="main"]//div[1]//div//table//tbody//tr',
+                foreach='//tbody[@class="lister-list"]/tr',
                 rules=[
                     Rule(
                         key='rank',
-                        extractor=Path('./td[2]/text()')
+                        extractor=Path('.//span[@name="rk"]/@data-value',
+                                       reduce=reducers.first,
+                                       transform=int)
                     ),
                     Rule(
                         key='rating',
-                        extractor=Path('./td[3]//strong//text()')
-                    ),
-                    Rule(
-                        key='title',
-                        extractor=Path('./td[2]//a//text()')
-                    ),
-                    Rule(
-                        key='year',
-                        extractor=Path('./td[2]//span//text()')
+                        extractor=Path('.//span[@name="ir"]/@data-value',
+                                       reduce=reducers.first,
+                                       transform=lambda x: round(float(x), 1))
                     ),
                     Rule(
                         key='movieID',
-                        extractor=Path('./td[2]//a/@href')
+                        extractor=Path('./td[@class="titleColumn"]/a/@href', reduce=reducers.first)
+                    ),
+                    Rule(
+                        key='title',
+                        extractor=Path('./td[@class="titleColumn"]/a/text()')
+                    ),
+                    Rule(
+                        key='year',
+                        extractor=Path('./td[@class="titleColumn"]/span/text()')
                     ),
                     Rule(
                         key='votes',
-                        extractor=Path('./td[3]//strong/@title')
+                        extractor=Path('.//span[@name="nv"]/@data-value', reduce=reducers.first,
+                                       transform=int)
                     )
                 ]
             )
@@ -85,29 +90,15 @@ class DOMHTMLTop250Parser(DOMParserBase):
             movie_id = analyze_imdbid(entry['movieID'])
             if movie_id is None:
                 continue
+            del entry['movieID']
 
-            movie_info = analyze_title(entry['title'] + ' ' + entry.get('year', ''))
-            try:
-                movie_info[self.ranktext] = int(entry['rank'].replace('.', ''))
-            except ValueError:
-                pass
+            entry[self.ranktext] = entry['rank']
             del entry['rank']
 
-            if 'votes' in entry:
-                try:
-                    votes = entry['votes'].replace(' user ratings', '')
-                    votes = votes.split(' based on ')[1]    # is IndexError possible?
-                    movie_info['votes'] = int(votes.replace(',', ''))
-                except (IndexError, ValueError):
-                    pass
+            title = analyze_title(entry['title'] + ' ' + entry.get('year', ''))
+            entry.update(title)
 
-            if 'rating' in entry:
-                try:
-                    movie_info['rating'] = float(entry['rating'])
-                except ValueError:
-                    pass
-
-            movies.append((movie_id, movie_info))
+            movies.append((movie_id, entry))
         return movies
 
 

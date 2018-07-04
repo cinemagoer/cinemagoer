@@ -35,66 +35,56 @@ from .utils import DOMParserBase, analyze_imdbid
 
 
 class DOMHTMLTop250Parser(DOMParserBase):
-    """Parser for the "top 250" page.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        tparser = DOMHTMLTop250Parser()
-        result = tparser.parse(top250_html_string)
-    """
-    label = 'top 250'
+    """A parser for the "top 250 movies" page."""
     ranktext = 'top 250 rank'
 
-    def _init(self):
-        self.rules = [
-            Rule(
-                key=self.label,
-                extractor=Rules(
-                    foreach='//div[@id="main"]//div[1]//div//table//tbody//tr',
-                    rules=[
-                        Rule(
-                            key=self.ranktext,
-                            extractor=Path('./td[2]/text()')
-                        ),
-                        Rule(
-                            key='rating',
-                            extractor=Path('./td[3]//strong//text()')
-                        ),
-                        Rule(
-                            key='title',
-                            extractor=Path('./td[2]//a//text()')
-                        ),
-                        Rule(
-                            key='year',
-                            extractor=Path('./td[2]//span//text()')
-                        ),
-                        Rule(
-                            key='movieID',
-                            extractor=Path('./td[2]//a/@href')
-                        ),
-                        Rule(
-                            key='votes',
-                            extractor=Path('./td[3]//strong/@title')
-                        )
-                    ]
-                )
+    rules = [
+        Rule(
+            key='chart',
+            extractor=Rules(
+                foreach='//div[@id="main"]//div[1]//div//table//tbody//tr',
+                rules=[
+                    Rule(
+                        key='rank',
+                        extractor=Path('./td[2]/text()')
+                    ),
+                    Rule(
+                        key='rating',
+                        extractor=Path('./td[3]//strong//text()')
+                    ),
+                    Rule(
+                        key='title',
+                        extractor=Path('./td[2]//a//text()')
+                    ),
+                    Rule(
+                        key='year',
+                        extractor=Path('./td[2]//span//text()')
+                    ),
+                    Rule(
+                        key='movieID',
+                        extractor=Path('./td[2]//a/@href')
+                    ),
+                    Rule(
+                        key='votes',
+                        extractor=Path('./td[3]//strong/@title')
+                    )
+                ]
             )
-        ]
+        )
+    ]
 
     def postprocess_data(self, data):
-        if not data or self.label not in data:
+        if not data or ('chart' not in data):
             return []
         mlist = []
-        data = data[self.label]
+        data = data['chart']
         # Avoid duplicates.  A real fix, using XPath, is auspicabile.
         # XXX: probably this is no more needed.
         seenIDs = []
         for d in data:
             if 'movieID' not in d:
                 continue
-            if self.ranktext not in d:
+            if 'rank' not in d:
                 continue
             if 'title' not in d:
                 continue
@@ -107,9 +97,10 @@ class DOMHTMLTop250Parser(DOMParserBase):
             seenIDs.append(theID)
             minfo = analyze_title(d['title'] + ' ' + d['year'])
             try:
-                minfo[self.ranktext] = int(d[self.ranktext].replace('.', ''))
+                minfo[self.ranktext] = int(d['rank'].replace('.', ''))
             except ValueError:
                 pass
+            del d['rank']
             if 'votes' in d:
                 try:
                     votes = d['votes'].replace(' user ratings', '')
@@ -127,16 +118,7 @@ class DOMHTMLTop250Parser(DOMParserBase):
 
 
 class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):
-    """Parser for the "bottom 100" page.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example:
-        tparser = DOMHTMLBottom100Parser()
-        result = tparser.parse(bottom100_html_string)
-    """
-    label = 'bottom 100'
+    """A parser for the "bottom 100 movies" page."""
     ranktext = 'bottom 100 rank'
 
 

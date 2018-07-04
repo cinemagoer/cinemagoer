@@ -74,47 +74,41 @@ class DOMHTMLTop250Parser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
-        if not data or ('chart' not in data):
+        if (not data) or ('chart' not in data):
             return []
-        mlist = []
-        data = data['chart']
-        # Avoid duplicates.  A real fix, using XPath, is auspicabile.
-        # XXX: probably this is no more needed.
-        seenIDs = []
-        for d in data:
-            if 'movieID' not in d:
+
+        movies = []
+        for entry in data['chart']:
+            if ('movieID' not in entry) or ('rank' not in entry) or ('title' not in entry):
                 continue
-            if 'rank' not in d:
+
+            movie_id = analyze_imdbid(entry['movieID'])
+            if movie_id is None:
                 continue
-            if 'title' not in d:
-                continue
-            theID = analyze_imdbid(d['movieID'])
-            if theID is None:
-                continue
-            theID = str(theID)
-            if theID in seenIDs:
-                continue
-            seenIDs.append(theID)
-            minfo = analyze_title(d['title'] + ' ' + d['year'])
+
+            movie_info = analyze_title(entry['title'] + ' ' + entry.get('year', ''))
             try:
-                minfo[self.ranktext] = int(d['rank'].replace('.', ''))
+                movie_info[self.ranktext] = int(entry['rank'].replace('.', ''))
             except ValueError:
                 pass
-            del d['rank']
-            if 'votes' in d:
+            del entry['rank']
+
+            if 'votes' in entry:
                 try:
-                    votes = d['votes'].replace(' user ratings', '')
+                    votes = entry['votes'].replace(' user ratings', '')
                     votes = votes.split(' based on ')[1]    # is IndexError possible?
-                    minfo['votes'] = int(votes.replace(',', ''))
+                    movie_info['votes'] = int(votes.replace(',', ''))
                 except (IndexError, ValueError):
                     pass
-            if 'rating' in d:
+
+            if 'rating' in entry:
                 try:
-                    minfo['rating'] = float(d['rating'])
+                    movie_info['rating'] = float(entry['rating'])
                 except ValueError:
                     pass
-            mlist.append((theID, minfo))
-        return mlist
+
+            movies.append((movie_id, movie_info))
+        return movies
 
 
 class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):

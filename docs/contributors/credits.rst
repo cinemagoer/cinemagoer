@@ -15,6 +15,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/.
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* tiagoaquinofl and rednibia for extensive debugging on SSL certificate issues
+
 * Tim King for a report about birth and death dates.
 
 * Lars Gustäbel for a report about series seasons.

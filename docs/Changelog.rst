@@ -14,7 +14,7 @@ Changelog
   - #149: store person birth and death dates in ISO8601 format
   - #166: fix birth and death dates without itemprop attributes
   - #160: fix series seasons list
-  - #155: ignore certificate to prevent validation errors
+  - #155 and #165: ignore certificate to prevent validation errors
   - #156: fix tech parser
   - #157: full-size headshot for persons
   - #161: fix string/unicode conversion in Python 2.7

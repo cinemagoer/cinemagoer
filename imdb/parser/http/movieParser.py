@@ -1385,7 +1385,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
             date = date.strip()
             if not (country and date):
                 continue
-            notes = i['notes']
+            notes = i.get('notes')
             info = '%s::%s' % (country, date)
             if notes:
                 info += notes

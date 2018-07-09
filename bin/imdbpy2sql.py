@@ -38,6 +38,7 @@ except ImportError:
     from md5 import md5
 from gzip import GzipFile
 
+from imdb import PY2
 from imdb.parser.sql.dbschema import DB_SCHEMA, dropTables, createTables, createIndexes
 from imdb.parser.sql import soundex
 from imdb.utils import analyze_title, analyze_name, date_and_notes, \
@@ -818,12 +819,16 @@ class SourceFile(GzipFile):
 
     def readline_NOcheckEnd(self, size=-1):
         line = GzipFile.readline(self, size)
+        if PY2:
+            return line.decode('latin_2', 'ignore')
         return str(line, 'latin_1', 'ignore')
 
     def readline_checkEnd(self, size=-1):
         line = GzipFile.readline(self, size)
         if self.stop is not None and line[:self.stoplen] == self.stop:
             return ''
+        if PY2:
+            return line.decode('latin_2', 'ignore')
         return str(line, 'latin_1', 'ignore')
 
     def getByHashSections(self):

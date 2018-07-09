@@ -31,7 +31,7 @@ import logging
 from difflib import SequenceMatcher
 from codecs import lookup
 
-from imdb import IMDbBase
+from imdb import IMDbBase, PY2
 from imdb.utils import normalizeName, normalizeTitle, build_title, \
     build_name, analyze_name, analyze_title, \
                         canonicalTitle, canonicalName, re_titleRef, \
@@ -702,6 +702,8 @@ class IMDbSqlAccessSystem(IMDbBase):
                 try:
                     lookup(e)
                     lat1 = akatitle.encode('latin_1', 'replace')
+                    if PY2:
+                        return lat1.decode(e, 'replace')
                     return str(lat1, e, 'replace')
                 except (LookupError, ValueError, TypeError):
                     continue

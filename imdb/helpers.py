@@ -32,7 +32,7 @@ from gettext import gettext as _
 
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
-from imdb import IMDb, imdbURL_character_base, imdbURL_movie_base, imdbURL_person_base
+from imdb import IMDb, imdbURL_character_base, imdbURL_movie_base, imdbURL_person_base, PY2
 from imdb.Character import Character
 from imdb.Company import Company
 from imdb.linguistics import COUNTRY_LANG
@@ -217,7 +217,11 @@ def makeModCGILinks(movieTxt, personTxt, characterTxt=None, encoding='utf8'):
                 movieID = item.movieID
                 to_replace = movieTxt % {
                     'movieID': movieID,
-                    'title': str(_cgiPrint(to_replace), encoding, 'xmlcharrefreplace')
+                    'title': (
+                        _cgiPrint(to_replace).decode(encoding, 'xmlcharrefreplace')
+                        if PY2 else
+                        str(_cgiPrint(to_replace), encoding, 'xmlcharrefreplace')
+                    )
                 }
             return to_replace
 
@@ -228,7 +232,11 @@ def makeModCGILinks(movieTxt, personTxt, characterTxt=None, encoding='utf8'):
                 personID = item.personID
                 to_replace = personTxt % {
                     'personID': personID,
-                    'name': str(_cgiPrint(to_replace), encoding, 'xmlcharrefreplace')
+                    'name': (
+                        _cgiPrint(to_replace).decode(encoding, 'xmlcharrefreplace')
+                        if PY2 else
+                        str(_cgiPrint(to_replace), encoding, 'xmlcharrefreplace')
+                    )
                 }
             return to_replace
 
@@ -243,7 +251,11 @@ def makeModCGILinks(movieTxt, personTxt, characterTxt=None, encoding='utf8'):
                     return to_replace
                 to_replace = characterTxt % {
                     'characterID': characterID,
-                    'name': str(_cgiPrint(to_replace), encoding, 'xmlcharrefreplace')
+                    'name': (
+                        _cgiPrint(to_replace).decode(encoding, 'xmlcharrefreplace')
+                        if PY2 else
+                        str(_cgiPrint(to_replace), encoding, 'xmlcharrefreplace')
+                    )
                 }
             return to_replace
         s = s.replace('<', '&lt;').replace('>', '&gt;')

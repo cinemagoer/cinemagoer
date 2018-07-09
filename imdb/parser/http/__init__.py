@@ -225,6 +225,8 @@ class IMDbURLopener(FancyURLopener):
                               ' falling back to default utf8.', encode)
         if isinstance(content, str):
             return content
+        if PY2:
+            return content.decode(encode, 'replace')
         return str(content, encode, 'replace')
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):

@@ -1354,11 +1354,11 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
                 foreach='//table[@id="akas"]//tr',
                 rules=[
                     Rule(
-                        key='title',
+                        key='countries',
                         extractor=Path('./td[1]/text()')
                     ),
                     Rule(
-                        key='countries',
+                        key='title',
                         extractor=Path('./td[2]/text()')
                     )
                 ]

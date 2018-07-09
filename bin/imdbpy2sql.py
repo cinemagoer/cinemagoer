@@ -820,7 +820,7 @@ class SourceFile(GzipFile):
     def readline_NOcheckEnd(self, size=-1):
         line = GzipFile.readline(self, size)
         if PY2:
-            return line.decode('latin_2', 'ignore')
+            return line.decode('latin_1', 'ignore')
         return str(line, 'latin_1', 'ignore')
 
     def readline_checkEnd(self, size=-1):
@@ -828,7 +828,7 @@ class SourceFile(GzipFile):
         if self.stop is not None and line[:self.stoplen] == self.stop:
             return ''
         if PY2:
-            return line.decode('latin_2', 'ignore')
+            return line.decode('latin_1', 'ignore')
         return str(line, 'latin_1', 'ignore')
 
     def getByHashSections(self):

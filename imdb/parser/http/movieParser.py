@@ -1391,6 +1391,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
                 info += notes
             rl.append(info)
         if releases:
+            data['raw release dates'] = data['release dates']
             del data['release dates']
         if rl:
             data['release dates'] = rl
@@ -1407,6 +1408,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
                 for country in countries:
                     nakas.append('%s::%s' % (title, country.strip()))
         if akas:
+            data['raw akas'] = data['akas']
             del data['akas']
         if nakas:
             data['akas from release info'] = nakas

@@ -1020,7 +1020,7 @@ def _tagAttr(key, fullpath):
         attrs['keytype'] = strType
         tagName = str(key)
     else:
-        tagName = str((key, 'ascii', 'ignore'))
+        tagName = key
     if isinstance(key, int):
         attrs['keytype'] = 'int'
     origTagName = tagName

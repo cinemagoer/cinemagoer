@@ -8,6 +8,7 @@ Changelog
   - #154: exclude docs and etc directories from packaging
   - introduce 'https' as an alias for 'http'
   - #151: the 'in' operator also considers key names
+    #172: fix for ASCII keys in XML output
 
   [http]
 

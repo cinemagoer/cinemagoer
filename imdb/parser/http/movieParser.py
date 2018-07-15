@@ -1388,6 +1388,8 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
             notes = i.get('notes')
             info = '%s::%s' % (country, date)
             if notes:
+                notes = notes.replace('\n', '')
+                i['notes'] = notes
                 info += notes
             rl.append(info)
         if releases:

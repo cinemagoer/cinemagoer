@@ -8,7 +8,7 @@ Changelog
   - #154: exclude docs and etc directories from packaging
   - introduce 'https' as an alias for 'http'
   - #151: the 'in' operator also considers key names
-    #172: fix for ASCII keys in XML output
+  - #172: fix for ASCII keys in XML output
 
   [http]
 
@@ -19,6 +19,7 @@ Changelog
   - #156: fix tech parser
   - #157: full-size headshot for persons
   - #161: fix string/unicode conversion in Python 2.7
+  - #173: raw akas and raw release dates fields
 
   [s3]
 

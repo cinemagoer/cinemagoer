@@ -1413,7 +1413,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
             data['raw akas'] = data['akas']
             del data['akas']
         if nakas:
-            data['akas from release info'] = nakas
+            data['akas'] = data['akas from release info'] = nakas
         return data
 
 

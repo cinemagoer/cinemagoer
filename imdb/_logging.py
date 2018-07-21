@@ -46,5 +46,5 @@ def setLevel(level):
     """Set logging level for the main logger."""
     level = level.lower().strip()
     imdbpyLogger.setLevel(LEVELS.get(level, logging.NOTSET))
-    imdbpyLogger.log(imdbpyLogger.level, 'set logging threshold to "%s"',
+    imdbpyLogger.log(logging.INFO, 'set logging threshold to "%s"',
                      logging.getLevelName(imdbpyLogger.level))

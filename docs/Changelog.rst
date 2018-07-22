@@ -9,6 +9,7 @@ Changelog
   - introduce 'https' as an alias for 'http'
   - #151: the 'in' operator also considers key names
   - #172: fix for ASCII keys in XML output
+  - #174: improve XML output
 
   [http]
 

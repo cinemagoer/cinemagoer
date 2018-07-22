@@ -985,6 +985,7 @@ TAGS_TO_MODIFY = {
     'movie.parents-guide': ('item', True),
     'movie.number-of-votes': ('item', True),
     'movie.soundtrack.item': ('item', True),
+    'movie.soundtrack.item.item': ('item', True),
     'movie.quotes': ('quote', False),
     'movie.quotes.quote': ('line', False),
     'movie.demographic': ('item', True),
@@ -1101,7 +1102,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
     else:
         if isinstance(seq, _Container):
             _l.extend(_tag4TON(seq))
-        else:
+        elif seq:
             # Text, ints, floats and the like.
             _l.append(_normalizeValue(seq, withRefs=withRefs,
                                       modFunct=modFunct,

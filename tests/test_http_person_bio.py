@@ -16,6 +16,11 @@ def test_person_headshot_if_none_should_be_excluded(ia):
     assert 'headshot' not in person
 
 
+def test_person_bio_is_present(ia):
+    person = ia.get_person('0000206', info=['biography'])   # Keanu Reeves
+    assert 'mini biography' in person
+
+
 def test_person_birth_date_should_be_in_ymd_format(ia):
     person = ia.get_person('0000001', info=['biography'])   # Fred Astaire
     assert person.get('birth date') == '1899-05-10'

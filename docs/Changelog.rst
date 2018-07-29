@@ -22,6 +22,7 @@ Changelog
   - #157: full-size headshot for persons
   - #161: fix string/unicode conversion in Python 2.7
   - #173: raw akas and raw release dates fields
+  - #178: fix mini biography parser
 
   [s3]
 

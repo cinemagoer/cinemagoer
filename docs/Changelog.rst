@@ -10,6 +10,7 @@ Changelog
   - #151: the 'in' operator also considers key names
   - #172: fix for ASCII keys in XML output
   - #174: improve XML output
+  - #179: introduce Travis CI at https://travis-ci.org/alberanid/imdbpy
 
   [http]
 

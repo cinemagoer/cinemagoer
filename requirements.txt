@@ -1,0 +1,13 @@
+atomicwrites==1.1.5
+attrs==18.1.0
+lxml==4.2.3
+more-itertools==4.2.0
+packaging==17.1
+pluggy==0.7.1
+py==1.5.4
+pyparsing==2.2.0
+pytest==3.6.4
+six==1.11.0
+SQLAlchemy==1.2.10
+tox==3.1.2
+virtualenv==16.0.0

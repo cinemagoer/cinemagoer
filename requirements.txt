@@ -3,7 +3,6 @@ attrs==18.1.0
 lxml==4.2.3
 more-itertools==4.2.0
 packaging==17.1
-pkg-resources
 pluggy==0.7.1
 py==1.5.4
 pyparsing==2.2.0

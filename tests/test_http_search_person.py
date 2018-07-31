@@ -50,7 +50,9 @@ def test_search_person_entries_missing_index_should_be_excluded(ia):
 
 def test_search_person_entries_should_include_akas(ia):
     people = ia.search_person('julia roberts')
-    assert people[3]['akas'] == ['Julia Robertson']
+    person_with_aka = [p for p in people if p.personID == '4691618']
+    assert len(person_with_aka) == 1
+    assert person_with_aka[0]['akas'] == ['Julia Robertson']
 
 
 def test_search_person_entries_missing_akas_should_be_excluded(ia):

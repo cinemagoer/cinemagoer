@@ -5,34 +5,41 @@ def test_top_chart_should_contain_250_entries(ia):
 
 def test_top_chart_entries_should_have_rank(ia):
     movies = ia.get_top250_movies()
-    assert movies[0]['top 250 rank'] == 1
+    for rank, movie in enumerate(movies):
+        assert movie['top 250 rank'] == rank + 1
 
 
 def test_top_chart_entries_should_have_movie_id(ia):
     movies = ia.get_top250_movies()
-    assert movies[0].movieID == '0111161'
+    for movie in movies:
+        assert movie.movieID.isdigit()
 
 
 def test_top_chart_entries_should_have_title(ia):
     movies = ia.get_top250_movies()
-    assert movies[0]['title'] == 'The Shawshank Redemption'
+    for movie in movies:
+        assert 'title' in movie
 
 
-def test_top_chart_entries_should_have_kind(ia):
+def test_top_chart_entries_should_be_movies(ia):
     movies = ia.get_top250_movies()
-    assert movies[0]['kind'] == 'movie'
+    for movie in movies:
+        assert movie['kind'] == 'movie'
 
 
 def test_top_chart_entries_should_have_year(ia):
     movies = ia.get_top250_movies()
-    assert movies[0]['year'] == 1994
+    for movie in movies:
+        assert isinstance(movie['year'], int)
 
 
-def test_top_chart_entries_should_have_rating(ia):
+def test_top_chart_entries_should_have_high_ratings(ia):
     movies = ia.get_top250_movies()
-    assert movies[0]['rating'] > 9
+    for movie in movies:
+        assert movie['rating'] > 7.5
 
 
-def test_top_chart_entries_should_have_votes(ia):
+def test_top_chart_entries_should_have_minimal_number_of_votes(ia):
     movies = ia.get_top250_movies()
-    assert movies[0]['votes'] > 1900000
+    for movie in movies:
+        assert movie['votes'] >= 25000  # limit stated by IMDb

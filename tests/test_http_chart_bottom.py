@@ -5,34 +5,41 @@ def test_bottom_chart_should_contain_100_entries(ia):
 
 def test_bottom_chart_entries_should_have_rank(ia):
     movies = ia.get_bottom100_movies()
-    assert movies[0]['bottom 100 rank'] == 1
+    for rank, movie in enumerate(movies):
+        assert movie['bottom 100 rank'] == rank + 1
 
 
 def test_bottom_chart_entries_should_have_movie_id(ia):
     movies = ia.get_bottom100_movies()
-    assert movies[0].movieID == '4458206'
+    for movie in movies:
+        assert movie.movieID.isdigit()
 
 
 def test_bottom_chart_entries_should_have_title(ia):
     movies = ia.get_bottom100_movies()
-    assert movies[0]['title'] == 'Code Name: K.O.Z.'
+    for movie in movies:
+        assert 'title' in movie
 
 
-def test_bottom_chart_entries_should_have_kind(ia):
+def test_bottom_chart_entries_should_be_movies(ia):
     movies = ia.get_bottom100_movies()
-    assert movies[0]['kind'] == 'movie'
+    for movie in movies:
+        assert movie['kind'] == 'movie'
 
 
 def test_bottom_chart_entries_should_have_year(ia):
     movies = ia.get_bottom100_movies()
-    assert movies[0]['year'] == 2015
+    for movie in movies:
+        assert isinstance(movie['year'], int)
 
 
-def test_bottom_chart_entries_should_have_rating(ia):
+def test_bottom_chart_entries_should_have_low_ratings(ia):
     movies = ia.get_bottom100_movies()
-    assert movies[0]['rating'] < 1.6
+    for movie in movies:
+        assert movie['rating'] < 5.0
 
 
-def test_bottom_chart_entries_should_have_votes(ia):
+def test_bottom_chart_entries_should_have_minimal_number_of_votes(ia):
     movies = ia.get_bottom100_movies()
-    assert movies[0]['votes'] > 25000
+    for movie in movies:
+        assert movie['votes'] > 1500  # limit stated by IMDb

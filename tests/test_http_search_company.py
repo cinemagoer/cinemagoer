@@ -40,6 +40,6 @@ def test_search_company_entries_should_include_company_country(ia):
 
 def test_search_company_entries_missing_country_should_be_excluded(ia):
     companies = ia.search_company('pixar', results=500)
-    company = [c for c in companies if c.companyID == '0115838']
-    assert len(company) == 1
-    assert 'country' not in company
+    company_without_country = [c for c in companies if c.companyID == '0115838']
+    assert len(company_without_country) == 1
+    assert 'country' not in company_without_country[0]

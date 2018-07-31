@@ -49,7 +49,9 @@ def test_search_movie_entries_should_include_movie_kind(ia):
 
 def test_search_movie_entries_should_include_movie_kind_if_other_than_movie(ia):
     movies = ia.search_movie('matrix')
-    assert movies[1]['kind'] == 'tv series'
+    tv_series = [m for m in movies if m.movieID == '0106062']
+    assert len(tv_series) == 1
+    assert tv_series[0]['kind'] == 'tv series'
 
 
 def test_search_movie_entries_should_include_movie_year(ia):
@@ -59,7 +61,9 @@ def test_search_movie_entries_should_include_movie_year(ia):
 
 def test_search_movie_entries_should_include_imdb_index(ia):
     movies = ia.search_movie('blink')
-    assert movies[2]['imdbIndex'] == 'III'
+    movie_with_index = [m for m in movies if m.movieID == '6544524']
+    assert len(movie_with_index) == 1
+    assert movie_with_index[0]['imdbIndex'] == 'IV'
 
 
 def test_search_movie_entries_missing_imdb_index_should_be_excluded(ia):
@@ -69,7 +73,9 @@ def test_search_movie_entries_missing_imdb_index_should_be_excluded(ia):
 
 def test_search_movie_entries_should_include_akas(ia):
     movies = ia.search_movie('matrix')
-    assert movies[6]['akas'] == ['Matrix Hunter']
+    movie_with_aka = [m for m in movies if m.movieID == '0270841']
+    assert len(movie_with_aka) == 1
+    assert movie_with_aka[0]['akas'] == ['Matrix Hunter']
 
 
 def test_search_movie_entries_missing_akas_should_be_excluded(ia):

@@ -42,4 +42,4 @@ def test_bottom_chart_entries_should_have_low_ratings(ia):
 def test_bottom_chart_entries_should_have_minimal_number_of_votes(ia):
     movies = ia.get_bottom100_movies()
     for movie in movies:
-        assert movie['votes'] > 1500  # limit stated by IMDb
+        assert movie['votes'] >= 1500  # limit stated by IMDb

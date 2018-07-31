@@ -29,7 +29,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import re
 
-from .piculet import Path, Rule, Rules, transformers
+from imdb.utils import analyze_company_name
+
+from .piculet import Path, Rule, Rules
 from .utils import DOMParserBase, analyze_imdbid, build_movie
 
 
@@ -50,8 +52,8 @@ class DOMCompanyParser(DOMParserBase):
         Rule(
             key='name',
             extractor=Path(
-                '//div[@id="company_heading"]//h1/text()',
-                transform=transformers.strip
+                '//div[@id="company_heading"]//h1//text()',
+                transform=lambda x: analyze_company_name(x, stripNotes=True)
             )
         ),
         Rule(

@@ -1,6 +1,9 @@
 Changelog
 =========
 
+* What's new in release 6.7
+
+
 * What's new in release 6.6 "Stranger Things" (05 Aug 2018)
 
   [general]

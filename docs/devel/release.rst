@@ -96,7 +96,7 @@ How to make a release
 
 *imdb/__init__.py*
 
-    Bump the ``VERSION`` and ``__version__`` variables.
+    Bump the ``VERSION`` and ``__version__`` variables adding again the *devISO8601DATE* string.
 
 *docs/Changelog.rst*
 

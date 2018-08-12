@@ -3,6 +3,9 @@ Changelog
 
 * What's new in release 6.7
 
+  [general]
+  - #180: include tests in source package
+
 
 * What's new in release 6.6 "Stranger Things" (05 Aug 2018)
 

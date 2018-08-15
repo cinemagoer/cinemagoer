@@ -139,8 +139,20 @@ def merge_roles(mop):
     """Merge multiple roles."""
     new_list = []
     for m in mop:
-        if m in new_list:
-            keep_this = new_list[new_list.index(m)]
+        m_isinnewlist = False
+        m_indexinnewlist = None
+        if isinstance(m, Person):
+            for i, person in enumerate(new_list):
+                if person.isSamePerson(m):
+                    m_isinnewlist = True
+                    m_indexinnewlist = i
+                    break
+        else:
+            if m in new_list:
+                m_isinnewlist = True
+                m_indexinnewlist = new_list.index(m)
+        if m_isinnewlist:
+            keep_this = new_list[m_indexinnewlist]
             if not isinstance(keep_this.currentRole, list):
                 keep_this.currentRole = [keep_this.currentRole]
             keep_this.currentRole.append(m.currentRole)

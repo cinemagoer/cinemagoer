@@ -19,7 +19,7 @@ and hints (kept in reverse order since IMDbPY 4.5):
 
 * David Runge for package tests and hints
 
-* antonioforte for a bug report about XML output
+* antonioforte for bug reports and patches about XML output and SQL parser
 
 * Jakub Synowiec for multiple bug reports and patches
 

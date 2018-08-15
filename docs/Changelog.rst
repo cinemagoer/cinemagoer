@@ -6,6 +6,9 @@ Changelog
   [general]
   - #180: include tests in source package
 
+  [sql]
+  - #176: correctly handle multiple characters
+
 
 * What's new in release 6.6 "Stranger Things" (05 Aug 2018)
 

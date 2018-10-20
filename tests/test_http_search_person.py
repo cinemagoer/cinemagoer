@@ -1,3 +1,5 @@
+from pytest import mark
+
 def test_search_person_should_list_default_number_of_people(ia):
     people = ia.search_person('julia')
     assert len(people) == 20
@@ -49,6 +51,7 @@ def test_search_person_entries_should_include_person_index(ia):
     assert people[0]['imdbIndex'] == 'I'
 
 
+@mark.skip(reason="no persons without imdbIndex in the first 20 results")
 def test_search_person_entries_missing_index_should_be_excluded(ia):
     people = ia.search_person('julia roberts')
     assert 'imdbIndex' not in people[3]

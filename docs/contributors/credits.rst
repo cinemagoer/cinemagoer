@@ -15,6 +15,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/.
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* JohnnyD0101 and Kagandi for a bug report and a patch about currentRole and notes
+
 * Ali Momen Sani for a report about mini biography
 
 * David Runge for package tests and hints

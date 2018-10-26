@@ -678,6 +678,9 @@ class DOMHTMLMovieParser(DOMParserBase):
         misc_sections = data.get('misc sections')
         if misc_sections is not None:
             for section in misc_sections:
+                # skip sections with their own parsers
+                if 'cast' in section.keys():
+                    continue
                 data.update(section)
             del data['misc sections']
         if 'akas' in data or 'other akas' in data:

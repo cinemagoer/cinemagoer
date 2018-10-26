@@ -467,6 +467,13 @@ def test_movie_colors_if_multiple_should_be_a_list_of_color_types(ia):
     assert movie.get('color info', []) == ['Black and White']
 
 
+def test_movie_cast_can_contain_notes(ia):
+    movie = ia.get_movie('0060666', info=['main'])      # Manos
+    diane_adelson = movie['cast'][2]
+    assert str(diane_adelson.currentRole) == 'Margaret'
+    assert diane_adelson.notes == '(as Diane Mahree)'
+
+
 def test_movie_colors_if_single_with_notes_should_include_notes(ia):
     movie = ia.get_movie('0060666', info=['main'])      # Manos
     assert movie.get('color info', []) == ['Color::(Eastmancolor)']

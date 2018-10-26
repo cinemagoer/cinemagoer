@@ -6,6 +6,10 @@ Changelog
   [general]
   - #180: include tests in source package
 
+  [http]
+
+  - #144: fix parser for currentRole and notes
+
   [sql]
   - #176: correctly handle multiple characters
 

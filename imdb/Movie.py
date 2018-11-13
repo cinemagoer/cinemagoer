@@ -225,18 +225,24 @@ class Movie(_Container):
             lang = self.guessLanguage()
         return canonicalTitle(title, lang=lang)
 
+    def _getSeriesTitle(self, obj):
+        """Get the title from a Movie object or return the string itself."""
+        if isinstance(obj, Movie):
+            return obj.get('title', '')
+        return obj
+
     def _getitem(self, key):
         """Handle special keys."""
         if 'episode of' in self.data:
             if key == 'long imdb episode title':
                 return build_title(self.data)
             elif key == 'series title':
-                return self.data['episode of']['title']
+                return self._getSeriesTitle(self.data['episode of'])
             elif key == 'canonical series title':
-                ser_title = self.data['episode of']['title']
+                ser_title = self._getSeriesTitle(self.data['episode of'])
                 return canonicalTitle(ser_title)
             elif key == 'smart canonical series title':
-                ser_title = self.data['episode of']['title']
+                ser_title = self._getSeriesTitle(self.data['episode of'])
                 return self.smartCanonicalTitle(ser_title)
             elif key == 'episode title':
                 return self.data.get('title', '')

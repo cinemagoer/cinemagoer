@@ -5,6 +5,7 @@ Changelog
 
   [general]
   - #180: include tests in source package
+  - #188: avoid missing keys in search results
 
   [http]
 

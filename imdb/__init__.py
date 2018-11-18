@@ -25,7 +25,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.7dev20181213'
+__version__ = VERSION = '6.7dev20181218'
 
 
 import logging
@@ -54,7 +54,7 @@ _aux_logger = logging.getLogger('imdbpy.aux')
 
 
 # URLs of the main pages for movies, persons, characters and queries.
-imdbURL_base = 'http://www.imdb.com/'
+imdbURL_base = 'https://www.imdb.com/'
 
 # NOTE: the urls below will be removed in a future version.
 #       please use the values in the 'urls' attribute
@@ -271,8 +271,8 @@ class IMDbBase:
     def set_imdb_urls(self, imdbURL_base):
         """Set the urls used accessing the IMDb site."""
         imdbURL_base = imdbURL_base.strip().strip('"\'')
-        if not imdbURL_base.startswith('http://'):
-            imdbURL_base = 'http://%s' % imdbURL_base
+        if not imdbURL_base.startswith(('https://', 'http://')):
+            imdbURL_base = 'https://%s' % imdbURL_base
         if not imdbURL_base.endswith('/'):
             imdbURL_base = '%s/' % imdbURL_base
         # http://www.imdb.com/title/

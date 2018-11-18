@@ -10,6 +10,7 @@ Changelog
   [http]
 
   - #144: fix parser for currentRole and notes
+  - #189: use HTTPS insted of HTTP
 
   [sql]
   - #176: correctly handle multiple characters

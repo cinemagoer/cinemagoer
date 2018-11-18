@@ -15,6 +15,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/.
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* jh888 for suggesting to switch to https
+
 * tlc for a bug report about search results
 
 * JohnnyD0101 and Kagandi for a bug report and a patch about currentRole and notes

@@ -15,6 +15,9 @@ Changelog
   [sql]
   - #176: correctly handle multiple characters
 
+  [s3]
+  - #163 and #193: fix import in MySQL
+
 
 * What's new in release 6.6 "Stranger Things" (05 Aug 2018)
 

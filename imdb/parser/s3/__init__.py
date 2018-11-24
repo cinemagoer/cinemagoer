@@ -59,7 +59,7 @@ class IMDbS3AccessSystem(IMDbBase):
     def __init__(self, uri, adultSearch=True, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
-        self._engine = sqlalchemy.create_engine(uri, echo=False)
+        self._engine = sqlalchemy.create_engine(uri, encoding='utf-8', echo=False)
         self._metadata.bind = self._engine
         self._metadata.reflect()
         self.T = self._metadata.tables

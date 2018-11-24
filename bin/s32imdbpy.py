@@ -172,7 +172,7 @@ if __name__ == '__main__':
     db_uri = args.db_uri
     if args.verbose:
         logger.setLevel(logging.DEBUG)
-    engine = sqlalchemy.create_engine(db_uri, echo=False)
+    engine = sqlalchemy.create_engine(db_uri, encoding='utf-8', echo=False)
     metadata.bind = engine
     import_dir(dir_name, engine)
 

@@ -85,7 +85,8 @@ DB_TRANSFORM = {
     'title_basics': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
-        'titleType': {'transform': transf_kind, 'rename': 'kind', 'index': True},
+        'titleType': {'type': sqlalchemy.String, 'transform': transf_kind,
+                      'rename': 'kind', 'length': 16, 'index': True},
         'primaryTitle': {'rename': 'title'},
         'originalTitle': {'rename': 'original title'},
         'isAdult': {'type': sqlalchemy.Boolean, 'transform': transf_bool, 'rename': 'adult', 'index': True},
@@ -113,7 +114,7 @@ DB_TRANSFORM = {
         'titleId': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
         'ordering': {'type': sqlalchemy.Integer, 'transform': transf_int},
-        'title': {'index': True},
+        'title': {},
         'region': {'type': sqlalchemy.String, 'length': 5, 'index': True},
         'language': {'type': sqlalchemy.String, 'length': 5, 'index': True},
         'types': {'type': sqlalchemy.String, 'length': 31, 'index': True},
@@ -165,7 +166,7 @@ def soundex(s, length=SOUNDEX_LENGTH):
 
     :param s: the string to convert to soundex
     :type s: str
-    :param length: length of the soundx code to generate
+    :param length: length of the soundex code to generate
     :type length: int
     :returns: the soundex code
     :rtype: str"""

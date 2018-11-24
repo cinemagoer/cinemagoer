@@ -27,8 +27,11 @@ Then, follow these steps:
       s32imdbpy.py ~/Download/imdb-s3-dataset-2018-02-07/ \
           postgres://user:password@localhost/imdb
 
-Once the import is finished -which should take about an hour or less
-on a modern system- you will have a SQL database with all the information
+Please notice that for some database engines (like MySQL and MariaDB) you may need
+to specify the charset on the URI and sometimes also the dialect, with something like 'mysql+mysqldb://username:password@localhost/imdb?charset=utf8'
+
+Once the import is finished - which should take about an hour or less
+on a modern system - you will have a SQL database with all the information
 and you can use the normal IMDbPY API:
 
 .. code-block:: python

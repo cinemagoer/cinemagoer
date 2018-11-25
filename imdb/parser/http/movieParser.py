@@ -106,6 +106,8 @@ _SECT_CONV = {
     'special effects': 'special effects companies'
 }
 
+re_space = re.compile(r'\s+')
+
 
 def _manageRoles(mo):
     """Perform some transformation on the html, so that roleIDs can
@@ -130,15 +132,6 @@ def _manageRoles(mo):
 
 
 _reRolesMovie = re.compile(r'(<td class="character">)(.*?)(</td>)', re.I | re.M | re.S)
-
-
-def _replaceBR(mo):
-    """Replaces <br> tags with '::' (useful for some akas)"""
-    txt = mo.group(0)
-    return txt.replace('<br>', '::')
-
-
-_reAkas = re.compile(r'<h5>also known as:</h5>.*?</div>', re.I | re.M | re.S)
 
 
 def makeSplitter(lstrip=None, sep='|', comments=True,
@@ -228,11 +221,16 @@ def analyze_certificates(certificates):
                 acc[-1],
                 el,
             )
-
         return acc
-
     certificates = [el.strip() for el in certificates.split('\n') if el.strip()]
     return functools.reduce(reducer, certificates, [])
+
+
+def clean_akas(aka):
+    aka = re_space.sub(' ', aka).strip()
+    if aka.lower().startswith('see more'):
+        aka = ''
+    return aka
 
 
 class DOMHTMLMovieParser(DOMParserBase):
@@ -397,11 +395,9 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='other akas',
             extractor=Path(
-                '//section[contains(@class, "listo")]'
-                '//td[starts-with(text(), "Also Known As")]/..//ul//text()',
-                transform=makeSplitter(
-                    sep='::', origNotesSep='" - ', newNotesSep='::', strip='"'
-                )
+                foreach='//section[contains(@class, "listo")]//td[starts-with(text(), "Also Known As")]/..//ul/li',
+                path='.//text()',
+                transform=clean_akas
             )
         ),
         Rule(
@@ -628,8 +624,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         ('<td> </td>', '<td>...</td>'),
         (re.compile(r'<span class="tv-extra">TV mini-series(\s+.*?)</span>', re.I),
          r'<span class="tv-extra">TV series\1</span> (mini)'),
-        (_reRolesMovie, _manageRoles),
-        (_reAkas, _replaceBR)
+        (_reRolesMovie, _manageRoles)
     ]
 
     def preprocess_dom(self, dom):
@@ -690,6 +685,8 @@ class DOMHTMLMovieParser(DOMParserBase):
             nakas = []
             for aka in akas:
                 aka = aka.strip()
+                if not aka:
+                    continue
                 if aka.endswith('" -'):
                     aka = aka[:-3].rstrip()
                 nakas.append(aka)
@@ -1334,7 +1331,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         Rule(
             key='release dates',
             extractor=Rules(
-                foreach='//table[@id="release_dates"]//tr',
+                foreach='//table[contains(@class, "release-dates-table-test-only")]//tr',
                 rules=[
                     Rule(
                         key='country',
@@ -1354,7 +1351,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         Rule(
             key='akas',
             extractor=Rules(
-                foreach='//table[@id="akas"]//tr',
+                foreach='//table[contains(@class, "akas-table-test-only")]//tr',
                 rules=[
                     Rule(
                         key='countries',
@@ -1411,7 +1408,7 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
                 nakas.append(title)
             else:
                 for country in countries:
-                    nakas.append('%s::%s' % (title, country.strip()))
+                    nakas.append('%s %s' % (title, country.strip()))
         if akas:
             data['raw akas'] = data['akas']
             del data['akas']

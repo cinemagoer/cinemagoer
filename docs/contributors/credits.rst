@@ -10,10 +10,12 @@ Other very special thanks go to some people who followed the development
 of IMDbPY very closely, providing hints and insights: Ori Cohen, James Rubino,
 Tero Saarni, and Jesper Noer (for a lot of help, and also for the wonderful
 https://bitbucket.org/); and let's not forget all the translators
-on https://www.transifex.com/davide_alberani/imdbpy/.
+on https://www.transifex.com/davide_alberani/imdbpy/
 
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
+
+* mmuehlenhoff for a bug report about list of AKAs and release dates
 
 * ChakshuGautam for a bug report about MySQL import
 

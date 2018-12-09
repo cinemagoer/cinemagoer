@@ -19,6 +19,7 @@ Changelog
   [s3]
   - #163 and #193: fix import in MySQL
   - #193: handle the new format of title.principals.tsv.gz
+  - #195: show progress, importing data (with --verbose)
 
 
 * What's new in release 6.6 "Stranger Things" (05 Aug 2018)

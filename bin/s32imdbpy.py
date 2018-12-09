@@ -123,10 +123,16 @@ def import_file(fn, engine):
     logging.info('begin processing file %s' % fn)
     connection = engine.connect()
     count = 0
-    with gzip.GzipFile(fn, 'r') as gz_file:
+    nr_of_lines = 0
+    fn_basename = os.path.basename(fn)
+    with gzip.GzipFile(fn, 'rb') as gz_file:
+        gz_file.readline()
+        for line in gz_file:
+            nr_of_lines += 1
+    with gzip.GzipFile(fn, 'rb') as gz_file:
         headers = gz_file.readline().decode('utf-8').strip().split('\t')
         logging.debug('headers of file %s: %s' % (fn, ','.join(headers)))
-        table = build_table(os.path.basename(fn), headers)
+        table = build_table(fn_basename, headers)
         try:
             table.drop()
             logging.debug('table %s dropped' % table.name)
@@ -142,9 +148,11 @@ def import_file(fn, engine):
                     logging.error('error processing data: %d entries lost: %s' % (len(block), e))
                     continue
                 count += len(block)
+                percent = count * 100 / nr_of_lines
+                logging.debug('processed %.1f%% of file %s' % (percent, fn_basename))
         except Exception as e:
             logging.error('error processing data on table %s: %s' % (table.name, e))
-        logging.info('end processing file %s: %d entries' % (fn, count))
+        logging.info('processed %d%% of file %s: %d entries' % (percent, fn, count))
 
 
 def import_dir(dir_name, engine):
@@ -166,7 +174,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('tsv_files_dir')
     parser.add_argument('db_uri')
-    parser.add_argument('--verbose', help='increase verbosity', action='store_true')
+    parser.add_argument('--verbose', help='increase verbosity and show progress', action='store_true')
     args = parser.parse_args()
     dir_name = args.tsv_files_dir
     db_uri = args.db_uri

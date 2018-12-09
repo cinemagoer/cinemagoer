@@ -29,6 +29,7 @@ SOUNDEX_LENGTH = 5
 RO_THRESHOLD = 0.6
 STRING_MAXLENDIFFER = 0.7
 re_imdbids = re.compile(r'(nm|tt)')
+re_characters = re.compile(r'"(.+?)"')
 
 
 def transf_imdbid(x):
@@ -39,6 +40,12 @@ def transf_multi_imdbid(x):
     if not x:
         return x
     return re_imdbids.sub('', x)
+
+
+def transf_multi_character(x):
+    if not x:
+        return x
+    ' / '.join(re_characters.findall(x))
 
 
 def transf_int(x):
@@ -141,7 +148,13 @@ DB_TRANSFORM = {
     'title_principals': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
-        'principalCast': {'transform': transf_multi_imdbid, 'rename': 'cast'}
+        'ordering': {'type': sqlalchemy.Integer, 'transform': transf_int},
+        'nconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+                   'rename': 'personID', 'index': True},
+        'category': {'type': sqlalchemy.String, 'length': 64},
+        'job': {'type': sqlalchemy.String, 'length': 1024},
+        'characters': {'type': sqlalchemy.String, 'length': 1024,
+                       'transform': transf_multi_character}
     },
     'title_ratings': {
         'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,

@@ -27,6 +27,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 import sqlalchemy
+from operator import itemgetter
 from imdb import IMDbBase
 from .utils import DB_TRANSFORM, title_soundex, name_soundexes, scan_titles, scan_names
 
@@ -160,20 +161,34 @@ class IMDbS3AccessSystem(IMDbBase):
         data.update(te_data)
 
         tp = self.T['title_principals']
-        movie = tp.select(tp.c.tconst == movieID).execute().fetchone() or {}
-        tp_data = self._rename('title_principals', dict(movie))
-        cast = []
-        for personID in split_array(tp_data.get('cast') or ''):
-            if not personID:
+        movie_rows = tp.select(tp.c.tconst == movieID).execute().fetchall() or {}
+        roles = {}
+        for movie_row in movie_rows:
+            movie_row = dict(movie_row)
+            tp_data = self._rename('title_principals', dict(movie_row))
+            category = tp_data.get('category')
+            if not category:
                 continue
-            personID = int(personID)
-            person_data = self._base_person_info(personID,
-                                                    movies_cache=_movies_cache,
-                                                    persons_cache=_persons_cache)
-            person = Person(personID=personID, data=person_data, accessSystem=self.accessSystem)
-            cast.append(person)
-        tp_data['cast'] = cast
-        data.update(tp_data)
+            if category in ('actor', 'actress', 'self'):
+                category = 'cast'
+            roles.setdefault(category, []).append(movie_row)
+        for role in roles:
+            roles[role].sort(key=itemgetter('ordering'))
+            persons = []
+            for person_info in roles[role]:
+                personID = person_info.get('nconst')
+                if not personID:
+                    continue
+                person_data = self._base_person_info(personID,
+                                                     movies_cache=_movies_cache,
+                                                     persons_cache=_persons_cache)
+                person = Person(personID=personID, data=person_data,
+                                billingPos=person_info.get('ordering'),
+                                currentRole=person_info.get('characters'),
+                                notes=person_info.get('job'),
+                                accessSystem=self.accessSystem)
+                persons.append(person)
+            data[role] = persons
 
         tr = self.T['title_ratings']
         movie = tr.select(tr.c.tconst == movieID).execute().fetchone() or {}

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1056,7 +1056,7 @@ class DOMHTMLKeywordsParser(DOMParserBase):
         Rule(
             key='keywords',
             extractor=Path(
-                foreach='//a[starts-with(@href, "/keyword/")]',
+                foreach='//a[starts-with(@href, "/search/keyword?keywords=")]',
                 path='./text()',
                 transform=lambda x: x.lower().replace(' ', '-')
             )

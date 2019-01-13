@@ -12,6 +12,7 @@ Changelog
   - #144: fix parser for currentRole and notes
   - #189: use HTTPS insted of HTTP
   - #192: fix list of AKAs and release dates
+  - #200: fix keywords parser
 
   [sql]
   - #176: correctly handle multiple characters

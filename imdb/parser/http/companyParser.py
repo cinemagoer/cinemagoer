@@ -1,4 +1,4 @@
-# Copyright 2008-2017 Davide Alberani <da@erlug.linux.it>
+# Copyright 2008-2019 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,15 @@ from imdb.utils import analyze_company_name
 from .piculet import Path, Rule, Rules
 from .utils import DOMParserBase, analyze_imdbid, build_movie
 
+_re_company_name = re.compile('IMDb: With\s+(.+)\s+\(Sorted by.*', re.I | re.M)
+
+
+def clean_company_title(title):
+    """Extract company name"""
+    name = _re_company_name.findall(title or '')
+    if name and name[0]:
+        return name[0]
+
 
 class DOMCompanyParser(DOMParserBase):
     """Parser for the main page of a given company.
@@ -52,8 +61,8 @@ class DOMCompanyParser(DOMParserBase):
         Rule(
             key='name',
             extractor=Path(
-                '//div[@id="company_heading"]//h1//text()',
-                transform=lambda x: analyze_company_name(x, stripNotes=True)
+                '//title/text()',
+                transform=lambda x: clean_company_title(x)
             )
         ),
         Rule(

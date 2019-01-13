@@ -75,7 +75,7 @@ def test_search_movie_entries_should_include_akas(ia):
     movies = ia.search_movie('matrix')
     movie_with_aka = [m for m in movies if m.movieID == '0270841']
     assert len(movie_with_aka) == 1
-    assert movie_with_aka[0]['akas'] == ['Matrix Hunter']
+    assert movie_with_aka[0]['akas'] == ['Matrix Hunters: Kynigoi ston kyvernohoro']
 
 
 def test_search_movie_entries_missing_akas_should_be_excluded(ia):

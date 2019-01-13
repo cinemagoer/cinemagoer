@@ -8,7 +8,7 @@ def test_series_episodes_should_be_a_map_of_seasons_and_episodes(ia):
 
 def test_series_episodes_with_unknown_season_should_have_placeholder_at_end(ia):
     movie = ia.get_movie('0436992', info=['episodes'])      # Doctor Who
-    assert list(sorted(movie.get('episodes'))) == [-1] + list(range(1, 12))
+    assert list(sorted(movie.get('episodes'))) == [-1] + list(range(1, 13))
 
 
 @mark.skip('episodes is {} instead of None')

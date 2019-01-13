@@ -32,7 +32,7 @@ def test_movie_demographics_should_be_divided_into_multiple_categories(ia):
 def test_movie_demographics_votes_should_be_integers(ia):
     movie = ia.get_movie('0133093', info=['vote details'])  # Matrix
     top1000 = movie['demographics']['top 1000 voters']
-    assert 900 <= top1000['votes'] <= 1000
+    assert 890 <= top1000['votes'] <= 1000
 
 
 def test_movie_demographics_rating_should_be_numeric(ia):

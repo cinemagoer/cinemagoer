@@ -522,7 +522,14 @@ def test_movie_sound_mix_if_none_should_be_excluded(ia):
 def test_movie_certificates_should_be_a_list_of_certificates(ia):
     movie = ia.get_movie('1000252', info=['main'])      # Doctor Who - Blink
     assert movie.get('certificates', []) == [
-        'Brazil:12', 'United Kingdom:PG::(DVD rating)', 'United States:TV-PG'
+        'Australia:PG::(most episodes)',
+        'Brazil:12',
+        'Netherlands:9::(some episodes)',
+        'New Zealand:PG',
+        'Singapore:PG',
+        'South Africa:PG',
+        'United Kingdom:PG::(DVD rating)',
+        'United States:TV-PG'
     ]
 
 

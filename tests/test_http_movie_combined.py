@@ -319,7 +319,7 @@ def test_series_number_of_seasons_should_be_numeric(ia):
 
 def test_series_number_of_seasons_should_exclude_non_numeric_season_titles(ia):
     movie = ia.get_movie('0436992', info=['main'])      # Doctor Who
-    assert movie.get('number of seasons') == 11
+    assert movie.get('number of seasons') == 12
 
 
 def test_episode_original_air_date_should_be_a_date(ia):

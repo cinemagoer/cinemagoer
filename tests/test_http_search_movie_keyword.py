@@ -1,6 +1,6 @@
 def test_get_keyword_should_list_correct_number_of_movies(ia):
     movies = ia.get_keyword('colander')
-    assert len(movies) == 4
+    assert len(movies) == 5
 
 
 def test_get_keyword_if_too_many_should_list_upper_limit_of_movies(ia):

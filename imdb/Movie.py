@@ -70,6 +70,7 @@ class Movie(_Container):
         'certification': 'certificates',
         'episodes number': 'number of episodes',
         'faq': 'faqs',
+        'technical': 'tech',
         'frequently asked questions': 'faqs'
     }
 

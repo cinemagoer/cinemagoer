@@ -1,4 +1,4 @@
-# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
 #                2009 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -949,16 +949,20 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
             crl = [crl]
         for cr in crl:
             crTag = cr.__class__.__name__.lower()
-            crValue = cr.get('long imdb name') or ''
+            if PY2 and isinstance(cr, unicode):
+                crValue = cr
+                crID = None
+            else:
+                crValue = cr.get('long imdb name') or ''
+                crID = cr.getID()
             crValue = _normalizeValue(crValue)
-            crID = cr.getID()
             if crID is not None:
                 extras += '<current-role><%s id="%s"><name>%s</name></%s>' % (
                     crTag, crID, crValue, crTag
                 )
             else:
                 extras += '<current-role><%s><name>%s</name></%s>' % (crTag, crValue, crTag)
-            if cr.notes:
+            if hasattr(cr, 'notes'):
                 extras += '<notes>%s</notes>' % _normalizeValue(cr.notes)
             extras += '</current-role>'
     theID = ton.getID()

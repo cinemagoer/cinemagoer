@@ -27,7 +27,7 @@ import msgfmt
 def rebuildmo():
     lang_glob = 'imdbpy-*.po'
     created = []
-    for input_file in glob.glob(lang_glob):
+    for input_file in sorted(glob.glob(lang_glob)):
         lang = input_file[7:-3]
         if not os.path.exists(lang):
             os.mkdir(lang)

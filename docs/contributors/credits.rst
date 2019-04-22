@@ -15,6 +15,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* h3llrais3r for a patch for Python 2 and encodings
+
 * Konstantin Danilov and guillaumedsde for a bug report about s3 dataset
 
 * mmuehlenhoff for a bug report about list of AKAs and release dates

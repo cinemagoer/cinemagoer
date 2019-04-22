@@ -8,11 +8,11 @@ Changelog
   - #188: avoid missing keys in search results
 
   [http]
-
   - #144: fix parser for currentRole and notes
   - #189: use HTTPS insted of HTTP
   - #192: fix list of AKAs and release dates
   - #200: fix keywords parser
+  - #201: fix encoding doing searches
 
   [sql]
   - #176: correctly handle multiple characters

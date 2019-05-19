@@ -2043,7 +2043,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                                 Rule(
                                     key='rating',
                                     extractor=Path(
-                                        './/div[@class="ipl-rating-star "][1]'
+                                        './/div[contains(@class, "ipl-rating-star")][1]'
                                         '/span[@class="ipl-rating-star__rating"][1]/text()'
                                     )
                                 ),

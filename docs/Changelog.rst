@@ -13,6 +13,7 @@ Changelog
   - #192: fix list of AKAs and release dates
   - #200: fix keywords parser
   - #201: fix encoding doing searches
+  - #210: fix TV series episode rating and votes
 
   [sql]
   - #176: correctly handle multiple characters

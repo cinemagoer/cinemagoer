@@ -1,7 +1,10 @@
 Changelog
 =========
 
-* What's new in release 6.7 (19 May 2019)
+* What's new in release 6.8
+
+
+* What's new in release 6.7 "Game of Thrones" (19 May 2019)
 
   [general]
   - #180: include tests in source package

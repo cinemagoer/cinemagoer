@@ -22,7 +22,7 @@ def test_movie_synopsis_should_be_some_text(ia):
     movie = ia.get_movie('0133093', info=['plot'])  # Matrix
     synopsis = movie.get('synopsis')
     assert len(synopsis) == 1
-    assert re.match('^The screen is filled with .* three Matrix movies\.$', synopsis[0])
+    assert re.match('^The screen fills with .* three Matrix movies\.$', synopsis[0])
 
 
 def test_movie_synopsis_if_none_should_be_excluded(ia):

@@ -1,6 +1,6 @@
-def test_search_keyword_if_single_should_list_one_keyword(ia):
+def test_search_keyword_check_list_of_keywords(ia):
     keywords = ia.search_keyword('zoolander')
-    assert keywords == ['colander']
+    assert 'reference-to-zoolander' in keywords
 
 
 def test_search_keyword_if_multiple_should_list_correct_number_of_keywords(ia):

@@ -528,6 +528,7 @@ def test_movie_certificates_should_be_a_list_of_certificates(ia):
         'New Zealand:PG',
         'Singapore:PG',
         'South Africa:PG',
+        'United Kingdom:PG',
         'United Kingdom:PG::(DVD rating)',
         'United States:TV-PG'
     ]

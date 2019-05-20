@@ -1,48 +1,36 @@
+# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 """
-imdb package.
-
-This package can be used to retrieve information about a movie or
-a person from the IMDb database.
-It can fetch data through different media (e.g.: the IMDb web pages,
-a SQL database, etc.)
-
-Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+This package can be used to retrieve information about a movie or a person
+from the IMDb database. It can fetch data through different media such as
+the IMDb web pages, or a SQL database.
 """
+
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.3dev20171208'
+__version__ = VERSION = '6.8dev20190519'
 
-VERSION_NOTICE = """This version of IMDbPY requires Python 3.
-For a version compatible with Python 2.7, see the imdbpy-legacy branch:
-    https://github.com/alberanid/imdbpy/tree/imdbpy-legacy
 
-Please notice that the imdbpy-legacy branch is mostly unsupported.
-"""
-
-import sys
-
-if sys.hexversion < 0x3000000:
-    print(VERSION_NOTICE)
-    sys.exit(1)
-
-import configparser
 import logging
 import os
+import sys
 from pkgutil import find_loader
 from types import MethodType, FunctionType
 
@@ -52,39 +40,48 @@ from imdb import Character, Company, Movie, Person
 from imdb.utils import build_company_name, build_name, build_title
 
 
+PY2 = sys.hexversion < 0x3000000
+
+
+if PY2:
+    import ConfigParser as configparser
+else:
+    import configparser
+
+
 _imdb_logger = logging.getLogger('imdbpy')
 _aux_logger = logging.getLogger('imdbpy.aux')
 
 
 # URLs of the main pages for movies, persons, characters and queries.
-imdbURL_base = 'http://akas.imdb.com/'
+imdbURL_base = 'https://www.imdb.com/'
 
 # NOTE: the urls below will be removed in a future version.
 #       please use the values in the 'urls' attribute
 #       of the IMDbBase subclass instance.
-# http://akas.imdb.com/title/
+# http://www.imdb.com/title/
 imdbURL_movie_base = '%stitle/' % imdbURL_base
-# http://akas.imdb.com/title/tt%s/
+# http://www.imdb.com/title/tt%s/
 imdbURL_movie_main = imdbURL_movie_base + 'tt%s/'
-# http://akas.imdb.com/name/
+# http://www.imdb.com/name/
 imdbURL_person_base = '%sname/' % imdbURL_base
-# http://akas.imdb.com/name/nm%s/
+# http://www.imdb.com/name/nm%s/
 imdbURL_person_main = imdbURL_person_base + 'nm%s/'
-# http://akas.imdb.com/character/
+# http://www.imdb.com/character/
 imdbURL_character_base = '%scharacter/' % imdbURL_base
-# http://akas.imdb.com/character/ch%s/
+# http://www.imdb.com/character/ch%s/
 imdbURL_character_main = imdbURL_character_base + 'ch%s/'
-# http://akas.imdb.com/company/
+# http://www.imdb.com/company/
 imdbURL_company_base = '%scompany/' % imdbURL_base
-# http://akas.imdb.com/company/co%s/
+# http://www.imdb.com/company/co%s/
 imdbURL_company_main = imdbURL_company_base + 'co%s/'
-# http://akas.imdb.com/keyword/%s/
+# http://www.imdb.com/keyword/%s/
 imdbURL_keyword_main = imdbURL_base + 'keyword/%s/'
-# http://akas.imdb.com/chart/top
+# http://www.imdb.com/chart/top
 imdbURL_top250 = imdbURL_base + 'chart/top'
-# http://akas.imdb.com/chart/bottom
+# http://www.imdb.com/chart/bottom
 imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
-# http://akas.imdb.com/find?%s
+# http://www.imdb.com/find?%s
 imdbURL_find = imdbURL_base + 'find?%s'
 
 # Name of the configuration file.
@@ -98,7 +95,10 @@ class ConfigParserWithCase(configparser.ConfigParser):
 
         *defaults* -- defaults values.
         *confFile* -- the file (or list of files) to parse."""
-        super(configparser.ConfigParser, self).__init__(defaults=defaults)
+        if PY2:
+            configparser.ConfigParser.__init__(self, defaults=defaults)
+        else:
+            super(configparser.ConfigParser, self).__init__(defaults=defaults)
         if confFile is None:
             dotFileName = '.' + confFileName
             # Current and home directory.
@@ -191,9 +191,12 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             logging.config.fileConfig(os.path.expanduser(logCfg))
         except Exception as e:
             _imdb_logger.warn('unable to read logger config: %s' % e)
-    if accessSystem in ('http', 'web', 'html'):
+    if accessSystem in ('http', 'https', 'web', 'html'):
         from .parser.http import IMDbHTTPAccessSystem
         return IMDbHTTPAccessSystem(*arguments, **keywords)
+    if accessSystem in ('s3', 's3dataset', 'imdbws'):
+        from .parser.s3 import IMDbS3AccessSystem
+        return IMDbS3AccessSystem(*arguments, **keywords)
     elif accessSystem in ('sql', 'db', 'database'):
         try:
             from .parser.sql import IMDbSqlAccessSystem
@@ -268,33 +271,33 @@ class IMDbBase:
     def set_imdb_urls(self, imdbURL_base):
         """Set the urls used accessing the IMDb site."""
         imdbURL_base = imdbURL_base.strip().strip('"\'')
-        if not imdbURL_base.startswith('http://'):
-            imdbURL_base = 'http://%s' % imdbURL_base
+        if not imdbURL_base.startswith(('https://', 'http://')):
+            imdbURL_base = 'https://%s' % imdbURL_base
         if not imdbURL_base.endswith('/'):
             imdbURL_base = '%s/' % imdbURL_base
-        # http://akas.imdb.com/title/
+        # http://www.imdb.com/title/
         imdbURL_movie_base = '%stitle/' % imdbURL_base
-        # http://akas.imdb.com/title/tt%s/
+        # http://www.imdb.com/title/tt%s/
         imdbURL_movie_main = imdbURL_movie_base + 'tt%s/'
-        # http://akas.imdb.com/name/
+        # http://www.imdb.com/name/
         imdbURL_person_base = '%sname/' % imdbURL_base
-        # http://akas.imdb.com/name/nm%s/
+        # http://www.imdb.com/name/nm%s/
         imdbURL_person_main = imdbURL_person_base + 'nm%s/'
-        # http://akas.imdb.com/character/
+        # http://www.imdb.com/character/
         imdbURL_character_base = '%scharacter/' % imdbURL_base
-        # http://akas.imdb.com/character/ch%s/
+        # http://www.imdb.com/character/ch%s/
         imdbURL_character_main = imdbURL_character_base + 'ch%s/'
-        # http://akas.imdb.com/company/
+        # http://www.imdb.com/company/
         imdbURL_company_base = '%scompany/' % imdbURL_base
-        # http://akas.imdb.com/company/co%s/
+        # http://www.imdb.com/company/co%s/
         imdbURL_company_main = imdbURL_company_base + 'co%s/'
-        # http://akas.imdb.com/keyword/%s/
+        # http://www.imdb.com/keyword/%s/
         imdbURL_keyword_main = imdbURL_base + 'keyword/%s/'
-        # http://akas.imdb.com/chart/top
+        # http://www.imdb.com/chart/top
         imdbURL_top250 = imdbURL_base + 'chart/top'
-        # http://akas.imdb.com/chart/bottom
+        # http://www.imdb.com/chart/bottom
         imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
-        # http://akas.imdb.com/find?%s
+        # http://www.imdb.com/find?%s
         imdbURL_find = imdbURL_base + 'find?%s'
         self.urls = dict(
             movie_base=imdbURL_movie_base,
@@ -761,7 +764,7 @@ class IMDbBase:
         raise NotImplementedError('override this method')
 
     def _searchIMDb(self, kind, ton, title_kind=None):
-        """Search the IMDb akas server for the given title or name."""
+        """Search the IMDb www server for the given title or name."""
         if not ton:
             return None
         ton = ton.strip('"')

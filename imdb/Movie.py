@@ -1,25 +1,25 @@
-"""
-Movie module (imdb package).
+# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+"""
 This module provides the Movie class, used to store information about
 a given movie.
-
-Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
+
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from copy import deepcopy
 
@@ -31,8 +31,10 @@ from imdb.utils import analyze_title, build_title, canonicalTitle, cmpMovies, fl
 class Movie(_Container):
     """A Movie.
 
-    Every information about a movie can be accessed as:
+    Every information about a movie can be accessed as::
+
         movieObject['information']
+
     to get a list of the kind of information stored in a
     Movie object, use the keys() method; some useful aliases
     are defined (as "casting" for the "casting director" key); see
@@ -48,48 +50,8 @@ class Movie(_Container):
         'plot summary': 'plot',
         'plot summaries': 'plot',
         'directed by': 'director',
-        'created by': 'creator',
-        'writing credits': 'writer',
-        'produced by': 'producer',
-        'original music by': 'original music',
-        'non-original music by': 'non-original music',
-        'music': 'original music',
-        'cinematography by': 'cinematographer',
-        'cinematography': 'cinematographer',
-        'film editing by': 'editor',
-        'film editing': 'editor',
-        'editing': 'editor',
         'actors': 'cast',
         'actresses': 'cast',
-        'casting by': 'casting director',
-        'casting': 'casting director',
-        'art direction by': 'art direction',
-        'set decoration by': 'set decoration',
-        'costume design by': 'costume designer',
-        'costume design': 'costume designer',
-        'makeup department': 'make up',
-        'makeup': 'make up',
-        'make-up': 'make up',
-        'production management': 'production manager',
-        'production company': 'production companies',
-        'second unit director or assistant director': 'assistant director',
-        'second unit director': 'assistant director',
-        'sound department': 'sound crew',
-        'costume and wardrobe department': 'costume department',
-        'special effects by': 'special effects',
-        'visual effects by': 'visual effects',
-        'special effects company': 'special effects companies',
-        'stunts': 'stunt performer',
-        'other crew': 'miscellaneous crew',
-        'misc crew': 'miscellaneous crew',
-        'miscellaneouscrew': 'miscellaneous crew',
-        'crewmembers': 'miscellaneous crew',
-        'crew members': 'miscellaneous crew',
-        'other companies': 'miscellaneous companies',
-        'misc companies': 'miscellaneous companies',
-        'miscellaneous company': 'miscellaneous companies',
-        'misc company': 'miscellaneous companies',
-        'other company': 'miscellaneous companies',
         'aka': 'akas',
         'also known as': 'akas',
         'country': 'countries',
@@ -106,27 +68,9 @@ class Movie(_Container):
         'certificate': 'certificates',
         'certifications': 'certificates',
         'certification': 'certificates',
-        'miscellaneous links': 'misc links',
-        'miscellaneous': 'misc links',
-        'soundclips': 'sound clips',
-        'videoclips': 'video clips',
-        'photographs': 'photo sites',
-        'distributor': 'distributors',
-        'distribution': 'distributors',
-        'distribution companies': 'distributors',
-        'distribution company': 'distributors',
-        'guest': 'guests',
-        'guest appearances': 'guests',
-        'tv guests': 'guests',
-        'notable tv guest appearances': 'guests',
-        'episodes cast': 'guests',
         'episodes number': 'number of episodes',
-        'amazon review': 'amazon reviews',
-        'merchandising': 'merchandising links',
-        'merchandise': 'merchandising links',
-        'sales': 'merchandising links',
         'faq': 'faqs',
-        'parental guide': 'parents guide',
+        'technical': 'tech',
         'frequently asked questions': 'faqs'
     }
 
@@ -136,6 +80,8 @@ class Movie(_Container):
         'crazy credits', 'business', 'supplements',
         'video review', 'faqs'
     )
+
+    _image_key = 'cover url'
 
     cmpFunct = cmpMovies
 
@@ -221,18 +167,24 @@ class Movie(_Container):
             lang = self.guessLanguage()
         return canonicalTitle(title, lang=lang)
 
+    def _getSeriesTitle(self, obj):
+        """Get the title from a Movie object or return the string itself."""
+        if isinstance(obj, Movie):
+            return obj.get('title', '')
+        return obj
+
     def _getitem(self, key):
         """Handle special keys."""
         if 'episode of' in self.data:
             if key == 'long imdb episode title':
                 return build_title(self.data)
             elif key == 'series title':
-                return self.data['episode of']['title']
+                return self._getSeriesTitle(self.data['episode of'])
             elif key == 'canonical series title':
-                ser_title = self.data['episode of']['title']
+                ser_title = self._getSeriesTitle(self.data['episode of'])
                 return canonicalTitle(ser_title)
             elif key == 'smart canonical series title':
-                ser_title = self.data['episode of']['title']
+                ser_title = self._getSeriesTitle(self.data['episode of'])
                 return self.smartCanonicalTitle(ser_title)
             elif key == 'episode title':
                 return self.data.get('title', '')
@@ -253,8 +205,8 @@ class Movie(_Container):
                 return build_title(self.data, canonical=True)
             elif key == 'smart long imdb canonical title':
                 return build_title(self.data, canonical=True, lang=self.guessLanguage())
-        if key == 'full-size cover url' and 'cover url' in self.data:
-            return self._re_fullsizeURL.sub('', self.data.get('cover url', ''))
+        if key == 'full-size cover url':
+            return self.get_fullsizeURL()
         return None
 
     def getID(self):
@@ -303,6 +255,8 @@ class Movie(_Container):
                              toDescend=(list, dict, tuple, Movie)):
                 if item.isSame(c):
                     return True
+        elif isinstance(item, str):
+            return item in self.data
         return False
 
     def __deepcopy__(self, memo):

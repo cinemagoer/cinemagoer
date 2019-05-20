@@ -1,28 +1,27 @@
-# -*- encoding: utf-8 -*-
-"""
-parser.sql.dbschema module (imdb.parser.sql package).
+# Copyright 2005-2017 Davide Alberani <da@erlug.linux.it>
+#                2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-This module provides the schema used to describe the layout of the
-database used by the imdb.parser.sql package; functions to create/drop
+"""
+This module provides the schema used to describe the layout of the database
+used by the :mod:`imdb.parser.sql` package; functions to create/drop
 tables and indexes are also provided.
-
-Copyright 2005-2017 Davide Alberani <da@erlug.linux.it>
-               2006 Giuseppe "Cowo" Corbelli <cowo --> lugbs.linux.it>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
+
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
 
@@ -425,24 +424,6 @@ def createIndexes(tables, ifNotExists=True):
         _dbschema_logger.info('creating indexes for table %s', table._imdbpyName)
         try:
             table.addIndexes(ifNotExists)
-        except Exception as e:
-            errors.append(e)
-            continue
-    return errors
-
-
-def createForeignKeys(tables, ifNotExists=True):
-    """Create Foreign Keys.
-    Return a list of errors, if any."""
-    errors = []
-    mapTables = {}
-    for table in tables:
-        mapTables[table._imdbpyName] = table
-    globCounter = 0
-    for table in tables:
-        _dbschema_logger.info('creating foreign keys for table %s', table._imdbpyName)
-        try:
-            globCounter = table.addForeignKeys(mapTables, ifNotExists=ifNotExists, _counter=globCounter)
         except Exception as e:
             errors.append(e)
             continue

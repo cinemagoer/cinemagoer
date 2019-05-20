@@ -1,30 +1,29 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+#  Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
+#           2012 Alberto Malagoli <albemala AT gmail.com>
+#           2009 H. Turgut Uyar <uyar@tekir.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 """
-linguistics module (imdb package).
-
-This module provides functions and data to handle in a smart way
-languages and articles (in various languages) at the beginning of movie titles.
-
-Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
-          2012 Alberto Malagoli <albemala AT gmail.com>
-          2009 H. Turgut Uyar <uyar@tekir.org>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+This module provides functions and data to handle languages and articles
+(in various languages) at the beginning of movie titles in a smart way.
 """
+
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 # List of generic articles used when the language of the title is unknown (or
 # we don't have information about articles in that language).

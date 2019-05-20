@@ -1,0 +1,79 @@
+Localization
+============
+
+Since version 4.1 the labels that describe the information are translatable.
+
+.. admonition:: Limitation
+
+   Internal messages or exceptions are not translatable,
+   the internationalization is limited to the "tags" returned by
+   the ``getAsXML`` and ``asXML`` methods of the Movie, Person, Character,
+   or Company classes.
+
+   Beware that in many cases these "tags" are not the same as the "keys" used
+   to access information in the same class. For example, you can translate
+   the tag "long-imdb-name" -the tag returned by the call
+   ``person.getAsXML('long imdb name')``, but not the key "long imdb name"
+   itself. To translate keys, you can use
+   the :func:`helpers.translateKey <imdb.helpers.translateKey>` function.
+
+If you want to add i18n to your IMDbPY-based application, all you need to do
+is to switch to the ``imdbpy`` text domain:
+
+.. code-block:: python
+
+   >>> import imdb.locale
+   >>> import gettext
+   >>> gettext.textdomain('imdbpy')
+   'imdbpy'
+   >>> from gettext import gettext as _
+   >>> _('art-department')
+   'Art department'
+   >>> import os
+   >>> os.environ['LANG'] = 'it_IT'
+   >>> _('art-department')
+   'Dipartimento artistico'
+
+If you want to translate IMDbPY into another language, see
+the :ref:`translate` document for instructions.
+
+
+Articles in titles
+------------------
+
+To convert a title to its canonical format as in "Title, The", IMDbPY makes
+some assumptions about what is an article and what isn't, and this can lead
+to some wrong canonical titles. For example, it can canonicalize the title
+"Die Hard" as "Hard, Die" because it guesses "Die" as an article (and it is,
+in Germany...).
+
+To solve this problem, there are other keys: "smart canonical title",
+"smart long imdb canonical title", "smart canonical series title",
+"smart canonical episode title" which can be used to do a better job
+converting a title into its canonical format.
+
+This works, but it needs to know about articles in various languages:
+if you want to help, see the :attr:`linguistics.LANG_ARTICLES` and
+:attr:`linguistics.LANG_COUNTRIES` dictionaries.
+
+To guess the language of a movie title, call its 'guessLanguage' method
+(it will return None, if unable to guess).
+If you want to force a given language instead of the guessed one, you
+can call its 'smartCanonicalTitle' method, setting the 'lang' argument
+appropriately.
+
+Alternative titles
+------------------
+
+Sometimes it's useful to manage a title's alternatives (AKAs) knowing
+their languages. In the 'helpers' module there are some (hopefully)
+useful functions:
+
+- ``akasLanguages(movie)`` - Given a movie, return a list of tuples
+  in (lang, AKA) format (lang can be None, if unable to detect).
+
+- ``sortAKAsBySimilarity(movie, title)`` - Sort the AKAs on a movie considering
+  how much they are similar to a given title (see the code for more options).
+
+- ``getAKAsInLanguage(movie, lang)`` - Return a list of AKAs of the movie
+  in the given language (see the code for more options).

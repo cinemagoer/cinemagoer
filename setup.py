@@ -7,7 +7,7 @@ import setuptools
 
 # version of the software; in the code repository this represents
 # the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
-version = '6.3'
+version = '6.8'
 
 home_page = 'https://imdbpy.sourceforge.io/'
 
@@ -15,7 +15,7 @@ long_desc = """IMDbPY is a Python package useful to retrieve and
 manage the data of the IMDb movie database about movies, people,
 characters and companies.
 
-Platform-independent and written in pure Python 3
+Platform-independent and written in Python 3
 it can retrieve data from both the IMDb's web server and a local copy
 of the whole database.
 
@@ -40,6 +40,12 @@ Natural Language :: English
 Natural Language :: Italian
 Natural Language :: Turkish
 Programming Language :: Python
+Programming Language :: Python :: 3.7
+Programming Language :: Python :: 3.5
+Programming Language :: Python :: 3.4
+Programming Language :: Python :: 2.7
+Programming Language :: Python :: Implementation :: CPython
+Programming Language :: Python :: Implementation :: PyPy
 Operating System :: OS Independent
 Topic :: Database :: Front-Ends
 Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries
@@ -54,6 +60,7 @@ keywords = ['imdb', 'movie', 'people', 'database', 'cinema', 'film', 'person',
 scripts = [
     './bin/get_first_movie.py',
     './bin/imdbpy2sql.py',
+    './bin/s32imdbpy.py',
     './bin/get_movie.py',
     './bin/search_movie.py',
     './bin/get_first_person.py',
@@ -70,12 +77,13 @@ scripts = [
     './bin/get_top_bottom_movies.py'
 ]
 
-# XXX: I'm not sure that 'etc' is a good idea.  Making it an absolute
-#      path seems a recipe for a disaster (with bdist_egg, at least).
-data_files = [('doc', setuptools.findall('docs')), ('etc', ['docs/imdbpy.cfg'])]
+data_files = []
 
-featSQLAlchemy = setuptools.dist.Feature('SQLAlchemy dependency',
-        standard=True, install_requires=['sqlalchemy-migrate', 'SQLAlchemy'])
+featSQLAlchemy = setuptools.dist.Feature(
+    'SQLAlchemy dependency',
+    standard=True,
+    install_requires=['SQLAlchemy']
+)
 
 params = {
     # Meta-information.
@@ -97,10 +105,22 @@ params = {
     'download_url': dwnl_url,
     'scripts': scripts,
     'data_files': data_files,
-    'install_requires': ['sqlalchemy-migrate', 'SQLAlchemy', 'lxml'],
+    'install_requires': ['SQLAlchemy', 'lxml'],
     'extras_require': {
-        'dev': ['flake8', 'flake8-isort'],
-        'test': ['pytest', 'pytest-cov', 'pytest-profiling']
+        'dev': [
+            'flake8',
+            'flake8-isort',
+            'readme_renderer'
+        ],
+        'doc': [
+            'sphinx',
+            'sphinx_rtd_theme'
+        ],
+        'test': [
+            'pytest',
+            'pytest-cov',
+            'pytest-profiling'
+        ]
     },
     'features': {'sqlalchemy': featSQLAlchemy},
     'packages': setuptools.find_packages(),

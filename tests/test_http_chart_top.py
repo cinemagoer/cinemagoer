@@ -1,34 +1,45 @@
-from pytest import fixture
-
-from imdb.parser.http.topBottomParser import DOMHTMLTop250Parser
-
-
-@fixture(scope='module')
-def chart_top(url_opener, base_url):
-    """A function to retrieve the top movies page."""
-    def retrieve():
-        url = base_url + '/chart/top'
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_top_chart_should_contain_250_entries(ia):
+    chart = ia.get_top250_movies()
+    assert len(chart) == 250
 
 
-parser = DOMHTMLTop250Parser()
+def test_top_chart_entries_should_have_rank(ia):
+    movies = ia.get_top250_movies()
+    for rank, movie in enumerate(movies):
+        assert movie['top 250 rank'] == rank + 1
 
 
-def test_chart_should_contain_250_movies(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    assert len(data) == 250
+def test_top_chart_entries_should_have_movie_id(ia):
+    movies = ia.get_top250_movies()
+    for movie in movies:
+        assert movie.movieID.isdigit()
 
 
-def test_all_movies_should_have_rating_and_votes(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    for movie in dict(data).values():
-        assert {'title', 'kind', 'year', 'rating', 'votes'}.issubset(set(movie.keys()))
+def test_top_chart_entries_should_have_title(ia):
+    movies = ia.get_top250_movies()
+    for movie in movies:
+        assert 'title' in movie
 
 
-def test_chart_should_contain_correct_movie(chart_top):
-    page = chart_top()
-    data = parser.parse(page)['data']
-    assert '0133093' in dict(data)      # The Matrix
+def test_top_chart_entries_should_be_movies(ia):
+    movies = ia.get_top250_movies()
+    for movie in movies:
+        assert movie['kind'] == 'movie'
+
+
+def test_top_chart_entries_should_have_year(ia):
+    movies = ia.get_top250_movies()
+    for movie in movies:
+        assert isinstance(movie['year'], int)
+
+
+def test_top_chart_entries_should_have_high_ratings(ia):
+    movies = ia.get_top250_movies()
+    for movie in movies:
+        assert movie['rating'] > 7.5
+
+
+def test_top_chart_entries_should_have_minimal_number_of_votes(ia):
+    movies = ia.get_top250_movies()
+    for movie in movies:
+        assert movie['votes'] >= 25000  # limit stated by IMDb

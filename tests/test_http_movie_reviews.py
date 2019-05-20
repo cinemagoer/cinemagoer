@@ -1,23 +1,9 @@
-from pytest import fixture
-
-from imdb.parser.http.movieParser import DOMHTMLReviewsParser
-
-
-@fixture(scope='module')
-def movie_reviews_details(url_opener, movies):
-    """A function to retrieve the reviews details page of a test movie."""
-    def retrieve(movie_key):
-        url = movies[movie_key] + '/reviews'
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_movie_reviews_should_be_a_list(ia):
+    movie = ia.get_movie('0104155', info=['reviews'])   # Dust Devil
+    reviews = movie.get('reviews', [])
+    assert len(reviews) == 25
 
 
-parser = DOMHTMLReviewsParser()
-
-
-def test_number_of_reviews(movie_reviews_details):
-    page = movie_reviews_details('dust devil')
-    data = parser.parse(page)['data']
-    reviews_number = len(data.get('reviews', []))
-    assert(reviews_number == 10)
-
+def test_movie_reviews_if_none_should_be_excluded(ia):
+    movie = ia.get_movie('1863157', info=['reviews'])   # Ates Parcasi
+    assert 'reviews' not in movie

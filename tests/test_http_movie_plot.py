@@ -1,29 +1,30 @@
-from pytest import fixture
-
 import re
 
-from imdb.parser.http.movieParser import DOMHTMLPlotParser
+
+def test_movie_summary_should_be_some_text_with_author(ia):
+    movie = ia.get_movie('0133093', info=['plot'])  # Matrix
+    plots = movie.get('plot', [])
+    assert 5 <= len(plots) <= 10
+    kc_plot = ''
+    for plot in plots:
+        if plot.endswith('Kenneth Chisholm'):
+            kc_plot = plot
+            break
+    assert re.match('^A computer hacker .*controllers\.::Kenneth Chisholm$', kc_plot)
 
 
-@fixture(scope='module')
-def movie_plot_summaries(url_opener, movies):
-    """A function to retrieve the plot summary page of a test movie."""
-    def retrieve(movie_key):
-        url = movies[movie_key] + '/plotsummary'
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_movie_summary_if_none_should_be_excluded(ia):
+    movie = ia.get_movie('1863157', info=['plot'])  # Ates Parcasi
+    assert 'plot' not in movie
 
 
-parser = DOMHTMLPlotParser()
+def test_movie_synopsis_should_be_some_text(ia):
+    movie = ia.get_movie('0133093', info=['plot'])  # Matrix
+    synopsis = movie.get('synopsis')
+    assert len(synopsis) == 1
+    assert re.match('^The screen fills with .* three Matrix movies\.$', synopsis[0])
 
 
-def test_summary_should_end_with_author(movie_plot_summaries):
-    page = movie_plot_summaries('matrix')
-    data = parser.parse(page)['data']
-    assert re.match('^Thomas A\. Anderson is a man .*::redcommander27$', data['plot'][0])
-
-
-def test_summary_none_should_be_excluded(movie_plot_summaries):
-    page = movie_plot_summaries('ates parcasi')
-    data = parser.parse(page)['data']
-    assert 'plot' not in data
+def test_movie_synopsis_if_none_should_be_excluded(ia):
+    movie = ia.get_movie('1863157', info=['plot'])  # Ates Parcasi
+    assert 'synopsis' not in movie

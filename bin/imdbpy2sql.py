@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 imdbpy2sql.py script.
 
@@ -38,8 +39,7 @@ except ImportError:
     from md5 import md5
 from gzip import GzipFile
 
-from imdb.parser.sql.dbschema import DB_SCHEMA, dropTables, createTables, \
-    createIndexes, createForeignKeys
+from imdb.parser.sql.dbschema import DB_SCHEMA, dropTables, createTables, createIndexes
 from imdb.parser.sql import soundex
 from imdb.utils import analyze_title, analyze_name, date_and_notes, \
     build_name, build_title, normalizeName, normalizeTitle, _articles, \
@@ -1745,7 +1745,6 @@ class AkasMoviesCache(MoviesCache):
                                                               'episodeNr', 'note', 'md5sum'))
 
     def flush(self, *args, **kwds):
-        # Preserve consistency of ForeignKey.
         CACHE_MID.flush(quiet=1)
         super(AkasMoviesCache, self).flush(*args, **kwds)
 
@@ -2988,7 +2987,7 @@ def executeCustomQueries(when, _keys=None, _timeit=True):
 
 
 def buildIndexesAndFK():
-    """Build indexes and Foreign Keys."""
+    """Build indexes."""
     executeCustomQueries('BEFORE_INDEXES')
     print('building database indexes (this may take a while)')
     sys.stdout.flush()
@@ -2997,13 +2996,7 @@ def buildIndexesAndFK():
     for idx_error in idx_errors:
         print('ERROR caught exception creating an index: %s' % idx_error)
     t('createIndexes()')
-    print('adding foreign keys (this may take a while)')
     sys.stdout.flush()
-    # Add FK.
-    fk_errors = createForeignKeys(DB_TABLES)
-    for fk_error in fk_errors:
-        print('ERROR caught exception creating a foreign key: %s' % fk_error)
-    t('createForeignKeys()')
 
 
 def restoreCSV():

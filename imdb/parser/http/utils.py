@@ -1,39 +1,40 @@
+# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+#           2008-2018 H. Turgut Uyar <uyar@tekir.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
 """
-parser.http.utils module (imdb package).
-
-This module provides miscellaneous utilities used by
-the imdb.parser.http classes.
-
-Copyright 2004-2017 Davide Alberani <da@erlug.linux.it>
-               2008 H. Turgut Uyar <uyar@tekir.org>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+This module provides miscellaneous utilities used by the components
+in the :mod:`imdb.parser.http` package.
 """
+
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import collections
 import logging
 import re
-from html.entities import entitydefs
 
-import lxml.etree
-import lxml.html
-
+from imdb import PY2
 from imdb.Character import Character
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
+
+from .piculet import _USE_LXML, ElementTree, Rules, build_tree, html_to_xhtml
+from .piculet import xpath as piculet_xpath
+from .piculet import Rule, Path
 
 
 # Year, imdbIndex and kind.
@@ -42,7 +43,7 @@ re_yearKind_index = re.compile(
 )
 
 # Match imdb ids in href tags
-re_imdbid = re.compile(r'(title/tt|name/nm|character/ch|company/co|user/ur)([0-9]+)')
+re_imdbid = re.compile(r'(title/tt|name/nm|company/co|user/ur)([0-9]+)')
 
 
 def analyze_imdbid(href):
@@ -58,7 +59,7 @@ def analyze_imdbid(href):
 _modify_keys = list(Movie.keys_tomodify_list) + list(Person.keys_tomodify_list)
 
 
-def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
+def _putRefs(d, re_titles, re_names, lastKey=None):
     """Iterate over the strings inside list items or dictionary values,
     substitutes movie titles and person names with the (qv) references."""
     if isinstance(d, list):
@@ -69,10 +70,8 @@ def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
                         d[i] = re_names.sub(r"'\1' (qv)", d[i])
                     if re_titles:
                         d[i] = re_titles.sub(r'_\1_ (qv)', d[i])
-                    if re_characters:
-                        d[i] = re_characters.sub(r'#\1# (qv)', d[i])
             elif isinstance(d[i], (list, dict)):
-                _putRefs(d[i], re_titles, re_names, re_characters, lastKey=lastKey)
+                _putRefs(d[i], re_titles, re_names, lastKey=lastKey)
     elif isinstance(d, dict):
         for k, v in list(d.items()):
             lastKey = k
@@ -82,95 +81,8 @@ def _putRefs(d, re_titles, re_names, re_characters, lastKey=None):
                         d[k] = re_names.sub(r"'\1' (qv)", v)
                     if re_titles:
                         d[k] = re_titles.sub(r'_\1_ (qv)', v)
-                    if re_characters:
-                        d[k] = re_characters.sub(r'#\1# (qv)', v)
             elif isinstance(v, (list, dict)):
-                _putRefs(d[k], re_titles, re_names, re_characters, lastKey=lastKey)
-
-
-# Handle HTML/XML/SGML entities.
-entitydefs = entitydefs.copy()
-entitydefsget = entitydefs.get
-entitydefs['nbsp'] = ' '
-
-sgmlentity = {'lt': '<', 'gt': '>', 'amp': '&', 'quot': '"', 'apos': '\'', 'ndash': '-'}
-sgmlentityget = sgmlentity.get
-_sgmlentkeys = list(sgmlentity.keys())
-
-entcharrefs = {}
-entcharrefsget = entcharrefs.get
-for _k, _v in list(entitydefs.items()):
-    if _k in _sgmlentkeys:
-        continue
-    if _v[0:2] == '&#':
-        dec_code = _v[1:-1]
-        _v = chr(int(_v[2:-1]))
-        entcharrefs[dec_code] = _v
-    else:
-        dec_code = '#' + str(ord(_v))
-        entcharrefs[dec_code] = _v
-    entcharrefs[_k] = _v
-del _sgmlentkeys, _k, _v
-entcharrefs['#160'] = ' '
-entcharrefs['#xA0'] = ' '
-entcharrefs['#xa0'] = ' '
-entcharrefs['#XA0'] = ' '
-entcharrefs['#x22'] = '"'
-entcharrefs['#X22'] = '"'
-entcharrefs['#38'] = '&amp;'
-entcharrefs['#x26'] = '&amp;'
-entcharrefs['#x26'] = '&amp;'
-
-re_entcharrefs = re.compile('&(%s|\#160|\#\d{1,5}|\#x[0-9a-f]{1,4});' %
-                            '|'.join(map(re.escape, entcharrefs)), re.I)
-re_entcharrefssub = re_entcharrefs.sub
-
-sgmlentity.update(dict([('#34', '"'), ('#38', '&'),
-                        ('#60', '<'), ('#62', '>'), ('#39', "'")]))
-re_sgmlref = re.compile('&(%s);' % '|'.join(map(re.escape, sgmlentity)))
-re_sgmlrefsub = re_sgmlref.sub
-
-# Matches XML-only single tags, like <br/> ; they are invalid in HTML,
-# but widely used by IMDb web site. :-/
-re_xmltags = re.compile('<([a-zA-Z]+)/>')
-
-
-def _replXMLRef(match):
-    """Replace the matched XML/HTML entities and references;
-    replace everything except sgml entities like &lt;, &gt;, ..."""
-    ref = match.group(1)
-    value = entcharrefsget(ref)
-    if value is None:
-        if ref[0] == '#':
-            ref_code = ref[1:]
-            if ref_code in ('34', '38', '60', '62', '39'):
-                return match.group(0)
-            elif ref_code[0].lower() == 'x':
-                return chr(int(ref[2:], 16))
-            else:
-                return chr(int(ref[1:]))
-        else:
-            return ref
-    return value
-
-
-def subXMLRefs(s):
-    """Return the given html string with entity and char references
-    replaced."""
-    return re_entcharrefssub(_replXMLRef, s)
-
-
-# XXX: no more used here; move it to mobile (they are imported by helpers, too)?
-def _replSGMLRefs(match):
-    """Replace the matched SGML entity."""
-    ref = match.group(1)
-    return sgmlentityget(ref, ref)
-
-
-def subSGMLRefs(s):
-    """Return the given html string with sgml entity and char references
-    replaced."""
-    return re_sgmlrefsub(_replSGMLRefs, s)
+                _putRefs(d[k], re_titles, re_names, lastKey=lastKey)
 
 
 _b_p_logger = logging.getLogger('imdbpy.parser.http.build_person')
@@ -282,7 +194,8 @@ def build_person(txt, personID=None, billingPos=None,
         for idx, role in enumerate(person.currentRole):
             if roleNotes[idx]:
                 role.notes = roleNotes[idx]
-    elif person.currentRole and not person.currentRole.notes and notes:
+    elif person.currentRole and isinstance(person.currentRole, Character) and \
+            not person.currentRole.notes and notes:
         person.currentRole.notes = notes
     return person
 
@@ -304,9 +217,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
     # FIXME: Oook, lets face it: build_movie and build_person are now
     # two horrible sets of patches to support the new IMDb design.  They
     # must be rewritten from scratch.
-    if _parsingCharacter:
-        _defSep = ' Played by '
-    elif _parsingCompany:
+    if _parsingCompany:
         _defSep = ' ... '
     else:
         _defSep = ' .... '
@@ -377,8 +288,6 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
                     notes = title[fpIdx:]
                 title = title[:fpIdx].rstrip()
         title = '%s (%s)' % (title, year)
-    if _parsingCharacter and roleID and not role:
-        roleID = None
     if not roleID:
         roleID = None
     elif len(roleID) == 1:
@@ -462,7 +371,7 @@ class DOMParserBase(object):
     _containsObjects = False
 
     preprocessors = []
-    extractors = []
+    rules = []
 
     _logger = logging.getLogger('imdbpy.parser.http.domparser')
 
@@ -479,7 +388,6 @@ class DOMParserBase(object):
         # Names and titles references.
         self._namesRefs = {}
         self._titlesRefs = {}
-        self._charactersRefs = {}
         self._reset()
 
     def _init(self):
@@ -492,21 +400,19 @@ class DOMParserBase(object):
 
     def parse(self, html_string, getRefs=None, **kwds):
         """Return the dictionary generated from the given html string;
-        getRefs can be used to force the gathering of movies/persons/characters
+        getRefs can be used to force the gathering of movies/persons
         references."""
         self.reset()
         if getRefs is not None:
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
-        # Useful only for the testsuite.
-        if not isinstance(html_string, str):
-            html_string = str(html_string, 'utf8', 'replace')
-        html_string = subXMLRefs(html_string)
+        if PY2 and isinstance(html_string, str):
+            html_string = html_string.decode('utf-8')
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
-        html_string = html_string.strip()
         if html_string:
+            html_string = html_string.replace('&nbsp;', ' ')
             dom = self.get_dom(html_string)
             try:
                 dom = self.preprocess_dom(dom)
@@ -535,26 +441,22 @@ class DOMParserBase(object):
     def get_dom(self, html_string):
         """Return a dom object, from the given string."""
         try:
-            dom = lxml.html.fromstring(html_string)
+            if not _USE_LXML:
+                html_string = html_to_xhtml(html_string, omit_tags={"script"})
+            dom = build_tree(html_string, force_html=True)
             if dom is None:
-                dom = lxml.html.fromstring('')
+                dom = build_tree('')
                 self._logger.error('%s: using a fake empty DOM', self._cname)
             return dom
         except Exception:
             self._logger.error('%s: caught exception parsing DOM',
                                self._cname, exc_info=True)
-            return lxml.html.fromstring('')
+            return build_tree('')
 
     def xpath(self, element, path):
         """Return elements matching the given XPath."""
         try:
-            xpath_result = element.xpath(path)
-            result = []
-            for item in xpath_result:
-                if isinstance(item, str):
-                    item = str(item)
-                result.append(item)
-            return result
+            return piculet_xpath(element, path)
         except Exception:
             self._logger.error('%s: caught exception extracting XPath "%s"',
                                self._cname, path, exc_info=True)
@@ -566,7 +468,7 @@ class DOMParserBase(object):
             return str(element)
         else:
             try:
-                return lxml.etree.tostring(element, encoding='utf8')
+                return ElementTree.tostring(element, encoding='utf8')
             except Exception:
                 self._logger.error('%s: unable to convert to string',
                                    self._cname, exc_info=True)
@@ -574,16 +476,12 @@ class DOMParserBase(object):
 
     def clone(self, element):
         """Clone an element."""
-        return lxml.html.fromstring(self.tostring(element))
+        return build_tree(self.tostring(element))
 
     def preprocess_string(self, html_string):
         """Here we can modify the text, before it's parsed."""
         if not html_string:
             return html_string
-        # Remove silly &nbsp;&raquo; and &ndash; chars.
-        html_string = html_string.replace(' \xbb', '')
-        html_string = html_string.replace('–', '-')
-        html_string = html_string.replace('&ndash;', '-')
         try:
             preprocessors = self.preprocessors
         except AttributeError:
@@ -592,7 +490,7 @@ class DOMParserBase(object):
             # re._pattern_type is present only since Python 2.5.
             if isinstance(getattr(src, 'sub', None), collections.Callable):
                 html_string = src.sub(sub, html_string)
-            elif isinstance(src, str):
+            elif isinstance(src, str) or isinstance(src, unicode):
                 html_string = html_string.replace(src, sub)
             elif isinstance(src, collections.Callable):
                 try:
@@ -612,96 +510,14 @@ class DOMParserBase(object):
         refs = grParser.postprocess_data(refs)
         self._namesRefs = refs['names refs']
         self._titlesRefs = refs['titles refs']
-        self._charactersRefs = refs['characters refs']
 
     def preprocess_dom(self, dom):
-        """Last chance to modify the dom, before the rules in self.extractors
-        are applied by the parse_dom method."""
+        """Last chance to modify the dom, before the rules are applied."""
         return dom
 
     def parse_dom(self, dom):
-        """Parse the given dom according to the rules specified
-        in self.extractors."""
-        result = {}
-        for extractor in self.extractors:
-            # print extractor.label
-            if extractor.group is None:
-                elements = [(extractor.label, element)
-                            for element in self.xpath(dom, extractor.path)]
-            else:
-                groups = self.xpath(dom, extractor.group)
-                elements = []
-                for group in groups:
-                    group_key = self.xpath(group, extractor.group_key)
-                    if not group_key:
-                        continue
-                    group_key = group_key[0]
-                    group_key = self.tostring(group_key)
-                    normalizer = extractor.group_key_normalize
-                    if normalizer is not None:
-                        if isinstance(normalizer, collections.Callable):
-                            try:
-                                group_key = normalizer(group_key)
-                            except Exception:
-                                _m = '%s: unable to apply group_key normalizer'
-                                self._logger.error(_m, self._cname, exc_info=True)
-                    group_elements = self.xpath(group, extractor.path)
-                    elements.extend([(group_key, element) for element in group_elements])
-            for group_key, element in elements:
-                for attr in extractor.attrs:
-                    if isinstance(attr.path, dict):
-                        data = {}
-                        for field in list(attr.path.keys()):
-                            path = attr.path[field]
-                            value = self.xpath(element, path)
-                            if not value:
-                                data[field] = None
-                            else:
-                                # XXX: use u'' , to join?
-                                data[field] = ''.join(value)
-
-                        # If the value is to be ignored, set data to empty dict.
-                        # It will be skipped later.
-                        for key, value in attr.ignore.items():
-                            if data[key] == value:
-                                data = {}
-                    else:
-                        data = self.xpath(element, attr.path)
-                        if not data:
-                            data = None
-                        else:
-                            data = attr.joiner.join(data)
-                    if not data:
-                        continue
-                    attr_postprocess = attr.postprocess
-                    if isinstance(attr_postprocess, collections.Callable):
-                        try:
-                            data = attr_postprocess(data)
-                        except Exception:
-                            _m = '%s: unable to apply attr postprocess'
-                            self._logger.error(_m, self._cname, exc_info=True)
-                    key = attr.key
-                    if key is None:
-                        key = group_key
-                    elif key.startswith('.'):
-                        # assuming this is an xpath
-                        try:
-                            key = self.xpath(element, key)[0]
-                        except IndexError:
-                            self._logger.error('%s: XPath returned no items',
-                                               self._cname, exc_info=True)
-                    elif key.startswith('self.'):
-                        key = getattr(self, key[5:])
-                    if attr.multi:
-                        if key not in result:
-                            result[key] = []
-                        result[key].append(data)
-                    else:
-                        if isinstance(data, dict):
-                            result.update(data)
-                        else:
-                            result[key] = data
-        return result
+        """Parse the given dom according to the rules specified in self.rules."""
+        return Rules(self.rules).extract(dom)
 
     def postprocess_data(self, data):
         """Here we can modify the data."""
@@ -731,82 +547,11 @@ class DOMParserBase(object):
                 re_names = re.compile(nam_re, re.U)
             else:
                 re_names = None
-            chr_re = r'(%s)' % '|'.join(
-                [re.escape(x) for x in list(self._charactersRefs.keys())]
-            )
-            if chr_re != r'()':
-                re_characters = re.compile(chr_re, re.U)
-            else:
-                re_characters = None
-            _putRefs(data, re_titles, re_names, re_characters)
+            _putRefs(data, re_titles, re_names)
         return {'data': data,
                 'titlesRefs': self._titlesRefs,
-                'namesRefs': self._namesRefs,
-                'charactersRefs': self._charactersRefs}
-
-
-class Extractor(object):
-    """Instruct the DOM parser about how to parse a document."""
-    def __init__(self, label, path, attrs, group=None, group_key=None,
-                 group_key_normalize=None):
-        """Initialize an Extractor object, used to instruct the DOM parser
-        about how to parse a document."""
-        # rarely (never?) used, mostly for debugging purposes.
-        self.label = label
-        self.group = group
-        if group_key is None:
-            self.group_key = ".//text()"
-        else:
-            self.group_key = group_key
-        self.group_key_normalize = group_key_normalize
-        self.path = path
-        # A list of attributes to fetch.
-        if isinstance(attrs, Attribute):
-            attrs = [attrs]
-        self.attrs = attrs
-
-    def __repr__(self):
-        """String representation of an Extractor object."""
-        t = '<Extractor id:%s (label=%s, path=%s, attrs=%s, group=%s, group_key=%s' + \
-            ', group_key_normalize=%s)>'
-        r = t % (id(self), self.label, self.path, repr(self.attrs), self.group,
-                 self.group_key, self.group_key_normalize)
-        return r
-
-
-class Attribute(object):
-    """The attribute to consider, for a given node."""
-    def __init__(self, key, multi=False, path=None, joiner=None,
-                 postprocess=None, ignore=None):
-        """Initialize an Attribute object, used to specify the
-        attribute to consider, for a given node."""
-        # The key under which information will be saved; can be a string or an
-        # XPath. If None, the label of the containing extractor will be used.
-        self.key = key
-        self.multi = multi
-        self.path = path
-        if joiner is None:
-            joiner = ''
-        self.joiner = joiner
-        # Post-process this set of information.
-        self.postprocess = postprocess
-
-        if ignore is not None:
-            # If there is no explicit mapping for values to ignore for particular fields,
-            # use the value for all fields.
-            if not isinstance(ignore, dict):
-                ignore = {k: ignore for k in self.path}
-        else:
-            ignore = {}
-        self.ignore = ignore
-
-    def __repr__(self):
-        """String representation of an Attribute object."""
-        r = '<Attribute id:%s (key=%s, multi=%s, path=%s, joiner=%s, postprocess=%s)>' % (
-            id(self), self.key, self.multi, repr(self.path), self.joiner,
-            repr(self.postprocess)
-        )
-        return r
+                'namesRefs': self._namesRefs
+                }
 
 
 def _parse_ref(text, link, info):
@@ -819,54 +564,55 @@ def _parse_ref(text, link, info):
 
 
 class GatherRefs(DOMParserBase):
-    """Parser used to gather references to movies, persons and characters."""
-    _attrs = [
-        Attribute(
-            key=None,
-            multi=True,
-            path={
-                'text': './text()',
-                'link': './@href',
-                'info': './following::text()[1]'
-            },
-            postprocess=lambda x: _parse_ref(
-                x.get('text') or '',
-                x.get('link') or '',
-                (x.get('info') or '').strip()
+    """Parser used to gather references to movies, persons."""
+    _common_rules = [
+        Rule(
+            key='text',
+            extractor=Path('./text()')
+        ),
+        Rule(
+            key='link',
+            extractor=Path('./@href')
+        ),
+        Rule(
+            key='info',
+            extractor=Path('./following::text()[1]')
+        )
+    ]
+
+    _common_transform = lambda x: _parse_ref(
+        x.get('text') or '',
+        x.get('link') or '',
+        (x.get('info') or '').strip()
+    )
+
+    rules = [
+        Rule(
+            key='names refs',
+            extractor=Rules(
+                foreach='//a[starts-with(@href, "/name/nm")]',
+                rules=_common_rules,
+                transform=_common_transform
+            )
+        ),
+        Rule(
+            key='titles refs',
+            extractor=Rules(
+                foreach='//a[starts-with(@href, "/title/tt")]',
+                rules=_common_rules,
+                transform=_common_transform
             )
         )
     ]
 
-    extractors = [
-        Extractor(
-            label='names refs',
-            path="//a[starts-with(@href, '/name/nm')][string-length(@href)=16]",
-            attrs=_attrs
-        ),
-
-        Extractor(
-            label='titles refs',
-            path="//a[starts-with(@href, '/title/tt')][string-length(@href)=17]",
-            attrs=_attrs
-        ),
-
-        Extractor(
-            label='characters refs',
-            path="//a[starts-with(@href, '/character/ch')][string-length(@href)=21]",
-            attrs=_attrs
-        ),
-    ]
-
     def postprocess_data(self, data):
         result = {}
-        for item in ('names refs', 'titles refs', 'characters refs'):
+        for item in ('names refs', 'titles refs'):
             result[item] = {}
             for k, v in data.get(item, []):
                 k = k.strip()
                 v = v.strip()
                 if not (k and v):
-                    continue
-                if not v.endswith('/'):
                     continue
                 imdbID = analyze_imdbid(v)
                 if item == 'names refs':
@@ -875,11 +621,6 @@ class GatherRefs(DOMParserBase):
                 elif item == 'titles refs':
                     obj = Movie(movieID=imdbID, title=k,
                                 accessSystem=self._as, modFunct=self._modFunct)
-                else:
-                    obj = Character(characterID=imdbID, name=k,
-                                    accessSystem=self._as, modFunct=self._modFunct)
-                # XXX: companies aren't handled: are they ever found in text,
-                #      as links to their page?
                 result[item][k] = obj
         return result
 

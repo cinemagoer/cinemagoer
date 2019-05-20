@@ -1,28 +1,28 @@
-"""
-helpers module (imdb package).
+# Copyright 2006-2018 Davide Alberani <da@erlug.linux.it>
+#                2012 Alberto Malagoli <albemala AT gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+"""
 This module provides functions not used directly by the imdb package,
 but useful for IMDbPY-based programs.
-
-Copyright 2006-2017 Davide Alberani <da@erlug.linux.it>
-               2012 Alberto Malagoli <albemala AT gmail.com>
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 
-# XXX: find better names for the functions in this modules.
+# XXX: Find better names for the functions in this module.
+
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import difflib
 import gettext
@@ -37,9 +37,8 @@ from imdb.Character import Character
 from imdb.Company import Company
 from imdb.linguistics import COUNTRY_LANG
 from imdb.Movie import Movie
-from imdb.parser.http.utils import entcharrefs
 from imdb.Person import Person
-from imdb.utils import _Container, _tagAttr, re_characterRef, re_nameRef, re_titleRef
+from imdb.utils import _tagAttr, re_characterRef, re_nameRef, re_titleRef
 from imdb.utils import TAGS_TO_MODIFY
 
 
@@ -271,34 +270,6 @@ modHtmlLinksASCII = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt,
                                     encoding='ascii')
 
 
-everyentcharrefs = entcharrefs.copy()
-for k, v in list({'lt': '<', 'gt': '>', 'amp': '&', 'quot': '"', 'apos': '\''}.items()):
-    everyentcharrefs[k] = v
-    everyentcharrefs['#%s' % ord(v)] = v
-everyentcharrefsget = everyentcharrefs.get
-re_everyentcharrefs = re.compile('&(%s|\#160|\#\d{1,5});' % '|'.join(map(re.escape,
-                                                                         everyentcharrefs)))
-re_everyentcharrefssub = re_everyentcharrefs.sub
-
-
-def _replAllXMLRef(match):
-    """Replace the matched XML reference."""
-    ref = match.group(1)
-    value = everyentcharrefsget(ref)
-    if value is None:
-        if ref[0] == '#':
-            return chr(int(ref[1:]))
-        else:
-            return ref
-    return value
-
-
-def subXMLHTMLSGMLRefs(s):
-    """Return the given string with XML/HTML/SGML entity and char references
-    replaced."""
-    return re_everyentcharrefssub(_replAllXMLRef, s)
-
-
 def sortedSeasons(m):
     """Return a sorted list of seasons of the given series."""
     seasons = list(m.get('episodes', {}).keys())
@@ -364,15 +335,7 @@ def fullSizeCoverURL(obj):
     or None otherwise.  This function is obsolete: the same information
     are available as keys: 'full-size cover url' and 'full-size headshot',
     respectively for movies and persons/characters."""
-    if isinstance(obj, Movie):
-        coverUrl = obj.get('cover url')
-    elif isinstance(obj, (Person, Character)):
-        coverUrl = obj.get('headshot')
-    else:
-        coverUrl = obj
-    if not coverUrl:
-        return None
-    return _Container._re_fullsizeURL.sub('', coverUrl)
+    return obj.get_fullsizeURL()
 
 
 def keyToXML(key):

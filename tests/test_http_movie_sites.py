@@ -1,25 +1,20 @@
-from pytest import fixture
-
-from imdb.parser.http.movieParser import DOMHTMLOfficialsitesParser
-
-
-@fixture(scope='module')
-def movie_sites_details(url_opener, movies):
-    """A function to retrieve the sites details page of a test movie."""
-    def retrieve(movie_key):
-        url = movies[movie_key] + '/externalsites'
-        return url_opener.retrieve_unicode(url)
-    return retrieve
+def test_movie_official_sites_should_be_a_list(ia):
+    movie = ia.get_movie('0133093', info=['official sites'])    # Matrix
+    official_sites = movie.get('official sites', [])
+    assert len(official_sites) == 1
 
 
-parser = DOMHTMLOfficialsitesParser()
+def test_movie_official_sites_if_none_should_be_excluded(ia):
+    movie = ia.get_movie('1863157', info=['official sites'])    # Ates Parcasi
+    assert 'official sites' not in movie
 
 
-def test_number_of_links(movie_sites_details):
-    page = movie_sites_details('matrix')
-    data = parser.parse(page)['data']
-    official_sites_number = len(data.get('official sites', []))
-    sound_clies_number = len(data.get('sound clips', []))
-    assert(official_sites_number == 1)
-    assert(sound_clies_number == 3)
+def test_movie_sound_clips_should_be_a_list(ia):
+    movie = ia.get_movie('0133093', info=['official sites'])    # Matrix
+    sound_clips = movie.get('sound clips', [])
+    assert len(sound_clips) == 3
 
+
+def test_movie_sound_clips_if_none_should_be_excluded(ia):
+    movie = ia.get_movie('1863157', info=['official sites'])    # Ates Parcasi
+    assert 'sound clips' not in movie

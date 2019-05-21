@@ -552,3 +552,9 @@ def test_movie_misc_sections_must_contain_items(ia):
 def test_movie_companies_sections_must_contain_items(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix
     assert len(movie.get('special effects companies', [])) == 7
+
+
+def test_movie_box_office_should_be_a_dict(ia):
+    movie = ia.get_movie('0133093', info=['main'])      # Matrix
+    assert isinstance(movie.get('box office'), dict)
+    assert len(movie.get('box office', {})) == 3

@@ -15,6 +15,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* Enrique A for pull request to fix box office parser
+
 * Christian Graabæk Steenfeldt for a report about tv series ratings
 
 * h3llrais3r for a patch for Python 2 and encodings

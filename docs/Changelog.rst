@@ -2,6 +2,8 @@ Changelog
 =========
 
 * What's new in release 6.8
+  [http]
+  - #182: box office information
 
 
 * What's new in release 6.7 "Game of Thrones" (19 May 2019)

@@ -385,6 +385,25 @@ class DOMHTMLMovieParser(DOMParserBase):
             )
         ),
         Rule(
+            key='box office',
+            extractor=Rules(
+                foreach='//section[contains(@class, "titlereference-section-box-office")]'
+                        '//table[contains(@class, "titlereference-list")]//tr',
+                rules=[
+                    Rule(
+                        key='box_office_title',
+                        extractor=Path('./td[1]/text()')
+                    ),
+                    Rule(
+                        key='box_office_detail',
+                        extractor=Path('./td[2]/text()')
+                    )
+                ],
+                transform=lambda x: (x['box_office_title'].strip(),
+                                     x['box_office_detail'].strip())
+            ),
+        ),
+        Rule(
             key='certificates',
             extractor=Path(
                 '//td[starts-with(text(), "Certificat")]/..//text()',
@@ -762,6 +781,8 @@ class DOMHTMLMovieParser(DOMParserBase):
                         key = '%s companies' % key
                     data.update({key: value})
             del data['companies']
+        if 'box office' in data:
+            data['box office'] = dict(data['box office'])
         return data
 
 

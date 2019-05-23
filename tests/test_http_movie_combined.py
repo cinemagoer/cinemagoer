@@ -359,7 +359,7 @@ def test_movie_genres_if_multiple_should_be_a_list_of_genre_names(ia):
 
 def test_movie_plot_outline_should_be_a_longer_text(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix
-    assert re.match('^Thomas A\. Anderson is a man .* human rebellion.$', movie.get('plot outline'))
+    assert re.match(r'^Thomas A\. Anderson is a man .* human rebellion.$', movie.get('plot outline'))
 
 
 def test_movie_plot_outline_none_should_be_excluded(ia):

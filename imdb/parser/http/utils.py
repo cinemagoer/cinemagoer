@@ -488,7 +488,7 @@ class DOMParserBase(object):
             return html_string
         for src, sub in preprocessors:
             # re._pattern_type is present only since Python 2.5.
-            if isinstance(getattr(src, 'sub', None), collections.Callable):
+            if isinstance(getattr(src, 'sub', None), collections.abc.Callable):
                 html_string = src.sub(sub, html_string)
             elif isinstance(src, str) or isinstance(src, unicode):
                 html_string = html_string.replace(src, sub)

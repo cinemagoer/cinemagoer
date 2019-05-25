@@ -4,6 +4,7 @@ Changelog
 * What's new in release 6.8
   [http]
   - #182: box office information
+  - #168: parse series and episode number searching for movies
 
 
 * What's new in release 6.7 "Game of Thrones" (19 May 2019)

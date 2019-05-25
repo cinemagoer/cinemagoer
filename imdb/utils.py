@@ -47,7 +47,7 @@ _utils_logger = logging.getLogger('imdbpy.utils')
 # XXX: probably L, C, D and M are far too much! ;-)
 re_year_index = re.compile(r'\(([0-9\?]{4}(/[IVXLCDM]+)?)\)')
 re_m_episode = re.compile(r'\(TV Episode\)\s+-\s+', re.I)
-re_m_series = re.compile(r'Season\s+\d+\s+\|\s+Episode\s+\d+\s+-', re.I)
+re_m_series = re.compile(r'Season\s+(\d+)\s+\|\s+Episode\s+(\d+)\s+-', re.I)
 re_m_imdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 re_m_kind = re.compile(
     r'\((TV episode|TV Series|TV mini-series|mini|TV|Video|Video Game|VG|Short|TV Movie|TV Short|V)\)',
@@ -389,6 +389,10 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
         # It's an episode of a series.
         kind = 'episode'
         series_title = title[epindex.end():]
+        season_episode_match = re_m_series.match(series_title)
+        if season_episode_match:
+            result['season'] = int(season_episode_match.groups()[0])
+            result['episode'] = int(season_episode_match.groups()[1])
         series_title = re_m_series.sub('', series_title)
         series_info = analyze_title(series_title)
         result['episode of'] = series_info.get('title')

@@ -81,3 +81,11 @@ def test_search_movie_entries_should_include_akas(ia):
 def test_search_movie_entries_missing_akas_should_be_excluded(ia):
     movies = ia.search_movie('matrix')
     assert 'akas' not in movies[0]
+
+
+def test_search_movie_episodes_should_include_season_and_number(ia):
+    movies = ia.search_movie('swarley')  # How I Met Your Mother S02E07
+    movie_with_season_and_episode = [m for m in movies if m.movieID == '0875360']
+    assert len(movie_with_season_and_episode) == 1
+    assert movie_with_season_and_episode[0]['season'] == 2
+    assert movie_with_season_and_episode[0]['episode'] == 7

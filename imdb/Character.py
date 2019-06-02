@@ -1,4 +1,4 @@
-# Copyright 2007-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2007-2019 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -91,7 +91,7 @@ class Character(_Container):
     def set_name(self, name):
         """Set the name of the character."""
         try:
-            d = analyze_name(name, canonical=False)
+            d = analyze_name(name)
             self.data.update(d)
         except IMDbParserError:
             pass

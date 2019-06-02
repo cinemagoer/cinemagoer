@@ -881,13 +881,13 @@ class IMDbBase:
             if mop.personID is not None:
                 imdbID = aSystem.get_imdbPersonID(mop.personID)
             else:
-                imdbID = aSystem.name2imdbID(build_name(mop, canonical=1))
+                imdbID = aSystem.name2imdbID(build_name(mop, canonical=False))
         elif isinstance(mop, Character.Character):
             if mop.characterID is not None:
                 imdbID = aSystem.get_imdbCharacterID(mop.characterID)
             else:
                 # canonical=0 ?
-                imdbID = aSystem.character2imdbID(build_name(mop, canonical=1))
+                imdbID = aSystem.character2imdbID(build_name(mop, canonical=False))
         elif isinstance(mop, Company.Company):
             if mop.companyID is not None:
                 imdbID = aSystem.get_imdbCompanyID(mop.companyID)

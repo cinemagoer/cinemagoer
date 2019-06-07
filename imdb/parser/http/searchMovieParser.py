@@ -40,7 +40,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         Rule(
             key='data',
             extractor=Rules(
-                foreach="//tr[contains(concat(' ',normalize-space(@class),' '),' findResult ')]",
+                foreach='//tr[contains(concat(" ",normalize-space(@class)," "), " findResult ")]',
                 rules=[
                     Rule(
                         key='link',

@@ -42,6 +42,11 @@ def test_search_movie_entries_should_include_movie_title(ia):
     assert movies[0]['title'] == 'The Matrix'
 
 
+def test_search_movie_entries_should_include_cover_url_if_available(ia):
+    movies = ia.search_movie('matrix')
+    assert 'cover url' in movies[0]
+
+
 def test_search_movie_entries_should_include_movie_kind(ia):
     movies = ia.search_movie('matrix')
     assert movies[0]['kind'] == 'movie'

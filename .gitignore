@@ -13,4 +13,5 @@ dist/
 .cache
 .tox
 .coverage
+.venv
 prof

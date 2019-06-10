@@ -71,6 +71,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
 
     def _init(self):
         self.url = ''
+        self.img_type = "cover url"
 
     def _reset(self):
         self.url = ''
@@ -93,7 +94,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                     akas = [aka[1:-1] for aka in datum[2]]  # remove the quotes
                     datum[1]['akas'] = akas
                 if datum[3] is not None:
-                    datum[1]['cover url'] = datum[3]
+                    datum[1][self.img_type] = datum[3]
                 data['data'][idx] = (datum[0], datum[1])
         return data
 

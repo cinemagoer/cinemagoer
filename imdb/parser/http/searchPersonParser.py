@@ -41,32 +41,42 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//td[@class="result_text"]',
+                foreach='//tr[contains(concat(" ",normalize-space(@class)," "), " findResult ")]',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./a/@href', reduce=reducers.first)
+                        extractor=Path('./td[@class="result_text"]/a/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='name',
-                        extractor=Path('./a/text()')
+                        extractor=Path('./td[@class="result_text"]/a/text()')
                     ),
                     Rule(
                         key='index',
-                        extractor=Path('./text()')
+                        extractor=Path('./td[@class="result_text"]/text()')
                     ),
                     Rule(
                         key='akas',
-                        extractor=Path(foreach='./i', path='./text()')
+                        extractor=Path(foreach='./td[@class="result_text"]/i', path='./text()')
+                    ),
+                    Rule(
+                        key='headshot',
+                        extractor=Path('./td[@class="primary_photo"]/a/img/@src')
                     )
                 ],
                 transform=lambda x: (
                     analyze_imdbid(x.get('link')),
-                    analyze_name(x.get('name', '') + x.get('index', ''), canonical=1), x.get('akas')
+                    analyze_name(x.get('name', '') + x.get('index', ''), canonical=1),
+                    x.get('akas'),
+                    x.get('headshot')
                 )
             )
         )
     ]
+
+    def _init(self):
+        super(DOMHTMLSearchPersonParser, self)._init()
+        self.img_type = 'headshot'
 
 
 _OBJECTS = {

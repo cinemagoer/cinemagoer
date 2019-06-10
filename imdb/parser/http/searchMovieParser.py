@@ -71,7 +71,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
 
     def _init(self):
         self.url = ''
-        self.img_type = "cover url"
+        self.img_type = 'cover url'
 
     def _reset(self):
         self.url = ''

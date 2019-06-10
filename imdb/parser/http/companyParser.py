@@ -34,7 +34,7 @@ from imdb.utils import analyze_company_name
 from .piculet import Path, Rule, Rules
 from .utils import DOMParserBase, analyze_imdbid, build_movie
 
-_re_company_name = re.compile('IMDb: With\s+(.+)\s+\(Sorted by.*', re.I | re.M)
+_re_company_name = re.compile('With\s+(.+)\s+\(Sorted by.*', re.I | re.M)
 
 
 def clean_company_title(title):
@@ -61,7 +61,7 @@ class DOMCompanyParser(DOMParserBase):
         Rule(
             key='name',
             extractor=Path(
-                '//title/text()',
+                '//h1[@class="header"]/text()',
                 transform=lambda x: clean_company_title(x)
             )
         ),

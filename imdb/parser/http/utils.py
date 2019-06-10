@@ -22,7 +22,6 @@ in the :mod:`imdb.parser.http` package.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import collections
 import logging
 import re
 
@@ -35,6 +34,12 @@ from imdb.utils import _Container, flatten
 from .piculet import _USE_LXML, ElementTree, Rules, build_tree, html_to_xhtml
 from .piculet import xpath as piculet_xpath
 from .piculet import Rule, Path
+
+
+if PY2:
+    from collections import Callable
+else:
+    from collections.abc import Callable
 
 
 # Year, imdbIndex and kind.
@@ -488,11 +493,11 @@ class DOMParserBase(object):
             return html_string
         for src, sub in preprocessors:
             # re._pattern_type is present only since Python 2.5.
-            if isinstance(getattr(src, 'sub', None), collections.Callable):
+            if isinstance(getattr(src, 'sub', None), Callable):
                 html_string = src.sub(sub, html_string)
             elif isinstance(src, str) or isinstance(src, unicode):
                 html_string = html_string.replace(src, sub)
-            elif isinstance(src, collections.Callable):
+            elif isinstance(src, Callable):
                 try:
                     html_string = src(html_string)
                 except Exception:

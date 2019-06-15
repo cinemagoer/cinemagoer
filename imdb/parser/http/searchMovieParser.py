@@ -40,23 +40,23 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//tr[contains(concat(" ",normalize-space(@class)," "), " findResult ")]',
+                foreach='//td[@class="result_text"]',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./td[@class="result_text"]/a/@href', reduce=reducers.first)
+                        extractor=Path('./a/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='info',
-                        extractor=Path('./td[@class="result_text"]//text()')
+                        extractor=Path('.//text()')
                     ),
                     Rule(
                         key='akas',
-                        extractor=Path(foreach='./td[@class="result_text"]/i', path='./text()')
+                        extractor=Path(foreach='./i', path='./text()')
                     ),
                     Rule(
                         key='cover url',
-                        extractor=Path('./td[@class="primary_photo"]/a/img/@src')
+                        extractor=Path('../td[@class="primary_photo"]/a/img/@src')
                     )
                 ],
                 transform=lambda x: (

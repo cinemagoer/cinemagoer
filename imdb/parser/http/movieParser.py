@@ -2529,19 +2529,18 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
         Rule(
             key='parents guide',
             extractor=Rules(
-                foreach='//div[@class="section"]',
+                foreach='//tr[@class="ipl-zebra-list__item"]',
                 rules=[
                     Rule(
                         key=Path(
-                            './h3/a/span/text()',
+                            './td[1]/text()',
                             transform=transformers.lower
                         ),
                         extractor=Path(
-                            foreach='../following-sibling::div[1]/p',
-                            path='.//text()',
+                            path='./td[2]//text()',
                             transform=lambda x: [
-                                t.strip().replace('\n', ' ')
-                                for t in x.split('||') if t.strip()
+                                re_space.sub(' ', t)
+                                for t in x.split('\n') if t.strip()
                             ]
                         )
                     )
@@ -2550,18 +2549,14 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
         )
     ]
 
-    preprocessors = [
-        (re.compile('<br/><br/>', re.I), r'||')
-    ]
-
     def postprocess_data(self, data):
-        data2 = {}
-        for key in data:
-            if data[key]:
-                data2[key] = data[key]
-        if not data2:
-            return {}
-        return {'parents guide': data2}
+        ret = {}
+        for sect in data.get('parents guide', []):
+            for key, value in sect.items():
+                ret[key] = value
+        if isinstance(ret.get('mpaa'), list):
+            ret['mpaa'] = ret['mpaa'][0]
+        return ret
 
 
 _OBJECTS = {

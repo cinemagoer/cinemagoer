@@ -6,6 +6,7 @@ Changelog
   - #182: box office information
   - #168: parse series and episode number searching for movies
   - #217: grab poster from search
+  - #218: extract MPAA rating
 
 
 * What's new in release 6.7 "Game of Thrones" (19 May 2019)

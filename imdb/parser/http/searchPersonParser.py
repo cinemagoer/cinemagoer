@@ -58,15 +58,25 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
                     Rule(
                         key='akas',
                         extractor=Path(foreach='./i', path='./text()')
+                    ),
+                    Rule(
+                        key='headshot',
+                        extractor=Path('../td[@class="primary_photo"]/a/img/@src')
                     )
                 ],
                 transform=lambda x: (
                     analyze_imdbid(x.get('link')),
-                    analyze_name(x.get('name', '') + x.get('index', ''), canonical=1), x.get('akas')
+                    analyze_name(x.get('name', '') + x.get('index', ''), canonical=1),
+                    x.get('akas'),
+                    x.get('headshot')
                 )
             )
         )
     ]
+
+    def _init(self):
+        super(DOMHTMLSearchPersonParser, self)._init()
+        self.img_type = 'headshot'
 
 
 _OBJECTS = {

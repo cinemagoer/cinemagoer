@@ -1697,12 +1697,17 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
                     Rule(
                         key='roleID',
                         extractor=Path('./td[4]//div[@class="_imdbpyrole"]/@roleid')
+                    ),
+                    Rule(
+                        key='headshot',
+                        extractor=Path('./td[@class="primary_photo"]/a/img/@src')
                     )
                 ],
                 transform=lambda x: build_person(
-                    x.get('person') or '',
+                    x.get('person', ''),
                     personID=analyze_imdbid(x.get('link')),
-                    roleID=(x.get('roleID') or '').split('/')
+                    roleID=(x.get('roleID', '')).split('/'),
+                    headshot=(x.get('headshot', ''))
                 )
             )
         )

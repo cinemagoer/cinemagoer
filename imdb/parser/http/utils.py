@@ -94,7 +94,7 @@ _b_p_logger = logging.getLogger('imdbpy.parser.http.build_person')
 
 
 def build_person(txt, personID=None, billingPos=None,
-                 roleID=None, accessSystem='http', modFunct=None):
+                 roleID=None, accessSystem='http', modFunct=None, headshot=None):
     """Return a Person instance from the tipical <tr>...</tr> strings
     found in the IMDb's web site."""
     # if personID is None
@@ -192,9 +192,12 @@ def build_person(txt, personID=None, billingPos=None,
         else:
             notes = notes.strip()
     # XXX: return None if something strange is detected?
+    data = {}
+    if headshot:
+        data['headshot'] = headshot
     person = Person(name=name, personID=personID, currentRole=role,
                     roleID=roleID, notes=notes, billingPos=billingPos,
-                    modFunct=modFunct, accessSystem=accessSystem)
+                    modFunct=modFunct, accessSystem=accessSystem, data=data)
     if roleNotes and len(roleNotes) == len(roleID):
         for idx, role in enumerate(person.currentRole):
             if roleNotes[idx]:

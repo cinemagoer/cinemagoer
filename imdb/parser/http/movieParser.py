@@ -1717,6 +1717,15 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
         (_reRolesMovie, _manageRoles)
     ]
 
+    def postprocess_data(self, data):
+        clean_cast = []
+        for person in data.get('cast', []):
+            if person.personID and person.get('name'):
+                clean_cast.append(person)
+        if clean_cast:
+            data['cast'] = clean_cast
+        return data
+
 
 class DOMHTMLOfficialsitesParser(DOMParserBase):
     """Parser for the "official sites", "external reviews"

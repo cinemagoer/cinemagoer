@@ -29,7 +29,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import re
 
 from .piculet import Path, Rule, Rules, preprocessors, reducers
-from .utils import DOMParserBase, analyze_imdbid
+from .utils import DOMParserBase, analyze_imdbid, build_person
 
 
 _re_secondary_info = re.compile(
@@ -66,6 +66,11 @@ def _parse_secondary_info(info):
 class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
     """A parser for the title search page."""
 
+    person_rules = [
+        Rule(key='name', extractor=Path('./text()', reduce=reducers.first)),
+        Rule(key='link', extractor=Path('./@href', reduce=reducers.first,
+                                        transform=analyze_imdbid)),
+    ]
     rules = [
         Rule(
             key='data',
@@ -137,6 +142,22 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                                        reduce=reducers.clean)
                     ),
                     Rule(
+                        key='directors',
+                        extractor=Rules(
+                            foreach='.//div[@class="DIRECTORS"]/a',
+                            rules=person_rules,
+                            transform=lambda x: build_person(x['name'], personID=x['link'])
+                        )
+                    ),
+                    Rule(
+                        key='cast',
+                        extractor=Rules(
+                            foreach='.//div[@class="STARS"]/a',
+                            rules=person_rules,
+                            transform=lambda x: build_person(x['name'], personID=x['link'])
+                        )
+                    ),
+                    Rule(
                         key='cover url',
                         extractor=Path('..//a/img/@loadlate')
                     )
@@ -153,9 +174,9 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
         self.url = ''
 
     preprocessors = [
-        ('Directors?:(.*?)(<span|</p>)', '<div class="DIRECTORS">\1</div>\2'),
-        ('Stars?:(.*?)(<span|</p>)', '<div class="STARS">\1</div>\2'),
-        (re.compile('(Gross:.*?<span name=)"nv"', re.DOTALL), r'\1"GROSS"'),
+        (re.compile(r'Directors?:(.*?)(<span|</p>)', re.DOTALL), r'<div class="DIRECTORS">\1</div>\2'),
+        (re.compile(r'Stars?:(.*?)(<span|</p>)', re.DOTALL), r'<div class="STARS">\1</div>\2'),
+        (re.compile(r'(Gross:.*?<span name=)"nv"', re.DOTALL), r'\1"GROSS"'),
         ('Add a Plot', '<br class="ADD_A_PLOT"/>'),
         ('(Episode:)(</small>)(.*?)(</h3>)', '\1\3\2\4')
     ]

@@ -143,6 +143,59 @@ def test_selected_movie_should_have_correct_plot(ia):
     assert selected['plot'].startswith('A computer hacker learns')
 
 
+def test_selected_movie_should_have_correct_director_imdb_ids(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '1830851'][0]
+    assert [p.personID for p in selected['directors']] == ['0649609']
+
+
+def test_selected_work_should_have_correct_director_name(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '1830851'][0]
+    assert [p['name'] for p in selected['directors']] == ['Josh Oreck']
+
+
+def test_selected_work_should_have_correct_director_imdb_ids_if_multiple(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert [p.personID for p in selected["directors"]] == ['0905154', '0905152']
+
+
+def test_selected_work_should_have_correct_director_names_if_multiple(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert [p['name'] for p in selected['directors']] == ['Lana Wachowski', 'Lilly Wachowski']
+
+
+def test_selected_work_should_have_correct_cast_imdb_id(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '1830851'][0]
+    assert [p.personID for p in selected['cast']] == ['1047143']
+
+
+def test_selected_work_should_have_correct_cast_name(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '1830851'][0]
+    assert [p['name'] for p in selected['cast']] == ['Clayton Watson']
+
+
+def test_selected_work_should_have_correct_cast_imdb_ids_if_multiple(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert [p.personID for p in selected['cast']] == ['0000206', '0000401', '0005251', '0915989']
+
+
+def test_selected_work_should_have_correct_cast_names_if_multiple(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert [p['name'] for p in selected['cast']] == [
+        'Keanu Reeves',
+        'Laurence Fishburne',
+        'Carrie-Anne Moss',
+        'Hugo Weaving'
+    ]
+
+
 def test_selected_movie_should_have_cover_url(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]

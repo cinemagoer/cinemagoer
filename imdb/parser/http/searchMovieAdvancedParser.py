@@ -1,5 +1,4 @@
-# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
-#           2008-2019 H. Turgut Uyar <uyar@tekir.org>
+# Copyright 2019 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,20 +16,51 @@
 
 """
 This module provides the classes (and the instances) that are used to parse
-the results of a search for a given title.
+the results of an advanced search for a given title.
 
 For example, when searching for the title "the passion", the parsed page
 would be:
 
-http://www.imdb.com/find?q=the+passion&s=tt
+http://www.imdb.com/search/title/?title=the+passion
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from imdb.utils import analyze_title
+import re
 
 from .piculet import Path, Rule, Rules, preprocessors, reducers
 from .utils import DOMParserBase, analyze_imdbid
+
+
+_re_secondary_info = re.compile(
+    r'''(\(([IVXLCM]+)\)\s+)?\((\d{4})(–(\s|(\d{4})))?(\s+(.*))?\)'''
+)
+
+
+_KIND_MAP = {
+    'tv short': 'tv short movie',
+    'video': 'video movie'
+}
+
+
+def _parse_secondary_info(info):
+    parsed = {}
+    match = _re_secondary_info.match(info)
+    kind = None
+    if match.group(2):
+        parsed['imdbIndex'] = match.group(2)
+    if match.group(3):
+        parsed['year'] = int(match.group(3))
+    if match.group(4):
+        kind = 'tv series'
+    if match.group(6):
+        parsed['end_year'] = int(match.group(6))
+    if match.group(8):
+        kind = match.group(8).lower()
+    if kind is None:
+        kind = 'movie'
+    parsed['kind'] = _KIND_MAP.get(kind, kind)
+    return parsed
 
 
 class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
@@ -49,6 +79,15 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                     Rule(
                         key='title',
                         extractor=Path('./h3/a/text()', reduce=reducers.first)
+                    ),
+                    Rule(
+                        key='secondary_info',
+                        extractor=Path('./h3/span[@class="lister-item-year text-muted unbold"]/text()',
+                                       reduce=reducers.first)
+                    ),
+                    Rule(
+                        key='state',
+                        extractor=Path('.//b/text()', reduce=reducers.first)
                     ),
                     Rule(
                         key='cover url',
@@ -87,6 +126,13 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
         results = getattr(self, 'results', None)
         if results is not None:
             data['data'][:] = data['data'][:results]
+
+        for movieID, movie in data['data']:
+            secondary_info = movie.pop('secondary_info', None)
+            if secondary_info is not None:
+                secondary = _parse_secondary_info(secondary_info)
+                movie.update(secondary)
+
         return data
 
     def add_refs(self, data):

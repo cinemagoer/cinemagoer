@@ -1219,7 +1219,8 @@ class _Container(object):
             pass
         if not self._roleIsPerson:
             if not isinstance(roleID, (list, tuple)):
-                self.currentRole.characterID = roleID
+                if not(PY2 and isinstance(self.currentRole, unicode)):
+                    self.currentRole.characterID = roleID
             else:
                 for index, item in enumerate(roleID):
                     r = self.__role[index]

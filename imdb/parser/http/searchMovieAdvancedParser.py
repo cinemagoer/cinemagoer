@@ -90,14 +90,29 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                         extractor=Path('.//b/text()', reduce=reducers.first)
                     ),
                     Rule(
+                        key='certificates',
+                        extractor=Path('.//span[@class="certificate"]/text()',
+                                       reduce=reducers.first,
+                                       transform=list)
+                    ),
+                    Rule(
+                        key='runtimes',
+                        extractor=Path('.//span[@class="runtime"]/text()',
+                                       reduce=reducers.first,
+                                       transform=lambda s: [[w for w in s.split() if w.isdigit()][0]])
+                    ),
+                    Rule(
+                        key='genres',
+                        extractor=Path('.//span[@class="genre"]/text()',
+                                       reduce=reducers.first,
+                                       transform=lambda s: [w.strip() for w in s.split(',')])
+                    ),
+                    Rule(
                         key='cover url',
                         extractor=Path('..//a/img/@loadlate')
                     )
                 ],
-                transform=lambda x: (
-                    analyze_imdbid(x.pop('link')),
-                    x
-                )
+                transform=lambda x: (analyze_imdbid(x.pop('link')), x)
             )
         )
     ]

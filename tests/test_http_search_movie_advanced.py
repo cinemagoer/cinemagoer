@@ -80,22 +80,40 @@ def test_selected_video_game_should_have_correct_kind(ia):
 def test_selected_movie_should_have_correct_year(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]
-    assert selected["year"] == 1999
+    assert selected['year'] == 1999
 
 
 def test_selected_ended_tv_series_should_have_correct_end_year(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0364888'][0]
-    assert selected["end_year"] == 2004
+    assert selected['end_year'] == 2004
 
 
 def test_selected_unreleased_movie_should_have_correct_state(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '5359784'][0]
-    assert selected["state"] == "Completed"
+    assert selected['state'] == 'Completed'
+
+
+def test_selected_movie_should_have_correct_certification(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert selected['certificates'] == ['R']
+
+
+def test_selected_movie_should_have_correct_runtime(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert selected['runtimes'] == ['136']
+
+
+def test_selected_work_should_have_correct_genres(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert selected['genres'] == ['Action', 'Sci-Fi']
 
 
 def test_selected_movie_should_have_cover_url(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]
-    assert selected['cover url'].endswith(".jpg")
+    assert selected['cover url'].endswith('.jpg')

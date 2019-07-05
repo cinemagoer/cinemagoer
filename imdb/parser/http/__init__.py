@@ -41,6 +41,7 @@ from . import (
     movieParser,
     personParser,
     searchMovieParser,
+    searchMovieAdvancedParser,
     searchPersonParser,
     searchCompanyParser,
     searchKeywordParser
@@ -300,6 +301,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
         # Proxy objects.
         self.smProxy = _ModuleProxy(searchMovieParser, defaultKeys=_def)
+        self.smaProxy = _ModuleProxy(searchMovieAdvancedParser, defaultKeys=_def)
         self.spProxy = _ModuleProxy(searchPersonParser, defaultKeys=_def)
         self.scompProxy = _ModuleProxy(searchCompanyParser, defaultKeys=_def)
         self.skProxy = _ModuleProxy(searchKeywordParser, defaultKeys=_def)
@@ -437,6 +439,21 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def _search_movie(self, title, results):
         cont = self._get_search_content('tt', title, results)
         return self.smProxy.search_movie_parser.parse(cont, results=results)['data']
+
+    def _get_search_movie_advanced_content(self, title, results):
+        """Retrieve the web page for a given search.
+        results is the maximum number of results to be retrieved."""
+        criteria = {}
+        if title is not None:
+            criteria['title'] = title
+        if results is not None:
+            criteria['count'] = str(results)
+        params = '&'.join(['%s=%s' % (k, v) for k, v in criteria.items()])
+        return self._retrieve(self.urls['search_movie_advanced'] % params)
+
+    def _search_movie_advanced(self, title, results):
+        cont = self._get_search_movie_advanced_content(title, results)
+        return self.smaProxy.search_movie_advanced_parser.parse(cont, results=results)['data']
 
     def _search_episode(self, title, results):
         t_dict = analyze_title(title)

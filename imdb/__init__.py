@@ -299,6 +299,8 @@ class IMDbBase:
         imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
         # http://www.imdb.com/find?%s
         imdbURL_find = imdbURL_base + 'find?%s'
+        # http://www.imdb.com/search/title?%s
+        imdbURL_search_movie_advanced = imdbURL_base + 'search/title/?%s'
         self.urls = dict(
             movie_base=imdbURL_movie_base,
             movie_main=imdbURL_movie_main,
@@ -311,7 +313,8 @@ class IMDbBase:
             keyword_main=imdbURL_keyword_main,
             top250=imdbURL_top250,
             bottom100=imdbURL_bottom100,
-            find=imdbURL_find)
+            find=imdbURL_find,
+            search_movie_advanced=imdbURL_search_movie_advanced)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -422,6 +425,26 @@ class IMDbBase:
             res = self._search_movie(title, results)
         else:
             res = self._search_episode(title, results)
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                data=md, modFunct=self._defModFunct,
+                accessSystem=self.accessSystem) for mi, md in res][:results]
+
+    def _search_movie_advanced(self, title, results):
+        """Return a list of tuples (movieID, {movieData})"""
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        raise NotImplementedError('override this method')
+
+    def search_movie_advanced(self, title, results=None):
+        """Return a list of Movie objects for a query for the given title.
+        The results argument is the maximum number of results to return."""
+        if results is None:
+            results = self._results
+        try:
+            results = int(results)
+        except (ValueError, OverflowError):
+            results = 20
+        res = self._search_movie_advanced(title, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]

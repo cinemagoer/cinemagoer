@@ -137,6 +137,12 @@ def test_selected_movie_should_have_correct_gross(ia):
     assert selected['gross'] >= 171479930
 
 
+def test_selected_movie_should_have_correct_plot(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert selected['plot'].startswith('A computer hacker learns')
+
+
 def test_selected_movie_should_have_cover_url(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]

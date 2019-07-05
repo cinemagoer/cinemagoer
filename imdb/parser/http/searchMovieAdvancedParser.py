@@ -132,6 +132,11 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                                        transform=int)
                     ),
                     Rule(
+                        key='plot',
+                        extractor=Path('./p[@class="text-muted"]//text()',
+                                       reduce=reducers.clean)
+                    ),
+                    Rule(
                         key='cover url',
                         extractor=Path('..//a/img/@loadlate')
                     )

@@ -59,10 +59,10 @@ def test_selected_ended_tv_series_should_have_correct_kind(ia):
     assert selected['kind'] == 'tv series'
 
 
-# def test_selected_tv_episode_should_have_correct_kind(ia):
-#     movies = ia.search_movie_advanced('matrix', results=250)
-#     selected = [m for m in movies if m.movieID == '0594932'][0]
-#     assert selected['kind'] == 'episode'
+def test_selected_tv_episode_should_have_correct_kind(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594932'][0]
+    assert selected['kind'] == 'episode'
 
 
 def test_selected_tv_special_should_have_correct_kind(ia):
@@ -95,7 +95,7 @@ def test_selected_unreleased_movie_should_have_correct_state(ia):
     assert selected['state'] == 'Completed'
 
 
-def test_selected_movie_should_have_correct_certification(ia):
+def test_selected_movie_should_have_correct_certificate(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]
     assert selected['certificates'] == ['R']
@@ -158,7 +158,7 @@ def test_selected_work_should_have_correct_director_name(ia):
 def test_selected_work_should_have_correct_director_imdb_ids_if_multiple(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]
-    assert [p.personID for p in selected["directors"]] == ['0905154', '0905152']
+    assert [p.personID for p in selected['directors']] == ['0905154', '0905152']
 
 
 def test_selected_work_should_have_correct_director_names_if_multiple(ia):
@@ -193,6 +193,89 @@ def test_selected_work_should_have_correct_cast_names_if_multiple(ia):
         'Laurence Fishburne',
         'Carrie-Anne Moss',
         'Hugo Weaving'
+    ]
+
+
+def test_selected_tv_episode_should_have_correct_title(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert selected['title'] == "The Making of 'The Matrix'"
+
+
+def test_selected_tv_episode_should_have_correct_year(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert selected['year'] == 1999
+
+
+def test_selected_tv_episode_should_have_correct_imdb_index(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '1072112'][0]
+    assert selected['imdbIndex'] == 'I'
+
+
+def test_selected_tv_episode_should_have_correct_certificate(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '1072112'][0]
+    assert selected['certificates'] == ['TV-PG']
+
+
+def test_selected_tv_episode_should_have_correct_runtime(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert selected['runtimes'] == ['26']
+
+
+def test_selected_tv_episode_should_have_correct_genres(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert selected['genres'] == ['Documentary', 'Short']
+
+
+def test_selected_tv_episode_should_have_correct_rating(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert abs(selected['rating'] - 7.6) < 0.5
+
+
+def test_selected_tv_episode_should_have_correct_number_of_votes(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert selected['votes'] >= 14
+
+
+def test_selected_tv_episode_should_have_correct_plot(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '10177094'][0]
+    assert selected['plot'].startswith('Roberto Leoni reviews The Matrix (1999)')
+
+
+def test_selected_tv_episode_should_have_correct_director_imdb_ids(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert [p.personID for p in selected['directors']] == ['0649609']
+
+
+def test_selected_tv_episode_should_have_correct_director_names(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert [p['name'] for p in selected['directors']] == ['Josh Oreck']
+
+
+def test_selected_tv_episode_should_have_correct_cast_imdb_ids(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert [p.personID for p in selected['cast']] == ['0000401', '0300665', '0303293', '0005251']
+
+
+def test_selected_tv_episode_should_have_correct_cast_names(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert [p['name'] for p in selected['cast']] == [
+        'Laurence Fishburne',
+        'John Gaeta',
+        "Robert 'Rock' Galotti",
+        'Carrie-Anne Moss'
     ]
 
 

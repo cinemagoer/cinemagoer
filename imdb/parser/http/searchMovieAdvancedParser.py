@@ -29,7 +29,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import re
 
 from .piculet import Path, Rule, Rules, preprocessors, reducers
-from .utils import DOMParserBase, analyze_imdbid, build_person
+from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 
 
 _re_secondary_info = re.compile(
@@ -68,8 +68,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
 
     person_rules = [
         Rule(key='name', extractor=Path('./text()', reduce=reducers.first)),
-        Rule(key='link', extractor=Path('./@href', reduce=reducers.first,
-                                        transform=analyze_imdbid)),
+        Rule(key='link', extractor=Path('./@href', reduce=reducers.first))
     ]
     rules = [
         Rule(
@@ -98,7 +97,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                         key='certificates',
                         extractor=Path('.//span[@class="certificate"]/text()',
                                        reduce=reducers.first,
-                                       transform=list)
+                                       transform=lambda s: [s])
                     ),
                     Rule(
                         key='runtimes',
@@ -146,7 +145,8 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                         extractor=Rules(
                             foreach='.//div[@class="DIRECTORS"]/a',
                             rules=person_rules,
-                            transform=lambda x: build_person(x['name'], personID=x['link'])
+                            transform=lambda x: build_person(x['name'],
+                                                             personID=analyze_imdbid(x['link']))
                         )
                     ),
                     Rule(
@@ -154,15 +154,29 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                         extractor=Rules(
                             foreach='.//div[@class="STARS"]/a',
                             rules=person_rules,
-                            transform=lambda x: build_person(x['name'], personID=x['link'])
+                            transform=lambda x: build_person(x['name'],
+                                                             personID=analyze_imdbid(x['link']))
                         )
                     ),
                     Rule(
                         key='cover url',
                         extractor=Path('..//a/img/@loadlate')
+                    ),
+                    Rule(
+                        key='episode',
+                        extractor=Rules(
+                            rules=[
+                                Rule(key='link',
+                                     extractor=Path('./h3/small/a/@href', reduce=reducers.first)),
+                                Rule(key='title',
+                                     extractor=Path('./h3/small/a/text()', reduce=reducers.first)),
+                                Rule(key='secondary_info',
+                                     extractor=Path('./h3/small/span[@class="lister-item-year text-muted unbold"]/text()',
+                                                    reduce=reducers.first)),
+                            ]
+                        )
                     )
-                ],
-                transform=lambda x: (analyze_imdbid(x.pop('link')), x)
+                ]
             )
         )
     ]
@@ -178,7 +192,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
         (re.compile(r'Stars?:(.*?)(<span|</p>)', re.DOTALL), r'<div class="STARS">\1</div>\2'),
         (re.compile(r'(Gross:.*?<span name=)"nv"', re.DOTALL), r'\1"GROSS"'),
         ('Add a Plot', '<br class="ADD_A_PLOT"/>'),
-        ('(Episode:)(</small>)(.*?)(</h3>)', '\1\3\2\4')
+        (re.compile(r'(Episode:)(</small>)(.*?)(</h3>)', re.DOTALL), r'\1\3\2\4')
     ]
 
     def preprocess_dom(self, dom):
@@ -192,11 +206,25 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
         if results is not None:
             data['data'][:] = data['data'][:results]
 
-        for movieID, movie in data['data']:
+        result = []
+        for movie in data['data']:
+            # series = None
+            episode = movie.pop('episode', None)
+            if episode is not None:
+                # series = build_movie(movie.get('title'), movieID=imdb_id)
+                movie['link'] = episode['link']
+                movie['title'] = episode['title']
+                movie['secondary_info'] = episode.get('secondary_info')
+
             secondary_info = movie.pop('secondary_info', None)
             if secondary_info is not None:
                 secondary = _parse_secondary_info(secondary_info)
                 movie.update(secondary)
+                if episode is not None:
+                    movie['kind'] = 'episode'
+
+            result.append((analyze_imdbid(movie.pop('link')), movie))
+        data['data'] = result
 
         return data
 

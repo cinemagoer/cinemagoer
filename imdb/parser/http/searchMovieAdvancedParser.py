@@ -108,6 +108,30 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                                        transform=lambda s: [w.strip() for w in s.split(',')])
                     ),
                     Rule(
+                        key='rating',
+                        extractor=Path('.//div[@name="ir"]/@data-value',
+                                       reduce=reducers.first,
+                                       transform=float)
+                    ),
+                    Rule(
+                        key='votes',
+                        extractor=Path('.//span[@name="nv"]/@data-value',
+                                       reduce=reducers.first,
+                                       transform=int)
+                    ),
+                    Rule(
+                        key='metascore',
+                        extractor=Path('.//span[@class="metascore  favorable"]/text()',
+                                       reduce=reducers.first,
+                                       transform=int)
+                    ),
+                    Rule(
+                        key='gross',
+                        extractor=Path('.//span[@name="GROSS"]/@data-value',
+                                       reduce=reducers.normalize,
+                                       transform=int)
+                    ),
+                    Rule(
                         key='cover url',
                         extractor=Path('..//a/img/@loadlate')
                     )
@@ -126,7 +150,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
     preprocessors = [
         ('Directors?:(.*?)(<span|</p>)', '<div class="DIRECTORS">\1</div>\2'),
         ('Stars?:(.*?)(<span|</p>)', '<div class="STARS">\1</div>\2'),
-        ('(Gross:.*?<span name=)"nv"', '\1"GROSS"'),
+        (re.compile('(Gross:.*?<span name=)"nv"', re.DOTALL), r'\1"GROSS"'),
         ('Add a Plot', '<br class="ADD_A_PLOT"/>'),
         ('(Episode:)(</small>)(.*?)(</h3>)', '\1\3\2\4')
     ]

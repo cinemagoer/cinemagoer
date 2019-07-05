@@ -107,10 +107,34 @@ def test_selected_movie_should_have_correct_runtime(ia):
     assert selected['runtimes'] == ['136']
 
 
-def test_selected_work_should_have_correct_genres(ia):
+def test_selected_movie_should_have_correct_genres(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]
     assert selected['genres'] == ['Action', 'Sci-Fi']
+
+
+def test_selected_movie_should_have_correct_rating(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert abs(selected['rating'] - 8.7) < 0.5
+
+
+def test_selected_movie_should_have_correct_number_of_votes(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert selected['votes'] >= 1513744
+
+
+def test_selected_movie_should_have_correct_metascore(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert abs(selected['metascore'] - 73) < 5
+
+
+def test_selected_movie_should_have_correct_gross(ia):
+    movies = ia.search_movie_advanced('matrix', results=50)
+    selected = [m for m in movies if m.movieID == '0133093'][0]
+    assert selected['gross'] >= 171479930
 
 
 def test_selected_movie_should_have_cover_url(ia):

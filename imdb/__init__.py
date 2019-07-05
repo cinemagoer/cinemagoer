@@ -429,13 +429,13 @@ class IMDbBase:
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]
 
-    def _search_movie_advanced(self, title=None, results=None, sort=None, sort_dir=None):
+    def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None, sort_dir=None):
         """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError('override this method')
 
-    def search_movie_advanced(self, title=None, results=None, sort=None, sort_dir=None):
+    def search_movie_advanced(self, title=None, adult=None, results=None, sort=None, sort_dir=None):
         """Return a list of Movie objects for a query for the given title.
         The results argument is the maximum number of results to return."""
         if results is None:
@@ -444,7 +444,7 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        res = self._search_movie_advanced(title=title, results=results, sort=sort, sort_dir=sort_dir)
+        res = self._search_movie_advanced(title=title, adult=adult, results=results, sort=sort, sort_dir=sort_dir)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]

@@ -318,6 +318,24 @@ def test_selected_movie_should_have_cover_url(ia):
     assert selected['cover url'].endswith('.jpg')
 
 
+def test_search_results_should_include_adult_titles_if_requested(ia):
+    movies = ia.search_movie_advanced('matrix', adult=True, results=250)
+    movies_no_adult = ia.search_movie_advanced('matrix', adult=False, results=250)
+    assert len(movies) > len(movies_no_adult)
+
+
+def test_selected_adult_movie_should_have_correct_title(ia):
+    movies = ia.search_movie_advanced('matrix', adult=True, results=250)
+    selected = [m for m in movies if m.movieID == '0273126'][0]
+    assert selected['title'] == "Blue Matrix"
+
+
+def test_selected_adult_movie_should_have_adult_in_genres(ia):
+    movies = ia.search_movie_advanced('matrix', adult=True, results=250)
+    selected = [m for m in movies if m.movieID == '0273126'][0]
+    assert 'Adult' in selected['genres']
+
+
 def test_search_results_should_be_sortable_in_alphabetical_order_default_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='alpha')
     titles = [m['title'] for m in movies]

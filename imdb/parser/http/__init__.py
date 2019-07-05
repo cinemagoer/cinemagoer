@@ -440,7 +440,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._get_search_content('tt', title, results)
         return self.smProxy.search_movie_parser.parse(cont, results=results)['data']
 
-    def _get_search_movie_advanced_content(self, title, results):
+    def _get_search_movie_advanced_content(self, title=None, results=None, sort=None, sort_dir=None):
         """Retrieve the web page for a given search.
         results is the maximum number of results to be retrieved."""
         criteria = {}
@@ -448,11 +448,15 @@ class IMDbHTTPAccessSystem(IMDbBase):
             criteria['title'] = title
         if results is not None:
             criteria['count'] = str(results)
+        if sort is not None:
+            criteria['sort'] = sort
+            if sort_dir is not None:
+                criteria['sort'] = sort + ','+ sort_dir
         params = '&'.join(['%s=%s' % (k, v) for k, v in criteria.items()])
         return self._retrieve(self.urls['search_movie_advanced'] % params)
 
-    def _search_movie_advanced(self, title, results):
-        cont = self._get_search_movie_advanced_content(title, results)
+    def _search_movie_advanced(self, title=None, results=None, sort=None, sort_dir=None):
+        cont = self._get_search_movie_advanced_content(title=title, results=results, sort=sort, sort_dir=sort_dir)
         return self.smaProxy.search_movie_advanced_parser.parse(cont, results=results)['data']
 
     def _search_episode(self, title, results):

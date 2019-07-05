@@ -208,7 +208,6 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
 
         result = []
         for movie in data['data']:
-            series = None
             episode = movie.pop('episode', None)
             if episode is not None:
                 series = build_movie(movie.get('title'), movieID=analyze_imdbid(movie['link']))

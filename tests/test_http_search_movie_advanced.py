@@ -1,3 +1,6 @@
+import math
+
+
 def test_search_results_should_include_correct_number_of_works_by_default(ia):
     movies = ia.search_movie_advanced('matrix')
     assert len(movies) == 20
@@ -313,3 +316,113 @@ def test_selected_movie_should_have_cover_url(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]
     assert selected['cover url'].endswith('.jpg')
+
+
+def test_search_results_should_be_sortable_in_alphabetical_order_default_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='alpha')
+    titles = [m['title'] for m in movies]
+    # assert all(a <= b for a, b in zip(titles, titles[1:]))  # fails due to IMDb
+    assert sum(1 if a > b else 0 for a, b in zip(titles, titles[1:])) <= 1
+
+
+def test_search_results_should_be_sortable_in_alphabetical_order_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='alpha', sort_dir='asc')
+    titles = [m['title'] for m in movies]
+    # assert all(a <= b for a, b in zip(titles, titles[1:]))  # fails due to IMDb
+    assert sum(1 if a > b else 0 for a, b in zip(titles, titles[1:])) <= 1
+
+
+def test_search_results_should_be_sortable_in_alphabetical_order_descending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='alpha', sort_dir='desc')
+    titles = [m['title'] for m in movies]
+    assert all(a >= b for a, b in zip(titles, titles[1:]))
+
+
+def test_search_results_should_be_sortable_in_rating_order_default_descending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='user_rating')
+    ratings = [m.get('rating', 0) for m in movies]
+    assert all(a >= b for a, b in zip(ratings, ratings[1:]))
+
+
+def test_search_results_should_be_sortable_in_rating_order_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='user_rating', sort_dir='asc')
+    ratings = [m.get('rating', math.inf) for m in movies]
+    assert all(a <= b for a, b in zip(ratings, ratings[1:]))
+
+
+def test_search_results_should_be_sortable_in_rating_order_descending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='user_rating', sort_dir='desc')
+    ratings = [m.get('rating', 0) for m in movies]
+    assert all(a >= b for a, b in zip(ratings, ratings[1:]))
+
+
+def test_search_results_should_be_sortable_in_votes_order_default_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='num_votes')
+    votes = [m.get('votes', math.inf) for m in movies]
+    assert all(a <= b for a, b in zip(votes, votes[1:]))
+
+
+def test_search_results_should_be_sortable_in_votes_order_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='num_votes', sort_dir='asc')
+    votes = [m.get('votes', math.inf) for m in movies]
+    assert all(a <= b for a, b in zip(votes, votes[1:]))
+
+
+def test_search_results_should_be_sortable_in_votes_order_descending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='num_votes', sort_dir='desc')
+    votes = [m.get('votes', 0) for m in movies]
+    assert all(a >= b for a, b in zip(votes, votes[1:]))
+
+
+def test_search_results_should_be_sortable_in_gross_order_default_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='boxoffice_gross_us')
+    grosses = [m.get("gross", math.inf) for m in movies]
+    assert all(a <= b for a, b in zip(grosses, grosses[1:]))
+
+
+def test_search_results_should_be_sortable_in_gross_order_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='boxoffice_gross_us', sort_dir='asc')
+    grosses = [m.get("gross", math.inf) for m in movies]
+    assert all(a <= b for a, b in zip(grosses, grosses[1:]))
+
+
+def test_search_results_should_be_sortable_in_gross_order_descending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='boxoffice_gross_us', sort_dir='desc')
+    grosses = [m.get("gross", 0) for m in movies]
+    assert all(a >= b for a, b in zip(grosses, grosses[1:]))
+
+
+def test_search_results_should_be_sortable_in_runtime_order_default_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='runtime')
+    runtimes = [m.get('runtime', math.inf) for m in movies]
+    assert all(a <= b for a, b in zip(runtimes, runtimes[1:]))
+
+
+def test_search_results_should_be_sortable_in_runtime_order_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='runtime', sort_dir='asc')
+    runtimes = [int(m.get('runtimes', [math.inf])[0]) for m in movies]
+    assert all(a <= b for a, b in zip(runtimes, runtimes[1:]))
+
+
+def test_search_results_should_be_sortable_in_runtime_order_descending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='runtime', sort_dir='desc')
+    runtimes = [int(m.get('runtimes', [math.inf])[0]) for m in movies]
+    assert all(a >= b for a, b in zip(runtimes, runtimes[1:]))
+
+
+def test_search_results_should_be_sortable_in_year_order_default_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='year')
+    years = [m.get('year', math.inf) for m in movies]
+    assert all(a <= b for a, b in zip(years, years[1:]))
+
+
+def test_search_results_should_be_sortable_in_year_order_ascending(ia):
+    movies = ia.search_movie_advanced(title='matrix', sort='year', sort_dir='asc')
+    years = [m.get('year', math.inf) for m in movies]
+    assert all(a <= b for a, b in zip(years, years[1:]))
+
+
+# def test_search_results_should_be_sortable_in_year_order_descending(ia):
+#     movies = ia.search_movie_advanced(title='matrix', sort='year', sort_dir='desc')
+#     years = [m.get('year', math.inf) for m in movies]
+#     assert all(a >= b for a, b in zip(years, years[1:]))

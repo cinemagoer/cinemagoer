@@ -279,6 +279,36 @@ def test_selected_tv_episode_should_have_correct_cast_names(ia):
     ]
 
 
+def test_selected_tv_episode_should_have_series(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert selected['episode of']['kind'] == 'tv series'
+
+
+def test_selected_tv_episode_should_have_correct_series_imdb_id(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert selected['episode of'].movieID == '0318220'
+
+
+def test_selected_tv_episode_should_have_correct_series_title(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert selected['episode of']['title'] == 'HBO First Look'
+
+
+def test_selected_tv_episode_should_have_correct_series_year(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '1072112'][0]
+    assert selected['episode of']['year'] == 2001
+
+
+def test_selected_tv_episode_should_have_correct_series_end_year(ia):
+    movies = ia.search_movie_advanced('matrix', results=250)
+    selected = [m for m in movies if m.movieID == '1072112'][0]
+    assert selected['episode of']['end_year'] == 2012
+
+
 def test_selected_movie_should_have_cover_url(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]

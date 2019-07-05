@@ -208,13 +208,21 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
 
         result = []
         for movie in data['data']:
-            # series = None
+            series = None
             episode = movie.pop('episode', None)
             if episode is not None:
-                # series = build_movie(movie.get('title'), movieID=imdb_id)
+                series = build_movie(movie.get('title'), movieID=analyze_imdbid(movie['link']))
+                series['kind'] = 'tv series'
+                series_secondary = movie.get('secondary_info')
+                if series_secondary:
+                    series.update(_parse_secondary_info(series_secondary))
+
+                movie['episode of'] = series
                 movie['link'] = episode['link']
                 movie['title'] = episode['title']
-                movie['secondary_info'] = episode.get('secondary_info')
+                ep_secondary = episode.get('secondary_info')
+                if ep_secondary is not None:
+                    movie['secondary_info'] = ep_secondary
 
             secondary_info = movie.pop('secondary_info', None)
             if secondary_info is not None:

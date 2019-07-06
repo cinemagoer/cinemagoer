@@ -1700,7 +1700,7 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
                     ),
                     Rule(
                         key='headshot',
-                        extractor=Path('./td[@class="primary_photo"]/a/img/@src')
+                        extractor=Path('./td[@class="primary_photo"]/a/img/@loadlate')
                     )
                 ],
                 transform=lambda x: build_person(

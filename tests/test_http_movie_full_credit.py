@@ -12,3 +12,4 @@ def test_movie_full_credits_for_tv_show(ia):
 def test_movie_full_credits_contains_headshot(ia):
     movie = ia.get_movie('0133093', info=['main', 'full credits'])      # Matrix
     assert 'headshot' in movie['cast'][0] # Keanu Reeves
+    assert 'nopicture' not in movie['cast'][0]['headshot'] # is real headshot, not default

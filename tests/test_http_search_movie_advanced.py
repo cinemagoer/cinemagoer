@@ -327,7 +327,7 @@ def test_search_results_should_include_adult_titles_if_requested(ia):
 def test_selected_adult_movie_should_have_correct_title(ia):
     movies = ia.search_movie_advanced('matrix', adult=True, results=250)
     selected = [m for m in movies if m.movieID == '0273126'][0]
-    assert selected['title'] == "Blue Matrix"
+    assert selected['title'] == 'Blue Matrix'
 
 
 def test_selected_adult_movie_should_have_adult_in_genres(ia):
@@ -394,19 +394,19 @@ def test_search_results_should_be_sortable_in_votes_order_descending(ia):
 
 def test_search_results_should_be_sortable_in_gross_order_default_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='boxoffice_gross_us')
-    grosses = [m.get("gross", math.inf) for m in movies]
+    grosses = [m.get('gross', math.inf) for m in movies]
     assert all(a <= b for a, b in zip(grosses, grosses[1:]))
 
 
 def test_search_results_should_be_sortable_in_gross_order_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='boxoffice_gross_us', sort_dir='asc')
-    grosses = [m.get("gross", math.inf) for m in movies]
+    grosses = [m.get('gross', math.inf) for m in movies]
     assert all(a <= b for a, b in zip(grosses, grosses[1:]))
 
 
 def test_search_results_should_be_sortable_in_gross_order_descending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='boxoffice_gross_us', sort_dir='desc')
-    grosses = [m.get("gross", 0) for m in movies]
+    grosses = [m.get('gross', 0) for m in movies]
     assert all(a >= b for a, b in zip(grosses, grosses[1:]))
 
 

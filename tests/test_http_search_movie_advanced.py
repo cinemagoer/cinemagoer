@@ -1,6 +1,3 @@
-import math
-
-
 def test_search_results_should_include_correct_number_of_works_by_default(ia):
     movies = ia.search_movie_advanced('matrix')
     assert len(movies) == 20
@@ -364,7 +361,7 @@ def test_search_results_should_be_sortable_in_rating_order_default_descending(ia
 
 def test_search_results_should_be_sortable_in_rating_order_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='user_rating', sort_dir='asc')
-    ratings = [m.get('rating', math.inf) for m in movies]
+    ratings = [m.get('rating', float('inf')) for m in movies]
     assert all(a <= b for a, b in zip(ratings, ratings[1:]))
 
 
@@ -376,13 +373,13 @@ def test_search_results_should_be_sortable_in_rating_order_descending(ia):
 
 def test_search_results_should_be_sortable_in_votes_order_default_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='num_votes')
-    votes = [m.get('votes', math.inf) for m in movies]
+    votes = [m.get('votes', float('inf')) for m in movies]
     assert all(a <= b for a, b in zip(votes, votes[1:]))
 
 
 def test_search_results_should_be_sortable_in_votes_order_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='num_votes', sort_dir='asc')
-    votes = [m.get('votes', math.inf) for m in movies]
+    votes = [m.get('votes', float('inf')) for m in movies]
     assert all(a <= b for a, b in zip(votes, votes[1:]))
 
 
@@ -394,13 +391,13 @@ def test_search_results_should_be_sortable_in_votes_order_descending(ia):
 
 def test_search_results_should_be_sortable_in_gross_order_default_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='boxoffice_gross_us')
-    grosses = [m.get('gross', math.inf) for m in movies]
+    grosses = [m.get('gross', float('inf')) for m in movies]
     assert all(a <= b for a, b in zip(grosses, grosses[1:]))
 
 
 def test_search_results_should_be_sortable_in_gross_order_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='boxoffice_gross_us', sort_dir='asc')
-    grosses = [m.get('gross', math.inf) for m in movies]
+    grosses = [m.get('gross', float('inf')) for m in movies]
     assert all(a <= b for a, b in zip(grosses, grosses[1:]))
 
 
@@ -412,35 +409,35 @@ def test_search_results_should_be_sortable_in_gross_order_descending(ia):
 
 def test_search_results_should_be_sortable_in_runtime_order_default_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='runtime')
-    runtimes = [m.get('runtime', math.inf) for m in movies]
+    runtimes = [m.get('runtime', float('inf')) for m in movies]
     assert all(a <= b for a, b in zip(runtimes, runtimes[1:]))
 
 
 def test_search_results_should_be_sortable_in_runtime_order_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='runtime', sort_dir='asc')
-    runtimes = [int(m.get('runtimes', [math.inf])[0]) for m in movies]
+    runtimes = [int(m.get('runtimes', [float('inf')])[0]) for m in movies]
     assert all(a <= b for a, b in zip(runtimes, runtimes[1:]))
 
 
 def test_search_results_should_be_sortable_in_runtime_order_descending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='runtime', sort_dir='desc')
-    runtimes = [int(m.get('runtimes', [math.inf])[0]) for m in movies]
+    runtimes = [int(m.get('runtimes', [float('inf')])[0]) for m in movies]
     assert all(a >= b for a, b in zip(runtimes, runtimes[1:]))
 
 
 def test_search_results_should_be_sortable_in_year_order_default_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='year')
-    years = [m.get('year', math.inf) for m in movies]
+    years = [m.get('year', float('inf')) for m in movies]
     assert all(a <= b for a, b in zip(years, years[1:]))
 
 
 def test_search_results_should_be_sortable_in_year_order_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='year', sort_dir='asc')
-    years = [m.get('year', math.inf) for m in movies]
+    years = [m.get('year', float('inf')) for m in movies]
     assert all(a <= b for a, b in zip(years, years[1:]))
 
 
 # def test_search_results_should_be_sortable_in_year_order_descending(ia):
 #     movies = ia.search_movie_advanced(title='matrix', sort='year', sort_dir='desc')
-#     years = [m.get('year', math.inf) for m in movies]
+#     years = [m.get('year', float('inf')) for m in movies]
 #     assert all(a >= b for a, b in zip(years, years[1:]))

@@ -1,3 +1,6 @@
+import sys
+
+
 def test_search_results_should_include_correct_number_of_works_by_default(ia):
     movies = ia.search_movie_advanced('matrix')
     assert len(movies) == 20
@@ -15,12 +18,12 @@ def test_search_results_should_include_correct_number_of_works_if_asked_less_tha
 
 def test_found_movies_should_have_movie_ids(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
-    assert all(isinstance(m.movieID, (str, unicode)) for m in movies)
+    assert all(isinstance(m.movieID, unicode if sys.version_info < (3,) else str) for m in movies)
 
 
 def test_found_movies_should_have_titles(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
-    assert all(isinstance(m['title'], (str, unicode)) for m in movies)
+    assert all(isinstance(m['title'], unicode if sys.version_info < (3,) else str) for m in movies)
 
 
 def test_selected_movie_should_have_correct_kind(ia):

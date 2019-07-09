@@ -446,7 +446,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         results is the maximum number of results to be retrieved."""
         criteria = {}
         if title is not None:
-            criteria['title'] = title
+            criteria['title'] = quote_plus(title, safe='')
         if adult:
             criteria['adult'] = 'include'
         if results is not None:

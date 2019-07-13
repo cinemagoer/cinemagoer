@@ -3,6 +3,7 @@ Changelog
 
 * What's new in release 6.8
   [http]
+  - #224: introduce the search_movie_advanced(title, adult=None, results=None, sort=None, sort_dir=None) method
   - #182: box office information
   - #168: parse series and episode number searching for movies
   - #217: grab poster from search

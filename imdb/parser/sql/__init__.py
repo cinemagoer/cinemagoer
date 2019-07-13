@@ -1,4 +1,4 @@
-# Copyright 2005-2017 Davide Alberani <da@erlug.linux.it>
+# Copyright 2005-2019 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -1024,6 +1024,9 @@ class IMDbSqlAccessSystem(IMDbBase):
         if results > 0:
             new_res[:] = new_res[:results]
         return new_res
+
+    def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None, sort_dir=None):
+        return self._search_movie(title, results)
 
     def _search_episode(self, title, results):
         return self._search_movie(title, results, _episodes=True)

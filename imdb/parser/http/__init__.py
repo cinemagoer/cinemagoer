@@ -1,4 +1,4 @@
-# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
 #                2008 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@ import logging
 import socket
 import ssl
 from codecs import lookup
+import warnings
 
 from imdb import PY2
 from imdb import IMDbBase
@@ -87,16 +88,6 @@ class _ModuleProxy:
             setattr(self, name, obj)
             return obj
         return getattr(_sm, name)
-
-
-# The cookies for the "adult" search.
-# Please don't mess with these account.
-_cookie_id = 'BCYmoyqSm2WglmOzG-SrFWSvVpxsTZOB0qEOOqmAwCBxCbaNgKOxd0DTKzUvt7t04Pya5gV2tUrpDmYxrc1Dr54DQj2UX' \
-    'I7QI35__M5-HI2KrbOI3PjDz6M-_U3HG8topMfN64R24tmBixoZhMYXVaEc556lf0Z4gQNJVYRANXvwytP5v1lpfeToRlu9aVJwN4kT'
-_cookie_uu = 'BCYquDS8Y2i8R1pJxS4nB77YrhjHHXeOea2Xl9KtZvE6RZKVfMvzTGU4Vl5-yxfPbgRSiFJasyf-hhPuVvXyaHlfeBjNl' \
-    'bFT8hz2HzFFkQ_SxKxq05J51gi7Fv4SaAws1M-i7zmQ1TRunfJqCVIYqPwIs2NO7s4_YDH2ZoISVGLgca8OY2K58HychOZB1oRWHVe' \
-    'AJNhLJMrCWJBuGRLCNnQK5X9tA0dPPntr2Ussy0ouul-N1GQz-8y5vda3JJ_C6xkwmHcA6JrOdOFO_HqMWjVSXuxGEdrXC919JM9H0' \
-    'vooVvKeVgAEJnTh2GiVlUJUoH3c'
 
 
 class _FakeURLOpener(object):
@@ -171,10 +162,6 @@ class IMDbURLopener:
             self.del_header(header)
         self.set_header('User-Agent', 'Mozilla/5.0')
         self.set_header('Accept-Language', 'en-us,en;q=0.5')
-        # XXX: This class is used also to perform "Exact Primary
-        #      [Title|Name]" searches, and so by default the cookie is set.
-        c_header = 'uu=%s; id=%s' % (_cookie_uu, _cookie_id)
-        self.set_header('Cookie', c_header)
 
     def get_proxy(self):
         """Return the used proxy, or an empty string."""
@@ -289,12 +276,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self._getRefs = True
         self._mdparse = False
         self.set_timeout(timeout)
-        self.do_adult_search(adultSearch)
-        if cookie_id != -1:
-            if cookie_id is None:
-                self.del_cookies()
-            elif cookie_uu is not None:
-                self.set_cookies(cookie_id, cookie_uu)
         if proxy != -1:
             self.set_proxy(proxy)
         _def = {'_modFunct': self._defModFunct, '_as': self.accessSystem}
@@ -375,40 +356,24 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def set_cookies(self, cookie_id, cookie_uu):
         """Set a cookie to access an IMDb's account."""
-        c_header = 'id=%s; uu=%s' % (cookie_id, cookie_uu)
-        self.urlOpener.set_header('Cookie', c_header)
+        warnings.warn("set_cookies has been deprecated")
 
     def del_cookies(self):
         """Remove the used cookie."""
-        self.urlOpener.del_header('Cookie')
+        warnings.warn("del_cookies has been deprecated")
 
     def do_adult_search(self, doAdult,
-                        cookie_id=_cookie_id, cookie_uu=_cookie_uu):
+                        cookie_id=None, cookie_uu=None):
         """If doAdult is true, 'adult' movies are included in the
         search results; cookie_id and cookie_uu are optional
         parameters to select a specific account (see your cookie
         or cookies.txt file."""
-        if doAdult:
-            self.set_cookies(cookie_id, cookie_uu)
-        else:
-            self.urlOpener.del_header('Cookie')
+        return
 
     def _retrieve(self, url, size=-1, _noCookies=False):
         """Retrieve the given URL."""
-        # print url
-        _cookies = None
-        # XXX: quite obscene, but in some very limited
-        #      cases (/ttXXXXXXX/epdate) if the cookies
-        #      are set, a 500 error is returned.
-        if _noCookies:
-            _cookies = self.urlOpener.get_header('Cookie')
-            self.del_cookies()
         self._http_logger.debug('fetching url %s (size: %d)', url, size)
-        try:
-            ret = self.urlOpener.retrieve_unicode(url, size=size)
-        finally:
-            if _noCookies and _cookies:
-                self.urlOpener.set_header('Cookie', _cookies)
+        ret = self.urlOpener.retrieve_unicode(url, size=size)
         if PY2 and isinstance(ret, str):
             ret = ret.decode('utf-8')
         return ret

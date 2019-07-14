@@ -544,9 +544,19 @@ def test_movie_cast_must_contain_items(ia):
     assert len(movie.get('cast', [])) > 20
 
 
+def test_movie_cast_must_be_in_plain_format(ia):
+    movie = ia.get_movie('0133093', info=['main'])      # Matrix
+    assert movie['cast'][0].data.get('name') == 'Keanu Reeves'
+
+
 def test_movie_misc_sections_must_contain_items(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix
     assert len(movie.get('casting department', [])) == 2
+
+
+def test_movie_misc_sections_must_be_in_plain_format(ia):
+    movie = ia.get_movie('0133093', info=['main'])      # Matrix
+    assert movie['casting department'][0].data.get('name') == 'Tim Littleton'
 
 
 def test_movie_companies_sections_must_contain_items(ia):

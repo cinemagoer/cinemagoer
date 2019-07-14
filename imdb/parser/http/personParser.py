@@ -1,4 +1,4 @@
-# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import re
 
-from imdb.utils import analyze_name, canonicalName
+from imdb.utils import analyze_name
 
 from .movieParser import (
     DOMHTMLAwardsParser,
@@ -122,7 +122,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             key='name',
             extractor=Path(
                 '//h1[@class="header"]//text()',
-                transform=lambda x: analyze_name(x, canonical=1)
+                transform=lambda x: analyze_name(x)
             )
         ),
         Rule(
@@ -339,7 +339,7 @@ class DOMHTMLBioParser(DOMParserBase):
             extractor=Path(
                 '//table[@id="overviewTable"]'
                 '//td[text()="Birth Name"]/following-sibling::td[1]/text()',
-                transform=lambda x: canonicalName(x.strip())
+                transform=lambda x: x.strip()
             )
         ),
         Rule(

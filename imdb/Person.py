@@ -1,4 +1,4 @@
-# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from copy import deepcopy
 
-from imdb.utils import _Container, analyze_name, build_name, cmpPeople, flatten, normalizeName
+from imdb.utils import _Container, analyze_name, build_name, cmpPeople, flatten, normalizeName, canonicalName
 
 
 class Person(_Container):
@@ -142,7 +142,7 @@ class Person(_Container):
 
     def set_name(self, name):
         """Set the name of the person."""
-        d = analyze_name(name, canonical=True)
+        d = analyze_name(name, canonical=False)
         self.data.update(d)
 
     def _additional_keys(self):
@@ -161,11 +161,11 @@ class Person(_Container):
             if key == 'name':
                 return normalizeName(self.data['name'])
             elif key == 'canonical name':
-                return self.data['name']
+                return canonicalName(self.data['name'])
             elif key == 'long imdb name':
                 return build_name(self.data, canonical=False)
             elif key == 'long imdb canonical name':
-                return build_name(self.data)
+                return build_name(self.data, canonical=True)
         if key == 'full-size headshot':
             return self.get_fullsizeURL()
         return None
@@ -233,7 +233,7 @@ class Person(_Container):
         """String representation of a Person object."""
         # XXX: add also currentRole and notes, if present?
         return '<Person id:%s[%s] name:_%s_>' % (
-            self.personID, self.accessSystem, self.get('long imdb canonical name')
+            self.personID, self.accessSystem, self.get('long imdb name')
         )
 
     def __str__(self):

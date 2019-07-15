@@ -29,7 +29,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from imdb.utils import analyze_name
 
-from .piculet import Path, Rule, Rules,reducers
+from .piculet import Path, Rule, Rules, reducers
 from .searchMovieParser import DOMHTMLSearchMovieParser
 from .utils import analyze_imdbid
 

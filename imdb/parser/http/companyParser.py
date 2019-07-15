@@ -29,10 +29,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import re
 
-from imdb.utils import analyze_company_name
-
 from .piculet import Path, Rule, Rules
 from .utils import DOMParserBase, analyze_imdbid, build_movie
+
 
 _re_company_name = re.compile('With\s+(.+)\s+\(Sorted by.*', re.I | re.M)
 

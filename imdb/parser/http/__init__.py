@@ -45,9 +45,9 @@ from . import (
     searchMovieAdvancedParser,
     searchPersonParser,
     searchCompanyParser,
-    searchKeywordParser
+    searchKeywordParser,
+    topBottomParser
 )
-from . import topBottomParser
 
 if PY2:
     from urllib import quote_plus
@@ -419,7 +419,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         if sort is not None:
             criteria['sort'] = sort
             if sort_dir is not None:
-                criteria['sort'] = sort + ','+ sort_dir
+                criteria['sort'] = sort + ',' + sort_dir
         params = '&'.join(['%s=%s' % (k, v) for k, v in criteria.items()])
         return self._retrieve(self.urls['search_movie_advanced'] % params)
 

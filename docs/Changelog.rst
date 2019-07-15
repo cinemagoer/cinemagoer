@@ -2,7 +2,9 @@ Changelog
 =========
 
 * What's new in release 6.8
+
   [http]
+
   - #224: introduce the search_movie_advanced(title, adult=None, results=None, sort=None, sort_dir=None) method
   - #145: names are stored in normal format (Name Surname)
   - #225: remove obsolete cookie
@@ -16,10 +18,12 @@ Changelog
 * What's new in release 6.7 "Game of Thrones" (19 May 2019)
 
   [general]
+
   - #180: include tests in source package
   - #188: avoid missing keys in search results
 
   [http]
+
   - #144: fix parser for currentRole and notes
   - #189: use HTTPS insted of HTTP
   - #192: fix list of AKAs and release dates
@@ -28,9 +32,11 @@ Changelog
   - #210: fix TV series episode rating and votes
 
   [sql]
+
   - #176: correctly handle multiple characters
 
   [s3]
+
   - #163 and #193: fix import in MySQL
   - #193: handle the new format of title.principals.tsv.gz
   - #195: show progress, importing data (with --verbose)

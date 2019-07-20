@@ -1,6 +1,9 @@
 Changelog
 =========
 
+* What's new in release 6.9
+
+
 * What's new in release 6.8 "Apollo 11" (20 Jul 2019)
 
   [http]

@@ -125,7 +125,7 @@ And movies that match a given keyword:
 Top / bottom movies
 -------------------
 
-It's possible to retrieve the list of top 250 and bottom 100 movies: [#sql_bottom]_
+It's possible to retrieve the list of top 250 and bottom 100 movies:
 
 .. code-block:: python
 
@@ -152,9 +152,3 @@ the :class:`imdb.IMDbError` exception:
        people = ia.search_person('Mel Gibson')
    except IMDbError as e:
        print(e)
-
-
-.. [#sql_bottom]
-
-   Beware that in an SQL-based access system, the bottom 100 list is limited
-   to the first 10 results.

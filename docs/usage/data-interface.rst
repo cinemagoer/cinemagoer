@@ -20,8 +20,8 @@ within the respective class.
 Information sets
 ----------------
 
-IMDbPY can retrieve almost every piece of information of a movie, person or
-company. This can be a problem, because (at least for the "http" data access
+IMDbPY can retrieve almost every piece of information of a movie or person
+This can be a problem, because (at least for the "http" data access
 system) it means that a lot of web pages must be fetched and parsed.
 This can be both time- and bandwidth-consuming, especially if you're interested
 in only a small part of the information.

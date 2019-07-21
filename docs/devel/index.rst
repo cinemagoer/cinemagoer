@@ -33,15 +33,14 @@ the :file:`setup.py` file resides), run::
 
 
 I wanted to stay independent from the source of the data for a given
-movie/person/character/company, so the :func:`imdb.IMDb` function returns
+movie/person, so the :func:`imdb.IMDb` function returns
 an instance of a class that provides specific methods to access a given
 data source (web server, SQL database, etc.).
 
 Unfortunately this means that the ``movieID``
-in the :class:`Movie <imdb.Movie.Movie>` class, the ``personID``
-in the :class:`Person <imdb.Person.Person>` class, and the ``characterID``
-in the :class:`Character <imdb.Character.Character>` class depend on
-the data access system being used. So, when a movie, person, or character
+in the :class:`Movie <imdb.Movie.Movie>` class and the ``personID``
+in the :class:`Person <imdb.Person.Person>` class depend on
+the data access system being used. So, when a movie or person
 object is instantiated, the ``accessSystem`` instance variable is set
 to a string used to identify the used data access system.
 

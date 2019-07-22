@@ -1,11 +1,26 @@
-.. image:: https://travis-ci.org/alberanid/imdbpy.svg?branch=master
+|pypi| |pyversions| |license| |travis|
+
+.. |pypi| image:: https://img.shields.io/pypi/v/imdbpy.svg?style=flat-square
+    :target: https://pypi.org/project/imdbpy/
+    :alt: PyPI version.
+
+.. |pyversions| image:: https://img.shields.io/pypi/pyversions/imdbpy.svg?style=flat-square
+    :target: https://pypi.org/project/imdbpy/
+    :alt: Supported Python versions.
+
+.. |license| image:: https://img.shields.io/pypi/l/imdbpy.svg?style=flat-square
+    :target: https://pypi.org/project/imdbpy/
+    :alt: Project license.
+
+.. |travis| image:: https://travis-ci.org/alberanid/imdbpy.svg?branch=master
     :target: https://travis-ci.org/alberanid/imdbpy
+    :alt: Travis CI build status.
+
 
 **IMDbPY** is a Python package for retrieving and managing the data
 of the `IMDb`_ movie database about movies, people and companies.
 
 :Homepage: https://imdbpy.sourceforge.io/
-:PyPI: https://pypi.org/project/IMDbPY/
 :Repository: https://github.com/alberanid/imdbpy
 :Documentation: https://imdbpy.readthedocs.io/
 :Support: https://imdbpy.sourceforge.io/support.html

@@ -1077,8 +1077,8 @@ class DOMHTMLKeywordsParser(DOMParserBase):
         Rule(
             key='keywords',
             extractor=Path(
-                foreach='//a[starts-with(@href, "/search/keyword?keywords=")]',
-                path='./text()',
+                foreach='//td[@data-item-keyword]',
+                path='./@data-item-keyword',
                 transform=lambda x: x.lower().replace(' ', '-')
             )
         )

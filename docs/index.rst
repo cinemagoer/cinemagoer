@@ -6,7 +6,7 @@ IMDbPY
 
 .. admonition:: Disclaimer
 
-   .. include:: disclaimer.rst
+   .. include:: ../DISCLAIMER.txt
 
 
 .. toctree::
@@ -16,7 +16,7 @@ IMDbPY
    usage/index
    devel/index
    faqs
-   contributors/index
+   credits
    Changelog
 
 

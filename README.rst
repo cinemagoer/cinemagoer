@@ -101,6 +101,19 @@ and to the the online documentation on `Read The Docs`_.
 
 The sources are available on `GitHub`_.
 
+License
+-------
+
+Copyright (C) 2004-2019 Davide Alberani <da --> mimante.net> et al.
+
+IMDbPY is released under the GPL license, version 2 or later.
+Read the included `LICENSE.txt`_ file for details.
+
+
+NOTE: See also the recommendations in the `DISCLAIMER.txt`_ file.
+
+NOTE: For a list of persons who share the copyright over specific portions of code, see the `CONTRIBUTORS.txt`_ file.
+
 
 .. _IMDb: https://www.imdb.com/
 .. _please help with it!: http://imdbpy.readthedocs.io/en/latest/devel/test.html
@@ -109,3 +122,6 @@ The sources are available on `GitHub`_.
 .. _support: https://imdbpy.sourceforge.io/support.html
 .. _Read The Docs: https://imdbpy.readthedocs.io/
 .. _GitHub: https://github.com/alberanid/imdbpy
+.. _LICENSE.txt: https://github.com/alberanid/imdbpy/blob/master/LICENSE.txt
+.. _DISCLAIMER.txt: https://github.com/alberanid/imdbpy/blob/master/DISCLAIMER.txt
+.. _CONTRIBUTORS.txt: https://github.com/alberanid/imdbpy/blob/master/CONTRIBUTORS.txt

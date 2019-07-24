@@ -20,11 +20,6 @@
 **IMDbPY** is a Python package for retrieving and managing the data
 of the `IMDb`_ movie database about movies, people and companies.
 
-:Homepage: https://imdbpy.sourceforge.io/
-:Repository: https://github.com/alberanid/imdbpy
-:Documentation: https://imdbpy.readthedocs.io/
-:Support: https://imdbpy.sourceforge.io/support.html
-
 .. admonition:: Revamp notice
    :class: note
 
@@ -98,6 +93,19 @@ Here's an example that demonstrates how to use IMDbPY:
       print(person.personID, person['name'])
 
 
+Getting help
+------------
+
+Please refer to the `support`_ page on the `project homepage`_
+and to the the online documentation on `Read The Docs`_.
+
+The sources are available on `GitHub`_.
+
+
 .. _IMDb: https://www.imdb.com/
 .. _please help with it!: http://imdbpy.readthedocs.io/en/latest/devel/test.html
 .. _Curious about that: https://imdbpy.sourceforge.io/ecosystem.html
+.. _project homepage: https://imdbpy.sourceforge.io/
+.. _support: https://imdbpy.sourceforge.io/support.html
+.. _Read The Docs: https://imdbpy.readthedocs.io/
+.. _GitHub: https://github.com/alberanid/imdbpy

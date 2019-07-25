@@ -4,7 +4,7 @@
 # Manifest template for creating the Distutils source distribution.
 #
 
-include tox.ini
+include tox.ini CHANGELOG.txt CONTRIBUTORS.txt CREDITS.txt DISCLAIMER.txt LICENSE.txt
 recursive-include imdb/locale *
 recursive-include tests *
 prune tests/__pycache__
@@ -15,4 +15,3 @@ global-exclude .pytest_cache
 global-exclude .tox
 global-exclude .cache
 global-exclude *~
-

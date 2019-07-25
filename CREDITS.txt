@@ -1,6 +1,3 @@
-Credits
--------
-
 First of all, I want to thank all the package maintainers, and especially
 Ana Guerrero. Another big thanks to the developers who used IMDbPY
 for their projects and research; they can be found here:
@@ -379,4 +376,10 @@ and hints (kept in reverse order since IMDbPY 4.5):
 * Davide for a bug report.
 
 
-.. _Contributors: CONTRIBUTORS.html
+We'd like to thank the following people for their donations:
+
+- Paulina Wadecka
+- Oleg Peil
+- Diego Sarmentero
+- Fabian Winter
+- Lacroix Scott

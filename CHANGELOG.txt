@@ -1,6 +1,3 @@
-Changelog
-=========
-
 * What's new in release 6.9
 
 

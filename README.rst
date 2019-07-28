@@ -115,9 +115,9 @@ NOTE: See also the recommendations in the `DISCLAIMER.txt`_ file.
 
 .. _IMDb: https://www.imdb.com/
 .. _please help with it!: http://imdbpy.readthedocs.io/en/latest/devel/test.html
-.. _Curious about that: https://imdbpy.sourceforge.io/ecosystem.html
-.. _project homepage: https://imdbpy.sourceforge.io/
-.. _support: https://imdbpy.sourceforge.io/support.html
+.. _Curious about that: https://imdbpy.github.io/ecosystem/
+.. _project homepage: https://imdbpy.github.io/
+.. _support: https://imdbpy.github.io/support/
 .. _Read The Docs: https://imdbpy.readthedocs.io/
 .. _GitHub: https://github.com/alberanid/imdbpy
 .. _LICENSE.txt: https://raw.githubusercontent.com/alberanid/imdbpy/master/LICENSE.txt

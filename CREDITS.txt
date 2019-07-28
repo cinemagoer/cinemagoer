@@ -1,7 +1,7 @@
 First of all, I want to thank all the package maintainers, and especially
 Ana Guerrero. Another big thanks to the developers who used IMDbPY
 for their projects and research; they can be found here:
-https://imdbpy.sourceforge.io/ecosystem.html
+https://imdbpy.github.io/ecosystem/
 
 Other very special thanks go to some people who followed the development
 of IMDbPY very closely, providing hints and insights: Ori Cohen, James Rubino,

@@ -9,7 +9,7 @@ import setuptools
 # the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
 version = '6.9'
 
-home_page = 'https://imdbpy.sourceforge.io/'
+home_page = 'https://imdbpy.github.io/'
 
 long_desc = """IMDbPY is a Python package useful to retrieve and
 manage the data of the IMDb movie database about movies, people,
@@ -27,7 +27,7 @@ in this package; other IMDbPY-based programs are available at the
 home page: %s
 """ % home_page
 
-dwnl_url = 'https://imdbpy.sourceforge.io/downloads.html'
+dwnl_url = 'https://imdbpy.github.io/downloads/'
 
 classifiers = """\
 Development Status :: 5 - Production/Stable

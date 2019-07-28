@@ -2,7 +2,7 @@
 
      XML Document Type Definition for IMDbPY 4.8.
 
-     http://imdbpy.sf.net/dtd/imdbpy48.dtd
+     https://imdbpy.github.io/static/dtd/imdbpy.dtd
 
      Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
           2009-2011 Davide Alberani <da@erlug.linux.it>

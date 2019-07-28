@@ -1,5 +1,9 @@
 * What's new in release 6.9
 
+  [http]
+
+  - #228: fix goofs parser
+
 
 * What's new in release 6.8 "Apollo 11" (20 Jul 2019)
 

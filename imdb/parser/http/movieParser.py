@@ -1235,10 +1235,9 @@ class DOMHTMLCrazyCreditsParser(DOMParserBase):
 
 
 def _process_goof(x):
-    if x['spoiler_category']:
-        return x['spoiler_category'].strip() + ': SPOILER: ' + x['text'].strip()
-    else:
-        return x['category'].strip() + ': ' + x['text'].strip()
+    text = (x.get('text') or '').strip()
+    category = (x.get('category') or 'Goof').strip()
+    return {"category": category, "text": text}
 
 
 class DOMHTMLGoofsParser(DOMParserBase):
@@ -1258,19 +1257,15 @@ class DOMHTMLGoofsParser(DOMParserBase):
         Rule(
             key='goofs',
             extractor=Rules(
-                foreach='//div[@class="soda odd"]',
+                foreach='//div[contains(@class, "soda sodavote")]',
                 rules=[
                     Rule(
                         key='text',
-                        extractor=Path('./text()')
+                        extractor=Path('./div[@class="sodatext"]/text()')
                     ),
                     Rule(
                         key='category',
                         extractor=Path('./preceding-sibling::h4[1]/text()')
-                    ),
-                    Rule(
-                        key='spoiler_category',
-                        extractor=Path('./h4/text()')
                     )
                 ],
                 transform=_process_goof

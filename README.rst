@@ -9,7 +9,7 @@
     :alt: Supported Python versions.
 
 .. |license| image:: https://img.shields.io/pypi/l/imdbpy.svg?style=flat-square
-    :target: https://pypi.org/project/imdbpy/
+    :target: https://github.com/alberanid/imdbpy/blob/master/LICENSE.txt
     :alt: Project license.
 
 .. |travis| image:: https://travis-ci.org/alberanid/imdbpy.svg?branch=master

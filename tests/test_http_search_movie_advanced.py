@@ -86,10 +86,10 @@ def test_selected_movie_should_have_correct_year(ia):
     assert selected['year'] == 1999
 
 
-def test_selected_ended_tv_series_should_have_correct_end_year(ia):
+def test_selected_ended_tv_series_should_have_correct_series_years(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0364888'][0]
-    assert selected['end_year'] == 2004
+    assert selected['series years'] == '2003-2004'
 
 
 def test_selected_unreleased_movie_should_have_correct_state(ia):
@@ -306,10 +306,10 @@ def test_selected_tv_episode_should_have_correct_series_year(ia):
     assert selected['episode of']['year'] == 2001
 
 
-def test_selected_tv_episode_should_have_correct_series_end_year(ia):
+def test_selected_tv_episode_should_have_correct_series_series_years(ia):
     movies = ia.search_movie_advanced('matrix', results=250)
     selected = [m for m in movies if m.movieID == '1072112'][0]
-    assert selected['episode of']['end_year'] == 2012
+    assert selected['episode of']['series years'] == '2001-2012'
 
 
 def test_selected_movie_should_have_cover_url(ia):

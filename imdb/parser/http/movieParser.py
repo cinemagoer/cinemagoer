@@ -252,6 +252,11 @@ class DOMHTMLMovieParser(DOMParserBase):
             extractor=Path('//meta[@property="og:title"]/@content',
                            transform=analyze_og_title)
         ),
+        Rule(
+            key='original title',
+            extractor=Path('//div[@class="titlereference-header"]//h3[@itemprop="name"]//text()',
+                           transform=lambda x: re_space.sub(' ', x).strip())
+        ),
 
         # parser for misc sections like 'casting department', 'stunts', ...
         Rule(

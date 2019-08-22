@@ -76,7 +76,7 @@ imdbURL_company_base = '%scompany/' % imdbURL_base
 # http://www.imdb.com/company/co%s/
 imdbURL_company_main = imdbURL_company_base + 'co%s/'
 # http://www.imdb.com/keyword/%s/
-imdbURL_keyword_main = imdbURL_base + 'keyword/%s/'
+imdbURL_keyword_main = imdbURL_base + 'search/keyword/?keywords=%s'
 # http://www.imdb.com/chart/top
 imdbURL_top250 = imdbURL_base + 'chart/top'
 # http://www.imdb.com/chart/bottom
@@ -292,7 +292,7 @@ class IMDbBase:
         # http://www.imdb.com/company/co%s/
         imdbURL_company_main = imdbURL_company_base + 'co%s/'
         # http://www.imdb.com/keyword/%s/
-        imdbURL_keyword_main = imdbURL_base + 'keyword/%s/'
+        imdbURL_keyword_main = imdbURL_base + '/search/keyword?keywords=%s'
         # http://www.imdb.com/chart/top
         imdbURL_top250 = imdbURL_base + 'chart/top'
         # http://www.imdb.com/chart/bottom
@@ -603,13 +603,13 @@ class IMDbBase:
             results = 100
         return self._search_keyword(keyword, results)
 
-    def _get_keyword(self, keyword, results):
+    def _get_keyword(self, keyword, results, page):
         """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError('override this method')
 
-    def get_keyword(self, keyword, results=None):
+    def get_keyword(self, keyword, results=None, page=None):
         """Return a list of movies for the given keyword."""
         if results is None:
             results = self._keywordsResults
@@ -617,7 +617,7 @@ class IMDbBase:
             results = int(results)
         except (ValueError, OverflowError):
             results = 100
-        res = self._get_keyword(keyword, results)
+        res = self._get_keyword(keyword, results, page)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]

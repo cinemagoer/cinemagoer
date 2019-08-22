@@ -694,7 +694,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         try:
             url = self.urls['keyword_main'] % keyword
             if page != None:
-                url = url + f"&page={page}"
+                url = url + "&page=" + str(page)
             cont = self._retrieve(url)
         except IMDbDataAccessError:
             self._http_logger.warn('unable to get keyword %s', keyword,

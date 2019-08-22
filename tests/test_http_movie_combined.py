@@ -345,8 +345,8 @@ def test_season_and_episode_numbers_none_should_be_excluded(ia):
 
 
 def test_movie_genres_if_single_should_be_a_list_of_genre_names(ia):
-    movie = ia.get_movie('0063850', info=['main'])      # If....
-    assert movie.get('genres', []) == ['Drama']
+    movie = ia.get_movie('0389150', info=['main'])      # Matrix (TV)
+    assert movie.get('genres', []) == ['Documentary']
 
 
 def test_movie_genres_if_multiple_should_be_a_list_of_genre_names(ia):

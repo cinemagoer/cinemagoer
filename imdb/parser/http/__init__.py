@@ -690,10 +690,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
             return []
         return self.skProxy.search_keyword_parser.parse(cont, results=results)['data']
 
-    def _get_keyword(self, keyword, results, page):
+    def _get_keyword(self, keyword, results, page=None):
         try:
             url = self.urls['keyword_main'] % keyword
-            if page != None:
+            if page is not None:
                 url = url + "&page=" + str(page)
             cont = self._retrieve(url)
         except IMDbDataAccessError:

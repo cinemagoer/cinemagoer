@@ -48,12 +48,10 @@ from imdb.utils import _Container, KIND_MAP
 from .piculet import Path, Rule, Rules, preprocessors, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_person
 
-
 if PY2:
     from urllib import unquote
 else:
     from urllib.parse import unquote
-
 
 # Dictionary used to convert some section's names.
 _SECT_CONV = {
@@ -137,6 +135,7 @@ _reRolesMovie = re.compile(r'(<td class="character">)(.*?)(</td>)', re.I | re.M 
 def makeSplitter(lstrip=None, sep='|', comments=True,
                  origNotesSep=' (', newNotesSep='::(', strip=None):
     """Return a splitter function suitable for a given set of data."""
+
     def splitter(x):
         if not x:
             return x
@@ -152,6 +151,7 @@ def makeSplitter(lstrip=None, sep='|', comments=True,
         if strip:
             lx[:] = [j.strip(strip) for j in lx]
         return lx
+
     return splitter
 
 
@@ -222,6 +222,7 @@ def analyze_certificates(certificates):
                 el,
             )
         return acc
+
     certificates = [el.strip() for el in certificates.split('\n') if el.strip()]
     return functools.reduce(reducer, certificates, [])
 
@@ -655,7 +656,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         # Handle series information.
         xpath = self.xpath(dom, "//b[text()='Series Crew']")
         if xpath:
-            b = xpath[-1]   # In doubt, take the last one.
+            b = xpath[-1]  # In doubt, take the last one.
             for a in self.xpath(b, "./following::h5/a[@class='glossary']"):
                 name = a.get('name')
                 if name:
@@ -898,61 +899,60 @@ class DOMHTMLAwardsParser(DOMParserBase):
         Rule(
             key='awards',
             extractor=Rules(
-                foreach='//table//big',
+                foreach='//*[@id="main"]/div[1]/div/table//tr',
+                # rules=[
+                #     Rule(
+                #         key=Path('./preceding-sibling::*[1]/text()'),
+                #         extractor=Rules(
+                #             foreach='.//tr',
                 rules=[
                     Rule(
-                        key=Path('./a'),
-                        extractor=Rules(
-                            foreach='./ancestor::tr[1]/following-sibling::tr/td[last()][not(@colspan)]',
-                            rules=[
-                                Rule(
-                                    key='year',
-                                    extractor=Path('./td[1]/a/text()')
-                                ),
-                                Rule(
-                                    key='result',
-                                    extractor=Path('../td[2]/b/text()')
-                                ),
-                                Rule(
-                                    key='award',
-                                    extractor=Path('./td[3]/text()')
-                                ),
-                                Rule(
-                                    key='category',
-                                    extractor=Path('./text()[1]')
-                                ),
-                                Rule(
-                                    key='with',
-                                    extractor=Path(
-                                        './small[starts-with(text(), "Shared with:")]/'
-                                        'following-sibling::a[1]/text()'
-                                    )
-                                ),
-                                Rule(
-                                    key='notes',
-                                    extractor=Path('./small[last()]//text()')
-                                ),
-                                Rule(
-                                    key='anchor',
-                                    extractor=Path('.//text()')
-                                )
-                            ],
-                            transform=_process_award
-                        )
+                        key='year',
+                        extractor=Path('normalize-space(./ancestor::table/preceding-sibling::h3/a/text())')
+                    ),
+                    Rule(
+                        key='result',
+                        extractor=Path('./td[1]/b/text()')
+                    ),
+                    Rule(
+                        key='award',
+                        extractor=Path('./td[1]/span/text()')
+                    ),
+                    Rule(
+                        key='category',
+                        extractor=Path('normalize-space(./ancestor::table/preceding-sibling::h3/text())')
+                    ),
+                    # Rule(
+                    #     key='with',
+                    #     extractor=Path(
+                    #         './small[starts-with(text(), "Shared with:")]/'
+                    #         'following-sibling::a[1]/text()'
+                    #     )
+                    # ),
+                    Rule(
+                        key='notes',
+                        extractor=Path('./td[2]/text()')
+                    ),
+                    Rule(
+                        key='anchor',
+                        extractor=Path('.//text()')
                     )
-                ]
+                ],
+                transform=_process_award
+                # )
+                #     )
+                # ]
             )
         ),
         Rule(
             key='recipients',
             extractor=Rules(
-                foreach='//table//big',
-                rules=[
-                    Rule(
-                        key=Path('./a'),
-                        extractor=Rules(
-                            foreach='./ancestor::tr[1]/following-sibling::tr'
-                                    '/td[last()]/small[1]/preceding-sibling::a',
+                foreach='//*[@id="main"]/div[1]/div/table//tr/td[2]/a',
+                # rules=[
+                #     Rule(
+                #         key=Path('./preceding-sibling::*[1]/text()'),
+                #         extractor=Rules(
+                #             foreach='.//tr/td[2]/a',
                             rules=[
                                 Rule(
                                     key='name',
@@ -964,12 +964,12 @@ class DOMHTMLAwardsParser(DOMParserBase):
                                 ),
                                 Rule(
                                     key='anchor',
-                                    extractor=Path('..//text()')
+                                    extractor=Path('./ancestor::tr//text()')
                                 )
                             ]
-                        )
-                    )
-                ]
+                #         )
+                #     )
+                # ]
             )
         )
     ]
@@ -1004,35 +1004,26 @@ class DOMHTMLAwardsParser(DOMParserBase):
         if len(data) == 0:
             return {}
         nd = []
-        for key in list(data.keys()):
-            dom = self.get_dom(key)
-            assigner = self.xpath(dom, "//a/text()")[0]
-            for entry in data[key]:
-                if 'name' not in entry:
-                    if not entry:
-                        continue
-                    # this is an award, not a recipient
-                    entry['assigner'] = assigner.strip()
-                    # find the recipients
-                    matches = [p for p in data[key]
-                               if 'name' in p and (entry['anchor'] == p['anchor'])]
-                    if self.subject == 'title':
-                        recipients = [
-                            Person(name=recipient['name'],
-                                   personID=analyze_imdbid(recipient['link']))
-                            for recipient in matches
-                        ]
-                        entry['to'] = recipients
-                    elif self.subject == 'name':
-                        recipients = [
-                            Movie(title=recipient['name'],
-                                  movieID=analyze_imdbid(recipient['link']))
-                            for recipient in matches
-                        ]
-                        entry['for'] = recipients
-                    nd.append(entry)
-                del entry['anchor']
+        for award in data['awards']:
+            matches = [p for p in data['recipients']if 'nm' in p['link'] and (award['anchor'] == p['anchor'])]
+            if self.subject == 'title':
+                recipients = [
+                    Person(name=recipient['name'],
+                           personID=analyze_imdbid(recipient['link']))
+                    for recipient in matches
+                ]
+                award['to'] = recipients
+            elif self.subject == 'name':
+                recipients = [
+                    Movie(title=recipient['name'],
+                          movieID=analyze_imdbid(recipient['link']))
+                    for recipient in matches
+                ]
+                award['for'] = recipients
+            nd.append(award)
+            del award['anchor']
         return {'awards': nd}
+
 
 
 class DOMHTMLTaglinesParser(DOMParserBase):

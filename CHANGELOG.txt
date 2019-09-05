@@ -2,6 +2,7 @@
 
   [http]
 
+  - #134: fix movie awards parser
   - #228: fix goofs parser
   - #230: get_keyword method is now paginated
   - #229: introduce the "original title" key

@@ -874,7 +874,8 @@ def _process_award(x):
         award['with'] = received_with.strip()
     notes = x.get('notes')
     if notes is not None:
-        notes = notes.strip()
+        notes = notes.strip().split('\n', 2)[0]
+        notes = re_space.sub(' ', notes)
         if notes:
             award['notes'] = notes
     award['anchor'] = x.get('anchor')
@@ -900,11 +901,6 @@ class DOMHTMLAwardsParser(DOMParserBase):
             key='awards',
             extractor=Rules(
                 foreach='//*[@id="main"]/div[1]/div/table//tr',
-                # rules=[
-                #     Rule(
-                #         key=Path('./preceding-sibling::*[1]/text()'),
-                #         extractor=Rules(
-                #             foreach='.//tr',
                 rules=[
                     Rule(
                         key='year',
@@ -922,13 +918,6 @@ class DOMHTMLAwardsParser(DOMParserBase):
                         key='category',
                         extractor=Path('normalize-space(./ancestor::table/preceding-sibling::h3/text())')
                     ),
-                    # Rule(
-                    #     key='with',
-                    #     extractor=Path(
-                    #         './small[starts-with(text(), "Shared with:")]/'
-                    #         'following-sibling::a[1]/text()'
-                    #     )
-                    # ),
                     Rule(
                         key='notes',
                         extractor=Path('./td[2]/text()')
@@ -939,20 +928,12 @@ class DOMHTMLAwardsParser(DOMParserBase):
                     )
                 ],
                 transform=_process_award
-                # )
-                #     )
-                # ]
             )
         ),
         Rule(
             key='recipients',
             extractor=Rules(
                 foreach='//*[@id="main"]/div[1]/div/table//tr/td[2]/a',
-                # rules=[
-                #     Rule(
-                #         key=Path('./preceding-sibling::*[1]/text()'),
-                #         extractor=Rules(
-                #             foreach='.//tr/td[2]/a',
                             rules=[
                                 Rule(
                                     key='name',
@@ -967,9 +948,6 @@ class DOMHTMLAwardsParser(DOMParserBase):
                                     extractor=Path('./ancestor::tr//text()')
                                 )
                             ]
-                #         )
-                #     )
-                # ]
             )
         )
     ]
@@ -1005,7 +983,8 @@ class DOMHTMLAwardsParser(DOMParserBase):
             return {}
         nd = []
         for award in data['awards']:
-            matches = [p for p in data['recipients']if 'nm' in p['link'] and (award['anchor'] == p['anchor'])]
+            matches = [p for p in data.get('recipients', [])
+                       if 'nm' in p.get('link') and award.get('anchor') == p.get('anchor')]
             if self.subject == 'title':
                 recipients = [
                     Person(name=recipient['name'],
@@ -1021,7 +1000,8 @@ class DOMHTMLAwardsParser(DOMParserBase):
                 ]
                 award['for'] = recipients
             nd.append(award)
-            del award['anchor']
+            if 'anchor' in award:
+                del award['anchor']
         return {'awards': nd}
 
 

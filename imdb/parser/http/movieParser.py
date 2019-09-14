@@ -904,7 +904,7 @@ class DOMHTMLAwardsParser(DOMParserBase):
                 rules=[
                     Rule(
                         key='year',
-                        extractor=Path('normalize-space(./ancestor::table/preceding-sibling::h3/a/text())')
+                        extractor=Path('normalize-space(./ancestor::table/preceding-sibling::*[1]/a/text())')
                     ),
                     Rule(
                         key='result',
@@ -916,7 +916,7 @@ class DOMHTMLAwardsParser(DOMParserBase):
                     ),
                     Rule(
                         key='category',
-                        extractor=Path('normalize-space(./ancestor::table/preceding-sibling::h3/text())')
+                        extractor=Path('normalize-space(./ancestor::table/preceding-sibling::*[1]/text())')
                     ),
                     Rule(
                         key='notes',

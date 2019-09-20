@@ -1267,7 +1267,7 @@ class DOMHTMLQuotesParser(DOMParserBase):
         Rule(
             key='quotes_odd',
             extractor=Path(
-                foreach='//div[@class="quote soda odd"]',
+                foreach='//div[@class="quote soda sodavote odd"]',
                 path='.//text()',
                 transform=lambda x: x
                     .strip()
@@ -1279,7 +1279,7 @@ class DOMHTMLQuotesParser(DOMParserBase):
         Rule(
             key='quotes_even',
             extractor=Path(
-                foreach='//div[@class="quote soda even"]',
+                foreach='//div[@class="quote soda sodavote even"]',
                 path='.//text()',
                 transform=lambda x: x
                     .strip()

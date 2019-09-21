@@ -77,9 +77,6 @@ languages (string list)
 certificates (string list)
   ['UK:15', 'USA:R']
 
-mpaa (string)
-  The MPAA rating.
-
 episodes (series only) (dictionary of dictionaries)
   One key for every season, one key for every episode in the season.
 

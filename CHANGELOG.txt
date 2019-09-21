@@ -6,6 +6,7 @@
   - #228: fix goofs parser
   - #230: get_keyword method is now paginated
   - #229: introduce the "original title" key
+  - #237: fix quotes parser
 
 
 * What's new in release 6.8 "Apollo 11" (20 Jul 2019)

@@ -1265,21 +1265,9 @@ class DOMHTMLQuotesParser(DOMParserBase):
 
     rules = [
         Rule(
-            key='quotes_odd',
+            key='quotes',
             extractor=Path(
-                foreach='//div[@class="quote soda odd"]',
-                path='.//text()',
-                transform=lambda x: x
-                    .strip()
-                    .replace(' \n', '::')
-                    .replace('::\n', '::')
-                    .replace('\n', ' ')
-            )
-        ),
-        Rule(
-            key='quotes_even',
-            extractor=Path(
-                foreach='//div[@class="quote soda even"]',
+                foreach='//div[@class="sodatext"]',
                 path='.//text()',
                 transform=lambda x: x
                     .strip()
@@ -1290,18 +1278,12 @@ class DOMHTMLQuotesParser(DOMParserBase):
         )
     ]
 
-    preprocessors = [
-        (re.compile('<a href="#" class="hidesoda hidden">Hide options</a><br>', re.I), '')
-    ]
-
     def preprocess_dom(self, dom):
-        # Remove "link this quote" links.
-        preprocessors.remove(dom, '//span[@class="linksoda"]')
-        preprocessors.remove(dom, '//div[@class="sharesoda_pre"]')
+        preprocessors.remove(dom, '//div[@class="did-you-know-actions"]')
         return dom
 
     def postprocess_data(self, data):
-        quotes = data.get('quotes_odd', []) + data.get('quotes_even', [])
+        quotes = data.get('quotes', [])
         if not quotes:
             return {}
         quotes = [q.split('::') for q in quotes]

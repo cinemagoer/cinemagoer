@@ -386,7 +386,7 @@ def test_movie_runtimes_single_should_be_a_list_in_minutes(ia):
 
 def test_movie_runtimes_with_countries_should_include_context(ia):
     movie = ia.get_movie('0076786', info=['main'])      # Suspiria
-    assert movie.get('runtimes', []) == ['98']
+    assert movie.get('runtimes', []) == ['99']
 
 
 def test_movie_runtimes_if_none_should_be_excluded(ia):

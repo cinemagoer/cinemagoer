@@ -314,6 +314,13 @@ class DOMHTMLMovieParser(DOMParserBase):
             )
         ),
         Rule(
+            key='recommendations',
+            extractor=Path(
+                foreach='//div[@class="rec_overviews"]',
+                path='//div[@class="rec_overview"]/@data-tconst'
+            )
+        ),
+        Rule(
             key='myrating',
             extractor=Path('//span[@id="voteuser"]//text()')
         ),

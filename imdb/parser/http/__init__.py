@@ -441,7 +441,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
 
     def get_movie_recommendations(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID)
-        return self.mProxy.movie_parser.parse(cont, mdparse=self._mdparse)["data"]["recommendations"][0].split("tt")[1:]
+        r = {'info sets': ('recommendations',), 'data': {}}
+        ret = self.mProxy.movie_parser.parse(cont, mdparse=self._mdparse)
+        if 'data' in ret and 'recommendations' in ret['data'] and ret['data']['recommendations']:
+            r['data']['recommendations'] = ret['data']['recommendations']
+        return r
 
     def get_movie_full_credits(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'fullcredits')

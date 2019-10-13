@@ -46,7 +46,7 @@ from imdb.Person import Person
 from imdb.utils import _Container, KIND_MAP
 
 from .piculet import Path, Rule, Rules, preprocessors, transformers
-from .utils import DOMParserBase, analyze_imdbid, build_person
+from .utils import DOMParserBase, analyze_imdbid, build_person, build_movie
 
 if PY2:
     from urllib import unquote
@@ -315,9 +315,25 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
         Rule(
             key='recommendations',
-            extractor=Path(
-                foreach='//div[@class="rec_overviews"]',
-                path='//div[@class="rec_overview"]/@data-tconst'
+            extractor=Rules(
+                foreach='//div[@class="rec_overview"]',
+                rules=[
+                    Rule(
+                        key='movieID',
+                        extractor=Path(
+                            './@data-tconst',
+                            transform=lambda x: (x or '').replace('tt', '')
+                        )
+                    ),
+                    Rule(
+                        key='title',
+                        extractor=Path(
+                            './/div[@class="rec-title"]//text()',
+                            transform=lambda x: re_space.sub(' ', x or '').strip()
+                        )
+                    ),
+                ],
+                transform=lambda x: build_movie(x.get('title', ''), movieID=x.get('movieID'))
             )
         ),
         Rule(

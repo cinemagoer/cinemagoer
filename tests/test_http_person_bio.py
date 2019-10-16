@@ -83,7 +83,7 @@ def test_person_nicknames_if_multiple_should_be_a_list_of_names(ia):
 
 def test_person_height_should_be_in_inches_and_meters(ia):
     person = ia.get_person('0000210', info=['biography'])   # Julia Roberts
-    assert person.get('height') == '5\' 9" (1.75 m)'
+    assert person.get('height') == '5\' 8" (1.73 m)'
 
 
 def test_person_height_if_none_should_be_excluded(ia):

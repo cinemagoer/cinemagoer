@@ -511,7 +511,8 @@ def test_movie_sound_mix_if_single_with_notes_should_include_notes(ia):
 
 def test_movie_sound_mix_if_multiple_with_notes_should_include_notes(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix
-    assert movie.get('sound mix', []) == ['DTS::(Digital DTS Sound)', 'Dolby Digital', 'SDDS']
+    expected = set(['DTS::(Digital DTS Sound)', 'Dolby Digital', 'SDDS', 'Dolby Atmos'])
+    assert expected.issubset(set(movie.get('sound mix', [])))
 
 
 def test_movie_sound_mix_if_none_should_be_excluded(ia):

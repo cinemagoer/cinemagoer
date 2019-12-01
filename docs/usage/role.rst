@@ -77,19 +77,18 @@ is set to a string describing the role of the considered person:
 
 .. code-block:: python
 
-    # Julia Roberts
     julia = i.get_person('0000210')
-    # Output a list of movies she acted in and the played role
-    # separated by '::'
-    print([movie['title'] + '::' + movie.currentRole
-           for movie in julia['actress']])
+    for job in julia['filmography'].keys():
+        print('# Job: ', job)
+        for movie in julia['filmography'][job]:
+            print('\t%s %s (role: %s)' % (movie.movieID, movie['title'], movie.currentRole))
 
 Here the various Movie objects only contain minimal information,
 like the title and the year; the latest movie with Julia Roberts:
 
 .. code-block:: python
 
-    last = julia['actress'][0]
+    last = julia['filmography']['actress'][0]
     # Retrieve full information
     i.update(last)
     # name of the first director

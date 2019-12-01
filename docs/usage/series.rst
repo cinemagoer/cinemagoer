@@ -158,7 +158,7 @@ by a person.
    from imdb import IMDb
    i = IMDb()
    p = i.get_person('0005041')  # Laura Innes
-   p['actress'][0]   # <Movie id:0568152[http] title:_"ER" (????)_>
+   p['filmography']['actress'][0]   # <Movie id:0568152[http] title:_"ER" (????)_>
 
    # At this point you have an entry (in keys like 'actor', 'actress',
    # 'director', ...) for every series the person starred/worked in, but

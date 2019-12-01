@@ -210,6 +210,13 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
+        filmo = {}
+        for job in (data.get('filmography') or []):
+            if not isinstance(job, dict) or not job:
+                continue
+            filmo.update(job)
+        if filmo:
+            data['filmography'] = filmo
         for key in ['name']:
             if (key in data) and isinstance(data[key], dict):
                 subdata = data[key]
@@ -226,21 +233,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         # XXX: the code below is for backwards compatibility
         # probably could be removed
         for key in list(data.keys()):
-            if key.startswith('actor '):
-                if 'actor' not in data:
-                    data['actor'] = []
-                data['actor'].extend(data[key])
-                del data[key]
-            if key.startswith('actress '):
-                if 'actress' not in data:
-                    data['actress'] = []
-                data['actress'].extend(data[key])
-                del data[key]
-            if key.startswith('self '):
-                if 'self' not in data:
-                    data['self'] = []
-                data['self'].extend(data[key])
-                del data[key]
             if key == 'birth place':
                 data['birth notes'] = data[key]
                 del data[key]

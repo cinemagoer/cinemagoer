@@ -1,4 +1,5 @@
 import sys
+from pytest import mark
 
 
 def test_search_results_should_include_correct_number_of_works_by_default(ia):
@@ -319,8 +320,8 @@ def test_selected_movie_should_have_cover_url(ia):
 
 
 def test_search_results_should_include_adult_titles_if_requested(ia):
-    movies = ia.search_movie_advanced('matrix', adult=True, results=250)
-    movies_no_adult = ia.search_movie_advanced('matrix', adult=False, results=250)
+    movies = ia.search_movie_advanced('castello', adult=True, results=250)
+    movies_no_adult = ia.search_movie_advanced('castello', adult=False, results=250)
     assert len(movies) > len(movies_no_adult)
 
 

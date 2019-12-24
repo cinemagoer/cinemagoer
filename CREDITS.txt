@@ -12,6 +12,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* Lucas Joviniano for a patch to use the correct escape function
+
 * Dobatymo for a bug report about filmography
 
 * Dilyara Baymurzina for the recommendations parser

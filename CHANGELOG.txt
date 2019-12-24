@@ -1,5 +1,9 @@
 * What's new in release 6.9
 
+  [general]
+
+  - #247: use html escape
+
   [http]
 
   - #134: fix movie awards parser

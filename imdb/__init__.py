@@ -758,6 +758,68 @@ class IMDbBase:
                 mop.update_charactersRefs(ret['charactersRefs'])
         mop.set_data(res, override=0)
 
+        def update_series_seasons(self, mop, season_nums, override=0):
+        """Given a Movie object with only retrieve the season data.
+
+        season_nums is the list of the specific seasons to retrieve.
+
+        If override is set, the information are retrieved and updated
+        even if they're already in the object."""
+        mopID = None
+        if isinstance(mop, Movie.Movie):
+            mopID = mop.movieID
+        else:
+            raise IMDbError('object ' + repr(mop) + ' is not a Movie instance')
+        if mopID is None:
+            raise IMDbDataAccessError('supplied object has null movieID, personID or companyID')
+        if mop.accessSystem == self.accessSystem:
+            aSystem = self
+        else:
+            aSystem = IMDb(mop.accessSystem)
+
+        info = 'episodes'
+
+        res = {}
+        
+        if info in mop.current_info and not override:
+            return
+        _imdb_logger.debug('retrieving "%s" info set', info)
+        try:
+            method = getattr(aSystem, 'get_movie_episodes')
+        except AttributeError:
+            _imdb_logger.error('unknown information set "%s"', info)
+            # Keeps going.
+            method = lambda *x: {}
+        try:
+            ret = method(mopID, season_nums)
+        except Exception:
+            _imdb_logger.critical(
+                'caught an exception retrieving or parsing "%s" info set'
+                ' for mopID "%s" (accessSystem: %s)',
+                info, mopID, mop.accessSystem, exc_info=True
+            )
+            ret = {}
+            # If requested by the user, reraise the exception.
+            if self._reraise_exceptions:
+                raise
+        keys = None
+        if 'data' in ret:
+            res.update(ret['data'])
+            if isinstance(ret['data'], dict):
+                keys = list(ret['data'].keys())
+        if 'info sets' in ret:
+            for ri in ret['info sets']:
+                mop.add_to_current_info(ri, keys, mainInfoset=info)
+        else:
+            mop.add_to_current_info(info, keys)
+        if 'titlesRefs' in ret:
+            mop.update_titlesRefs(ret['titlesRefs'])
+        if 'namesRefs' in ret:
+            mop.update_namesRefs(ret['namesRefs'])
+        if 'charactersRefs' in ret:
+            mop.update_charactersRefs(ret['charactersRefs'])
+        mop.set_data(res, override=0)
+
     def get_imdbMovieID(self, movieID):
         """Translate a movieID in an imdbID (the ID used by the IMDb
         web server); must be overridden by the subclass."""

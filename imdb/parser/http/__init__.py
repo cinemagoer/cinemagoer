@@ -584,31 +584,36 @@ class IMDbHTTPAccessSystem(IMDbBase):
             del data_d['data']['_seasons']
         return data_d
 
-    def get_movie_episodes(self, movieID):
+    def get_movie_episodes(self, movieID, season_nums='all'):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'episodes')
-        data_d = self.mProxy.season_episodes_parser.parse(cont)
-        if not data_d and 'data' in data_d:
+        temp_d = self.mProxy.season_episodes_parser.parse(cont)
+        if not isinstance(season_nums, list):
+            if season_nums != 'all':
+                season_nums = [season_nums]
+        if not temp_d and 'data' in temp_d:
             return {}
-        _current_season = data_d['data'].get('_current_season', '')
-        _seasons = data_d['data'].get('_seasons') or []
-        data_d = self._purge_seasons_data(data_d)
-        data_d['data'].setdefault('episodes', {})
-
-        nr_eps = len(data_d['data']['episodes'].get(_current_season) or [])
+            
+        _seasons = temp_d['data'].get('_seasons') or []
+        
+        nr_eps = 0
+        data_d = dict()
 
         for season in _seasons:
-            if season == _current_season:
+            if season_nums != 'all' and season not in season_nums:
                 continue
-            other_cont = self._retrieve(
+            cont = self._retrieve(
                 self.urls['movie_main'] % movieID + 'episodes?season=' + str(season)
             )
-            other_d = self.mProxy.season_episodes_parser.parse(other_cont)
+            other_d = self.mProxy.season_episodes_parser.parse(cont)
             other_d = self._purge_seasons_data(other_d)
             other_d['data'].setdefault('episodes', {})
             if not (other_d and other_d['data'] and other_d['data']['episodes'][season]):
                 continue
             nr_eps += len(other_d['data']['episodes'].get(season) or [])
-            data_d['data']['episodes'][season] = other_d['data']['episodes'][season]
+            if data_d:
+                data_d['data']['episodes'][season] = other_d['data']['episodes'][season]
+            else:
+                data_d = other_d
         data_d['data']['number of episodes'] = nr_eps
         return data_d
 

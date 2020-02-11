@@ -13,6 +13,7 @@
   - #237: fix quotes parser
   - #241: introduce recommendations parser
   - #244: fix parser for persons filmography
+  - #245: ability to fetch information about a single season
 
 
 * What's new in release 6.8 "Apollo 11" (20 Jul 2019)

@@ -758,7 +758,7 @@ class IMDbBase:
                 mop.update_charactersRefs(ret['charactersRefs'])
         mop.set_data(res, override=0)
 
-        def update_series_seasons(self, mop, season_nums, override=0):
+    def update_series_seasons(self, mop, season_nums, override=0):
         """Given a Movie object with only retrieve the season data.
 
         season_nums is the list of the specific seasons to retrieve.

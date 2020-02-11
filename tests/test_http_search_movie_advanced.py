@@ -93,6 +93,7 @@ def test_selected_ended_tv_series_should_have_correct_series_years(ia):
     assert selected['series years'] == '2003-2004'
 
 
+@mark.skip('skipped until we found another announced title')
 def test_selected_unreleased_movie_should_have_correct_state(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '9839912'][0]

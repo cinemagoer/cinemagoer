@@ -532,13 +532,87 @@ class DOMHTMLPersonGenresParser(DOMParserBase):
             return {}
         return {self.kind: data}
 
+def _process_person_award(x):
+    awards = {}
+    awards['movies'] = []
+    year = x.get('year', None)
+    result = x.get('result', None)
+    prize = x.get('prize', None)
+    category = x.get('category', None)
+    movie1 = x.get('movie1', None)
+    movie2 = x.get('movie2', None)
+    award = x.get('award', None)
+
+    if year:
+        awards['year'] = int(year.strip())
+    if result:
+        awards['result'] = result.strip()
+    if prize:
+        awards['prize'] = prize.strip()
+    if category:
+        awards['category'] = category.strip()
+    # in some cases actors have been nominated at multiple movies at the same year and same awards
+    # movie1 and movie2 solve this
+    # Ex: Keanu Reeves on Razzie Awards at 2020.
+    # John Wick: Chapter 3 - Parabellum (2019)
+    # Toy Story 4 (2019)
+    if movie1:
+        awards['movies'].append(movie1.strip())
+    if movie2:
+        awards['movies'].append(movie2.strip())
+    if award:
+        awards['award'] = award.strip()
+    return awards
+
+class DOMHTMLPersonAwardsParser(DOMParserBase):
+    _defGetRefs = True
+
+    rules = [
+        Rule(
+            key='awards',
+            extractor=Rules(
+                foreach='//table[@class="awards"]/tr',
+                rules=[
+                    Rule(
+                        key='year',
+                        extractor=Path('./td[@class="award_year"]/a/text()')
+                    ),
+                    Rule(
+                        key='result',
+                        extractor=Path('./td[@class="award_outcome"]/b/text()')
+                    ),
+                    Rule(
+                        key='prize',
+                        extractor=Path('.//span[@class="award_category"]/text()')
+                    ),
+                    Rule(
+                        key='movie1',
+                        extractor=Path('./td[@class="award_description"]/a[1]/text()')
+                    ),
+                    Rule(
+                        key='movie2',
+                        extractor=Path('./td[@class="award_description"]/a[2]/text()')
+                    ),
+                    Rule(
+                        key='category',
+                        extractor=Path('./td[@class="award_description"]/text()')
+                    ),
+                    Rule(
+                        key='award',
+                        extractor=Path('../preceding-sibling::h3[1]/text()')
+                    ),
+                ],
+                transform=_process_person_award
+            )
+        )
+    ]
 
 _OBJECTS = {
     'maindetails_parser': ((DOMHTMLMaindetailsParser,), None),
     'bio_parser': ((DOMHTMLBioParser,), None),
     'otherworks_parser': ((DOMHTMLOtherWorksParser,), None),
     'person_officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
-    'person_awards_parser': ((DOMHTMLAwardsParser,), {'subject': 'name'}),
+    'person_awards_parser': ((DOMHTMLPersonAwardsParser,), None),
     'publicity_parser': ((DOMHTMLTechParser,), {'kind': 'publicity'}),
     'person_contacts_parser': ((DOMHTMLTechParser,), {'kind': 'contacts'}),
     'person_genres_parser': ((DOMHTMLPersonGenresParser,), None),

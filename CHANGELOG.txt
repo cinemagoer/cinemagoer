@@ -12,6 +12,7 @@
   - #230: get_keyword method is now paginated
   - #237: fix quotes parser
   - #241: introduce recommendations parser
+  - #242: introduce the "imdbID" key with the actual imdbID for movies and persons
   - #244: fix parser for persons filmography
   - #245: ability to fetch information about a single season
 

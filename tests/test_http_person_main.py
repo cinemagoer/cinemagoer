@@ -14,6 +14,10 @@ def test_person_filmography_includes_role(ia):
     movies = person.get('filmography', {}).get('actor', {})
     assert 'John Wick' in [str(movie.currentRole) for movie in movies]
 
+def test_person_with_id_redirect(ia):
+    person = ia.get_person('1890852', info=['main'])    # Aleksandr Karpov
+    assert '0440022' == person.get('imdbID')
+
 def test_person_name_in_data_should_be_plain(ia):
     person = ia.get_person('0000206', info=['main'])    # Keanu Reeves
     assert person.data.get('name') == 'Keanu Reeves'

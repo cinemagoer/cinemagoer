@@ -534,14 +534,12 @@ class DOMHTMLPersonGenresParser(DOMParserBase):
 
 def _process_person_award(x):
     awards = {}
-    awards['movies'] = []
-    year = x.get('year', None)
-    result = x.get('result', None)
-    prize = x.get('prize', None)
-    category = x.get('category', None)
-    movie1 = x.get('movie1', None)
-    movie2 = x.get('movie2', None)
-    award = x.get('award', None)
+    movies = x.get('movies')
+    year = x.get('year')
+    result = x.get('result')
+    prize = x.get('prize')
+    category = x.get('category')
+    award = x.get('award')
 
     if year:
         awards['year'] = int(year.strip())
@@ -551,15 +549,8 @@ def _process_person_award(x):
         awards['prize'] = prize.strip()
     if category:
         awards['category'] = category.strip()
-    # in some cases actors have been nominated at multiple movies at the same year and same awards
-    # movie1 and movie2 solve this
-    # Ex: Keanu Reeves on Razzie Awards at 2020.
-    # John Wick: Chapter 3 - Parabellum (2019)
-    # Toy Story 4 (2019)
-    if movie1:
-        awards['movies'].append(movie1.strip())
-    if movie2:
-        awards['movies'].append(movie2.strip())
+    if movies:
+        awards['movies'] = movies
     if award:
         awards['award'] = award.strip()
     return awards
@@ -586,12 +577,11 @@ class DOMHTMLPersonAwardsParser(DOMParserBase):
                         extractor=Path('.//span[@class="award_category"]/text()')
                     ),
                     Rule(
-                        key='movie1',
-                        extractor=Path('./td[@class="award_description"]/a[1]/text()')
-                    ),
-                    Rule(
-                        key='movie2',
-                        extractor=Path('./td[@class="award_description"]/a[2]/text()')
+                        key='movies',
+                        extractor=Path(
+                            foreach='./td[@class="award_description"]/a',
+                            path='./text()'
+                        )
                     ),
                     Rule(
                         key='category',

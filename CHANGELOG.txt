@@ -10,6 +10,7 @@
   - #228: fix goofs parser
   - #229: introduce the "original title" key
   - #230: get_keyword method is now paginated
+  - #234: parse person awards (thanks to Volkan Yalcin)
   - #237: fix quotes parser
   - #241: introduce recommendations parser
   - #242: introduce the "imdbID" key with the actual imdbID for movies and persons

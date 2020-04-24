@@ -2,7 +2,9 @@
 
   [general]
 
+  - #242: introduce the "imdbID" key with the actual imdbID for movies and persons
   - #247: use html escape
+  - #257: fix exception formatting string (courtesy of miigotu)
 
   [http]
 
@@ -13,7 +15,6 @@
   - #234: parse person awards (thanks to Volkan Yalcin)
   - #237: fix quotes parser
   - #241: introduce recommendations parser
-  - #242: introduce the "imdbID" key with the actual imdbID for movies and persons
   - #244: fix parser for persons filmography
   - #245: ability to fetch information about a single season
 

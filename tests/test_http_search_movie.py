@@ -77,10 +77,10 @@ def test_search_movie_entries_missing_imdb_index_should_be_excluded(ia):
 
 
 def test_search_movie_entries_should_include_akas(ia):
-    movies = ia.search_movie('matrix')
-    movie_with_aka = [m for m in movies if m.movieID == '0270841']
+    movies = ia.search_movie('Una calibro 20 per lo specialista')
+    movie_with_aka = [m for m in movies if m.movieID == '0072288']
     assert len(movie_with_aka) == 1
-    assert movie_with_aka[0]['akas'] == ['Matrix Hunters: Kynigoi ston kyvernohoro']
+    assert movie_with_aka[0]['akas'] == ['Una calibro 20 per lo specialista']
 
 
 def test_search_movie_entries_missing_akas_should_be_excluded(ia):

@@ -40,9 +40,9 @@ MESSAGES = {}
 
 
 def usage(code, msg=''):
-    print(__doc__, file=sys.stderr)
+    sys.stderr.write(__doc__)
     if msg:
-        print(msg, file=sys.stderr)
+        sys.stderr.write(msg)
     sys.exit(code)
 
 

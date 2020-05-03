@@ -722,6 +722,15 @@ class IMDbHTTPAccessSystem(IMDbBase):
         elif kind == 'bottom':
             parser = self.topBottomProxy.bottom100_parser
             url = self.urls['bottom100']
+        elif kind == 'moviemeter':
+            parser = self.topBottomProxy.moviemeter100_parser
+            url = self.urls['moviemeter100']
+        elif kind == 'toptv':
+            parser = self.topBottomProxy.toptv250_parser
+            url = self.urls['toptv250']
+        elif kind == 'tvmeter':
+            parser = self.topBottomProxy.tvmeter100_parser
+            url = self.urls['tvmeter100']
         else:
             return []
         cont = self._retrieve(url)

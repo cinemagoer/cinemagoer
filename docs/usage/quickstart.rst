@@ -136,6 +136,8 @@ It's possible to retrieve the list of top 250 and bottom 100 movies:
    >>> bottom[0]
    <Movie id:4458206[http] title:_Code Name: K.O.Z. (2015)_>
 
+The :meth:`get_top250_tv <imdb.IMDbBase.get_top250_tv>`, :meth:`get_popular100_movies <imdb.IMDbBase.get_popular100_movies>`, :meth:`get_popular100_movies <imdb.IMDbBase.get_popular100_movies>` and :meth:`get_top250_indian_movies <imdb.IMDbBase.get_top250_indian_movies>` methods are also available.
+
 
 Exceptions
 ----------

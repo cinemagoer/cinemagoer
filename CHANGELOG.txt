@@ -17,6 +17,7 @@
   - #241: introduce recommendations parser
   - #244: fix parser for persons filmography
   - #245: ability to fetch information about a single season
+  - #260: parsers for top rated tv show, top rated indian movies, most popular tv shows and movies
 
 
 * What's new in release 6.8 "Apollo 11" (20 Jul 2019)

@@ -1,4 +1,4 @@
-# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2020 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -303,6 +303,8 @@ class IMDbBase:
         imdbURL_tvmeter100 = imdbURL_base + 'chart/tvmeter'
         # http://www.imdb.com/chart/toptv
         imdbURL_toptv250 = imdbURL_base + 'chart/toptv'
+        # https://www.imdb.com/india/top-rated-indian-movies
+        imdbURL_topindian250 = imdbURL_base + 'india/top-rated-indian-movies'
         # http://www.imdb.com/find?%s
         imdbURL_find = imdbURL_base + 'find?%s'
         # http://www.imdb.com/search/title?%s
@@ -322,6 +324,7 @@ class IMDbBase:
             moviemeter100=imdbURL_moviemeter100,
             tvmeter100=imdbURL_tvmeter100,
             toptv250=imdbURL_toptv250,
+            topindian250=imdbURL_topindian250,
             find=imdbURL_find,
             search_movie_advanced=imdbURL_search_movie_advanced)
 
@@ -654,22 +657,33 @@ class IMDbBase:
                 accessSystem=self.accessSystem) for mi, md in res]
 
     def get_top250_tv(self):
+        """Return the list of the top 250 tv shows."""
         res = self._get_top_bottom_movies('toptv')
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res]
 
     def get_popular100_movies(self):
+        """Return the list of the 100 most popular movies."""
         res = self._get_top_bottom_movies('moviemeter')
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res]
 
     def get_popular100_tv(self):
+        """Return the list of the 100 most popular tv shows."""
         res = self._get_top_bottom_movies('tvmeter')
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res]
+
+    def get_top250_indian_movies(self):
+        """Return the list of the top 250 indian movies."""
+        res = self._get_top_bottom_movies('topindian250')
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                data=md, modFunct=self._defModFunct,
+                accessSystem=self.accessSystem) for mi, md in res]
+
 
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""

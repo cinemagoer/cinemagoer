@@ -1,4 +1,4 @@
-# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2020 Davide Alberani <da@erlug.linux.it>
 #                2008 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -731,6 +731,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
         elif kind == 'tvmeter':
             parser = self.topBottomProxy.tvmeter100_parser
             url = self.urls['tvmeter100']
+        elif kind == 'topindian250':
+            parser = self.topBottomProxy.topindian250_parser
+            url = self.urls['topindian250']
         else:
             return []
         cont = self._retrieve(url)

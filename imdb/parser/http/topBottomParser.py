@@ -1,4 +1,4 @@
-# Copyright 2009-2017 Davide Alberani <da@erlug.linux.it>
+# Copyright 2009-2020 Davide Alberani <da@erlug.linux.it>
 #                2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -107,7 +107,31 @@ class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):
     ranktext = 'bottom 100 rank'
 
 
+class DOMHTMLMoviemeter100Parser(DOMHTMLTop250Parser):
+    """A parser for the "Most Popular Movies" page."""
+    ranktext = 'popular movies 100 rank'
+
+
+class DOMHTMLTVmeter100Parser(DOMHTMLTop250Parser):
+    """A parser for the "Most Popular TV Shows" page."""
+    ranktext = 'popular tv 100 rank'
+
+
+class DOMHTMLTVTop250Parser(DOMHTMLTop250Parser):
+    """A parser for the "Top Rated TV Shows" page."""
+    ranktext = 'top tv 250 rank'
+
+
+class DOMHTMLTopIndian250Parser(DOMHTMLTop250Parser):
+    """A parser for the "Top Rated Indian Movies" page."""
+    ranktext = 'top indian 250 rank'
+
+
 _OBJECTS = {
     'top250_parser': ((DOMHTMLTop250Parser,), None),
-    'bottom100_parser': ((DOMHTMLBottom100Parser,), None)
+    'bottom100_parser': ((DOMHTMLBottom100Parser,), None),
+    'moviemeter100_parser': ((DOMHTMLMoviemeter100Parser,), None),
+    'toptv250_parser': ((DOMHTMLTVTop250Parser,), None),
+    'tvmeter100_parser': ((DOMHTMLTVmeter100Parser,), None),
+    'topindian250_parser': ((DOMHTMLTopIndian250Parser,), None)
 }

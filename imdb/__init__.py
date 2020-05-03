@@ -654,13 +654,22 @@ class IMDbBase:
                 accessSystem=self.accessSystem) for mi, md in res]
 
     def get_top250_tv(self):
-        return self._get_top_bottom_movies('toptv')
+        res = self._get_top_bottom_movies('toptv')
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                data=md, modFunct=self._defModFunct,
+                accessSystem=self.accessSystem) for mi, md in res]
 
     def get_popular100_movies(self):
-        return self._get_top_bottom_movies('moviemeter')
+        res = self._get_top_bottom_movies('moviemeter')
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                data=md, modFunct=self._defModFunct,
+                accessSystem=self.accessSystem) for mi, md in res]
 
     def get_popular100_tv(self):
-        return self._get_top_bottom_movies('tvmeter')
+        res = self._get_top_bottom_movies('tvmeter')
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                data=md, modFunct=self._defModFunct,
+                accessSystem=self.accessSystem) for mi, md in res]
 
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""

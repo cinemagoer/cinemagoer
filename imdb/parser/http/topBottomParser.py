@@ -106,20 +106,23 @@ class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):
     """A parser for the "bottom 100 movies" page."""
     ranktext = 'bottom 100 rank'
 
+
 class DOMHTMLMoviemeter100Parser(DOMHTMLTop250Parser):
-    """A parser for the "" page. """
+    """A parser for the "Most Popular Movies" page."""
     # TODO: add description here
-    ranktext = ''
+    ranktext = 'popular movies 100 rank'
+
 
 class DOMHTMLTVmeter100Parser(DOMHTMLTop250Parser):
-    """A parser for the "" page. """
+    """A parser for the "Most Popular TV Shows" page."""
     # TODO: add description here
-    ranktext = ''
+    ranktext = 'popular tv 100 rank'
+
 
 class DOMHTMLTVTop250Parser(DOMHTMLTop250Parser):
-    """A parser for the "" page. """
+    """A parser for the "Top Rated TV Shows" page."""
     # TODO: add description here
-    ranktext = ''
+    ranktext = 'top tv 250 rank'
 
 
 _OBJECTS = {

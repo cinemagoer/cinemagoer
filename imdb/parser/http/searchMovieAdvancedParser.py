@@ -35,7 +35,7 @@ from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 
 
 _re_secondary_info = re.compile(
-    r'''(\(([IVXLCM]+)\)\s+)?\((\d{4})(–(\s|(\d{4})))?(\s+(.*))?\)'''
+    r'''(\(([IVXLCM]+)\)\s+)?\((\d{4})(–(\s|(\d{4})))?(\s+(.*))?\)|(\(([IVXLCM]+)\))'''
 )
 
 
@@ -59,6 +59,8 @@ def _parse_secondary_info(info):
         parsed['series years'] = match.group(3) + "-" + match.group(6)
     if match.group(8):
         kind = match.group(8).lower()
+    if match.group(10): # Added to support case of imdbIndex but no year
+        parsed['imdbIndex'] = match.group(10)
     if kind is None:
         kind = 'movie'
     parsed['kind'] = _KIND_MAP.get(kind, kind)

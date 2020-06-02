@@ -5,6 +5,7 @@
   - #242: introduce the "imdbID" key with the actual imdbID for movies and persons
   - #247: use html escape
   - #257: fix exception formatting string (courtesy of miigotu)
+  - #267: Update regex to support imdbIndex without a year
 
   [http]
 

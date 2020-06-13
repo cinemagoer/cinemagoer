@@ -80,11 +80,6 @@ scripts = [
 
 data_files = []
 
-featSQLAlchemy = setuptools.dist.Feature(
-    'SQLAlchemy dependency',
-    standard=True,
-    install_requires=['SQLAlchemy']
-)
 
 params = {
     # Meta-information.
@@ -123,7 +118,6 @@ params = {
             'pytest-profiling'
         ]
     },
-    'features': {'sqlalchemy': featSQLAlchemy},
     'packages': setuptools.find_packages(),
     'entry_points': """
         [console_scripts]
@@ -160,12 +154,11 @@ def runRebuildmo():
     path = list(sys.path)
     languages = []
     try:
-        import imp
+        import importlib
         scriptPath = os.path.dirname(__file__)
         modulePath = os.path.join(cwd, scriptPath, REBUILDMO_DIR)
         sys.path += [modulePath, '.', cwd]
-        modInfo = imp.find_module(REBUILDMO_NAME, [modulePath, '.', cwd])
-        rebuildmo = imp.load_module('rebuildmo', *modInfo)
+        rebuildmo = importlib.import_module(os.path.join(REBUILDMO_DIR, REBUILDMO_NAME).replace('/', '.'))
         os.chdir(modulePath)
         languages = rebuildmo.rebuildmo()
         print('Created locale for: %s.' % ' '.join(languages))

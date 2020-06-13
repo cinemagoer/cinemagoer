@@ -2,6 +2,7 @@
 
   [general]
 
+  - #112: switch to a calendar versioning scheme
   - #242: introduce the "imdbID" key with the actual imdbID for movies and persons
   - #247: use html escape
   - #257: fix exception formatting string (courtesy of miigotu)

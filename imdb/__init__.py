@@ -21,11 +21,12 @@ the IMDb web pages, or a SQL database.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
-
+from imdb.version import __version__
 
 __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
-__version__ = VERSION = '6.9dev20200613'
+
+VERSION = __version__
 
 
 import logging

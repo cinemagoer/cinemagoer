@@ -11,15 +11,9 @@ How to make a release
       tag_build = dev
       tag_date = true
 
-*setup.py*
+*imdb.version*
 
-    The ``version`` variable must be set to the **next** version.
-
-*imdb/__init__.py*
-
-    When a major fix or feature is committed, the ``VERSION`` and
-    ``__version__`` variables must be updated to something in the form
-    *{next.version}devISO8601DATE* (not mandatory, but...)
+    Be sure that the ``__version__`` variable is up-to-date.
 
 *docs/Changelog.rst*
 
@@ -36,10 +30,6 @@ How to make a release
 *setup.py*
 
     Not touched.
-
-*imdb/__init__.py*
-
-    The *devISO8601DATE* part must be removed from the version variables.
 
 *docs/Changelog.rst*
 
@@ -90,13 +80,6 @@ How to make a release
 
     Uncomment the two lines again.
 
-*setup.py*
-
-    Bump the ``version`` variable.
-
-*imdb/__init__.py*
-
-    Bump the ``VERSION`` and ``__version__`` variables adding again the *devISO8601DATE* string.
 
 *docs/Changelog.rst*
 

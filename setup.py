@@ -5,9 +5,8 @@ import sys
 import setuptools
 
 
-# version of the software; in the code repository this represents
-# the _next_ release.  setuptools will automatically add 'dev-rREVISION'.
-version = '6.9'
+# version of the software from imdb/version.py
+exec(compile(open('imdb/version.py').read(), 'imdb/version.py', 'exec'))
 
 home_page = 'https://imdbpy.github.io/'
 
@@ -84,7 +83,7 @@ data_files = []
 params = {
     # Meta-information.
     'name': 'IMDbPY',
-    'version': version,
+    'version': __version__,
     'description': 'Python package to access the IMDb\'s database',
     'long_description': long_desc,
     'author': 'Davide Alberani',

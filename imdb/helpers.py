@@ -55,7 +55,7 @@ def makeCgiPrintEncoding(encoding):
     def cgiPrint(s):
         """Encode the given string using the %s encoding, and replace
         chars outside the given charset with XML char references.""" % encoding
-        s = escape(s, quote = 1)
+        s = escape(s, quote=1)
         if isinstance(s, str):
             s = s.encode(encoding, 'xmlcharrefreplace')
         return s
@@ -605,7 +605,7 @@ def resizeImage(image, size, crop=None):
     """Return resized and cropped image url."""
 
     width, height = size
-    
+
     regexString = r'https://m.media-amazon.com/images/\w/\w+'
 
     resultImage = re.findall(regexString, image)[0]
@@ -624,18 +624,3 @@ def resizeImage(image, size, crop=None):
     resultImage += '.jpg'
 
     return resultImage
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-

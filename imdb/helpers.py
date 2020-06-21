@@ -601,16 +601,13 @@ def getAKAsInLanguage(movie, lang, _searchedTitle=None):
     return akas
 
 
-def resizeImage(image, size, crop=None):
+def resizeImage(image, width=None, height=None, crop=None):
     """Return resized and cropped image url."""
-
-    width, height = size
 
     regexString = r'https://m.media-amazon.com/images/\w/\w+'
 
     resultImage = re.findall(regexString, image)[0]
     resultImage += '@._V1_'
-
 
     if width:
         resultImage += f'SX{width}_'

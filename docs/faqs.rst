@@ -29,3 +29,8 @@ FAQs
     encoding, chars conversions, replacements of references and so on.
 
 :A: See the many functions in the imdb.helpers module.
+
+
+:Q: How can I get a link to an image (movie cover or people headshot) with a specific size?
+
+:A: You can use the ``imdb.helpers.resizeImage`` function to get a link to a resized and/or cropped version of the image.

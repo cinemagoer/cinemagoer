@@ -55,7 +55,7 @@ def makeCgiPrintEncoding(encoding):
     def cgiPrint(s):
         """Encode the given string using the %s encoding, and replace
         chars outside the given charset with XML char references.""" % encoding
-        s = escape(s, quote = 1)
+        s = escape(s, quote=1)
         if isinstance(s, str):
             s = s.encode(encoding, 'xmlcharrefreplace')
         return s
@@ -599,3 +599,25 @@ def getAKAsInLanguage(movie, lang, _searchedTitle=None):
         scores.sort(reverse=True)
         akas = [x[1] for x in scores]
     return akas
+
+
+def resizeImage(image, width=None, height=None, crop=None):
+    """Return resized and cropped image url."""
+
+    regexString = r'https://m.media-amazon.com/images/\w/\w+'
+
+    resultImage = re.findall(regexString, image)[0]
+    resultImage += '@._V1_'
+
+    if width:
+        resultImage += f'SX{width}_'
+    if height:
+        resultImage += f'SY{height}_'
+
+    if crop:
+        cropVals = ','.join(crop)
+        resultImage += f'CR{cropVals}_'
+
+    resultImage += '.jpg'
+
+    return resultImage

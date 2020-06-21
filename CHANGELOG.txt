@@ -1,4 +1,4 @@
-* What's new in release 6.9
+* What's new in release 2020.06.21
 
   [general]
 
@@ -7,6 +7,7 @@
   - #247: use html escape
   - #257: fix exception formatting string (courtesy of miigotu)
   - #262: remove obsolete Feature key from setup.py
+  - #265: imdb.helpers.resizeImage function to manipulate image URLs
   - #267: Update regex to support imdbIndex without a year
 
   [http]

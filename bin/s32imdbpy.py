@@ -28,6 +28,7 @@ import gzip
 import logging
 import argparse
 import sqlalchemy
+from tqdm import tqdm
 
 from imdb.parser.s3.utils import DB_TRANSFORM, title_soundex, name_soundexes
 
@@ -140,8 +141,12 @@ def import_file(fn, engine):
             pass
         insert = table.insert()
         metadata.create_all(tables=[table])
+        if logger.isEnabledFor(logging.DEBUG):
+            tqdm_ = tqdm
+        else:
+            tqdm_ = lambda it, **kwargs: it
         try:
-            for block in generate_content(gz_file, headers, table):
+            for block in generate_content(tqdm_(gz_file, total=nr_of_lines), headers, table):
                 try:
                     connection.execute(insert, block)
                 except Exception as e:
@@ -149,10 +154,9 @@ def import_file(fn, engine):
                     continue
                 count += len(block)
                 percent = count * 100 / nr_of_lines
-                logging.debug('processed %.1f%% of file %s' % (percent, fn_basename))
         except Exception as e:
             logging.error('error processing data on table %s: %s' % (table.name, e))
-        logging.info('processed %d%% of file %s: %d entries' % (percent, fn, count))
+        logging.info('processed file %s: %d entries' % (fn, count))
 
 
 def import_dir(dir_name, engine):

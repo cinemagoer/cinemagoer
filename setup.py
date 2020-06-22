@@ -100,7 +100,7 @@ params = {
     'download_url': dwnl_url,
     'scripts': scripts,
     'data_files': data_files,
-    'install_requires': ['SQLAlchemy', 'lxml'],
+    'install_requires': ['SQLAlchemy', 'lxml', 'tqdm'],
     'extras_require': {
         'dev': [
             'flake8',

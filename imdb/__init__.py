@@ -84,6 +84,8 @@ imdbURL_top250 = imdbURL_base + 'chart/top'
 imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
 # http://www.imdb.com/find?%s
 imdbURL_find = imdbURL_base + 'find?%s'
+# http://www.imdb.com/list/
+imdbURL_list_base = imdbURL_base + 'list/'
 
 # Name of the configuration file.
 confFileName = 'imdbpy.cfg'
@@ -310,6 +312,8 @@ class IMDbBase:
         imdbURL_find = imdbURL_base + 'find?%s'
         # http://www.imdb.com/search/title?%s
         imdbURL_search_movie_advanced = imdbURL_base + 'search/title/?%s'
+        # http://www.imdb.com/list/
+        imdbURL_list_base = imdbURL_base + 'list/'
         self.urls = dict(
             movie_base=imdbURL_movie_base,
             movie_main=imdbURL_movie_main,
@@ -327,6 +331,7 @@ class IMDbBase:
             toptv250=imdbURL_toptv250,
             topindian250=imdbURL_topindian250,
             find=imdbURL_find,
+            movie_list=imdbURL_list_base,
             search_movie_advanced=imdbURL_search_movie_advanced)
 
     def _normalize_movieID(self, movieID):
@@ -438,6 +443,19 @@ class IMDbBase:
             res = self._search_movie(title, results)
         else:
             res = self._search_episode(title, results)
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                data=md, modFunct=self._defModFunct,
+                accessSystem=self.accessSystem) for mi, md in res][:results]
+
+    def _get_movie_list(self, list, results):
+        """Return a list of tuples (movieID, {movieData})"""
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        raise NotImplementedError('override this method')
+
+    def get_movie_list(self, list, results=None):
+        """Return a list of Movie objects for a list id as input """
+        res = self._get_movie_list(list, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]

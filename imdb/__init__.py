@@ -447,15 +447,15 @@ class IMDbBase:
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]
 
-    def _get_movie_list(self, list, results):
+    def _get_movie_list(self, list_, results):
         """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError('override this method')
 
-    def get_movie_list(self, list, results=None):
+    def get_movie_list(self, list_, results=None):
         """Return a list of Movie objects for a list id as input """
-        res = self._get_movie_list(list, results)
+        res = self._get_movie_list(list_, results)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res][:results]

@@ -407,17 +407,17 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._get_search_content('tt', title, results)
         return self.smProxy.search_movie_parser.parse(cont, results=results)['data']
 
-    def _get_list_content(self, list):
+    def _get_list_content(self, list_):
         """Retrieve a list by it's id"""
-        if list.startswith('ls'):
-            imdbUrl = self.urls['movie_list'] + list
+        if list_.startswith('ls'):
+            imdbUrl = self.urls['movie_list'] + list_
         else:
             warnings.warn("list type not recognized make sure it starts with 'ls'")
             return
         return self._retrieve(url=imdbUrl)
 
-    def _get_movie_list(self, list, results):
-        cont = self._get_list_content(list)
+    def _get_movie_list(self, list_, results):
+        cont = self._get_list_content(list_)
         return self.listProxy.list_parser.parse(cont, results=results)['data']
 
     def _get_search_movie_advanced_content(self, title=None, adult=None, results=None,

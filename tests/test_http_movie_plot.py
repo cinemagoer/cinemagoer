@@ -4,7 +4,7 @@ import re
 def test_movie_summary_should_be_some_text_with_author(ia):
     movie = ia.get_movie('0133093', info=['plot'])  # Matrix
     plots = movie.get('plot', [])
-    assert 5 <= len(plots) <= 10
+    assert 3 <= len(plots) <= 10
     kc_plot = ''
     for plot in plots:
         if plot.endswith('Kenneth Chisholm'):

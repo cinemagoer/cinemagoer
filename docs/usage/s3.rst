@@ -55,6 +55,12 @@ and you can use the normal IMDbPY API:
    the data again.
 
 
+.. note::
+
+   Installing the `tqdm`_ package, a progress bar is shown while the database
+   is populated and the --verbose argument is used.
+
+
 .. [#ptdf]
 
    Until the end of 2017, IMDb used to distribute a more comprehensive subset
@@ -66,3 +72,4 @@ and you can use the normal IMDbPY API:
 .. _datasets: https://www.imdb.com/interfaces/
 .. _SQLAlchemy: https://www.sqlalchemy.org/
 .. _SQLAlchemy dialects: http://docs.sqlalchemy.org/en/latest/dialects/
+.. _tqdm: https://github.com/tqdm/tqdm

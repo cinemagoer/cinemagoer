@@ -46,7 +46,8 @@ from . import (
     searchPersonParser,
     searchCompanyParser,
     searchKeywordParser,
-    topBottomParser
+    topBottomParser,
+    listParser
 )
 
 if PY2:
@@ -290,6 +291,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self.pProxy = _ModuleProxy(personParser, defaultKeys=_def)
         self.compProxy = _ModuleProxy(companyParser, defaultKeys=_def)
         self.topBottomProxy = _ModuleProxy(topBottomParser, defaultKeys=_def)
+        self.listProxy = _ModuleProxy(listParser, defaultKeys=_def)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -404,6 +406,19 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def _search_movie(self, title, results):
         cont = self._get_search_content('tt', title, results)
         return self.smProxy.search_movie_parser.parse(cont, results=results)['data']
+
+    def _get_list_content(self, list_):
+        """Retrieve a list by it's id"""
+        if list_.startswith('ls'):
+            imdbUrl = self.urls['movie_list'] + list_
+        else:
+            warnings.warn("list type not recognized make sure it starts with 'ls'")
+            return
+        return self._retrieve(url=imdbUrl)
+
+    def _get_movie_list(self, list_, results):
+        cont = self._get_list_content(list_)
+        return self.listProxy.list_parser.parse(cont, results=results)['data']
 
     def _get_search_movie_advanced_content(self, title=None, adult=None, results=None,
                                            sort=None, sort_dir=None):

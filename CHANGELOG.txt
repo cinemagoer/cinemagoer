@@ -9,7 +9,6 @@
   - #262: remove obsolete Feature key from setup.py
   - #265: imdb.helpers.resizeImage function to manipulate image URLs
   - #267: Update regex to support imdbIndex without a year
-  - #270: introduce a progress bar importing s3 dataset (courtesy of Sam Grayson)
 
   [http]
 
@@ -23,6 +22,11 @@
   - #244: fix parser for persons filmography
   - #245: ability to fetch information about a single season
   - #260: parsers for top rated tv show, top rated indian movies, most popular tv shows and movies
+  - #273: ability to parse movie lists (courtesy of Stein van Broekhoven)
+
+  [sql]
+
+  - #270: introduce a progress bar importing s3 dataset (courtesy of Sam Grayson)
 
 
 * What's new in release 6.8 "Apollo 11" (20 Jul 2019)

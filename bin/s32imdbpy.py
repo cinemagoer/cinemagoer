@@ -28,7 +28,12 @@ import gzip
 import logging
 import argparse
 import sqlalchemy
-from tqdm import tqdm
+
+try:
+    from tqdm import tqdm
+    HAS_TQDM = True
+except ImportError:
+    HAS_TQDM = False
 
 from imdb.parser.s3.utils import DB_TRANSFORM, title_soundex, name_soundexes
 
@@ -141,7 +146,7 @@ def import_file(fn, engine):
             pass
         insert = table.insert()
         metadata.create_all(tables=[table])
-        if logger.isEnabledFor(logging.DEBUG):
+        if HAS_TQDM and logger.isEnabledFor(logging.DEBUG):
             tqdm_ = tqdm
         else:
             tqdm_ = lambda it, **kwargs: it

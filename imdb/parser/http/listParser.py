@@ -72,7 +72,7 @@ class DOMHTMLListParser(DOMParserBase):
                     Rule(
                         key='year',
                         extractor=Path('.//span[@class="lister-item-year text-muted unbold"]/text()', 
-                                        transform=lambda x: ''.join(i for i in x if i.isdigit())[:4] )
+                                        transform=lambda x: int(''.join(i for i in x if i.isdigit())[:4]) )
                     ),
                     Rule(
                         key='votes',

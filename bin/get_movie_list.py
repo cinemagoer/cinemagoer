@@ -14,7 +14,7 @@ import sys
 try:
     import imdb
 except ImportError:
-    print('You bad boy!  You need to install the IMDbPY package!')
+    print('You need to install the IMDbPY package!')
     sys.exit(1)
 
 

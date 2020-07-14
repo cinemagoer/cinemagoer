@@ -71,8 +71,7 @@ if PY2:
 else:
     from contextlib import redirect_stdout
 
-
-_logger = logging.getLogger(__name__)
+_logger = logging.getLogger('imdbpy.parser.http')
 
 
 ###########################################################

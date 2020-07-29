@@ -153,7 +153,7 @@ class IMDbS3AccessSystem(IMDbBase):
         data.update(tc_data)
 
         te = self.T['title_episode']
-        movie = tc.select(te.c.tconst == movieID).execute().fetchone() or {}
+        movie = te.select(te.c.tconst == movieID).execute().fetchone() or {}
         te_data = self._rename('title_episode', dict(movie))
         if 'parentTconst' in te_data:
             te_data['episodes of'] = self._base_title_info(te_data['parentTconst'])

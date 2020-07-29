@@ -12,6 +12,8 @@ on https://www.transifex.com/davide_alberani/imdbpy/
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since IMDbPY 4.5):
 
+* errael for a fix to s3 tables access
+
 * Stein van Broekhoven for a PR to parse movie lists
 
 * Sam Grayson for a PR that introduce tqdm importing the s3 dataset

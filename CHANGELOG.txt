@@ -27,6 +27,7 @@
   [sql]
 
   - #270: introduce a progress bar importing s3 dataset (courtesy of Sam Grayson)
+  - #278: fix access to s3 tables
 
 
 * What's new in release 6.8 "Apollo 11" (20 Jul 2019)

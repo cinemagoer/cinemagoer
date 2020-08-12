@@ -24,11 +24,17 @@ but useful for IMDbPY-based programs.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import sys
 import difflib
 import gettext
 import re
-from html import escape
 from gettext import gettext as _
+
+PY2 = sys.hexversion < 0x3000000
+if PY2:
+    from cgi import escape
+else:
+    from html import escape
 
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
@@ -610,13 +616,13 @@ def resizeImage(image, width=None, height=None, crop=None):
     resultImage += '@._V1_'
 
     if width:
-        resultImage += f'SX{width}_'
+        resultImage += 'SX%s_' % width
     if height:
-        resultImage += f'SY{height}_'
+        resultImage += 'SY%s_' % height
 
     if crop:
         cropVals = ','.join(crop)
-        resultImage += f'CR{cropVals}_'
+        resultImage += 'CR%s_' % cropVals
 
     resultImage += '.jpg'
 

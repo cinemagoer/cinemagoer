@@ -40,9 +40,7 @@ from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb import Character, Company, Movie, Person
 from imdb.utils import build_company_name, build_name, build_title
 
-
 PY2 = sys.hexversion < 0x3000000
-
 
 if PY2:
     import ConfigParser as configparser

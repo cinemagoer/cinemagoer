@@ -38,7 +38,6 @@ __version__ = "1.1"
 MESSAGES = {}
 
 
-
 def usage(code, msg=''):
     sys.stderr.write(__doc__)
     if msg:
@@ -46,7 +45,6 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 def add(id, str, fuzzy):
     "Add a non-fuzzy translation to the dictionary."
     global MESSAGES
@@ -54,7 +52,6 @@ def add(id, str, fuzzy):
         MESSAGES[id] = str
 
 
-
 def generate():
     "Return the generated output."
     global MESSAGES
@@ -96,7 +93,6 @@ def generate():
     return output
 
 
-
 def make(filename, outfile):
     ID = 1
     STR = 2
@@ -112,15 +108,15 @@ def make(filename, outfile):
     try:
         lines = open(infile, 'rb').readlines()
     except IOError as msg:
-        print(msg, file=sys.stderr)
+        print(msg)
         sys.exit(1)
 
     section = None
     fuzzy = 0
 
-    # Start off assuming Latin-1, so everything decodes without failure,
+    # Start off assuming utf-8, so everything decodes without failure,
     # until we know the exact encoding
-    encoding = 'latin-1'
+    encoding = 'utf-8'
 
     # Parse the catalog
     lno = 0
@@ -155,8 +151,7 @@ def make(filename, outfile):
         # This is a message with plural forms
         elif l.startswith('msgid_plural'):
             if section != ID:
-                print('msgid_plural not preceded by msgid on %s:%d' % (infile, lno),
-                      file=sys.stderr)
+                print('msgid_plural not preceded by msgid on %s:%d' % (infile, lno))
                 sys.exit(1)
             l = l[12:]
             msgid += b'\0' # separator of singular and plural
@@ -166,31 +161,29 @@ def make(filename, outfile):
             section = STR
             if l.startswith('msgstr['):
                 if not is_plural:
-                    print('plural without msgid_plural on %s:%d' % (infile, lno),
-                          file=sys.stderr)
+                    print('plural without msgid_plural on %s:%d' % (infile, lno))
                     sys.exit(1)
                 l = l.split(']', 1)[1]
                 if msgstr:
                     msgstr += b'\0' # Separator of the various plural forms
             else:
                 if is_plural:
-                    print('indexed msgstr required for plural on  %s:%d' % (infile, lno),
-                          file=sys.stderr)
+                    print('indexed msgstr required for plural on  %s:%d' % (infile, lno))
                     sys.exit(1)
                 l = l[6:]
         # Skip empty lines
         l = l.strip()
         if not l:
             continue
-        l = ast.literal_eval(l)
+        #l = ast.literal_eval(l)
         if section == ID:
             msgid += l.encode(encoding)
         elif section == STR:
             msgstr += l.encode(encoding)
         else:
             print('Syntax error on %s:%d' % (infile, lno), \
-                  'before:', file=sys.stderr)
-            print(l, file=sys.stderr)
+                  'before:')
+            print(l)
             sys.exit(1)
     # Add last entry
     if section == STR:
@@ -202,10 +195,9 @@ def make(filename, outfile):
     try:
         open(outfile,"wb").write(output)
     except IOError as msg:
-        print(msg, file=sys.stderr)
+        print(msg)
 
 
-
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'hVo:',
@@ -225,8 +217,8 @@ def main():
             outfile = arg
     # do it
     if not args:
-        print('No input file given', file=sys.stderr)
-        print("Try `msgfmt --help' for more information.", file=sys.stderr)
+        print('No input file given')
+        print("Try `msgfmt --help' for more information.")
         return
 
     for filename in args:

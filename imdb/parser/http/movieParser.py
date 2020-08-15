@@ -2031,6 +2031,13 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             )
         ),
         Rule(
+            key='_years',
+            extractor=Path(
+                foreach='//select[@id="byYear"]//option',
+                path='./@value'
+            )
+        ),
+        Rule(
             key='_current_season',
             extractor=Path('//select[@id="bySeason"]//option[@selected]/@value')
         ),

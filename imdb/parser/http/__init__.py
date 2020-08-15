@@ -599,7 +599,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
             del data_d['data']['_seasons']
         return data_d
 
-    def get_movie_episodes(self, movieID, season_nums='all'):
+    def get_movie_episodes(self, movieID, season_nums='all', byYear=False):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'episodes')
         temp_d = self.mProxy.season_episodes_parser.parse(cont)
         if not isinstance(season_nums, list):
@@ -607,8 +607,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 season_nums = [season_nums]
         if not temp_d and 'data' in temp_d:
             return {}
-            
-        _seasons = temp_d['data'].get('_seasons') or []
+
+        if byYear:
+            _seasons = temp_d['data'].get('_years') or []
+        else:
+            _seasons = temp_d['data'].get('_seasons') or []
         
         nr_eps = 0
         data_d = dict()
@@ -616,9 +619,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
         for season in _seasons:
             if season_nums != 'all' and season not in season_nums:
                 continue
-            cont = self._retrieve(
-                self.urls['movie_main'] % movieID + 'episodes?season=' + str(season)
-            )
+            if byYear:
+                url = self.urls['movie_main'] % movieID + 'episodes?year=' + str(season)
+            else:
+                url = self.urls['movie_main'] % movieID + 'episodes?season=' + str(season)
+            cont = self._retrieve(url)
             other_d = self.mProxy.season_episodes_parser.parse(cont)
             other_d = self._purge_seasons_data(other_d)
             other_d['data'].setdefault('episodes', {})
@@ -631,6 +636,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 data_d = other_d
         data_d['data']['number of episodes'] = nr_eps
         return data_d
+
+    def get_movie_episodes_by_year(self, movieID, season_nums='all'):
+        return self.get_movie_episodes(movieID, season_nums=season_nums, byYear=True)
 
     def get_movie_faqs(self, movieID):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'faq')

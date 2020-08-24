@@ -21,7 +21,6 @@ This module provides basic utilities for the imdb package.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import logging
 import re
 import string
 import sys
@@ -32,13 +31,14 @@ from time import strftime, strptime
 from imdb import VERSION
 from imdb import linguistics
 from imdb._exceptions import IMDbParserError
+from imdb._logging import imdbpyLogger
 
 
 PY2 = sys.hexversion < 0x3000000
 
 
 # Logger for imdb.utils module.
-_utils_logger = logging.getLogger('imdbpy.utils')
+_utils_logger = imdbpyLogger.getChild('utils')
 
 # The regular expression for the "long" year format of IMDb, like
 # "(1998)" and "(1986/II)", where the optional roman number (that I call

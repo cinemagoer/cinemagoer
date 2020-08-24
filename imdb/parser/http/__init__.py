@@ -26,7 +26,6 @@ or "html" (this is the default).
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import logging
 import socket
 import ssl
 from codecs import lookup
@@ -35,6 +34,7 @@ import warnings
 from imdb import PY2
 from imdb import IMDbBase
 from imdb.utils import analyze_title
+from imdb.parser.http.logging import logger
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 
 from . import (
@@ -58,7 +58,7 @@ else:
     from urllib.request import HTTPSHandler, ProxyHandler, build_opener
 
 # Logger for miscellaneous functions.
-_aux_logger = logging.getLogger('imdbpy.parser.http.aux')
+_aux_logger = logger.getChild('aux')
 
 
 class _ModuleProxy:
@@ -152,7 +152,7 @@ class IMDbHTTPSHandler(HTTPSHandler, object):
 
 class IMDbURLopener:
     """Fetch web pages and handle errors."""
-    _logger = logging.getLogger('imdbpy.parser.http.urlopener')
+    _logger = logger.getChild('urlopener')
 
     def __init__(self, *args, **kwargs):
         self._last_url = ''
@@ -267,7 +267,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     """The class used to access IMDb's data through the web."""
 
     accessSystem = 'http'
-    _http_logger = logging.getLogger('imdbpy.parser.http')
+    _http_logger = logger
 
     def __init__(self, adultSearch=True, proxy=-1, cookie_id=-1,
                  timeout=30, cookie_uu=None, *arguments, **keywords):
@@ -607,9 +607,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 season_nums = [season_nums]
         if not temp_d and 'data' in temp_d:
             return {}
-            
+
         _seasons = temp_d['data'].get('_seasons') or []
-        
+
         nr_eps = 0
         data_d = dict()
 

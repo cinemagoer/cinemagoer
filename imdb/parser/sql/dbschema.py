@@ -23,10 +23,10 @@ tables and indexes are also provided.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import logging
+from imdb.parser.sql.logging import logger
 
 
-_dbschema_logger = logging.getLogger('imdbpy.parser.sql.dbschema')
+_dbschema_logger = logger.getChild('dbschema')
 
 
 # Placeholders for column types.

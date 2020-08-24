@@ -30,11 +30,11 @@ try:
 except ImportError:
     from sqlalchemy import exceptions as exc  # 0.4
 
-_alchemy_logger = logging.getLogger('imdbpy.parser.sql.alchemy')
-
-
 from imdb._exceptions import IMDbDataAccessError
+from imdb.parser.sql.logging import logger
 from .dbschema import *
+
+_alchemy_logger = logger.getChild('alchemy')
 
 # Used to convert table and column names.
 re_upper = re.compile(r'([A-Z])')

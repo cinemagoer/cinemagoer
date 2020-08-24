@@ -27,7 +27,6 @@ when called with the ``accessSystem`` parameter is set to "sql",
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-import logging
 from difflib import SequenceMatcher
 from codecs import lookup
 
@@ -40,11 +39,12 @@ from imdb.utils import normalizeName, normalizeTitle, build_title, \
 from imdb.Person import Person
 from imdb.Movie import Movie
 from imdb.Company import Company
+from imdb.parser.sql.logging import logger
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 
 
 # Logger for miscellaneous functions.
-_aux_logger = logging.getLogger('imdbpy.parser.sql.aux')
+_aux_logger = logger.getChild('aux')
 
 # =============================
 # Things that once upon a time were in imdb.parser.common.locsql.

@@ -2203,10 +2203,6 @@ class DOMHTMLEpisodesParser(DOMParserBase):
         eparser = DOMHTMLEpisodesParser()
         result = eparser.parse(episodes_html_string)
     """
-    # XXX: no more used for the list of episodes parser,
-    #      but only for the episodes cast parser (see below).
-    _containsObjects = True
-
     kind = 'episodes list'
     _episodes_path = "..//h4"
     _oad_path = "./following-sibling::span/strong[1]/text()"
@@ -2266,45 +2262,6 @@ class DOMHTMLEpisodesParser(DOMParserBase):
                 )
             )
         ]
-
-        if self.kind == 'episodes cast':
-            self.rules += [
-                Rule(
-                    key='cast',
-                    extractor=Rules(
-                        foreach='//h4',
-                        rules=[
-                            Rule(
-                                key=Path('./text()[1]', transform=transformers.strip),
-                                extractor=Rules(
-                                    foreach='./following-sibling::table[1]//td[@class="nm"]',
-                                    rules=[
-                                        Rule(
-                                            key='person',
-                                            extractor=Path('..//text()')
-                                        ),
-                                        Rule(
-                                            key='link',
-                                            extractor=Path('./a/@href')
-                                        ),
-                                        Rule(
-                                            key='roleID',
-                                            extractor=Path('../td[4]//div[@class="_imdbpyrole"]/@roleid')
-                                        )
-                                    ],
-                                    transform=lambda x: build_person(
-                                        x.get('person') or '',
-                                        personID=analyze_imdbid(x.get('link')),
-                                        roleID=(x.get('roleID') or '').split('/'),
-                                        accessSystem=self._as,
-                                        modFunct=self._modFunct
-                                    )
-                                )
-                            )
-                        ]
-                    )
-                )
-            ]
 
     preprocessors = [
         (re.compile('(<hr/>\n)(<h3>)', re.I), r'</div>\1<div class="_imdbpy">\2'),

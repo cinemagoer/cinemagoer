@@ -116,29 +116,6 @@ the complete list of cast and crew with the "full credits" data set:
    >>> len(series['cast'])
    2514
 
-If you prefer, you can retrieve the complete cast of every episode, keeping
-the lists separated for each episode. Instead of retrieving with::
-
-  ia.update(series, 'episodes')
-
-use::
-
-  ia.update(series, 'episodes cast')
-
-or the equivalent::
-
-  i.update(m, 'guests')
-
-Now you end up having the same information as if you have updated
-the 'episodes' info set, but every Movie object inside the dictionary
-of dictionary has the complete cast, e.g.::
-
-  cast = m['episodes'][1][2]['cast']  # cast list for the second episode
-                                      # of the first season.
-
-Beware that both 'episodes cast' and 'guests' will update the
-keyword 'episodes' (and not 'episodes cast' or 'guests').
-
 
 Ratings
 -------

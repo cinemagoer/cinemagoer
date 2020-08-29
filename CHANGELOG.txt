@@ -1,4 +1,4 @@
-* What's new in release 2020.07.12
+* What's new in release 2020.08.29
 
   [general]
 
@@ -9,6 +9,7 @@
   - #262: remove obsolete Feature key from setup.py
   - #265: imdb.helpers.resizeImage function to manipulate image URLs
   - #267: Update regex to support imdbIndex without a year
+  - #284: use derived loggers (courtesy of jsynowiec)
 
   [http]
 

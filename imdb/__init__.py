@@ -29,13 +29,12 @@ __all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
 VERSION = __version__
 
 
-import logging
 import os
 import sys
 from pkgutil import find_loader
 from types import MethodType, FunctionType
 
-import imdb._logging
+from imdb._logging import imdbpyLogger as _imdb_logger
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb import Character, Company, Movie, Person
 from imdb.utils import build_company_name, build_name, build_title
@@ -48,9 +47,7 @@ else:
     import configparser
 
 
-_imdb_logger = logging.getLogger('imdbpy')
-_aux_logger = logging.getLogger('imdbpy.aux')
-
+_aux_logger = _imdb_logger.getChild('aux')
 
 # URLs of the main pages for movies, persons, characters and queries.
 imdbURL_base = 'https://www.imdb.com/'
@@ -838,7 +835,7 @@ class IMDbBase:
         info = 'episodes'
 
         res = {}
-        
+
         if info in mop.current_info and not override:
             return
         _imdb_logger.debug('retrieving "%s" info set', info)

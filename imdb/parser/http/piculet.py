@@ -26,7 +26,6 @@ https://piculet.readthedocs.io/
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import json
-import logging
 import os
 import re
 import sys
@@ -71,7 +70,9 @@ if PY2:
 else:
     from contextlib import redirect_stdout
 
-_logger = logging.getLogger('imdbpy.parser.http')
+from imdb.parser.http.logging import logger
+
+_logger = logger.getChild('piculet')
 
 
 ###########################################################

@@ -22,7 +22,6 @@ in the :mod:`imdb.parser.http` package.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import logging
 import re
 
 from imdb import PY2
@@ -30,6 +29,7 @@ from imdb.Character import Character
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
+from imdb.parser.http.logging import logger
 
 from .piculet import _USE_LXML, ElementTree, Rules, build_tree, html_to_xhtml
 from .piculet import xpath as piculet_xpath
@@ -90,7 +90,7 @@ def _putRefs(d, re_titles, re_names, lastKey=None):
                 _putRefs(d[k], re_titles, re_names, lastKey=lastKey)
 
 
-_b_p_logger = logging.getLogger('imdbpy.parser.http.build_person')
+_b_p_logger = logger.getChild('build_person')
 
 
 def build_person(txt, personID=None, billingPos=None,
@@ -210,7 +210,7 @@ def build_person(txt, personID=None, billingPos=None,
 
 _re_chrIDs = re.compile('[0-9]{7}')
 
-_b_m_logger = logging.getLogger('imdbpy.parser.http.build_movie')
+_b_m_logger = logger.getChild('build_movie')
 
 # To shrink spaces.
 re_spaces = re.compile(r'\s+')
@@ -379,7 +379,7 @@ class DOMParserBase(object):
     preprocessors = []
     rules = []
 
-    _logger = logging.getLogger('imdbpy.parser.http.domparser')
+    _logger = logger.getChild('domparser')
 
     def __init__(self):
         """Initialize the parser."""

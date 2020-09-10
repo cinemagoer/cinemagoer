@@ -172,7 +172,7 @@ def applyDiffs():
     # from the first line of the imdb list file itself but that seems like overkill to me.
     day = None
     for f in os.listdir(ImdbListsPath):
-        if re.match(".*\.list\.gz",f) or re.match(".*\.list",f):
+        if re.match(r".*\.list\.gz",f) or re.match(r".*\.list",f):
             try:
                 t = os.path.getmtime(os.path.join(ImdbListsPath,f))
                 d = datetime.fromtimestamp(t)
@@ -298,7 +298,7 @@ def applyDiffs():
     # Uncompress list files in ImdbListsPath to our temporary folder tmpListsPath
     numListFiles = 0
     for f in os.listdir(ImdbListsPath):
-        if re.match(".*\.list\.gz",f):
+        if re.match(r".*\.list\.gz",f):
             try:
                 cmdUnGzip = unGzip % (os.path.join(ImdbListsPath,f), tmpListsPath)
                 subprocess.call(cmdUnGzip , shell=True)
@@ -360,7 +360,7 @@ def applyDiffs():
             # Apply all the patch files to the list files in tmpListsPath
             isFirstPatchFile = True
             for f in os.listdir(tmpDiffsPath):
-                if re.match(".*\.list",f):
+                if re.match(r".*\.list",f):
                     logger.info("Patching imdb list file %s" % f)
                     try:
                         cmdApplyPatch = applyPatch % (os.path.join(tmpListsPath,f), os.path.join(tmpDiffsPath,f))
@@ -437,7 +437,7 @@ def applyDiffs():
 
     # List files are all updated so re-Gzip them up and delete the old list files
     for f in os.listdir(tmpListsPath):
-        if re.match(".*\.list",f):
+        if re.match(r".*\.list",f):
             try:
                 cmdGZip = progGZip % os.path.join(tmpListsPath,f)
                 subprocess.call(cmdGZip, shell=True)
@@ -449,7 +449,7 @@ def applyDiffs():
 
     # Now move the updated and compressed lists to the main lists folder, replacing the old list files
     for f in os.listdir(tmpListsPath):
-        if re.match(".*\.list.gz",f):
+        if re.match(r".*\.list.gz",f):
             # Delete the original compressed list file from ImdbListsPath if it exists
             if os.path.isfile(os.path.join(ImdbListsPath,f)):
                 os.remove(os.path.join(ImdbListsPath,f))

@@ -10,6 +10,7 @@
   - #265: imdb.helpers.resizeImage function to manipulate image URLs
   - #267: Update regex to support imdbIndex without a year
   - #284: use derived loggers (courtesy of jsynowiec)
+  - #282: use correct escape sequence for regular expressions (courtesy of Karthikeyan Singaravelan)
 
   [http]
 

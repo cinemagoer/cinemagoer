@@ -40,8 +40,8 @@ def test_selected_video_should_have_correct_kind(ia):
 
 
 def test_selected_tv_movie_should_have_correct_kind(ia):
-    movies = ia.search_movie_advanced('matrix', results=250)
-    selected = [m for m in movies if m.movieID == '4151794'][0]
+    movies = ia.search_movie_advanced('Sharknado', results=250)
+    selected = [m for m in movies if m.movieID == '2724064'][0]
     assert selected['kind'] == 'tv movie'
 
 

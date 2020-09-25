@@ -1,4 +1,4 @@
-* What's new in release 2020.08.29
+* What's new in release 2020.09.25
 
   [general]
 
@@ -8,7 +8,8 @@
   - #257: fix exception formatting string (courtesy of miigotu)
   - #262: remove obsolete Feature key from setup.py
   - #265: imdb.helpers.resizeImage function to manipulate image URLs
-  - #267: Update regex to support imdbIndex without a year
+  - #267: update regex to support imdbIndex without a year
+  - #275: update che path for Creator
   - #284: use derived loggers (courtesy of jsynowiec)
   - #282: use correct escape sequence for regular expressions (courtesy of Karthikeyan Singaravelan)
 

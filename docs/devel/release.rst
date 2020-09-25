@@ -3,14 +3,6 @@ How to make a release
 
 **During development**
 
-*setup.cfg*
-
-    The ``egg_info`` section must include the lines below::
-
-      [egg_info]
-      tag_build = dev
-      tag_date = true
-
 *imdb.version*
 
     Be sure that the ``__version__`` variable is up-to-date.
@@ -22,16 +14,7 @@ How to make a release
 
 **When a new release is planned**
 
-*setup.cfg*
-
-    In the ``egg_info`` section, the lines mentioned above must be
-    commented out.
-
-*setup.py*
-
-    Not touched.
-
-*docs/Changelog.rst*
+*CHANGELOG.txt*
 
     The date of the release has to be added.
 
@@ -40,7 +23,7 @@ How to make a release
 
 - Commit the above changes.
 
-- Add an annotated tag like *major.minor*; e.g.: ``git tag -a 6.3``
+- Add an annotated tag like *year.month.day*; e.g.: ``git tag -a 2020.09.25``
   (the commit message is not important).
 
 - ``python3 setup.py sdist``
@@ -76,12 +59,7 @@ How to make a release
 
 **After the release**
 
-*setup.cfg*
-
-    Uncomment the two lines again.
-
-
-*docs/Changelog.rst*
+*CHANGELOG.txt*
 
     Add a new section for the next release, on top.
 

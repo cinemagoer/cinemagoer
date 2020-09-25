@@ -451,7 +451,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='creator',
             extractor=Rules(
-                foreach='//td[starts-with(text(), "Creator")]/..//a',
+                foreach='//div[starts-with(normalize-space(text()), "Creator")]/ul/li[1]/a',
                 rules=[
                     Rule(
                         key='name',

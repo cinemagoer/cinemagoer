@@ -46,11 +46,7 @@ How to make a release
 
 **communication**
 
-- access the web site with: `sftp ${your-sourceforge-username}@frs.sourceforge.net` and move to the *imdbpy_web/htdocs/*
-
-- download *index.html* and add an *article* section, removing the one or more of the old ones
-
-- upload the page
+- update the *content/news* section of https://github.com/imdbpy/website
 
 - add a news on https://sourceforge.net/p/imdbpy/news/new
 

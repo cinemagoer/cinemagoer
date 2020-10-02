@@ -60,15 +60,15 @@ msgstr "todos-produtos"
 
 # Default: Alternate language version of
 msgid "alternate-language-version-of"
-msgstr ""
+msgstr "Versão em idioma alternativo de"
 
 # Default: Alternate versions
 msgid "alternate-versions"
-msgstr ""
+msgstr "Versões alternativas"
 
 # Default: Amazon reviews
 msgid "amazon-reviews"
-msgstr ""
+msgstr "Avaliações da Amazon"
 
 # Default: Analog left
 msgid "analog-left"
@@ -80,39 +80,39 @@ msgstr ""
 
 # Default: Animation department
 msgid "animation-department"
-msgstr ""
+msgstr "Departamento de animação"
 
 # Default: Archive footage
 msgid "archive-footage"
-msgstr ""
+msgstr "Arquivo de filmagem"
 
 # Default: Arithmetic mean
 msgid "arithmetic-mean"
-msgstr ""
+msgstr "Média aritmética"
 
 # Default: Art department
 msgid "art-department"
-msgstr ""
+msgstr "Departamento de arte"
 
 # Default: Art direction
 msgid "art-direction"
-msgstr ""
+msgstr "Direção da arte"
 
 # Default: Art director
 msgid "art-director"
-msgstr ""
+msgstr "Diretor de arte"
 
 # Default: Article
 msgid "article"
-msgstr ""
+msgstr "Artigo"
 
 # Default: Asin
 msgid "asin"
-msgstr ""
+msgstr "Como em"
 
 # Default: Aspect ratio
 msgid "aspect-ratio"
-msgstr ""
+msgstr "Proporção da tela"
 
 # Default: Assigner
 msgid "assigner"
@@ -120,11 +120,11 @@ msgstr ""
 
 # Default: Assistant director
 msgid "assistant-director"
-msgstr ""
+msgstr "Diretor assistente"
 
 # Default: Auctions
 msgid "auctions"
-msgstr ""
+msgstr "Leilões"
 
 # Default: Audio noise
 msgid "audio-noise"
@@ -132,23 +132,23 @@ msgstr ""
 
 # Default: Audio quality
 msgid "audio-quality"
-msgstr ""
+msgstr "Qualidade de áudio"
 
 # Default: Award
 msgid "award"
-msgstr ""
+msgstr "Prêmio"
 
 # Default: Awards
 msgid "awards"
-msgstr ""
+msgstr "Prêmios"
 
 # Default: Biographical movies
 msgid "biographical-movies"
-msgstr ""
+msgstr "Filmes biográficos"
 
 # Default: Biography
 msgid "biography"
-msgstr ""
+msgstr "Biografia"
 
 # Default: Biography print
 msgid "biography-print"
@@ -156,27 +156,27 @@ msgstr ""
 
 # Default: Birth date
 msgid "birth-date"
-msgstr ""
+msgstr "Data de nascimento"
 
 # Default: Birth name
 msgid "birth-name"
-msgstr ""
+msgstr "Nome de nascença"
 
 # Default: Birth notes
 msgid "birth-notes"
-msgstr ""
+msgstr "Notas de nascimento"
 
 # Default: Body
 msgid "body"
-msgstr ""
+msgstr "Corpo"
 
 # Default: Book
 msgid "book"
-msgstr ""
+msgstr "Livro"
 
 # Default: Books
 msgid "books"
-msgstr ""
+msgstr "Livros"
 
 # Default: Bottom 100 rank
 msgid "bottom-100-rank"
@@ -1256,7 +1256,7 @@ msgstr ""
 
 # Default: Video quality
 msgid "video-quality"
-msgstr ""
+msgstr "Qualidade de vídeo"
 
 # Default: Video standard
 msgid "video-standard"
@@ -1264,15 +1264,15 @@ msgstr ""
 
 # Default: Visual effects
 msgid "visual-effects"
-msgstr ""
+msgstr "Efeitos Visuais"
 
 # Default: Votes
 msgid "votes"
-msgstr ""
+msgstr "Votos"
 
 # Default: Votes distribution
 msgid "votes-distribution"
-msgstr ""
+msgstr "Distribuição de votos"
 
 # Default: Weekend gross
 msgid "weekend-gross"
@@ -1284,19 +1284,19 @@ msgstr ""
 
 # Default: With
 msgid "with"
-msgstr ""
+msgstr "Com"
 
 # Default: Writer
 msgid "writer"
-msgstr ""
+msgstr "Escritor(a)"
 
 # Default: Written by
 msgid "written-by"
-msgstr ""
+msgstr "Escrito por"
 
 # Default: Year
 msgid "year"
-msgstr ""
+msgstr "Ano"
 
 # Default: Zshops
 msgid "zshops"

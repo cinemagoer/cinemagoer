@@ -67,3 +67,5 @@ Additional translations were provided by:
 - Atanas Kovachki (Bulgarian)
 - lukophron (French)
 - Raphael (German)
+- Henrique Lauro Bagio de Souza (Portuguese)
+- Alexa Ognjanovic (Serbian)

@@ -1,5 +1,9 @@
 * What's new in the next release
 
+  [general]
+  - #289: Serbian translations
+  - #290: update Portuguese translations
+
   [sql]
 
   - #287: fix missing logger

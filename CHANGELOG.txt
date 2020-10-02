@@ -1,3 +1,10 @@
+* What's new in the next release
+
+  [sql]
+
+  - #287: fix missing logger
+
+
 * What's new in release 2020.09.25 (The Umbrella Academy)
 
   [general]

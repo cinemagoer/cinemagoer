@@ -5,12 +5,12 @@ def test_movie_summary_should_be_some_text_with_author(ia):
     movie = ia.get_movie('0133093', info=['plot'])  # Matrix
     plots = movie.get('plot', [])
     assert 3 <= len(plots) <= 10
-    kc_plot = ''
+    sel_plot = ''
     for plot in plots:
-        if plot.endswith('Kenneth Chisholm'):
-            kc_plot = plot
+        if plot.endswith('redcommander27'):
+            sel_plot = plot
             break
-    assert re.match(r'^A computer hacker .*controllers\.::Kenneth Chisholm$', kc_plot)
+    assert re.match(r'^Thomas A. Anderson is a man.*As a rebel.*::redcommander27$', sel_plot)
 
 
 def test_movie_summary_if_none_should_be_excluded(ia):

@@ -5,7 +5,7 @@ def test_search_keyword_check_list_of_keywords(ia):
 
 def test_search_keyword_if_multiple_should_list_correct_number_of_keywords(ia):
     keywords = ia.search_keyword('messiah')
-    assert 50 <= len(keywords) <= 70
+    assert 50 <= len(keywords) <= 80
 
 
 def test_search_keyword_if_too_many_should_list_upper_limit_of_keywords(ia):

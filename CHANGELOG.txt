@@ -3,6 +3,7 @@
   [general]
   - #289: Serbian translations
   - #290: update Portuguese translations
+  - #291: allow direct access to filmography keys
 
   [sql]
 

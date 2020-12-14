@@ -31,7 +31,7 @@ out_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
 try:
     # Do the search, and get the results (a list of Movie objects).
-    results = i.get_movie_list(list=listId)
+    results = i.get_movie_list(list_=listId)
 except imdb.IMDbError as e:
     print("Probably you're not connected to Internet.  Complete error report:")
     print(e)

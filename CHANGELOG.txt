@@ -4,6 +4,7 @@
   - #289: Serbian translations
   - #290: update Portuguese translations
   - #291: allow direct access to filmography keys
+  - #299: add pagination to get_movie_list (courtesy of Stein van Broekhoven)
 
   [sql]
 

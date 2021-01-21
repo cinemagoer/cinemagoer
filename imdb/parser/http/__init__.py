@@ -611,9 +611,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def get_movie_episodes(self, movieID, season_nums='all'):
         cont = self._retrieve(self.urls['movie_main'] % movieID + 'episodes')
         temp_d = self.mProxy.season_episodes_parser.parse(cont)
-        if not isinstance(season_nums, list):
-            if season_nums != 'all':
-                season_nums = [season_nums]
+        if isinstance(season_nums, int):
+            season_nums = {season_nums}
+        elif (isinstance(season_nums, (list, tuple)) or 
+              not hasattr(season_nums, '__contains__')):
+            season_nums = set(season_nums)
         if not temp_d and 'data' in temp_d:
             return {}
 

@@ -5,6 +5,7 @@
   - #290: update Portuguese translations
   - #291: allow direct access to filmography keys
   - #299: add pagination to get_movie_list (courtesy of Stein van Broekhoven)
+  - #300: any iterable can be used as season_nums parameter of update_series_seasons
 
   [sql]
 

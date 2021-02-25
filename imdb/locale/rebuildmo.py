@@ -25,17 +25,15 @@ import msgfmt
 
 
 def rebuildmo():
-    lang_glob = 'imdbpy-*.po'
+    cur_dir = os.path.dirname(__file__)
+    lang_glob = cur_dir + '/imdbpy-*.po'
     created = []
-    for input_file in sorted(glob.glob(lang_glob)):
-        lang = input_file[7:-3]
-        if not os.path.exists(lang):
-            os.mkdir(lang)
-        mo_dir = os.path.join(lang, 'LC_MESSAGES')
-        if not os.path.exists(mo_dir):
-            os.mkdir(mo_dir)
+    for po_file in sorted(glob.glob(lang_glob)):
+        lang = os.path.splitext(po_file)[0].split('imdbpy-')[-1]
+        mo_dir = os.path.join(cur_dir, lang, 'LC_MESSAGES')
+        os.makedirs(mo_dir, exist_ok=True)
         output_file = os.path.join(mo_dir, 'imdbpy.mo')
-        msgfmt.make(input_file, output_file)
+        msgfmt.make(po_file, output_file)
         created.append(lang)
     return created
 

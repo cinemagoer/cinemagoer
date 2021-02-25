@@ -2,7 +2,7 @@
 def test_movie_full_credits(ia):
     movie = ia.get_movie('0133093', info=['full credits']) # Matrix
     assert 'cast' in movie
-    assert len(movie['cast']) == 40
+    assert len(movie['cast']) == 41
 
 def test_movie_full_credits_for_tv_show(ia):
     movie = ia.get_movie('0098904', info=['full credits']) # Seinfeld

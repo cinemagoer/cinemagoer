@@ -20,26 +20,15 @@
 **IMDbPY** is a Python package for retrieving and managing the data
 of the `IMDb`_ movie database about movies, people and companies.
 
-.. admonition:: Revamp notice
-   :class: note
-
-   Starting on November 2017, many things were improved and simplified:
-
-   - moved the package to Python 3 (compatible with Python 2.7)
-   - removed dependencies: SQLObject, C compiler, BeautifulSoup
-   - removed the "mobile" and "httpThin" parsers
-   - introduced a test suite (`please help with it!`_)
-
-
 Main features
 -------------
 
-- written in Python 3 (compatible with Python 2.7)
+- written in Python (3.6 and later)
 
 - platform-independent
 
-- can retrieve data from both the IMDb's web server, or a local copy
-  of the database
+- can retrieve data from both the IMDb's web server,
+  or a local copy of the database
 
 - simple and complete API
 
@@ -104,7 +93,7 @@ The sources are available on `GitHub`_.
 License
 -------
 
-Copyright (C) 2004-2019 Davide Alberani <da --> mimante.net> et al.
+Copyright (C) 2004-2021 Davide Alberani <da --> mimante.net> et al.
 
 IMDbPY is released under the GPL license, version 2 or later.
 Read the included `LICENSE.txt`_ file for details.

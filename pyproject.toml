@@ -14,11 +14,9 @@ repository = "https://github.com/alberanid/imdbpy"
 keywords = [
     "imdb",
     "movie",
-    "people",
     "database",
     "cinema",
     "film",
-    "person",
     "cast",
     "actor",
     "actress",
@@ -26,7 +24,6 @@ keywords = [
     "sql",
     "character",
     "company",
-    "package",
     "plain text data files",
     "keywords",
     "top250",
@@ -37,7 +34,6 @@ keywords = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
-    "Environment :: Web Environment",
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: GNU General Public License (GPL)",
@@ -60,7 +56,6 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
     "Operating System :: OS Independent",
     "Topic :: Database :: Front-Ends",
-    "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 

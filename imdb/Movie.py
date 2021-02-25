@@ -19,8 +19,6 @@ This module provides the Movie class, used to store information about
 a given movie.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from copy import deepcopy
 
 from imdb import linguistics

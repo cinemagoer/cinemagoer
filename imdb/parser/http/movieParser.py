@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright 2004-2020 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
@@ -32,8 +30,6 @@ plot summary
 
 ...and so on.
 """
-
-from __future__ import absolute_import, division, print_function, unicode_literals
 
 import functools
 import re

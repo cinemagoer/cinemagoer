@@ -21,8 +21,6 @@ used by the :mod:`imdb.parser.sql` package; functions to create/drop
 tables and indexes are also provided.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from imdb.parser.sql.logging import logger
 
 

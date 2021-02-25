@@ -30,8 +30,6 @@ biography
 ...and so on.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import re
 
 from imdb.utils import analyze_name

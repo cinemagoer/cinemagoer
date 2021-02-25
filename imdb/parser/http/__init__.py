@@ -24,8 +24,6 @@ called with the ``accessSystem`` argument is set to "http" or "web"
 or "html" (this is the default).
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import socket
 import ssl
 from codecs import lookup
@@ -613,7 +611,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         temp_d = self.mProxy.season_episodes_parser.parse(cont)
         if isinstance(season_nums, int):
             season_nums = {season_nums}
-        elif (isinstance(season_nums, (list, tuple)) or 
+        elif (isinstance(season_nums, (list, tuple)) or
               not hasattr(season_nums, '__contains__')):
             season_nums = set(season_nums)
         if not temp_d and 'data' in temp_d:

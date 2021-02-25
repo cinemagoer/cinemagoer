@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2017-2019 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -22,8 +21,6 @@ through the Amazon S3 dataset.
 The :func:`imdb.IMDb` function will return an instance of this class when
 called with the ``accessSystem`` parameter is set to "s3" or "s3dataset".
 """
-
-from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
 import sqlalchemy

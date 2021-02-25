@@ -19,13 +19,11 @@
 This module provides the classes (and the instances) that are used to parse
 the the contents of a list.
 
-For example, when you want to parse the list "Golden Globes 2020: Trending Titles" 
+For example, when you want to parse the list "Golden Globes 2020: Trending Titles"
 the corresponding url would be:
 
 https://www.imdb.com/list/ls091843609/
 """
-
-from __future__ import absolute_import, division, print_function, unicode_literals
 
 import string
 
@@ -71,7 +69,7 @@ class DOMHTMLListParser(DOMParserBase):
                     ),
                     Rule(
                         key='year',
-                        extractor=Path('.//span[@class="lister-item-year text-muted unbold"]/text()', 
+                        extractor=Path('.//span[@class="lister-item-year text-muted unbold"]/text()',
                                         transform=lambda x: int(''.join(i for i in x if i.isdigit())[:4]) )
                     ),
                     Rule(

@@ -26,8 +26,6 @@ http://www.imdb.com/chart/top
 http://www.imdb.com/chart/bottom
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from imdb.utils import analyze_title
 
 from .piculet import Path, Rule, Rules, reducers

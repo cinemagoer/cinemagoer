@@ -41,8 +41,15 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: GNU General Public License (GPL)",
+    "Natural Language :: Arabic",
+    "Natural Language :: Bulgarian",
     "Natural Language :: English",
+    "Natural Language :: French",
+    "Natural Language :: German",
     "Natural Language :: Italian",
+    "Natural Language :: Portuguese (Brazilian)"
+    "Natural Language :: Serbian",
+    "Natural Language :: Spanish",
     "Natural Language :: Turkish",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.9",
@@ -59,6 +66,10 @@ classifiers = [
 
 packages = [
     { include = "imdb" }
+]
+
+include = [
+    "imdb/locale/**/*.mo"
 ]
 
 [tool.poetry.dependencies]

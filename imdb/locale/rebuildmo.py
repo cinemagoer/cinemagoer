@@ -26,7 +26,7 @@ import msgfmt
 
 def rebuildmo():
     cur_dir = os.path.dirname(__file__)
-    lang_glob = cur_dir + '/imdbpy-*.po'
+    lang_glob = os.path.join(cur_dir, 'imdbpy-*.po')
     created = []
     for po_file in sorted(glob.glob(lang_glob)):
         lang = os.path.splitext(po_file)[0].split('imdbpy-')[-1]

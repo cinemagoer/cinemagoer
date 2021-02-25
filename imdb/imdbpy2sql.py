@@ -3176,10 +3176,14 @@ def _kdb_handler(signum, frame):
     sys.exit()
 
 
-if __name__ == '__main__':
+def main():
     import signal
     signal.signal(signal.SIGINT, _kdb_handler)
     if CSV_ONLY_LOAD:
         restoreCSV()
     else:
         run()
+
+
+if __name__ == '__main__':
+    main()

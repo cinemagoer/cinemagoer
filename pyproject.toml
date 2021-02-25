@@ -83,6 +83,8 @@ tox = "^3.22.0"
 
 [tool.poetry.scripts]
 imdbpy = "imdb.cli:main"
+s32imdbpy = "imdb.s32imdbpy:main"
+imdbpy2sql = "imdb.imdbpy2sql:main"
 
 [tool.isort]
 line_length = 96

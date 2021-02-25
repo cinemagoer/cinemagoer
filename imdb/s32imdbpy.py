@@ -179,7 +179,7 @@ def import_dir(dir_name, engine):
         import_file(fn, engine)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('tsv_files_dir')
     parser.add_argument('db_uri')
@@ -193,3 +193,6 @@ if __name__ == '__main__':
     metadata.bind = engine
     import_dir(dir_name, engine)
 
+
+if __name__ == '__main__':
+    main()

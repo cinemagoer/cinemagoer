@@ -254,8 +254,13 @@ class DOMHTMLMovieParser(DOMParserBase):
                            transform=analyze_og_title)
         ),
         Rule(
+            key='localized title',
+            extractor=Path('//div[@class="titlereference-header"]//span[@class="titlereference-title-year"]/preceding-sibling::text()',
+                           transform=lambda x: re_space.sub(' ', x).strip())
+        ),
+        Rule(
             key='original title',
-            extractor=Path('//div[@class="titlereference-header"]//h3[@itemprop="name"]//text()',
+            extractor=Path('//div[@class="titlereference-header"]//span[@class="titlereference-original-title-label"]/preceding-sibling::text()',
                            transform=lambda x: re_space.sub(' ', x).strip())
         ),
 

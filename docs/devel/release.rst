@@ -43,6 +43,9 @@ How to make a release
 - The new tar.gz must also be uploaded
   to https://sourceforge.net/projects/imdbpy/ (along with a new "news").
 
+- Create a new release on GitHub, including the changelog and the whl and tar.gz files.
+  https://github.com/alberanid/imdbpy/releases/new
+
 
 **communication**
 

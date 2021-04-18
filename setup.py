@@ -1,4 +1,3 @@
-import distutils.sysconfig
 import os
 import sys
 
@@ -75,9 +74,6 @@ scripts = [
     './bin/get_top_bottom_movies.py'
 ]
 
-data_files = []
-
-
 params = {
     # Meta-information.
     'name': 'IMDbPY',
@@ -97,7 +93,14 @@ params = {
     'url': home_page,
     'download_url': dwnl_url,
     'scripts': scripts,
-    'data_files': data_files,
+    'package_data': {
+        # Here, the "*" represents any possible language ID.
+        'imdb.locale': [
+            'imdbpy.pot',
+            'imdbpy-*.po',
+            '*/LC_MESSAGES/imdbpy.mo',
+        ],
+    },
     'install_requires': ['SQLAlchemy', 'lxml'],
     'extras_require': {
         'dev': [
@@ -155,7 +158,7 @@ def runRebuildmo():
         scriptPath = os.path.dirname(__file__)
         modulePath = os.path.join(cwd, scriptPath, REBUILDMO_DIR)
         sys.path += [modulePath, '.', cwd]
-        rebuildmo = importlib.import_module(os.path.join(REBUILDMO_DIR, REBUILDMO_NAME).replace('/', '.'))
+        rebuildmo = importlib.import_module(os.path.join(REBUILDMO_DIR, REBUILDMO_NAME).replace(os.path.sep, '.'))
         os.chdir(modulePath)
         languages = rebuildmo.rebuildmo()
         print('Created locale for: %s.' % ' '.join(languages))
@@ -181,23 +184,7 @@ def hasCommand():
 
 try:
     if hasCommand():
-        languages = runRebuildmo()
-    else:
-        languages = []
-    if languages:
-        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), 'imdb/locale'),
-                           ['imdb/locale/imdbpy.pot']))
-    for lang in languages:
-        files_found = setuptools.findall('imdb/locale/%s' % lang)
-        if not files_found:
-            continue
-        base_dir = os.path.dirname(files_found[0])
-        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), 'imdb/locale'),
-                           ['imdb/locale/imdbpy-%s.po' % lang]))
-        if not base_dir:
-            continue
-        data_files.append((os.path.join(distutils.sysconfig.get_python_lib(), base_dir),
-                           files_found))
+        runRebuildmo()
 except SystemExit:
     print(ERR_MSG)
 

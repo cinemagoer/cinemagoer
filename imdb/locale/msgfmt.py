@@ -97,6 +97,11 @@ def generate():
 
 
 def make(filename, outfile):
+    # Clear "MESSAGES" to prevent translations to be mixed up
+    # when calling this function on multiple ".po" files.
+    global MESSAGES
+    MESSAGES = {}
+
     ID = 1
     STR = 2
 
@@ -178,7 +183,7 @@ def make(filename, outfile):
         l = l.strip()
         if not l:
             continue
-        #l = ast.literal_eval(l)
+        l = ast.literal_eval(l)
         if section == ID:
             msgid += l.encode(encoding)
         elif section == STR:

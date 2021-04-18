@@ -7,7 +7,7 @@ How to make a release
 
     Be sure that the ``__version__`` variable is up-to-date.
 
-*docs/Changelog.rst*
+*CHANGELOG.txt*
 
     When a major fix or feature is committed, the changelog must be updated.
 

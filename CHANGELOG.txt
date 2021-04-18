@@ -1,3 +1,6 @@
+* What's new in the next release
+
+
 * What's new in release 2021.04.18 (Black Sails)
 
   [general]

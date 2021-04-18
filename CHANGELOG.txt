@@ -1,4 +1,4 @@
-* What's new in the next release
+* What's new in release 2021.04.18 (Black Sails)
 
   [general]
   - #289: Serbian translations
@@ -7,6 +7,8 @@
   - #299: add pagination to get_movie_list (courtesy of Stein van Broekhoven)
   - #300: any iterable can be used as season_nums parameter of update_series_seasons
   - #305: fix ability to set logging level
+  - #310: fix build of locales .mo files
+  - #312: extract localized title
 
   [sql]
 

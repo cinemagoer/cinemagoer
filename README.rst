@@ -104,7 +104,7 @@ The sources are available on `GitHub`_.
 License
 -------
 
-Copyright (C) 2004-2019 Davide Alberani <da --> mimante.net> et al.
+Copyright (C) 2004-2021 Davide Alberani <da --> mimante.net> et al.
 
 IMDbPY is released under the GPL license, version 2 or later.
 Read the included `LICENSE.txt`_ file for details.

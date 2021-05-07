@@ -1,4 +1,4 @@
-# Copyright 2004-2020 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2021 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -263,7 +263,7 @@ class IMDbBase:
         if keywordsResults < 1:
             keywordsResults = 100
         self._keywordsResults = keywordsResults
-        self._reraise_exceptions = keywords.get('reraiseExceptions') or False
+        self._reraise_exceptions = keywords.get('reraiseExceptions', True)
         self.set_imdb_urls(keywords.get('imdbURL_base') or imdbURL_base)
 
     def set_imdb_urls(self, imdbURL_base):

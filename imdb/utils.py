@@ -1,4 +1,4 @@
-# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2021 Davide Alberani <da@erlug.linux.it>
 #                2009 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -61,7 +61,8 @@ KIND_MAP = {
     'video': 'video movie',
     'vg': 'video game',
     'mini': 'tv mini series',
-    'tv mini-series': 'tv mini series'
+    'tv mini-series': 'tv mini series',
+    'tv miniseries': 'tv mini series'
 }
 
 # Match only the imdbIndex (for name strings).

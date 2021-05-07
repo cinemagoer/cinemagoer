@@ -3,6 +3,7 @@
   [general]
   - #238: by default, exceptions are raised
   - #315: include all script in the ./bin directory
+  - #318: fix kind of tv mini series in search results
 
 
 * What's new in release 2021.04.18 (Black Sails)

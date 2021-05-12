@@ -5,6 +5,9 @@
   - #315: include all script in the ./bin directory
   - #318: fix kind of tv mini series in search results
 
+  [http]
+  - #319: parse review rating
+
 
 * What's new in release 2021.04.18 (Black Sails)
 

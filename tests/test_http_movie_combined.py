@@ -395,7 +395,7 @@ def test_movie_runtimes_if_none_should_be_excluded(ia):
 
 
 def test_movie_countries_if_single_should_be_a_list_of_country_names(ia):
-    movie = ia.get_movie('0133093', info=['main'])      # Matrix
+    movie = ia.get_movie('0060666', info=['main'])      # Manos
     assert movie.get('countries', []) == ['United States']
 
 
@@ -408,7 +408,7 @@ def test_movie_countries_if_multiple_should_be_a_list_of_country_names(ia):
 
 
 def test_movie_country_codes_if_single_should_be_a_list_of_country_codes(ia):
-    movie = ia.get_movie('0133093', info=['main'])      # Matrix
+    movie = ia.get_movie('0060666', info=['main'])      # Manos
     assert movie.get('country codes', []) == ['us']
 
 

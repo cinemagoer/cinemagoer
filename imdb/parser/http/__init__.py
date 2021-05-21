@@ -464,7 +464,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return self.mProxy.movie_parser.parse(cont, mdparse=self._mdparse)
 
     def get_movie_recommendations(self, movieID):
-        cont = self._retrieve(self.urls['movie_main'] % movieID)
+        # for some reason /tt0133093 is okay, but /tt0133093/ is not
+        cont = self._retrieve((self.urls['movie_main'] % movieID).strip('/'))
         r = {'info sets': ('recommendations',), 'data': {}}
         ret = self.mProxy.movie_parser.parse(cont, mdparse=self._mdparse)
         if 'data' in ret and 'recommendations' in ret['data'] and ret['data']['recommendations']:

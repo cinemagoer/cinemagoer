@@ -321,7 +321,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='recommendations',
             extractor=Rules(
-                foreach='//div[@class="rec_overview"]',
+                foreach='//div[contains(@class, "rec_item")]',
                 rules=[
                     Rule(
                         key='movieID',
@@ -333,7 +333,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                     Rule(
                         key='title',
                         extractor=Path(
-                            './/div[@class="rec-title"]//text()',
+                            './/a//img/@title',
                             transform=lambda x: re_space.sub(' ', x or '').strip()
                         )
                     ),

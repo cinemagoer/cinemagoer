@@ -25,7 +25,7 @@ Then, follow these steps:
    *URI* is the identifier used to access the SQL database. For example::
 
       s32imdbpy.py ~/Download/imdb-s3-dataset-2018-02-07/ \
-          postgres://user:password@localhost/imdb
+          postgresql://user:password@localhost/imdb
 
 Please notice that for some database engines (like MySQL and MariaDB) you may need
 to specify the charset on the URI and sometimes also the dialect, with something like 'mysql+mysqldb://username:password@localhost/imdb?charset=utf8'

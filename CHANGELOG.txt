@@ -6,6 +6,7 @@
   - #318: fix kind of tv mini series in search results
 
   [http]
+  - #308: fix movie connections parser
   - #319: parse review rating
 
 

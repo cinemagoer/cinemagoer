@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2004-2020 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2021 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1759,72 +1759,66 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
     ]
 
 
-class DOMHTMLConnectionParser(DOMParserBase):
-    """Parser for the "connections" page of a given movie.
+class DOMHTMLConnectionsParser(DOMParserBase):
+    """Parser for the "connections" pages of a given movie.
     The page should be provided as a string, as taken from
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
 
     Example::
 
-        connparser = DOMHTMLConnectionParser()
-        result = connparser.parse(connections_html_string)
+        osparser = DOMHTMLOfficialsitesParser()
+        result = osparser.parse(officialsites_html_string)
     """
-    _containsObjects = True
-
+    preprocessors = [
+        (re.compile('(<h4 class="li_group">)', re.I), r'</div><div class="_imdbpy">\1'),
+        (re.compile('(^<br />.*$)', re.I | re.M), r''),
+    ]
     rules = [
         Rule(
-            key='connection',
+            foreach='//div[@class="_imdbpy"]',
+            key=Path(
+                './h4/text()',
+                transform=lambda x: x.strip().lower()
+            ),
             extractor=Rules(
-                foreach='//div[@class="_imdbpy"]',
+                foreach='./div[contains(@class, "soda")]',
                 rules=[
                     Rule(
-                        key=Path('./h5/text()', transform=transformers.lower),
-                        extractor=Rules(
-                            foreach='./a',
-                            rules=[
-                                Rule(
-                                    key='title',
-                                    extractor=Path('./text()')
-                                ),
-                                Rule(
-                                    key='movieID',
-                                    extractor=Path('./@href')
-                                )
-                            ]
-                        )
+                        key='link',
+                        extractor=Path('./a/@href')
+                    ),
+                    Rule(
+                        key='info',
+                        extractor=Path('.//text()')
                     )
-                ]
+                ],
+                transform=lambda x: (
+                    x.get('info').strip(),
+                    unquote(_normalize_href(x.get('link')))
+                )
             )
         )
     ]
 
-    preprocessors = [
-        ('<h5>', '</div><div class="_imdbpy"><h5>'),
-        # To get the movie's year.
-        ('</a> (', ' ('),
-        ('\n<br/>', '</a>'),
-        ('<br/> - ', '::')
-    ]
-
     def postprocess_data(self, data):
-        for key in list(data.keys()):
-            nl = []
-            for v in data[key]:
-                title = v['title']
-                ts = title.split('::', 1)
-                title = ts[0].strip()
-                notes = ''
-                if len(ts) == 2:
-                    notes = ts[1].strip()
-                m = Movie(title=title, movieID=analyze_imdbid(v['movieID']),
-                          accessSystem=self._as, notes=notes, modFunct=self._modFunct)
-                nl.append(m)
-            data[key] = nl
-        if not data:
-            return {}
-        return {'connections': data}
-
+        connections = {}
+        for k, v in data.items():
+            k = k.strip()
+            if not (k and v):
+                continue
+            movies = []
+            for title, link in v:
+                title = title.strip().replace('\n', '')
+                movieID = analyze_imdbid(link)
+                if not (title and movieID):
+                    continue
+                movie = Movie(title=title, movieID=movieID,
+                       accessSystem=self._as, modFunct=self._modFunct)
+                movies.append(movie)
+            if movies:
+                connections[k] = movies
+        return {'connections': connections}
 
 class DOMHTMLLocationsParser(DOMParserBase):
     """Parser for the "locations" page of a given movie.
@@ -2545,7 +2539,7 @@ _OBJECTS = {
     'soundclips_parser': ((DOMHTMLOfficialsitesParser,), None),
     'videoclips_parser': ((DOMHTMLOfficialsitesParser,), None),
     'photosites_parser': ((DOMHTMLOfficialsitesParser,), None),
-    'connections_parser': ((DOMHTMLConnectionParser,), None),
+    'connections_parser': ((DOMHTMLConnectionsParser,), None),
     'tech_parser': ((DOMHTMLTechParser,), None),
     'locations_parser': ((DOMHTMLLocationsParser,), None),
     'news_parser': ((DOMHTMLNewsParser,), None),

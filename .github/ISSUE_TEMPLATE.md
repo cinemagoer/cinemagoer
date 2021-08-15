@@ -16,8 +16,8 @@
 
 *if possible, provide a minimal code to reproduce the problem*
 
-```
-#!python
+```python
+#!/usr/bin/env python
 
 # your code here
 ```

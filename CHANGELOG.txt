@@ -9,6 +9,7 @@
   - #308: fix movie connections parser
   - #319: parse review rating
   - #327: do not strip new lines
+  - #329: improve localized and original title
 
 
 * What's new in release 2021.04.18 (Black Sails)

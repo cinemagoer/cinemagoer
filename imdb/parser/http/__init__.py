@@ -162,7 +162,8 @@ class IMDbURLopener:
         for header in ('User-Agent', 'User-agent', 'user-agent'):
             self.del_header(header)
         self.set_header('User-Agent', 'Mozilla/5.0')
-        self.set_header('Accept-Language', 'en-us,en;q=0.5')
+        lang = kwargs.get('languages', 'en-us,en;q=0.5')
+        self.set_header('Accept-Language', lang)
 
     def get_proxy(self):
         """Return the used proxy, or an empty string."""
@@ -273,7 +274,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
                  timeout=30, cookie_uu=None, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
-        self.urlOpener = IMDbURLopener()
+        self.urlOpener = IMDbURLopener(*arguments, **keywords)
         self._getRefs = True
         self._mdparse = False
         self.set_timeout(timeout)

@@ -45,7 +45,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _Container, KIND_MAP
 
-from .piculet import Path, Rule, Rules, preprocessors, transformers
+from .piculet import Path, Rule, Rules, preprocessors, transformers, ElementTree
 from .utils import DOMParserBase, analyze_imdbid, build_person, build_movie
 
 if PY2:
@@ -847,6 +847,12 @@ class DOMHTMLPlotParser(DOMParserBase):
         result = pparser.parse(plot_summary_html_string)
     """
     _defGetRefs = True
+    def synopsis_reducer(nodes):
+      ret=[]
+      for n in nodes:
+        if type(n) is ElementTree._ElementUnicodeResult:
+          ret.append(n)
+      return '\n\n'.join(ret)
 
     # Notice that recently IMDb started to put the email of the
     # author only in the link, that we're not collecting, here.
@@ -872,7 +878,8 @@ class DOMHTMLPlotParser(DOMParserBase):
             key='synopsis',
             extractor=Path(
                 foreach='//ul[@id="plot-synopsis-content"]',
-                path='.//li//text()'
+                path='.//li//node()',
+                reduce=synopsis_reducer
             )
         )
     ]

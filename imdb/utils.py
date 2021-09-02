@@ -50,7 +50,7 @@ re_m_episode = re.compile(r'\(TV Episode\)\s+-\s+', re.I)
 re_m_series = re.compile(r'Season\s+(\d+)\s+\|\s+Episode\s+(\d+)\s+-', re.I)
 re_m_imdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 re_m_kind = re.compile(
-    r'\((TV episode|TV Series|TV mini-series|mini|TV|Video|Video Game|VG|Short|TV Movie|TV Short|V)\)',
+    r'\((TV episode|TV Series|TV mini[ -]series|mini|TV|Video|Video Game|VG|Short|TV Movie|TV Short|V)\)',
     re.I
 )
 

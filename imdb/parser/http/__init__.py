@@ -629,14 +629,22 @@ class IMDbHTTPAccessSystem(IMDbBase):
         for season in _seasons:
             if season_nums != 'all' and season not in season_nums:
                 continue
-            cont = self._retrieve(
-                self.urls['movie_main'] % movieID + 'episodes?season=' + str(season)
-            )
+            # Prevent Critical error if season is not found #330
+            try:
+                cont = self._retrieve(
+                    self.urls['movie_main'] % movieID + 'episodes?season=' + str(season)
+                )
+            except:
+                pass
             other_d = self.mProxy.season_episodes_parser.parse(cont)
             other_d = self._purge_seasons_data(other_d)
             other_d['data'].setdefault('episodes', {})
-            if not (other_d and other_d['data'] and other_d['data']['episodes'][season]):
-                continue
+            # Prevent Critical error if season is not found #330
+            try:
+                if not (other_d and other_d['data'] and other_d['data']['episodes'][season]):
+                    continue
+            except:
+                pass
             nr_eps += len(other_d['data']['episodes'].get(season) or [])
             if data_d:
                 data_d['data']['episodes'][season] = other_d['data']['episodes'][season]

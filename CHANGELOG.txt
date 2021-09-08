@@ -10,6 +10,7 @@
   - #319: parse review rating
   - #327: do not strip new lines
   - #329: improve localized and original title
+  - #330: fix for tv series for seasons not found
   - #331: fix kind of tv mini series in search results
 
 

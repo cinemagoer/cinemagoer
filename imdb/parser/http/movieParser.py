@@ -1720,7 +1720,36 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
                     headshot=(x.get('headshot', ''))
                 )
             )
-        )
+        ),
+        # parser for misc sections like 'casting department', 'stunts', ...
+        Rule(
+            key='misc sections',
+            extractor=Rules(
+                foreach='//h4[contains(@class, "dataHeaderWithBorder")]',
+                rules=[
+                    Rule(
+                        key=Path('./@name', transform=lambda x: x.replace('_', ' ').strip()),
+                        extractor=Rules(
+                            foreach='./following-sibling::table[1]//tr',
+                            rules=[
+                                Rule(
+                                    key='person',
+                                    extractor=Path('.//text()')
+                                ),
+                                Rule(
+                                    key='link',
+                                    extractor=Path('./td[1]/a[@href]/@href')
+                                )
+                            ],
+                            transform=lambda x: build_person(
+                                x.get('person') or '',
+                                personID=analyze_imdbid(x.get('link'))
+                            )
+                        )
+                    )
+                ]
+            )
+        ),
     ]
 
     preprocessors = [
@@ -1734,6 +1763,14 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
                 clean_cast.append(person)
         if clean_cast:
             data['cast'] = clean_cast
+        misc_sections = data.get('misc sections')
+        if misc_sections is not None:
+            for section in misc_sections:
+                # skip sections with their own parsers
+                if 'cast' in section.keys():
+                    continue
+                data.update(section)
+            del data['misc sections']
         return data
 
 

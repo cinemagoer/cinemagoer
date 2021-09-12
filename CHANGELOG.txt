@@ -13,6 +13,7 @@
   - #330: fix for tv series for seasons not found
   - #331: fix kind of tv mini series in search results
   - #342: parse all information from full credits
+  - #343: fix for mpaa and certificates from parental guide page
 
 
 * What's new in release 2021.04.18 (Black Sails)

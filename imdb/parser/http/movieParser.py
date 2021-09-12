@@ -2539,36 +2539,20 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
     """
     rules = [
         Rule(
-            key='parents guide',
-            extractor=Rules(
-                foreach='//tr[@class="ipl-zebra-list__item"]',
-                rules=[
-                    Rule(
-                        key=Path(
-                            './td[1]/text()',
-                            transform=transformers.lower
-                        ),
-                        extractor=Path(
-                            path='./td[2]//text()',
-                            transform=lambda x: [
-                                re_space.sub(' ', t)
-                                for t in x.split('\n') if t.strip()
-                            ]
-                        )
-                    )
-                ]
+            key='mpaa',
+            extractor=Path(
+                '//tr[@id="mpaa-rating"]/td[2]//text()'
+            )
+        ),
+        Rule(
+            key='certificates',
+            extractor=Path(
+                foreach='//tr[@id="certifications-list"]//li',
+                path='.//text()',
+                transform=lambda x: re_space.sub(' ', x).strip()
             )
         )
     ]
-
-    def postprocess_data(self, data):
-        ret = {}
-        for sect in data.get('parents guide', []):
-            for key, value in sect.items():
-                ret[key] = value
-        if isinstance(ret.get('mpaa'), list):
-            ret['mpaa'] = ret['mpaa'][0]
-        return ret
 
 
 _OBJECTS = {

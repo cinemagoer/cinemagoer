@@ -2551,8 +2551,41 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
                 path='.//text()',
                 transform=lambda x: re_space.sub(' ', x).strip()
             )
+        ),
+        Rule(
+            key='advisories',
+            extractor=Rules(
+                foreach='//section[starts-with(@id, "advisory-")]',
+                rules=[
+                    Rule(key='section',
+                         extractor=Path('./@id')
+                         ),
+                    Rule(key='items',
+                         extractor=Rules(
+                             foreach='.//li',
+                             rules=[
+                                 Rule(
+                                     key='item',
+                                     extractor=Path('./text()')
+                                 )
+                             ],
+                             transform=lambda x: x.get('item').strip()
+                         )
+                    )
+                ]
+            )
         )
     ]
+
+    def postprocess_data(self, data):
+        if 'advisories' in data:
+            for advisory in data['advisories']:
+                sect = advisory.get('section', '').replace('-', ' ')
+                items = [x for x in advisory.get('items', []) if x]
+                if sect and items:
+                    data[sect] = items
+            del data['advisories']
+        return data
 
 
 _OBJECTS = {

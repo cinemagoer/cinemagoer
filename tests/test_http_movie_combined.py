@@ -519,10 +519,6 @@ def test_movie_sound_mix_if_none_should_be_excluded(ia):
     movie = ia.get_movie('1863157', info=['main'])      # Ates Parcasi
     assert 'sound mix' not in movie
 
-def test_movie_certificates_from_parental_guide(ia):
-    movie = ia.get_movie('0133093', info=['parents guide'])      # Matrix
-    assert 'India:A (1999, original rating)' in movie.get('certificates', [])
-
 def test_movie_certificates_should_be_a_list_of_certificates(ia):
     movie = ia.get_movie('1000252', info=['main'])      # Doctor Who - Blink
     assert movie.get('certificates', []) == [

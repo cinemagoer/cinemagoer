@@ -4,7 +4,8 @@ def test_movie_parental_guide_contains_mpaa_rating(ia):
 
 def test_movie_certificates_from_parental_guide(ia):
     movie = ia.get_movie('0133093', info=['parents guide'])      # Matrix
-    assert 'India:A (1999, original rating)' in movie.get('certificates', [])
+    arCert = {'country_code': 'AR', 'country': 'Argentina', 'certificate': '13', 'note': '', 'full': 'Argentina:13'}
+    assert arCert in movie.get('certificates', [])
 
 def test_movie_advisories(ia):
     movie = ia.get_movie('0133093', info=['parents guide'])      # Matrix

@@ -2546,10 +2546,30 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
         ),
         Rule(
             key='certificates',
-            extractor=Path(
+            extractor=Rules(
                 foreach='//tr[@id="certifications-list"]//li',
-                path='.//text()',
-                transform=lambda x: re_space.sub(' ', x).strip()
+                rules=[
+                    Rule(
+                        key='full',
+                        extractor=Path('./a//text()')
+                    ),
+                    Rule(
+                        key='country_code',
+                        extractor=Path('./a/@href')
+                    ),
+                    Rule(
+                        key='note',
+                        extractor=Path('./text()')
+                    ),
+
+                ],
+                transform=lambda x: {
+                    'country_code': x.get('country_code').split('certificates=')[1].split(':')[0].strip(),
+                    'country': x.get('full').split(':')[0].strip(),
+                    'certificate': x.get('full').split(':')[1].strip(),
+                    'note': x.get('note').strip(),
+                    'full': x.get('full').strip(),
+                }
             )
         ),
         Rule(

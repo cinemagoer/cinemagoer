@@ -1364,6 +1364,10 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
                         extractor=Path('.//td[1]//text()')
                     ),
                     Rule(
+                        key='country_code',
+                        extractor=Path('.//td[1]/a/@href')
+                    ),
+                    Rule(
                         key='date',
                         extractor=Path('.//td[2]//text()')
                     ),
@@ -1419,6 +1423,8 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
                 info += notes
             rl.append(info)
         if releases:
+            for rd in data['release dates']:
+                rd['country_code'] = rd['country_code'].split('region=')[1].split('&')[0].strip().upper()
             data['raw release dates'] = data['release dates']
             del data['release dates']
         if rl:
@@ -1436,6 +1442,11 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
                 for country in countries:
                     nakas.append('%s %s' % (title, country.strip()))
         if akas:
+            if releases:
+                for rd in data['raw release dates']:
+                    for a in data['akas']:
+                        if rd['country'].strip() in a['countries'].strip():
+                            a['country_code'] = rd['country_code']
             data['raw akas'] = data['akas']
             del data['akas']
         if nakas:

@@ -1445,8 +1445,9 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
             if releases:
                 for rd in data['raw release dates']:
                     for a in data['akas']:
-                        if rd['country'].strip() in a['countries'].strip():
-                            a['country_code'] = rd['country_code']
+                        if 'countries' in a:
+                            if rd['country'].strip() in a['countries'].strip():
+                                a['country_code'] = rd['country_code']
             data['raw akas'] = data['akas']
             del data['akas']
         if nakas:

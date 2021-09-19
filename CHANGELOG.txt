@@ -15,6 +15,7 @@
   - #342: parse all information from full credits
   - #343: fix for mpaa and certificates from parental guide page
   - #344: extract advisories from parental guide page
+  - #346: collect raw info from country code
 
 
 * What's new in release 2021.04.18 (Black Sails)

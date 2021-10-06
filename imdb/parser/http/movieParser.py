@@ -1109,8 +1109,50 @@ class DOMHTMLKeywordsParser(DOMParserBase):
                 path='./@data-item-keyword',
                 transform=lambda x: x.lower().replace(' ', '-')
             )
+        ),
+        Rule(
+            key='relevant keywords',
+            extractor=Rules(
+                foreach='//td[@data-item-keyword]',
+                            rules=[
+                                Rule(
+                                    key='keyword',
+                                    extractor=Path('./@data-item-keyword')
+                                ),
+                                Rule(
+                                    key='ordering',
+                                    extractor=Path('./@data-item-votes')
+                                ),
+                                Rule(
+                                    key='vote_str',
+                                    extractor=Path('./div[2]/div//text()')
+                                )
+                            ],
+                            transform=lambda x: {
+                                'keyword': x.get('keyword').lower(),
+                                'keyword_dash': x.get('keyword').lower().replace(' ', '-'),
+                                'ordering': x.get('ordering'),
+                                'votes_str': x.get('vote_str').strip().lower()
+                            }
+            )
         )
+
     ]
+
+    def postprocess_data(self, data):
+        if 'relevant keywords' in data:
+            rk = []
+            for x in data['relevant keywords']:
+                if 'votes_str' in x:
+                    if 'is this relevant?' in x['votes_str']:
+                        x['votes_for'] = 0
+                        x['total_votes'] = 0
+                    else:
+                        x['votes_for'] = x['votes_str'].split('of')[0].strip()
+                        x['total_votes'] = re.sub("\D", "", x['votes_str'].split('of')[1]).strip()
+                    rk.append(x)
+            data['relevant keywords'] = rk
+        return data
 
 
 class DOMHTMLAlternateVersionsParser(DOMParserBase):

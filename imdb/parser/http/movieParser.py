@@ -1149,7 +1149,7 @@ class DOMHTMLKeywordsParser(DOMParserBase):
                         x['total_votes'] = 0
                     else:
                         x['votes_for'] = x['votes_str'].split('of')[0].strip()
-                        x['total_votes'] = re.sub("\D", "", x['votes_str'].split('of')[1]).strip()
+                        x['total_votes'] = re.sub(r"\D", "", x['votes_str'].split('of')[1]).strip()
                     rk.append(x)
             data['relevant keywords'] = rk
         return data

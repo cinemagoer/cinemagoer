@@ -16,6 +16,7 @@
   - #343: fix for mpaa and certificates from parental guide page
   - #344: extract advisories from parental guide page
   - #346: collect raw info from country code
+  - #349: relevant keywords
 
 
 * What's new in release 2021.04.18 (Black Sails)

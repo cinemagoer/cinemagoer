@@ -650,6 +650,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 data_d['data']['episodes'][season] = other_d['data']['episodes'][season]
             else:
                 data_d = other_d
+        if not data_d:
+            data_d['data'] = dict()
         data_d['data']['number of episodes'] = nr_eps
         return data_d
 

@@ -16,6 +16,7 @@
   - #343: fix for mpaa and certificates from parental guide page
   - #344: extract advisories from parental guide page
   - #346: collect raw info from country code
+  - #348: fix for series with no episodes
   - #349: relevant keywords
 
 

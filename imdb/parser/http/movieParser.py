@@ -84,8 +84,11 @@ _SECT_CONV = {
     'creators': 'creator',
     'color': 'color info',
     'plot': 'plot outline',
+    'art director': 'art direction',
     'art directors': 'art direction',
+    'composers': 'composer',
     'assistant directors': 'assistant director',
+    'set decorator': 'set decoration',
     'set decorators': 'set decoration',
     'visual effects department': 'visual effects',
     'miscellaneous': 'miscellaneous crew',
@@ -94,6 +97,7 @@ _SECT_CONV = {
     'cinematographers': 'cinematographer',
     'camera department': 'camera and electrical department',
     'costume designers': 'costume designer',
+    'production designer': 'production design',
     'production designers': 'production design',
     'production managers': 'production manager',
     'music original': 'original music',
@@ -101,11 +105,16 @@ _SECT_CONV = {
     'other companies': 'miscellaneous companies',
     'producers': 'producer',
     'special effects by': 'special effects department',
-    'special effects': 'special effects companies'
 }
 
 re_space = re.compile(r'\s+')
 
+def clean_section_name(section):
+    """Clean and replace some section names."""
+    section = re_space.sub(' ', section.replace('_', ' ').strip().lower())
+    if section.endswith(' by'):
+        section = section[:-3]
+    return _SECT_CONV.get(section, section)
 
 def _manageRoles(mo):
     """Perform some transformation on the html, so that roleIDs can
@@ -277,7 +286,7 @@ class DOMHTMLMovieParser(DOMParserBase):
                 foreach='//h4[contains(@class, "ipl-header__content")]',
                 rules=[
                     Rule(
-                        key=Path('./@name', transform=lambda x: x.replace('_', ' ').strip()),
+                        key=Path('./@name', transform=clean_section_name),
                         extractor=Rules(
                             foreach='../../following-sibling::table[1]//tr',
                             rules=[
@@ -718,7 +727,6 @@ class DOMHTMLMovieParser(DOMParserBase):
             if sect in _SECT_CONV:
                 data[_SECT_CONV[sect]] = data[sect]
                 del data[sect]
-                sect = _SECT_CONV[sect]
         # Filter out fake values.
         for key in data:
             value = data[key]
@@ -1782,7 +1790,7 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
                 foreach='//h4[contains(@class, "dataHeaderWithBorder")]',
                 rules=[
                     Rule(
-                        key=Path('./@name', transform=lambda x: x.replace('_', ' ').strip()),
+                        key=Path('./@name', transform=clean_section_name),
                         extractor=Rules(
                             foreach='./following-sibling::table[1]//tr',
                             rules=[
@@ -1811,6 +1819,7 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
+        # Convert section names.
         clean_cast = []
         for person in data.get('cast', []):
             if person.personID and person.get('name'):
@@ -1820,10 +1829,13 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
         misc_sections = data.get('misc sections')
         if misc_sections is not None:
             for section in misc_sections:
-                # skip sections with their own parsers
-                if 'cast' in section.keys():
-                    continue
-                data.update(section)
+                for sectName, sectData in section.items():
+                    # skip sections with their own parsers
+                    if sectName in ('cast',):
+                        continue
+                    newName = _SECT_CONV.get(sectName, sectName)
+                    if sectData:
+                        data[newName] = sectData
             del data['misc sections']
         return data
 

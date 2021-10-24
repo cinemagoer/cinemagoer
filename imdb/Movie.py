@@ -50,6 +50,8 @@ class Movie(_Container):
         'plot summary': 'plot',
         'plot summaries': 'plot',
         'directed by': 'director',
+        'directors': 'director',
+        'writers': 'writer',
         'actors': 'cast',
         'actresses': 'cast',
         'aka': 'akas',

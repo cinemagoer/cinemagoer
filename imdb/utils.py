@@ -1500,8 +1500,10 @@ class _Container(object):
         if value is not None:
             return value
         # Handle key aliases.
-        key = self.keys_alias.get(key, key)
-        rawData = self.data[key]
+        if key in self.keys_alias and self.keys_alias[key] in self.data:
+            rawData = self.data[self.keys_alias[key]]
+        else:
+            rawData = self.data[key]
         if key in self.keys_tomodify and \
                 self.modFunct not in (None, modNull):
             try:

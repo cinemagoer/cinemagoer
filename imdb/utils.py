@@ -50,7 +50,7 @@ re_m_episode = re.compile(r'\(TV Episode\)\s+-\s+', re.I)
 re_m_series = re.compile(r'Season\s+(\d+)\s+\|\s+Episode\s+(\d+)\s+-', re.I)
 re_m_imdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
 re_m_kind = re.compile(
-    r'\((TV episode|TV Series|TV mini[ -]series|mini|TV|Video|Video Game|VG|Short|TV Movie|TV Short|V)\)',
+    r'\((TV episode|TV Series|TV mini[ -]series|mini|TV|Video|Video Game|VG|Short|TV Movie|TV Short|TV Special|V)\)',
     re.I
 )
 
@@ -62,7 +62,8 @@ KIND_MAP = {
     'vg': 'video game',
     'mini': 'tv mini series',
     'tv mini-series': 'tv mini series',
-    'tv miniseries': 'tv mini series'
+    'tv miniseries': 'tv mini series',
+    'tv special': 'tv special'
 }
 
 # Match only the imdbIndex (for name strings).
@@ -435,7 +436,6 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
         else:
             title = normalizeTitle(title)
     result['title'] = title
-    result['kind'] = kind or 'movie'
     if year and year != '????':
         if '-' in year:
             result['series years'] = year
@@ -701,7 +701,7 @@ def cmpMovies(m1, m2):
         return 1
     m1id = getattr(m1, 'movieID', None)
     # Introduce this check even for other comparisons functions?
-    # XXX: is it safe to check without knowning the data access system?
+    # XXX: is it safe to check without knowing the data access system?
     #      probably not a great idea.  Check for 'kind', instead?
     if m1id is not None:
         m2id = getattr(m2, 'movieID', None)

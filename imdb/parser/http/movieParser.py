@@ -180,9 +180,15 @@ _re_og_title = re.compile(
     re.UNICODE
 )
 
+def special_kind(og_title):
+    specialKind = re.compile(r"\n(.*)").findall(og_title)
+    if len(specialKind):
+        return specialKind[0].strip()
+    return None
 
 def analyze_og_title(og_title):
     data = {}
+    og_kind = special_kind(og_title)
     match = _re_og_title.match(og_title)
     if og_title and not match:
         # assume it's a title in production, missing release date information
@@ -192,7 +198,10 @@ def analyze_og_title(og_title):
         data['year'] = int(match.group(3))
     kind = match.group(2) or match.group(6)
     if kind is None:
-        kind = 'movie'
+        if og_kind is None:
+            kind = 'movie'
+        else:
+            kind = og_kind.lower()
     else:
         kind = kind.lower()
         kind = KIND_MAP.get(kind, kind)
@@ -259,7 +268,7 @@ class DOMHTMLMovieParser(DOMParserBase):
     rules = [
         Rule(
             key='title',
-            extractor=Path('//meta[@property="og:title"]/@content',
+            extractor=Path('//meta[@property="og:title"]/@content|//*[@id="main"]/section/div/div/ul[1]/li[5]/text()',
                            transform=analyze_og_title)
         ),
         Rule(

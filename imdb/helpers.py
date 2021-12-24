@@ -613,7 +613,13 @@ def resizeImage(image, width=None, height=None, crop=None):
     regexString = r'https://m.media-amazon.com/images/\w/\w+'
 
     resultImage = re.findall(regexString, image)[0]
-    resultImage += '@._V1_'
+        if "@@" in image:
+        resultImage += '@'
+
+    if "@" not in image:
+        resultImage += '._V1_'
+    else:
+        resultImage += '@._V1_'
 
     if width:
         resultImage += 'SX%s_' % width

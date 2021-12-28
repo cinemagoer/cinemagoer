@@ -19,6 +19,7 @@
   - #348: fix for series with no episodes
   - #349: relevant keywords
   - #357: add support for TV Special
+  - #366: fix full-size image links
 
 
 * What's new in release 2021.04.18 (Black Sails)

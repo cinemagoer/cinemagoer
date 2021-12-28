@@ -131,6 +131,10 @@ def test_movie_kind_tv_movie_should_be_tv_movie(ia):
     movie = ia.get_movie('0389150', info=['main'])      # Matrix (TV)
     assert movie.get('kind') == 'tv movie'
 
+def test_movie_kind_tv_special_should_be_tv_special(ia):
+    movie = ia.get_movie('14544192', info=['main'])      # Bo Burnham: Inside
+    assert movie.get('kind') == 'tv special'
+
 
 def test_movie_kind_video_movie_should_be_video_movie(ia):
     movie = ia.get_movie('0109151', info=['main'])      # Matrix (V)

@@ -162,6 +162,8 @@ def hasCommand():
         return False
     if '-h' in args:
         return False
+    if 'clean' in args:
+        return False
     for arg in args:
         if arg and not arg.startswith('-'):
             return True

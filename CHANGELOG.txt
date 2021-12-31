@@ -4,6 +4,7 @@
   - #238: by default, exceptions are raised
   - #315: include all script in the ./bin directory
   - #318: fix kind of tv mini series in search results
+  - #369: do not rebuild locales running setup.py clean
 
   [http]
   - #308: fix movie connections parser

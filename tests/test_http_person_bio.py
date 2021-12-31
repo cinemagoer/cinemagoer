@@ -1,3 +1,5 @@
+from pytest import mark
+
 import re
 
 
@@ -91,6 +93,7 @@ def test_person_height_if_none_should_be_excluded(ia):
     assert 'height' not in person
 
 
+@mark.skip("FIXME: biography page change: from 'Spouses' it's now 'Family > Spouse")
 def test_person_spouse_should_be_a_list(ia):
     person = ia.get_person('0000210', info=['biography'])   # Julia Roberts
     spouses = person.get('spouse', [])

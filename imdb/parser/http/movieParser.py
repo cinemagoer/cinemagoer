@@ -879,7 +879,7 @@ class DOMHTMLPlotParser(DOMParserBase):
     def synopsis_reducer(nodes):
       ret=[]
       for n in nodes:
-        if type(n) is ElementTree._ElementUnicodeResult:
+        if 'ElementUnicodeResult' in n.__class__.__name__:
           ret.append(n)
       return '\n\n'.join(ret)
 

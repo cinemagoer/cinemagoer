@@ -302,7 +302,7 @@ def sortedEpisodes(m, season=None):
 
 
 # Idea and portions of the code courtesy of none none (dclist at gmail.com)
-_re_imdbIDurl = re.compile(r'\b(nm|tt|ch|co)([0-9]{7})\b')
+_re_imdbIDurl = re.compile(r'\b(nm|tt|ch|co)([0-9]{7,8})\b')
 
 
 def get_byURL(url, info=None, args=None, kwds=None):

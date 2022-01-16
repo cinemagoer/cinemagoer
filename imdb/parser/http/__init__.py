@@ -772,6 +772,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
         elif kind == 'topindian250':
             parser = self.topBottomProxy.topindian250_parser
             url = self.urls['topindian250']
+        elif kind == 'boxoffice':
+            parser = self.topBottomProxy.boxoffice_parser
+            url = self.urls['boxoffice']
         else:
             return []
         cont = self._retrieve(url)

@@ -303,6 +303,8 @@ class IMDbBase:
         imdbURL_toptv250 = imdbURL_base + 'chart/toptv'
         # https://www.imdb.com/india/top-rated-indian-movies
         imdbURL_topindian250 = imdbURL_base + 'india/top-rated-indian-movies'
+        # http://www.imdb.com/chart/boxoffice/
+        imdbURL_boxoffice = imdbURL_base + 'chart/boxoffice/'
         # http://www.imdb.com/find?%s
         imdbURL_find = imdbURL_base + 'find?%s'
         # http://www.imdb.com/search/title?%s
@@ -698,6 +700,12 @@ class IMDbBase:
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res]
 
+    def get_boxoffice_movies(self):
+        """Return the list of the top box office movies."""
+        res = self._get_top_bottom_movies('boxoffice')
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                            data=md, modFunct=self._defModFunct,
+                            accessSystem=self.accessSystem) for mi, md in res]
 
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""

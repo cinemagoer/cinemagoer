@@ -329,7 +329,8 @@ class IMDbBase:
             topindian250=imdbURL_topindian250,
             find=imdbURL_find,
             movie_list=imdbURL_list_base,
-            search_movie_advanced=imdbURL_search_movie_advanced)
+            search_movie_advanced=imdbURL_search_movie_advanced,
+            boxoffice=imdbURL_boxoffice)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""

@@ -707,6 +707,24 @@ class IMDbBase:
                             data=md, modFunct=self._defModFunct,
                             accessSystem=self.accessSystem) for mi, md in res]
 
+    def _get_top_movies_by_genres(self, genres):
+        """Return a list of tuples (movieID, {movieData})"""
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        raise NotImplementedError('override this method')
+
+    def get_top50_movies_by_genres(self, genres):
+        """Return the list of the top 50 movies by genres.
+
+        :sig: (Union[str, List[str]]) -> List
+        :param genres: Name genre or list of genre's names."""
+        if isinstance(genres, list):
+            genres = ','.join(map(str, genres))
+        res = self._get_top_movies_by_genres(genres)
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                            data=md, modFunct=self._defModFunct,
+                            accessSystem=self.accessSystem) for mi, md in res]
+
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""
         # XXX: not really useful...

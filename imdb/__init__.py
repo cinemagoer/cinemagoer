@@ -303,6 +303,8 @@ class IMDbBase:
         imdbURL_toptv250 = imdbURL_base + 'chart/toptv'
         # https://www.imdb.com/india/top-rated-indian-movies
         imdbURL_topindian250 = imdbURL_base + 'india/top-rated-indian-movies'
+        # http://www.imdb.com/chart/boxoffice/
+        imdbURL_boxoffice = imdbURL_base + 'chart/boxoffice/'
         # http://www.imdb.com/find?%s
         imdbURL_find = imdbURL_base + 'find?%s'
         # http://www.imdb.com/search/title?%s
@@ -327,7 +329,8 @@ class IMDbBase:
             topindian250=imdbURL_topindian250,
             find=imdbURL_find,
             movie_list=imdbURL_list_base,
-            search_movie_advanced=imdbURL_search_movie_advanced)
+            search_movie_advanced=imdbURL_search_movie_advanced,
+            boxoffice=imdbURL_boxoffice)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -698,6 +701,30 @@ class IMDbBase:
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res]
 
+    def get_boxoffice_movies(self):
+        """Return the list of the top box office movies."""
+        res = self._get_top_bottom_movies('boxoffice')
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                            data=md, modFunct=self._defModFunct,
+                            accessSystem=self.accessSystem) for mi, md in res]
+
+    def _get_top_movies_by_genres(self, genres):
+        """Return a list of tuples (movieID, {movieData})"""
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        raise NotImplementedError('override this method')
+
+    def get_top50_movies_by_genres(self, genres):
+        """Return the list of the top 50 movies by genres.
+
+        :sig: (Union[str, List[str]]) -> List
+        :param genres: Name genre or list of genre's names."""
+        if isinstance(genres, list):
+            genres = ','.join(map(str, genres))
+        res = self._get_top_movies_by_genres(genres)
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                            data=md, modFunct=self._defModFunct,
+                            accessSystem=self.accessSystem) for mi, md in res]
 
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""

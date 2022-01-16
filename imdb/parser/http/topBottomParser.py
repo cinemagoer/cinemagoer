@@ -127,11 +127,70 @@ class DOMHTMLTopIndian250Parser(DOMHTMLTop250Parser):
     ranktext = 'top indian 250 rank'
 
 
+class DOMHTMLBoxOfficeParser(DOMParserBase):
+    """A parser for the "top boxoffice movies" page."""
+    ranktext = 'top box office rank'
+
+    rules = [
+        Rule(
+            key='chart',
+            extractor=Rules(
+                foreach='//tbody/tr',
+                rules=[
+                    Rule(
+                        key='movieID',
+                        extractor=Path('./td[@class="titleColumn"]/a/@href', reduce=reducers.first)
+                    ),
+                    Rule(
+                        key='title',
+                        extractor=Path('./td[@class="titleColumn"]/a/text()')
+                    ),
+                    Rule(
+                        key='weekend',
+                        extractor=Path('./td[@class="ratingColumn"]/text()')
+                    ),
+                    Rule(
+                        key='gross',
+                        extractor=Path('./td[@class="ratingColumn"]/span[@class="secondaryInfo"]/text()')
+                    ),
+                    Rule(
+                        key='weeks',
+                        extractor=Path('./td[@class="weeksColumn"]/text()')
+                    ),
+                ]
+            )
+        )
+    ]
+
+    def postprocess_data(self, data):
+        if (not data) or ('chart' not in data):
+            return []
+
+        movies = []
+        for entry in data['chart']:
+            if ('movieID' not in entry) or ('title' not in entry):
+                continue
+
+            movie_id = analyze_imdbid(entry['movieID'])
+            if movie_id is None:
+                continue
+            del entry['movieID']
+
+            title = analyze_title(entry['title'])
+            entry.update(title)
+            weekend = entry['weekend'].lstrip().rstrip()
+            entry.update({'weekend': weekend})
+
+            movies.append((movie_id, entry))
+        return movies
+
+
 _OBJECTS = {
     'top250_parser': ((DOMHTMLTop250Parser,), None),
     'bottom100_parser': ((DOMHTMLBottom100Parser,), None),
     'moviemeter100_parser': ((DOMHTMLMoviemeter100Parser,), None),
     'toptv250_parser': ((DOMHTMLTVTop250Parser,), None),
     'tvmeter100_parser': ((DOMHTMLTVmeter100Parser,), None),
-    'topindian250_parser': ((DOMHTMLTopIndian250Parser,), None)
+    'topindian250_parser': ((DOMHTMLTopIndian250Parser,), None),
+    'boxoffice_parser': ((DOMHTMLBoxOfficeParser,), None)
 }

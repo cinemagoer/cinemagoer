@@ -453,6 +453,10 @@ class IMDbHTTPAccessSystem(IMDbBase):
                                                        sort=sort, sort_dir=sort_dir)
         return self.smaProxy.search_movie_advanced_parser.parse(cont, results=results)['data']
 
+    def _get_top_movies_by_genres(self, genres):
+        cont = self._retrieve(self.urls['search_movie_advanced'] % 'genres=' + genres)
+        return self.smaProxy.search_movie_advanced_parser.parse(cont)['data']
+
     def _search_episode(self, title, results):
         t_dict = analyze_title(title)
         if t_dict['kind'] == 'episode':
@@ -772,6 +776,9 @@ class IMDbHTTPAccessSystem(IMDbBase):
         elif kind == 'topindian250':
             parser = self.topBottomProxy.topindian250_parser
             url = self.urls['topindian250']
+        elif kind == 'boxoffice':
+            parser = self.topBottomProxy.boxoffice_parser
+            url = self.urls['boxoffice']
         else:
             return []
         cont = self._retrieve(url)

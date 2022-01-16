@@ -5,6 +5,7 @@
   - #315: include all script in the ./bin directory
   - #318: fix kind of tv mini series in search results
   - #369: do not rebuild locales running setup.py clean
+  - #371: support for 8-digit imdbIDs
 
   [http]
   - #308: fix movie connections parser

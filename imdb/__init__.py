@@ -711,7 +711,7 @@ class IMDbBase:
                             data=md, modFunct=self._defModFunct,
                             accessSystem=self.accessSystem) for mi, md in res]
 
-    def _get_top_movies_by_genres(self, genres):
+    def _get_top_movies_or_tv_by_genres(self, genres, filter_content):
         """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
@@ -724,7 +724,21 @@ class IMDbBase:
         :param genres: Name genre or list of genre's names."""
         if isinstance(genres, list):
             genres = ','.join(map(str, genres))
-        res = self._get_top_movies_by_genres(genres)
+        movies_filter = '&title_type=feature'
+        res = self._get_top_movies_or_tv_by_genres(genres, movies_filter)
+        return [Movie.Movie(movieID=self._get_real_movieID(mi),
+                            data=md, modFunct=self._defModFunct,
+                            accessSystem=self.accessSystem) for mi, md in res]
+
+    def get_top50_tv_by_genres(self, genres):
+        """Return the list of the top 50 tv series and mini series by genres.
+
+        :sig: (Union[str, List[str]]) -> List
+        :param genres: Name genre or list of genre's names."""
+        if isinstance(genres, list):
+            genres = ','.join(map(str, genres))
+        tv_filter = '&title_type=tv_series,mini_series'
+        res = self._get_top_movies_or_tv_by_genres(genres, tv_filter)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                             data=md, modFunct=self._defModFunct,
                             accessSystem=self.accessSystem) for mi, md in res]

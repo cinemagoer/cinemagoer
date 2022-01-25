@@ -62,7 +62,7 @@ scripts = glob.glob('./bin/*.py')
 
 params = {
     # Meta-information.
-    'name': 'Cinemagoer',
+    'name': 'cinemagoer',
     'version': __version__,
     'description': 'Python package to access the IMDb\'s database',
     'long_description': long_desc,

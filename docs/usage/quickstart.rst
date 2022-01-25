@@ -142,7 +142,7 @@ The :meth:`get_top250_tv <imdb.IMDbBase.get_top250_tv>`, :meth:`get_popular100_m
 Exceptions
 ----------
 
-Any error related to IMDbPY can be caught by checking for
+Any error related to Cinemagoer can be caught by checking for
 the :class:`imdb.IMDbError` exception:
 
 .. code-block:: python

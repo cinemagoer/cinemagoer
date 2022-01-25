@@ -1,4 +1,4 @@
-  IMDbPY's goodies
+  Cinemagoer's goodies
   ================
 
 Useful shell scripts, especially for developers.

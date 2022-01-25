@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'IMDbPY'
+project = 'Cinemagoer'
 copyright = '2018, Davide Alberani, H. Turgut Uyar'
 author = 'Davide Alberani, H. Turgut Uyar'
 
@@ -104,7 +104,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'IMDbPYdoc'
+htmlhelp_basename = 'Cinemagoerdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -131,7 +131,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'IMDbPY.tex', 'IMDbPY Documentation',
+    (master_doc, 'Cinemagoer.tex', 'Cinemagoer Documentation',
      'Davide Alberani, H. Turgut Uyar', 'manual'),
 ]
 
@@ -141,7 +141,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'imdbpy', 'IMDbPY Documentation',
+    (master_doc, 'cinemagoer', 'Cinemagoer Documentation',
      [author], 1)
 ]
 
@@ -152,8 +152,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'IMDbPY', 'IMDbPY Documentation',
-     author, 'IMDbPY', 'One line description of project.',
+    (master_doc, 'Cinemagoer', 'Cinemagoer Documentation',
+     author, 'Cinemagoer', 'One line description of project.',
      'Miscellaneous'),
 ]
 

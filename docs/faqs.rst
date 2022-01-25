@@ -1,7 +1,7 @@
 FAQs
 ====
 
-:Q: Is IMDbPY compatible with Python 3?
+:Q: Is Cinemagoer compatible with Python 3?
 
 :A: Yes. Versions after 6.0 are compatible with Python 3.x, but should
     also work with Python 2.7.
@@ -25,7 +25,7 @@ FAQs
 :A: Import the ``imdb.helpers`` module and use the ``get_byURL`` function.
 
 
-:Q: I'm writing an interface based on IMDbPY and I have problems handling
+:Q: I'm writing an interface based on Cinemagoer and I have problems handling
     encoding, chars conversions, replacements of references and so on.
 
 :A: See the many functions in the imdb.helpers module.

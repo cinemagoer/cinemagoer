@@ -37,7 +37,7 @@ How to make a release
 - Don't forget to push both sources and tags to both the GitHub and Bitbucket
   repositories (they are kept in sync).
 
-- Upload to pypi: ``twine upload dist/IMDbPY-*`` (you probably need a recent
+- Upload to pypi: ``twine upload dist/Cinemagoer-*`` (you probably need a recent
   version of twine and the appropriate ~/.pypi file)
 
 - The new tar.gz must also be uploaded

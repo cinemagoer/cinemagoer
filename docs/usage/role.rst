@@ -101,7 +101,7 @@ like the title and the year; the latest movie with Julia Roberts:
    This document is still valid, but only for the obsolete "sql" data access
    system.
 
-Since version 3.3, IMDbPY supports the character pages of the IMDb database;
+Since version 3.3, Cinemagoer supports the character pages of the IMDb database;
 this required some substantial changes to how actors' and acresses' roles
 were handled. Starting with release 3.4, "sql" data access system is supported,
 too - but it works a bit differently from "http". See "SQL" below.

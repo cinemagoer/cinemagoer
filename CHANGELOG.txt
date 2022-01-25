@@ -6,6 +6,7 @@
   - #318: fix kind of tv mini series in search results
   - #369: do not rebuild locales running setup.py clean
   - #371: support for 8-digit imdbIDs
+  - #378: renamed to cinemagoer
 
   [http]
   - #308: fix movie connections parser

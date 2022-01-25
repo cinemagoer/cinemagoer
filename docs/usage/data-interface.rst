@@ -1,7 +1,7 @@
 Data interface
 ==============
 
-The IMDbPY objects that represent movies, people and companies provide
+The Cinemagoer objects that represent movies, people and companies provide
 a dictionary-like interface where the key identifies the information
 you want to get out of the object.
 
@@ -20,7 +20,7 @@ within the respective class.
 Information sets
 ----------------
 
-IMDbPY can retrieve almost every piece of information of a movie or person
+Cinemagoer can retrieve almost every piece of information of a movie or person
 This can be a problem, because (at least for the "http" data access
 system) it means that a lot of web pages must be fetched and parsed.
 This can be both time- and bandwidth-consuming, especially if you're interested

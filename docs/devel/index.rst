@@ -1,13 +1,13 @@
 Development
 ===========
 
-If you intend to do development on the IMDbPY package, it's recommended
+If you intend to do development on the Cinemagoer package, it's recommended
 that you create a virtual environment for it. For example::
 
    python -m venv ~/.virtualenvs/imdbpy
    . ~/.virtualenvs/imdbpy/bin/activate
 
-In the virtual environment, install IMDbPY in editable mode and include
+In the virtual environment, install Cinemagoer in editable mode and include
 the extra packages. In the top level directory of the project (where
 the :file:`setup.py` file resides), run::
 
@@ -29,7 +29,7 @@ the :file:`setup.py` file resides), run::
   created with the imdbpy2sql.py script; see the README.sqldb file.
   The dbschema module contains tables definitions and some useful functions.
   The helpers module contains functions and other goodies not directly used
-  by the IMDbPY package, but that can be useful to develop IMDbPY-based programs.
+  by the Cinemagoer package, but that can be useful to develop Cinemagoer-based programs.
 
 
 I wanted to stay independent from the source of the data for a given

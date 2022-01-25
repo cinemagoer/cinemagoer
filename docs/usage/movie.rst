@@ -117,7 +117,7 @@ Other keys that contain list of companies are: production companies, special
 effects, sound mix, special effects companies, miscellaneous companies,
 distributors.
 
-Converting a title to its "Title, The" canonical format, IMDbPY makes
+Converting a title to its "Title, The" canonical format, Cinemagoer makes
 some assumptions about what is an article and what isn't, and this could
 lead to some wrong canonical titles. For more information on this subject,
 see the "ARTICLES IN TITLES" section of the README.locale file.

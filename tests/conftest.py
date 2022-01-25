@@ -32,7 +32,7 @@ def retrieve_unicode_cached(self, url, size=-1):
     return content
 
 
-s3_uri = os.getenv('IMDBPY_S3_URI')
+s3_uri = os.getenv('CINEMAGOER_S3_URI')
 
 
 @fixture(params=['http'] + (['s3'] if s3_uri is not None else []))

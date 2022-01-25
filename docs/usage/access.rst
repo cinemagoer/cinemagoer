@@ -3,7 +3,7 @@
 Access systems
 ==============
 
-IMDbPY supports different ways of accessing the IMDb data:
+Cinemagoer supports different ways of accessing the IMDb data:
 
 - Fetching data directly from the web server.
 

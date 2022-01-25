@@ -1,16 +1,16 @@
 First of all, I want to thank all the package maintainers, and especially
-Ana Guerrero. Another big thanks to the developers who used IMDbPY
+Ana Guerrero. Another big thanks to the developers who used Cinemagoer
 for their projects and research; they can be found here:
 https://imdbpy.github.io/ecosystem/
 
 Other very special thanks go to some people who followed the development
-of IMDbPY very closely, providing hints and insights: Ori Cohen, James Rubino,
+of Cinemagoer very closely, providing hints and insights: Ori Cohen, James Rubino,
 Tero Saarni, and Jesper Noer (for a lot of help, and also for the wonderful
 https://bitbucket.org/); and let's not forget all the translators
 on https://www.transifex.com/davide_alberani/imdbpy/
 
 Below is a list of people who contributed with bug reports, small patches,
-and hints (kept in reverse order since IMDbPY 4.5):
+and hints (kept in reverse order since Cinemagoer 4.5):
 
 * Maxim Shidlovski for multiple PRs
 
@@ -388,7 +388,7 @@ and hints (kept in reverse order since IMDbPY 4.5):
 * Jay Klein for a bug report and testing to fix a nasty bug in the
   imdbpy2sql.py script (splitting too large data sets).
 
-* Ivan Garcia for an important bug report about the use of IMDbPY
+* Ivan Garcia for an important bug report about the use of Cinemagoer
   within wxPython programs.
 
 * Kessia Pinheiro for a bug report about tv series list of episodes.

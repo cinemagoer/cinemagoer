@@ -17,7 +17,7 @@
     :alt: Travis CI build status.
 
 
-**IMDbPY** is a Python package for retrieving and managing the data
+**Cinemagoer** is a Python package for retrieving and managing the data
 of the `IMDb`_ movie database about movies, people and companies.
 
 .. admonition:: Revamp notice
@@ -45,7 +45,7 @@ Main features
 
 - released under the terms of the GPL 2 license
 
-IMDbPY powers many other software and has been used in various research papers.
+Cinemagoer powers many other software and has been used in various research papers.
 `Curious about that`_?
 
 
@@ -65,7 +65,7 @@ But if you want, you can also install the latest release from PyPI::
 Example
 -------
 
-Here's an example that demonstrates how to use IMDbPY:
+Here's an example that demonstrates how to use Cinemagoer:
 
 .. code-block:: python
 
@@ -106,7 +106,7 @@ License
 
 Copyright (C) 2004-2021 Davide Alberani <da --> mimante.net> et al.
 
-IMDbPY is released under the GPL license, version 2 or later.
+Cinemagoer is released under the GPL license, version 2 or later.
 Read the included `LICENSE.txt`_ file for details.
 
 NOTE: For a list of persons who share the copyright over specific portions of code, see the `CONTRIBUTORS.txt`_ file.

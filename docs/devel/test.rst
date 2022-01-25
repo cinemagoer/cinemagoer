@@ -3,7 +3,7 @@
 How to test
 ===========
 
-IMDbPY has a test suite based on `pytest`_. The simplest way to run the tests
+Cinemagoer has a test suite based on `pytest`_. The simplest way to run the tests
 is to run the following command in the top level directory of the project::
 
    pytest
@@ -59,7 +59,7 @@ using pypy3, execute::
 
    tox -e pypy3 -- pytest -k cover
 
-Or to get a Python prompt under Python 3.5 (with IMDbPY and all dependencies
+Or to get a Python prompt under Python 3.5 (with Cinemagoer and all dependencies
 already installed), execute::
 
    tox -e py35 -- python
@@ -69,10 +69,10 @@ S3 dataset
 ----------
 
 The tests will use the HTTP access system by default. If you would also like
-to test the database generated from the S3 dataset, define the ``IMDBPY_S3_URI``
+to test the database generated from the S3 dataset, define the ``CINEMAGOER_S3_URI``
 environment variable::
 
-   IMDBPY_S3_URI='postgres://imdb@localhost/imdb' pytest
+   CINEMAGOER_S3_URI='postgres://imdb@localhost/imdb' pytest
 
 This will run the tests for both HTTP and S3 access systems.
 

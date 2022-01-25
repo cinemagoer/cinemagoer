@@ -1,4 +1,4 @@
-IMDbPY
+Cinemagoer
 ======
 
 .. include:: ../README.rst

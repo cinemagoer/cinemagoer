@@ -17,7 +17,7 @@ Since version 4.1 the labels that describe the information are translatable.
    itself. To translate keys, you can use
    the :func:`helpers.translateKey <imdb.helpers.translateKey>` function.
 
-If you want to add i18n to your IMDbPY-based application, all you need to do
+If you want to add i18n to your Cinemagoer-based application, all you need to do
 is to switch to the ``imdbpy`` text domain:
 
 .. code-block:: python
@@ -34,14 +34,14 @@ is to switch to the ``imdbpy`` text domain:
    >>> _('art-department')
    'Dipartimento artistico'
 
-If you want to translate IMDbPY into another language, see
+If you want to translate Cinemagoer into another language, see
 the :ref:`translate` document for instructions.
 
 
 Articles in titles
 ------------------
 
-To convert a title to its canonical format as in "Title, The", IMDbPY makes
+To convert a title to its canonical format as in "Title, The", Cinemagoer makes
 some assumptions about what is an article and what isn't, and this can lead
 to some wrong canonical titles. For example, it can canonicalize the title
 "Die Hard" as "Hard, Die" because it guesses "Die" as an article (and it is,

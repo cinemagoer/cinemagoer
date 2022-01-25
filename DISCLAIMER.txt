@@ -1,4 +1,4 @@
-IMDbPY and its authors are not affiliated with Internet Movie Database Inc.
+Cinemagoer and its authors are not affiliated with Internet Movie Database Inc.
 
 IMDb is a trademark of Internet Movie Database Inc., and all content and data
 included on the IMDb's site is the property of IMDb or its content suppliers

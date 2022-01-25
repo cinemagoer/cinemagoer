@@ -10,7 +10,7 @@ Old data files
    -but less comprehensive- downloadable data, check the :ref:`s3` document.
 
 Until the end of 2017, IMDb used to distribute some of its data as downloadable
-text files. IMDbPY can import this data into a database and make it
+text files. Cinemagoer can import this data into a database and make it
 accessible through its API.
 
 For this, you will first need to install `SQLAlchemy`_ and the libraries
@@ -45,7 +45,7 @@ Then, follow these steps:
           -u postgres://user:password@localhost/imdb
 
 Once the import is finished, you will have a SQL database with all
-the information and you can use the normal IMDbPY API:
+the information and you can use the normal Cinemagoer API:
 
 .. code-block:: python
 

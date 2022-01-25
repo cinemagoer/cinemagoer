@@ -1,7 +1,7 @@
 Usage
 =====
 
-Here you can find information about how you can use IMDbPY in your own
+Here you can find information about how you can use Cinemagoer in your own
 programs.
 
 .. warning::

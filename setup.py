@@ -10,7 +10,7 @@ exec(compile(open('imdb/version.py').read(), 'imdb/version.py', 'exec'))
 
 home_page = 'https://imdbpy.github.io/'
 
-long_desc = """IMDbPY is a Python package useful to retrieve and
+long_desc = """Cinemagoer is a Python package useful to retrieve and
 manage the data of the IMDb movie database about movies, people,
 characters and companies.
 
@@ -18,11 +18,11 @@ Platform-independent and written in Python 3
 it can retrieve data from both the IMDb's web server and a local copy
 of the whole database.
 
-IMDbPY package can be very easily used by programmers and developers
+Cinemagoer package can be very easily used by programmers and developers
 to provide access to the IMDb's data to their programs.
 
 Some simple example scripts - useful for the end users - are included
-in this package; other IMDbPY-based programs are available at the
+in this package; other Cinemagoer-based programs are available at the
 home page: %s
 """ % home_page
 
@@ -62,16 +62,14 @@ scripts = glob.glob('./bin/*.py')
 
 params = {
     # Meta-information.
-    'name': 'IMDbPY',
+    'name': 'Cinemagoer',
     'version': __version__,
     'description': 'Python package to access the IMDb\'s database',
     'long_description': long_desc,
     'author': 'Davide Alberani',
-    'author_email': 'da@erlug.linux.it',
-    'contact': 'IMDbPY-devel mailing list',
-    'contact_email': 'imdbpy-devel@lists.sourceforge.net',
+    'author_email': 'da@mimante.net',
     'maintainer': 'Davide Alberani',
-    'maintainer_email': 'da@erlug.linux.it',
+    'maintainer_email': 'da@mimante.net',
     'license': 'GPL',
     'platforms': 'any',
     'keywords': keywords,
@@ -120,7 +118,7 @@ ERR_MSG = """
   Aaargh!  An error!  An error!
   Curse my metal body, I wasn't fast enough.  It's all my fault!
 
-  Anyway, if you were trying to build a package or install IMDbPY to your
+  Anyway, if you were trying to build a package or install Cinemagoer to your
   system, looks like we're unable to fetch or install some dependencies.
 
   The best solution is to resolve these dependencies (maybe you're

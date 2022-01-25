@@ -3,7 +3,7 @@
 S3 datasets
 ===========
 
-IMDb distributes some of its data as downloadable `datasets`_. IMDbPY can
+IMDb distributes some of its data as downloadable `datasets`_. Cinemagoer can
 import this data into a database and make it accessible through its API.
 [#ptdf]_
 
@@ -32,7 +32,7 @@ to specify the charset on the URI and sometimes also the dialect, with something
 
 Once the import is finished - which should take about an hour or less
 on a modern system - you will have a SQL database with all the information
-and you can use the normal IMDbPY API:
+and you can use the normal Cinemagoer API:
 
 .. code-block:: python
 
@@ -64,7 +64,7 @@ and you can use the normal IMDbPY API:
 .. [#ptdf]
 
    Until the end of 2017, IMDb used to distribute a more comprehensive subset
-   of its data in a different format. IMDbPY can also import that data
+   of its data in a different format. Cinemagoer can also import that data
    but note that the data is not being updated anymore. For more information,
    see :ref:`ptdf`.
 

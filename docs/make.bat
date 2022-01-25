@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=IMDbPY
+set SPHINXPROJ=Cinemagoer
 
 if "%1" == "" goto help
 

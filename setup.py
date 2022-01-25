@@ -8,7 +8,7 @@ import setuptools
 # version of the software from imdb/version.py
 exec(compile(open('imdb/version.py').read(), 'imdb/version.py', 'exec'))
 
-home_page = 'https://imdbpy.github.io/'
+home_page = 'https://cinemagoer.github.io/'
 
 long_desc = """Cinemagoer is a Python package useful to retrieve and
 manage the data of the IMDb movie database about movies, people,
@@ -26,7 +26,7 @@ in this package; other Cinemagoer-based programs are available at the
 home page: %s
 """ % home_page
 
-dwnl_url = 'https://imdbpy.github.io/downloads/'
+dwnl_url = 'https://cinemagoer.github.io/downloads/'
 
 classifiers = """\
 Development Status :: 5 - Production/Stable

@@ -9,16 +9,14 @@
     :alt: Supported Python versions.
 
 .. |license| image:: https://img.shields.io/pypi/l/imdbpy.svg?style=flat-square
-    :target: https://github.com/alberanid/imdbpy/blob/master/LICENSE.txt
+    :target: https://github.com/cinemagoer/cinemagoer/blob/master/LICENSE.txt
     :alt: Project license.
-
-.. |travis| image:: https://travis-ci.org/alberanid/imdbpy.svg?branch=master
-    :target: https://travis-ci.org/alberanid/imdbpy
-    :alt: Travis CI build status.
 
 
 **Cinemagoer** is a Python package for retrieving and managing the data
 of the `IMDb`_ movie database about movies, people and companies.
+
+This project and its authors are not affiliated in any way to Internet Movie Database Inc.; see the `DISCLAIMER.txt`_ file for details about data licenses.
 
 .. admonition:: Revamp notice
    :class: note
@@ -54,7 +52,7 @@ Installation
 
 Whenever possible, please use the latest version from the repository::
 
-   pip install git+https://github.com/alberanid/imdbpy
+   pip install git+https://github.com/cinemagoer/cinemagoer
 
 
 But if you want, you can also install the latest release from PyPI::
@@ -114,12 +112,12 @@ NOTE: For a list of persons who share the copyright over specific portions of co
 NOTE: See also the recommendations in the `DISCLAIMER.txt`_ file.
 
 .. _IMDb: https://www.imdb.com/
-.. _please help with it!: http://imdbpy.readthedocs.io/en/latest/devel/test.html
-.. _Curious about that: https://imdbpy.github.io/ecosystem/
-.. _project homepage: https://imdbpy.github.io/
-.. _support: https://imdbpy.github.io/support/
-.. _Read The Docs: https://imdbpy.readthedocs.io/
-.. _GitHub: https://github.com/alberanid/imdbpy
-.. _LICENSE.txt: https://raw.githubusercontent.com/alberanid/imdbpy/master/LICENSE.txt
-.. _CONTRIBUTORS.txt: https://raw.githubusercontent.com/alberanid/imdbpy/master/CONTRIBUTORS.txt
-.. _DISCLAIMER.txt: https://raw.githubusercontent.com/alberanid/imdbpy/master/DISCLAIMER.txt
+.. _please help with it!: http://cinemagoer.readthedocs.io/en/latest/devel/test.html
+.. _Curious about that: https://cinemagoer.github.io/ecosystem/
+.. _project homepage: https://cinemagoer.github.io/
+.. _support: https://cinemagoer.github.io/support/
+.. _Read The Docs: https://cinemagoer.readthedocs.io/
+.. _GitHub: https://github.com/cinemagoer/cinemagoer
+.. _LICENSE.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/LICENSE.txt
+.. _CONTRIBUTORS.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/CONTRIBUTORS.txt
+.. _DISCLAIMER.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/DISCLAIMER.txt

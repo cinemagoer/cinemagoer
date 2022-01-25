@@ -1,5 +1,7 @@
 * What's new in the next release
 
+* What's new in release 2022.01.25 (the Cinemagoer release)
+
   [general]
   - #238: by default, exceptions are raised
   - #315: include all script in the ./bin directory

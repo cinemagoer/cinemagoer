@@ -1122,7 +1122,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
 
 
 _xmlHead = """<?xml version="1.0"?>
-<!DOCTYPE %s SYSTEM "https://imdbpy.github.io/static/dtd/imdbpy.dtd">
+<!DOCTYPE %s SYSTEM "https://cinemagoer.github.io/static/dtd/cinemagoer.dtd">
 
 """
 

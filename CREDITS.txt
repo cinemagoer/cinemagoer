@@ -1,7 +1,7 @@
 First of all, I want to thank all the package maintainers, and especially
 Ana Guerrero. Another big thanks to the developers who used Cinemagoer
 for their projects and research; they can be found here:
-https://imdbpy.github.io/ecosystem/
+https://cinemagoer.github.io/ecosystem/
 
 Other very special thanks go to some people who followed the development
 of Cinemagoer very closely, providing hints and insights: Ori Cohen, James Rubino,

@@ -84,7 +84,7 @@ DTD
 ---
 
 Since version 4.1 a DTD is available; it can be found in this
-directory or on the web, at: https://imdbpy.github.io/static/dtd/imdbpy.dtd
+directory or on the web, at: https://cinemagoer.github.io/static/dtd/cinemagoer.dtd
 
 The version number changes with the Cinemagoer version.
 

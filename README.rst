@@ -57,7 +57,7 @@ Whenever possible, please use the latest version from the repository::
 
 But if you want, you can also install the latest release from PyPI::
 
-   pip install imdbpy
+   pip install cinemagoer
 
 
 Example

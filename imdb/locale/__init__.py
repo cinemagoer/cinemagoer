@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 """
-This package provides scripts and files for internationalization of IMDbPY.
+This package provides scripts and files for internationalization of Cinemagoer.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals

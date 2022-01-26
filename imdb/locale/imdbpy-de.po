@@ -6,7 +6,7 @@
 # vaeng vaeng <christiaaan@gmail.com>, 2018
 msgid ""
 msgstr ""
-"Project-Id-Version: IMDbPY\n"
+"Project-Id-Version: Cinemagoer\n"
 "POT-Creation-Date: 2010-03-18 14:35+0000\n"
 "PO-Revision-Date: 2018-11-14 12:49+0000\n"
 "Last-Translator: vaeng vaeng <christiaaan@gmail.com>\n"

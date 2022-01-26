@@ -10,11 +10,11 @@ Search for the given title and print the best matching result.
 
 import sys
 
-# Import the IMDbPY package.
+# Import the Cinemagoer package.
 try:
     import imdb
 except ImportError:
-    print('You need to install the IMDbPY package!')
+    print('You need to install the Cinemagoer package!')
     sys.exit(1)
 
 

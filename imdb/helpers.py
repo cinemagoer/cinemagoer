@@ -17,7 +17,7 @@
 
 """
 This module provides functions not used directly by the imdb package,
-but useful for IMDbPY-based programs.
+but useful for Cinemagoer-based programs.
 """
 
 # XXX: Find better names for the functions in this module.

@@ -10,11 +10,11 @@ Search for the given name and print the results.
 
 import sys
 
-# Import the IMDbPY package.
+# Import the Cinemagoer package.
 try:
     import imdb
 except ImportError:
-    print('You bad boy!  You need to install the IMDbPY package!')
+    print('You bad boy!  You need to install the Cinemagoer package!')
     sys.exit(1)
 
 

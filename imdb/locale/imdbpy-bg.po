@@ -3,7 +3,7 @@
 # Атанас Ковачки <crashdeburn@gmail.com>, 2014
 msgid ""
 msgstr ""
-"Project-Id-Version: IMDbPY\n"
+"Project-Id-Version: Cinemagoer\n"
 "POT-Creation-Date: 2010-03-18 14:35+0000\n"
 "PO-Revision-Date: 2018-12-29 20:34+0000\n"
 "Last-Translator: Атанас Ковачки <crashdeburn@gmail.com>\n"

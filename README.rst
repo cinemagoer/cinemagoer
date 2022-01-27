@@ -1,19 +1,19 @@
-|pypi| |pyversions| |license| |travis|
+|pypi| |pyversions| |license|
 
-.. |pypi| image:: https://img.shields.io/pypi/v/imdbpy.svg?style=flat-square
-    :target: https://pypi.org/project/imdbpy/
+.. |pypi| image:: https://img.shields.io/pypi/v/cinemagoer.svg?style=flat-square
+    :target: https://pypi.org/project/cinemagoer/
     :alt: PyPI version.
 
-.. |pyversions| image:: https://img.shields.io/pypi/pyversions/imdbpy.svg?style=flat-square
-    :target: https://pypi.org/project/imdbpy/
+.. |pyversions| image:: https://img.shields.io/pypi/pyversions/cinemagoer.svg?style=flat-square
+    :target: https://pypi.org/project/cinemagoer/
     :alt: Supported Python versions.
 
-.. |license| image:: https://img.shields.io/pypi/l/imdbpy.svg?style=flat-square
+.. |license| image:: https://img.shields.io/pypi/l/cinemagoer.svg?style=flat-square
     :target: https://github.com/cinemagoer/cinemagoer/blob/master/LICENSE.txt
     :alt: Project license.
 
 
-**Cinemagoer** is a Python package for retrieving and managing the data
+**Cinemagoer** (previously known as *IMDbPY*) is a Python package for retrieving and managing the data
 of the `IMDb`_ movie database about movies, people and companies.
 
 This project and its authors are not affiliated in any way to Internet Movie Database Inc.; see the `DISCLAIMER.txt`_ file for details about data licenses.

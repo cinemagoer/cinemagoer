@@ -37,19 +37,19 @@ How to make a release
 - Don't forget to push both sources and tags to both the GitHub and Bitbucket
   repositories (they are kept in sync).
 
-- Upload to pypi: ``twine upload dist/Cinemagoer-*`` (you probably need a recent
+- Upload to pypi: ``twine upload dist/cinemagoer-*`` (you probably need a recent
   version of twine and the appropriate ~/.pypi file)
 
 - The new tar.gz must also be uploaded
   to https://sourceforge.net/projects/imdbpy/ (along with a new "news").
 
 - Create a new release on GitHub, including the changelog and the whl and tar.gz files.
-  https://github.com/alberanid/imdbpy/releases/new
+  https://github.com/cinemagoer/cinemagoer/releases/new
 
 
 **communication**
 
-- update the *content/news* section of https://github.com/imdbpy/website
+- update the *content/news* section of https://github.com/cinemagoer/website
 
 - add a news on https://sourceforge.net/p/imdbpy/news/new
 

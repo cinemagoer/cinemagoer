@@ -4,8 +4,8 @@ Development
 If you intend to do development on the Cinemagoer package, it's recommended
 that you create a virtual environment for it. For example::
 
-   python -m venv ~/.virtualenvs/imdbpy
-   . ~/.virtualenvs/imdbpy/bin/activate
+   python -m venv ~/.virtualenvs/cinemagoer
+   . ~/.virtualenvs/cinemagoer/bin/activate
 
 In the virtual environment, install Cinemagoer in editable mode and include
 the extra packages. In the top level directory of the project (where

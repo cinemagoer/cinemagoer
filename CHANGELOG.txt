@@ -1,5 +1,9 @@
 * What's new in the next release
 
+  [http]
+  - #373: include TV shows in get top 50 by genre
+
+
 * What's new in release 2022.01.25 (the Cinemagoer release)
 
   [general]

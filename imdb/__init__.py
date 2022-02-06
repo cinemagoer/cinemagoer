@@ -23,7 +23,7 @@ the IMDb web pages, or a SQL database.
 from __future__ import absolute_import, division, print_function, unicode_literals
 from imdb.version import __version__
 
-__all__ = ['IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
+__all__ = ['Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
            'available_access_systems']
 
 VERSION = __version__
@@ -82,8 +82,8 @@ imdbURL_find = imdbURL_base + 'find?%s'
 # http://www.imdb.com/list/
 imdbURL_list_base = imdbURL_base + 'list/'
 
-# Name of the configuration file.
-confFileName = 'imdbpy.cfg'
+# Name of the configuration files.
+confFileNames = ['cinemagoer.cfg', 'imdbpy.cfg']
 
 
 class ConfigParserWithCase(configparser.ConfigParser):
@@ -98,20 +98,21 @@ class ConfigParserWithCase(configparser.ConfigParser):
         else:
             super(configparser.ConfigParser, self).__init__(defaults=defaults)
         if confFile is None:
-            dotFileName = '.' + confFileName
-            # Current and home directory.
-            confFile = [os.path.join(os.getcwd(), confFileName),
-                        os.path.join(os.getcwd(), dotFileName),
-                        os.path.join(os.path.expanduser('~'), confFileName),
-                        os.path.join(os.path.expanduser('~'), dotFileName)]
-            if os.name == 'posix':
-                sep = getattr(os.path, 'sep', '/')
-                # /etc/ and /etc/conf.d/
-                confFile.append(os.path.join(sep, 'etc', confFileName))
-                confFile.append(os.path.join(sep, 'etc', 'conf.d', confFileName))
-            else:
-                # etc subdirectory of sys.prefix, for non-unix systems.
-                confFile.append(os.path.join(sys.prefix, 'etc', confFileName))
+            for confFileName in confFileNames:
+                dotFileName = '.' + confFileName
+                # Current and home directory.
+                confFile = [os.path.join(os.getcwd(), confFileName),
+                            os.path.join(os.getcwd(), dotFileName),
+                            os.path.join(os.path.expanduser('~'), confFileName),
+                            os.path.join(os.path.expanduser('~'), dotFileName)]
+                if os.name == 'posix':
+                    sep = getattr(os.path, 'sep', '/')
+                    # /etc/ and /etc/conf.d/
+                    confFile.append(os.path.join(sep, 'etc', confFileName))
+                    confFile.append(os.path.join(sep, 'etc', 'conf.d', confFileName))
+                else:
+                    # etc subdirectory of sys.prefix, for non-unix systems.
+                    confFile.append(os.path.join(sys.prefix, 'etc', confFileName))
         for fname in confFile:
             try:
                 self.read(fname)
@@ -204,6 +205,8 @@ def IMDb(accessSystem=None, *arguments, **keywords):
     else:
         raise IMDbError('unknown kind of data access system: "%s"' % accessSystem)
 
+# Cinemagoer alias
+Cinemagoer = IMDb
 
 def available_access_systems():
     """Return the list of available data access systems."""

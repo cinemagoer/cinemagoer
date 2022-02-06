@@ -36,9 +36,6 @@ Main features
 
 - platform-independent
 
-- can retrieve data from both the IMDb's web server, or a local copy
-  of the database
-
 - simple and complete API
 
 - released under the terms of the GPL 2 license

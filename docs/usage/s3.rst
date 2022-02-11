@@ -18,13 +18,13 @@ Then, follow these steps:
 
 #. Create a database. Use a collation like ``utf8_unicode_ci``.
 
-#. Import the data using the :file:`s32imdbpy.py` script::
+#. Import the data using the :file:`s32cinemagoer.py` script::
 
-      s32imdbpy.py /path/to/the/tsv.gz/files/ URI
+      s32cinemagoer.py /path/to/the/tsv.gz/files/ URI
 
    *URI* is the identifier used to access the SQL database. For example::
 
-      s32imdbpy.py ~/Download/imdb-s3-dataset-2018-02-07/ \
+      s32cinemagoer.py ~/Download/imdb-s3-dataset-2018-02-07/ \
           postgresql://user:password@localhost/imdb
 
 Please notice that for some database engines (like MySQL and MariaDB) you may need

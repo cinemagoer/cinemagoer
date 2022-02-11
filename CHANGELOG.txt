@@ -3,6 +3,10 @@
   [http]
   - #373: include TV shows in get top 50 by genre
 
+  [s3]
+  - #378: rename s32imdbpy.py to s32cinemagoer.py
+
+
 
 * What's new in release 2022.01.25 (the Cinemagoer release)
 

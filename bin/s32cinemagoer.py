@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-s32imdbpy.py script.
+s32cinemagoer.py script.
 
 This script imports the s3 dataset distributed by IMDb into a SQL database.
 

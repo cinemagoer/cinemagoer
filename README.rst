@@ -66,7 +66,7 @@ Here's an example that demonstrates how to use Cinemagoer:
 
    from imdb import Cinemagoer
 
-   # create an instance of the IMDb class
+   # create an instance of the Cinemagoer class
    ia = Cinemagoer()
 
    # get a movie

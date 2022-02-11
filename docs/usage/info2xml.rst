@@ -8,7 +8,7 @@ if the key is not found). E.g.:
 
 .. code-block:: python
 
-   from imdb import IMDb
+   from imdb import Cinemagoer
    ia = Cinemagoer('http')
    movie = ia.get_movie(theMovieID)
    print(movie.getAsXML('keywords'))

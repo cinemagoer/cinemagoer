@@ -169,7 +169,7 @@ E.g.:
 
    import imdb
    myPrint = imdb.helpers.makeObject2Txt(personTxt=u'%(name)s ... %(currentRole)s')
-   i = imdb.IMDb()
+   i = imdb.Cinemagoer()
    m = i.get_movie('0057012')
    ps = m['cast'][0]
    print(myPrint(ps))

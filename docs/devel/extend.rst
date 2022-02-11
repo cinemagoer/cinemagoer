@@ -3,7 +3,7 @@ How to extend
 
 To introduce a new data access system, you have to write a new package
 inside the "parser" package; this new package must provide a subclass
-of the imdb.IMDb class which must define at least the following methods:
+of the imdb.IMDbBase class which must define at least the following methods:
 
 ``_search_movie(title)``
   To search for a given title; must return a list of (movieID, {movieData})
@@ -135,8 +135,8 @@ Then it's possible to use the new data access system like:
 
 .. code-block:: python
 
-   from imdb import IMDb
-   i = IMDb(accessSystem='mysql')
+   from imdb import Cinemagoer
+   i = Cinemagoer(accessSystem='mysql')
    results = i.search_movie('the matrix')
    print(results)
 
@@ -153,18 +153,18 @@ it this way:
 
 .. code-block:: python
 
-   from imdb import IMDb
-   i = IMDb(accessSystem='http') # the 'accessSystem' argument is not
+   from imdb import Cinemagoer
+   i = Cinemagoer(accessSystem='http') # the 'accessSystem' argument is not
                                  # really needed, since "http" is the default.
    i.set_proxy('http://localhost:8080/')
 
 A list of special methods provided by the imdb.IMDbBase subclass, along with
 their description, is always available calling the ``get_special_methods()``
-of the IMDb class:
+of the IMDb instance object:
 
 .. code-block:: python
 
-   i = IMDb(accessSystem='http')
+   i = Cinemagoer(accessSystem='http')
    print(i.get_special_methods())
 
 will print a dictionary with the format::

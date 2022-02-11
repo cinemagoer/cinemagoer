@@ -132,8 +132,8 @@ by a person.
 
 .. code-block:: python
 
-   from imdb import IMDb
-   i = IMDb()
+   from imdb import Cinemagoer
+   i = Cinemagoer()
    p = i.get_person('0005041')  # Laura Innes
    p['filmography']['actress'][0]   # <Movie id:0568152[http] title:_"ER" (????)_>
 
@@ -170,8 +170,8 @@ lists of episodes:
 
   .. code-block:: python
 
-     >>> from imdb import IMDb
-     >>> i = IMDb()
+     >>> from imdb import Cinemagoer
+     >>> i = Cinemagoer()
      >>> m = i.get_movie('0411008')
      >>> i.update(m, 'episodes')
      >>> sortedSeasons(m)
@@ -183,8 +183,8 @@ lists of episodes:
 
   .. code-block:: python
 
-     >>> from imdb import IMDb
-     >>> i = IMDb()
+     >>> from imdb import Cinemagoer
+     >>> i = Cinemagoer()
      >>> m = i.get_movie('0411008')
      >>> i.update(m, 'episodes')
      >>> sortedEpisodes(m, season=1)

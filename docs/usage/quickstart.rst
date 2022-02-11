@@ -7,7 +7,7 @@ function to get an access object through which IMDb data can be retrieved:
 .. code-block:: python
 
    >>> import imdb
-   >>> ia = imdb.IMDb()
+   >>> ia = imdb.Cinemagoer()
 
 By default this will fetch the data from the IMDb web server but there are
 other options. See the :ref:`access systems <access>` document
@@ -147,10 +147,10 @@ the :class:`imdb.IMDbError` exception:
 
 .. code-block:: python
 
-   from imdb import IMDb, IMDbError
+   from imdb import Cinemagoer, IMDbError
 
    try:
-       ia = IMDb()
+       ia = Cinemagoer()
        people = ia.search_person('Mel Gibson')
    except IMDbError as e:
        print(e)

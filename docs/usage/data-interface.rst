@@ -41,8 +41,8 @@ using the access object:
 
 .. code-block:: python
 
-   >>> from imdb import IMDb
-   >>> ia = IMDb()
+   >>> from imdb import Cinemagoer
+   >>> ia = Cinemagoer()
    >>> ia.get_movie_infoset()
    ['airing', 'akas', ..., 'video clips', 'vote details']
    >>> ia.get_person_infoset()
@@ -174,12 +174,12 @@ of the ``get_movie``, ``get_person``, and ``get_character`` methods:
 .. code-block:: python
 
    import imdb
-   i = imdb.IMDb(defaultModFunct=imdb.utils.modHtmlLinks)
+   i = imdb.Cinemagoer(defaultModFunct=imdb.utils.modHtmlLinks)
 
 or:
 
 .. code-block:: python
 
    import imdb
-   i = imdb.IMDb()
+   i = imdb.Cinemagoer()
    i.get_person('0000154', modFunct=imdb.utils.modHtmlLinks)

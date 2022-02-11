@@ -6,6 +6,6 @@ Since version 6.8 you can use the **search_movie_advanced(title, adult=None, res
 .. code-block:: python
 
    >>> import imdb
-   >>> ia = imdb.IMDb(accessSystem='http')
+   >>> ia = imdb.Cinemagoer(accessSystem='http')
    >>> movies = ia.search_movie_advanced('debby does dallas', adult=True)
 

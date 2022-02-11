@@ -64,10 +64,10 @@ Here's an example that demonstrates how to use Cinemagoer:
 
 .. code-block:: python
 
-   from imdb import IMDb
+   from imdb import Cinemagoer
 
    # create an instance of the IMDb class
-   ia = IMDb()
+   ia = Cinemagoer()
 
    # get a movie
    movie = ia.get_movie('0133093')
@@ -99,7 +99,7 @@ The sources are available on `GitHub`_.
 License
 -------
 
-Copyright (C) 2004-2021 Davide Alberani <da --> mimante.net> et al.
+Copyright (C) 2004-2022 Davide Alberani <da --> mimante.net> et al.
 
 Cinemagoer is released under the GPL license, version 2 or later.
 Read the included `LICENSE.txt`_ file for details.

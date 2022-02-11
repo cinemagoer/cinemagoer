@@ -49,9 +49,9 @@ the information and you can use the normal Cinemagoer API:
 
 .. code-block:: python
 
-   from imdb import IMDb
+   from imdb import Cinemagoer
 
-   ia = IMDb('sql', uri='postgres://user:password@localhost/imdb')
+   ia = Cinemagoer('sql', uri='postgres://user:password@localhost/imdb')
 
    results = ia.search_movie('the matrix')
    for result in results:

@@ -19,8 +19,6 @@ Internet Movie Database Inc.; see the DISCLAIMER.txt file for
 details about data licenses.
 
 Platform-independent and written in Python 3
-it can retrieve data from both the IMDb's web server and a local copy
-of the whole database.
 
 Cinemagoer package can be very easily used by programmers and developers
 to provide access to the IMDb's data to their programs.

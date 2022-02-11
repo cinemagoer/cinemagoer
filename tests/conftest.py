@@ -4,7 +4,7 @@ import logging
 import os
 from hashlib import md5
 
-from imdb import IMDb
+from imdb import Cinemagoer
 from imdb.parser.http import IMDbURLopener
 
 
@@ -40,7 +40,7 @@ def ia(request):
     """Access to IMDb data."""
     if request.param == 'http':
         IMDbURLopener.retrieve_unicode = retrieve_unicode_cached
-        yield IMDb('http')
+        yield Cinemagoer('http')
         IMDbURLopener.retrieve_unicode = retrieve_unicode_orig
     elif request.param == 's3':
-        yield IMDb('s3', uri=s3_uri)
+        yield Cinemagoer('s3', uri=s3_uri)

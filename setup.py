@@ -77,6 +77,9 @@ params = {
     'keywords': keywords,
     'classifiers': [_f for _f in classifiers.split("\n") if _f],
     'url': home_page,
+    'project_urls': {
+        'Source': 'https://github.com/cinemagoer/cinemagoer',
+    },
     'download_url': dwnl_url,
     'scripts': scripts,
     'package_data': {

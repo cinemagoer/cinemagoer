@@ -696,6 +696,11 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='imdbID',
             extractor=Path('//meta[@property="pageId"]/@content',
                            transform=lambda x: (x or '').replace('tt', ''))
+        ),
+        Rule(
+            key='videos',
+            extractor=Path(foreach='//div[@class="mediastrip_big"]//a',
+                           path='./@href', transform=lambda x: 'http://www.imdb.com' + x)
         )
     ]
 

@@ -19,6 +19,10 @@ def test_cover_url_if_none_should_be_excluded(ia):
     movie = ia.get_movie('3629794', info=['main'])      # Aslan
     assert 'cover url' not in movie
 
+def test_videos_if_none_should_be_excluded(ia):
+    movie = ia.get_movie('7967312', info=['main'])      # Simple Worker Needed
+    assert 'videos' not in movie
+
 
 def test_movie_directors_should_be_a_list_of_persons(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix

@@ -2674,6 +2674,27 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
                     )
                 ]
             )
+        ),
+        Rule(
+            key='advisory votes',
+            extractor=Rules(
+                foreach='//section[starts-with(@id, "advisory-")][not(contains(@id, "advisory-spoiler"))]',
+                rules=[
+                    Rule(key='section',
+                         extractor=Path('./@id'),
+                         ),
+                    Rule(key='status',
+                         extractor=Path('.//li[1]//div[contains(@class, "ipl-swapper__content-primary")]//span/text()')
+                         ),
+                    Rule(key='votes',
+                         extractor=Path(
+                             foreach='.//li[1]//span[contains(@class, "ipl-vote-button__details")]',
+                             path='./text()',
+                             transform=lambda x: int(x)
+                         )
+                         )
+                ]
+            )
         )
     ]
 
@@ -2685,6 +2706,23 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
                 if sect and items:
                     data[sect] = items
             del data['advisories']
+
+        if 'advisory votes' in data:
+            advisory_votes = {}
+            for vote in data['advisory votes']:
+                if 'status' not in vote or 'votes' not in vote:
+                    continue
+                advisory_votes[vote['section'][9:]] = {
+                    'votes': {
+                        'None': vote['votes'][0],
+                        'Mild': vote['votes'][1],
+                        'Moderate': vote['votes'][2],
+                        'Severe': vote['votes'][3],
+                    },
+                    'status': vote['status'],
+                }
+            data['advisory votes'] = advisory_votes
+
         return data
 
 

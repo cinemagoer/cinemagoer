@@ -2690,7 +2690,7 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
                          extractor=Path(
                              foreach='.//li[1]//span[contains(@class, "ipl-vote-button__details")]',
                              path='./text()',
-                             transform=lambda x: int(x)
+                             transform=lambda x: int(x.replace(',', ''))
                          )
                          )
                 ]

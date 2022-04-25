@@ -2,6 +2,7 @@
 
   [http]
   - #388: add 'videos' key to extract movie trailer links
+  - #391: add parental guide advisory votes (courtesy of salehdeh76)
 
 
 * What's new in release 2022.02.11 (the Cinemagoer Strikes Back release)

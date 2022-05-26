@@ -46,6 +46,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _tagAttr, re_characterRef, re_nameRef, re_titleRef
 from imdb.utils import TAGS_TO_MODIFY
+from imdb._exceptions import IMDbParserError
 
 
 gettext.textdomain('imdbpy')
@@ -612,7 +613,11 @@ def resizeImage(image, width=None, height=None, crop=None):
 
     regexString = r'https://m.media-amazon.com/images/\w/\w+'
 
-    resultImage = re.findall(regexString, image)[0]
+    try:
+        resultImage = re.findall(regexString, image)[0]
+    except IndexError:
+        raise IMDbParserError('Image url not matched. Original url: "%s"' % (image))
+
     if "@@" in image:
         resultImage += '@'
 

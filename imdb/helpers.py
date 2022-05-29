@@ -46,6 +46,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import _tagAttr, re_characterRef, re_nameRef, re_titleRef
 from imdb.utils import TAGS_TO_MODIFY
+from imdb._exceptions import IMDbError
 
 
 gettext.textdomain('imdbpy')
@@ -607,12 +608,16 @@ def getAKAsInLanguage(movie, lang, _searchedTitle=None):
     return akas
 
 
-def resizeImage(image, width=None, height=None, crop=None):
+def resizeImage(image, width=None, height=None, crop=None, custom_regex=None):
     """Return resized and cropped image url."""
 
-    regexString = r'https://m.media-amazon.com/images/\w/\w+'
+    regexString = custom_regex if custom_regex else r'https://m.media-amazon.com/images/\w/\w+'
 
-    resultImage = re.findall(regexString, image)[0]
+    try:
+        resultImage = re.findall(regexString, image)[0]
+    except IndexError:
+        raise IMDbError('Image url not matched. Original url: "%s"' % (image))
+
     if "@@" in image:
         resultImage += '@'
 

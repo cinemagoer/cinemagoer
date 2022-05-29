@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2004-2021 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2023 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -618,7 +618,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='production status',
             extractor=Path(
-                '//td[starts-with(text(), "Status:")]/..//div[@class="info-content"]//text()',
+                '//td[starts-with(text(), "Status:")]/../td[2]/text()',
                 transform=lambda x: x.strip().split('|')[0].strip().lower()
             )
         ),
@@ -626,7 +626,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='production status updated',
             extractor=Path(
                 '//td[starts-with(text(), "Status Updated:")]/'
-                '..//div[@class="info-content"]//text()',
+                '..//td[2]/text()',
                 transform=transformers.strip
             )
         ),
@@ -634,7 +634,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='production comments',
             extractor=Path(
                 '//td[starts-with(text(), "Comments:")]/'
-                '..//div[@class="info-content"]//text()',
+                '..//td[2]/text()',
                 transform=transformers.strip
             )
         ),
@@ -642,7 +642,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='production note',
             extractor=Path(
                 '//td[starts-with(text(), "Note:")]/'
-                '..//div[@class="info-content"]//text()',
+                '..//td[2]/text()',
                 transform=transformers.strip
             )
         ),

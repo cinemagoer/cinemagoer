@@ -5,6 +5,7 @@
   - #391: add parental guide advisory votes (courtesy of salehdeh76)
   - #395: fix for some wrongly-formatted titles (courtesy of tsaklidis)
   - #396: raise exception on resize image (courtesy of tsaklidis)
+  - #398: fix for production status
 
 
 * What's new in release 2022.02.11 (the Cinemagoer Strikes Back release)

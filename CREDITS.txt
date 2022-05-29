@@ -12,7 +12,7 @@ on https://www.transifex.com/davide_alberani/imdbpy/
 Below is a list of people who contributed with bug reports, small patches,
 and hints (kept in reverse order since Cinemagoer 4.5):
 
-* Stefanos I. Tsaklidis for a PR to improve imdb.helpers.resizeImage
+* Stefanos I. Tsaklidis for PRs to improve imdb.helpers.resizeImage and fix wrongly-formatted titles
 
 * salehdeh76 for a PR fetching videos
 

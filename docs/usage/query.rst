@@ -5,10 +5,12 @@ Querying data
 
 Method descriptions:
 
-``search_movie(title)``
+``search_movie(title, results=None, _episodes=False)``
   Searches for the given title, and returns a list of Movie objects containing
   only basic information like the movie title and year, and with a "movieID"
-  instance variable:
+  instance variable. The return parameter can be set to an integer value to
+  specify how many results should be retured by search_movie. If _episodes is
+  set to true then episodes containing the title parameter are also returned:
 
    - ``movieID`` is an identifier of some kind; for the sake of simplicity
      you can think of it as the ID used by the IMDb's web server used

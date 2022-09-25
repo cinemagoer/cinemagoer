@@ -25,4 +25,3 @@ def test_popular_movies_chart_entries_should_be_movies(ia):
     movies = ia.get_popular100_movies()
     for movie in movies:
         assert movie['kind'] == 'movie'
-

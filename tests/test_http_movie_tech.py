@@ -4,4 +4,3 @@ def test_movie_tech_sections(ia):
     assert set(tech.keys()) == set(['sound mix', 'color', 'aspect ratio', 'camera',
                                     'laboratory', 'cinematographic process', 'printed film format',
                                     'negative format', 'runtime', 'film length'])
-

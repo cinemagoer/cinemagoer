@@ -1,5 +1,6 @@
-import sys
 from pytest import mark
+
+import sys
 
 
 def test_search_results_should_include_correct_number_of_works_by_default(ia):
@@ -338,12 +339,14 @@ def test_selected_adult_movie_should_have_adult_in_genres(ia):
     selected = [m for m in movies if m.movieID == '0273126'][0]
     assert 'Adult' in selected['genres']
 
+
 @mark.skip('IMDb sorting works in misterious ways')
 def test_search_results_should_be_sortable_in_alphabetical_order_default_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='alpha')
     titles = [m['title'] for m in movies]
     # assert all(a <= b for a, b in zip(titles, titles[1:]))  # fails due to IMDb
     assert sum(1 if a > b else 0 for a, b in zip(titles, titles[1:])) <= 1
+
 
 @mark.skip('IMDb sorting works in misterious ways')
 def test_search_results_should_be_sortable_in_alphabetical_order_ascending(ia):

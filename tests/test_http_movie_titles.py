@@ -1,5 +1,6 @@
 from pytest import mark
 
+
 @mark.skip('obviously this depends on your country of origin')
 def test_movie_localized_title(ia):
     movie = ia.get_movie('2991224', info=['main'])
@@ -17,4 +18,3 @@ def test_movie_title(ia):
     movie = ia.get_movie('2991224', info=['main'])
     title = movie.get('title', '')
     assert title == 'Tangerines'
-

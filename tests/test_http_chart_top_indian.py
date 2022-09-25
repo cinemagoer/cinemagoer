@@ -37,4 +37,3 @@ def test_top_indian_chart_entries_should_have_high_ratings(ia):
     movies = ia.get_top250_indian_movies()
     for movie in movies:
         assert movie['rating'] > 7
-

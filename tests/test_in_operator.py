@@ -23,4 +23,3 @@ def test_key_in_person(ia):
 def test_key_in_company(ia):
     company = ia.get_company('0017902', info=['main'])  # Pixar
     assert 'name' in company
-

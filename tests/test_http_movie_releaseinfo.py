@@ -10,4 +10,3 @@ def test_movie_release_info_raw_release_dates_must_be_a_list(ia):
     akas = movie.get('raw release dates', [])
     assert len(akas) >= 56
     assert len(akas) == len(movie.get('release dates'))
-

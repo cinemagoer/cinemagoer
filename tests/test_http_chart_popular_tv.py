@@ -25,4 +25,3 @@ def test_popular_tv_entries_should_have_year(ia):
     movies = ia.get_popular100_tv()
     for movie in movies:
         assert isinstance(movie['year'], int)
-

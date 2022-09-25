@@ -19,6 +19,7 @@ def test_cover_url_if_none_should_be_excluded(ia):
     movie = ia.get_movie('3629794', info=['main'])      # Aslan
     assert 'cover url' not in movie
 
+
 def test_videos_if_none_should_be_excluded(ia):
     movie = ia.get_movie('7967312', info=['main'])      # Simple Worker Needed
     assert 'videos' not in movie
@@ -134,6 +135,7 @@ def test_movie_kind_none_should_be_movie(ia):
 def test_movie_kind_tv_movie_should_be_tv_movie(ia):
     movie = ia.get_movie('0389150', info=['main'])      # Matrix (TV)
     assert movie.get('kind') == 'tv movie'
+
 
 def test_movie_kind_tv_special_should_be_tv_special(ia):
     movie = ia.get_movie('14544192', info=['main'])      # Bo Burnham: Inside
@@ -526,6 +528,7 @@ def test_movie_sound_mix_if_multiple_with_notes_should_include_notes(ia):
 def test_movie_sound_mix_if_none_should_be_excluded(ia):
     movie = ia.get_movie('1863157', info=['main'])      # Ates Parcasi
     assert 'sound mix' not in movie
+
 
 def test_movie_certificates_should_be_a_list_of_certificates(ia):
     movie = ia.get_movie('1000252', info=['main'])      # Doctor Who - Blink

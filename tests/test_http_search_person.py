@@ -1,5 +1,6 @@
 from pytest import mark
 
+
 def test_search_person_should_list_default_number_of_people(ia):
     people = ia.search_person('julia')
     assert len(people) == 20
@@ -34,9 +35,11 @@ def test_search_person_entries_should_include_person_name(ia):
     people = ia.search_person('julia roberts')
     assert people[0]['name'] == 'Julia Roberts'
 
+
 def test_search_person_entries_should_include_headshot_if_available(ia):
     people = ia.search_person('julia roberts')
     assert 'headshot' in people[0]
+
 
 def test_search_person_entries_with_aka_should_exclude_name_in_aka(ia):
     people = ia.search_person('julia roberts')

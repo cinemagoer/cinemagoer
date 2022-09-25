@@ -97,7 +97,7 @@ def test_search_movie_episodes_should_include_season_and_number(ia):
 
 
 def test_search_movie_entries_tv_mini_series_should_have_correct_kind(ia):
-    movies = ia.search_movie('capture 2019') # The Capture (2019)
+    movies = ia.search_movie('capture 2019')  # The Capture (2019)
     miniseries = [m for m in movies if m.movieID == '8201186']
     assert len(miniseries) == 1
     miniseries[0]['kind'] == 'tv mini series'

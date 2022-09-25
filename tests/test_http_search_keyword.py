@@ -25,5 +25,3 @@ def test_get_keyword_pagination(ia):
     for i in range(50):
         assert superheroes_without_page_param[i]['title'] == superheroes_page_one[i]['title']
         assert superheroes_without_page_param[i]['title'] != superheroes_page_two[i]['title']
-
-    

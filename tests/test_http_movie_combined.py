@@ -559,7 +559,7 @@ def test_movie_cast_must_be_in_plain_format(ia):
 
 def test_movie_misc_sections_must_contain_items(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix
-    assert len(movie.get('casting department', [])) == 2
+    assert len(movie.get('casting department', [])) == 3
 
 
 def test_movie_misc_sections_must_be_in_plain_format(ia):

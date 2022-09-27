@@ -314,6 +314,8 @@ class IMDbBase:
         imdbURL_search_movie_advanced = imdbURL_base + 'search/title/?%s'
         # http://www.imdb.com/list/
         imdbURL_list_base = imdbURL_base + 'list/'
+        # https://www.imdb.com/showtimes
+        imdbURL_showtimes = imdbURL_base + 'showtimes'
         self.urls = dict(
             movie_base=imdbURL_movie_base,
             movie_main=imdbURL_movie_main,
@@ -333,7 +335,8 @@ class IMDbBase:
             find=imdbURL_find,
             movie_list=imdbURL_list_base,
             search_movie_advanced=imdbURL_search_movie_advanced,
-            boxoffice=imdbURL_boxoffice)
+            boxoffice=imdbURL_boxoffice,
+            showtimes=imdbURL_showtimes)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -762,6 +765,9 @@ class IMDbBase:
         """Return a Company object."""
         # XXX: not really useful...
         return Company.Company(accessSystem=self.accessSystem, *arguments, **keywords)
+
+    def get_showtimes(self):
+        return self.get_showtimes()
 
     def update(self, mop, info=None, override=0):
         """Given a Movie, Person, Character or Company object with only

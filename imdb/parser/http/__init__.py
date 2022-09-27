@@ -47,7 +47,8 @@ from . import (
     searchCompanyParser,
     searchKeywordParser,
     topBottomParser,
-    listParser
+    listParser,
+    showtimesParser
 )
 
 if PY2:
@@ -293,6 +294,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self.compProxy = _ModuleProxy(companyParser, defaultKeys=_def)
         self.topBottomProxy = _ModuleProxy(topBottomParser, defaultKeys=_def)
         self.listProxy = _ModuleProxy(listParser, defaultKeys=_def)
+        self.stimesProxy = _ModuleProxy(showtimesParser, defaultKeys=_def)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -783,3 +785,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
             return []
         cont = self._retrieve(url)
         return parser.parse(cont)['data']
+
+    def get_showtimes(self):
+        cont = self._retrieve(self.urls['showtimes'])
+        return self.stimesProxy.showtime_parser.parse(cont)

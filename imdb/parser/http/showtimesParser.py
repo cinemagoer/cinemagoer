@@ -1,4 +1,4 @@
-# Copyright 2009-2020 Davide Alberani <da@erlug.linux.it>
+# Copyright 2009-2022 Davide Alberani <da@erlug.linux.it>
 #                2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,13 +17,11 @@
 
 """
 This module provides the classes (and the instances) that are used to parse
-the pages for the lists of top 250 and bottom 100 movies.
+the pages for the showtimes of movies near you.
 
 Pages:
 
-http://www.imdb.com/chart/top
-
-http://www.imdb.com/chart/bottom
+https://www.imdb.com/showtimes/
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals

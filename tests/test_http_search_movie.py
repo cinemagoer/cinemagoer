@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 def test_search_movie_if_single_should_list_one_movie(ia):
     movies = ia.search_movie('od instituta do proizvodnje')
     assert len(movies) == 1

@@ -53,6 +53,7 @@ else:
     from html import escape as html_escape
     from html.parser import HTMLParser
     from io import StringIO
+    from types import MappingProxyType
     from urllib.request import urlopen
 
 
@@ -327,7 +328,7 @@ else:
     xpath = lambda e, p: XPath(p)(e)
 
 
-_EMPTY = {}     # empty result singleton
+_EMPTY = {} if PY2 else MappingProxyType({})  # empty result singleton
 
 
 # sigalias: Reducer = Callable[[Sequence[str]], str]

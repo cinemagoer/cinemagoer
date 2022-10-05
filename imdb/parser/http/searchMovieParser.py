@@ -78,7 +78,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
 
     def postprocess_data(self, data):
         if 'data' not in data:
-            data['data'] = []
+            return {'data': []}
         results = getattr(self, 'results', None)
         if results is not None:
             data['data'][:] = data['data'][:results]

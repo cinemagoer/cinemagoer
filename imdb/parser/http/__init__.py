@@ -786,6 +786,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         cont = self._retrieve(url)
         return parser.parse(cont)['data']
 
-    def get_showtimes(self):
+    def _get_showtimes(self):
         cont = self._retrieve(self.urls['showtimes'])
-        return self.stimesProxy.showtime_parser.parse(cont)
+        return self.stimesProxy.showtime_parser.parse(cont)['data']

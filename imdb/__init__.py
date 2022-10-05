@@ -767,7 +767,7 @@ class IMDbBase:
         return Company.Company(accessSystem=self.accessSystem, *arguments, **keywords)
 
     def get_showtimes(self):
-        return self.get_showtimes()
+        return self._get_showtimes()
 
     def update(self, mop, info=None, override=0):
         """Given a Movie, Person, Character or Company object with only

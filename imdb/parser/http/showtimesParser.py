@@ -1,5 +1,6 @@
 # Copyright 2009-2022 Davide Alberani <da@erlug.linux.it>
 #                2018 H. Turgut Uyar <uyar@tekir.org>
+#                2022 Kostya Farber
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,60 +27,69 @@ https://www.imdb.com/showtimes/
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import re
 from .piculet import Path, Rule, Rules
 from .utils import DOMParserBase, analyze_imdbid, build_movie
 
+re_space = re.compile(r'\s+')
+
 
 class DOMHTMLMoviesNearYou(DOMParserBase):
-    # foreach='//h3[@itemprop="name"]/a'
     rules = [
         Rule(
-            foreach='//h3[@itemprop="name"]/a',
-            key=Path('./text()'),
+            key='showtimes',
             extractor=Rules(
-                foreach='//span[@itemprop="name"]/a',
+                foreach='//div[@itemtype="http://schema.org/MovieTheater"]',
                 rules=[
-                    Rule(        
-                        key='movie',
-                        extractor=Rules(
-                            rules=[
-                                Rule(
-                                    key='link',
-                                    extractor=Path("./@href")
-                                ),
-                                Rule(
-                                    key='title',
-                                    extractor=Path("./text()")
-                                ),
-                            ],
-                            transform=lambda x: build_movie(x.get('title'), analyze_imdbid(x.get('link')))
+                    Rule(
+                        key='cinema',
+                        extractor=Path('.//h3/a/text()')
+                    ),
+                    Rule(
+                        key='address and contacts',
+                        extractor=Path(
+                            './/div[@itemtype="http://schema.org/PostalAddress"]//text()',
+                            transform=lambda x: re_space.sub(' ', x).strip()
                         )
                     ),
                     Rule(
-                        key='showtimes',
-                        extractor=Path(
-                            './../../..//div[@class="showtimes"]//text()',
-                            transform=lambda x: " ".join(x.replace("\n", "").strip().split())
-                        )
+                        key='movies',
+                        extractor=Rules(
+                            foreach='.//div[@class="info"]',
+                            rules=[
+                                Rule(
+                                    key='movie',
+                                    extractor=Rules(
+                                        rules=[
+                                            Rule(
+                                                key='link',
+                                                extractor=Path(".//h4//a/@href")
+                                            ),
+                                            Rule(
+                                                key='title',
+                                                extractor=Path(".//h4//a/text()")
+                                            ),
+                                        ],
+                                        transform=lambda x: build_movie(x.get('title'), analyze_imdbid(x.get('link')))
+                                    )
+                                ),
+                                Rule(
+                                    key='showtimes',
+                                    extractor=Path(
+                                        './/div[@class="showtimes"]//text()',
+                                        transform=lambda x: re_space.sub(' ', x).strip()
+                                    )
+                                )
+                            ])
                     )
-                ],
+                ]
             )
-        ),
-        Rule(
-            key='num_cinemas',
-            extractor=Path(
-                '//ul[@class="list_tabs"]/li[2]/a/span/text()',
-                transform=lambda x: int(x.replace('(', '').replace(')', '').strip())
-            ),
-        ),
-        Rule(
-            key='num_movies',
-            extractor=Path(
-                '//ul[@class="list_tabs"]/li[1]/a/span/text()',
-                transform=lambda x: int(x.replace('(', '').replace(')', '').strip())
-            ),
         )
     ]
+
+    def postprocess_data(self, data):
+        return data.get('showtimes', [])
+
 
 _OBJECTS = {
     'showtime_parser': ((DOMHTMLMoviesNearYou,), None),

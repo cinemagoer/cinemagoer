@@ -746,6 +746,17 @@ class IMDbBase:
                             data=md, modFunct=self._defModFunct,
                             accessSystem=self.accessSystem) for mi, md in res]
 
+    def _get_showtimes(self):
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        raise NotImplementedError('override this method')
+
+    def get_showtimes(self):
+        """Return a list of objects like this:
+        [{'cinema': 'Cinema Name', 'address and contacts': '...',
+          'movies': [{'movie': MovieObject, 'showtimes': 'showtimes info'}}, ...]"""
+        return self._get_showtimes()
+
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""
         # XXX: not really useful...
@@ -765,9 +776,6 @@ class IMDbBase:
         """Return a Company object."""
         # XXX: not really useful...
         return Company.Company(accessSystem=self.accessSystem, *arguments, **keywords)
-
-    def get_showtimes(self):
-        return self._get_showtimes()
 
     def update(self, mop, info=None, override=0):
         """Given a Movie, Person, Character or Company object with only

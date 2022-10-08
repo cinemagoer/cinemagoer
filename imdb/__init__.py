@@ -314,6 +314,8 @@ class IMDbBase:
         imdbURL_search_movie_advanced = imdbURL_base + 'search/title/?%s'
         # http://www.imdb.com/list/
         imdbURL_list_base = imdbURL_base + 'list/'
+        # https://www.imdb.com/showtimes
+        imdbURL_showtimes = imdbURL_base + 'showtimes'
         self.urls = dict(
             movie_base=imdbURL_movie_base,
             movie_main=imdbURL_movie_main,
@@ -333,7 +335,8 @@ class IMDbBase:
             find=imdbURL_find,
             movie_list=imdbURL_list_base,
             search_movie_advanced=imdbURL_search_movie_advanced,
-            boxoffice=imdbURL_boxoffice)
+            boxoffice=imdbURL_boxoffice,
+            showtimes=imdbURL_showtimes)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -742,6 +745,17 @@ class IMDbBase:
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                             data=md, modFunct=self._defModFunct,
                             accessSystem=self.accessSystem) for mi, md in res]
+
+    def _get_showtimes(self):
+        # XXX: for the real implementation, see the method of the
+        #      subclass, somewhere under the imdb.parser package.
+        raise NotImplementedError('override this method')
+
+    def get_showtimes(self):
+        """Return a list of objects like this:
+        [{'cinema': 'Cinema Name', 'address and contacts': '...',
+          'movies': [{'movie': MovieObject, 'showtimes': 'showtimes info'}}, ...]"""
+        return self._get_showtimes()
 
     def new_movie(self, *arguments, **keywords):
         """Return a Movie object."""

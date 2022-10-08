@@ -1,6 +1,7 @@
 * What's new in the next release
 
   [http]
+  - #232: add get_showtimes() method (courtesy of Kostya Farber)
   - #388: add 'videos' key to extract movie trailer links
   - #391: add parental guide advisory votes (courtesy of salehdeh76)
   - #395: fix for some wrongly-formatted titles (courtesy of tsaklidis)

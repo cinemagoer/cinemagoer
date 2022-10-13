@@ -28,14 +28,11 @@ from copy import copy, deepcopy
 from functools import total_ordering
 from time import strftime, strptime
 
-from imdb import VERSION
 from imdb import linguistics
 from imdb._exceptions import IMDbParserError
 from imdb._logging import imdbpyLogger
 
-
 PY2 = sys.hexversion < 0x3000000
-
 
 # Logger for imdb.utils module.
 _utils_logger = imdbpyLogger.getChild('utils')
@@ -1219,7 +1216,7 @@ class _Container(object):
             pass
         if not self._roleIsPerson:
             if not isinstance(roleID, (list, tuple)):
-                if not(PY2 and isinstance(self.currentRole, unicode)):
+                if not (PY2 and isinstance(self.currentRole, unicode)):
                     self.currentRole.characterID = roleID
             else:
                 for index, item in enumerate(roleID):
@@ -1284,7 +1281,7 @@ class _Container(object):
         if ext_idx == -1:
             return url
         if '@' in url:
-            return url[:url.rindex('@')+1] + url[ext_idx:]
+            return url[:url.rindex('@') + 1] + url[ext_idx:]
         else:
             prev_dot = url[:ext_idx].rfind('.')
             if prev_dot == -1:

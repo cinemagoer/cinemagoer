@@ -26,13 +26,15 @@ called with the ``accessSystem`` parameter is set to "s3" or "s3dataset".
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
-import sqlalchemy
 from operator import itemgetter
-from imdb import IMDbBase
-from .utils import DB_TRANSFORM, title_soundex, name_soundexes, scan_titles, scan_names
 
+import sqlalchemy
+
+from imdb import IMDbBase
 from imdb.Movie import Movie
 from imdb.Person import Person
+
+from .utils import DB_TRANSFORM, name_soundexes, scan_names, scan_titles, title_soundex
 
 
 def split_array(text):
@@ -283,4 +285,3 @@ class IMDbS3AccessSystem(IMDbBase):
         results = scan_names(results, name)
         results = [x[1] for x in results]
         return results
-

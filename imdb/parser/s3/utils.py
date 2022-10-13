@@ -21,9 +21,11 @@ This package provides utilities for the s3 dataset.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-import sqlalchemy
 from difflib import SequenceMatcher
-from imdb.utils import canonicalName, canonicalTitle, _unicodeArticles
+
+import sqlalchemy
+
+from imdb.utils import _unicodeArticles, canonicalName, canonicalTitle
 
 SOUNDEX_LENGTH = 5
 RO_THRESHOLD = 0.6
@@ -78,6 +80,7 @@ KIND = {
     'videoGame': 'video game'
 }
 
+
 def transf_kind(x):
     return KIND.get(x, x)
 
@@ -119,7 +122,7 @@ DB_TRANSFORM = {
     },
     'title_akas': {
         'titleId': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
-                   'rename': 'movieID', 'index': True},
+                    'rename': 'movieID', 'index': True},
         'ordering': {'type': sqlalchemy.Integer, 'transform': transf_int},
         'title': {},
         'region': {'type': sqlalchemy.String, 'length': 5, 'index': True},
@@ -344,4 +347,3 @@ def scan_titles(titles_list, title, results=0, ro_threshold=RO_THRESHOLD):
     if results > 0:
         res[:] = res[:results]
     return res
-

@@ -35,19 +35,16 @@ from functools import partial
 from operator import itemgetter
 from pkgutil import find_loader
 
-
 PY2 = sys.version_info < (3, 0)
-
 
 if PY2:
     str, bytes = unicode, str
 
-
 if PY2:
     from cgi import escape as html_escape
+    from htmlentitydefs import name2codepoint  # noqa: I003
     from HTMLParser import HTMLParser
     from StringIO import StringIO
-    from htmlentitydefs import name2codepoint
     from urllib2 import urlopen
 else:
     from html import escape as html_escape
@@ -907,7 +904,7 @@ def main(argv=None):
 
     # set debug mode
     if arguments.debug:
-        logging.basicConfig(level=logging.DEBUG)
+        # logging.basicConfig(level=logging.DEBUG)
         _logger.debug('running in debug mode')
 
     # run the handler for the selected command

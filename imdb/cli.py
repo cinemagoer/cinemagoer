@@ -25,7 +25,6 @@ from argparse import ArgumentParser
 
 from imdb import VERSION, IMDb
 
-
 DEFAULT_RESULT_SIZE = 20
 
 

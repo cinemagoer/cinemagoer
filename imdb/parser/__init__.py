@@ -22,5 +22,4 @@ etc. So far, the http, s3 and sql parsers are implemented.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-
 __all__ = ['http', 'sql', 's3']

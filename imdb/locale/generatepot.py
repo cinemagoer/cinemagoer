@@ -22,7 +22,6 @@ import re
 import sys
 from datetime import datetime as dt
 
-
 DEFAULT_MESSAGES = {}
 
 ELEMENT_PATTERN = r"""<!ELEMENT\s+([^\s]+)"""

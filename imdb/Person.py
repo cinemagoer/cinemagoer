@@ -23,7 +23,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from copy import deepcopy
 
-from imdb.utils import _Container, analyze_name, build_name, cmpPeople, flatten, normalizeName, canonicalName
+from imdb.utils import _Container, analyze_name, build_name, canonicalName, cmpPeople, flatten, normalizeName
 
 
 class Person(_Container):
@@ -184,8 +184,9 @@ class Person(_Container):
     def __contains__(self, item):
         """Return true if this Person has worked in the given Movie,
         or if the fiven Character was played by this Person."""
-        from .Movie import Movie
         from .Character import Character
+        from .Movie import Movie
+
         if isinstance(item, Movie):
             for m in flatten(self.data, yieldDictKeys=True, scalar=Movie):
                 if item.isSame(m):

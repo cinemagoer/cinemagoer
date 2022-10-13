@@ -33,7 +33,6 @@ import re
 from .piculet import Path, Rule, Rules, preprocessors, reducers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 
-
 _re_secondary_info = re.compile(
     r'''(\(([IVXLCM]+)\)\s+)?\((\d{4})(–(\s|(\d{4})))?(\s+(.*))?\)|(\(([IVXLCM]+)\))'''
 )
@@ -59,7 +58,7 @@ def _parse_secondary_info(info):
         parsed['series years'] = match.group(3) + "-" + match.group(6)
     if match.group(8):
         kind = match.group(8).lower()
-    if match.group(10): # Added to support case of imdbIndex but no year
+    if match.group(10):  # Added to support case of imdbIndex but no year
         parsed['imdbIndex'] = match.group(10)
     if kind is None:
         kind = 'movie'
@@ -175,7 +174,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                                 Rule(key='title',
                                      extractor=Path('./h3/small/a/text()', reduce=reducers.first)),
                                 Rule(key='secondary_info',
-                                     extractor=Path('./h3/small/span[@class="lister-item-year text-muted unbold"]/text()',
+                                     extractor=Path('./h3/small/span[@class="lister-item-year text-muted unbold"]/text()',  # noqa: E501
                                                     reduce=reducers.first)),
                             ]
                         )

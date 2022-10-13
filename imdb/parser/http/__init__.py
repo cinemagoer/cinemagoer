@@ -28,32 +28,31 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import socket
 import ssl
-from codecs import lookup
 import warnings
+from codecs import lookup
 
-from imdb import PY2
-from imdb import IMDbBase
-from imdb.utils import analyze_title
-from imdb.parser.http.logging import logger
+from imdb import PY2, IMDbBase
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
+from imdb.parser.http.logging import logger
+from imdb.utils import analyze_title
 
 from . import (
     companyParser,
+    listParser,
     movieParser,
     personParser,
-    searchMovieParser,
-    searchMovieAdvancedParser,
-    searchPersonParser,
     searchCompanyParser,
     searchKeywordParser,
-    topBottomParser,
-    listParser,
-    showtimesParser
+    searchMovieAdvancedParser,
+    searchMovieParser,
+    searchPersonParser,
+    showtimesParser,
+    topBottomParser
 )
 
 if PY2:
     from urllib import quote_plus
-    from urllib2 import HTTPSHandler, ProxyHandler, build_opener
+    from urllib2 import HTTPSHandler, ProxyHandler, build_opener  # noqa: I003
 else:
     from urllib.parse import quote_plus
     from urllib.request import HTTPSHandler, ProxyHandler, build_opener
@@ -621,7 +620,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         temp_d = self.mProxy.season_episodes_parser.parse(cont)
         if isinstance(season_nums, int):
             season_nums = {season_nums}
-        elif (isinstance(season_nums, (list, tuple)) or 
+        elif (isinstance(season_nums, (list, tuple)) or
               not hasattr(season_nums, '__contains__')):
             season_nums = set(season_nums)
         if not temp_d and 'data' in temp_d:

@@ -22,7 +22,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import logging
 
-
 LEVELS = {
     'debug': logging.DEBUG,
     'info': logging.INFO,

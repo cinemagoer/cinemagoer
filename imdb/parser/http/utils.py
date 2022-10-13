@@ -27,14 +27,12 @@ import re
 from imdb import PY2
 from imdb.Character import Character
 from imdb.Movie import Movie
+from imdb.parser.http.logging import logger
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
-from imdb.parser.http.logging import logger
 
-from .piculet import _USE_LXML, ElementTree, Rules, build_tree, html_to_xhtml
+from .piculet import _USE_LXML, ElementTree, Path, Rule, Rules, build_tree, html_to_xhtml
 from .piculet import xpath as piculet_xpath
-from .piculet import Rule, Path
-
 
 if PY2:
     from collections import Callable

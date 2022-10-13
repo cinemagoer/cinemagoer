@@ -32,7 +32,6 @@ import re
 from .piculet import Path, Rule, Rules
 from .utils import DOMParserBase, analyze_imdbid, build_movie
 
-
 _re_company_name = re.compile(r'With\s+(.+)\s+\(Sorted by.*', re.I | re.M)
 
 

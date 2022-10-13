@@ -36,15 +36,9 @@ import re
 
 from imdb.utils import analyze_name
 
-from .movieParser import (
-    DOMHTMLAwardsParser,
-    DOMHTMLNewsParser,
-    DOMHTMLOfficialsitesParser,
-    DOMHTMLTechParser
-)
+from .movieParser import DOMHTMLNewsParser, DOMHTMLOfficialsitesParser, DOMHTMLTechParser
 from .piculet import Path, Rule, Rules, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
-
 
 _re_spaces = re.compile(r'\s+')
 _reRoles = re.compile(r'(<li>.*? \.\.\.\. )(.*?)(</li>|<br>)', re.I | re.M | re.S)
@@ -532,6 +526,7 @@ class DOMHTMLPersonGenresParser(DOMParserBase):
             return {}
         return {self.kind: data}
 
+
 def _process_person_award(x):
     awards = {}
     movies = x.get('movies')
@@ -583,38 +578,42 @@ class DOMHTMLPersonAwardsParser(DOMParserBase):
                     Rule(
                         key='movies',
                         foreach='./td[@class="award_description"]/a',
-                        extractor=Rules([
-                            Rule(
-                                key='title',
-                                extractor=Path('./text()')
-                            ),
-                            Rule(
-                                key='link',
-                                extractor=Path('./@href')
-                            ),
-                            Rule(
-                                key='year',
-                                extractor=Path('./following-sibling::span[@class="title_year"][1]/text()')
+                        extractor=Rules(
+                            [
+                                Rule(
+                                    key='title',
+                                    extractor=Path('./text()')
+                                ),
+                                Rule(
+                                    key='link',
+                                    extractor=Path('./@href')
+                                ),
+                                Rule(
+                                    key='year',
+                                    extractor=Path('./following-sibling::span[@class="title_year"][1]/text()')
+                                )
+                            ],
+                            transform=lambda x: build_movie(
+                                x.get('title') or '',
+                                movieID=analyze_imdbid(x.get('link')),
+                                year=x.get('year')
                             )
-                        ],
-                        transform=lambda x: build_movie(
-                            x.get('title') or '',
-                            movieID=analyze_imdbid(x.get('link')),
-                            year=x.get('year')
                         )
-                    )),
+                    ),
                     Rule(
                         key='shared with',
                         foreach='./td[@class="award_description"]/div[@class="shared_with"]/following-sibling::ul//a',
-                        extractor=Rules([
-                            Rule(
-                                key='name',
-                                extractor=Path('./text()')
-                            ),
-                            Rule(
-                                key='link',
-                                extractor=Path('./@href')
-                            )],
+                        extractor=Rules(
+                            [
+                                Rule(
+                                    key='name',
+                                    extractor=Path('./text()')
+                                ),
+                                Rule(
+                                    key='link',
+                                    extractor=Path('./@href')
+                                )
+                            ],
                             transform=lambda x: build_person(
                                 x.get('name') or '',
                                 personID=analyze_imdbid(x.get('link'))

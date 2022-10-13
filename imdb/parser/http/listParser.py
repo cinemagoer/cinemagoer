@@ -19,7 +19,7 @@
 This module provides the classes (and the instances) that are used to parse
 the the contents of a list.
 
-For example, when you want to parse the list "Golden Globes 2020: Trending Titles" 
+For example, when you want to parse the list "Golden Globes 2020: Trending Titles"
 the corresponding url would be:
 
 https://www.imdb.com/list/ls091843609/
@@ -35,6 +35,7 @@ from .piculet import Path, Rule, Rules, reducers
 from .utils import DOMParserBase, analyze_imdbid
 
 non_numeric_chars = ''.join(set(string.printable) - set(string.digits))
+
 
 class DOMHTMLListParser(DOMParserBase):
     """A parser for the title search page."""
@@ -71,8 +72,8 @@ class DOMHTMLListParser(DOMParserBase):
                     ),
                     Rule(
                         key='year',
-                        extractor=Path('.//span[@class="lister-item-year text-muted unbold"]/text()', 
-                                        transform=lambda x: int(''.join(i for i in x if i.isdigit())[:4]) )
+                        extractor=Path('.//span[@class="lister-item-year text-muted unbold"]/text()',
+                                       transform=lambda x: int(''.join(i for i in x if i.isdigit())[:4]))
                     ),
                     Rule(
                         key='votes',
@@ -94,7 +95,7 @@ class DOMHTMLListParser(DOMParserBase):
             if ('movieID' not in entry) or ('rank' not in entry) or ('title' not in entry):
                 continue
 
-            movie_id = analyze_imdbid(entry['movieID']) # actually url parser to filter out id
+            movie_id = analyze_imdbid(entry['movieID'])  # actually url parser to filter out id
             if movie_id is None:
                 continue
             del entry['movieID']
@@ -104,6 +105,7 @@ class DOMHTMLListParser(DOMParserBase):
 
             movies.append((movie_id, entry))
         return movies
+
 
 _OBJECTS = {
     'list_parser': ((DOMHTMLListParser,), None)

@@ -21,6 +21,7 @@ the IMDb web pages, or a SQL database.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+
 from imdb.version import __version__
 
 __all__ = ['Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
@@ -32,11 +33,11 @@ VERSION = __version__
 import os
 import sys
 from pkgutil import find_loader
-from types import MethodType, FunctionType
+from types import FunctionType, MethodType
 
-from imdb._logging import imdbpyLogger as _imdb_logger
-from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb import Character, Company, Movie, Person
+from imdb._exceptions import IMDbDataAccessError, IMDbError
+from imdb._logging import imdbpyLogger as _imdb_logger
 from imdb.utils import build_company_name, build_name, build_title
 
 PY2 = sys.hexversion < 0x3000000
@@ -205,8 +206,10 @@ def IMDb(accessSystem=None, *arguments, **keywords):
     else:
         raise IMDbError('unknown kind of data access system: "%s"' % accessSystem)
 
+
 # Cinemagoer alias
 Cinemagoer = IMDb
+
 
 def available_access_systems():
     """Return the list of available data access systems."""

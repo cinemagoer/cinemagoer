@@ -1,6 +1,7 @@
 * What's new in the next release
 
   [http]
+
   - #232: add get_showtimes() method (courtesy of Kostya Farber)
   - #388: add 'videos' key to extract movie trailer links
   - #391: add parental guide advisory votes (courtesy of salehdeh76)
@@ -12,10 +13,12 @@
 * What's new in release 2022.02.11 (the Cinemagoer Strikes Back release)
 
   [http]
+
   - #373: include TV shows in get top 50 by genre
   - #378: update documentation
 
   [s3]
+
   - #378: rename s32imdbpy.py to s32cinemagoer.py
 
 
@@ -23,6 +26,7 @@
 * What's new in release 2022.01.25 (the Cinemagoer release)
 
   [general]
+
   - #238: by default, exceptions are raised
   - #315: include all script in the ./bin directory
   - #318: fix kind of tv mini series in search results
@@ -31,6 +35,7 @@
   - #378: renamed to cinemagoer
 
   [http]
+
   - #308: fix movie connections parser
   - #319: parse review rating
   - #327: do not strip new lines
@@ -51,6 +56,7 @@
 * What's new in release 2021.04.18 (Black Sails)
 
   [general]
+
   - #289: Serbian translations
   - #290: update Portuguese translations
   - #291: allow direct access to filmography keys

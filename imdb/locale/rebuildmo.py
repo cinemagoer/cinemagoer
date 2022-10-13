@@ -1,4 +1,4 @@
-# Copyright 2009 H. Turgut Uyar <uyar@tekir.org>
+# Copyright 2022 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,13 +21,14 @@ This script builds the .mo files, from the .po files.
 import glob
 import os
 
-import msgfmt
+import polib
 
 
 def rebuildmo():
     lang_glob = 'imdbpy-*.po'
     created = []
     for input_file in sorted(glob.glob(lang_glob)):
+        po_file = polib.pofile(input_file)
         lang = input_file[7:-3]
         if not os.path.exists(lang):
             os.mkdir(lang)
@@ -35,7 +36,7 @@ def rebuildmo():
         if not os.path.exists(mo_dir):
             os.mkdir(mo_dir)
         output_file = os.path.join(mo_dir, 'imdbpy.mo')
-        msgfmt.make(input_file, output_file)
+        po_file.save_as_mofile(output_file)
         created.append(lang)
     return created
 

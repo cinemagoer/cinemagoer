@@ -11,7 +11,7 @@ In the virtual environment, install Cinemagoer in editable mode and include
 the extra packages. In the top level directory of the project (where
 the :file:`setup.py` file resides), run::
 
-   pip install -e .[dev,doc,test]
+   pip install -e .[dev,doc]
 
 
 .. packages

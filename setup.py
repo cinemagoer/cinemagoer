@@ -96,17 +96,14 @@ params = {
         'dev': [
             'flake8',
             'flake8-isort',
-            'readme_renderer',
-            'tox'
+            'polib',
+            'pytest',
+            'pytest-cov',
+            'tox',
         ],
         'doc': [
             'sphinx',
             'sphinx_rtd_theme'
-        ],
-        'test': [
-            'pytest',
-            'pytest-cov',
-            'pytest-profiling'
         ]
     },
     'packages': setuptools.find_packages(),

@@ -5,7 +5,6 @@ import re
 from imdb.Movie import Movie
 from imdb.Person import Person
 
-
 months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 re_date = re.compile(r'[0-9]{1,2} (%s) [0-9]{4}' % '|'.join(months), re.I)
 
@@ -275,7 +274,7 @@ def test_movie_rating_should_be_between_1_and_10(ia):
 
 
 def test_movie_rating_if_none_should_be_excluded(ia):
-    movie = ia.get_movie('1863157', info=['main'])      # Ates Parcasi
+    movie = ia.get_movie('3629794', info=['main'])      # Aslan
     assert 'rating' not in movie
 
 
@@ -285,7 +284,7 @@ def test_movie_votes_should_be_an_integer(ia):
 
 
 def test_movie_votes_if_none_should_be_excluded(ia):
-    movie = ia.get_movie('1863157', info=['main'])      # Ates Parcasi
+    movie = ia.get_movie('3629794', info=['main'])      # Aslan
     assert 'votes' not in movie
 
 

@@ -48,6 +48,7 @@ class Movie(_Container):
         'user rating': 'rating',
         'plot summary': 'plot',
         'plot summaries': 'plot',
+        'age range': 'age range',
         'directed by': 'director',
         'directors': 'director',
         'writers': 'writer',

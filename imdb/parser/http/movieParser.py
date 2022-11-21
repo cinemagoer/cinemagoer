@@ -255,6 +255,38 @@ def clean_akas(aka):
     return aka
 
 
+class MovieTypeExtractor(Path):
+    def apply(self, element):
+        value = None
+        index = 1
+        while not value and index < 7:
+            path1 = f'//*[@id="main"]/section/div/div/ul[1]/li[{index}]/text()'
+            value = self.exctract_from_path(path1, element)
+            if not value:
+                path2 = f'//*[@id="main"]/section/div/div/div/ul[1]/li[{index}]/text()'
+                value = self.exctract_from_path(path2, element)
+            index += 1
+
+        return value
+
+    def exctract_from_path(self, path: str, element):
+        self.path = XPath(path)
+        selected = self.path(element)
+        if selected:
+            value = self.reduce(selected)
+            value = self.transform(value)
+            if value in ['Movie', 'TV Movie', 'Video', 'Short', 'TV Special', 'FILM', 'Video Game']:
+                value = "movie"
+            elif value in ['Series', 'TV Series', 'TV Episode', 'TV Mini Series']:
+                value = "series"
+            else:
+                value = None
+        else:
+            value = None
+
+        return value
+
+
 class DOMHTMLMovieParser(DOMParserBase):
     """Parser for the "reference" page of a given movie.
     The page should be provided as a string, as taken from
@@ -289,6 +321,11 @@ class DOMHTMLMovieParser(DOMParserBase):
             key='localized title',
             extractor=Path('//meta[@name="title"]/@content',
                            transform=lambda x: analyze_og_title(x).get('title'))
+        ),
+        Rule(
+            key='movie type',
+            extractor=MovieTypeExtractor(
+                '//*[@id="main"]/section/div/div/ul[1]/li[3]/text()', transform=lambda x: re_space.sub(' ', x).strip())
         ),
 
         # parser for misc sections like 'casting department', 'stunts', ...

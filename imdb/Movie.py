@@ -46,6 +46,7 @@ class Movie(_Container):
     keys_alias = {
         'tv schedule': 'airing',
         'user rating': 'rating',
+        'movie type': 'movie type',
         'plot summary': 'plot',
         'plot summaries': 'plot',
         'directed by': 'director',

@@ -161,7 +161,7 @@ class IMDbURLopener:
         self.addheaders = []
         for header in ('User-Agent', 'User-agent', 'user-agent'):
             self.del_header(header)
-        self.set_header('User-Agent', 'Mozilla/5.0')
+        self.set_header('User-Agent', 'Mozilla/5.0 (X11; Linux i686; rv:107.0) Gecko/20100101 Firefox/107.0')
         lang = kwargs.get('languages', 'en-us,en;q=0.5')
         self.set_header('Accept-Language', lang)
 
@@ -215,7 +215,6 @@ class IMDbURLopener:
                     'https': self.proxies['http']
                 })
                 handlers.append(proxy_handler)
-            self.set_header("User-Agent", "alberanid/Cinemagoer")
             handlers.append(self.https_handler)
             uopener = build_opener(*handlers)
             uopener.addheaders = list(self.addheaders)

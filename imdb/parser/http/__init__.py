@@ -215,6 +215,7 @@ class IMDbURLopener:
                     'https': self.proxies['http']
                 })
                 handlers.append(proxy_handler)
+            self.set_header("User-Agent", "alberanid/Cinemagoer")
             handlers.append(self.https_handler)
             uopener = build_opener(*handlers)
             uopener.addheaders = list(self.addheaders)

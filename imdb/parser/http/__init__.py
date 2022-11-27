@@ -161,7 +161,8 @@ class IMDbURLopener:
         self.addheaders = []
         for header in ('User-Agent', 'User-agent', 'user-agent'):
             self.del_header(header)
-        self.set_header('User-Agent', 'Mozilla/5.0 (X11; Linux i686; rv:107.0) Gecko/20100101 Firefox/107.0')
+        self.set_header('User-Agent',
+                        'Mozilla/5.0 (X11; CrOS armv6l 13597.84.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.56')')
         lang = kwargs.get('languages', 'en-us,en;q=0.5')
         self.set_header('Accept-Language', lang)
 

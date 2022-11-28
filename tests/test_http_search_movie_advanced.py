@@ -152,14 +152,14 @@ def test_selected_movie_should_have_correct_plot(ia):
 
 def test_selected_movie_should_have_correct_director_imdb_ids(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
-    selected = [m for m in movies if m.movieID == '1830851'][0]
-    assert [p.personID for p in selected['directors']] == ['0649609']
+    selected = [m for m in movies if m.movieID == '10838180'][0]
+    assert [p.personID for p in selected['directors']] == ['0905154']
 
 
 def test_selected_work_should_have_correct_director_name(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
-    selected = [m for m in movies if m.movieID == '1830851'][0]
-    assert [p['name'] for p in selected['directors']] == ['Josh Oreck']
+    selected = [m for m in movies if m.movieID == '10838180'][0]
+    assert [p['name'] for p in selected['directors']] == ['Lana Wachowski']
 
 
 def test_selected_work_should_have_correct_director_imdb_ids_if_multiple(ia):
@@ -176,14 +176,14 @@ def test_selected_work_should_have_correct_director_names_if_multiple(ia):
 
 def test_selected_work_should_have_correct_cast_imdb_id(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
-    selected = [m for m in movies if m.movieID == '1830851'][0]
-    assert [p.personID for p in selected['cast']] == ['1047143']
+    selected = [m for m in movies if m.movieID == '11749868'][0]
+    assert [p.personID for p in selected['cast']] == ['4216365']
 
 
 def test_selected_work_should_have_correct_cast_name(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
-    selected = [m for m in movies if m.movieID == '1830851'][0]
-    assert [p['name'] for p in selected['cast']] == ['Clayton Watson']
+    selected = [m for m in movies if m.movieID == '11749868'][0]
+    assert [p['name'] for p in selected['cast']] == ['Chris Harvey']
 
 
 def test_selected_work_should_have_correct_cast_imdb_ids_if_multiple(ia):

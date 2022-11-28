@@ -2,12 +2,14 @@ from pytest import fixture
 
 import logging
 import os
-from hashlib import md5
+import time
 
 from imdb import Cinemagoer
 from imdb.parser.http import IMDbURLopener
 
 logging.raiseExceptions = False
+
+DELAY = 0
 
 
 cache_dir = os.path.join(os.path.dirname(__file__), '.cache')
@@ -19,12 +21,14 @@ retrieve_unicode_orig = IMDbURLopener.retrieve_unicode
 
 
 def retrieve_unicode_cached(self, url, size=-1):
-    key = md5(url.encode('utf-8')).hexdigest()
+    print(url)
+    key = "_".join(url.split("/")[3:])
     cache_file = os.path.join(cache_dir, key)
     if os.path.exists(cache_file):
         with open(cache_file, 'r') as f:
             content = f.read()
     else:
+        time.sleep(DELAY)
         content = retrieve_unicode_orig(self, url, size=size)
         with open(cache_file, 'w') as f:
             f.write(content)

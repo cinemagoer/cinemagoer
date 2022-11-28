@@ -70,7 +70,7 @@ def test_search_movie_entries_should_include_imdb_index(ia):
     movies = ia.search_movie('blink')
     movie_with_index = [m for m in movies if m.movieID == '6544524']
     assert len(movie_with_index) == 1
-    assert movie_with_index[0]['imdbIndex'] == 'IV'
+    assert movie_with_index[0]['imdbIndex'] == 'XXIV'
 
 
 def test_search_movie_entries_missing_imdb_index_should_be_excluded(ia):

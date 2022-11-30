@@ -96,6 +96,11 @@ and to the the online documentation on `Read The Docs`_.
 
 The sources are available on `GitHub`_.
 
+Contribute
+------------
+
+Visit the `CONTRIBUTOR_GUIDE.rst`_ to learn how you can contribute to the Cinemagoer package.
+
 License
 -------
 
@@ -115,6 +120,7 @@ NOTE: See also the recommendations in the `DISCLAIMER.txt`_ file.
 .. _support: https://cinemagoer.github.io/support/
 .. _Read The Docs: https://cinemagoer.readthedocs.io/
 .. _GitHub: https://github.com/cinemagoer/cinemagoer
+.. _CONTRIBUTOR_GUIDE.rst: https://github.com/ethorne2/cinemagoer/blob/add-contributor-guide/CONTRIBUTOR_GUIDE.rst
 .. _LICENSE.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/LICENSE.txt
 .. _CONTRIBUTORS.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/CONTRIBUTORS.txt
 .. _DISCLAIMER.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/DISCLAIMER.txt

@@ -1,4 +1,4 @@
-# Copyright 2004-2020 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2022 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -83,11 +83,11 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
     _film_rules = [
         Rule(
             key='link',
-            extractor=Path('./b/a[1]/@href')
+            extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/@href')
         ),
         Rule(
             key='title',
-            extractor=Path('./b/a[1]/text()')
+            extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/text()')
         ),
         Rule(
             key='notes',
@@ -95,7 +95,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='year',
-            extractor=Path('./span[@class="year_column"]/text()')
+            extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()')
         ),
         Rule(
             key='status',
@@ -151,15 +151,15 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         Rule(
             key='filmography',
             extractor=Rules(
-                foreach='//div[starts-with(@id, "filmo-head-")]',
+                foreach='//div[contains(@class, "filmo-section-")]',
                 rules=[
                     Rule(
                         key=Path(
-                            './a[@name]/text()',
+                            './/h3/text()',
                             transform=lambda x: x.lower().replace(': ', ' ')
                         ),
                         extractor=Rules(
-                            foreach='./following-sibling::div[1]/div[starts-with(@class, "filmo-row")]',
+                            foreach='./following-sibling::div[1]//li[contains(@class, "ipc-metadata-list-summary-item")]',
                             rules=_film_rules,
                             transform=lambda x: build_movie(
                                 x.get('title') or '',

@@ -61,7 +61,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                 ],
                 transform=lambda x: (
                     analyze_imdbid(x.get('link')),
-                    analyze_title(x.get('info', '') + ' (%s)' % x.get('year') if x.get('year') else ''),
+                    analyze_title(x.get('info', '') + (' (%s)' % x.get('year') if x.get('year') else '')),
                     x.get('akas'),
                     x.get('cover url')
                 )

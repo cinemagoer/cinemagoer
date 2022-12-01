@@ -9,6 +9,7 @@
   - #396: raise exception on resize image (courtesy of tsaklidis)
   - #398: fix for production status
   - #415: change User-Agent to a more complete form
+  - #419: fix movie and person searches
 
 
 * What's new in release 2022.02.11 (the Cinemagoer Strikes Back release)

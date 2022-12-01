@@ -10,6 +10,7 @@
   - #398: fix for production status
   - #415: change User-Agent to a more complete form
   - #419: fix movie and person searches
+  - #420: introduce a contributor guide (courtesy of Elizabeth Thorne)
 
 
 * What's new in release 2022.02.11 (the Cinemagoer Strikes Back release)

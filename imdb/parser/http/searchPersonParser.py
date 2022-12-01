@@ -1,4 +1,4 @@
-# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2022 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -41,27 +41,19 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//td[@class="result_text"]',
+                foreach='//li[contains(@class, "find-name-result")]',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./a/@href', reduce=reducers.first)
+                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='name',
-                        extractor=Path('./a/text()')
-                    ),
-                    Rule(
-                        key='index',
-                        extractor=Path('./text()')
-                    ),
-                    Rule(
-                        key='akas',
-                        extractor=Path(foreach='./i', path='./text()')
+                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/text()')
                     ),
                     Rule(
                         key='headshot',
-                        extractor=Path('../td[@class="primary_photo"]/a/img/@src')
+                        extractor=Path('.//img[@class="ipc-image"]/@src')
                     )
                 ],
                 transform=lambda x: (

@@ -1,4 +1,4 @@
-# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2022 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -40,28 +40,28 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//td[@class="result_text"]',
+                foreach='//li[contains(@class, "find-title-result")]',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./a/@href', reduce=reducers.first)
+                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='info',
-                        extractor=Path('.//text()')
+                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/text()')
                     ),
                     Rule(
-                        key='akas',
-                        extractor=Path(foreach='./i', path='./text()')
+                        key='year',
+                        extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()', reduce=reducers.first)
                     ),
                     Rule(
                         key='cover url',
-                        extractor=Path('../td[@class="primary_photo"]/a/img/@src')
+                        extractor=Path('.//img[@class="ipc-image"]/@src')
                     )
                 ],
                 transform=lambda x: (
                     analyze_imdbid(x.get('link')),
-                    analyze_title(x.get('info', '')),
+                    analyze_title(x.get('info', '') + ' (%s)' % x.get('year') if x.get('year') else ''),
                     x.get('akas'),
                     x.get('cover url')
                 )

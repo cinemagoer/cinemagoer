@@ -1,4 +1,4 @@
-# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2022 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ re_yearKind_index = re.compile(
 )
 
 # Match imdb ids in href tags
-re_imdbid = re.compile(r'(title/tt|name/nm|company/co|user/ur)([0-9]+)')
+re_imdbid = re.compile(r'(title/tt|name/nm|company/co|companies=co|user/ur)([0-9]+)')
 
 
 def analyze_imdbid(href):

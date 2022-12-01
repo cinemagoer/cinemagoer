@@ -1,4 +1,4 @@
-# Copyright 2008-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2008-2022 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -41,24 +41,20 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//td[@class="result_text"]',
+                foreach='//li[contains(@class, "find-company-result")]',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./a/@href', reduce=reducers.first)
+                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='name',
-                        extractor=Path('./a/text()')
-                    ),
-                    Rule(
-                        key='notes',
-                        extractor=Path('./text()')
+                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/text()')
                     )
                 ],
                 transform=lambda x: (
                     analyze_imdbid(x.get('link')),
-                    analyze_company_name(x.get('name') + x.get('notes', ''), stripNotes=True)
+                    analyze_company_name(x.get('name'))
                 )
             )
         )

@@ -1,16 +1,18 @@
+from pytest import mark
+
 def test_search_keyword_check_list_of_keywords(ia):
     keywords = ia.search_keyword('zoolander')
-    assert 'reference-to-zoolander' in keywords
+    assert 'reference to zoolander' in keywords
 
 
 def test_search_keyword_if_multiple_should_list_correct_number_of_keywords(ia):
     keywords = ia.search_keyword('messiah')
-    assert 150 <= len(keywords) <= 200
+    assert len(keywords) == 25
 
 
 def test_search_keyword_if_too_many_should_list_upper_limit_of_keywords(ia):
     keywords = ia.search_keyword('computer')
-    assert len(keywords) == 200
+    assert len(keywords) == 25
 
 
 def test_search_keyword_if_none_result_should_be_empty(ia):

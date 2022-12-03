@@ -115,13 +115,9 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         Rule(
             key='name',
             extractor=Path(
-                '//h1[@class="header"]//text()',
+                '//h1[@data-testid="hero__pageTitle"]//text()',
                 transform=lambda x: analyze_name(x)
             )
-        ),
-        Rule(
-            key='name_index',
-            extractor=Path('//h1[@class="header"]/span[1]/text()')
         ),
         Rule(
             key='birth info',
@@ -224,11 +220,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         for what in 'birth date', 'death date':
             if what in data and not data[what]:
                 del data[what]
-        name_index = (data.get('name_index') or '').strip()
-        if name_index:
-            if self._name_imdb_index.match(name_index):
-                data['imdbIndex'] = name_index[1:-1]
-            del data['name_index']
         # XXX: the code below is for backwards compatibility
         # probably could be removed
         for key in list(data.keys()):

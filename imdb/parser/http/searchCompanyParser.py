@@ -50,11 +50,15 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
                     Rule(
                         key='name',
                         extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/text()')
-                    )
+                    ),
+                    Rule(
+                        key='country',
+                        extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()', reduce=reducers.first)
+                    ),
                 ],
                 transform=lambda x: (
                     analyze_imdbid(x.get('link')),
-                    analyze_company_name(x.get('name'))
+                    analyze_company_name(x.get('name') + (' [%s]' % x.get('country') if x.get('country') else ''))
                 )
             )
         )

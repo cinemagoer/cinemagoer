@@ -38,7 +38,7 @@ def process_title(tdict):
     imdbid = analyze_imdbid(tdict.get('link'))
     title = tdict.get('title', '')
     kind = (tdict.get('kind') or '').strip()
-    if not re_m_kind.findall('(%s)' % kind):
+    if not re_m_kind.match('(%s)' % kind):
         kind = ''
     year = (tdict.get('year') or '').strip()
     if year:

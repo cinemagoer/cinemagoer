@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from pytest import mark
 
 def test_search_movie_if_single_should_list_one_movie(ia):
     movies = ia.search_movie('od instituta do proizvodnje')
@@ -13,7 +14,7 @@ def test_search_movie_should_list_default_number_of_movies(ia):
     movies = ia.search_movie('movie')
     assert len(movies) == 20
 
-
+@mark.skip(reason="number of results limit is not honored anymore")
 def test_search_movie_limited_should_list_requested_number_of_movies(ia):
     movies = ia.search_movie('ace in the hole', results=98)
     assert len(movies) == 98
@@ -21,12 +22,12 @@ def test_search_movie_limited_should_list_requested_number_of_movies(ia):
 
 def test_search_movie_unlimited_should_list_correct_number_of_movies(ia):
     movies = ia.search_movie('ace in the hole', results=500)
-    assert 185 <= len(movies) <= 200
+    assert len(movies) == 25
 
 
 def test_search_movie_if_too_many_result_should_list_upper_limit_of_movies(ia):
     movies = ia.search_movie('matrix', results=500)
-    assert len(movies) == 200
+    assert len(movies) == 25
 
 
 def test_search_movie_if_none_should_be_empty(ia):
@@ -66,6 +67,7 @@ def test_search_movie_entries_should_include_movie_year(ia):
     assert movies[0]['year'] == 1999
 
 
+@mark.skip(reason="index is no longer shown on search results")
 def test_search_movie_entries_should_include_imdb_index(ia):
     movies = ia.search_movie('blink')
     movie_with_index = [m for m in movies if m.movieID == '6544524']
@@ -78,6 +80,7 @@ def test_search_movie_entries_missing_imdb_index_should_be_excluded(ia):
     assert 'imdbIndex' not in movies[0]
 
 
+@mark.skip(reason="AKAs are no longer shown on search results")
 def test_search_movie_entries_should_include_akas(ia):
     movies = ia.search_movie('Una calibro 20 per lo specialista')
     movie_with_aka = [m for m in movies if m.movieID == '0072288']
@@ -90,6 +93,7 @@ def test_search_movie_entries_missing_akas_should_be_excluded(ia):
     assert 'akas' not in movies[0]
 
 
+@mark.skip(reason="episode title are no longer shown on search results")
 def test_search_movie_episodes_should_include_season_and_number(ia):
     movies = ia.search_movie('swarley')  # How I Met Your Mother S02E07
     movie_with_season_and_episode = [m for m in movies if m.movieID == '0875360']

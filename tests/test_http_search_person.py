@@ -11,14 +11,9 @@ def test_search_person_limited_should_list_requested_number_of_people(ia):
     assert len(people) == 11
 
 
-def test_search_person_unlimited_should_list_correct_number_of_people(ia):
-    people = ia.search_person('engelbart', results=500)
-    assert 120 <= len(people) <= 150
-
-
 def test_search_person_if_too_many_should_list_upper_limit_of_people(ia):
     people = ia.search_person('john', results=500)
-    assert len(people) == 200
+    assert len(people) == 25
 
 
 def test_search_person_if_none_result_should_be_empty(ia):
@@ -52,6 +47,7 @@ def test_search_person_entries_with_aka_should_exclude_name_in_aka(ia):
     assert robertson['name'] == 'Julia Robertson'
 
 
+@mark.skip(reason="imdbIndex no longer included in results")
 def test_search_person_entries_should_include_person_index(ia):
     people = ia.search_person('julia roberts')
     assert people[0]['imdbIndex'] == 'I'

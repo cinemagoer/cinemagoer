@@ -95,7 +95,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='year',
-            extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()')
+            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__cc"]//label[@class="ipc-metadata-list-summary-item__li"]/text()')
         ),
         Rule(
             key='status',
@@ -107,7 +107,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='chrRoles',
-            extractor=Path('./a[@imdbpyname]/@imdbpyname')
+            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__tl")]//label/text()')
         )
     ]
 

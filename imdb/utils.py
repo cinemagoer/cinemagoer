@@ -1,4 +1,4 @@
-# Copyright 2004-2021 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2022 Davide Alberani <da@erlug.linux.it>
 #                2009 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -42,7 +42,7 @@ _utils_logger = imdbpyLogger.getChild('utils')
 # "imdbIndex" after the slash is used for movies with the same title
 # and year of release.
 # XXX: probably L, C, D and M are far too much! ;-)
-re_year_index = re.compile(r'\(([0-9\?]{4}(/[IVXLCDM]+)?)\)')
+re_year_index = re.compile(r'\(([0-9\?]{4}([–-]([0-9\?]{4})?\s?)?(/[IVXLCDM]+)?)\)')
 re_m_episode = re.compile(r'\(TV Episode\)\s+-\s+', re.I)
 re_m_series = re.compile(r'Season\s+(\d+)\s+\|\s+Episode\s+(\d+)\s+-', re.I)
 re_m_imdbIndex = re.compile(r'\(([IVXLCDM]+)\)')
@@ -442,7 +442,7 @@ def analyze_title(title, canonical=None, canonicalSeries=None, canonicalEpisode=
         except (TypeError, ValueError):
             pass
     if imdbIndex:
-        result['imdbIndex'] = imdbIndex
+        result['imdbIndex'] = imdbIndex.strip()
     result['kind'] = kind or 'movie'
     return result
 

@@ -27,10 +27,28 @@ http://www.imdb.com/find?q=the+passion&s=tt
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from imdb.utils import analyze_title
+from imdb.utils import analyze_title, re_m_kind
 
 from .piculet import Path, Rule, Rules, reducers
 from .utils import DOMParserBase, analyze_imdbid
+
+def process_title(tdict):
+    """Process parsed data and build a tuple that
+    can be used to create a list of results."""
+    imdbid = analyze_imdbid(tdict.get('link'))
+    title = tdict.get('title', '')
+    kind = (tdict.get('kind') or '').strip()
+    if not re_m_kind.findall('(%s)' % kind):
+        kind = ''
+    year = (tdict.get('year') or '').strip()
+    if year:
+        title += ' (%s)' % year
+    if kind:
+        title += ' (%s)' % kind
+    analized_title = analyze_title(title)
+    akas = tdict.get('akas')
+    cover = tdict.get('cover url')
+    return imdbid, analized_title, akas, cover
 
 
 class DOMHTMLSearchMovieParser(DOMParserBase):
@@ -47,7 +65,7 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                         extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/@href', reduce=reducers.first)
                     ),
                     Rule(
-                        key='info',
+                        key='title',
                         extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/text()')
                     ),
                     Rule(
@@ -55,16 +73,15 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                         extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()', reduce=reducers.first)
                     ),
                     Rule(
+                        key='kind',
+                        extractor=Path('(.//label[@class="ipc-metadata-list-summary-item__li"])[2]/text()')
+                    ),
+                    Rule(
                         key='cover url',
                         extractor=Path('.//img[@class="ipc-image"]/@src')
                     )
                 ],
-                transform=lambda x: (
-                    analyze_imdbid(x.get('link')),
-                    analyze_title(x.get('info', '') + (' (%s)' % x.get('year') if x.get('year') else '')),
-                    x.get('akas'),
-                    x.get('cover url')
-                )
+                transform=process_title
             )
         )
     ]

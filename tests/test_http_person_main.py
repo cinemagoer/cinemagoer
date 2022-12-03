@@ -54,7 +54,7 @@ def test_person_imdb_index_should_be_a_roman_number(ia):
 
 def test_person_should_have_filmography(ia):
     person = ia.get_person('0000210', info=['main'])    # Julia Roberts
-    filmoset = set(['actress', 'producer', 'self'])
+    filmoset = set(['actress', 'producer', 'soundtrack'])
     assert filmoset.issubset(set(person.get('filmography', {}).keys()))
 
 

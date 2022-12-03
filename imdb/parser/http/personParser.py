@@ -135,7 +135,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='headshot',
-            extractor=Path('//td[@id="img_primary"]//div[@class="image"]/a/img/@src')
+            extractor=Path('(//div[contains(@class, "ipc-poster")]//img[@class="ipc-image"])[1]/@src')
         ),
         Rule(
             key='akas',

@@ -1,5 +1,8 @@
 * What's new in the next release
 
+
+* What's new in release 2022.11.04 (John Wick)
+
   [http]
 
   - #232: add get_showtimes() method (courtesy of Kostya Farber)
@@ -11,6 +14,7 @@
   - #415: change User-Agent to a more complete form
   - #419: fix movie and person searches
   - #420: introduce a contributor guide (courtesy of Elizabeth Thorne)
+  - #421: fixes for person parsers
 
 
 * What's new in release 2022.02.11 (the Cinemagoer Strikes Back release)

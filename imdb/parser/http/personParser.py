@@ -45,7 +45,7 @@ _reRoles = re.compile(r'(<li>.*? \.\.\.\. )(.*?)(</li>|<br>)', re.I | re.M | re.
 
 
 class DOMHTMLMaindetailsParser(DOMParserBase):
-    """Parser for the "categorized" (maindetails) page of a given person.
+    """Parser for the "maindetails" page of a given person.
     The page should be provided as a string, as taken from
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
@@ -91,7 +91,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='notes',
-            extractor=Path('./b/following-sibling::text()')
+            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__stl")]//label/text()')
         ),
         Rule(
             key='year',
@@ -103,10 +103,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='rolesNoChar',
-            extractor=Path('.//br/following-sibling::text()')
-        ),
-        Rule(
-            key='chrRoles',
             extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__tl")]//label/text()')
         )
     ]
@@ -162,7 +158,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                                 year=x.get('year'),
                                 movieID=analyze_imdbid(x.get('link') or ''),
                                 rolesNoChar=(x.get('rolesNoChar') or '').strip(),
-                                chrRoles=(x.get('chrRoles') or '').strip(),
                                 additionalNotes=x.get('notes'),
                                 status=x.get('status') or None
                             )
@@ -195,8 +190,8 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='imdbID',
-            extractor=Path('//meta[@property="pageId"]/@content',
-                           transform=lambda x: (x or '').replace('nm', ''))
+            extractor=Path('//meta[@property="og:url"]/@content',
+                           transform=analyze_imdbid)
         )
     ]
 

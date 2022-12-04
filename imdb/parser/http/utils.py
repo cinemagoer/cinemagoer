@@ -348,13 +348,13 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
               roleID=roleID, roleIsPerson=_parsingCharacter,
               modFunct=modFunct, accessSystem=accessSystem)
     if additionalNotes:
-        if '(TV Series)' in additionalNotes:
+        if 'TV Series' in additionalNotes:
             m['kind'] = 'tv series'
-        elif '(Video Game)' in additionalNotes:
+        elif 'Video Game' in additionalNotes:
             m['kind'] = 'video game'
-        elif '(TV Movie)' in additionalNotes:
+        elif 'TV Movie' in additionalNotes:
             m['kind'] = 'tv movie'
-        elif '(TV Short)' in additionalNotes:
+        elif 'TV Short' in additionalNotes:
             m['kind'] = 'tv short'
     if roleNotes and len(roleNotes) == len(roleID):
         for idx, role in enumerate(m.currentRole):

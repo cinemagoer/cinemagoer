@@ -6,9 +6,9 @@ def test_person_headshot_should_be_an_image_link(ia):
     assert re.match(r'^https?://.*\.jpg$', person['headshot'])
 
 
-def test_person_director_is_in_filmography(ia):
+def test_person_producer_is_in_filmography(ia):
     person = ia.get_person('0000206', info=['main'])    # Keanu Reeves
-    assert 'director' in person.get('filmography', {})
+    assert 'producer' in person.get('filmography', {})
 
 
 def test_person_filmography_includes_role(ia):
@@ -60,7 +60,7 @@ def test_person_should_have_filmography(ia):
 
 def test_person_filmography_should_contain_movies(ia):
     person = ia.get_person('0000210', info=['main'])    # Julia Roberts
-    assert len(person.get('filmography', {}).get('actress')) > 60
+    assert len(person.get('filmography', {}).get('actress')) >= 15
 
 
 def test_person_imdb_index_if_none_should_be_excluded(ia):

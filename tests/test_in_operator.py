@@ -10,7 +10,7 @@ def test_key_in_movie(ia):
 
 
 def test_movie_in_person(ia):
-    movie = ia.get_movie('0133093', info=['main'])  # Matrix
+    movie = ia.get_movie('10838180', info=['main'])  # The Matrix Resurrections
     person = ia.get_person('0000206', info=['main'])  # Keanu Reeves
     assert movie in person
 

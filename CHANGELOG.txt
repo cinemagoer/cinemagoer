@@ -1,5 +1,9 @@
 * What's new in the next release
 
+  [http]
+
+  - #419: more fixes for movie searches
+
 
 * What's new in release 2022.11.04 (John Wick)
 

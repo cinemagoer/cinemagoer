@@ -36,7 +36,7 @@ def process_title(tdict):
     """Process parsed data and build a tuple that
     can be used to create a list of results."""
     imdbid = analyze_imdbid(tdict.get('link'))
-    title = tdict.get('title', '')
+    title = tdict.get('title', '').strip()
     kind = (tdict.get('kind') or '').strip()
     if not re_m_kind.match('(%s)' % kind):
         kind = ''
@@ -45,7 +45,10 @@ def process_title(tdict):
         title += ' (%s)' % year
     if kind:
         title += ' (%s)' % kind
-    analized_title = analyze_title(title)
+    if title:
+        analized_title = analyze_title(title)
+    else:
+        analized_title = {}
     akas = tdict.get('akas')
     cover = tdict.get('cover url')
     return imdbid, analized_title, akas, cover

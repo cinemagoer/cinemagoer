@@ -1,5 +1,3 @@
-from pytest import mark
-
 def test_search_keyword_check_list_of_keywords(ia):
     keywords = ia.search_keyword('zoolander')
     assert 'reference to zoolander' in keywords

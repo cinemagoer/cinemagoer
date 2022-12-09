@@ -1,5 +1,6 @@
 from pytest import mark
 
+
 def test_search_company_should_list_default_number_of_companies(ia):
     companies = ia.search_company('pixar')
     assert len(companies) == 12

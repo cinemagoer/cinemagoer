@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from pytest import mark
 
+
 def test_search_movie_if_single_should_list_one_movie(ia):
     movies = ia.search_movie('od instituta do proizvodnje')
     assert len(movies) == 1
@@ -13,6 +14,7 @@ def test_search_movie_if_single_should_list_one_movie(ia):
 def test_search_movie_should_list_default_number_of_movies(ia):
     movies = ia.search_movie('movie')
     assert len(movies) == 20
+
 
 @mark.skip(reason="number of results limit is not honored anymore")
 def test_search_movie_limited_should_list_requested_number_of_movies(ia):

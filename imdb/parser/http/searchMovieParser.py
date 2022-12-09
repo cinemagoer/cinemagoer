@@ -32,6 +32,7 @@ from imdb.utils import analyze_title, re_m_kind
 from .piculet import Path, Rule, Rules, reducers
 from .utils import DOMParserBase, analyze_imdbid
 
+
 def process_title(tdict):
     """Process parsed data and build a tuple that
     can be used to create a list of results."""
@@ -65,7 +66,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/@href', reduce=reducers.first)
+                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/@href',
+                                       reduce=reducers.first)
                     ),
                     Rule(
                         key='title',
@@ -73,7 +75,8 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                     ),
                     Rule(
                         key='year',
-                        extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()', reduce=reducers.first)
+                        extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()',
+                                       reduce=reducers.first)
                     ),
                     Rule(
                         key='kind',

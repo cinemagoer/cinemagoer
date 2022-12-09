@@ -53,7 +53,8 @@ class DOMHTMLSearchCompanyParser(DOMHTMLSearchMovieParser):
                     ),
                     Rule(
                         key='country',
-                        extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()', reduce=reducers.first)
+                        extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()',
+                                       reduce=reducers.first)
                     ),
                 ],
                 transform=lambda x: (

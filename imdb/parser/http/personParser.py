@@ -91,11 +91,11 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='notes',
-            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__stl")]//label/text()')
+            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__stl")]//label/text()')  # noqa: E501
         ),
         Rule(
             key='year',
-            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__cc"]//label[@class="ipc-metadata-list-summary-item__li"]/text()')
+            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__cc"]//label[@class="ipc-metadata-list-summary-item__li"]/text()')  # noqa: E501
         ),
         Rule(
             key='status',
@@ -103,7 +103,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='rolesNoChar',
-            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__tl")]//label/text()')
+            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__tl")]//label/text()')  # noqa: E501
         )
     ]
 
@@ -131,7 +131,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         ),
         Rule(
             key='headshot',
-            extractor=Path('(//section[contains(@class, "ipc-page-section")])[1]//div[contains(@class, "ipc-poster")]/img[@class="ipc-image"]/@src')
+            extractor=Path('(//section[contains(@class, "ipc-page-section")])[1]//div[contains(@class, "ipc-poster")]/img[@class="ipc-image"]/@src')  # noqa: E501
         ),
         Rule(
             key='akas',
@@ -151,7 +151,7 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
                             transform=lambda x: x.lower().replace(': ', ' ')
                         ),
                         extractor=Rules(
-                            foreach='./following-sibling::div[1]//li[contains(@class, "ipc-metadata-list-summary-item")]',
+                            foreach='./following-sibling::div[1]//li[contains(@class, "ipc-metadata-list-summary-item")]',  # noqa: E501
                             rules=_film_rules,
                             transform=lambda x: build_movie(
                                 x.get('title') or '',

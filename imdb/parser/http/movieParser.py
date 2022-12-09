@@ -884,13 +884,6 @@ class DOMHTMLPlotParser(DOMParserBase):
     """
     _defGetRefs = True
 
-    def synopsis_reducer(nodes):
-        ret = []
-        for n in nodes:
-            if 'ElementUnicodeResult' in n.__class__.__name__:
-                ret.append(n)
-        return '\n\n'.join(ret)
-
     # Notice that recently IMDb started to put the email of the
     # author only in the link, that we're not collecting, here.
     rules = [
@@ -915,8 +908,7 @@ class DOMHTMLPlotParser(DOMParserBase):
             key='synopsis',
             extractor=Path(
                 foreach='//ul[@id="plot-synopsis-content"]',
-                path='.//li//node()',
-                reduce=synopsis_reducer
+                path='.//li//text()'
             )
         )
     ]

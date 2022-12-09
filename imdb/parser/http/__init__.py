@@ -390,7 +390,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
         if PY2:
-            params = 'q=%s&s=%s' % (quote_plus(ton.encode('utf8'), safe=''.encode('utf8')), kind.encode('utf8'))
+            params = 'q=%s&s=%s' % (quote_plus(ton, safe=''.encode('utf8')), kind.encode('utf8'))
         else:
             params = 'q=%s&s=%s' % (quote_plus(ton, safe=''), kind)
         if kind == 'ep':

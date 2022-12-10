@@ -22,7 +22,7 @@ import glob
 import os
 import os.path
 import sys
-from subprocess import CalledProcessError, check_call
+from subprocess import check_call
 
 
 def rebuildmo():

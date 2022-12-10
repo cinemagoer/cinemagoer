@@ -20,27 +20,30 @@ This script builds the .mo files, from the .po files.
 
 import glob
 import os
-
-import polib
+import os.path
+import sys
+from subprocess import CalledProcessError, check_call
 
 
 def rebuildmo():
-    lang_glob = 'imdbpy-*.po'
     created = []
-    for input_file in sorted(glob.glob(lang_glob)):
-        po_file = polib.pofile(input_file)
-        lang = input_file[7:-3]
-        if not os.path.exists(lang):
-            os.mkdir(lang)
-        mo_dir = os.path.join(lang, 'LC_MESSAGES')
+    locale_dir = os.path.join("imdb", "locale")
+    po_files = os.path.join(locale_dir, "imdbpy-*.po")
+    for po_file in sorted(glob.glob(po_files)):
+        lang = os.path.basename(po_file)[7:-3]
+        lang_dir = os.path.join(locale_dir, lang)
+        mo_dir = os.path.join(lang_dir, "LC_MESSAGES")
+        mo_file = os.path.join(mo_dir, "imdbpy.mo")
+        if os.path.exists(mo_file) and (os.stat(po_file).st_mtime < os.stat(mo_file).st_mtime):
+            continue
         if not os.path.exists(mo_dir):
-            os.mkdir(mo_dir)
-        output_file = os.path.join(mo_dir, 'imdbpy.mo')
-        po_file.save_as_mofile(output_file)
+            os.makedirs(mo_dir)
+        check_call([sys.executable, "msgfmt.py", "-o", mo_file, po_file])
         created.append(lang)
     return created
 
 
 if __name__ == '__main__':
     languages = rebuildmo()
-    print('Created locale for: %s.' % ' '.join(languages))
+    if len(languages) > 0:
+        print('Created locale for: %s.' % ' '.join(languages))

@@ -22,15 +22,9 @@ is to switch to the ``imdbpy`` text domain:
 
 .. code-block:: python
 
-   >>> import imdb.locale
-   >>> import gettext
-   >>> gettext.textdomain('imdbpy')
-   'imdbpy'
-   >>> from gettext import gettext as _
-   >>> _('art-department')
-   'Art department'
    >>> import os
    >>> os.environ['LANG'] = 'it_IT'
+   >>> from imdb.locale import _
    >>> _('art-department')
    'Dipartimento artistico'
 

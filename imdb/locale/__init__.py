@@ -25,4 +25,5 @@ import os
 
 LOCALE_DIR = os.path.dirname(__file__)
 
-gettext.bindtextdomain('imdbpy', LOCALE_DIR)
+translation = gettext.translation('imdbpy', LOCALE_DIR)
+_ = translation.gettext

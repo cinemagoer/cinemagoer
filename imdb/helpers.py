@@ -28,7 +28,8 @@ import difflib
 import gettext
 import re
 import sys
-from gettext import gettext as _
+
+from imdb.locale import _
 
 PY2 = sys.hexversion < 0x3000000
 if PY2:

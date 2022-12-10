@@ -1,9 +1,8 @@
-import os
-import sys
 import glob
+import sys
+from subprocess import CalledProcessError, check_call
 
 import setuptools
-
 
 # version of the software from imdb/version.py
 exec(compile(open('imdb/version.py').read(), 'imdb/version.py', 'exec'))
@@ -97,7 +96,6 @@ params = {
         'dev': [
             'flake8',
             'flake8-isort',
-            'polib',
             'pytest',
             'pytest-cov',
             'tox',
@@ -133,29 +131,13 @@ ERR_MSG = """
 """
 
 
-REBUILDMO_DIR = os.path.join('imdb', 'locale')
-REBUILDMO_NAME = 'rebuildmo'
-
-
 def runRebuildmo():
     """Call the function to rebuild the locales."""
-    cwd = os.getcwd()
-    path = list(sys.path)
     languages = []
     try:
-        import importlib
-        scriptPath = os.path.dirname(__file__)
-        modulePath = os.path.join(cwd, scriptPath, REBUILDMO_DIR)
-        sys.path += [modulePath, '.', cwd]
-        rebuildmo = importlib.import_module(os.path.join(REBUILDMO_DIR, REBUILDMO_NAME).replace(os.path.sep, '.'))
-        os.chdir(modulePath)
-        languages = rebuildmo.rebuildmo()
-        print('Created locale for: %s.' % ' '.join(languages))
-    except Exception as e:
+        check_call([sys.executable, "rebuildmo.py"])
+    except CalledProcessError as e:
         print('ERROR: unable to rebuild .mo files; caught exception %s' % e)
-    sys.path = path
-    os.chdir(cwd)
-    return languages
 
 
 def hasCommand():

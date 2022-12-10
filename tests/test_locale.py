@@ -1,23 +1,24 @@
 from pytest import fixture
 
-import gettext
 import os
+import sys
 
-import imdb.locale  # noqa: F401
+import imdb.locale
 
-gettext.textdomain("imdbpy")
-
-_ = gettext.gettext
+if sys.version_info.major >= 3:
+    from importlib import reload
 
 
 @fixture
 def italian():
-    """Set the language to Italian temporarily."""
+    """Set the language temporarily to Italian."""
     lang = os.environ["LANG"]
     os.environ["LANG"] = "it_IT.UTF-8"
-    yield
+    reload(imdb.locale)
+    yield imdb.locale._
     os.environ["LANG"] = lang
+    reload(imdb.locale)
 
 
 def test_locale_should_work(italian):
-    assert _("art-director") == "Direttore artistico"
+    assert italian("art-director") == "Direttore artistico"

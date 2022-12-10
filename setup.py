@@ -133,7 +133,6 @@ ERR_MSG = """
 
 def runRebuildmo():
     """Call the function to rebuild the locales."""
-    languages = []
     try:
         check_call([sys.executable, "rebuildmo.py"])
     except CalledProcessError as e:

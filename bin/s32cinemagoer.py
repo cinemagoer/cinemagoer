@@ -164,7 +164,7 @@ def import_file(fn, engine):
         logging.info('processed file %s: %d entries' % (fn, count))
 
 
-def import_dir(dir_name, engine):
+def import_dir(dir_name, engine, cleanup=False):
     """Import data from a series of .tsv.gz files.
 
     :param dir_name: directory containing the .tsv.gz files
@@ -177,19 +177,24 @@ def import_dir(dir_name, engine):
             logging.debug('skipping file %s' % fn)
             continue
         import_file(fn, engine)
+        if cleanup:
+            logging.debug('Removing file %s' % fn)
+            os.remove(fn)
 
-
+ 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('tsv_files_dir')
     parser.add_argument('db_uri')
     parser.add_argument('--verbose', help='increase verbosity and show progress', action='store_true')
+    parser.add_argument('--cleanup', help='Remove files after they\'re imported', action='store_true')
     args = parser.parse_args()
     dir_name = args.tsv_files_dir
     db_uri = args.db_uri
     if args.verbose:
         logger.setLevel(logging.DEBUG)
+    cleanup = args.cleanup
     engine = sqlalchemy.create_engine(db_uri, encoding='utf-8', echo=False)
     metadata.bind = engine
-    import_dir(dir_name, engine)
+    import_dir(dir_name, engine, cleanup)
 

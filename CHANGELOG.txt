@@ -3,6 +3,7 @@
   [http]
 
   - #419: more fixes for movie searches
+  - #426: support 308 Permanent Redirect HTTP code
   - better handling of locales
   - fixes for python2.7
 

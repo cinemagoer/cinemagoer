@@ -1,4 +1,4 @@
-# Copyright 2004-2020 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2022 Davide Alberani <da@erlug.linux.it>
 #                2008 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -52,10 +52,10 @@ from . import (
 
 if PY2:
     from urllib import quote_plus
-    from urllib2 import HTTPSHandler, ProxyHandler, build_opener  # noqa: I003
+    from urllib2 import HTTPSHandler, ProxyHandler, HTTPRedirectHandler, addinfourl, build_opener  # noqa: I003
 else:
     from urllib.parse import quote_plus
-    from urllib.request import HTTPSHandler, ProxyHandler, build_opener
+    from urllib.request import HTTPSHandler, ProxyHandler, HTTPRedirectHandler, addinfourl, build_opener
 
 # Logger for miscellaneous functions.
 _aux_logger = logger.getChild('aux')
@@ -150,6 +150,15 @@ class IMDbHTTPSHandler(HTTPSHandler, object):
         )
 
 
+class IMDbHTTPRedirectHandler(HTTPRedirectHandler):
+    """Custom handler to support redirect 308."""
+    def http_error_308(self, req, fp, code, msg, headers):
+        # force handling of redirect 308
+        req.code = 302
+        code = 302
+        return super(IMDbHTTPRedirectHandler, self).http_error_302(req, fp, code, msg, headers)
+
+
 class IMDbURLopener:
     """Fetch web pages and handle errors."""
     _logger = logger.getChild('urlopener')
@@ -157,6 +166,7 @@ class IMDbURLopener:
     def __init__(self, *args, **kwargs):
         self._last_url = ''
         self.https_handler = IMDbHTTPSHandler(logger=self._logger)
+        self.redirect_handler = IMDbHTTPRedirectHandler()
         self.proxies = {}
         self.addheaders = []
         for header in ('User-Agent', 'User-agent', 'user-agent'):
@@ -216,6 +226,7 @@ class IMDbURLopener:
                     'https': self.proxies['http']
                 })
                 handlers.append(proxy_handler)
+            handlers.append(self.redirect_handler)
             handlers.append(self.https_handler)
             uopener = build_opener(*handlers)
             uopener.addheaders = list(self.addheaders)

@@ -78,8 +78,8 @@ imdbURL_keyword_main = imdbURL_base + 'search/keyword/?keywords=%s'
 imdbURL_top250 = imdbURL_base + 'chart/top'
 # http://www.imdb.com/chart/bottom
 imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
-# http://www.imdb.com/find?%s
-imdbURL_find = imdbURL_base + 'find?%s'
+# http://www.imdb.com/find/?%s
+imdbURL_find = imdbURL_base + 'find/?%s'
 # http://www.imdb.com/list/
 imdbURL_list_base = imdbURL_base + 'list/'
 
@@ -311,8 +311,8 @@ class IMDbBase:
         imdbURL_topindian250 = imdbURL_base + 'india/top-rated-indian-movies'
         # http://www.imdb.com/chart/boxoffice/
         imdbURL_boxoffice = imdbURL_base + 'chart/boxoffice/'
-        # http://www.imdb.com/find?%s
-        imdbURL_find = imdbURL_base + 'find?%s'
+        # http://www.imdb.com/find/?%s
+        imdbURL_find = imdbURL_base + 'find/?%s'
         # http://www.imdb.com/search/title?%s
         imdbURL_search_movie_advanced = imdbURL_base + 'search/title/?%s'
         # http://www.imdb.com/list/

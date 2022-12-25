@@ -52,10 +52,10 @@ from . import (
 
 if PY2:
     from urllib import quote_plus
-    from urllib2 import HTTPSHandler, ProxyHandler, HTTPRedirectHandler, addinfourl, build_opener  # noqa: I003
+    from urllib2 import HTTPRedirectHandler, HTTPSHandler, ProxyHandler, build_opener  # noqa: I003
 else:
     from urllib.parse import quote_plus
-    from urllib.request import HTTPSHandler, ProxyHandler, HTTPRedirectHandler, addinfourl, build_opener
+    from urllib.request import HTTPRedirectHandler, HTTPSHandler, ProxyHandler, build_opener
 
 # Logger for miscellaneous functions.
 _aux_logger = logger.getChild('aux')

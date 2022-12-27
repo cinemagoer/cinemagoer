@@ -1,5 +1,7 @@
 * What's new in the next release
 
+* What's new in release 2022.12.27 (Turist)
+
   [http]
 
   - #419: more fixes for movie searches
@@ -8,7 +10,7 @@
   - fixes for python2.7
 
 
-* What's new in release 2022.11.04 (John Wick)
+* What's new in release 2022.12.04 (John Wick)
 
   [http]
 

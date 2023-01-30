@@ -80,33 +80,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         )
     ]
 
-    _film_rules = [
-        Rule(
-            key='link',
-            extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/@href')
-        ),
-        Rule(
-            key='title',
-            extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/text()')
-        ),
-        Rule(
-            key='notes',
-            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__stl")]//label/text()')  # noqa: E501
-        ),
-        Rule(
-            key='year',
-            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__cc"]//label[@class="ipc-metadata-list-summary-item__li"]/text()')  # noqa: E501
-        ),
-        Rule(
-            key='status',
-            extractor=Path('./a[@class="in_production"]/text()')
-        ),
-        Rule(
-            key='rolesNoChar',
-            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__tl")]//label/text()')  # noqa: E501
-        )
-    ]
-
     rules = [
         Rule(
             key='name',
@@ -138,32 +111,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             extractor=Path(
                 '//div[h4="Alternate Names:"]/text()',
                 transform=lambda x: x.strip().split('  ')
-            )
-        ),
-        Rule(
-            key='filmography',
-            extractor=Rules(
-                foreach='//div[contains(@class, "filmo-section-")]',
-                rules=[
-                    Rule(
-                        key=Path(
-                            './/h3/text()',
-                            transform=lambda x: x.lower().replace(': ', ' ')
-                        ),
-                        extractor=Rules(
-                            foreach='./following-sibling::div[1]//li[contains(@class, "ipc-metadata-list-summary-item")]',  # noqa: E501
-                            rules=_film_rules,
-                            transform=lambda x: build_movie(
-                                x.get('title') or '',
-                                year=x.get('year'),
-                                movieID=analyze_imdbid(x.get('link') or ''),
-                                rolesNoChar=(x.get('rolesNoChar') or '').strip(),
-                                additionalNotes=x.get('notes'),
-                                status=x.get('status') or None
-                            )
-                        )
-                    )
-                ]
             )
         ),
         Rule(
@@ -200,13 +147,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
-        filmo = {}
-        for job in (data.get('filmography') or []):
-            if not isinstance(job, dict) or not job:
-                continue
-            filmo.update(job)
-        if filmo:
-            data['filmography'] = filmo
         for key in ['name']:
             if (key in data) and isinstance(data[key], dict):
                 subdata = data[key]
@@ -224,6 +164,92 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
             if key == 'death place':
                 data['death notes'] = data[key]
                 del data[key]
+        return data
+
+
+class DOMHTMLFilmographyParser(DOMParserBase):
+    """Parser for the "full credits" page of a given person.
+    The page should be provided as a string, as taken from
+    the www.imdb.com server.
+
+    Example::
+
+        filmo_parser = DOMHTMLFilmographyParser()
+        result = filmo_parser.parse(fullcredits_html_string)
+    """
+    _defGetRefs = True
+
+    _film_rules = [
+        Rule(
+            key='link',
+            extractor=Path('.//b/a/@href')
+        ),
+        Rule(
+            key='title',
+            extractor=Path('.//b/a/text()')
+        ),
+        # TODO: Notes not migrated yet
+        Rule(
+            key='notes',
+            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__stl")]//label/text()')  # noqa: E501
+        ),
+        Rule(
+            key='year',
+            extractor=Path(
+                './/span[@class="year_column"]//text()',
+                transform=lambda x: x.strip(),
+            ),
+        ),
+        Rule(
+            key='status',
+            extractor=Path('./a[@class="in_production"]/text()')
+        ),
+        Rule(
+            key='rolesNoChar',
+            extractor=Path(
+                './/br/following-sibling::text()',
+                transform=lambda x: x.strip(),
+            ),
+        )
+    ]
+
+    rules = [
+        Rule(
+            key='filmography',
+            extractor=Rules(
+                foreach='//div[contains(@id, "filmo-head-")]',
+                rules=[
+                    Rule(
+                        key=Path(
+                            './/a/text()',
+                            transform=lambda x: x.lower()
+                        ),
+                        extractor=Rules(
+                            foreach='./following-sibling::div[1]/div[contains(@class, "filmo-row")]',
+                            rules=_film_rules,
+                            transform=lambda x: build_movie(
+                                x.get('title') or '',
+                                year=x.get('year'),
+                                movieID=analyze_imdbid(x.get('link') or ''),
+                                rolesNoChar=(x.get('rolesNoChar') or '').strip(),
+                                additionalNotes=x.get('notes'),
+                                status=x.get('status') or None
+                            )
+                        )
+                    )
+                ]
+            )
+        )
+    ]
+
+    def postprocess_data(self, data):
+        filmo = {}
+        for job in (data.get('filmography') or []):
+            if not isinstance(job, dict) or not job:
+                continue
+            filmo.update(job)
+        if filmo:
+            data['filmography'] = filmo
         return data
 
 
@@ -624,6 +650,7 @@ class DOMHTMLPersonAwardsParser(DOMParserBase):
 _OBJECTS = {
     'maindetails_parser': ((DOMHTMLMaindetailsParser,), None),
     'bio_parser': ((DOMHTMLBioParser,), None),
+    'filmo_parser': ((DOMHTMLFilmographyParser,), None),
     'otherworks_parser': ((DOMHTMLOtherWorksParser,), None),
     'person_officialsites_parser': ((DOMHTMLOfficialsitesParser,), None),
     'person_awards_parser': ((DOMHTMLPersonAwardsParser,), None),

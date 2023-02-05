@@ -1,5 +1,10 @@
 * What's new in the next release
 
+  [http]
+
+  - #424: parse the "fullcredits" page for persons (courtesy of DLu)
+
+
 * What's new in release 2022.12.27 (Turist)
 
   [http]

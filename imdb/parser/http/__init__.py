@@ -700,7 +700,8 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return ret
 
     def get_person_filmography(self, personID):
-        return self.get_person_main(personID)
+        cont = self._retrieve(self.urls['person_main'] % personID + 'fullcredits')
+        return self.pProxy.filmo_parser.parse(cont, getRefs=self._getRefs)
 
     def get_person_biography(self, personID):
         cont = self._retrieve(self.urls['person_main'] % personID + 'bio')

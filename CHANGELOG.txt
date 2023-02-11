@@ -3,6 +3,7 @@
   [http]
 
   - #424: parse the "fullcredits" page for persons (courtesy of DLu)
+  - #443: fix parser for plot summary (courtesy of Saleh Dehqanpour)
 
 
 * What's new in release 2022.12.27 (Turist)

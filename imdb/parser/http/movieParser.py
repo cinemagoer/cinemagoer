@@ -890,16 +890,12 @@ class DOMHTMLPlotParser(DOMParserBase):
         Rule(
             key='plot',
             extractor=Rules(
-                foreach='//ul[@id="plot-summaries-content"]/li',
+                foreach='//div[@data-testid="sub-section-summaries"]//li',
                 rules=[
                     Rule(
                         key='plot',
-                        extractor=Path('./p//text()')
+                        extractor=Path('.//text()')
                     ),
-                    Rule(
-                        key='author',
-                        extractor=Path('.//div[@class="author-container"]//a/text()')
-                    )
                 ],
                 transform=_process_plotsummary
             )

@@ -75,12 +75,12 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
                     ),
                     Rule(
                         key='year',
-                        extractor=Path('.//label[@class="ipc-metadata-list-summary-item__li"]/text()',
+                        extractor=Path('.//span[@class="ipc-metadata-list-summary-item__li"]/text()',
                                        reduce=reducers.first)
                     ),
                     Rule(
                         key='kind',
-                        extractor=Path('(.//label[@class="ipc-metadata-list-summary-item__li"])[2]/text()')
+                        extractor=Path('(.//span[@class="ipc-metadata-list-summary-item__li"])[2]/text()')
                     ),
                     Rule(
                         key='cover url',

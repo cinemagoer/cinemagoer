@@ -837,7 +837,7 @@ class DOMHTMLMovieParser(DOMParserBase):
             del data['tv series link']
         if 'rating' in data:
             try:
-                data['rating'] = float(data['rating'].replace('/10', ''))
+                data['rating'] = float(data['rating'].replace('/10', '').replace(',', '.'))
             except (TypeError, ValueError):
                 pass
             if data['rating'] == 0:

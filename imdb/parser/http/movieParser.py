@@ -1085,16 +1085,11 @@ class DOMHTMLTaglinesParser(DOMParserBase):
         Rule(
             key='taglines',
             extractor=Path(
-                foreach='//div[@id="taglines_content"]/div',
+                foreach='//div[@class="ipc-html-content-inner-div"]',
                 path='.//text()'
             )
         )
     ]
-
-    def preprocess_dom(self, dom):
-        preprocessors.remove(dom, '//div[@id="taglines_content"]/div[@class="header"]')
-        preprocessors.remove(dom, '//div[@id="taglines_content"]/div[@id="no_content"]')
-        return dom
 
     def postprocess_data(self, data):
         if 'taglines' in data:

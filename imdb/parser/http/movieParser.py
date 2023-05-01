@@ -1852,13 +1852,13 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
     """
     rules = [
         Rule(
-            foreach='//h4[@class="li_group"]',
+            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',
             key=Path(
-                './text()',
+                './/h3//text()',
                 transform=lambda x: x.strip().lower()
             ),
             extractor=Rules(
-                foreach='./following::ul[1]/li/a',
+                foreach='.//ul[1]//li//a[1]',
                 rules=[
                     Rule(
                         key='link',
@@ -1866,12 +1866,12 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
                     ),
                     Rule(
                         key='info',
-                        extractor=Path('./text()')
+                        extractor=Path('.//text()')
                     )
                 ],
                 transform=lambda x: (
-                    x.get('info').strip(),
-                    unquote(_normalize_href(x.get('link')))
+                    x.get('info', '').strip(),
+                    unquote(x.get('link'))
                 )
             )
         )

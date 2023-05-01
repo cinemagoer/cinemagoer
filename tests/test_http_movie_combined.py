@@ -571,7 +571,7 @@ def test_movie_misc_sections_must_be_in_plain_format(ia):
 
 def test_movie_companies_sections_must_contain_items(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix
-    assert len(movie.get('special effects companies', [])) == 7
+    assert len(movie.get('special effects companies', [])) == 6
 
 
 def test_movie_box_office_should_be_a_dict(ia):

@@ -14,7 +14,7 @@ def test_search_company_limited_should_list_requested_number_of_companies(ia):
 
 def test_search_company_unlimited_should_list_correct_number_of_companies(ia):
     companies = ia.search_company('pixar', results=500)
-    assert len(companies) == 12
+    assert len(companies) == 13
 
 
 def test_search_company_too_many_should_list_upper_limit_of_companies(ia):

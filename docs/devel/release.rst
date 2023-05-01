@@ -41,7 +41,7 @@ How to make a release
   version of twine and the appropriate ~/.pypi file)
 
 - The new tar.gz must also be uploaded
-  to https://sourceforge.net/projects/imdbpy/ (along with a new "news").
+  to https://sourceforge.net/projects/cinemagoer/ (along with a new "news").
 
 - Create a new release on GitHub, including the changelog and the whl and tar.gz files.
   https://github.com/cinemagoer/cinemagoer/releases/new
@@ -51,7 +51,7 @@ How to make a release
 
 - update the *content/news* section of https://github.com/cinemagoer/website
 
-- add a news on https://sourceforge.net/p/imdbpy/news/new
+- add a news on https://sourceforge.net/p/cinemagoer/news/new
 
 - send an email to imdbpy-devel@lists.sourceforge.net and imdbpy-help@lists.sourceforge.net
 

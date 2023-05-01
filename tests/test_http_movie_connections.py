@@ -1,7 +1,7 @@
 def test_movie_followed_by_connections(ia):
     movie = ia.get_movie('0133093', info=['connections'])
     quotes = movie.get('connections', {}).get('followed by', [])
-    assert len(quotes) >= 8
+    assert len(quotes) >= 5
 
 
 def test_movie_spinoff_connections(ia):

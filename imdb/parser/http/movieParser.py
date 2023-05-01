@@ -903,8 +903,8 @@ class DOMHTMLPlotParser(DOMParserBase):
         Rule(
             key='synopsis',
             extractor=Path(
-                foreach='//ul[@id="plot-synopsis-content"]',
-                path='.//li//text()'
+                foreach='//div[@data-testid="sub-section-synopsis"]//li',
+                path='.//text()'
             )
         )
     ]
@@ -1889,32 +1889,28 @@ class DOMHTMLConnectionsParser(DOMParserBase):
         osparser = DOMHTMLOfficialsitesParser()
         result = osparser.parse(officialsites_html_string)
     """
-    preprocessors = [
-        (re.compile('(<h4 class="li_group">)', re.I), r'</div><div class="_imdbpy">\1'),
-        (re.compile('(^<br />.*$)', re.I | re.M), r''),
-    ]
     rules = [
         Rule(
-            foreach='//div[@class="_imdbpy"]',
+            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',
             key=Path(
-                './h4/text()',
-                transform=lambda x: x.strip().lower()
+                './div[1]//h3//text()',
+                transform=lambda x: (x or '').strip().lower()
             ),
             extractor=Rules(
-                foreach='./div[contains(@class, "soda")]',
+                foreach='./div[2]//ul[1]//li',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./a/@href')
+                        extractor=Path('./div[1]//p//a/@href')
                     ),
                     Rule(
                         key='info',
-                        extractor=Path('.//text()')
+                        extractor=Path('./div[1]//p//text()')
                     )
                 ],
                 transform=lambda x: (
-                    x.get('info').strip(),
-                    unquote(_normalize_href(x.get('link')))
+                    x.get('info', '').strip(),
+                    unquote(_normalize_href(x.get('link', '')))
                 )
             )
         )

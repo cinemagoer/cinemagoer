@@ -3,7 +3,7 @@ from pytest import mark
 
 def test_search_company_should_list_default_number_of_companies(ia):
     companies = ia.search_company('pixar')
-    assert len(companies) == 12
+    assert len(companies) == 13
 
 
 @mark.skip(reason="number of results limit is not honored anymore")

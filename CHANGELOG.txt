@@ -1,5 +1,9 @@
 * What's new in the next release
 
+  [http]
+
+  - #358: access the "actress" key with "actor"
+
 * What's new in release 2023.05.01 (1922)
 
   [http]

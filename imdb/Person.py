@@ -168,8 +168,13 @@ class Person(_Container):
                 return build_name(self.data, canonical=True)
         if key == 'full-size headshot':
             return self.get_fullsizeURL()
-        elif key not in self.data and key in self.data.get('filmography', {}):
-            return self.data['filmography'][key]
+        elif key not in self.data:
+            filmography = self.data.get('filmography', {})
+            if key in filmography:
+                return self.data['filmography'][key]
+            elif key == 'actor' and 'actress' in filmography:
+                # we can also access the 'actress' key using 'actor'
+                return filmography['actress']
         return None
 
     def getID(self):

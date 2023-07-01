@@ -356,7 +356,7 @@ class DOMHTMLBioParser(DOMParserBase):
         Rule(
             key='mini biography',
             extractor=Rules(
-                foreach='//h4[starts-with(text(), "Mini Bio")]/following-sibling::div',
+                foreach='//div[@data-testid="sub-section-mini_bio"]',
                 rules=[
                     Rule(
                         key='bio',

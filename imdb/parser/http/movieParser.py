@@ -1200,20 +1200,8 @@ class DOMHTMLTriviaParser(DOMParserBase):
     _defGetRefs = True
 
     rules = [
-        Rule(
-            key='trivia',
-            extractor=Path(
-                foreach='//div[@class="sodatext"]',
-                path='.//text()',
-                transform=transformers.strip
-            )
-        )
+        Rule(key="trivia", extractor=Path(foreach='//div[@class="ipc-html-content-inner-div"]', path='.//text()'))
     ]
-
-    def preprocess_dom(self, dom):
-        # Remove "link this quote" links.
-        preprocessors.remove(dom, '//span[@class="linksoda"]')
-        return dom
 
 
 class DOMHTMLSoundtrackParser(DOMParserBase):

@@ -1847,7 +1847,7 @@ class DOMHTMLOfficialsitesParser(DOMParserBase):
     """
     rules = [
         Rule(
-            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',
+            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',  # noqa: E501
             key=Path(
                 './/h3//text()',
                 transform=lambda x: x.strip().lower()
@@ -1886,7 +1886,7 @@ class DOMHTMLConnectionsParser(DOMParserBase):
     """
     rules = [
         Rule(
-            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',
+            foreach='//div[contains(@class, "ipc-page-grid__item")]/section[contains(@class, "ipc-page-section--base")]',  # noqa: E501
             key=Path(
                 './div[1]//h3//text()',
                 transform=lambda x: (x or '').strip().lower()

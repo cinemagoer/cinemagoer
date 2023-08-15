@@ -62,9 +62,11 @@ def test_person_filmography_should_contain_movies(ia):
     person = ia.get_person('0000210', info=['filmography'])    # Julia Roberts
     assert len(person.get('filmography', {}).get('actress')) >= 20
 
+
 def test_person_filmography_actor_and_actress_should_be_the_same(ia):
     person = ia.get_person('0000210', info=['filmography'])    # Julia Roberts
     assert person.get('actress') == person.get('actor')
+
 
 def test_person_filmography_should_contain_many_roles(ia):
     person = ia.get_person('0000110', info=['filmography'])    # Kenneth Branagh

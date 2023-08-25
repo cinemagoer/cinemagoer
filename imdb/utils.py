@@ -981,7 +981,6 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
         beginTag=""
         if not _containerOnly:
             if value:
-                print( '<%s><%s>%s</%s>' % (tag, what, value, what))
                 beginTag = '<%s><%s>%s</%s>' % (tag, what, value, what)
         else:
             beginTag = '<%s>' % tag

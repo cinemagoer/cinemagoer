@@ -540,7 +540,7 @@ def akasLanguages(movie):
     akas = set((movie.get('akas') or []) + (movie.get('akas from release info') or []))
     for aka in akas:
         # split aka
-        aka = aka.split('::')
+        aka = re.search(r'^(.*) \((.*?)\)', aka).group(1, 2)
         # sometimes there is no countries information
         if len(aka) == 2:
             # search for something like "(... title)" where ... is a language

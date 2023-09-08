@@ -2125,51 +2125,43 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
     rules = [
         Rule(
             key='series link',
-            extractor=Path('//div[@class="parent"]//a/@href')
+            extractor=Path('.//div[@data-testid="poster"]//a/@href')
         ),
         Rule(
             key='series title',
-            extractor=Path('//head/meta[@property="og:title"]/@content')
+            extractor=Path('//h2[@data-testid="subtitle"]/text()')
         ),
         Rule(
             key='_seasons',
             extractor=Path(
-                foreach='//select[@id="bySeason"]//option',
-                path='./@value'
+                foreach='//li[@data-testid="tab-season-entry"]',
+                path='./text()'
             )
         ),
         Rule(
             key='_current_season',
-            extractor=Path('//select[@id="bySeason"]//option[@selected]/@value')
+            extractor=Path('//li[@data-testid="tab-season-entry"][@aria-selected="true"]/text()')
         ),
         Rule(
             key='episodes',
             extractor=Rules(
-                foreach='//div[@class="info"]',
+                foreach='//h4',
                 rules=[
                     Rule(
-                        key=Path('.//meta/@content',
-                                 transform=lambda x: 'episode %s' % x),
+                        key=Path('.//a/text()'),
                         extractor=Rules(
                             rules=[
                                 Rule(
                                     key='link',
-                                    extractor=Path('.//strong//a[@href][1]/@href')
+                                    extractor=Path('.//a/@href')
                                 ),
                                 Rule(
                                     key='original air date',
-                                    extractor=Path('.//div[@class="airdate"]/text()')
-                                ),
-                                Rule(
-                                    key='title',
-                                    extractor=Path('.//strong//text()')
+                                    extractor=Path('following-sibling::span/text()')
                                 ),
                                 Rule(
                                     key='rating',
-                                    extractor=Path(
-                                        './/div[contains(@class, "ipl-rating-star")][1]'
-                                        '/span[@class="ipl-rating-star__rating"][1]/text()'
-                                    )
+                                    extractor=Path('../..//span[contains(@class, "ratingGroup--imdb-rating")]/text()')
                                 ),
                                 Rule(
                                     key='votes',
@@ -2217,17 +2209,15 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
         for ep in episodes:
             if not ep:
                 continue
-            episode_nr, episode = list(ep.items())[0]
-            if not episode_nr.startswith('episode '):
-                continue
-            episode_nr = episode_nr[8:].rstrip()
+            episode_nr_title, episode = list(ep.items())[0]
+            episode_seq, episode_title = episode_nr_title.split(" ∙ ")
+            episode_nr = episode_seq.split(".")[1][1:]
             try:
                 episode_nr = int(episode_nr)
             except ValueError:
                 pass
             episode_id = analyze_imdbid(episode.get('link' ''))
             episode_air_date = episode.get('original air date', '').strip()
-            episode_title = episode.get('title', '').strip()
             episode_plot = episode.get('plot', '')
             episode_rating = episode.get('rating', '')
             episode_votes = episode.get('votes', '')

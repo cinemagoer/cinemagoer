@@ -290,6 +290,11 @@ class DOMHTMLMovieParser(DOMParserBase):
             extractor=Path('//meta[@name="title"]/@content',
                            transform=lambda x: analyze_og_title(x).get('title'))
         ),
+        Rule(
+            key='age range',
+            extractor=Path(
+                '//*[@id="main"]/section/div/div/ul[1]/li[1]/text()', transform=lambda x: re_space.sub(' ', x).strip())
+        ),
 
         # parser for misc sections like 'casting department', 'stunts', ...
         Rule(

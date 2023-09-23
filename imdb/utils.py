@@ -977,13 +977,18 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
         else:
             beginTag += '>'
     else:
+        # workaround for #350
+        beginTag=""
         if not _containerOnly:
-            beginTag = '<%s><%s>%s</%s>' % (tag, what, value, what)
+            if value:
+                beginTag = '<%s><%s>%s</%s>' % (tag, what, value, what)
         else:
             beginTag = '<%s>' % tag
     beginTag += extras
     if ton.notes:
         beginTag += '<notes>%s</notes>' % _normalizeValue(ton.notes)
+    if beginTag is "":
+        return beginTag
     return beginTag, '</%s>' % tag
 
 

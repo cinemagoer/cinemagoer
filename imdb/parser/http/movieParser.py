@@ -1642,7 +1642,8 @@ class DOMHTMLCriticReviewsParser(DOMParserBase):
     rules = [
         Rule(
             key='metascore',
-            extractor=Path('//*[@data-testid="critic-reviews-title"]/div/text()')
+            extractor=Path('//*[@data-testid="critic-reviews-title"]/div/text()',
+                           transform=lambda x: int(x.strip()))
         ),
         Rule(
             key='metacritic url',

@@ -578,3 +578,7 @@ def test_movie_box_office_should_be_a_dict(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix
     assert isinstance(movie.get('box office'), dict)
     assert len(movie.get('box office', {})) == 3
+
+def test_movie_contains_stars(ia):
+    movie = ia.get_movie('0133093', info=['main'])      # Matrix
+    assert len(movie.get('stars', [])) >= 3

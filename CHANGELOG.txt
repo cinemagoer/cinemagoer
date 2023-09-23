@@ -3,6 +3,7 @@
   [http]
 
   - #358: access the "actress" key with "actor"
+  - #390: fix i18n titles now being written between parenthesis (courtesy of Raphaël Droz)
   - #467: fix movies trivia parser (courtesy of Anthony Lipphardt)
   - #470: add parser for movie stars (courtesy of Jesús Cea)
   - #472: fix for metascore on critic reviews (courtesy of theotherp)

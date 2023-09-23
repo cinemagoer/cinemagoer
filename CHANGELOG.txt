@@ -4,6 +4,7 @@
 
   - #358: access the "actress" key with "actor"
   - #467: fix movies trivia parser (courtesy of Anthony Lipphardt)
+  - #470: add parser for movie stars (courtesy of Jesús Cea)
 
 * What's new in release 2023.05.01 (1922)
 

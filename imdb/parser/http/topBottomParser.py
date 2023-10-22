@@ -44,12 +44,6 @@ class DOMHTMLTop250Parser(DOMParserBase):
             extractor=Rules(
                 foreach='//ul[contains(@class, "ipc-metadata-list")]/li',
                 rules=[
-                    # Rule(
-                    #     key='rank',
-                    #     extractor=Path('.//span[@name="rk"]/@data-value',
-                    #                    reduce=reducers.first,
-                    #                    transform=int)
-                    # ),
                     Rule(
                         key='movieID',
                         extractor=Path('.//a[contains(@class, "ipc-title-link-wrapper")]/@href', reduce=reducers.first)
@@ -64,16 +58,15 @@ class DOMHTMLTop250Parser(DOMParserBase):
                                        reduce=reducers.first,
                                        transform=lambda x: round(float(x), 1))
                     ),
-                    # TODO: reintroduce parsers for year and votes
-                    # Rule(
-                    #     key='year',
-                    #     extractor=Path('./td[@class="titleColumn"]/span/text()')
-                    # ),
-                    # Rule(
-                    #     key='votes',
-                    #     extractor=Path('.//span[@name="nv"]/@data-value', reduce=reducers.first,
-                    #                    transform=int)
-                    # )
+                    Rule(
+                        key='year',
+                        extractor=Path('.//div[contains(@class, "cli-title-metadata")]/span/text()',
+                                       reduce=reducers.first)
+                    ),
+                    Rule(
+                        key='votes',
+                        extractor=Path('.//span[contains(@class, "ipc-rating-star--voteCount")]//text()')
+                    )
                 ]
             )
         )
@@ -83,6 +76,7 @@ class DOMHTMLTop250Parser(DOMParserBase):
         if (not data) or ('chart' not in data):
             return []
         _re_rank = re.compile('(\d+)\.(.+)')
+        _re_votes = re.compile('([0-9\.]+)([kmb])', re.I)
         movies = []
         for count, entry in enumerate(data['chart']):
             if ('movieID' not in entry) or ('title' not in entry):
@@ -102,8 +96,29 @@ class DOMHTMLTop250Parser(DOMParserBase):
             del entry['movieID']
             entry[self.ranktext] = entry['rank']
             del entry['rank']
-            title = analyze_title(entry['title'] + ' ' + entry.get('year', ''))
+            title = entry['title']
+            if 'year' in entry:
+                title = entry['title'] + ' (%s)' % entry['year']
+                del entry['year']
+            title = analyze_title(title)
             entry.update(title)
+            if 'votes' in entry:
+                votes = entry['votes'].replace('(', '').replace(')', '').replace('\xa0', '')
+                multiplier = 1
+                votes_match = _re_votes.match(votes)
+                if votes_match and len(votes_match.groups()) == 2:
+                    votes = votes_match.group(1)
+                    str_multiplier = votes_match.group(2).lower()
+                    if str_multiplier == 'k':
+                        multiplier = 1000
+                    elif str_multiplier == 'm':
+                        multiplier = 1000 * 1000
+                    elif str_multiplier == 'b':
+                        multiplier = 1000 * 1000 * 1000
+                try:
+                    entry['votes'] = int(float(votes) * multiplier)
+                except Exception:
+                    pass
             movies.append((movie_id, entry))
         return movies
 

@@ -8,6 +8,8 @@
   - #470: add parser for movie stars (courtesy of Jesús Cea)
   - #472: fix for metascore on critic reviews (courtesy of theotherp)
   - #350: avoid empty names in XML output (courtesy of reubot)
+  - #478: fix top/bottom chart parsers
+
 
 * What's new in release 2023.05.01 (1922)
 

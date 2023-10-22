@@ -1,4 +1,4 @@
-# Copyright 2009-2020 Davide Alberani <da@erlug.linux.it>
+# Copyright 2009-2023 Davide Alberani <da@erlug.linux.it>
 #                2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ http://www.imdb.com/chart/bottom
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
-
+import re
 from imdb.utils import analyze_title
 
 from .piculet import Path, Rule, Rules, reducers
@@ -42,37 +42,38 @@ class DOMHTMLTop250Parser(DOMParserBase):
         Rule(
             key='chart',
             extractor=Rules(
-                foreach='//tbody[@class="lister-list"]/tr',
+                foreach='//ul[contains(@class, "ipc-metadata-list")]/li',
                 rules=[
-                    Rule(
-                        key='rank',
-                        extractor=Path('.//span[@name="rk"]/@data-value',
-                                       reduce=reducers.first,
-                                       transform=int)
-                    ),
-                    Rule(
-                        key='rating',
-                        extractor=Path('.//span[@name="ir"]/@data-value',
-                                       reduce=reducers.first,
-                                       transform=lambda x: round(float(x), 1))
-                    ),
+                    # Rule(
+                    #     key='rank',
+                    #     extractor=Path('.//span[@name="rk"]/@data-value',
+                    #                    reduce=reducers.first,
+                    #                    transform=int)
+                    # ),
                     Rule(
                         key='movieID',
-                        extractor=Path('./td[@class="titleColumn"]/a/@href', reduce=reducers.first)
+                        extractor=Path('.//a[contains(@class, "ipc-title-link-wrapper")]/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='title',
-                        extractor=Path('./td[@class="titleColumn"]/a/text()')
+                        extractor=Path('.//h3[contains(@class, "ipc-title__text")]//text()')
                     ),
                     Rule(
-                        key='year',
-                        extractor=Path('./td[@class="titleColumn"]/span/text()')
+                        key='rating',
+                        extractor=Path('.//span[contains(@class, "ipc-rating-star")]//text()',
+                                       reduce=reducers.first,
+                                       transform=lambda x: round(float(x), 1))
                     ),
-                    Rule(
-                        key='votes',
-                        extractor=Path('.//span[@name="nv"]/@data-value', reduce=reducers.first,
-                                       transform=int)
-                    )
+                    # TODO: reintroduce parsers for year and votes
+                    # Rule(
+                    #     key='year',
+                    #     extractor=Path('./td[@class="titleColumn"]/span/text()')
+                    # ),
+                    # Rule(
+                    #     key='votes',
+                    #     extractor=Path('.//span[@name="nv"]/@data-value', reduce=reducers.first,
+                    #                    transform=int)
+                    # )
                 ]
             )
         )
@@ -81,23 +82,28 @@ class DOMHTMLTop250Parser(DOMParserBase):
     def postprocess_data(self, data):
         if (not data) or ('chart' not in data):
             return []
-
+        _re_rank = re.compile('(\d+)\.(.+)')
         movies = []
-        for entry in data['chart']:
-            if ('movieID' not in entry) or ('rank' not in entry) or ('title' not in entry):
+        for count, entry in enumerate(data['chart']):
+            if ('movieID' not in entry) or ('title' not in entry):
                 continue
+            entry['rank'] = count + 1
+            rank_match = _re_rank.match(entry['title'])
+            if rank_match and len(rank_match.groups()) == 2:
+                try:
+                    entry['rank'] = int(rank_match.group(1))
+                except Exception:
+                    pass
+                entry['title'] = rank_match.group(2).strip()
 
             movie_id = analyze_imdbid(entry['movieID'])
             if movie_id is None:
                 continue
             del entry['movieID']
-
             entry[self.ranktext] = entry['rank']
             del entry['rank']
-
             title = analyze_title(entry['title'] + ' ' + entry.get('year', ''))
             entry.update(title)
-
             movies.append((movie_id, entry))
         return movies
 

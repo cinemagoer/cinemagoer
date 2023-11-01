@@ -2156,7 +2156,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                 foreach='//h4',
                 rules=[
                     Rule(
-                        key=Path('.//a/text()'),
+                        key=Path('.//a//text()'),
                         extractor=Rules(
                             rules=[
                                 Rule(

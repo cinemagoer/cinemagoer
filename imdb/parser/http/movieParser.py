@@ -1119,8 +1119,8 @@ class DOMHTMLKeywordsParser(DOMParserBase):
         Rule(
             key='keywords',
             extractor=Path(
-                foreach='//td[@data-item-keyword]',
-                path='./@data-item-keyword',
+                foreach='//a[@class=ipc-metadata-list-summary-item__t]',
+                path='.',
                 transform=lambda x: x.lower().replace(' ', '-')
             )
         ),

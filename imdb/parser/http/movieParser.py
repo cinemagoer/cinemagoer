@@ -2205,19 +2205,20 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
         except ValueError:
             pass
         nd = {selected_season: {}}
-        if 'episode -1' in data:
+        if 'episodes' in data:
             counter = 1
-            for episode in data['episode -1']:
+            for episode in data['episodes']:
                 while 'episode %d' % counter in data:
                     counter += 1
                 k = 'episode %d' % counter
                 data[k] = [episode]
-            del data['episode -1']
-        episodes = data.get('episodes', [])
+            del data['episodes']
+
+        episodes = [data.get("episode {}".format(epNum)) for epNum in range(1, counter + 1)]
         for ep in episodes:
             if not ep:
                 continue
-            episode_nr_title, episode = list(ep.items())[0]
+            episode_nr_title, episode = list(ep[0].items())[0]
             episode_seq, episode_title = episode_nr_title.split(" ∙ ")
             episode_nr = episode_seq.split(".")[1][1:]
             try:

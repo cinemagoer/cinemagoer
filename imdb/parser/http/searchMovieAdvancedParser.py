@@ -77,15 +77,15 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//div[@class="lister-item-content"]',
+                foreach='//div[contains(@class, "ipc-title-")]//a',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('./h3/a/@href', reduce=reducers.first)
+                        extractor=Path('./@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='title',
-                        extractor=Path('./h3/a/text()', reduce=reducers.first)
+                        extractor=Path('./h3/text()', reduce=reducers.first)
                     ),
                     Rule(
                         key='secondary_info',
@@ -204,13 +204,17 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
 
     def postprocess_data(self, data):
         if 'data' not in data:
-            data['data'] = []
+            data = {'data': []}
         results = getattr(self, 'results', None)
         if results is not None:
             data['data'][:] = data['data'][:results]
 
         result = []
+        idx = 1
         for movie in data['data']:
+            if not movie["title"].startswith(str(idx) + ". "):
+                continue
+            movie["title"] = movie["title"][len(str(idx)) + 2:]
             episode = movie.pop('episode', None)
             if episode is not None:
                 series = build_movie(movie.get('title'), movieID=analyze_imdbid(movie['link']))
@@ -234,6 +238,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                     movie['kind'] = 'episode'
 
             result.append((analyze_imdbid(movie.pop('link')), movie))
+            idx += 1
         data['data'] = result
 
         return data

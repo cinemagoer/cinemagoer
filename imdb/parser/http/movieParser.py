@@ -2118,6 +2118,11 @@ def _parse_review(x):
     return result
 
 
+MONTH_NUMS = {m: "%02d" % (n + 1)
+              for n, m in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
+
+
 class DOMHTMLSeasonEpisodesParser(DOMParserBase):
     """Parser for the "episode list" page of a given movie.
     The page should be provided as a string, as taken from
@@ -2173,14 +2178,11 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                                 ),
                                 Rule(
                                     key='votes',
-                                    extractor=Path(
-                                        './/div[contains(@class, "ipl-rating-star")][1]'
-                                        '/span[@class="ipl-rating-star__total-votes"][1]/text()'
-                                    )
+                                    extractor=Path('../..//span[contains(@class, "ipc-rating-star--voteCount")]/text()')
                                 ),
                                 Rule(
                                     key='plot',
-                                    extractor=Path('.//div[@class="item_description"]//text()')
+                                    extractor=Path('../..//div[@role="presentation"]//text()')
                                 )
                             ]
                         )
@@ -2214,21 +2216,25 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                 data[k] = [episode]
             del data['episode -1']
         episodes = data.get('episodes', [])
-        for ep in episodes:
+        for seq, ep in enumerate(episodes):
             if not ep:
                 continue
             episode_nr_title, episode = list(ep.items())[0]
-            episode_seq, episode_title = episode_nr_title.split(" ∙ ")
-            episode_nr = episode_seq.split(".")[1][1:]
+            nr_title_tokens = episode_nr_title.split(" ∙ ")
+            if len(nr_title_tokens) == 2:
+                episode_seq, episode_title = nr_title_tokens
+                episode_nr = episode_seq.split(".")[1][1:]
+            else:
+                episode_nr, episode_title = seq + 1, nr_title_tokens[0]
             try:
                 episode_nr = int(episode_nr)
             except ValueError:
                 pass
-            episode_id = analyze_imdbid(episode.get('link' ''))
+            episode_id = analyze_imdbid(episode.get('link', ''))
             episode_air_date = episode.get('original air date', '').strip()
             episode_plot = episode.get('plot', '')
             episode_rating = episode.get('rating', '')
-            episode_votes = episode.get('votes', '')
+            episode_votes = episode.get('votes', '')[2:-1]  # remove ()
             if not (episode_nr is not None and episode_id and episode_title):
                 continue
             ep_obj = Movie(movieID=episode_id, title=episode_title,
@@ -2244,14 +2250,23 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                     pass
             if episode_votes:
                 try:
-                    ep_obj['votes'] = int(episode_votes.replace(',', '')
-                                          .replace('.', '').replace('(', '').replace(')', ''))
+                    if episode_votes[-1] == "K":
+                        ep_votes = int(float(episode_votes[:-1]) * 1000)
+                    elif episode_votes[-1] == "M":
+                        ep_votes = int(float(episode_votes[:-1]) * 1000000)
+                    else:
+                        ep_votes = int(episode_votes)
+                    ep_obj['votes'] = ep_votes
                 except:
                     pass
             if episode_air_date:
-                ep_obj['original air date'] = episode_air_date
                 if episode_air_date[-4:].isdigit():
-                    ep_obj['year'] = episode_air_date[-4:]
+                    year = episode_air_date[-4:]
+                    if episode_air_date.startswith(("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")):
+                        ep_month, ep_day = episode_air_date[5:].split(",")[0].split(" ")
+                        episode_air_date = year + "-" + MONTH_NUMS[ep_month] + "-" + "%02d" % int(ep_day)
+                    ep_obj['original air date'] = episode_air_date
+                    ep_obj['year'] = int(year)
             if episode_plot:
                 ep_obj['plot'] = episode_plot
             nd[selected_season][episode_nr] = ep_obj

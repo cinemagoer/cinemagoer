@@ -275,6 +275,11 @@ class DOMHTMLMovieParser(DOMParserBase):
                            transform=analyze_og_title)
         ),
         Rule(
+            key='alternative kind',
+            extractor=Path('//h3[@itemprop="name"]/following-sibling::ul/li[last()]/text()',
+                           transform=lambda x: KIND_MAP.get(x.strip().lower(), x.strip().lower()))
+        ),
+        Rule(
             key='original title',
             extractor=Path('//div[@class="titlereference-header"]//span[@class="titlereference-original-title-label"]/preceding-sibling::text()',  # noqa: E501
                            transform=lambda x: re_space.sub(' ', x).strip())
@@ -865,6 +870,9 @@ class DOMHTMLMovieParser(DOMParserBase):
             del data['companies']
         if 'box office' in data:
             data['box office'] = dict(data['box office'])
+        alt_kind = data.get('alternative kind')
+        if alt_kind is not None:
+            data['kind'] = alt_kind
         return data
 
 

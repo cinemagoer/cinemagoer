@@ -658,7 +658,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
             other_d['data'].setdefault('episodes', {})
             # Prevent Critical error if season is not found #330
             try:
-                if not (other_d and other_d['data'] and other_d['data']['episodes'][season]):
+                if not (other_d and other_d['data'] and isinstance(other_d['data']['episodes'], dict) and other_d['data']['episodes'][season]):
                     continue
             except:
                 pass

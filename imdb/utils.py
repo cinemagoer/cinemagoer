@@ -987,7 +987,7 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
     beginTag += extras
     if ton.notes:
         beginTag += '<notes>%s</notes>' % _normalizeValue(ton.notes)
-    if beginTag is "":
+    if beginTag == "":
         return beginTag
     return beginTag, '</%s>' % tag
 

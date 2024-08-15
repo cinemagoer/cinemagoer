@@ -33,6 +33,7 @@ biography
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
+from datetime import datetime
 
 from imdb.utils import analyze_name
 
@@ -268,33 +269,33 @@ class DOMHTMLBioParser(DOMParserBase):
 
     _birth_rules = [
         Rule(
-            key='birth date',
-            extractor=Path(
-                './time/@datetime',
-                transform=lambda s: '%4d-%02d-%02d' % tuple(map(int, s.split('-')))
-            )
+            key='monthday',
+            extractor=Path('.//a[starts-with(@href, "/search/name/?birth_monthday=")]/text()')
+        ),
+        Rule(
+            key='year',
+            extractor=Path('.//a[starts-with(@href, "/search/name/?birth_year=")]/text()')
         ),
         Rule(
             key='birth notes',
-            extractor=Path('./a[starts-with(@href, "/search/name?birth_place=")]/text()')
-        )
+            extractor=Path('.//a[starts-with(@href, "/search/name/?birth_place=")]/text()')
+        ),
     ]
 
     _death_rules = [
         Rule(
-            key='death date',
-            extractor=Path(
-                './time/@datetime',
-                transform=lambda s: '%4d-%02d-%02d' % tuple(map(int, s.split('-')))
-            )
+            key='monthday',
+            extractor=Path('.//a[contains(@href, "monthday")]/text()')
         ),
         Rule(
-            key='death cause',
-            extractor=Path(
-                './text()',
-                transform=lambda x: ''.join(x).strip()[2:].lstrip()
-            )
+            key='year',
+            extractor=Path('.//a[contains(@href, "died_year")]/text()')
         ),
+        Rule(
+            key='death notes',
+            extractor=Path('.//a[starts-with(@href, "/search/name/?death_place=")]/text()')
+        ),
+
         Rule(
             key='death notes',
             extractor=Path(
@@ -312,16 +313,14 @@ class DOMHTMLBioParser(DOMParserBase):
         Rule(
             key='birth info',
             extractor=Rules(
-                section='//table[@id="overviewTable"]'
-                        '//td[text()="Born"]/following-sibling::td[1]',
-                rules=_birth_rules
+                section='//ul[contains(@class, "ipc-metadata-list")]/li[@id="born"]',
+                rules=_birth_rules,
             )
         ),
         Rule(
             key='death info',
             extractor=Rules(
-                section='//table[@id="overviewTable"]'
-                        '//td[text()="Died"]/following-sibling::td[1]',
+                section='//ul[contains(@class, "ipc-metadata-list")]/li[@id="died"]',
                 rules=_death_rules
             )
         ),
@@ -449,14 +448,24 @@ class DOMHTMLBioParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
-        for key in ['birth info', 'death info']:
-            if key in data and isinstance(data[key], dict):
-                subdata = data[key]
-                del data[key]
-                data.update(subdata)
-        for what in 'birth date', 'death date', 'death cause':
-            if what in data and not data[what]:
-                del data[what]
+        for event in ['birth', 'death']:
+            info = data.pop(f'{event} info', {})
+            validity = False
+            if 'monthday' in info:
+                monthday = datetime.strptime(info.pop('monthday'), '%B %d').strftime('%m-%d')
+                validity = True
+            else:
+                monthday = '00-00'
+            if 'year' in info:
+                year = info.pop('year')
+                validity = True
+            else:
+                year = '0000'
+
+            if validity:
+                data[f'{event} date'] = f'{year}-{monthday}'
+            data.update(info)
+
         return data
 
 

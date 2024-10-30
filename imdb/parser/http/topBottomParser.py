@@ -28,7 +28,9 @@ http://www.imdb.com/chart/bottom
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import re
+import json
 from imdb.utils import analyze_title
+from imdb import PY2
 
 from .piculet import Path, Rule, Rules, reducers
 from .utils import DOMParserBase, analyze_imdbid
@@ -39,89 +41,41 @@ class DOMHTMLTop250Parser(DOMParserBase):
     ranktext = 'top 250 rank'
 
     rules = [
-        Rule(
+       Rule(
             key='chart',
-            extractor=Rules(
-                foreach='//ul[contains(@class, "ipc-metadata-list")]/li',
-                rules=[
-                    Rule(
-                        key='movieID',
-                        extractor=Path('.//a[contains(@class, "ipc-title-link-wrapper")]/@href', reduce=reducers.first)
-                    ),
-                    Rule(
-                        key='title',
-                        extractor=Path('.//h3[contains(@class, "ipc-title__text")]//text()')
-                    ),
-                    Rule(
-                        key='rating',
-                        extractor=Path('.//span[contains(@class, "ipc-rating-star")]//text()',
-                                       reduce=reducers.first,
-                                       transform=lambda x: round(float(x), 1))
-                    ),
-                    Rule(
-                        key='year',
-                        extractor=Path('.//div[contains(@class, "cli-title-metadata")]/span/text()',
-                                       reduce=reducers.first)
-                    ),
-                    Rule(
-                        key='votes',
-                        extractor=Path('.//span[contains(@class, "ipc-rating-star--voteCount")]//text()')
-                    )
-                ]
-            )
+            extractor=Path('.//script[contains(@id, "__NEXT_DATA__")]//text()')
         )
     ]
 
-    def postprocess_data(self, data):
-        if (not data) or ('chart' not in data):
-            return []
-        _re_rank = re.compile('(\d+)\.(.+)')
-        _re_votes = re.compile('([0-9\.]+)([kmb])', re.I)
-        movies = []
-        for count, entry in enumerate(data['chart']):
-            if ('movieID' not in entry) or ('title' not in entry):
-                continue
-            entry['rank'] = count + 1
-            rank_match = _re_rank.match(entry['title'])
-            if rank_match and len(rank_match.groups()) == 2:
-                try:
-                    entry['rank'] = int(rank_match.group(1))
-                except Exception:
-                    pass
-                entry['title'] = rank_match.group(2).strip()
+    def parse(self, html_string, getRefs=None, **kwds):
+        """Return the dictionary generated from the given html string;"""
+        if PY2 and isinstance(html_string, str):
+            html_string = html_string.decode('utf-8')
 
-            movie_id = analyze_imdbid(entry['movieID'])
-            if movie_id is None:
-                continue
-            del entry['movieID']
-            entry[self.ranktext] = entry['rank']
-            del entry['rank']
-            title = entry['title']
-            if 'year' in entry:
-                title = entry['title'] + ' (%s)' % entry['year']
-                del entry['year']
-            title = analyze_title(title)
-            entry.update(title)
-            if 'votes' in entry:
-                votes = entry['votes'].replace('(', '').replace(')', '').replace('\xa0', '')
-                multiplier = 1
-                votes_match = _re_votes.match(votes)
-                if votes_match and len(votes_match.groups()) == 2:
-                    votes = votes_match.group(1)
-                    str_multiplier = votes_match.group(2).lower()
-                    if str_multiplier == 'k':
-                        multiplier = 1000
-                    elif str_multiplier == 'm':
-                        multiplier = 1000 * 1000
-                    elif str_multiplier == 'b':
-                        multiplier = 1000 * 1000 * 1000
-                try:
-                    entry['votes'] = int(float(votes) * multiplier)
-                except Exception:
-                    pass
-            movies.append((movie_id, entry))
-        return movies
+        if html_string:
+            dom = self.get_dom(html_string)
+            data = self.parse_dom(dom)
+            chart = json.loads(data["chart"])
 
+            try:
+                movie_list = chart["props"]["pageProps"]["pageData"]["chartTitles"]["edges"]
+                data = list(
+                    map(lambda movie: (movie["node"]["id"], {
+                        "title": movie["node"]["titleText"]["text"],
+                        "rating": movie["node"]["ratingsSummary"]["aggregateRating"],
+                        "year": movie["node"]["releaseYear"]["year"],
+                        "votes": movie["node"]["ratingsSummary"]["voteCount"],
+                        "top 250 rank": movie["currentRank"]
+                    }),
+                    movie_list)
+                )
+            except Exception:
+                self._logger.error('%s: caught exception processing TOP250 charts JSON. KeyError.',
+                                   self._cname, exc_info=True)
+        else:
+            data = {}
+
+        return{"data": data}
 
 class DOMHTMLBottom100Parser(DOMHTMLTop250Parser):
     """A parser for the "bottom 100 movies" page."""

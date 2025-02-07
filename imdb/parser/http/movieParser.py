@@ -2155,13 +2155,13 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
         Rule(
             key='_seasons',
             extractor=Path(
-                foreach='//li[@data-testid="tab-season-entry"]',
+                foreach='//a[@data-testid="tab-season-entry"]',
                 path='./text()'
             )
         ),
         Rule(
             key='_current_season',
-            extractor=Path('//li[@data-testid="tab-season-entry"][@aria-selected="true"]/text()')
+            extractor=Path('//a[@data-testid="tab-season-entry"][contains(@class, "ipc-tab--active")]/text()')
         ),
         Rule(
             key='episodes',

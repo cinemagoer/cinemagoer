@@ -1313,16 +1313,10 @@ class DOMHTMLCrazyCreditsParser(DOMParserBase):
     ]
 
 
-def _process_goof(x):
-    text = (x.get('text') or '').strip()
-    category = (x.get('category') or 'Goof').strip()
-    return {"category": category, "text": text}
-
-
 class DOMHTMLGoofsParser(DOMParserBase):
     """Parser for the "goofs" page of a given movie.
     The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
+    the www.imdb.com server. The final result will be a
     dictionary, with a key for every relevant section.
 
     Example::
@@ -1335,22 +1329,21 @@ class DOMHTMLGoofsParser(DOMParserBase):
     rules = [
         Rule(
             key='goofs',
-            extractor=Rules(
-                foreach='//div[contains(@class, "soda sodavote")]',
-                rules=[
-                    Rule(
-                        key='text',
-                        extractor=Path('./div[@class="sodatext"]/text()')
-                    ),
-                    Rule(
-                        key='category',
-                        extractor=Path('./preceding-sibling::h4[1]/text()')
-                    )
-                ],
-                transform=_process_goof
+            extractor=Path(
+                foreach='.//div[contains(@class, "ipc-html-content-inner-div")]',
+                path='./text()',
+                transform=lambda x: x.strip()
             )
         )
     ]
+
+    def postprocess_data(self, data):
+        goofs = data.get('goofs', [])
+        if not goofs:
+            return {}
+        # Clean and structure the goofs data
+        processed_goofs = [goof for goof in goofs if goof.strip()]
+        return {'goofs': processed_goofs}
 
 
 class DOMHTMLQuotesParser(DOMParserBase):

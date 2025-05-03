@@ -1370,12 +1370,9 @@ class DOMHTMLQuotesParser(DOMParserBase):
         Rule(
             key='quotes',
             extractor=Path(
-                foreach='//div[@class="sodatext"]',
+                foreach='//div[@class="ipc-html-content-inner-div"]',
                 path='.//text()',
                 transform=lambda x: x.strip()
-                                     .replace(' \n', '::')
-                                     .replace('::\n', '::')
-                                     .replace('\n', ' ')
             )
         )
     ]
@@ -1388,8 +1385,16 @@ class DOMHTMLQuotesParser(DOMParserBase):
         quotes = data.get('quotes', [])
         if not quotes:
             return {}
-        quotes = [q.split('::') for q in quotes]
-        return {'quotes': quotes}
+        # IMDb now separates quotes by double newlines, so split accordingly
+        processed_quotes = []
+        for q in quotes:
+            # Split by double newlines, then by single newlines for lines in a quote
+            blocks = [block.strip() for block in q.split('\n\n') if block.strip()]
+            for block in blocks:
+                lines = [line.strip() for line in block.split('\n') if line.strip()]
+                if lines:
+                    processed_quotes.append(lines)
+        return {'quotes': processed_quotes}
 
 
 class DOMHTMLReleaseinfoParser(DOMParserBase):

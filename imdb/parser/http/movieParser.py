@@ -1125,36 +1125,23 @@ class DOMHTMLKeywordsParser(DOMParserBase):
     """
     rules = [
         Rule(
-            key='keywords',
-            extractor=Path(
-                foreach='//td[@data-item-keyword]',
-                path='./@data-item-keyword',
-                transform=lambda x: x.lower().replace(' ', '-')
-            )
-        ),
-        Rule(
             key='relevant keywords',
             extractor=Rules(
-                foreach='//td[@data-item-keyword]',
+                foreach='//ul[contains(@class, "ipc-metadata-list")]//li[contains(@class, "ipc-metadata-list-summary-item")]',
                 rules=[
                     Rule(
                         key='keyword',
-                        extractor=Path('./@data-item-keyword')
+                        extractor=Path('.//a[1]//text()')
                     ),
                     Rule(
-                        key='ordering',
-                        extractor=Path('./@data-item-votes')
-                    ),
-                    Rule(
-                        key='vote_str',
-                        extractor=Path('./div[2]/div//text()')
+                        key='votes_str',
+                        extractor=Path('.//span[contains(@class, "ipc-voting__label__count--up")]/text()')
                     )
                 ],
                 transform=lambda x: {
-                    'keyword': x.get('keyword').lower(),
-                    'keyword_dash': x.get('keyword').lower().replace(' ', '-'),
-                    'ordering': x.get('ordering'),
-                    'votes_str': x.get('vote_str').strip().lower()
+                    'keyword': (x.get('keyword') or '').strip().lower(),
+                    'keyword_dash': (x.get('keyword') or '').strip().lower().replace(' ', '-'),
+                    'votes_str': (x.get('votes_str') or '').strip().lower()
                 }
             )
         )
@@ -1169,10 +1156,17 @@ class DOMHTMLKeywordsParser(DOMParserBase):
                         x['votes_for'] = 0
                         x['total_votes'] = 0
                     else:
-                        x['votes_for'] = x['votes_str'].split('of')[0].strip()
-                        x['total_votes'] = re.sub(r"\D", "", x['votes_str'].split('of')[1]).strip()
+                        try:
+                            x['votes_for'] = int(x['votes_str'].split('of')[0].strip())
+                            x['total_votes'] = int(re.sub(r"\D", "", x['votes_str'].split('of')[1]).strip())
+                        except Exception:
+                            x['votes_for'] = 0
+                            x['total_votes'] = 0
                     rk.append(x)
             data['relevant keywords'] = rk
+        if 'relevant keywords' in data and len(data['relevant keywords']) > 0:
+            keywords = [k['keyword_dash'] for k in data['relevant keywords'] if k.get('keyword')]
+            data['keywords'] = keywords
         return data
 
 

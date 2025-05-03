@@ -76,7 +76,7 @@ def test_movie_title_tv_movie_should_not_include_type(ia):
 
 def test_movie_title_video_movie_should_not_include_type(ia):
     movie = ia.get_movie('0109151', info=['main'])      # Matrix (V)
-    assert movie.get('title') == 'Armitage III: Polymatrix'
+    assert movie.get('title') == 'Armitage III: Poly-Matrix'
 
 
 def test_movie_title_video_game_should_not_include_type(ia):
@@ -328,7 +328,7 @@ def test_series_number_of_seasons_should_be_numeric(ia):
 
 def test_series_number_of_seasons_should_exclude_non_numeric_season_titles(ia):
     movie = ia.get_movie('0436992', info=['main'])      # Doctor Who
-    assert movie.get('number of seasons') == 14
+    assert movie.get('number of seasons') == 15
 
 
 def test_episode_original_air_date_should_be_a_date(ia):
@@ -540,7 +540,8 @@ def test_movie_certificates_should_be_a_list_of_certificates(ia):
         'South Africa:PG',
         'United Kingdom:PG',
         'United Kingdom:PG::(DVD rating)',
-        'United States:TV-PG'
+        'United States:TV-PG',
+        'United States:TV-14::(streaming)'
     ]
 
 

@@ -151,32 +151,31 @@ class DOMHTMLTopIndian250Parser(DOMHTMLTop250Parser):
 class DOMHTMLBoxOfficeParser(DOMParserBase):
     """A parser for the "top boxoffice movies" page."""
     ranktext = 'top box office rank'
-
     rules = [
         Rule(
             key='chart',
             extractor=Rules(
-                foreach='//tbody/tr',
+                foreach='//ul[contains(@class, "ipc-metadata-list")]/li',
                 rules=[
                     Rule(
                         key='movieID',
-                        extractor=Path('./td[@class="titleColumn"]/a/@href', reduce=reducers.first)
+                        extractor=Path('.//a[contains(@class, "ipc-title-link-wrapper")]/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='title',
-                        extractor=Path('./td[@class="titleColumn"]/a/text()')
+                        extractor=Path('.//h3[contains(@class, "ipc-title__text")]/text()', reduce=reducers.first)
                     ),
                     Rule(
                         key='weekend',
-                        extractor=Path('./td[@class="ratingColumn"]/text()')
+                        extractor=Path('.//span[contains(@class, "sc-3a4309f8-0") and contains(@data-testid, "boxoffice-weekend-gross-to-date")]/text()', reduce=reducers.first)
                     ),
                     Rule(
                         key='gross',
-                        extractor=Path('./td[@class="ratingColumn"]/span[@class="secondaryInfo"]/text()')
+                        extractor=Path('.//span[contains(@class, "sc-3a4309f8-0") and contains(@data-testid, "boxoffice-total-gross-to-date")]/text()', reduce=reducers.first)
                     ),
                     Rule(
                         key='weeks',
-                        extractor=Path('./td[@class="weeksColumn"]/text()')
+                        extractor=Path('.//span[contains(@class, "sc-3a4309f8-0") and contains(@data-testid, "boxoffice-week-in-release")]/text()', reduce=reducers.first)
                     ),
                 ]
             )
@@ -188,7 +187,7 @@ class DOMHTMLBoxOfficeParser(DOMParserBase):
             return []
 
         movies = []
-        for entry in data['chart']:
+        for count, entry in enumerate(data['chart']):
             if ('movieID' not in entry) or ('title' not in entry):
                 continue
 
@@ -199,8 +198,15 @@ class DOMHTMLBoxOfficeParser(DOMParserBase):
 
             title = analyze_title(entry['title'])
             entry.update(title)
-            weekend = entry['weekend'].lstrip().rstrip()
-            entry.update({'weekend': weekend})
+            entry[self.ranktext] = count + 1
+
+            # Clean up fields
+            if 'weekend' in entry and entry['weekend']:
+                entry['weekend'] = entry['weekend'].strip()
+            if 'gross' in entry and entry['gross']:
+                entry['gross'] = entry['gross'].strip()
+            if 'weeks' in entry and entry['weeks']:
+                entry['weeks'] = entry['weeks'].strip()
 
             movies.append((movie_id, entry))
         return movies

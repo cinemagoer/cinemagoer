@@ -202,7 +202,9 @@ def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
 # sigalias: XPathResult = Union[Sequence[str], Sequence[Element]]
 
 
-_USE_LXML = find_loader('lxml') is not None
+import importlib.util
+
+_USE_LXML = importlib.util.find_spec('lxml') is not None
 if _USE_LXML:
     from lxml import etree as ElementTree
     from lxml.etree import Element

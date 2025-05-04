@@ -465,7 +465,6 @@ class DOMHTMLBioParser(DOMParserBase):
             data.update(info)
         if 'nick names' in data and isinstance(data['nick names'], str):
             data['nick names'] = [data['nick names']]
-        print('AAAAAAAAAAAAAA', data)
         return data
 
 

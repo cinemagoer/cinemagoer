@@ -311,6 +311,10 @@ class DOMHTMLBioParser(DOMParserBase):
             extractor=Path('//div[contains(@class, "ipc-poster")]//img[contains(@class, "ipc-image")]/@src')
         ),
         Rule(
+            key='birth name',
+            extractor=Path('//li[@id="name"]/div[contains(@class, "ipc-metadata-list-item__content-container")]//div[contains(@class, "ipc-html-content-inner-div")]/text()', transform=lambda x: x.strip())
+        ),
+        Rule(
             key='birth info',
             extractor=Rules(
                 section='//ul[contains(@class, "ipc-metadata-list")]/li[@id="born"]',

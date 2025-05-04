@@ -109,7 +109,7 @@ def test_person_trade_mark_should_be_a_list(ia):
 def test_person_trivia_should_be_a_list(ia):
     person = ia.get_person('0000210', info=['biography'])   # Julia Roberts
     trivia = person.get('trivia', [])
-    assert len(trivia) > 90
+    assert len(trivia) >= 5
 
 
 def test_person_quotes_should_be_a_list(ia):

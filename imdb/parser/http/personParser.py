@@ -8,8 +8,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
@@ -411,11 +410,15 @@ class DOMHTMLBioParser(DOMParserBase):
         ),
         Rule(
             key='trivia',
-            extractor=Path(
-                foreach='//div[@class="_imdbpyh4"]/h4[starts-with(text(), "Trivia")]'
-                        '/.././div[contains(@class, "soda")]',
-                path='.//text()',
-                transform=transformers.strip
+            extractor=Rules(
+                foreach='//div[@data-testid="sub-section-trivia"]//li[contains(@id, "trivia_")]',
+                rules=[
+                    Rule(
+                        key='trivia_item',
+                        extractor=Path('.//div[contains(@class, "ipc-html-content-inner-div")]/text()', transform=transformers.strip)
+                    )
+                ],
+                transform=lambda x: x.get('trivia_item') or ''
             )
         ),
         Rule(

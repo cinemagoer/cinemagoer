@@ -1399,23 +1399,24 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         Rule(
             key='release dates',
             extractor=Rules(
-                foreach='//table[contains(@class, "release-dates-table-test-only")]//tr',
+                foreach='//div[@data-testid="sub-section-releases"]/ul/li',
                 rules=[
                     Rule(
                         key='country',
-                        extractor=Path('.//td[1]//text()')
-                    ),
-                    Rule(
-                        key='country_code',
-                        extractor=Path('.//td[1]/a/@href')
+                        extractor=Path('./a[contains(@href, "/calendar")]/text()', transform=lambda x: x.strip())
                     ),
                     Rule(
                         key='date',
-                        extractor=Path('.//td[2]//text()')
+                        extractor=Path('./div/ul/li/span[1]/text()', transform=lambda x: x.strip())
                     ),
                     Rule(
                         key='notes',
-                        extractor=Path('.//td[3]//text()')
+                        extractor=Path('./div/ul/li/span[2]/text()', transform=lambda x: x.strip())
+                    ),
+                    Rule(
+                        key='country_code',
+                        extractor=Path('./a[contains(@href, "/calendar")]/@href',
+                                       transform=lambda x: x.split('region=')[1].split('&')[0].strip().upper() if 'region=' in x else '')
                     )
                 ]
             )
@@ -1423,77 +1424,94 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
         Rule(
             key='akas',
             extractor=Rules(
-                foreach='//table[contains(@class, "akas-table-test-only")]//tr',
+                foreach='//div[@data-testid="sub-section-akas"]/ul/li',
                 rules=[
                     Rule(
-                        key='countries',
-                        extractor=Path('./td[1]/text()')
+                        key='title',
+                        extractor=Path('.//ul//li/span[contains(@class, "ipc-metadata-list-item__list-content-item")][1]/text()', transform=lambda x: x.strip())
                     ),
                     Rule(
-                        key='title',
-                        extractor=Path('./td[2]/text()')
+                        key='countries',
+                        extractor=Path('./span/text()', transform=lambda x: x.strip())
                     )
                 ]
             )
         )
     ]
 
-    preprocessors = [
-        (re.compile('(<h5><a name="?akas"?.*</table>)', re.I | re.M | re.S),
-         r'<div class="_imdbpy_akas">\1</div>')
-    ]
+    preprocessors = []
 
     def postprocess_data(self, data):
         if not ('release dates' in data or 'akas' in data):
             return data
+
         releases = data.get('release dates') or []
-        rl = []
-        for i in releases:
-            country = i.get('country')
-            date = i.get('date')
+        processed_releases = []
+        raw_releases = []
+        for item in releases:
+            country = item.get('country')
+            date = item.get('date')
             if not (country and date):
                 continue
-            country = country.strip()
-            date = date.strip()
-            if not (country and date):
-                continue
-            notes = i.get('notes')
-            info = '%s::%s' % (country, date)
+
+            info = f"{country}::{date}"
+            notes = item.get('notes')
             if notes:
-                notes = notes.replace('\n', '')
-                i['notes'] = notes
-                info += notes
-            rl.append(info)
-        if releases:
-            for rd in data['release dates']:
-                rd['country_code'] = rd['country_code'].split('region=')[1].split('&')[0].strip().upper()
-            data['raw release dates'] = data['release dates']
+                item['notes'] = notes.replace('\n', '').strip()
+                info += f"::{item['notes']}"
+
+            processed_releases.append(info)
+            raw_item = {
+                'country': country,
+                'date': date,
+                'country_code': item.get('country_code', ''),
+            }
+            if notes:
+                raw_item['notes'] = item['notes']
+            raw_releases.append(raw_item)
+
+        if raw_releases:
+            data['raw release dates'] = raw_releases
+        if processed_releases:
+            data['release dates'] = processed_releases
+        elif 'release dates' in data:
             del data['release dates']
-        if rl:
-            data['release dates'] = rl
+
         akas = data.get('akas') or []
-        nakas = []
-        for aka in akas:
-            title = (aka.get('title') or '').strip()
+        processed_akas = []
+        raw_akas = []
+        for item in akas:
+            title = item.get('title')
             if not title:
                 continue
-            countries = (aka.get('countries') or '').split(',')
-            if not countries:
-                nakas.append(title)
-            else:
+
+            countries_str = item.get('countries')
+            raw_item = {'title': title}
+            if countries_str:
+                raw_item['countries'] = countries_str
+                countries = [c.strip() for c in countries_str.split(',') if c.strip()]
                 for country in countries:
-                    nakas.append('%s %s' % (title, country.strip()))
-        if akas:
-            if releases:
-                for rd in data['raw release dates']:
-                    for a in data['akas']:
-                        if 'countries' in a:
-                            if rd['country'].strip() in a['countries'].strip():
-                                a['country_code'] = rd['country_code']
-            data['raw akas'] = data['akas']
+                     processed_akas.append(f"{title} ({country})")
+            else:
+                processed_akas.append(title)
+            raw_akas.append(raw_item)
+
+        if raw_akas:
+             if 'raw release dates' in data:
+                 country_map = {rd['country']: rd['country_code'] for rd in data['raw release dates'] if rd.get('country_code')}
+                 for aka_item in raw_akas:
+                     if 'countries' in aka_item:
+                         first_country = aka_item['countries'].split(',')[0].strip()
+                         if first_country in country_map:
+                             aka_item['country_code'] = country_map[first_country]
+
+             data['raw akas'] = raw_akas
+
+        if processed_akas:
+            data['akas'] = data['akas from release info'] = processed_akas
+        elif 'akas' in data:
             del data['akas']
-        if nakas:
-            data['akas'] = data['akas from release info'] = nakas
+
         return data
 
 

@@ -433,20 +433,21 @@ class DOMHTMLBioParser(DOMParserBase):
         Rule(
             key='salary history',
             extractor=Rules(
-                foreach='//a[@name="salary"]/following::table[1]//tr',
+                foreach='//div[@data-testid="sub-section-salary"]//li',
                 rules=[
                     Rule(
                         key='title',
-                        extractor=Path('./td[1]//text()')
+                        extractor=Path('.//a/text()', transform=transformers.strip)
                     ),
                     Rule(
                         key='info',
-                        extractor=Path('./td[2]//text()')
+                        extractor=Path('string(.//a/following-sibling::text()[1])', transform=transformers.strip)
                     )
                 ],
-                transform=lambda x: "%s::%s" % (
-                    x.get('title').strip(),
-                    _re_spaces.sub(' ', (x.get('info') or '')).strip())
+                transform=lambda x: "%s %s" % (
+                    (x.get('title') or '').strip(),
+                    (x.get('info') or '').strip().replace(' - ', '::')
+                )
             )
         )
     ]

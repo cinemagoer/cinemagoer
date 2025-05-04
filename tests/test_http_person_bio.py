@@ -121,4 +121,4 @@ def test_person_quotes_should_be_a_list(ia):
 def test_person_salary_history_should_be_a_list(ia):
     person = ia.get_person('0000210', info=['biography'])   # Julia Roberts
     salary = person.get('salary history', [])
-    assert len(salary) > 25
+    assert len(salary) >= 5

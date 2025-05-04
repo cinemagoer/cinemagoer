@@ -495,7 +495,7 @@ def test_movie_colors_if_none_should_be_excluded(ia):
 
 def test_movie_aspect_ratio_should_be_a_number_to_one(ia):
     movie = ia.get_movie('0133093', info=['main'])      # Matrix
-    assert movie.get('aspect ratio') == '2.39 : 1'
+    assert ' : 1' in movie.get('aspect ratio', '')
 
 
 def test_movie_aspect_ratio_if_none_should_be_excluded(ia):

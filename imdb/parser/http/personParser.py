@@ -423,11 +423,15 @@ class DOMHTMLBioParser(DOMParserBase):
         ),
         Rule(
             key='quotes',
-            extractor=Path(
-                foreach='//div[@class="_imdbpyh4"]/h4[starts-with(text(), "Personal Quotes")]'
-                        '/.././div[contains(@class, "soda")]',
-                path='.//text()',
-                transform=transformers.strip
+            extractor=Rules(
+                foreach='//div[@data-testid="sub-section-quotes"]//li[contains(@id, "quote_")]',
+                rules=[
+                    Rule(
+                        key='quote',
+                        extractor=Path('.//div[contains(@class, "ipc-html-content-inner-div")]/text()', transform=transformers.strip)
+                    )
+                ],
+                transform=lambda x: (x.get('quote') or '').replace('\n', ' ')
             )
         ),
         Rule(

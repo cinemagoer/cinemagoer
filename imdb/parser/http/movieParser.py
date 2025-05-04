@@ -1520,118 +1520,49 @@ class DOMHTMLRatingsParser(DOMParserBase):
     The page should be provided as a string, as taken from
     the www.imdb.com server.  The final result will be a
     dictionary, with a key for every relevant section.
-
-    Example::
-
-        rparser = DOMHTMLRatingsParser()
-        result = rparser.parse(userratings_html_string)
     """
-    re_means = re.compile(r'mean\s*=\s*([0-9]\.[0-9])\s*median\s*=\s*([0-9])', re.I)
-
+    # Updated for new IMDb ratings page layout (2024)
     rules = [
         Rule(
-            key='votes',
-            extractor=Rules(
-                foreach='//th[@class="firstTableCoulmn"]/../../tr',
-                rules=[
-                    Rule(
-                        key='ordinal',
-                        extractor=Path('./td[1]/div//text()')
-                    ),
-                    Rule(
-                        key='votes',
-                        extractor=Path('./td[3]/div/div//text()')
-                    )
-                ]
-            )
-        ),
-        Rule(
-            key='mean and median',
+            key='aggregate rating',
             extractor=Path(
-                '//div[starts-with(normalize-space(text()), "Arithmetic mean")]/text()'
+                '//div[@data-testid="rating-button__aggregate-rating__score"]/span[1]/text()',
+                transform=lambda x: float(x) if x else None
             )
         ),
         Rule(
-            key='demographics',
-            extractor=Rules(
-                foreach='//div[@class="smallcell"]',
-                rules=[
-                    Rule(
-                        key='link',
-                        extractor=Path('./a/@href')
-                    ),
-                    Rule(
-                        key='rating',
-                        extractor=Path('..//div[@class="bigcell"]//text()')
-                    ),
-                    Rule(
-                        key='votes',
-                        extractor=Path('./a/text()')
-                    )
-                ]
+            key='aggregate votes',
+            extractor=Path(
+                '//div[@data-testid="rating-button__aggregate-rating__score"]/following-sibling::div[1]/text()',
+                transform=lambda x: int(x.replace('M', '000000').replace('K', '000').replace('.', '').replace(',', '').strip()) if x else None
+            )
+        ),
+        Rule(
+            key='user rating',
+            extractor=Path(
+                '//div[@data-testid="rating-button__user-rating__score"]/span[1]/text()',
+                transform=lambda x: int(x) if x else None
+            )
+        ),
+        Rule(
+            key='unweighted mean',
+            extractor=Path(
+                '//p[@data-testid="calculations-label"]/text()',
+                transform=lambda x: float(x.split()[0]) if x and x.split() else None
             )
         )
     ]
 
     def postprocess_data(self, data):
         nd = {}
-        demographics = data.get('demographics')
-        if demographics:
-            dem = {}
-            for dem_data in demographics:
-                link = (dem_data.get('link') or '').strip()
-                votes = (dem_data.get('votes') or '').strip()
-                rating = (dem_data.get('rating') or '').strip()
-                if not (link and votes and rating):
-                    continue
-                eq_idx = link.rfind('=')
-                if eq_idx == -1:
-                    continue
-                info = link[eq_idx + 1:].replace('_', ' ')
-                try:
-                    votes = int(votes.replace(',', ''))
-                except Exception:
-                    continue
-                try:
-                    rating = float(rating)
-                except Exception:
-                    continue
-                dem[info] = {'votes': votes, 'rating': rating}
-            nd['demographics'] = dem
-        votes = data.get('votes', [])
-        if votes:
-            nd['number of votes'] = {}
-            for v_info in votes:
-                ordinal = v_info.get('ordinal')
-                nr_votes = v_info.get('votes')
-                if not (ordinal and nr_votes):
-                    continue
-                try:
-                    ordinal = int(ordinal)
-                except Exception:
-                    continue
-                try:
-                    nr_votes = int(nr_votes.replace(',', ''))
-                except Exception:
-                    continue
-                nd['number of votes'][ordinal] = nr_votes
-        mean = data.get('mean and median', '')
-        if mean:
-            means = self.re_means.findall(mean)
-            if means and len(means[0]) == 2:
-                am, med = means[0]
-                try:
-                    am = float(am)
-                except (ValueError, OverflowError):
-                    pass
-                if isinstance(am, float):
-                    nd['arithmetic mean'] = am
-                try:
-                    med = int(med)
-                except (ValueError, OverflowError):
-                    pass
-                if isinstance(med, int):
-                    nd['median'] = med
+        if data.get('aggregate rating'):
+            nd['rating'] = data['aggregate rating']
+        if data.get('aggregate votes'):
+            nd['votes'] = data['aggregate votes']
+        if data.get('user rating'):
+            nd['user_rating'] = data['user rating']
+        if data.get('unweighted mean'):
+            nd['arithmetic mean'] = data['unweighted mean']
         return nd
 
 

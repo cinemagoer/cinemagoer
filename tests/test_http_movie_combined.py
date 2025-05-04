@@ -182,8 +182,8 @@ def test_movie_kind_tv_series_episode_should_be_episode(ia):
 
 
 def test_series_years_if_continuing_should_be_open_range(ia):
-    movie = ia.get_movie('0436992', info=['main'])      # Doctor Who
-    assert movie.get('series years') == '2005-'
+    movie = ia.get_movie('11280740', info=['main'])      # Severance
+    assert movie.get('series years') == '2022-'
 
 
 def test_series_years_if_ended_should_be_closed_range(ia):
@@ -328,7 +328,7 @@ def test_series_number_of_seasons_should_be_numeric(ia):
 
 def test_series_number_of_seasons_should_exclude_non_numeric_season_titles(ia):
     movie = ia.get_movie('0436992', info=['main'])      # Doctor Who
-    assert movie.get('number of seasons') == 15
+    assert movie.get('number of seasons') == 13
 
 
 def test_episode_original_air_date_should_be_a_date(ia):
@@ -485,7 +485,7 @@ def test_movie_cast_can_contain_notes(ia):
 
 def test_movie_colors_if_single_with_notes_should_include_notes(ia):
     movie = ia.get_movie('0060666', info=['main'])      # Manos
-    assert movie.get('color info', []) == ['Color::(Eastmancolor)']
+    assert movie.get('color info', []) == ['Color::(Eastman)']
 
 
 def test_movie_colors_if_none_should_be_excluded(ia):

@@ -315,6 +315,20 @@ class DOMHTMLBioParser(DOMParserBase):
             extractor=Path('//li[@id="name"]/div[contains(@class, "ipc-metadata-list-item__content-container")]//div[contains(@class, "ipc-html-content-inner-div")]/text()', transform=lambda x: x.strip())
         ),
         Rule(
+            key='nick names',
+            extractor=Rules(
+                foreach='//li[@id="nicknames"]//ul[contains(@class, "ipc-inline-list")]/li/span',
+                rules=[
+                    Rule(
+                        key='nickname',
+                        extractor=Path('.//text()',
+                        transform=lambda x: x.strip())
+                    )
+                ],
+                transform=lambda x: x.get('nickname') or ''
+            )
+        ),
+        Rule(
             key='birth info',
             extractor=Rules(
                 section='//ul[contains(@class, "ipc-metadata-list")]/li[@id="born"]',
@@ -326,18 +340,6 @@ class DOMHTMLBioParser(DOMParserBase):
             extractor=Rules(
                 section='//ul[contains(@class, "ipc-metadata-list")]/li[@id="died"]',
                 rules=_death_rules
-            )
-        ),
-        Rule(
-            key='nick names',
-            extractor=Path(
-                '//table[@id="overviewTable"]'
-                '//td[starts-with(text(), "Nickname")]/following-sibling::td[1]/text()',
-                reduce=lambda xs: '|'.join(xs),
-                transform=lambda x: [
-                    n.strip().replace(' (', '::(', 1)
-                    for n in x.split('|') if n.strip()
-                ]
             )
         ),
         Rule(
@@ -443,14 +445,6 @@ class DOMHTMLBioParser(DOMParserBase):
         )
     ]
 
-    preprocessors = [
-        (re.compile('(<h5>)', re.I), r'</div><div class="_imdbpy">\1'),
-        (re.compile('(<h4)', re.I), r'</div><div class="_imdbpyh4">\1'),
-        (re.compile('(</table>\n</div>\\s+)</div>', re.I + re.DOTALL), r'\1'),
-        (re.compile('(<div id="tn15bot">)'), r'</div>\1'),
-        (re.compile(r'\.<br><br>([^\s])', re.I), r'. \1')
-    ]
-
     def postprocess_data(self, data):
         for event in ['birth', 'death']:
             info = data.pop(f'{event} info', {})
@@ -469,7 +463,9 @@ class DOMHTMLBioParser(DOMParserBase):
             if validity:
                 data[f'{event} date'] = f'{year}-{monthday}'
             data.update(info)
-
+        if 'nick names' in data and isinstance(data['nick names'], str):
+            data['nick names'] = [data['nick names']]
+        print('AAAAAAAAAAAAAA', data)
         return data
 
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2004-2023 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2025 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1984,35 +1984,31 @@ class DOMHTMLLocationsParser(DOMParserBase):
 
 
 class DOMHTMLTechParser(DOMParserBase):
-    """Parser for the "technical", "publicity" (for people) and "contacts" (for people)
-    pages of a given movie.
-    The page should be provided as a string, as taken from
-    the www.imdb.com server.  The final result will be a
-    dictionary, with a key for every relevant section.
-
-    Example::
-
-        tparser = DOMHTMLTechParser()
-        result = tparser.parse(technical_html_string)
+    """Parser for the technical specifications page of a given movie.
+    Extracts technical specs from the new IMDb layout using robust XPath rules.
     """
     kind = 'tech'
-    re_space = re.compile(r'\s+')
-
     rules = [
         Rule(
-            key='tech',
+            key='technical specs',
             extractor=Rules(
-                foreach='//table//tr/td[@class="label"]',
+                foreach='//ul[contains(@class, "ipc-metadata-list")]/li[contains(@class, "ipc-metadata-list__item")]',
                 rules=[
                     Rule(
-                        key=Path(
-                            './text()',
-                            transform=lambda x: x.lower().strip()),
+                        key='label',
+                        extractor=Path('.//span[contains(@class, "ipc-metadata-list-item__label")]/text()', transform=lambda x: x.strip().lower())
+                    ),
+                    Rule(
+                        key='values',
                         extractor=Path(
-                            '..//td[2]//text()',
-                            transform=lambda x: [t.strip()
-                                                 for t in x.split(':::') if t.strip()]
+                            foreach='.//ul[contains(@class, "ipc-inline-list")]/li',
+                            path='.//text()',
+                            transform=lambda x: x.strip()
                         )
+                    ),
+                    Rule(
+                        key='single_value',
+                        extractor=Path('.//div[contains(@class, "ipc-metadata-list-item__content-container")]/span[1]/text()', transform=lambda x: x.strip())
                     )
                 ]
             )
@@ -2020,27 +2016,28 @@ class DOMHTMLTechParser(DOMParserBase):
     ]
 
     preprocessors = [
-        (re.compile('(<h5>.*?</h5>)', re.I), r'</div>\1<div class="_imdbpy">'),
-        (re.compile('((<br/>|</p>|</table>))\n?<br/>(?!<a)', re.I), r'\1</div>'),
-        # the ones below are for the publicity parser
-        (re.compile('<p>(.*?)</p>', re.I), r'\1<br/>'),
-        (re.compile('(</td><td valign="top">)', re.I), r'\1::'),
-        (re.compile('(</tr><tr>)', re.I), r'\n\1'),
-        (re.compile(r'<span class="ghost">\|</span>', re.I), r':::'),
-        (re.compile('<br/?>', re.I), r':::')
-        # this is for splitting individual entries
+        (re.compile('ipc-metadata-list-item__list-content-item--subText">', re.I),
+         'ipc-metadata-list-item__list-content-item--subtext">::')
     ]
 
     def postprocess_data(self, data):
-        info = {}
-        for section in data.get('tech', []):
-            info.update(section)
-        for key, value in info.items():
-            if isinstance(value, list):
-                info[key] = [self.re_space.sub(' ', x).strip() for x in value]
-            else:
-                info[key] = self.re_space.sub(' ', value).strip()
-        return {self.kind: info}
+        specs = data.get('technical specs', [])
+        result = {}
+        for item in specs:
+            label = item.get('label')
+            values = item.get('values')
+            single_value = item.get('single_value')
+            if label:
+                if values and isinstance(values, list) and any(values):
+                    # Filter out empty strings
+                    values = [v for v in values if v.strip()]
+                    if len(values) == 1:
+                        result[label] = values[0]
+                    elif len(values) > 1:
+                        result[label] = values
+                elif single_value:
+                    result[label] = single_value
+        return {self.kind: result}
 
 
 class DOMHTMLNewsParser(DOMParserBase):

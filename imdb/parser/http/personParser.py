@@ -398,11 +398,15 @@ class DOMHTMLBioParser(DOMParserBase):
         ),
         Rule(
             key='trade mark',
-            extractor=Path(
-                foreach='//div[@class="_imdbpyh4"]/h4[starts-with(text(), "Trade Mark")]'
-                        '/.././div[contains(@class, "soda")]',
-                path='.//text()',
-                transform=transformers.strip
+            extractor=Rules(
+                foreach='//div[@data-testid="sub-section-trademark"]//li[contains(@id, "trademark_")]',
+                rules=[
+                    Rule(
+                        key='trademark',
+                        extractor=Path('.//div[contains(@class, "ipc-html-content-inner-div")]/text()', transform=transformers.strip)
+                    )
+                ],
+                transform=lambda x: x.get('trademark') or ''
             )
         ),
         Rule(

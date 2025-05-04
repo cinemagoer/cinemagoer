@@ -353,8 +353,7 @@ class DOMHTMLBioParser(DOMParserBase):
         Rule(
             key='height',
             extractor=Path(
-                '//table[@id="overviewTable"]'
-                '//td[text()="Height"]/following-sibling::td[1]/text()',
+                '//li[@id="height"]/div[contains(@class, "ipc-metadata-list-item__content-container")]//div[contains(@class, "ipc-html-content-inner-div")]/text()',
                 transform=transformers.strip
             )
         ),

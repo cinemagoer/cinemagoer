@@ -308,7 +308,7 @@ class DOMHTMLBioParser(DOMParserBase):
     rules = [
         Rule(
             key='headshot',
-            extractor=Path('//img[@class="poster"]/@src')
+            extractor=Path('//img[contains(@class, "ipc-image")]/@src')
         ),
         Rule(
             key='birth info',

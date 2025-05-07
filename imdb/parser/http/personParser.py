@@ -77,6 +77,13 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         Rule(
             key='death place',
             extractor=Path('.//a[starts-with(@href, "/search/name?death_place=")]/text()')
+        ),
+        Rule(
+            key='death notes',
+            extractor=Path(
+                './/div[contains(@class, "ipc-html-content-inner-div")]/text()',
+                transform=lambda texts: next((t.strip() for t in texts if t and t.strip().startswith('(')), None)
+            )
         )
     ]
 
@@ -155,15 +162,6 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
         for what in 'birth date', 'death date':
             if what in data and not data[what]:
                 del data[what]
-        # XXX: the code below is for backwards compatibility
-        # probably could be removed
-        for key in list(data.keys()):
-            if key == 'birth place':
-                data['birth notes'] = data[key]
-                del data[key]
-            if key == 'death place':
-                data['death notes'] = data[key]
-                del data[key]
         return data
 
 
@@ -253,6 +251,15 @@ class DOMHTMLFilmographyParser(DOMParserBase):
         return data
 
 
+def extract_notes(notes):
+    """Extracts the notes from the text of the death info."""
+    note_begin_idx = notes.find('(')
+    note_end_idx = notes.rfind(')')
+    if note_begin_idx == -1 or note_end_idx == -1:
+        return ''
+    return notes[note_begin_idx + 1:note_end_idx].strip()
+
+
 class DOMHTMLBioParser(DOMParserBase):
     """Parser for the "biography" page of a given person.
     The page should be provided as a string, as taken from
@@ -276,7 +283,7 @@ class DOMHTMLBioParser(DOMParserBase):
             extractor=Path('.//a[starts-with(@href, "/search/name/?birth_year=")]/text()')
         ),
         Rule(
-            key='birth notes',
+            key='birth place',
             extractor=Path('.//a[starts-with(@href, "/search/name/?birth_place=")]/text()')
         ),
     ]
@@ -288,18 +295,18 @@ class DOMHTMLBioParser(DOMParserBase):
         ),
         Rule(
             key='year',
-            extractor=Path('.//a[contains(@href, "died_year")]/text()')
+            extractor=Path('.//a[starts-with(@href, "/search/name/?death_date=")][2]/text()')
         ),
         Rule(
-            key='death notes',
+            key='death place',
             extractor=Path('.//a[starts-with(@href, "/search/name/?death_place=")]/text()')
         ),
 
         Rule(
             key='death notes',
             extractor=Path(
-                '..//text()',
-                transform=lambda x: _re_spaces.sub(' ', (x or '').strip().split('\n')[-1])
+                './/div[contains(@class, "ipc-html-content-inner-div")]/text()',
+                transform=extract_notes
             )
         )
     ]
@@ -320,8 +327,10 @@ class DOMHTMLBioParser(DOMParserBase):
                 rules=[
                     Rule(
                         key='nickname',
-                        extractor=Path('.//text()',
-                        transform=lambda x: x.strip())
+                        extractor=Path(
+                            './/text()',
+                            transform=lambda x: x.strip()
+                        )
                     )
                 ],
                 transform=lambda x: x.get('nickname') or ''
@@ -459,21 +468,24 @@ class DOMHTMLBioParser(DOMParserBase):
     def postprocess_data(self, data):
         for event in ['birth', 'death']:
             info = data.pop(f'{event} info', {})
-            validity = False
+            monthday = ''
+            year = ''
+            the_date = ''
             if 'monthday' in info:
                 monthday = datetime.strptime(info.pop('monthday'), '%B %d').strftime('%m-%d')
-                validity = True
-            else:
-                monthday = '00-00'
             if 'year' in info:
                 year = info.pop('year')
-                validity = True
-            else:
-                year = '0000'
-
-            if validity:
-                data[f'{event} date'] = f'{year}-{monthday}'
+            if year and monthday:
+                the_date = f'{year}-{monthday}'
+            elif year:
+                the_date = year
+            elif monthday:
+                the_date = monthday
+            if the_date:
+                data[f'{event} date'] = the_date
             data.update(info)
+            if 'death notes' in info:
+                data['death notes'] = info['death notes'].strip()
         if 'nick names' in data and isinstance(data['nick names'], str):
             data['nick names'] = [data['nick names']]
         return data

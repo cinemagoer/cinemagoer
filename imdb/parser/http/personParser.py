@@ -507,10 +507,15 @@ class DOMHTMLOtherWorksParser(DOMParserBase):
     rules = [
         Rule(
             key='other works',
-            extractor=Path(
-                foreach='//li[@class="ipl-zebra-list__item"]',
-                path='.//text()',
-                transform=transformers.strip
+            extractor=Rules(
+                foreach='//li[contains(@class, "ipc-metadata-list__item") and @data-testid="list-item"]',
+                rules=[
+                    Rule(
+                        key='work',
+                        extractor=Path('.//div[contains(@class, "ipc-html-content-inner-div")]/text()', transform=transformers.strip)
+                    )
+                ],
+                transform=lambda x: x.get('work') or ''
             )
         )
     ]

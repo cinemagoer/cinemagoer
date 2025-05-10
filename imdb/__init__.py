@@ -723,8 +723,8 @@ class IMDbBase:
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError('override this method')
 
-    def get_top50_movies_by_genres(self, genres):
-        """Return the list of the top 50 movies by genres.
+    def get_top_movies_by_genres(self, genres):
+        """Return the list of the top movies by genres.
 
         :sig: (Union[str, List[str]]) -> List
         :param genres: Name genre or list of genre's names."""
@@ -735,9 +735,10 @@ class IMDbBase:
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                             data=md, modFunct=self._defModFunct,
                             accessSystem=self.accessSystem) for mi, md in res]
+    get_top50_movies_by_genres = get_top_movies_by_genres
 
-    def get_top50_tv_by_genres(self, genres):
-        """Return the list of the top 50 tv series and mini series by genres.
+    def get_top_tv_by_genres(self, genres):
+        """Return the list of the top tv series and mini series by genres.
 
         :sig: (Union[str, List[str]]) -> List
         :param genres: Name genre or list of genre's names."""
@@ -748,6 +749,7 @@ class IMDbBase:
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                             data=md, modFunct=self._defModFunct,
                             accessSystem=self.accessSystem) for mi, md in res]
+    get_top50_tv_by_genres = get_top_tv_by_genres
 
     def _get_showtimes(self):
         # XXX: for the real implementation, see the method of the

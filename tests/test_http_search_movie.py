@@ -33,7 +33,7 @@ def test_search_movie_if_too_many_result_should_list_upper_limit_of_movies(ia):
 
 
 def test_search_movie_if_none_should_be_empty(ia):
-    movies = ia.search_movie('ᚣ', results=500)
+    movies = ia.search_movie('sdljkfjwlgweiogjeirog', results=500)
     assert movies == []
 
 

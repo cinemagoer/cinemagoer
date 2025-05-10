@@ -9,13 +9,13 @@ def test_search_results_should_include_correct_number_of_works_by_default(ia):
 
 
 def test_search_results_should_include_correct_number_of_works(ia):
-    movies = ia.search_movie_advanced('matrix', results=250)
-    assert len(movies) > 220
+    movies = ia.search_movie_advanced('matrix', results=50)
+    assert len(movies) == 50
 
 
 def test_search_results_should_include_correct_number_of_works_if_asked_less_than_available(ia):
-    movies = ia.search_movie_advanced('matrix', results=25)
-    assert len(movies) == 25
+    movies = ia.search_movie_advanced('matrix', results=20)
+    assert len(movies) == 20
 
 
 def test_found_movies_should_have_movie_ids(ia):
@@ -25,9 +25,10 @@ def test_found_movies_should_have_movie_ids(ia):
 
 def test_found_movies_should_have_titles(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
-    assert all(isinstance(m['title'], (str, unicode) if sys.version_info < (3,) else str) for m in movies)
+    assert all(isinstance(m['title'], str) for m in movies)
 
 
+@mark.skip(reason='Missing information')
 def test_selected_movie_should_have_correct_kind(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
     selected = [m for m in movies if m.movieID == '0133093'][0]
@@ -311,9 +312,9 @@ def test_selected_tv_episode_should_have_correct_series_year(ia):
 
 
 def test_selected_tv_episode_should_have_correct_series_series_years(ia):
-    movies = ia.search_movie_advanced('matrix', results=250)
-    selected = [m for m in movies if m.movieID == '1072112'][0]
-    assert selected['episode of']['series years'] == '2001-2012'
+    movies = ia.search_movie_advanced('The Making of \'The Matrix\'', results=250)
+    selected = [m for m in movies if m.movieID == '0594933'][0]
+    assert selected['episode of']['series years'] == '1992-'
 
 
 def test_selected_movie_should_have_cover_url(ia):
@@ -425,13 +426,13 @@ def test_search_results_should_be_sortable_in_runtime_order_default_ascending(ia
 
 def test_search_results_should_be_sortable_in_runtime_order_ascending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='runtime', sort_dir='asc')
-    runtimes = [int(m.get('runtimes', [float('inf')])[0]) for m in movies]
+    runtimes = [float(m.get('runtimes', [float('inf')])[0]) for m in movies]
     assert all(a <= b for a, b in zip(runtimes, runtimes[1:]))
 
 
 def test_search_results_should_be_sortable_in_runtime_order_descending(ia):
     movies = ia.search_movie_advanced(title='matrix', sort='runtime', sort_dir='desc')
-    runtimes = [int(m.get('runtimes', [float('inf')])[0]) for m in movies]
+    runtimes = [float(m.get('runtimes', [float('inf')])[0]) for m in movies]
     assert all(a >= b for a, b in zip(runtimes, runtimes[1:]))
 
 

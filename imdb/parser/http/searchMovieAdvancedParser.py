@@ -75,6 +75,13 @@ def _parse_secondary_info(info):
     parsed['kind'] = _KIND_MAP.get(kind, kind)
     return parsed
 
+def get_votes(votes):
+    """Convert the votes string to an integer."""
+    if votes:
+        match = re.search(r'(\d+)', votes)
+        if match:
+            return int(match.group(1).replace(',', ''))
+    return None
 
 class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
     """A parser for the title search page."""
@@ -129,15 +136,15 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                     ),
                     Rule(
                         key='rating',
-                        extractor=Path('.//div[@name="ir"]/@data-value',
+                        extractor=Path('.//span[contains(@class, "ipc-rating-star--rating")]/text()',
                                        reduce=reducers.first,
                                        transform=float)
                     ),
                     Rule(
                         key='votes',
-                        extractor=Path('.//span[@name="nv"]/@data-value',
+                        extractor=Path('.//span[contains(@class, "ipc-rating-star--voteCount")]/text()',
                                        reduce=reducers.first,
-                                       transform=int)
+                                       transform=get_votes)
                     ),
                     Rule(
                         key='metascore',

@@ -649,6 +649,7 @@ _REDUCERS = {
     'first': itemgetter(0),
     'concat': partial(str.join, ''),
     'join': partial(str.join, ' '),
+    'pipe_join': partial(str.join, '|'),
     'clean': lambda xs: re.sub(r'\s+', ' ', ''.join(xs).replace('\xa0', ' ')).strip(),
     'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
 }

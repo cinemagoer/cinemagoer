@@ -113,8 +113,13 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                     ),
                     Rule(
                         key='secondary_info',
-                        extractor=Path('.//div[contains(@class, "dli-title-metadata")]//text()',
-                                       reduce=reducers.join)
+                        extractor=Path('.//span[contains(@class, "dli-title-metadata-item")]/text()',
+                                       reduce=reducers.pipe_join)
+                    ),
+                    Rule(
+                        key='kind',
+                        extractor=Path('.//span[contains(@class, "dli-title-type-data")]/text()',
+                                       reduce=reducers.first)
                     ),
                     Rule(
                         key='certificates',
@@ -148,7 +153,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                     ),
                     Rule(
                         key='metascore',
-                        extractor=Path('.//span[@class="metascore  favorable"]/text()',
+                        extractor=Path('.//span[contains(@class, "metacritic-score-box")]/text()',
                                        reduce=reducers.first,
                                        transform=int)
                     ),
@@ -181,7 +186,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                                     )
                                 ),
                                 Rule(key='secondary_info',
-                                     extractor=Path('./h3/small/span[@class="lister-item-year text-muted unbold"]/text()',  # noqa: E501
+                                     extractor=Path('.//span[@class="lister-item-year text-muted unbold"]/text()',  # noqa: E501
                                                     reduce=reducers.first)),
                             ]
                         )

@@ -146,6 +146,42 @@ class DOMHTMLTVTop250Parser(DOMHTMLTop250Parser):
 class DOMHTMLTopIndian250Parser(DOMHTMLTop250Parser):
     """A parser for the "Top Rated Indian Movies" page."""
     ranktext = 'top indian 250 rank'
+    rules = [
+        Rule(
+            key='chart',
+            extractor=Rules(
+                foreach='//ul[contains(@class, "ipc-metadata-list")]/li',
+                rules=[
+                    Rule(
+                        key='movieID',
+                        extractor=Path('.//a[contains(@class, "ipc-metadata-list-item__icon-link")]/@href', reduce=reducers.first)
+                    ),
+                    Rule(
+                        key='title',
+                        extractor=Path('.//span[contains(@data-testid, "rank-list-item-title")]/text()')
+                    ),
+                    Rule(
+                        key='rating',
+                        extractor=Path('.//span[contains(@class, "ipc-rating-star")]//text()',
+                                       reduce=reducers.first,
+                                       transform=lambda x: round(float(x), 1))
+                    )
+                ]
+            )
+        )
+    ]
+
+    def postprocess_data(self, data):
+        if (not data) or ('chart' not in data):
+            return []
+        movies = []
+        for count, entry in enumerate(data['chart']):
+            if ('movieID' not in entry) or ('title' not in entry):
+                continue
+            movie_id = analyze_imdbid(entry['movieID'])
+            entry[self.ranktext] = count + 1
+            movies.append((movie_id, entry))
+        return movies
 
 
 class DOMHTMLBoxOfficeParser(DOMParserBase):

@@ -160,7 +160,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                     ),
                     Rule(
                         key='plot',
-                        extractor=Path('./p[@class="text-muted"]//text()',
+                        extractor=Path('.//div[@role="presentation"][@class="ipc-html-content-inner-div"]/text()',
                                        reduce=reducers.clean)
                     ),
                     Rule(

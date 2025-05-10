@@ -44,6 +44,7 @@ _KIND_MAP = {
     'video': 'video movie'
 }
 
+
 def cleanup_title(title):
     """Cleanup the title string by removing the index and leading/trailing spaces."""
     if title:
@@ -52,28 +53,23 @@ def cleanup_title(title):
             return match.group(2).strip()
     return title.strip() if title else title
 
+
 def _parse_secondary_info(info):
     parsed = {}
-    match = _re_secondary_info.match(info)
-    if not match:
-        return parsed
-    kind = None
-    if match.group(2):
-        parsed['imdbIndex'] = match.group(2)
-    if match.group(3):
-        parsed['year'] = int(match.group(3))
-    if match.group(4):
-        kind = 'tv series'
-    if match.group(6):
-        parsed['series years'] = match.group(3) + "-" + match.group(6)
-    if match.group(8):
-        kind = match.group(8).lower()
-    if match.group(10):  # Added to support case of imdbIndex but no year
-        parsed['imdbIndex'] = match.group(10)
-    if kind is None:
-        kind = 'movie'
-    parsed['kind'] = _KIND_MAP.get(kind, kind)
+    info = info or ''
+    for item in info.strip().split('|'):
+        item = item.strip()
+        litem = item.lower()
+        if item.isdigit():
+            parsed['year'] = int(item)
+        elif '–' in item or '-' in item:
+            item = item.replace('–', '-')
+            parsed['series years'] = item
+        elif 'tv' in litem or 'series' in litem or 'episode' in litem or \
+                'show' in litem or 'video' in litem or 'short' in litem:
+            parsed['kind'] = litem
     return parsed
+
 
 def get_votes(votes):
     """Convert the votes string to an integer."""

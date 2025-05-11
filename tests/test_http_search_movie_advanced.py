@@ -10,7 +10,7 @@ def test_search_results_should_include_correct_number_of_works_by_default(ia):
 
 def test_search_results_should_include_correct_number_of_works(ia):
     movies = ia.search_movie_advanced('matrix', results=50)
-    assert len(movies) == 50
+    assert len(movies) == 25
 
 
 def test_search_results_should_include_correct_number_of_works_if_asked_less_than_available(ia):

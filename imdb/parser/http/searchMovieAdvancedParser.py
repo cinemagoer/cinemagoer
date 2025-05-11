@@ -57,22 +57,22 @@ def cleanup_title(title):
 def _parse_secondary_info(info):
     parsed = {}
     info = info or ''
-    _certs = set('pg-13', 'pg', 'r', 'g', 'nc-17', 'unrated', 'approved',
+    _certs = set(('pg-13', 'pg', 'r', 'g', 'nc-17', 'unrated', 'approved',
                  'not rated', 'm', 'x', 'tv-ma', 'tv-pg', 'tv-14', 'vm', 'vm-14',
-                 'vm-18')
+                 'vm-18'))
     for item in info.strip().split('|'):
         item = item.strip()
         litem = item.lower()
         if item.isdigit():
             parsed['year'] = int(item)
-        elif '–' in item or '-' in item:
-            item = item.replace('–', '-')
-            parsed['series years'] = item
         elif litem in _certs:
             parsed['certificates'] = item
         elif 'tv' in litem or 'series' in litem or 'episode' in litem or \
                 'show' in litem or 'video' in litem or 'short' in litem:
             parsed['kind'] = _KIND_MAP.get(litem, litem)
+        elif '–' in item or '-' in item:
+            item = item.replace('–', '-')
+            parsed['series years'] = item
         else:
             dg = _re_duration.match(item)
             duration = 0
@@ -134,7 +134,8 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                     Rule(
                         key='kind',
                         extractor=Path('.//span[contains(@class, "dli-title-type-data")]/text()',
-                                       reduce=reducers.first)
+                                       reduce=reducers.first,
+                                       transform=lambda x: _KIND_MAP.get(x.lower(), x.lower()))
                     ),
                     Rule(
                         key='genres',

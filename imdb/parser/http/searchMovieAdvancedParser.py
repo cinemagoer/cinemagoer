@@ -83,7 +83,7 @@ def _parse_secondary_info(info):
                 if m and m.isdigit():
                     duration += int(m)
             if duration:
-                parsed['runtimes'] = duration
+                parsed['runtimes'] = [duration]
     return parsed
 
 

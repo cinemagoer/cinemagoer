@@ -181,10 +181,10 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                         extractor=Rules(
                             rules=[
                                 Rule(key='link',
-                                     extractor=Path('.//div[contains(@ep-title, "")]/a/@href', reduce=reducers.first)),
+                                     extractor=Path('.//div[@ep-title]/a/@href', reduce=reducers.first)),
                                 Rule(key='title',
                                      extractor=Path(
-                                         './/div[contains(@ep-title, "")]/a/h3/text()',
+                                         './/div[@ep-title]/a/h3/text()',
                                          reduce=reducers.first,
                                          transform=cleanup_title
                                      )

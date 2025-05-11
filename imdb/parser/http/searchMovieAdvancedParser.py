@@ -33,9 +33,9 @@ import re
 from .piculet import Path, Rule, Rules, preprocessors, reducers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 
-_re_secondary_info = re.compile(
-    r'''(\(([IVXLCM]+)\)\s+)?\((\d{4})(–(\s|(\d{4})))?(\s+(.*))?\)|(\(([IVXLCM]+)\))'''
-)
+
+# regular expression to match duration in the format like "1h 30m"
+_re_duration = re.compile(r'(?:(\d+)h)?\s*(?:(\d+)?m)?')
 
 _re_index = re.compile(r'(\d+)\.\s+(.+)')
 
@@ -57,6 +57,9 @@ def cleanup_title(title):
 def _parse_secondary_info(info):
     parsed = {}
     info = info or ''
+    _certs = set('pg-13', 'pg', 'r', 'g', 'nc-17', 'unrated', 'approved',
+                 'not rated', 'm', 'x', 'tv-ma', 'tv-pg', 'tv-14', 'vm', 'vm-14',
+                 'vm-18')
     for item in info.strip().split('|'):
         item = item.strip()
         litem = item.lower()
@@ -65,9 +68,24 @@ def _parse_secondary_info(info):
         elif '–' in item or '-' in item:
             item = item.replace('–', '-')
             parsed['series years'] = item
+        elif litem in _certs:
+            parsed['certificates'] = item
         elif 'tv' in litem or 'series' in litem or 'episode' in litem or \
                 'show' in litem or 'video' in litem or 'short' in litem:
-            parsed['kind'] = litem
+            parsed['kind'] = _KIND_MAP.get(litem, litem)
+        else:
+            dg = _re_duration.match(item)
+            duration = 0
+            if dg:
+                h, m = dg.groups()
+                if h and h.isdigit():
+                    duration += int(h) * 60
+                if m and m.isdigit():
+                    duration += int(m)
+            if duration:
+                parsed['runtimes'] = duration
+    if parsed and 'kind' not in parsed:
+        parsed['kind'] = 'movie'
     return parsed
 
 
@@ -78,6 +96,7 @@ def get_votes(votes):
         if match:
             return int(match.group(1).replace(',', ''))
     return None
+
 
 class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
     """A parser for the title search page."""
@@ -116,18 +135,6 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                         key='kind',
                         extractor=Path('.//span[contains(@class, "dli-title-type-data")]/text()',
                                        reduce=reducers.first)
-                    ),
-                    Rule(
-                        key='certificates',
-                        extractor=Path('.//span[@class="certificate"]/text()',
-                                       reduce=reducers.first,
-                                       transform=lambda s: [s])
-                    ),
-                    Rule(
-                        key='runtimes',
-                        extractor=Path('.//span[@class="runtime"]/text()',
-                                       reduce=reducers.first,
-                                       transform=lambda s: [[w for w in s.split() if w.isdigit()][0]])
                     ),
                     Rule(
                         key='genres',
@@ -179,7 +186,7 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                                          './/div[contains(@ep-title, "")]/a/h3/text()',
                                          reduce=reducers.first,
                                          transform=cleanup_title
-                                    )
+                                     )
                                 ),
                                 Rule(key='secondary_info',
                                      extractor=Path('.//span[@class="lister-item-year text-muted unbold"]/text()',  # noqa: E501

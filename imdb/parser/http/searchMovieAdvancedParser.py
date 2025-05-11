@@ -84,8 +84,6 @@ def _parse_secondary_info(info):
                     duration += int(m)
             if duration:
                 parsed['runtimes'] = duration
-    if parsed and 'kind' not in parsed:
-        parsed['kind'] = 'movie'
     return parsed
 
 

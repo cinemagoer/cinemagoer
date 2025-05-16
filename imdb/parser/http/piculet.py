@@ -32,16 +32,14 @@ from argparse import ArgumentParser
 from collections import deque
 from functools import partial
 from operator import itemgetter
-from pkgutil import find_loader
+from . import jsel
 
-__version__ = '1.2b1'
+__version__ = '1.2b2'
 
 PY2 = sys.version_info < (3, 0)
 
 if PY2:
     str, bytes = unicode, str
-
-if PY2:
     from cgi import escape as html_escape
     from htmlentitydefs import name2codepoint  # noqa: I003
     from HTMLParser import HTMLParser
@@ -479,6 +477,9 @@ class Rule:
         self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPath]
         """XPath evaluator for generating multiple items."""
 
+        self.json_extractor = None
+        """JSON extractor for further parsing of the obtained data."""
+
     @staticmethod
     def from_map(item):
         """Generate a rule from a description map.
@@ -507,6 +508,8 @@ class Rule:
                 continue
             if self.extractor.foreach is None:
                 value = self.extractor.extract(subroot)
+                if self.json_extractor and isinstance(value, str):
+                    value = jsel.select(value, self.json_extractor)
                 if (value is None) or (value is _EMPTY):
                     continue
                 data[key] = value
@@ -515,6 +518,8 @@ class Rule:
                 raw_values = [self.extractor.extract(r, transform=False)
                               for r in self.extractor.foreach(subroot)]
                 values = [v for v in raw_values if (v is not None) and (v is not _EMPTY)]
+                if self.json_extractor:
+                    values = [jsel.select(v, self.json_extractor) for v in values]
                 if len(values) == 0:
                     continue
                 data[key] = values if self.extractor.transform is None else \

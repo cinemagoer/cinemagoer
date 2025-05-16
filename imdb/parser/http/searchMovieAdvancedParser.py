@@ -32,6 +32,7 @@ import re
 
 from .piculet import Path, Rule, Rules, preprocessors, reducers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
+from . import jsel
 
 
 # regular expression to match duration in the format like "1h 30m"
@@ -195,6 +196,14 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                     )
                 ]
             )
+        ),
+        Rule(
+            key='__NEXT_DATA__',
+            extractor=Path(
+                '//script[@id="__NEXT_DATA__"]/text()',
+                reduce=reducers.first,
+                transform=lambda x: x.strip()
+            )
         )
     ]
 
@@ -212,8 +221,10 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
             data['data'][:] = data['data'][:results]
 
         result = []
-        idx = 1
-        for movie in data['data']:
+        jdata = None
+        if '__NEXT_DATA__' in data:
+            jdata = jsel.select(data['__NEXT_DATA__'], '.props.pageProps.searchResults.titleResults.titleListItems[]')
+        for idx, movie in enumerate(data['data']):
             episode = movie.pop('episode', None)
             if episode is not None:
                 series = build_movie(movie.get('title'), movieID=analyze_imdbid(movie['link']))
@@ -235,9 +246,11 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
                 movie.update(secondary)
                 if episode is not None:
                     movie['kind'] = 'episode'
-
+            if jdata:
+                movie_jdata = jsel.select(jdata, '.[%d]' % idx)
+                if movie_jdata:
+                    movie['genres'] = jsel.select(movie_jdata, '.genres[]')
             result.append((analyze_imdbid(movie.pop('link')), movie))
-            idx += 1
         data['data'] = result
 
         return data

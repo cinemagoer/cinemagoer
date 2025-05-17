@@ -1,8 +1,12 @@
+"""Parse and select specific information from
+JSON data using a subset of Jq-like selectors."""
+
 import json
 import re
 
 # Regex to match .key, .key[], .key[N], .[N]
 _re_selector = re.compile(r'(?:\.([a-zA-Z0-9_]+)|\[(\d*)\])')
+
 
 def select(jobj, selector, default=None):
     """
@@ -15,6 +19,7 @@ def select(jobj, selector, default=None):
       - .key1.key2[]
       - .key1.key2[N]
       - .[N] (select N-th element from root array)
+      - . (returns the whole object)
     """
     if isinstance(jobj, str):
         try:
@@ -25,6 +30,8 @@ def select(jobj, selector, default=None):
         data = jobj
 
     selector = selector.strip()
+    if selector == '.':
+        return data
     if not selector.startswith('.'):
         raise ValueError("Selector must start with '.'")
 
@@ -61,5 +68,4 @@ def select(jobj, selector, default=None):
             if idx < 0 or idx >= len(obj):
                 return None
             return _extract(obj[idx], parts[1:])
-
     return _extract(data, parts)

@@ -30,6 +30,7 @@ the :file:`setup.py` file resides), run::
   The dbschema module contains tables definitions and some useful functions.
   The helpers module contains functions and other goodies not directly used
   by the Cinemagoer package, but that can be useful to develop Cinemagoer-based programs.
+  The :doc:`json` module provides utilities for extracting and selecting information from JSON data, used by the HTTP parsers.
 
 
 I wanted to stay independent from the source of the data for a given

@@ -28,10 +28,12 @@ http://www.imdb.com/chart/bottom
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import re
+from imdb.parser.http import jextr
 from imdb.utils import analyze_title
 
 from .piculet import Path, Rule, Rules, reducers
 from .utils import DOMParserBase, analyze_imdbid
+from . import jsel
 
 
 class DOMHTMLTop250Parser(DOMParserBase):
@@ -40,86 +42,36 @@ class DOMHTMLTop250Parser(DOMParserBase):
 
     rules = [
         Rule(
-            key='chart',
-            extractor=Rules(
-                foreach='//ul[contains(@class, "ipc-metadata-list")]/li',
-                rules=[
-                    Rule(
-                        key='movieID',
-                        extractor=Path('.//a[contains(@class, "ipc-title-link-wrapper")]/@href', reduce=reducers.first)
-                    ),
-                    Rule(
-                        key='title',
-                        extractor=Path('.//h3[contains(@class, "ipc-title__text")]//text()')
-                    ),
-                    Rule(
-                        key='rating',
-                        extractor=Path('.//span[contains(@class, "ipc-rating-star")]//text()',
-                                       reduce=reducers.first,
-                                       transform=lambda x: round(float(x), 1))
-                    ),
-                    Rule(
-                        key='year',
-                        extractor=Path('.//div[contains(@class, "cli-title-metadata")]/span/text()',
-                                       reduce=reducers.first)
-                    ),
-                    Rule(
-                        key='votes',
-                        extractor=Path('.//span[contains(@class, "ipc-rating-star--voteCount")]//text()')
-                    )
-                ]
+            key='__NEXT_DATA__',
+            extractor=Path(
+                '//script[@id="__NEXT_DATA__"]/text()',
+                reduce=reducers.first,
+                transform=lambda x: x.strip()
             )
         )
     ]
 
     def postprocess_data(self, data):
-        if (not data) or ('chart' not in data):
+        if '__NEXT_DATA__' not in data:
             return []
-        _re_rank = re.compile('(\d+)\.(.+)')
-        _re_votes = re.compile('([0-9\.]+)([kmb])', re.I)
         movies = []
-        for count, entry in enumerate(data['chart']):
-            if ('movieID' not in entry) or ('title' not in entry):
+        jdata = jsel.select(data['__NEXT_DATA__'], '.props.pageProps.pageData.chartTitles.edges')
+        if not jdata:
+            return []
+        for item in jdata:
+            mdata = {}
+            node = item.get('node', {})
+            if not node:
                 continue
-            entry['rank'] = count + 1
-            rank_match = _re_rank.match(entry['title'])
-            if rank_match and len(rank_match.groups()) == 2:
-                try:
-                    entry['rank'] = int(rank_match.group(1))
-                except Exception:
-                    pass
-                entry['title'] = rank_match.group(2).strip()
-
-            movie_id = analyze_imdbid(entry['movieID'])
-            if movie_id is None:
+            mdata = jextr.movie_data(node)
+            if not mdata:
                 continue
-            del entry['movieID']
-            entry[self.ranktext] = entry['rank']
-            del entry['rank']
-            title = entry['title']
-            if 'year' in entry:
-                title = entry['title'] + ' (%s)' % entry['year']
-                del entry['year']
-            title = analyze_title(title)
-            entry.update(title)
-            if 'votes' in entry:
-                votes = entry['votes'].replace('(', '').replace(')', '').replace('\xa0', '')
-                multiplier = 1
-                votes_match = _re_votes.match(votes)
-                if votes_match and len(votes_match.groups()) == 2:
-                    votes = votes_match.group(1)
-                    str_multiplier = votes_match.group(2).lower()
-                    if str_multiplier == 'k':
-                        multiplier = 1000
-                    elif str_multiplier == 'm':
-                        multiplier = 1000 * 1000
-                    elif str_multiplier == 'b':
-                        multiplier = 1000 * 1000 * 1000
-                try:
-                    entry['votes'] = int(float(votes) * multiplier)
-                except Exception:
-                    pass
-            movies.append((movie_id, entry))
+            rank = item.get('currentRank', None)
+            if rank:
+                mdata[self.ranktext] = rank
+            movie_id = mdata['id']
+            del mdata['id']
+            movies.append((movie_id, mdata))
         return movies
 
 

@@ -98,7 +98,9 @@ line-length = 79
 
 [tool.ruff.lint]
 select = ["A", "E", "F", "I", "T", "W"]
-ignore = ["E731"]
+ignore = ["E501", "E731"]
+exclude = ["imdb/parser/sql/**/*.py"]
+
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2

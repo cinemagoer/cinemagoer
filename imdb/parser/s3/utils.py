@@ -51,21 +51,21 @@ def transf_multi_character(x):
 def transf_int(x):
     try:
         return int(x)
-    except:
+    except Exception:
         return None
 
 
 def transf_float(x):
     try:
         return float(x)
-    except:
+    except Exception:
         return None
 
 
 def transf_bool(x):
     try:
         return x == '1'
-    except:
+    except Exception:
         return None
 
 

@@ -32,7 +32,13 @@ from imdb import IMDbBase
 from imdb.Movie import Movie
 from imdb.Person import Person
 
-from .utils import DB_TRANSFORM, name_soundexes, scan_names, scan_titles, title_soundex
+from .utils import (
+    DB_TRANSFORM,
+    name_soundexes,
+    scan_names,
+    scan_titles,
+    title_soundex,
+)
 
 
 def split_array(text):

@@ -7,7 +7,6 @@ import time
 from imdb import Cinemagoer
 from imdb.parser.http import IMDbURLopener
 
-
 logging.raiseExceptions = False
 
 DELAY = 0

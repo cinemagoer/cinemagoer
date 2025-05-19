@@ -29,7 +29,12 @@ import ssl
 import warnings
 from codecs import lookup
 from urllib.parse import quote_plus
-from urllib.request import HTTPRedirectHandler, HTTPSHandler, ProxyHandler, build_opener
+from urllib.request import (
+    HTTPRedirectHandler,
+    HTTPSHandler,
+    ProxyHandler,
+    build_opener,
+)
 
 from imdb import IMDbBase
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -47,9 +52,8 @@ from . import (
     searchMovieParser,
     searchPersonParser,
     showtimesParser,
-    topBottomParser
+    topBottomParser,
 )
-
 
 # Logger for miscellaneous functions.
 _aux_logger = logger.getChild('aux')
@@ -637,7 +641,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 cont = self._retrieve(
                     self.urls['movie_main'] % movieID + 'episodes?season=' + str(season)
                 )
-            except:
+            except Exception:
                 pass
             other_d = self.mProxy.season_episodes_parser.parse(cont)
             other_d = self._purge_seasons_data(other_d)
@@ -646,7 +650,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
             try:
                 if not (other_d and other_d['data'] and other_d['data']['episodes'][season]):
                     continue
-            except:
+            except Exception:
                 pass
             nr_eps += len(other_d['data']['episodes'].get(season) or [])
             if data_d:

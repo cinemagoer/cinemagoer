@@ -28,10 +28,9 @@ http://www.imdb.com/search/title/?title=the+passion
 
 import re
 
-from .piculet import Path, Rule, Rules, preprocessors, reducers
-from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 from . import jsel
-
+from .piculet import Path, Rule, Rules, reducers
+from .utils import DOMParserBase, analyze_imdbid, build_movie
 
 # regular expression to match duration in the format like "1h 30m"
 _re_duration = re.compile(r'(?:(\d+)h)?\s*(?:(\d+)?m)?')

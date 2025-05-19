@@ -101,9 +101,8 @@ select = ["A", "E", "F", "I", "T", "W"]
 ignore = ["E501", "E731"]
 exclude = ["imdb/parser/sql/**/*.py"]
 
-
-[tool.ruff.lint.isort]
-lines-after-imports = 2
+[tool.ruff.lint.per-file-ignores]
+"imdb/cli.py" = ["T201"]
 
 [tool.tox]
 legacy_tox_ini = """
@@ -124,7 +123,7 @@ commands =
 
 [testenv:style]
 commands =
-    ruff check --preview src tests
+    ruff check --preview imdb tests
 
 [testenv:docs]
 changedir = docs/

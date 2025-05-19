@@ -20,14 +20,6 @@ from the IMDb database. It can fetch data through different media such as
 the IMDb web pages, or a SQL database.
 """
 
-from imdb.version import __version__
-
-__all__ = ['Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
-           'available_access_systems']
-
-VERSION = __version__
-
-
 import configparser
 import os
 import sys
@@ -38,6 +30,12 @@ from imdb import Character, Company, Movie, Person
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb._logging import imdbpyLogger as _imdb_logger
 from imdb.utils import build_company_name, build_name, build_title
+from imdb.version import __version__
+
+__all__ = ['Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
+           'available_access_systems']
+
+VERSION = __version__
 
 
 _aux_logger = _imdb_logger.getChild('aux')

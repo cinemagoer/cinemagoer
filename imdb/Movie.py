@@ -22,7 +22,14 @@ a given movie.
 from copy import deepcopy
 
 from imdb import linguistics
-from imdb.utils import _Container, analyze_title, build_title, canonicalTitle, cmpMovies, flatten
+from imdb.utils import (
+    _Container,
+    analyze_title,
+    build_title,
+    canonicalTitle,
+    cmpMovies,
+    flatten,
+)
 
 
 class Movie(_Container):

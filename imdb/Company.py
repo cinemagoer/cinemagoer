@@ -21,7 +21,13 @@ a given company.
 
 from copy import deepcopy
 
-from imdb.utils import _Container, analyze_company_name, build_company_name, cmpCompanies, flatten
+from imdb.utils import (
+    _Container,
+    analyze_company_name,
+    build_company_name,
+    cmpCompanies,
+    flatten,
+)
 
 
 class Company(_Container):

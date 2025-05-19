@@ -37,6 +37,7 @@ def test_person_birth_date_without_itemprop_should_be_in_ymd_format(ia):
     person = ia.get_person('0000007', info=['biography'])   # Humphrey Bogart
     assert person.get('birth date') == '1899-12-25'
 
+
 @mark.skip("obsolete")
 def test_person_birth_notes_should_contain_birth_place(ia):
     person = ia.get_person('0000001', info=['biography'])   # Fred Astaire

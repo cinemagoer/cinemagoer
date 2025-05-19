@@ -34,7 +34,11 @@ from datetime import datetime
 
 from imdb.utils import analyze_name
 
-from .movieParser import DOMHTMLNewsParser, DOMHTMLOfficialsitesParser, DOMHTMLTechParser
+from .movieParser import (
+    DOMHTMLNewsParser,
+    DOMHTMLOfficialsitesParser,
+    DOMHTMLTechParser,
+)
 from .piculet import Path, Rule, Rules, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 

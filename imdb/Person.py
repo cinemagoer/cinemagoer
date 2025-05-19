@@ -21,7 +21,15 @@ a given person.
 
 from copy import deepcopy
 
-from imdb.utils import _Container, analyze_name, build_name, canonicalName, cmpPeople, flatten, normalizeName
+from imdb.utils import (
+    _Container,
+    analyze_name,
+    build_name,
+    canonicalName,
+    cmpPeople,
+    flatten,
+    normalizeName,
+)
 
 
 class Person(_Container):

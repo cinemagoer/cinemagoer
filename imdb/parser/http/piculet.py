@@ -32,7 +32,6 @@ from lxml import etree as ElementTree
 
 from . import jsel
 
-
 __version__ = '1.2b2'
 
 

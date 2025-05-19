@@ -29,7 +29,6 @@ from imdb import linguistics
 from imdb._exceptions import IMDbParserError
 from imdb._logging import imdbpyLogger
 
-
 # Logger for imdb.utils module.
 _utils_logger = imdbpyLogger.getChild('utils')
 
@@ -970,7 +969,7 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
             beginTag += '>'
     else:
         # workaround for #350
-        beginTag=""
+        beginTag = ""
         if not _containerOnly:
             if value:
                 beginTag = '<%s><%s>%s</%s>' % (tag, what, value, what)
@@ -1549,8 +1548,8 @@ class _Container:
     # XXX: really useful???
     #      consider also that this will confuse people who meant to
     #      call ia.update(movieObject, 'data set') instead.
-    def update(self, dict):
-        self.data.update(dict)
+    def update(self, d):
+        self.data.update(d)
 
     def get(self, key, failobj=None):
         """Return the given section, or default if it's not found."""

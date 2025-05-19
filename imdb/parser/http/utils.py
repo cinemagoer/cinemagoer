@@ -32,7 +32,6 @@ from imdb.utils import _Container, flatten
 from .piculet import ElementTree, Path, Rule, Rules, build_tree
 from .piculet import xpath as piculet_xpath
 
-
 # Year, imdbIndex and kind.
 re_yearKind_index = re.compile(
     r'(\([0-9\?]{4}(?:/[IVXLCDM]+)?\)(?: \(mini\)| \(TV\)| \(V\)| \(VG\))?)'

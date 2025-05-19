@@ -19,8 +19,6 @@ This module provides the company class, used to store information about
 a given company.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from copy import deepcopy
 
 from imdb.utils import _Container, analyze_company_name, build_company_name, cmpCompanies, flatten

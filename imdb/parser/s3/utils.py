@@ -18,8 +18,6 @@
 This package provides utilities for the s3 dataset.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import re
 from difflib import SequenceMatcher
 

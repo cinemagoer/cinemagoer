@@ -20,6 +20,4 @@ a parser for the web/http interface, a parser for the SQL database interface,
 etc. So far, the http, s3 and sql parsers are implemented.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 __all__ = ['http', 'sql', 's3']

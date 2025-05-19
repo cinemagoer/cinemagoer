@@ -25,8 +25,6 @@ main details
     http://www.imdb.com/company/co0071509/
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import re
 
 from .piculet import Path, Rule, Rules

@@ -23,8 +23,6 @@ The :func:`imdb.IMDb` function will return an instance of this class when
 called with the ``accessSystem`` parameter is set to "s3" or "s3dataset".
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import logging
 from operator import itemgetter
 

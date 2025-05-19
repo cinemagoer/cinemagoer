@@ -23,8 +23,6 @@ This module provides functions and data to handle languages and articles
 (in various languages) at the beginning of movie titles in a smart way.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 # List of generic articles used when the language of the title is unknown (or
 # we don't have information about articles in that language).
 # XXX: Managing titles in a lot of different languages, a function to recognize

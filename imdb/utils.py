@@ -21,7 +21,6 @@ This module provides basic utilities for the imdb package.
 
 import re
 import string
-import sys
 from copy import copy, deepcopy
 from functools import total_ordering
 from time import strftime, strptime
@@ -30,7 +29,6 @@ from imdb import linguistics
 from imdb._exceptions import IMDbParserError
 from imdb._logging import imdbpyLogger
 
-PY2 = sys.hexversion < 0x3000000
 
 # Logger for imdb.utils module.
 _utils_logger = imdbpyLogger.getChild('utils')
@@ -949,12 +947,8 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
             crl = [crl]
         for cr in crl:
             crTag = cr.__class__.__name__.lower()
-            if PY2 and isinstance(cr, unicode):
-                crValue = cr
-                crID = None
-            else:
-                crValue = cr.get('long imdb name') or ''
-                crID = cr.getID()
+            crValue = cr.get('long imdb name') or ''
+            crID = cr.getID()
             crValue = _normalizeValue(crValue)
             if crID is not None:
                 extras += '<current-role><%s id="%s"><name>%s</name></%s>' % (
@@ -1011,8 +1005,7 @@ TAGS_TO_MODIFY = {
 
 
 _valid_chars = string.ascii_lowercase + '-' + string.digits
-_translator = str.maketrans(_valid_chars, _valid_chars) if not PY2 else \
-    string.maketrans(_valid_chars, _valid_chars)
+_translator = str.maketrans(_valid_chars, _valid_chars)
 
 
 def _tagAttr(key, fullpath):
@@ -1219,13 +1212,10 @@ class _Container:
             pass
         if not self._roleIsPerson:
             if not isinstance(roleID, (list, tuple)):
-                if not (PY2 and isinstance(self.currentRole, unicode)):
-                    self.currentRole.characterID = roleID
+                self.currentRole.characterID = roleID
             else:
                 for index, item in enumerate(roleID):
                     r = self.__role[index]
-                    if PY2 and isinstance(r, unicode):
-                        continue
                     r.characterID = item
         else:
             if not isinstance(roleID, (list, tuple)):
@@ -1233,8 +1223,6 @@ class _Container:
             else:
                 for index, item in enumerate(roleID):
                     r = self.__role[index]
-                    if PY2 and isinstance(r, unicode):
-                        continue
                     r.personID = item
 
     roleID = property(_get_roleID, _set_roleID,

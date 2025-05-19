@@ -28,6 +28,7 @@ __all__ = ['Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'C
 VERSION = __version__
 
 
+import configparser
 import os
 import sys
 from pkgutil import find_loader
@@ -37,13 +38,6 @@ from imdb import Character, Company, Movie, Person
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb._logging import imdbpyLogger as _imdb_logger
 from imdb.utils import build_company_name, build_name, build_title
-
-PY2 = sys.hexversion < 0x3000000
-
-if PY2:
-    import ConfigParser as configparser
-else:
-    import configparser
 
 
 _aux_logger = _imdb_logger.getChild('aux')
@@ -92,10 +86,7 @@ class ConfigParserWithCase(configparser.ConfigParser):
 
         *defaults* -- defaults values.
         *confFile* -- the file (or list of files) to parse."""
-        if PY2:
-            configparser.ConfigParser.__init__(self, defaults=defaults)
-        else:
-            super(configparser.ConfigParser, self).__init__(defaults=defaults)
+        super().__init__(defaults=defaults)
         if confFile is None:
             for confFileName in confFileNames:
                 dotFileName = '.' + confFileName

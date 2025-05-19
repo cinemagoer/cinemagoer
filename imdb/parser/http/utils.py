@@ -21,8 +21,8 @@ in the :mod:`imdb.parser.http` package.
 """
 
 import re
+from collections.abc import Callable
 
-from imdb import PY2
 from imdb.Character import Character
 from imdb.Movie import Movie
 from imdb.parser.http.logging import logger
@@ -31,11 +31,6 @@ from imdb.utils import _Container, flatten
 
 from .piculet import _USE_LXML, ElementTree, Path, Rule, Rules, build_tree, html_to_xhtml
 from .piculet import xpath as piculet_xpath
-
-if PY2:
-    from collections import Callable
-else:
-    from collections.abc import Callable
 
 
 # Year, imdbIndex and kind.
@@ -409,8 +404,6 @@ class DOMParserBase:
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
-        if PY2 and isinstance(html_string, str):
-            html_string = html_string.decode('utf-8')
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
         if html_string:

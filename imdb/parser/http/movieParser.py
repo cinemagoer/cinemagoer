@@ -35,8 +35,9 @@ plot summary
 
 import functools
 import re
+from urllib.parse import unquote
 
-from imdb import PY2, imdbURL_base
+from imdb import imdbURL_base
 from imdb.Company import Company
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -45,10 +46,6 @@ from imdb.utils import KIND_MAP, _Container
 from .piculet import Path, Rule, Rules, preprocessors, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 
-if PY2:
-    from urllib import unquote
-else:
-    from urllib.parse import unquote
 
 # Dictionary used to convert some section's names.
 _SECT_CONV = {

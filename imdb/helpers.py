@@ -25,15 +25,7 @@ but useful for Cinemagoer-based programs.
 import difflib
 import gettext
 import re
-import sys
-
-from imdb.locale import _
-
-PY2 = sys.hexversion < 0x3000000
-if PY2:
-    from cgi import escape
-else:
-    from html import escape
+from html import escape
 
 # The modClearRefs can be used to strip names and titles references from
 # the strings in Movie and Person objects.
@@ -42,6 +34,7 @@ from imdb._exceptions import IMDbError
 from imdb.Character import Character
 from imdb.Company import Company
 from imdb.linguistics import COUNTRY_LANG
+from imdb.locale import _
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import TAGS_TO_MODIFY, _tagAttr, re_characterRef, re_nameRef, re_titleRef

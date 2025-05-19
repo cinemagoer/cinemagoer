@@ -34,7 +34,7 @@ STRINGCOL = 3
 _strMap = {1: 'INTCOL', 2: 'UNICODECOL', 3: 'STRINGCOL'}
 
 
-class DBCol(object):
+class DBCol:
 
     """Define column objects."""
 
@@ -97,7 +97,7 @@ class DBCol(object):
         return s
 
 
-class DBTable(object):
+class DBTable:
 
     """Define table objects."""
 

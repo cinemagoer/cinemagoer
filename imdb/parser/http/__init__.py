@@ -89,7 +89,7 @@ class _ModuleProxy:
         return getattr(_sm, name)
 
 
-class _FakeURLOpener(object):
+class _FakeURLOpener:
     """Fake URLOpener object, used to return empty strings instead of
     errors.
     """

@@ -1128,7 +1128,7 @@ _xmlHead = """<?xml version="1.0"?>
 
 
 @total_ordering
-class _Container(object):
+class _Container:
     """Base class for Movie, Person, Character and Company classes."""
     # The default sets of information retrieved.
     default_info = ()

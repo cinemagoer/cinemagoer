@@ -367,7 +367,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
     return m
 
 
-class DOMParserBase(object):
+class DOMParserBase:
     """Base parser to handle HTML data from the IMDb's web server."""
     _defGetRefs = False
     _containsObjects = False

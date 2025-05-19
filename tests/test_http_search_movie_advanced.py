@@ -1,7 +1,5 @@
 from pytest import mark
 
-import sys
-
 
 def test_search_results_should_include_correct_number_of_works_by_default(ia):
     movies = ia.search_movie_advanced('matrix')

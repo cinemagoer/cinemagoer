@@ -7,6 +7,7 @@ import time
 from imdb import Cinemagoer
 from imdb.parser.http import IMDbURLopener
 
+
 logging.raiseExceptions = False
 
 DELAY = 0
@@ -21,7 +22,6 @@ retrieve_unicode_orig = IMDbURLopener.retrieve_unicode
 
 
 def retrieve_unicode_cached(self, url, size=-1):
-    print(url)
     key = "_".join(url.split("/")[3:])
     cache_file = os.path.join(cache_dir, key)
     if os.path.exists(cache_file):

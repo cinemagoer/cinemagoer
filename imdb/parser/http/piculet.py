@@ -22,10 +22,7 @@ For more information, please refer to the documentation:
 https://piculet.readthedocs.io/
 """
 
-import json
 import re
-import sys
-from argparse import ArgumentParser
 from collections import deque
 from contextlib import redirect_stdout
 from functools import partial
@@ -625,31 +622,3 @@ def scrape(document, spec):
         preprocess(root, pre)
     data = extract(root, spec.get('items'), section=spec.get('section'))
     return data
-
-
-###########################################################
-# COMMAND-LINE INTERFACE
-###########################################################
-
-
-def main():
-    parser = ArgumentParser(description="extract data from XML/HTML")
-    parser.add_argument('--version', action='version', version=__version__)
-    parser.add_argument('--html', action='store_true', help='document is in HTML format')
-    parser.add_argument('-s', '--spec', required=True, help='spec file')
-    arguments = parser.parse_args()
-
-    content = sys.stdin.read()
-    if arguments.html:
-        content = html_to_xhtml(content)
-
-    with open(arguments.spec) as f:
-        spec_content = f.read()
-    spec = json.loads(spec_content)
-
-    data = scrape(content, spec)
-    print(json.dumps(data, indent=2, sort_keys=True))
-
-
-if __name__ == '__main__':
-    main()

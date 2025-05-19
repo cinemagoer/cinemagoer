@@ -65,7 +65,7 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     ]
 
     def _init(self):
-        super(DOMHTMLSearchPersonParser, self)._init()
+        super()._init()
         self.img_type = 'headshot'
 
 

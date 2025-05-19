@@ -851,7 +851,7 @@ class RolesList(list):
 
     def __init__(self, *args, **kwds):
         self._notes = None
-        super(RolesList, self).__init__(*args, **kwds)
+        super().__init__(*args, **kwds)
 
     def __str__(self):
         return ' / '.join([str(x) for x in self])

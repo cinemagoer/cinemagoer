@@ -110,7 +110,7 @@ class IMDbHTTPSHandler(HTTPSHandler, object):
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-        super(IMDbHTTPSHandler, self).__init__(context=context)
+        super().__init__(context=context)
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
         if errcode == 404:
@@ -150,7 +150,7 @@ class IMDbHTTPRedirectHandler(HTTPRedirectHandler):
         # force handling of redirect 308
         req.code = 302
         code = 302
-        return super(IMDbHTTPRedirectHandler, self).http_error_302(req, fp, code, msg, headers)
+        return super().http_error_302(req, fp, code, msg, headers)
 
 
 class IMDbURLopener:

@@ -81,7 +81,6 @@ class HTMLNormalizer(HTMLParser):
     def __init__(self, omit_tags=None, omit_attrs=None):
         """Initialize this normalizer.
 
-        :sig: (Optional[Iterable[str]], Optional[Iterable[str]]) -> None
         :param omit_tags: Tags to remove, along with all their content.
         :param omit_attrs: Attributes to remove.
         """
@@ -90,8 +89,8 @@ class HTMLNormalizer(HTMLParser):
         else:
             super().__init__(convert_charrefs=True)
 
-        self.omit_tags = set(omit_tags) if omit_tags is not None else set()     # sig: Set[str]
-        self.omit_attrs = set(omit_attrs) if omit_attrs is not None else set()  # sig: Set[str]
+        self.omit_tags = set(omit_tags) if omit_tags is not None else set()
+        self.omit_attrs = set(omit_attrs) if omit_attrs is not None else set()
 
         # stacks used during normalization
         self._open_tags = deque()
@@ -177,7 +176,6 @@ class HTMLNormalizer(HTMLParser):
 def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
     """Clean HTML and convert to XHTML.
 
-    :sig: (str, Optional[Iterable[str]], Optional[Iterable[str]]) -> str
     :param document: HTML document to clean and convert.
     :param omit_tags: Tags to exclude from the output.
     :param omit_attrs: Attributes to exclude from the output.
@@ -193,9 +191,6 @@ def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
 ###########################################################
 # DATA EXTRACTION OPERATIONS
 ###########################################################
-
-
-# sigalias: XPathResult = Union[Sequence[str], Sequence[Element]]
 
 
 import importlib.util
@@ -221,7 +216,6 @@ else:
         def __init__(self, path):
             """Initialize this evaluator.
 
-            :sig: (str) -> None
             :param path: XPath expression to evaluate.
             """
             def descendant(element):
@@ -255,12 +249,11 @@ else:
                 else:
                     _apply = partial(Element.findall, path=path)
 
-            self._apply = _apply    # sig: Callable[[Element], XPathResult]
+            self._apply = _apply
 
         def __call__(self, element):
             """Apply this evaluator to an element.
 
-            :sig: (Element) -> XPathResult
             :param element: Element to apply this expression to.
             :return: Elements or strings resulting from the query.
             """
@@ -272,33 +265,24 @@ else:
 _EMPTY = {} if PY2 else MappingProxyType({})  # empty result singleton
 
 
-# sigalias: Reducer = Callable[[Sequence[str]], str]
-# sigalias: PathTransformer = Callable[[str], Any]
-# sigalias: MapTransformer = Callable[[Mapping[str, Any]], Any]
-# sigalias: Transformer = Union[PathTransformer, MapTransformer]
-# sigalias: ExtractedItem = Union[str, Mapping[str, Any]]
-
-
 class Extractor:
     """Abstract base extractor for getting data out of an XML element."""
 
     def __init__(self, transform=None, foreach=None):
         """Initialize this extractor.
 
-        :sig: (Optional[Transformer], Optional[str]) -> None
         :param transform: Function to transform the extracted value.
         :param foreach: Path to apply for generating a collection of values.
         """
-        self.transform = transform  # sig: Optional[Transformer]
+        self.transform = transform
         """Function to transform the extracted value."""
 
-        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPath]
+        self.foreach = XPath(foreach) if foreach is not None else None
         """Path to apply for generating a collection of values."""
 
     def apply(self, element):
         """Get the raw data from an element using this extractor.
 
-        :sig: (Element) -> ExtractedItem
         :param element: Element to apply this extractor to.
         :return: Extracted raw data.
         """
@@ -307,7 +291,6 @@ class Extractor:
     def extract(self, element, transform=True):
         """Get the processed data from an element using this extractor.
 
-        :sig: (Element, Optional[bool]) -> Any
         :param element: Element to extract the data from.
         :param transform: Whether the transformation will be applied or not.
         :return: Extracted and optionally transformed data.
@@ -321,7 +304,6 @@ class Extractor:
     def from_map(item):
         """Generate an extractor from a description map.
 
-        :sig: (Mapping[str, Any]) -> Extractor
         :param item: Extractor description.
         :return: Extractor object.
         :raise ValueError: When reducer or transformer names are unknown.
@@ -362,12 +344,6 @@ class Path(Extractor):
     def __init__(self, path, reduce=None, transform=None, foreach=None):
         """Initialize this extractor.
 
-        :sig: (
-                str,
-                Optional[Reducer],
-                Optional[PathTransformer],
-                Optional[str]
-            ) -> None
         :param path: Path to apply to get the data.
         :param reduce: Function to reduce selected texts into a single string.
         :param transform: Function to transform extracted value.
@@ -378,19 +354,18 @@ class Path(Extractor):
         else:
             super().__init__(transform=transform, foreach=foreach)
 
-        self.path = XPath(path)     # sig: XPath
+        self.path = XPath(path)
         """XPath evaluator to apply to get the data."""
 
         if reduce is None:
             reduce = reducers.concat
 
-        self.reduce = reduce        # sig: Reducer
+        self.reduce = reduce
         """Function to reduce selected texts into a single string."""
 
     def apply(self, element):
         """Apply this extractor to an element.
 
-        :sig: (Element) -> str
         :param element: Element to apply this extractor to.
         :return: Extracted text.
         """
@@ -408,13 +383,6 @@ class Rules(Extractor):
     def __init__(self, rules, section=None, transform=None, foreach=None):
         """Initialize this extractor.
 
-        :sig:
-            (
-                Sequence[Rule],
-                str,
-                Optional[MapTransformer],
-                Optional[str]
-            ) -> None
         :param rules: Rules for generating the data items.
         :param section: Path for setting the root of this section.
         :param transform: Function to transform extracted value.
@@ -425,16 +393,15 @@ class Rules(Extractor):
         else:
             super().__init__(transform=transform, foreach=foreach)
 
-        self.rules = rules  # sig: Sequence[Rule]
+        self.rules = rules
         """Rules for generating the data items."""
 
-        self.section = XPath(section) if section is not None else None  # sig: Optional[XPath]
+        self.section = XPath(section) if section is not None else None
         """XPath expression for selecting a subroot for this section."""
 
     def apply(self, element):
         """Apply this extractor to an element.
 
-        :sig: (Element) -> Mapping[str, Any]
         :param element: Element to apply the extractor to.
         :return: Extracted mapping.
         """
@@ -461,18 +428,17 @@ class Rule:
     def __init__(self, key, extractor, foreach=None):
         """Initialize this rule.
 
-        :sig: (Union[str, Extractor], Extractor, Optional[str]) -> None
         :param key: Name to distinguish this data item.
         :param extractor: Extractor that will generate this data item.
         :param foreach: Path for generating multiple items.
         """
-        self.key = key              # sig: Union[str, Extractor]
+        self.key = key
         """Name to distinguish this data item."""
 
-        self.extractor = extractor  # sig: Extractor
+        self.extractor = extractor
         """Extractor that will generate this data item."""
 
-        self.foreach = XPath(foreach) if foreach is not None else None  # sig: Optional[XPath]
+        self.foreach = XPath(foreach) if foreach is not None else None
         """XPath evaluator for generating multiple items."""
 
         self.json_extractor = None
@@ -482,7 +448,6 @@ class Rule:
     def from_map(item):
         """Generate a rule from a description map.
 
-        :sig: (Mapping[str, Any]) -> Rule
         :param item: Item description.
         :return: Rule object.
         """
@@ -494,7 +459,6 @@ class Rule:
     def extract(self, element):
         """Extract data out of an element using this rule.
 
-        :sig: (Element) -> Mapping[str, Any]
         :param element: Element to extract the data from.
         :return: Extracted data.
         """
@@ -528,7 +492,6 @@ class Rule:
 def remove_elements(root, path):
     """Remove selected elements from the tree.
 
-    :sig: (Element, str) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to remove.
     """
@@ -550,13 +513,6 @@ def remove_elements(root, path):
 def set_element_attr(root, path, name, value):
     """Set an attribute for selected elements.
 
-    :sig:
-        (
-            Element,
-            str,
-            Union[str, Mapping[str, Any]],
-            Union[str, Mapping[str, Any]]
-        ) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
     :param name: Description for name generation.
@@ -580,7 +536,6 @@ def set_element_attr(root, path, name, value):
 def set_element_text(root, path, text):
     """Set the text for selected elements.
 
-    :sig: (Element, str, Union[str, Mapping[str, Any]]) -> None
     :param root: Root element of the tree.
     :param path: XPath to select the elements to set attributes for.
     :param text: Description for text generation.
@@ -596,7 +551,6 @@ def set_element_text(root, path, text):
 def build_tree(document, force_html=False):
     """Build a tree from an XML document.
 
-    :sig: (str, Optional[bool]) -> Element
     :param document: XML document to build the tree from.
     :param force_html: Force to parse from HTML without converting.
     :return: Root element of the XML tree.
@@ -614,7 +568,6 @@ class Registry:
     def __init__(self, entries):
         """Initialize this registry.
 
-        :sig: (Mapping[str, Any]) -> None
         :param entries: Entries to add to this registry.
         """
         self.__dict__.update(entries)
@@ -622,7 +575,6 @@ class Registry:
     def get(self, item):
         """Get the value of an entry from this registry.
 
-        :sig: (str) -> Any
         :param item: Entry to get the value for.
         :return: Value of entry.
         """
@@ -631,7 +583,6 @@ class Registry:
     def register(self, key, value):
         """Register a new entry in this registry.
 
-        :sig: (str, Any) -> None
         :param key: Key to search the entry in this registry.
         :param value: Value to store for the entry.
         """
@@ -644,7 +595,7 @@ _PREPROCESSORS = {
     'set_text': set_element_text
 }
 
-preprocessors = Registry(_PREPROCESSORS)    # sig: Registry
+preprocessors = Registry(_PREPROCESSORS)
 """Predefined preprocessors."""
 
 
@@ -657,7 +608,7 @@ _REDUCERS = {
     'normalize': lambda xs: re.sub('[^a-z0-9_]', '', ''.join(xs).lower().replace(' ', '_'))
 }
 
-reducers = Registry(_REDUCERS)              # sig: Registry
+reducers = Registry(_REDUCERS)
 """Predefined reducers."""
 
 
@@ -674,14 +625,13 @@ _TRANSFORMERS = {
     'strip': str.strip
 }
 
-transformers = Registry(_TRANSFORMERS)      # sig: Registry
+transformers = Registry(_TRANSFORMERS)
 """Predefined transformers."""
 
 
 def preprocess(root, pre):
     """Process a tree before starting extraction.
 
-    :sig: (Element, Sequence[Mapping[str, Any]]) -> None
     :param root: Root of tree to process.
     :param pre: Descriptions for processing operations.
     """
@@ -700,12 +650,6 @@ def preprocess(root, pre):
 def extract(element, items, section=None):
     """Extract data from an XML element.
 
-    :sig:
-        (
-            Element,
-            Sequence[Mapping[str, Any]],
-            Optional[str]
-        ) -> Mapping[str, Any]
     :param element: Element to extract the data from.
     :param items: Descriptions for extracting items.
     :param section: Path to select the root element for these items.
@@ -718,7 +662,6 @@ def extract(element, items, section=None):
 def scrape(document, spec):
     """Extract data from a document after optionally preprocessing it.
 
-    :sig: (str, Mapping[str, Any]) -> Mapping[str, Any]
     :param document: Document to scrape.
     :param spec: Extraction specification.
     :return: Extracted data.

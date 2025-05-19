@@ -724,7 +724,6 @@ class IMDbBase:
     def get_top_movies_by_genres(self, genres):
         """Return the list of the top movies by genres.
 
-        :sig: (Union[str, List[str]]) -> List
         :param genres: Name genre or list of genre's names."""
         if isinstance(genres, list):
             genres = ','.join(map(str, genres))
@@ -738,7 +737,6 @@ class IMDbBase:
     def get_top_tv_by_genres(self, genres):
         """Return the list of the top tv series and mini series by genres.
 
-        :sig: (Union[str, List[str]]) -> List
         :param genres: Name genre or list of genre's names."""
         if isinstance(genres, list):
             genres = ','.join(map(str, genres))

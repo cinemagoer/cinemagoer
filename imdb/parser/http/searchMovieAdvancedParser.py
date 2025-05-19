@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright 2019 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify

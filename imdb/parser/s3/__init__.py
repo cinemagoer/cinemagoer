@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2017-2019 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify

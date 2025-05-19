@@ -1,5 +1,12 @@
 * What's new in the next release
 
+  [general]
+
+  - drop support for python 2
+  - drop support for python versions prior to 3.10
+  - switch to pyproject.toml configuration
+  - switch to using uv for management
+
   [http]
 
   - #358: access the "actress" key with "actor"

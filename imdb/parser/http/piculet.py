@@ -23,14 +23,12 @@ https://piculet.readthedocs.io/
 """
 
 import re
-from collections import deque
-from contextlib import redirect_stdout
 from functools import partial
-from html import escape as html_escape
-from html.parser import HTMLParser
-from io import StringIO
 from operator import itemgetter
 from types import MappingProxyType
+
+import lxml.html
+from lxml import etree as ElementTree
 
 from . import jsel
 
@@ -39,184 +37,12 @@ __version__ = '1.2b2'
 
 
 ###########################################################
-# HTML OPERATIONS
-###########################################################
-
-
-class HTMLNormalizer(HTMLParser):
-    """HTML cleaner and XHTML convertor.
-
-    DOCTYPE declarations and comments are removed.
-    """
-
-    SELF_CLOSING_TAGS = {'br', 'hr', 'img', 'input', 'link', 'meta'}
-    """Tags to handle as self-closing."""
-
-    def __init__(self, omit_tags=None, omit_attrs=None):
-        """Initialize this normalizer.
-
-        :param omit_tags: Tags to remove, along with all their content.
-        :param omit_attrs: Attributes to remove.
-        """
-        super().__init__(convert_charrefs=True)
-
-        self.omit_tags = set(omit_tags) if omit_tags is not None else set()
-        self.omit_attrs = set(omit_attrs) if omit_attrs is not None else set()
-
-        # stacks used during normalization
-        self._open_tags = deque()
-        self._open_omitted_tags = deque()
-
-    def handle_starttag(self, tag, attrs):
-        if tag in self.omit_tags:
-            self._open_omitted_tags.append(tag)
-        if not self._open_omitted_tags:
-            # stack empty -> not in omit mode
-            if '@' in tag:
-                # email address in angular brackets
-                print('&lt;%s&gt;' % tag, end='')
-                return
-            if (tag == 'li') and (self._open_tags[-1] == 'li'):
-                self.handle_endtag('li')
-            attributes = []
-            for attr_name, attr_value in attrs:
-                if attr_name in self.omit_attrs:
-                    continue
-                if attr_value is None:
-                    attr_value = ''
-                markup = '%(name)s="%(value)s"' % {
-                    'name': attr_name,
-                    'value': html_escape(attr_value, quote=True)
-                }
-                attributes.append(markup)
-            line = '<%(tag)s%(attrs)s%(slash)s>' % {
-                'tag': tag,
-                'attrs': (' ' + ' '.join(attributes)) if len(attributes) > 0 else '',
-                'slash': ' /' if tag in self.SELF_CLOSING_TAGS else ''
-            }
-            print(line, end='')
-            if tag not in self.SELF_CLOSING_TAGS:
-                self._open_tags.append(tag)
-
-    def handle_endtag(self, tag):
-        if not self._open_omitted_tags:
-            # stack empty -> not in omit mode
-            if tag not in self.SELF_CLOSING_TAGS:
-                last = self._open_tags[-1]
-                if (tag == 'ul') and (last == 'li'):
-                    self.handle_endtag('li')
-                if tag == last:
-                    # expected end tag
-                    print('</%(tag)s>' % {'tag': tag}, end='')
-                    self._open_tags.pop()
-                elif tag not in self._open_tags:
-                    # XXX: for <a><b></a></b>, this case gets invoked after the case below
-                    pass
-                elif tag == self._open_tags[-2]:
-                    print('</%(tag)s>' % {'tag': last}, end='')
-                    print('</%(tag)s>' % {'tag': tag}, end='')
-                    self._open_tags.pop()
-                    self._open_tags.pop()
-        elif (tag in self.omit_tags) and (tag == self._open_omitted_tags[-1]):
-            # end of expected omitted tag
-            self._open_omitted_tags.pop()
-
-    def handle_data(self, data):
-        if not self._open_omitted_tags:
-            # stack empty -> not in omit mode
-            line = html_escape(data)
-            print(line, end='')
-
-    def handle_charref(self, name):
-        # XXX: doesn't get called if convert_charrefs=True
-        print('&#%(ref)s;' % {'ref': name}, end='')
-
-
-def html_to_xhtml(document, omit_tags=None, omit_attrs=None):
-    """Clean HTML and convert to XHTML.
-
-    :param document: HTML document to clean and convert.
-    :param omit_tags: Tags to exclude from the output.
-    :param omit_attrs: Attributes to exclude from the output.
-    :return: Normalized XHTML content.
-    """
-    out = StringIO()
-    normalizer = HTMLNormalizer(omit_tags=omit_tags, omit_attrs=omit_attrs)
-    with redirect_stdout(out):
-        normalizer.feed(document)
-    return out.getvalue()
-
-
-###########################################################
 # DATA EXTRACTION OPERATIONS
 ###########################################################
 
 
-import importlib.util
-
-_USE_LXML = importlib.util.find_spec('lxml') is not None
-if _USE_LXML:
-    from lxml import etree as ElementTree
-    from lxml.etree import Element
-
-    XPath = ElementTree.XPath
-    xpath = ElementTree._Element.xpath
-else:
-    from xml.etree import ElementTree
-    from xml.etree.ElementTree import Element
-
-    class XPath:
-        """An XPath expression evaluator.
-
-        This class is mainly needed to compensate for the lack of ``text()``
-        and ``@attr`` axis queries in ElementTree XPath support.
-        """
-
-        def __init__(self, path):
-            """Initialize this evaluator.
-
-            :param path: XPath expression to evaluate.
-            """
-            def descendant(element):
-                # strip trailing '//text()'
-                return [t for e in element.findall(path[:-8]) for t in e.itertext() if t]
-
-            def child(element):
-                # strip trailing '/text()'
-                return [t for e in element.findall(path[:-7])
-                        for t in ([e.text] + [c.tail if c.tail else '' for c in e]) if t]
-
-            def attribute(element, subpath, attr):
-                result = [e.attrib.get(attr) for e in element.findall(subpath)]
-                return [r for r in result if r is not None]
-
-            if path[0] == '/':
-                # ElementTree doesn't support absolute paths
-                # TODO: handle this properly, find root of tree
-                path = '.' + path
-
-            if path.endswith('//text()'):
-                _apply = descendant
-            elif path.endswith('/text()'):
-                _apply = child
-            else:
-                *front, last = path.split('/')
-                if last.startswith('@'):
-                    _apply = partial(attribute, subpath='/'.join(front), attr=last[1:])
-                else:
-                    _apply = partial(Element.findall, path=path)
-
-            self._apply = _apply
-
-        def __call__(self, element):
-            """Apply this evaluator to an element.
-
-            :param element: Element to apply this expression to.
-            :return: Elements or strings resulting from the query.
-            """
-            return self._apply(element)
-
-    xpath = lambda e, p: XPath(p)(e)
+XPath = ElementTree.XPath
+xpath = ElementTree._Element.xpath
 
 
 _EMPTY = MappingProxyType({})  # empty result singleton
@@ -446,19 +272,11 @@ def remove_elements(root, path):
     :param root: Root element of the tree.
     :param path: XPath to select the elements to remove.
     """
-    if _USE_LXML:
-        get_parent = ElementTree._Element.getparent
-    else:
-        # ElementTree doesn't support parent queries, so we'll build a map for it
-        get_parent = root.attrib.get('_get_parent')
-        if get_parent is None:
-            get_parent = {e: p for p in root.iter() for e in p}.get
-            root.attrib['_get_parent'] = get_parent
     elements = XPath(path)(root)
     if len(elements) > 0:
         for element in elements:
             # XXX: could this be hazardous? parent removed in earlier iteration?
-            get_parent(element).remove(element)
+            element.getparent().remove(element)
 
 
 def set_element_attr(root, path, name, value):
@@ -506,8 +324,7 @@ def build_tree(document, force_html=False):
     :param force_html: Force to parse from HTML without converting.
     :return: Root element of the XML tree.
     """
-    if _USE_LXML and force_html:
-        import lxml.html
+    if force_html:
         return lxml.html.fromstring(document)
     return ElementTree.fromstring(document)
 

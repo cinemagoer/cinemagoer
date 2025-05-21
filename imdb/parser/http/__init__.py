@@ -24,14 +24,19 @@ called with the ``accessSystem`` argument is set to "http" or "web"
 or "html" (this is the default).
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import socket
 import ssl
 import warnings
 from codecs import lookup
+from urllib.parse import quote_plus
+from urllib.request import (
+    HTTPRedirectHandler,
+    HTTPSHandler,
+    ProxyHandler,
+    build_opener,
+)
 
-from imdb import PY2, IMDbBase
+from imdb import IMDbBase
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 from imdb.parser.http.logging import logger
 from imdb.utils import analyze_title
@@ -47,15 +52,8 @@ from . import (
     searchMovieParser,
     searchPersonParser,
     showtimesParser,
-    topBottomParser
+    topBottomParser,
 )
-
-if PY2:
-    from urllib import quote_plus
-    from urllib2 import HTTPRedirectHandler, HTTPSHandler, ProxyHandler, build_opener  # noqa: I003
-else:
-    from urllib.parse import quote_plus
-    from urllib.request import HTTPRedirectHandler, HTTPSHandler, ProxyHandler, build_opener
 
 # Logger for miscellaneous functions.
 _aux_logger = logger.getChild('aux')
@@ -91,7 +89,7 @@ class _ModuleProxy:
         return getattr(_sm, name)
 
 
-class _FakeURLOpener(object):
+class _FakeURLOpener:
     """Fake URLOpener object, used to return empty strings instead of
     errors.
     """
@@ -116,7 +114,7 @@ class IMDbHTTPSHandler(HTTPSHandler, object):
         context = ssl.create_default_context()
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
-        super(IMDbHTTPSHandler, self).__init__(context=context)
+        super().__init__(context=context)
 
     def http_error_default(self, url, fp, errcode, errmsg, headers):
         if errcode == 404:
@@ -156,7 +154,7 @@ class IMDbHTTPRedirectHandler(HTTPRedirectHandler):
         # force handling of redirect 308
         req.code = 302
         code = 302
-        return super(IMDbHTTPRedirectHandler, self).http_error_302(req, fp, code, msg, headers)
+        return super().http_error_302(req, fp, code, msg, headers)
 
 
 class IMDbURLopener:
@@ -234,10 +232,7 @@ class IMDbURLopener:
             content = response.read()
             self._last_url = response.url
             # Maybe the server is so nice to tell us the charset...
-            if PY2:
-                server_encode = response.headers.getparam('charset') or None
-            else:
-                server_encode = response.headers.get_content_charset(None)
+            server_encode = response.headers.get_content_charset(None)
             # Otherwise, look at the content-type HTML meta tag.
             if server_encode is None and content:
                 begin_h = content.find(b'text/html; charset=')
@@ -390,8 +385,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         """Retrieve the given URL."""
         self._http_logger.debug('fetching url %s (size: %d)', url, size)
         ret = self.urlOpener.retrieve_unicode(url, size=size)
-        if PY2 and isinstance(ret, str):
-            ret = ret.decode('utf-8')
         return ret
 
     def _get_search_content(self, kind, ton, results):
@@ -400,10 +393,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         or 'co' (for companies).
         ton is the title or the name to search.
         results is the maximum number of results to be retrieved."""
-        if PY2:
-            params = 'q=%s&s=%s' % (quote_plus(ton, safe=''.encode('utf8')), kind.encode('utf8'))
-        else:
-            params = 'q=%s&s=%s' % (quote_plus(ton, safe=''), kind)
+        params = 'q=%s&s=%s' % (quote_plus(ton, safe=''), kind)
         if kind == 'ep':
             params = params.replace('s=ep&', 's=tt&ttype=ep&', 1)
         cont = self._retrieve(self.urls['find'] % params)
@@ -651,7 +641,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
                 cont = self._retrieve(
                     self.urls['movie_main'] % movieID + 'episodes?season=' + str(season)
                 )
-            except:
+            except Exception:
                 pass
             other_d = self.mProxy.season_episodes_parser.parse(cont)
             other_d = self._purge_seasons_data(other_d)
@@ -660,7 +650,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
             try:
                 if not (other_d and other_d['data'] and other_d['data']['episodes'][season]):
                     continue
-            except:
+            except Exception:
                 pass
             nr_eps += len(other_d['data']['episodes'].get(season) or [])
             if data_d:

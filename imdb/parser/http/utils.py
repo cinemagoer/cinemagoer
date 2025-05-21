@@ -20,25 +20,17 @@ This module provides miscellaneous utilities used by the components
 in the :mod:`imdb.parser.http` package.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import re
+from collections.abc import Callable
 
-from imdb import PY2
 from imdb.Character import Character
 from imdb.Movie import Movie
 from imdb.parser.http.logging import logger
 from imdb.Person import Person
 from imdb.utils import _Container, flatten
 
-from .piculet import _USE_LXML, ElementTree, Path, Rule, Rules, build_tree, html_to_xhtml
+from .piculet import ElementTree, Path, Rule, Rules, build_tree
 from .piculet import xpath as piculet_xpath
-
-if PY2:
-    from collections import Callable
-else:
-    from collections.abc import Callable
-
 
 # Year, imdbIndex and kind.
 re_yearKind_index = re.compile(
@@ -369,7 +361,7 @@ def build_movie(txt, movieID=None, roleID=None, status=None,
     return m
 
 
-class DOMParserBase(object):
+class DOMParserBase:
     """Base parser to handle HTML data from the IMDb's web server."""
     _defGetRefs = False
     _containsObjects = False
@@ -411,8 +403,6 @@ class DOMParserBase(object):
             self.getRefs = getRefs
         else:
             self.getRefs = self._defGetRefs
-        if PY2 and isinstance(html_string, str):
-            html_string = html_string.decode('utf-8')
         # Temporary fix: self.parse_dom must work even for empty strings.
         html_string = self.preprocess_string(html_string)
         if html_string:
@@ -445,8 +435,6 @@ class DOMParserBase(object):
     def get_dom(self, html_string):
         """Return a dom object, from the given string."""
         try:
-            if not _USE_LXML:
-                html_string = html_to_xhtml(html_string, omit_tags={"script"})
             dom = build_tree(html_string, force_html=True)
             if dom is None:
                 dom = build_tree('')
@@ -494,7 +482,7 @@ class DOMParserBase(object):
             # re._pattern_type is present only since Python 2.5.
             if isinstance(getattr(src, 'sub', None), Callable):
                 html_string = src.sub(sub, html_string)
-            elif isinstance(src, str) or isinstance(src, unicode):
+            elif isinstance(src, str):
                 html_string = html_string.replace(src, sub)
             elif isinstance(src, Callable):
                 try:

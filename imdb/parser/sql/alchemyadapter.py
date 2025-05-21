@@ -18,8 +18,6 @@
 This module adapts the SQLAlchemy ORM to the internal mechanism.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import re
 import sys
 import logging
@@ -71,7 +69,7 @@ def _renameColumn(cname):
     return _renameTable(cname)
 
 
-class DNNameObj(object):
+class DNNameObj:
 
     """Used to access table.sqlmeta.columns[column].dbName (a string)."""
 
@@ -82,7 +80,7 @@ class DNNameObj(object):
         return '<DNNameObj(dbName=%s) [id=%s]>' % (self.dbName, id(self))
 
 
-class DNNameDict(object):
+class DNNameDict:
 
     """Used to access table.sqlmeta.columns (a dictionary)."""
 
@@ -96,7 +94,7 @@ class DNNameDict(object):
         return '<DNNameDict(colMap=%s) [id=%s]>' % (self.colMap, id(self))
 
 
-class SQLMetaAdapter(object):
+class SQLMetaAdapter:
 
     """Used to access table.sqlmeta (an object with .table, .columns and
     .idName attributes)."""
@@ -121,7 +119,7 @@ class SQLMetaAdapter(object):
             (repr(self.table), repr(self.colMap), id(self))
 
 
-class QAdapter(object):
+class QAdapter:
 
     """Used to access table.q attribute (remapped to SQLAlchemy table.c)."""
 
@@ -142,7 +140,7 @@ class QAdapter(object):
             (repr(self.table), repr(self.colMap), id(self))
 
 
-class RowAdapter(object):
+class RowAdapter:
 
     """Adapter for a SQLAlchemy RowProxy object."""
 
@@ -191,7 +189,7 @@ class RowAdapter(object):
             (repr(self.row), repr(self.table), repr(self.colMap), id(self))
 
 
-class ResultAdapter(object):
+class ResultAdapter:
 
     """Adapter for a SQLAlchemy ResultProxy object."""
 
@@ -232,7 +230,7 @@ class ResultAdapter(object):
              repr(self.colMap), id(self))
 
 
-class TableAdapter(object):
+class TableAdapter:
 
     """Adapter for a SQLAlchemy Table object, to mimic a SQLObject class."""
 
@@ -423,7 +421,7 @@ def toUTF8(s):
     return s
 
 
-class _AlchemyConnection(object):
+class _AlchemyConnection:
 
     """A proxy for the connection object, required since _ConnectionFairy
     uses __slots__."""

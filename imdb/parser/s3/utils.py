@@ -18,8 +18,6 @@
 This package provides utilities for the s3 dataset.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import re
 from difflib import SequenceMatcher
 
@@ -53,21 +51,21 @@ def transf_multi_character(x):
 def transf_int(x):
     try:
         return int(x)
-    except:
+    except Exception:
         return None
 
 
 def transf_float(x):
     try:
         return float(x)
-    except:
+    except Exception:
         return None
 
 
 def transf_bool(x):
     try:
         return x == '1'
-    except:
+    except Exception:
         return None
 
 

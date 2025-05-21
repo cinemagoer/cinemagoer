@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright 2019 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -26,14 +24,11 @@ would be:
 http://www.imdb.com/search/title/?title=the+passion
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import re
 
-from .piculet import Path, Rule, Rules, preprocessors, reducers
-from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 from . import jsel
-
+from .piculet import Path, Rule, Rules, reducers
+from .utils import DOMParserBase, analyze_imdbid, build_movie
 
 # regular expression to match duration in the format like "1h 30m"
 _re_duration = re.compile(r'(?:(\d+)h)?\s*(?:(\d+)?m)?')

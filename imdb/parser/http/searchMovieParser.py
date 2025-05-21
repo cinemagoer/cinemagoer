@@ -25,8 +25,6 @@ would be:
 http://www.imdb.com/find?q=the+passion&s=tt
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from imdb.utils import analyze_title, re_m_kind
 
 from .piculet import Path, Rule, Rules, reducers

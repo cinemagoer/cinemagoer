@@ -25,8 +25,6 @@ would be:
 http://www.imdb.com/find?q=Mel+Gibson&s=nm
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from imdb.utils import analyze_name
 
 from .piculet import Path, Rule, Rules, reducers
@@ -67,7 +65,7 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
     ]
 
     def _init(self):
-        super(DOMHTMLSearchPersonParser, self)._init()
+        super()._init()
         self.img_type = 'headshot'
 
 

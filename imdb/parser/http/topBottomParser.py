@@ -26,14 +26,12 @@ http://www.imdb.com/chart/top
 http://www.imdb.com/chart/bottom
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-import re
 from imdb.parser.http import jextr
 from imdb.utils import analyze_title
 
+from . import jsel
 from .piculet import Path, Rule, Rules, reducers
 from .utils import DOMParserBase, analyze_imdbid
-from . import jsel
 
 
 class DOMHTMLTop250Parser(DOMParserBase):

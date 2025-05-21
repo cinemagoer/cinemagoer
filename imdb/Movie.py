@@ -19,12 +19,17 @@ This module provides the Movie class, used to store information about
 a given movie.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from copy import deepcopy
 
 from imdb import linguistics
-from imdb.utils import _Container, analyze_title, build_title, canonicalTitle, cmpMovies, flatten
+from imdb.utils import (
+    _Container,
+    analyze_title,
+    build_title,
+    canonicalTitle,
+    cmpMovies,
+    flatten,
+)
 
 
 class Movie(_Container):

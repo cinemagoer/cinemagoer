@@ -1,7 +1,5 @@
 """Extracts information from a JSON object."""
 
-from imdb.parser.http.utils import analyze_imdbid
-
 
 def movie_data(obj):
     """
@@ -38,7 +36,7 @@ def movie_data(obj):
     if 'runtime' in obj and obj['runtime']:
         rt = obj['runtime']
         if 'seconds' in rt:
-            data['runtimes'] = [rt['seconds']/60]
+            data['runtimes'] = [rt['seconds'] / 60]
     if 'certificate' in obj and obj['certificate']:
         cert = obj['certificate']
         if 'rating' in cert:

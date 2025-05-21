@@ -21,8 +21,6 @@ used by the :mod:`imdb.parser.sql` package; functions to create/drop
 tables and indexes are also provided.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from imdb.parser.sql.logging import logger
 
 
@@ -36,7 +34,7 @@ STRINGCOL = 3
 _strMap = {1: 'INTCOL', 2: 'UNICODECOL', 3: 'STRINGCOL'}
 
 
-class DBCol(object):
+class DBCol:
 
     """Define column objects."""
 
@@ -99,7 +97,7 @@ class DBCol(object):
         return s
 
 
-class DBTable(object):
+class DBTable:
 
     """Define table objects."""
 

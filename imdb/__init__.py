@@ -20,16 +20,7 @@ from the IMDb database. It can fetch data through different media such as
 the IMDb web pages, or a SQL database.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-from imdb.version import __version__
-
-__all__ = ['Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
-           'available_access_systems']
-
-VERSION = __version__
-
-
+import configparser
 import os
 import sys
 from pkgutil import find_loader
@@ -39,13 +30,12 @@ from imdb import Character, Company, Movie, Person
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb._logging import imdbpyLogger as _imdb_logger
 from imdb.utils import build_company_name, build_name, build_title
+from imdb.version import __version__
 
-PY2 = sys.hexversion < 0x3000000
+__all__ = ['Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
+           'available_access_systems']
 
-if PY2:
-    import ConfigParser as configparser
-else:
-    import configparser
+VERSION = __version__
 
 
 _aux_logger = _imdb_logger.getChild('aux')
@@ -94,10 +84,7 @@ class ConfigParserWithCase(configparser.ConfigParser):
 
         *defaults* -- defaults values.
         *confFile* -- the file (or list of files) to parse."""
-        if PY2:
-            configparser.ConfigParser.__init__(self, defaults=defaults)
-        else:
-            super(configparser.ConfigParser, self).__init__(defaults=defaults)
+        super().__init__(defaults=defaults)
         if confFile is None:
             for confFileName in confFileNames:
                 dotFileName = '.' + confFileName
@@ -726,7 +713,6 @@ class IMDbBase:
     def get_top_movies_by_genres(self, genres):
         """Return the list of the top movies by genres.
 
-        :sig: (Union[str, List[str]]) -> List
         :param genres: Name genre or list of genre's names."""
         if isinstance(genres, list):
             genres = ','.join(map(str, genres))
@@ -740,7 +726,6 @@ class IMDbBase:
     def get_top_tv_by_genres(self, genres):
         """Return the list of the top tv series and mini series by genres.
 
-        :sig: (Union[str, List[str]]) -> List
         :param genres: Name genre or list of genre's names."""
         if isinstance(genres, list):
             genres = ','.join(map(str, genres))

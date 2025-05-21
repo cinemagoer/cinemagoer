@@ -19,11 +19,17 @@ This module provides the Person class, used to store information about
 a given person.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from copy import deepcopy
 
-from imdb.utils import _Container, analyze_name, build_name, canonicalName, cmpPeople, flatten, normalizeName
+from imdb.utils import (
+    _Container,
+    analyze_name,
+    build_name,
+    canonicalName,
+    cmpPeople,
+    flatten,
+    normalizeName,
+)
 
 
 class Person(_Container):

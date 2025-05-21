@@ -1,5 +1,6 @@
 from pytest import mark
 
+
 def test_top_indian_chart_should_contain_250_entries(ia):
     chart = ia.get_top250_indian_movies()
     assert len(chart) == 250
@@ -23,14 +24,14 @@ def test_top_indian_chart_entries_should_have_title(ia):
         assert 'title' in movie
 
 
-@mark.skip(reason="No longer available") 
+@mark.skip(reason="No longer available")
 def test_top_indian_chart_entries_should_be_movies(ia):
     movies = ia.get_top250_indian_movies()
     for movie in movies:
         assert movie['kind'] == 'movie'
 
 
-@mark.skip(reason="No longer available") 
+@mark.skip(reason="No longer available")
 def test_top_indian_chart_entries_should_have_year(ia):
     movies = ia.get_top250_indian_movies()
     for movie in movies:

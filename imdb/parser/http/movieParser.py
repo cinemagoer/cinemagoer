@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright 2004-2025 Davide Alberani <da@erlug.linux.it>
 #           2008-2018 H. Turgut Uyar <uyar@tekir.org>
 #
@@ -33,12 +31,11 @@ plot summary
 ...and so on.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import functools
 import re
+from urllib.parse import unquote
 
-from imdb import PY2, imdbURL_base
+from imdb import imdbURL_base
 from imdb.Company import Company
 from imdb.Movie import Movie
 from imdb.Person import Person
@@ -46,11 +43,6 @@ from imdb.utils import KIND_MAP, _Container
 
 from .piculet import Path, Rule, Rules, preprocessors, transformers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
-
-if PY2:
-    from urllib import unquote
-else:
-    from urllib.parse import unquote
 
 # Dictionary used to convert some section's names.
 _SECT_CONV = {
@@ -811,11 +803,11 @@ class DOMHTMLMovieParser(DOMParserBase):
             tokens = data['season/episode'].split('Episode')
             try:
                 data['season'] = int(tokens[0].split('Season')[1])
-            except:
+            except Exception:
                 data['season'] = 'unknown'
             try:
                 data['episode'] = int(tokens[1])
-            except:
+            except Exception:
                 data['episode'] = 'unknown'
             del data['season/episode']
         for k in ('writer', 'director'):
@@ -1249,32 +1241,32 @@ class DOMHTMLSoundtrackParser(DOMParserBase):
                     title = title[1:-1]
                 nds = []
                 newData = {}
-                for l in ds[1:]:
-                    if ' with ' in l or ' by ' in l or ' from ' in l \
-                            or ' of ' in l or l.startswith('From '):
-                        nds.append(l)
+                for t in ds[1:]:
+                    if ' with ' in t or ' by ' in t or ' from ' in t \
+                            or ' of ' in t or t.startswith('From '):
+                        nds.append(t)
                     else:
                         if nds:
-                            nds[-1] += l
+                            nds[-1] += t
                         else:
-                            nds.append(l)
+                            nds.append(t)
                 newData[title] = {}
-                for l in nds:
+                for t in nds:
                     skip = False
                     for sep in ('From ',):
-                        if l.startswith(sep):
+                        if t.startswith(sep):
                             fdix = len(sep)
-                            kind = l[:fdix].rstrip().lower()
-                            info = l[fdix:].lstrip()
+                            kind = t[:fdix].rstrip().lower()
+                            info = t[fdix:].lstrip()
                             newData[title][kind] = info
                             skip = True
                     if not skip:
                         for sep in ' with ', ' by ', ' from ', ' of ':
-                            fdix = l.find(sep)
+                            fdix = t.find(sep)
                             if fdix != -1:
                                 fdix = fdix + len(sep)
-                                kind = l[:fdix].rstrip().lower()
-                                info = l[fdix:].lstrip()
+                                kind = t[:fdix].rstrip().lower()
+                                info = t[fdix:].lstrip()
                                 newData[title][kind] = info
                                 break
                 nd.append(newData)
@@ -1491,21 +1483,21 @@ class DOMHTMLReleaseinfoParser(DOMParserBase):
                 raw_item['countries'] = countries_str
                 countries = [c.strip() for c in countries_str.split(',') if c.strip()]
                 for country in countries:
-                     processed_akas.append(f"{title} ({country})")
+                    processed_akas.append(f"{title} ({country})")
             else:
                 processed_akas.append(title)
             raw_akas.append(raw_item)
 
         if raw_akas:
-             if 'raw release dates' in data:
-                 country_map = {rd['country']: rd['country_code'] for rd in data['raw release dates'] if rd.get('country_code')}
-                 for aka_item in raw_akas:
-                     if 'countries' in aka_item:
-                         first_country = aka_item['countries'].split(',')[0].strip()
-                         if first_country in country_map:
-                             aka_item['country_code'] = country_map[first_country]
+            if 'raw release dates' in data:
+                country_map = {rd['country']: rd['country_code'] for rd in data['raw release dates'] if rd.get('country_code')}
+                for aka_item in raw_akas:
+                    if 'countries' in aka_item:
+                        first_country = aka_item['countries'].split(',')[0].strip()
+                        if first_country in country_map:
+                            aka_item['country_code'] = country_map[first_country]
 
-             data['raw akas'] = raw_akas
+            data['raw akas'] = raw_akas
 
         if processed_akas:
             data['akas'] = data['akas from release info'] = processed_akas
@@ -2192,7 +2184,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
             if episode_rating:
                 try:
                     ep_obj['rating'] = float(episode_rating)
-                except:
+                except Exception:
                     pass
             if episode_votes:
                 try:
@@ -2203,7 +2195,7 @@ class DOMHTMLSeasonEpisodesParser(DOMParserBase):
                     else:
                         ep_votes = int(episode_votes)
                     ep_obj['votes'] = ep_votes
-                except:
+                except Exception:
                     pass
             if episode_air_date:
                 if episode_air_date[-4:].isdigit():

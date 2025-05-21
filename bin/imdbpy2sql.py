@@ -311,7 +311,7 @@ for t in DB_TABLES:
 # CSV Handling.
 
 
-class CSVCursor(object):
+class CSVCursor:
 
     """Emulate a cursor object, but instead it writes data to a set
     of CSV files."""
@@ -446,7 +446,7 @@ class CSVCursor(object):
     def buildFakeFileNames(self):
         """Populate the self._fdPool dictionary with fake objects
         taking file names from the content of the self.csvDir directory."""
-        class _FakeFD(object):
+        class _FakeFD:
             pass
         for fname in os.listdir(self.csvDir):
             if not fname.endswith(CSV_EXT):
@@ -552,7 +552,7 @@ def colName(table, column):
     return table.sqlmeta.columns[column].dbName
 
 
-class RawValue(object):
+class RawValue:
 
     """String-like objects to store raw SQL parameters, that are not
     intended to be replaced with positional parameters, in the query."""

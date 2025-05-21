@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2017-2019 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -23,8 +22,6 @@ The :func:`imdb.IMDb` function will return an instance of this class when
 called with the ``accessSystem`` parameter is set to "s3" or "s3dataset".
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import logging
 from operator import itemgetter
 
@@ -34,7 +31,13 @@ from imdb import IMDbBase
 from imdb.Movie import Movie
 from imdb.Person import Person
 
-from .utils import DB_TRANSFORM, name_soundexes, scan_names, scan_titles, title_soundex
+from .utils import (
+    DB_TRANSFORM,
+    name_soundexes,
+    scan_names,
+    scan_titles,
+    title_soundex,
+)
 
 
 def split_array(text):

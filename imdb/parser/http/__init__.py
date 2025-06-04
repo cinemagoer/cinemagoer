@@ -24,7 +24,6 @@ called with the ``accessSystem`` argument is set to "http" or "web"
 or "html" (this is the default).
 """
 
-import socket
 import ssl
 import warnings
 from codecs import lookup
@@ -40,7 +39,6 @@ from imdb import IMDbBase
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 from imdb.parser.http.logging import logger
 from imdb.utils import analyze_title
-
 from . import (
     companyParser,
     listParser,
@@ -209,7 +207,7 @@ class IMDbURLopener:
                 del self.addheaders[index]
                 break
 
-    def retrieve_unicode(self, url, size=-1):
+    def retrieve_unicode(self, url, size=-1, timeout=None):
         """Retrieves the given URL, and returns a unicode string,
         trying to guess the encoding of the data (assuming utf8
         by default)"""
@@ -228,7 +226,7 @@ class IMDbURLopener:
             handlers.append(self.https_handler)
             uopener = build_opener(*handlers)
             uopener.addheaders = list(self.addheaders)
-            response = uopener.open(url)
+            response = uopener.open(url, timeout=timeout)
             content = response.read()
             self._last_url = response.url
             # Maybe the server is so nice to tell us the charset...
@@ -284,7 +282,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
         self.urlOpener = IMDbURLopener(*arguments, **keywords)
         self._getRefs = True
         self._mdparse = False
-        self.set_timeout(timeout)
+        self.timeout = timeout
         if proxy != -1:
             self.set_proxy(proxy)
         _def = {'_modFunct': self._defModFunct, '_as': self.accessSystem}
@@ -355,16 +353,6 @@ class IMDbHTTPAccessSystem(IMDbBase):
         """
         self.urlOpener.set_proxy(proxy)
 
-    def set_timeout(self, timeout):
-        """Set the default timeout, in seconds, of the connection."""
-        try:
-            timeout = int(timeout)
-        except Exception:
-            timeout = 0
-        if timeout <= 0:
-            timeout = None
-        socket.setdefaulttimeout(timeout)
-
     def set_cookies(self, cookie_id, cookie_uu):
         """Set a cookie to access an IMDb's account."""
         warnings.warn("set_cookies has been deprecated")
@@ -384,7 +372,7 @@ class IMDbHTTPAccessSystem(IMDbBase):
     def _retrieve(self, url, size=-1, _noCookies=False):
         """Retrieve the given URL."""
         self._http_logger.debug('fetching url %s (size: %d)', url, size)
-        ret = self.urlOpener.retrieve_unicode(url, size=size)
+        ret = self.urlOpener.retrieve_unicode(url, size=size, timeout=self.timeout)
         return ret
 
     def _get_search_content(self, kind, ton, results):

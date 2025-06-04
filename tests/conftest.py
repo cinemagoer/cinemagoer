@@ -20,7 +20,7 @@ if not os.path.exists(cache_dir):
 retrieve_unicode_orig = IMDbURLopener.retrieve_unicode
 
 
-def retrieve_unicode_cached(self, url, size=-1):
+def retrieve_unicode_cached(self, url, size=-1, timeout=None):
     key = "_".join(url.split("/")[3:])
     cache_file = os.path.join(cache_dir, key)
     if os.path.exists(cache_file):
@@ -28,7 +28,7 @@ def retrieve_unicode_cached(self, url, size=-1):
             content = f.read()
     else:
         time.sleep(DELAY)
-        content = retrieve_unicode_orig(self, url, size=size)
+        content = retrieve_unicode_orig(self, url, size=size, timeout=timeout)
         with open(cache_file, 'w') as f:
             f.write(content)
     return content

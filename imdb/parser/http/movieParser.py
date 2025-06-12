@@ -607,7 +607,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
         Rule(
             key='tv series link',
-            extractor=Path('//a[starts-with(text(), "All Episodes")]/@href')
+            extractor=Path('//a[@data-testid="hero-title-block__series-link"]/@href')
         ),
         Rule(
             key='akas',

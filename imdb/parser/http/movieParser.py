@@ -406,9 +406,9 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='country codes',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Countr")]/..//li/a',
+                foreach='//li[@data-testid="title-details-origin"]/.//li/a',
                 path='./@href',
-                transform=lambda x: x.split('/')[2].strip().lower()
+                transform=lambda x: re.sub(r".*country_of_origin=([A-z]+)&?.*", r"\1", x.lower())
             )
         ),
         Rule(

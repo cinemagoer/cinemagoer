@@ -688,7 +688,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
         Rule(
             key='rating',
-            extractor=Path('(//span[@class="ipl-rating-star__rating"])[1]/text()')
+            extractor=Path('//span[contains(@class, "ipc-rating-star--rating")]/text()')
         ),
         Rule(
             key='votes',
@@ -696,7 +696,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
         Rule(
             key='cover url',
-            extractor=Path('//img[@alt="Poster"]/@src')
+            extractor=Path('//div[contains(@data-testid, "hero-media__poster")]//img/@src')
         ),
         Rule(
             key='imdbID',

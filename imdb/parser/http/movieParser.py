@@ -384,7 +384,7 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='genres',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Genre")]/..//li/a',
+                foreach='//li[@data-testid="storyline-genres"][.//span[starts-with(text(),"Genre")]]//ul/li/a',
                 path='./text()'
             )
         ),

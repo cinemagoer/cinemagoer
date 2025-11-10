@@ -41,7 +41,7 @@ from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import KIND_MAP, _Container
 
-from .piculet import Path, Rule, Rules, preprocessors, transformers
+from .piculet import Path, Rule, Rules, preprocessors, transformers, reducers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 
 # Dictionary used to convert some section's names.
@@ -527,15 +527,15 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='thin director',
             extractor=Rules(
-                foreach='//div[starts-with(normalize-space(text()), "Director")]/ul/li[1]/a',
+                foreach='//section[contains(@class,"ipc-page-section")][.//span[starts-with(normalize-space(text()),"Director")]]//ul/li',
                 rules=[
                     Rule(
                         key='name',
-                        extractor=Path('./text()')
+                        extractor=Path('.//a/text()', reduce=reducers.first)
                     ),
                     Rule(
                         key='link',
-                        extractor=Path('./@href')
+                        extractor=Path('.//a/@href', reduce=reducers.first)
                     )
                 ],
                 transform=lambda x: build_person(

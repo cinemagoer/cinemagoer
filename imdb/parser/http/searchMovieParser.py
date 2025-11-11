@@ -60,29 +60,27 @@ class DOMHTMLSearchMovieParser(DOMParserBase):
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//li[contains(@class, "find-title-result")]',
+                foreach='//li[contains(@class, "ipc-metadata-list-summary-item")]',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('.//a[contains(@class, "ipc-metadata-list-summary-item__t")]/@href',
-                                       reduce=reducers.first)
+                        extractor=Path('.//a[contains(@class, "ipc-title-link-wrapper")]/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='title',
-                        extractor=Path('.//a[contains(@class, "ipc-metadata-list-summary-item__t")]/text()')
+                        extractor=Path('.//h3[contains(@class, "ipc-title__text")]/text()', reduce=reducers.first)
                     ),
                     Rule(
                         key='year',
-                        extractor=Path('.//span[contains(@class, "ipc-metadata-list-summary-item__li")]/text()',
-                                       reduce=reducers.first)
+                        extractor=Path('.//div[contains(@class, "cli-title-metadata")]/span[1]/text()', reduce=reducers.first)
                     ),
                     Rule(
                         key='kind',
-                        extractor=Path('(.//span[contains(@class, "ipc-metadata-list-summary-item__li")])[2]/text()')
+                        extractor=Path('.//div[contains(@class, "cli-title-metadata")]/span[contains(@class, "cli-title-type-data")]/text()',reduce=reducers.first)
                     ),
                     Rule(
                         key='cover url',
-                        extractor=Path('.//img[contains(@class, "ipc-image")]/@src')
+                        extractor=Path('.//img[contains(@class, "ipc-image")]/@src', reduce=reducers.first)
                     )
                 ],
                 transform=process_title

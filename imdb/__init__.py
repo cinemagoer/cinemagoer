@@ -23,7 +23,7 @@ the IMDb web pages, or a SQL database.
 import configparser
 import os
 import sys
-from pkgutil import find_loader
+from importlib.util import find_spec
 from types import FunctionType, MethodType
 
 from imdb import Character, Company, Movie, Person
@@ -201,9 +201,9 @@ Cinemagoer = IMDb
 def available_access_systems():
     """Return the list of available data access systems."""
     asList = []
-    if find_loader('imdb.parser.http') is not None:
+    if find_spec('imdb.parser.http') is not None:
         asList.append('http')
-    if find_loader('imdb.parser.sql') is not None:
+    if find_spec('imdb.parser.sql') is not None:
         asList.append('sql')
     return asList
 

@@ -1,3 +1,5 @@
+from pytest import mark
+
 def test_movie_parental_guide_contains_mpaa_rating(ia):
     movie = ia.get_movie('0133093', info=['parents guide'])  # Matrix
     assert movie.get('mpaa') == "Rated R for sci-fi violence and brief language"
@@ -11,12 +13,19 @@ def test_movie_certificates_from_parental_guide(ia):
 
 def test_movie_advisories(ia):
     movie = ia.get_movie('0133093', info=['parents guide'])      # Matrix
-    assert any(['Mouse gets shot' in x for x in movie.get('advisory spoiler violence')])
+
+    # Advisory Spoilers unavailable in latest release
+    # assert any(['Mouse gets shot' in x for x in movie.get('advisory spoiler violence')])
+
+    assert any(['Neo is seen naked' in x for x in movie.get('advisory nudity')])
 
 
 def test_movie_advisory_votes(ia):
     movie = ia.get_movie('0133093', info=['parents guide'])      # Matrix
     votes = movie.get('advisory votes')
-    assert votes['nudity']['votes']['Mild'] > 300
-    assert votes['nudity']['status'] == 'Mild'
-    assert votes['profanity']['status'] == 'Moderate'
+
+    # Votes unavailable in latest release
+    # assert votes['nudity']['votes']['Mild'] > 300
+    
+    assert votes['Sex & Nudity']['status'] == 'Mild'
+    assert votes['Profanity']['status'] == 'Moderate'

@@ -2539,55 +2539,62 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
     rules = [
         Rule(
             key='mpaa',
-            extractor=Path(
-                '//tr[@id="mpaa-rating"]/td[2]//text()'
-            )
+            extractor=Path('//li[.//span[starts-with(text(),"Motion Picture Rating")]]//div//text()')
         ),
         Rule(
             key='certificates',
             extractor=Rules(
-                foreach='//tr[@id="certifications-list"]//li',
+                foreach='//ul[@data-testid="certificates-container"]//li',
                 rules=[
                     Rule(
-                        key='full',
-                        extractor=Path('./a//text()')
+                        key='country',
+                        extractor=Path('./span//text()')
                     ),
                     Rule(
-                        key='country_code',
-                        extractor=Path('./a/@href')
-                    ),
-                    Rule(
-                        key='note',
-                        extractor=Path('./text()')
-                    ),
-
-                ],
-                transform=lambda x: {
-                    'country_code': x.get('country_code').split('certificates=')[1].split(':')[0].strip(),
-                    'country': x.get('full').split(':')[0].strip(),
-                    'certificate': x.get('full').split(':')[1].strip(),
-                    'note': x.get('note').strip(),
-                    'full': x.get('full').strip(),
-                }
+                        key="items",
+                        extractor=Rules(
+                            foreach='.//li[contains(@class,"ipc-inline-list__item")]',
+                            rules=[
+                                Rule(
+                                    key='country_code',
+                                    extractor=Path('.//a/@href')
+                                ),
+                                Rule(
+                                    key='certificate',
+                                    extractor=Path('.//a/text()')
+                                ), 
+                                Rule(
+                                    key='note',
+                                    extractor=Path('.//span/text()')
+                                )                                
+                            ],
+                            transform=lambda x: {
+                                'country_code': x.get('country_code').split('certificates=')[1].split('%3A')[0].strip(),
+                                'certificate': x.get('certificate').strip(),
+                                'note': x.get('note','').strip(),
+                            }                            
+                        )
+                    )
+                ]
             )
         ),
         Rule(
             key='advisories',
             extractor=Rules(
-                foreach='//section[starts-with(@id, "advisory-")]',
+                foreach='//div[starts-with(@data-testid, "sub-section-")]',
                 rules=[
                     Rule(
                         key='section',
-                        extractor=Path('./@id')
+                        extractor=Path('./@data-testid')
                     ),
                     Rule(
                         key='items',
                         extractor=Rules(
-                            foreach='.//li',
+                            foreach='.//div[@data-testid="item-id"]',
                             rules=[
                                 Rule(
                                     key='item',
-                                    extractor=Path('./text()')
+                                    extractor=Path('.//text()')
                                 )
                             ],
                             transform=lambda x: x.get('item').strip()
@@ -2599,47 +2606,46 @@ class DOMHTMLParentsGuideParser(DOMParserBase):
         Rule(
             key='advisory votes',
             extractor=Rules(
-                foreach='//section[starts-with(@id, "advisory-")][not(contains(@id, "advisory-spoiler"))]',
+                foreach='//section[contains(@class,"ipc-page-section")][.//span[@class="ipc-btn__text"]]',
                 rules=[
                     Rule(key='section',
-                         extractor=Path('./@id'),
+                         extractor=Path('.//div[@class="ipc-title__wrapper"]/a//text()'),
                          ),
                     Rule(key='status',
-                         extractor=Path('.//li[1]//div[contains(@class, "ipl-swapper__content-primary")]//span/text()')
+                         extractor=Path('.//div[contains(@class,"ipc-signpost__text")]/text()'),
                          ),
-                    Rule(key='votes',
-                         extractor=Path(
-                             foreach='.//li[1]//span[contains(@class, "ipl-vote-button__details")]',
-                             path='./text()',
-                             transform=lambda x: int(x.replace(',', ''))
-                         )
-                         )
                 ]
             )
         )
     ]
 
     def postprocess_data(self, data):
+
+        if 'certificates' in data:
+            certificates = []
+            for entry in data['certificates']:
+                if 'items' in entry:
+                    for item in entry['items']:
+                        item['country'] = entry['country']
+                        item['full'] = entry['country'] + ":" + item['certificate']
+                        certificates.append(item)
+            data['certificates'] = certificates
+
         if 'advisories' in data:
             for advisory in data['advisories']:
-                sect = advisory.get('section', '').replace('-', ' ')
+                sect = advisory.get('section', '').replace('sub-section-', '').replace('-',' ')
                 items = [x for x in advisory.get('items', []) if x]
                 if sect and items:
-                    data[sect] = items
+                    sect_name = "advisory " + sect
+                    data[sect_name] = items
             del data['advisories']
 
         if 'advisory votes' in data:
             advisory_votes = {}
             for vote in data['advisory votes']:
-                if 'status' not in vote or 'votes' not in vote:
+                if 'status' not in vote:
                     continue
-                advisory_votes[vote['section'][9:]] = {
-                    'votes': {
-                        'None': vote['votes'][0],
-                        'Mild': vote['votes'][1],
-                        'Moderate': vote['votes'][2],
-                        'Severe': vote['votes'][3],
-                    },
+                advisory_votes[vote['section']] = {
                     'status': vote['status'],
                 }
             data['advisory votes'] = advisory_votes

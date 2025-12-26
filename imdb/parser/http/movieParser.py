@@ -168,6 +168,46 @@ def _toInt(val, replace=()):
         return None
 
 
+def _convert_votes(val):
+    """Convert vote count strings like '2.2M' or '150K' to integers."""
+    if not val:
+        return None
+    val = val.strip()
+    try:
+        if val.endswith('M'):
+            return int(float(val[:-1]) * 1000000)
+        elif val.endswith('K'):
+            return int(float(val[:-1]) * 1000)
+        else:
+            return int(val.replace(',', ''))
+    except (TypeError, ValueError):
+        return None
+
+
+def _parse_runtime(val):
+    """Parse runtime strings like '2h 16m' or '(136 min)' to minutes string."""
+    if not val:
+        return None
+    val = val.strip()
+    # Handle "(136 min)" format - extract from parentheses
+    if val.startswith('(') and 'min' in val:
+        match = re.search(r'\((\d+)\s*min', val)
+        if match:
+            return match.group(1)
+    # Handle "2h 16m" format - convert to minutes
+    if 'h' in val:
+        match = re.match(r'(\d+)h\s*(\d+)?m?', val)
+        if match:
+            hours = int(match.group(1))
+            minutes = int(match.group(2) or 0)
+            return str(hours * 60 + minutes)
+    # Handle plain number with optional "m" suffix
+    match = re.match(r'(\d+)\s*m?$', val)
+    if match:
+        return match.group(1)
+    return None
+
+
 _re_og_title = re.compile(
     r'(.*) \((?:(?:(.+)(?= ))? ?(\d{4})(?:(–)(\d{4}| ))?|(.+))\)',
     re.UNICODE
@@ -324,29 +364,89 @@ class DOMHTMLMovieParser(DOMParserBase):
                 ]
             )
         ),
+        # Cast - updated 2025 for new IMDB HTML (section-aware)
         Rule(
             key='cast',
             extractor=Rules(
-                foreach='//table[@class="cast_list"]//tr',
+                foreach='//span[contains(@id, "amzn1.imdb.concept.name_credit") and normalize-space(text())="Cast"]/ancestor::section[1]//li[@data-testid="name-credits-list-item"]',
                 rules=[
                     Rule(
-                        key='person',
-                        extractor=Path('.//text()')
-                    ),
-                    Rule(
                         key='link',
-                        extractor=Path('./td[2]/a/@href')
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/@href')
                     ),
                     Rule(
-                        key='roleID',
-                        extractor=Path('./td[4]//div[@class="_imdbpyrole"]/@roleid')
+                        key='name',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/text()')
                     )
                 ],
                 transform=lambda x: build_person(
-                    x.get('person') or '',
+                    x.get('name') or '',
                     personID=analyze_imdbid(x.get('link')),
-                    roleID=(x.get('roleID') or '').split('/')
-                )
+                    roleID=[]
+                ) if x.get('name') else None
+            )
+        ),
+        # Director - updated 2025 for new IMDB HTML
+        Rule(
+            key='director',
+            extractor=Rules(
+                foreach='//span[contains(@id, "amzn1.imdb.concept.name_credit") and contains(normalize-space(text()), "Director") and not(contains(normalize-space(text()), "Art Director")) and not(contains(normalize-space(text()), "Second Unit"))]/ancestor::section[1]//li[@data-testid="name-credits-list-item"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/@href')
+                    ),
+                    Rule(
+                        key='name',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/text()')
+                    )
+                ],
+                transform=lambda x: build_person(
+                    x.get('name') or '',
+                    personID=analyze_imdbid(x.get('link'))
+                ) if x.get('name') else None
+            )
+        ),
+        # Writer - updated 2025 for new IMDB HTML
+        Rule(
+            key='writer',
+            extractor=Rules(
+                foreach='//span[contains(@id, "amzn1.imdb.concept.name_credit") and contains(normalize-space(text()), "Writer")]/ancestor::section[1]//li[@data-testid="name-credits-list-item"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/@href')
+                    ),
+                    Rule(
+                        key='name',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/text()')
+                    )
+                ],
+                transform=lambda x: build_person(
+                    x.get('name') or '',
+                    personID=analyze_imdbid(x.get('link'))
+                ) if x.get('name') else None
+            )
+        ),
+        # Producer - updated 2025 for new IMDB HTML
+        Rule(
+            key='producer',
+            extractor=Rules(
+                foreach='//span[contains(@id, "amzn1.imdb.concept.name_credit") and normalize-space(text())="Producers"]/ancestor::section[1]//li[@data-testid="name-credits-list-item"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/@href')
+                    ),
+                    Rule(
+                        key='name',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/text()')
+                    )
+                ],
+                transform=lambda x: build_person(
+                    x.get('name') or '',
+                    personID=analyze_imdbid(x.get('link'))
+                ) if x.get('name') else None
             )
         ),
         Rule(
@@ -378,8 +478,10 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
         Rule(
             key='plot summary',
-            extractor=Path('//td[starts-with(text(), "Plot")]/..//p/text()',
-                           transform=lambda x: x.strip().rstrip('|').rstrip())
+            extractor=Path(
+                '//span[@data-testid="plot-l"]/text()',
+                transform=lambda x: x.strip().rstrip('|').rstrip() if x else None
+            )
         ),
         Rule(
             key='genres',
@@ -391,15 +493,19 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='runtimes',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Runtime")]/..//li',
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]'
+                        '[.//span[contains(@class, "ipc-metadata-list-item__label") and starts-with(text(), "Runtime")]]'
+                        '//span[contains(@class, "ipc-metadata-list-item__list-content-item")][1]',
                 path='./text()',
-                transform=lambda x: x.strip().replace(' min', '')
+                transform=lambda x: _parse_runtime(x.strip()) if x else None
             )
         ),
         Rule(
             key='countries',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Countr")]/..//li/a',
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]'
+                        '[.//span[contains(@class, "ipc-metadata-list-item__label") and contains(text(), "Countr")]]'
+                        '//a[contains(@class, "ipc-metadata-list-item__list-content-item")]',
                 path='./text()'
             )
         ),
@@ -414,22 +520,28 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='language',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Language")]/..//li/a',
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]'
+                        '[.//span[contains(@class, "ipc-metadata-list-item__label") and contains(text(), "Language")]]'
+                        '//a[contains(@class, "ipc-metadata-list-item__list-content-item")]',
                 path='./text()'
             )
         ),
         Rule(
             key='language codes',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Language")]/..//li/a',
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]'
+                        '[.//span[contains(@class, "ipc-metadata-list-item__label") and contains(text(), "Language")]]'
+                        '//a[contains(@class, "ipc-metadata-list-item__list-content-item")]',
                 path='./@href',
-                transform=lambda x: x.split('/')[2].strip()
+                transform=lambda x: re.search(r'primary_language=([a-z]+)', x).group(1) if 'primary_language=' in x else (x.split('/')[-2].strip() if '/language/' in x else '')
             )
         ),
         Rule(
             key='color info',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Color")]/..//li/a',
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]'
+                        '[.//span[contains(@class, "ipc-metadata-list-item__label") and starts-with(text(), "Color")]]'
+                        '//a[contains(@class, "ipc-metadata-list-item__list-content-item")]',
                 path='./text()',
                 transform=lambda x: x.replace(' (', '::(')
             )
@@ -437,14 +549,18 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='aspect ratio',
             extractor=Path(
-                '//td[starts-with(text(), "Aspect")]/..//li/text()',
+                '//li[contains(@class, "ipc-metadata-list__item")]'
+                '[.//span[contains(@class, "ipc-metadata-list-item__label") and contains(text(), "Aspect ratio")]]'
+                '//span[contains(@class, "ipc-metadata-list-item__list-content-item")][1]/text()',
                 transform=transformers.strip
             )
         ),
         Rule(
             key='sound mix',
             extractor=Path(
-                foreach='//td[starts-with(text(), "Sound Mix")]/..//li/a',
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]'
+                        '[.//span[contains(@class, "ipc-metadata-list-item__label") and contains(text(), "Sound mix")]]'
+                        '//a[contains(@class, "ipc-metadata-list-item__list-content-item")]',
                 path='./text()',
                 transform=lambda x: x.replace(' (', '::(')
             )
@@ -452,27 +568,31 @@ class DOMHTMLMovieParser(DOMParserBase):
         Rule(
             key='box office',
             extractor=Rules(
-                foreach='//section[contains(@class, "titlereference-section-box-office")]'
-                        '//table[contains(@class, "titlereference-list")]//tr',
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]'
+                        '[.//span[contains(@class, "ipc-metadata-list-item__label") and '
+                        '(contains(text(), "Budget") or contains(text(), "Gross") or contains(text(), "Opening"))]]',
                 rules=[
                     Rule(
                         key='box_office_title',
-                        extractor=Path('./td[1]/text()')
+                        extractor=Path('.//span[contains(@class, "ipc-metadata-list-item__label")]/text()')
                     ),
                     Rule(
                         key='box_office_detail',
-                        extractor=Path('./td[2]/text()')
+                        extractor=Path('.//span[contains(@class, "ipc-metadata-list-item__list-content-item")]/text()')
                     )
                 ],
-                transform=lambda x: (x['box_office_title'].strip(),
-                                     x['box_office_detail'].strip())
+                transform=lambda x: (x.get('box_office_title', '').strip(),
+                                     x.get('box_office_detail', '').strip())
             ),
         ),
         Rule(
             key='certificates',
             extractor=Path(
-                '//td[starts-with(text(), "Certificat")]/..//text()',
-                transform=analyze_certificates
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]'
+                        '[.//a[contains(@class, "ipc-metadata-list-item__label") and contains(text(), "Certificate")]]'
+                        '//a[contains(@class, "ipc-metadata-list-item__list-content-item")]',
+                path='./text()',
+                transform=lambda x: x.strip()
             )
         ),
         # Collects akas not encosed in <i> tags.
@@ -692,7 +812,46 @@ class DOMHTMLMovieParser(DOMParserBase):
         ),
         Rule(
             key='votes',
-            extractor=Path('//span[@class="ipl-rating-star__total-votes"][1]/text()')
+            extractor=Path(
+                '//span[contains(@class, "ipc-rating-star--voteCount")]/text()',
+                transform=lambda x: _convert_votes(x.replace('\xa0', '').replace('(', '').replace(')', '').strip()) if x else None
+            )
+        ),
+        Rule(
+            key='top 250 rank',
+            extractor=Path(
+                '//a[contains(text(), "Top rated movie #")]/text()',
+                transform=lambda x: int(x.replace('Top rated movie #', '').strip()) if x else None
+            )
+        ),
+        Rule(
+            key='bottom 100 rank',
+            extractor=Path(
+                '//a[contains(text(), "Bottom rated movie #")]/text()',
+                transform=lambda x: int(x.replace('Bottom rated movie #', '').strip()) if x else None
+            )
+        ),
+        Rule(
+            key='stars',
+            extractor=Rules(
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]'
+                        '[.//a[contains(@class, "ipc-metadata-list-item__label") and contains(text(), "Stars")]]'
+                        '//a[contains(@class, "ipc-metadata-list-item__list-content-item")]',
+                rules=[
+                    Rule(
+                        key='name',
+                        extractor=Path('./text()')
+                    ),
+                    Rule(
+                        key='link',
+                        extractor=Path('./@href')
+                    )
+                ],
+                transform=lambda x: build_person(
+                    x.get('name') or '',
+                    personID=analyze_imdbid(x.get('link'))
+                ) if x.get('name') else None
+            )
         ),
         Rule(
             key='cover url',
@@ -848,8 +1007,12 @@ class DOMHTMLMovieParser(DOMParserBase):
                 del data['rating']
         if 'votes' in data:
             try:
-                votes = data['votes'].replace('(', '').replace(')', '').replace(',', '').replace('votes', '')
-                data['votes'] = int(votes)
+                votes = data['votes']
+                if isinstance(votes, str):
+                    votes = votes.replace('(', '').replace(')', '').replace(',', '').replace('votes', '')
+                    data['votes'] = int(votes)
+                elif not isinstance(votes, int):
+                    del data['votes']
             except (TypeError, ValueError):
                 pass
         companies = data.get('companies')
@@ -1223,10 +1386,23 @@ class DOMHTMLSoundtrackParser(DOMParserBase):
     rules = [
         Rule(
             key='soundtrack',
-            extractor=Path(
-                foreach='//div[@class="list"]//div',
-                path='.//text()',
-                transform=transformers.strip
+            extractor=Rules(
+                foreach='//li[contains(@class, "ipc-metadata-list__item")]',
+                rules=[
+                    Rule(
+                        key='title',
+                        extractor=Path('.//span[contains(@class, "ipc-metadata-list-item__label")]/text()')
+                    ),
+                    Rule(
+                        key='credits',
+                        extractor=Path('.//div[contains(@class, "ipc-html-content-inner-div")]//text()',
+                                      reduce=lambda texts: ' '.join([t.strip() for t in texts if t.strip()]))
+                    )
+                ],
+                transform=lambda x: {
+                    'title': (x.get('title') or '').strip(),
+                    'credits': (x.get('credits') or '').strip()
+                }
             )
         )
     ]
@@ -1235,41 +1411,30 @@ class DOMHTMLSoundtrackParser(DOMParserBase):
         if 'soundtrack' in data:
             nd = []
             for x in data['soundtrack']:
-                ds = x.split('\n')
-                title = ds[0]
-                if title[0] == '"' and title[-1] == '"':
+                if not x or not isinstance(x, dict):
+                    continue
+                title = x.get('title', '')
+                credits = x.get('credits', '')
+                if title and title[0] == '"' and title[-1] == '"':
                     title = title[1:-1]
-                nds = []
-                newData = {}
-                for t in ds[1:]:
-                    if ' with ' in t or ' by ' in t or ' from ' in t \
-                            or ' of ' in t or t.startswith('From '):
-                        nds.append(t)
-                    else:
-                        if nds:
-                            nds[-1] += t
-                        else:
-                            nds.append(t)
-                newData[title] = {}
-                for t in nds:
-                    skip = False
-                    for sep in ('From ',):
-                        if t.startswith(sep):
-                            fdix = len(sep)
-                            kind = t[:fdix].rstrip().lower()
-                            info = t[fdix:].lstrip()
-                            newData[title][kind] = info
-                            skip = True
-                    if not skip:
-                        for sep in ' with ', ' by ', ' from ', ' of ':
-                            fdix = t.find(sep)
-                            if fdix != -1:
-                                fdix = fdix + len(sep)
-                                kind = t[:fdix].rstrip().lower()
-                                info = t[fdix:].lstrip()
-                                newData[title][kind] = info
-                                break
-                nd.append(newData)
+                newData = {title: {}}
+                # Parse credits string to extract roles
+                for sep in ('Written by', 'Music by', 'Lyrics by', 'Performed by',
+                            'Composed by', 'Arranged by', 'Produced by', 'From'):
+                    if sep in credits:
+                        idx = credits.find(sep)
+                        end_idx = len(credits)
+                        for other_sep in ('Written by', 'Music by', 'Lyrics by', 'Performed by',
+                                          'Composed by', 'Arranged by', 'Produced by', 'From', 'Courtesy'):
+                            if other_sep != sep:
+                                other_idx = credits.find(other_sep, idx + len(sep))
+                                if other_idx != -1 and other_idx < end_idx:
+                                    end_idx = other_idx
+                        info = credits[idx + len(sep):end_idx].strip()
+                        if info:
+                            newData[title][sep.lower().strip()] = info
+                if title:
+                    nd.append(newData)
             data['soundtrack'] = nd
         return data
 
@@ -1608,40 +1773,40 @@ class DOMHTMLReviewsParser(DOMParserBase):
         Rule(
             key='reviews',
             extractor=Rules(
-                foreach='//div[@class="review-container"]',
+                foreach='//article[contains(@class, "user-review-item")]',
                 rules=[
                     Rule(
                         key='text',
-                        extractor=Path('.//div[@class="text show-more__control"]//text()')
-                    ),
-                    Rule(
-                        key='helpful',
-                        extractor=Path('.//div[@class="actions text-muted"]//text()[1]')
+                        extractor=Path('.//*[@data-testid="review-overflow"]//div[contains(@class, "ipc-html-content-inner-div")]//text()')
                     ),
                     Rule(
                         key='title',
-                        extractor=Path('.//a[@class="title"]//text()')
+                        extractor=Path('.//*[@data-testid="review-summary"]//h3[contains(@class, "ipc-title__text")]/text()')
                     ),
                     Rule(
                         key='author',
-                        extractor=Path('.//span[@class="display-name-link"]/a/@href')
+                        extractor=Path('.//a[@data-testid="author-link"]/@href')
+                    ),
+                    Rule(
+                        key='author_name',
+                        extractor=Path('.//a[@data-testid="author-link"]/text()')
                     ),
                     Rule(
                         key='date',
-                        extractor=Path('.//span[@class="review-date"]//text()')
+                        extractor=Path('.//li[contains(@class, "review-date")]/text()')
                     ),
                     Rule(
                         key='rating',
-                        extractor=Path('.//span[@class="point-scale"]/preceding-sibling::span[1]/text()')
+                        extractor=Path('.//span[contains(@class, "ipc-rating-star--rating")]/text()')
                     )
                 ],
                 transform=lambda x: ({
-                    'content': x.get('text', '').replace('\n', ' ').replace('  ', ' ').strip(),
-                    'helpful': [int(s) for s in x.get('helpful', '').split() if s.isdigit()],
-                    'title': x.get('title', '').strip(),
+                    'content': (x.get('text') or '').replace('\n', ' ').replace('  ', ' ').strip(),
+                    'title': (x.get('title') or '').strip(),
                     'author': analyze_imdbid(x.get('author')),
-                    'date': x.get('date', '').strip(),
-                    'rating': x.get('rating', '').strip()
+                    'author_name': (x.get('author_name') or '').strip(),
+                    'date': (x.get('date') or '').strip(),
+                    'rating': (x.get('rating') or '').strip()
                 })
             )
         )
@@ -1683,38 +1848,106 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
 
         fcparser = DOMHTMLFullCreditsParser()
         result = fcparser.parse(fullcredits_html_string)
+
+    Updated 2025: IMDB now uses accordion-based layout with data-testid attributes
+    instead of table.cast_list. Credits are in li elements with
+    data-testid="name-credits-list-item".
     """
     kind = 'full credits'
 
     rules = [
+        # Cast section - find items under the Cast header by text label
         Rule(
             key='cast',
             extractor=Rules(
-                foreach='//table[@class="cast_list"]//tr[@class="odd" or @class="even"]',
+                foreach='//span[contains(@id, "amzn1.imdb.concept.name_credit") and normalize-space(text())="Cast"]/ancestor::section[1]//li[@data-testid="name-credits-list-item"]',
                 rules=[
                     Rule(
-                        key='person',
-                        extractor=Path('.//text()')
-                    ),
-                    Rule(
                         key='link',
-                        extractor=Path('./td[2]/a/@href')
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/@href')
                     ),
                     Rule(
-                        key='roleID',
-                        extractor=Path('./td[4]//div[@class="_imdbpyrole"]/@roleid')
+                        key='name',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/text()')
                     ),
                     Rule(
                         key='headshot',
-                        extractor=Path('./td[@class="primary_photo"]/a/img/@loadlate')
+                        extractor=Path('.//img[contains(@class, "ipc-image")]/@src')
+                    ),
+                    Rule(
+                        key='character',
+                        extractor=Path('.//a[contains(@href, "/characters/")]/text()')
                     )
                 ],
                 transform=lambda x: build_person(
-                    x.get('person', ''),
+                    x.get('name') or '',
                     personID=analyze_imdbid(x.get('link')),
-                    roleID=(x.get('roleID', '')).split('/'),
-                    headshot=(x.get('headshot', ''))
-                )
+                    roleID=[],
+                    headshot=(x.get('headshot') or '')
+                ) if x.get('name') else None
+            )
+        ),
+        # Director section
+        Rule(
+            key='director',
+            extractor=Rules(
+                foreach='//span[contains(@id, "amzn1.imdb.concept.name_credit") and contains(normalize-space(text()), "Director") and not(contains(normalize-space(text()), "Art Director")) and not(contains(normalize-space(text()), "Second Unit"))]/ancestor::section[1]//li[@data-testid="name-credits-list-item"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/@href')
+                    ),
+                    Rule(
+                        key='name',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/text()')
+                    )
+                ],
+                transform=lambda x: build_person(
+                    x.get('name') or '',
+                    personID=analyze_imdbid(x.get('link'))
+                ) if x.get('name') else None
+            )
+        ),
+        # Writer section  
+        Rule(
+            key='writer',
+            extractor=Rules(
+                foreach='//span[contains(@id, "amzn1.imdb.concept.name_credit") and contains(normalize-space(text()), "Writer")]/ancestor::section[1]//li[@data-testid="name-credits-list-item"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/@href')
+                    ),
+                    Rule(
+                        key='name',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/text()')
+                    )
+                ],
+                transform=lambda x: build_person(
+                    x.get('name') or '',
+                    personID=analyze_imdbid(x.get('link'))
+                ) if x.get('name') else None
+            )
+        ),
+        # Producer section
+        Rule(
+            key='producer',
+            extractor=Rules(
+                foreach='//span[contains(@id, "amzn1.imdb.concept.name_credit") and normalize-space(text())="Producers"]/ancestor::section[1]//li[@data-testid="name-credits-list-item"]',
+                rules=[
+                    Rule(
+                        key='link',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/@href')
+                    ),
+                    Rule(
+                        key='name',
+                        extractor=Path('.//a[contains(@class, "name-credits--title-text-big")]/text()')
+                    )
+                ],
+                transform=lambda x: build_person(
+                    x.get('name') or '',
+                    personID=analyze_imdbid(x.get('link'))
+                ) if x.get('name') else None
             )
         ),
         # parser for misc sections like 'casting department', 'stunts', ...
@@ -1753,13 +1986,15 @@ class DOMHTMLFullCreditsParser(DOMParserBase):
     ]
 
     def postprocess_data(self, data):
-        # Convert section names.
+        # Clean cast - remove None entries and entries without personID
         clean_cast = []
         for person in data.get('cast', []):
-            if person.personID and person.get('name'):
+            if person and person.personID and person.get('name'):
                 clean_cast.append(person)
         if clean_cast:
             data['cast'] = clean_cast
+        elif 'cast' in data:
+            del data['cast']
         misc_sections = data.get('misc sections')
         if misc_sections is not None:
             for section in misc_sections:
@@ -1888,19 +2123,19 @@ class DOMHTMLLocationsParser(DOMParserBase):
         Rule(
             key='locations',
             extractor=Rules(
-                foreach='//dt',
+                foreach='//div[@data-testid="item-id"]',
                 rules=[
                     Rule(
                         key='place',
-                        extractor=Path('.//text()')
+                        extractor=Path('.//a[@data-testid="item-text-with-link"]/text()')
                     ),
                     Rule(
                         key='note',
-                        extractor=Path('./following-sibling::dd[1]//text()')
+                        extractor=Path('.//p[@data-testid="item-attributes"]/text()')
                     )
                 ],
-                transform=lambda x: ('%s::%s' % (x['place'].strip(),
-                                                 (x['note'] or '').strip())).strip(':')
+                transform=lambda x: ('%s::%s' % ((x.get('place') or '').strip(),
+                                                 (x.get('note') or '').strip())).strip(':')
             )
         )
     ]
@@ -1980,37 +2215,37 @@ class DOMHTMLNewsParser(DOMParserBase):
         Rule(
             key='news',
             extractor=Rules(
-                foreach='//h2',
+                foreach='//div[contains(@class, "ipc-list-card")]',
                 rules=[
                     Rule(
                         key='title',
-                        extractor=Path('./text()')
-                    ),
-                    Rule(
-                        key='fromdate',
-                        extractor=Path('./following-sibling::p[1]/small//text()')
-                    ),
-                    Rule(
-                        key='body',
-                        extractor=Path('../following-sibling::p[2]//text()')
+                        extractor=Path('.//a[@data-testid="item-text-with-link"]/text()')
                     ),
                     Rule(
                         key='link',
-                        extractor=Path('../..//a[text()="Permalink"]/@href')
+                        extractor=Path('.//a[@data-testid="item-text-with-link"]/@href')
                     ),
                     Rule(
-                        key='fulllink',
-                        extractor=Path('../..//a[starts-with(text(), "See full article at")]/@href')
+                        key='date',
+                        extractor=Path('.//ul[@data-testid="item-bottom-list"]/li[1]/text()')
+                    ),
+                    Rule(
+                        key='author',
+                        extractor=Path('.//ul[@data-testid="item-bottom-list"]/li[2]/text()')
+                    ),
+                    Rule(
+                        key='source',
+                        extractor=Path('.//ul[@data-testid="item-bottom-list"]/li[3]//text()',
+                                      reduce=lambda x: ' '.join([t.strip() for t in x if t.strip()]))
                     )
                 ],
                 transform=lambda x: {
-                    'title': x.get('title').strip(),
-                    'date': x.get('fromdate').split('|')[0].strip(),
-                    'from': x.get('fromdate').split('|')[1].replace('From ', '').strip(),
-                    'body': (x.get('body') or '').strip(),
-                    'link': _normalize_href(x.get('link')),
-                    'full article link': _normalize_href(x.get('fulllink'))
-                }
+                    'title': (x.get('title') or '').strip(),
+                    'link': (x.get('link') or '').strip(),
+                    'date': (x.get('date') or '').strip(),
+                    'from': (x.get('author') or '').replace('by ', '').strip(),
+                    'source': (x.get('source') or '').strip()
+                } if x.get('title') else None
             )
         )
     ]
@@ -2024,10 +2259,8 @@ class DOMHTMLNewsParser(DOMParserBase):
     def postprocess_data(self, data):
         if 'news' not in data:
             return {}
-        for news in data['news']:
-            if 'full article link' in news:
-                if news['full article link'] is None:
-                    del news['full article link']
+        # Filter out None items (from transform)
+        data['news'] = [n for n in data['news'] if n is not None]
         return data
 
 

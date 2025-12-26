@@ -212,43 +212,213 @@ class DOMHTMLSearchMovieAdvancedParser(DOMParserBase):
         if 'data' not in data:
             data = {'data': []}
         results = getattr(self, 'results', None)
-        if results is not None:
-            data['data'][:] = data['data'][:results]
 
         result = []
         jdata = None
+        next_cursor = None
+        total_results = None
+
+        # Prefer JSON data from __NEXT_DATA__ as it's more reliable
         if '__NEXT_DATA__' in data:
             jdata = jsel.select(data['__NEXT_DATA__'], '.props.pageProps.searchResults.titleResults.titleListItems[]')
-        for idx, movie in enumerate(data['data']):
-            episode = movie.pop('episode', None)
-            if episode is not None:
-                series = build_movie(movie.get('title'), movieID=analyze_imdbid(movie['link']))
-                series['kind'] = 'tv series'
-                series_secondary = movie.get('secondary_info')
-                if series_secondary:
-                    series.update(_parse_secondary_info(series_secondary))
+            next_cursor = jsel.select(data['__NEXT_DATA__'], '.props.pageProps.searchResults.titleResults.endCursor')
+            total_results = jsel.select(data['__NEXT_DATA__'], '.props.pageProps.searchResults.titleResults.total')
 
-                movie['episode of'] = series
-                movie['link'] = episode['link']
-                movie['title'] = episode['title']
-                ep_secondary = episode.get('secondary_info')
-                if ep_secondary is not None:
-                    movie['secondary_info'] = ep_secondary
+        # If we have JSON data, use it as the primary source
+        if jdata:
+            for item in jdata:
+                movie = self._parse_json_item(item)
+                if movie:
+                    movie_id = movie.pop('movieID', None)
+                    if movie_id:
+                        result.append((movie_id, movie))
+        else:
+            # Fallback to HTML-based parsing
+            if results is not None:
+                data['data'][:] = data['data'][:results]
 
-            secondary_info = movie.pop('secondary_info', None)
-            if secondary_info is not None:
-                secondary = _parse_secondary_info(secondary_info)
-                movie.update(secondary)
+            for idx, movie in enumerate(data['data']):
+                episode = movie.pop('episode', None)
                 if episode is not None:
-                    movie['kind'] = 'episode'
-            if jdata:
-                movie_jdata = jsel.select(jdata, '.[%d]' % idx)
-                if movie_jdata:
-                    movie['genres'] = jsel.select(movie_jdata, '.genres[]')
-            result.append((analyze_imdbid(movie.pop('link')), movie))
+                    series = build_movie(movie.get('title'), movieID=analyze_imdbid(movie['link']))
+                    series['kind'] = 'tv series'
+                    series_secondary = movie.get('secondary_info')
+                    if series_secondary:
+                        series.update(_parse_secondary_info(series_secondary))
+
+                    movie['episode of'] = series
+                    movie['link'] = episode['link']
+                    movie['title'] = episode['title']
+                    ep_secondary = episode.get('secondary_info')
+                    if ep_secondary is not None:
+                        movie['secondary_info'] = ep_secondary
+
+                secondary_info = movie.pop('secondary_info', None)
+                if secondary_info is not None:
+                    secondary = _parse_secondary_info(secondary_info)
+                    movie.update(secondary)
+                    if episode is not None:
+                        movie['kind'] = 'episode'
+                result.append((analyze_imdbid(movie.pop('link')), movie))
+
+        # Limit results if specified
+        if results is not None:
+            result = result[:results]
+
         data['data'] = result
+        # Include pagination info for multi-page fetching
+        if next_cursor:
+            data['next_cursor'] = next_cursor
+        if total_results is not None:
+            data['total_results'] = total_results
 
         return data
+
+    def _parse_json_item(self, item):
+        """Parse a single item from __NEXT_DATA__ JSON."""
+        if not item:
+            return None
+
+        movie = {}
+
+        # Movie ID
+        title_id = item.get('titleId', '')
+        if title_id.startswith('tt'):
+            movie['movieID'] = title_id[2:]
+        else:
+            movie['movieID'] = title_id
+
+        # Title
+        movie['title'] = item.get('titleText') or item.get('originalTitleText', '')
+
+        # Year
+        year = item.get('releaseYear')
+        if year:
+            movie['year'] = year
+
+        # Series years for TV series
+        end_year = item.get('endYear')
+        if year and end_year:
+            movie['series years'] = '%d-%d' % (year, end_year)
+        elif year and item.get('titleType', {}).get('canHaveEpisodes'):
+            movie['series years'] = '%d-' % year
+
+        # Kind
+        title_type = item.get('titleType', {})
+        kind_id = title_type.get('id', '')
+        kind_map = {
+            'movie': 'movie',
+            'tvSeries': 'tv series',
+            'tvMiniSeries': 'tv mini series',
+            'tvMovie': 'tv movie',
+            'tvSpecial': 'tv special',
+            'tvShort': 'tv short movie',
+            'video': 'video movie',
+            'videoGame': 'video game',
+            'short': 'short',
+            'tvEpisode': 'episode',
+            'tvPilot': 'tv pilot',
+            'podcastSeries': 'podcast series',
+            'podcastEpisode': 'podcast episode',
+            'musicVideo': 'music video',
+        }
+        movie['kind'] = kind_map.get(kind_id, kind_id)
+
+        # Rating and votes
+        rating_summary = item.get('ratingSummary', {})
+        rating = rating_summary.get('aggregateRating')
+        if rating:
+            movie['rating'] = rating
+        votes = rating_summary.get('voteCount')
+        if votes:
+            movie['votes'] = votes
+
+        # Metascore
+        metascore = item.get('metascore')
+        if metascore:
+            movie['metascore'] = metascore
+
+        # Genres
+        genres = item.get('genres', [])
+        if genres:
+            movie['genres'] = genres
+
+        # Certificate
+        certificate = item.get('certificate')
+        if certificate:
+            movie['certificates'] = [certificate]
+
+        # Runtime (convert from seconds to minutes)
+        runtime = item.get('runtime')
+        if runtime:
+            movie['runtimes'] = [str(runtime // 60)]
+
+        # Plot
+        plot = item.get('plot')
+        if plot:
+            movie['plot'] = plot
+
+        # Cover URL
+        primary_image = item.get('primaryImage', {})
+        if primary_image and primary_image.get('url'):
+            movie['cover url'] = primary_image['url']
+
+        # Episode series info
+        series_info = item.get('series')
+        if series_info and kind_id == 'tvEpisode':
+            series_id = series_info.get('id', '').replace('tt', '')
+            series_title = series_info.get('titleText') or series_info.get('originalTitleText', '')
+            series_year = None
+            series_end_year = None
+            release_year_info = series_info.get('releaseYear', {})
+            if release_year_info:
+                series_year = release_year_info.get('year')
+                series_end_year = release_year_info.get('endYear')
+
+            if series_id and series_title:
+                series = build_movie(series_title, movieID=series_id)
+                series['kind'] = 'tv series'
+                if series_year:
+                    series['year'] = series_year
+                    if series_end_year:
+                        series['series years'] = '%d-%d' % (series_year, series_end_year)
+                    else:
+                        series['series years'] = '%d-' % series_year
+                movie['episode of'] = series
+
+        # Principal credits (directors and cast)
+        principal_credits = item.get('principalCredits', [])
+        for credit_group in principal_credits:
+            category = credit_group.get('category', '')
+            credits = credit_group.get('credits', [])
+            if not credits:
+                continue
+
+            if 'director' in category.lower():
+                directors = []
+                for c in credits:
+                    name = c.get('name', {})
+                    person_id = name.get('id', '').replace('nm', '')
+                    person_name = name.get('nameText', {}).get('text', '')
+                    if person_id and person_name:
+                        from imdb.Person import Person
+                        directors.append(Person(personID=person_id, data={'name': person_name}))
+                if directors:
+                    movie['directors'] = directors
+
+            elif 'cast' in category.lower() or 'actor' in category.lower() or 'actress' in category.lower():
+                cast = []
+                for c in credits:
+                    name = c.get('name', {})
+                    person_id = name.get('id', '').replace('nm', '')
+                    person_name = name.get('nameText', {}).get('text', '')
+                    if person_id and person_name:
+                        from imdb.Person import Person
+                        cast.append(Person(personID=person_id, data={'name': person_name}))
+                if cast:
+                    movie['cast'] = cast
+
+        return movie
 
     def add_refs(self, data):
         return data

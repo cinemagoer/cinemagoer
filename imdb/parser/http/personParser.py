@@ -39,7 +39,7 @@ from .movieParser import (
     DOMHTMLOfficialsitesParser,
     DOMHTMLTechParser,
 )
-from .piculet import Path, Rule, Rules, transformers
+from .piculet import Path, Rule, Rules, transformers, reducers
 from .utils import DOMParserBase, analyze_imdbid, build_movie, build_person
 
 _re_spaces = re.compile(r'\s+')
@@ -168,88 +168,130 @@ class DOMHTMLMaindetailsParser(DOMParserBase):
 
 
 class DOMHTMLFilmographyParser(DOMParserBase):
-    """Parser for the "full credits" page of a given person.
+    """Parser for the filmography page of a given person.
+
     The page should be provided as a string, as taken from
     the www.imdb.com server.
 
     Example::
 
         filmo_parser = DOMHTMLFilmographyParser()
-        result = filmo_parser.parse(fullcredits_html_string)
+        result = filmo_parser.parse(filmography_html_string)
     """
     _defGetRefs = True
 
     _film_rules = [
         Rule(
             key='link',
-            extractor=Path('.//b/a/@href')
+            extractor=Path(
+                './/a[contains(@class, "ipc-metadata-list-summary-item__t")]/@href',
+                reduce=reducers.first
+            )
         ),
         Rule(
             key='title',
-            extractor=Path('.//b/a/text()')
-        ),
-        # TODO: Notes not migrated yet
-        Rule(
-            key='notes',
-            extractor=Path('.//div[@class="ipc-metadata-list-summary-item__c"]//ul[contains(@class, "ipc-metadata-list-summary-item__stl")]//label/text()')  # noqa: E501
+            extractor=Path('.//a[contains(@class, "ipc-metadata-list-summary-item__t")]/text()')
         ),
         Rule(
             key='year',
             extractor=Path(
-                './/span[@class="year_column"]//text()',
-                transform=lambda x: x.strip(),
+                './/span[contains(@class, "ipc-metadata-list-summary-item__li")]/text()',
+                transform=lambda x: x.strip() if x else None,
             ),
-        ),
-        Rule(
-            key='status',
-            extractor=Path('./a[@class="in_production"]/text()')
         ),
         Rule(
             key='rolesNoChar',
             extractor=Path(
-                './/br/following-sibling::text()',
-                transform=lambda x: x.strip(),
+                './/ul[contains(@class, "credit-text-list")]//span/text()',
+                transform=lambda x: x.strip() if x else None,
             ),
+        ),
+        Rule(
+            key='credit_id',
+            extractor=Path('./@data-testid')
+        )
+    ]
+
+    _category_rules = [
+        Rule(
+            key='cat_id',
+            extractor=Path('./@id')
+        ),
+        Rule(
+            key='cat_name',
+            extractor=Path('.//span[contains(@class, "ipc-chip__text")]/text()')
         )
     ]
 
     rules = [
         Rule(
-            key='filmography',
+            key='categories',
             extractor=Rules(
-                foreach='//div[contains(@id, "filmo-head-")]',
-                rules=[
-                    Rule(
-                        key=Path(
-                            './/a/text()',
-                            transform=lambda x: x.lower()
-                        ),
-                        extractor=Rules(
-                            foreach='./following-sibling::div[1]/div[contains(@class, "filmo-row")]',
-                            rules=_film_rules,
-                            transform=lambda x: build_movie(
-                                x.get('title') or '',
-                                year=x.get('year'),
-                                movieID=analyze_imdbid(x.get('link') or ''),
-                                rolesNoChar=(x.get('rolesNoChar') or '').strip(),
-                                additionalNotes=x.get('notes'),
-                                status=x.get('status') or None
-                            )
-                        )
-                    )
-                ]
+                foreach='//*[contains(@class, "filmography") and contains(@class, "chip")]',
+                rules=_category_rules,
+                transform=lambda x: (x.get('cat_id') or '', x.get('cat_name') or '')
+            )
+        ),
+        Rule(
+            key='credits',
+            extractor=Rules(
+                foreach='//*[@data-testid="Filmography"]//*[starts-with(@data-testid, "cred_")]',
+                rules=_film_rules,
+                transform=lambda x: {
+                    'movie': build_movie(
+                        x.get('title') or '',
+                        year=x.get('year'),
+                        movieID=analyze_imdbid(x.get('link') or ''),
+                        rolesNoChar=(x.get('rolesNoChar') or '').strip(),
+                        additionalNotes=x.get('notes'),
+                        status=x.get('status') or None
+                    ),
+                    'credit_id': x.get('credit_id') or ''
+                }
             )
         )
     ]
 
     def postprocess_data(self, data):
+        # Build category UUID -> role name mapping from filter chips
+        category_map = {}
+        for cat_id, cat_name in (data.get('categories') or []):
+            match = re.search(r'name_credit_category\.([a-f0-9-]+)', cat_id or '')
+            if match:
+                uuid = match.group(1)
+                # Remove trailing numbers from name (e.g., "Actor135" -> "Actor")
+                role = re.sub(r'\d+$', '', cat_name or '').strip().lower()
+                if role:
+                    category_map[uuid] = role
+
+        # Group credits by role using UUID matching
         filmo = {}
-        for job in (data.get('filmography') or []):
-            if not isinstance(job, dict) or not job:
+        for item in (data.get('credits') or []):
+            if not isinstance(item, dict):
                 continue
-            filmo.update(job)
+            credit_id = item.get('credit_id', '')
+            movie = item.get('movie')
+            if not movie:
+                continue
+
+            # Extract role from credit_id UUID
+            match = re.search(r'name_credit_category\.([a-f0-9-]+)', credit_id)
+            role = 'unknown'
+            if match:
+                uuid = match.group(1)
+                role = category_map.get(uuid, 'unknown')
+
+            if role not in filmo:
+                filmo[role] = []
+            filmo[role].append(movie)
+
         if filmo:
             data['filmography'] = filmo
+
+        # Clean up temporary keys
+        data.pop('categories', None)
+        data.pop('credits', None)
+
         return data
 
 

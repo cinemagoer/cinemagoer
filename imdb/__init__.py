@@ -460,16 +460,19 @@ class IMDbBase:
         #      subclass, somewhere under the imdb.parser package.
         raise NotImplementedError('override this method')
 
-    def search_movie_advanced(self, title=None, adult=None, results=None, sort=None, sort_dir=None):
+    def search_movie_advanced(self, title=None, adult=None, results=None, sort=None, sort_dir=None,
+                               title_types=None):
         """Return a list of Movie objects for a query for the given title.
-        The results argument is the maximum number of results to return."""
+        The results argument is the maximum number of results to return.
+        title_types is an optional list of title types to filter by (e.g., ['movie', 'tvSeries'])."""
         if results is None:
             results = self._results
         try:
             results = int(results)
         except (ValueError, OverflowError):
             results = 20
-        res = self._search_movie_advanced(title=title, adult=adult, results=results, sort=sort, sort_dir=sort_dir)
+        res = self._search_movie_advanced(title=title, adult=adult, results=results, sort=sort,
+                                          sort_dir=sort_dir, title_types=title_types)
         return [Movie.Movie(movieID=self._get_real_movieID(mi),
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res if mi and md][:results]

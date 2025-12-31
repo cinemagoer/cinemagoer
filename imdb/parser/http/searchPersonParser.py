@@ -39,15 +39,15 @@ class DOMHTMLSearchPersonParser(DOMHTMLSearchMovieParser):
         Rule(
             key='data',
             extractor=Rules(
-                foreach='//li[contains(@class, "find-name-result")]',
+                foreach='//li[contains(@class, "ipc-metadata-list-summary-item")]',
                 rules=[
                     Rule(
                         key='link',
-                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/@href', reduce=reducers.first)
+                        extractor=Path('.//a[contains(@class, "ipc-title-link-wrapper")]/@href', reduce=reducers.first)
                     ),
                     Rule(
                         key='name',
-                        extractor=Path('.//a[@class="ipc-metadata-list-summary-item__t"]/text()')
+                        extractor=Path('.//h3[contains(@class, "ipc-title__text")]/text()')
                     ),
                     Rule(
                         key='headshot',

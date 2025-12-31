@@ -422,9 +422,11 @@ class IMDbHTTPAccessSystem(IMDbBase):
         return result_list
 
     def _get_search_movie_advanced_content(self, title=None, adult=None, results=None,
-                                           sort=None, sort_dir=None):
+                                           sort=None, sort_dir=None, title_types=None,
+                                           after=None):
         """Retrieve the web page for a given search.
-        results is the maximum number of results to be retrieved."""
+        results is the maximum number of results to be retrieved.
+        after is the cursor for pagination."""
         criteria = {}
         if title is not None:
             criteria['title'] = quote_plus(title, safe='')
@@ -436,13 +438,44 @@ class IMDbHTTPAccessSystem(IMDbBase):
             criteria['sort'] = sort
             if sort_dir is not None:
                 criteria['sort'] = sort + ',' + sort_dir
+        if title_types is not None:
+            criteria['title_type'] = ','.join(title_types)
+        if after is not None:
+            criteria['after'] = after
         params = '&'.join(['%s=%s' % (k, v) for k, v in criteria.items()])
         return self._retrieve(self.urls['search_movie_advanced'] % params)
 
-    def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None, sort_dir=None):
-        cont = self._get_search_movie_advanced_content(title=title, adult=adult, results=results,
-                                                       sort=sort, sort_dir=sort_dir)
-        return self.smaProxy.search_movie_advanced_parser.parse(cont, results=results)['data']
+    def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None, sort_dir=None,
+                               title_types=None):
+        """Search for movies with advanced options.
+        Supports multi-page fetching to retrieve more than 50 results."""
+        if results is None:
+            results = 20  # Default to 20 results like the original
+        # IMDB returns up to 50 results per page
+        page_size = min(results, 50)
+        all_results = []
+        cursor = None
+        max_pages = 10  # Safety limit to prevent infinite loops
+
+        for _ in range(max_pages):
+            cont = self._get_search_movie_advanced_content(
+                title=title, adult=adult, results=page_size,
+                sort=sort, sort_dir=sort_dir, title_types=title_types,
+                after=cursor
+            )
+            parsed = self.smaProxy.search_movie_advanced_parser.parse(cont)
+            page_data = parsed.get('data', [])
+            all_results.extend(page_data)
+
+            # Check if we have enough results or no more pages
+            if len(all_results) >= results:
+                break
+            cursor = parsed.get('next_cursor')
+            if not cursor:
+                break
+
+        # Trim to requested number of results
+        return all_results[:results]
 
     def _get_top_movies_or_tv_by_genres(self, genres, filter_content):
         cont = self._retrieve(self.urls['search_movie_advanced'] % 'genres=' + genres + filter_content)

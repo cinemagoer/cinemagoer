@@ -1004,7 +1004,10 @@ TAGS_TO_MODIFY = {
 
 
 _valid_chars = string.ascii_lowercase + '-' + string.digits
-_translator = str.maketrans(_valid_chars, _valid_chars)
+# Build a translation table that deletes all characters except valid XML tag chars
+# Map all printable chars that aren't valid to empty string (delete them)
+_invalid_chars = ''.join(c for c in string.printable if c not in _valid_chars)
+_translator = str.maketrans('', '', _invalid_chars)
 
 
 def _tagAttr(key, fullpath):

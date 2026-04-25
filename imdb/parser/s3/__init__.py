@@ -62,7 +62,7 @@ class IMDbS3AccessSystem(IMDbBase):
     _s3_logger = logging.getLogger('imdbpy.parser.s3')
     _metadata = sqlalchemy.MetaData()
 
-    def __init__(self, uri, adultSearch=True, *arguments, **keywords):
+    def __init__(self, uri='sqlite://cinemagoer.db', adultSearch=True, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         self._engine = sqlalchemy.create_engine(uri, encoding='utf-8', echo=False)

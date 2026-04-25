@@ -1,4 +1,4 @@
-# Copyright 2004-2021 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2026 Davide Alberani <da@erlug.linux.it>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@ __all__ = ['Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'C
            'available_access_systems']
 
 VERSION = __version__
-
 
 _aux_logger = _imdb_logger.getChild('aux')
 
@@ -157,7 +156,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
                 accessSystem = kwds['accessSystem']
                 del kwds['accessSystem']
             else:
-                accessSystem = 'http'
+                accessSystem = 's3'
             kwds.update(keywords)
             keywords = kwds
         except Exception as e:
@@ -165,8 +164,8 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             # It just LOOKS LIKE a bad habit: we tried to read config
             # options from some files, but something is gone horribly
             # wrong: ignore everything and pretend we were called with
-            # the 'http' accessSystem.
-            accessSystem = 'http'
+            # the 's3' accessSystem.
+            accessSystem = 's3'
     if 'loggingLevel' in keywords:
         _imdb_logger.setLevel(keywords['loggingLevel'])
         del keywords['loggingLevel']
@@ -179,8 +178,7 @@ def IMDb(accessSystem=None, *arguments, **keywords):
         except Exception as e:
             _imdb_logger.warn('unable to read logger config: %s' % e)
     if accessSystem in ('http', 'https', 'web', 'html'):
-        from .parser.http import IMDbHTTPAccessSystem
-        return IMDbHTTPAccessSystem(*arguments, **keywords)
+        raise IMDbError('data access system "http" is no longer supported; please use "s3" instead')
     if accessSystem in ('s3', 's3dataset', 'imdbws'):
         from .parser.s3 import IMDbS3AccessSystem
         return IMDbS3AccessSystem(*arguments, **keywords)
@@ -201,8 +199,6 @@ Cinemagoer = IMDb
 def available_access_systems():
     """Return the list of available data access systems."""
     asList = []
-    if find_spec('imdb.parser.http') is not None:
-        asList.append('http')
     if find_spec('imdb.parser.sql') is not None:
         asList.append('sql')
     return asList

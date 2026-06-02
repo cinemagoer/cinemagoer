@@ -16,8 +16,7 @@
 
 """
 This package can be used to retrieve information about a movie or a person
-from the IMDb database. It can fetch data through different media such as
-the IMDb web pages, or a SQL database.
+from the IMDb database. It can parse the data from https://datasets.imdbws.com/
 """
 
 import configparser
@@ -58,19 +57,6 @@ imdbURL_character_base = '%scharacter/' % imdbURL_base
 # http://www.imdb.com/character/ch%s/
 imdbURL_character_main = imdbURL_character_base + 'ch%s/'
 # http://www.imdb.com/company/
-imdbURL_company_base = '%scompany/' % imdbURL_base
-# http://www.imdb.com/company/co%s/
-imdbURL_company_main = imdbURL_company_base + 'co%s/'
-# http://www.imdb.com/keyword/%s/
-imdbURL_keyword_main = imdbURL_base + 'search/keyword/?keywords=%s'
-# http://www.imdb.com/chart/top
-imdbURL_top250 = imdbURL_base + 'chart/top'
-# http://www.imdb.com/chart/bottom
-imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
-# http://www.imdb.com/find/?%s
-imdbURL_find = imdbURL_base + 'find/?%s'
-# http://www.imdb.com/list/
-imdbURL_list_base = imdbURL_base + 'list/'
 
 # Name of the configuration files.
 confFileNames = ['cinemagoer.cfg', 'imdbpy.cfg']
@@ -179,15 +165,11 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             _imdb_logger.warn('unable to read logger config: %s' % e)
     if accessSystem in ('http', 'https', 'web', 'html'):
         raise IMDbError('data access system "http" is no longer supported; please use "s3" instead')
-    if accessSystem in ('s3', 's3dataset', 'imdbws'):
+    if accessSystem in ('s3', 's3dataset', 'imdbws', 'dataset', 'datasets'):
         from .parser.s3 import IMDbS3AccessSystem
         return IMDbS3AccessSystem(*arguments, **keywords)
     elif accessSystem in ('sql', 'db', 'database'):
-        try:
-            from .parser.sql import IMDbSqlAccessSystem
-        except ImportError:
-            raise IMDbError('the sql access system is not installed')
-        return IMDbSqlAccessSystem(*arguments, **keywords)
+        raise IMDbError('data access system "sql" is no longer supported; please use "s3" instead')
     else:
         raise IMDbError('unknown kind of data access system: "%s"' % accessSystem)
 
@@ -198,10 +180,7 @@ Cinemagoer = IMDb
 
 def available_access_systems():
     """Return the list of available data access systems."""
-    asList = []
-    if find_spec('imdb.parser.sql') is not None:
-        asList.append('sql')
-    return asList
+    return ['s3']
 
 
 # XXX: I'm not sure this is a good guess.
@@ -274,55 +253,13 @@ class IMDbBase:
         imdbURL_character_base = '%scharacter/' % imdbURL_base
         # http://www.imdb.com/character/ch%s/
         imdbURL_character_main = imdbURL_character_base + 'ch%s/'
-        # http://www.imdb.com/company/
-        imdbURL_company_base = '%scompany/' % imdbURL_base
-        # http://www.imdb.com/company/co%s/
-        imdbURL_company_main = imdbURL_company_base + 'co%s/'
-        # http://www.imdb.com/keyword/%s/
-        imdbURL_keyword_main = imdbURL_base + '/search/keyword?keywords=%s'
-        # http://www.imdb.com/chart/top
-        imdbURL_top250 = imdbURL_base + 'chart/top'
-        # http://www.imdb.com/chart/bottom
-        imdbURL_bottom100 = imdbURL_base + 'chart/bottom'
-        # http://www.imdb.com/chart/moviemeter
-        imdbURL_moviemeter100 = imdbURL_base + 'chart/moviemeter'
-        # http://www.imdb.com/chart/tvmeter
-        imdbURL_tvmeter100 = imdbURL_base + 'chart/tvmeter'
-        # http://www.imdb.com/chart/toptv
-        imdbURL_toptv250 = imdbURL_base + 'chart/toptv'
-        # https://www.imdb.com/india/top-rated-indian-movies
-        imdbURL_topindian250 = imdbURL_base + 'india/top-rated-indian-movies'
-        # http://www.imdb.com/chart/boxoffice/
-        imdbURL_boxoffice = imdbURL_base + 'chart/boxoffice/'
-        # http://www.imdb.com/find/?%s
-        imdbURL_find = imdbURL_base + 'find/?%s'
-        # http://www.imdb.com/search/title?%s
-        imdbURL_search_movie_advanced = imdbURL_base + 'search/title/?%s'
-        # http://www.imdb.com/list/
-        imdbURL_list_base = imdbURL_base + 'list/'
-        # https://www.imdb.com/showtimes
-        imdbURL_showtimes = imdbURL_base + 'showtimes'
         self.urls = dict(
             movie_base=imdbURL_movie_base,
             movie_main=imdbURL_movie_main,
             person_base=imdbURL_person_base,
             person_main=imdbURL_person_main,
             character_base=imdbURL_character_base,
-            character_main=imdbURL_character_main,
-            company_base=imdbURL_company_base,
-            company_main=imdbURL_company_main,
-            keyword_main=imdbURL_keyword_main,
-            top250=imdbURL_top250,
-            bottom100=imdbURL_bottom100,
-            moviemeter100=imdbURL_moviemeter100,
-            tvmeter100=imdbURL_tvmeter100,
-            toptv250=imdbURL_toptv250,
-            topindian250=imdbURL_topindian250,
-            find=imdbURL_find,
-            movie_list=imdbURL_list_base,
-            search_movie_advanced=imdbURL_search_movie_advanced,
-            boxoffice=imdbURL_boxoffice,
-            showtimes=imdbURL_showtimes)
+            character_main=imdbURL_character_main)
 
     def _normalize_movieID(self, movieID):
         """Normalize the given movieID."""
@@ -526,246 +463,6 @@ class IMDbBase:
                 data=pd, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for pi, pd in res if pi and pd][:results]
 
-    def get_character(self, characterID, info=Character.Character.default_info,
-                      modFunct=None):
-        """Return a Character object for the given characterID.
-
-        The characterID is something used to univocally identify a character;
-        it can be the imdbID used by the IMDb web server, a file
-        pointer, a line number in a file, an ID in a database, etc.
-
-        info is the list of sets of information to retrieve.
-
-        If specified, modFunct will be the function used by the Character
-        object when accessing its text fields (like 'biography')."""
-        characterID = self._normalize_characterID(characterID)
-        characterID = self._get_real_characterID(characterID)
-        character = Character.Character(characterID=characterID,
-                                        accessSystem=self.accessSystem)
-        modFunct = modFunct or self._defModFunct
-        if modFunct is not None:
-            character.set_mod_funct(modFunct)
-        self.update(character, info)
-        return character
-
-    def _search_character(self, name, results):
-        """Return a list of tuples (characterID, {characterData})"""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def search_character(self, name, results=None):
-        """Return a list of Character objects for a query for the given name.
-
-        The results argument is the maximum number of results to return."""
-        if results is None:
-            results = self._results
-        try:
-            results = int(results)
-        except (ValueError, OverflowError):
-            results = 20
-        res = self._search_character(name, results)
-        return [Character.Character(characterID=self._get_real_characterID(pi),
-                data=pd, modFunct=self._defModFunct,
-                accessSystem=self.accessSystem) for pi, pd in res if pi and pd][:results]
-
-    def get_company(self, companyID, info=Company.Company.default_info,
-                    modFunct=None):
-        """Return a Company object for the given companyID.
-
-        The companyID is something used to univocally identify a company;
-        it can be the imdbID used by the IMDb web server, a file
-        pointer, a line number in a file, an ID in a database, etc.
-
-        info is the list of sets of information to retrieve.
-
-        If specified, modFunct will be the function used by the Company
-        object when accessing its text fields (none, so far)."""
-        companyID = self._normalize_companyID(companyID)
-        companyID = self._get_real_companyID(companyID)
-        company = Company.Company(companyID=companyID, accessSystem=self.accessSystem)
-        modFunct = modFunct or self._defModFunct
-        if modFunct is not None:
-            company.set_mod_funct(modFunct)
-        self.update(company, info)
-        return company
-
-    def _search_company(self, name, results):
-        """Return a list of tuples (companyID, {companyData})"""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def search_company(self, name, results=None):
-        """Return a list of Company objects for a query for the given name.
-
-        The results argument is the maximum number of results to return."""
-        if results is None:
-            results = self._results
-        try:
-            results = int(results)
-        except (ValueError, OverflowError):
-            results = 20
-        res = self._search_company(name, results)
-        return [Company.Company(companyID=self._get_real_companyID(pi),
-                data=pd, modFunct=self._defModFunct,
-                accessSystem=self.accessSystem) for pi, pd in res if pi and pd][:results]
-
-    def _search_keyword(self, keyword, results):
-        """Return a list of 'keyword' strings."""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def search_keyword(self, keyword, results=None):
-        """Search for existing keywords, similar to the given one."""
-        if results is None:
-            results = self._keywordsResults
-        try:
-            results = int(results)
-        except (ValueError, OverflowError):
-            results = 100
-        return self._search_keyword(keyword, results)
-
-    def _get_keyword(self, keyword, results, page):
-        """Return a list of tuples (movieID, {movieData})"""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def get_keyword(self, keyword, results=None, page=None):
-        """Return a list of movies for the given keyword."""
-        if results is None:
-            results = self._keywordsResults
-        try:
-            results = int(results)
-        except (ValueError, OverflowError):
-            results = 100
-        res = self._get_keyword(keyword, results, page)
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                data=md, modFunct=self._defModFunct,
-                accessSystem=self.accessSystem) for mi, md in res][:results]
-
-    def _get_top_bottom_movies(self, kind):
-        """Return the list of the top 250 or bottom 100 movies."""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        #      This method must return a list of (movieID, {movieDict})
-        #      tuples.  The kind parameter can be 'top' or 'bottom'.
-        raise NotImplementedError('override this method')
-
-    def get_top250_movies(self):
-        """Return the list of the top 250 movies."""
-        res = self._get_top_bottom_movies('top')
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                data=md, modFunct=self._defModFunct,
-                accessSystem=self.accessSystem) for mi, md in res]
-
-    def get_bottom100_movies(self):
-        """Return the list of the bottom 100 movies."""
-        res = self._get_top_bottom_movies('bottom')
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                data=md, modFunct=self._defModFunct,
-                accessSystem=self.accessSystem) for mi, md in res]
-
-    def get_top250_tv(self):
-        """Return the list of the top 250 tv shows."""
-        res = self._get_top_bottom_movies('toptv')
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                data=md, modFunct=self._defModFunct,
-                accessSystem=self.accessSystem) for mi, md in res]
-
-    def get_popular100_movies(self):
-        """Return the list of the 100 most popular movies."""
-        res = self._get_top_bottom_movies('moviemeter')
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                data=md, modFunct=self._defModFunct,
-                accessSystem=self.accessSystem) for mi, md in res]
-
-    def get_popular100_tv(self):
-        """Return the list of the 100 most popular tv shows."""
-        res = self._get_top_bottom_movies('tvmeter')
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                data=md, modFunct=self._defModFunct,
-                accessSystem=self.accessSystem) for mi, md in res]
-
-    def get_top250_indian_movies(self):
-        """Return the list of the top 250 indian movies."""
-        res = self._get_top_bottom_movies('topindian250')
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                data=md, modFunct=self._defModFunct,
-                accessSystem=self.accessSystem) for mi, md in res]
-
-    def get_boxoffice_movies(self):
-        """Return the list of the top box office movies."""
-        res = self._get_top_bottom_movies('boxoffice')
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                            data=md, modFunct=self._defModFunct,
-                            accessSystem=self.accessSystem) for mi, md in res]
-
-    def _get_top_movies_or_tv_by_genres(self, genres, filter_content):
-        """Return a list of tuples (movieID, {movieData})"""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def get_top_movies_by_genres(self, genres):
-        """Return the list of the top movies by genres.
-
-        :param genres: Name genre or list of genre's names."""
-        if isinstance(genres, list):
-            genres = ','.join(map(str, genres))
-        movies_filter = '&title_type=feature'
-        res = self._get_top_movies_or_tv_by_genres(genres, movies_filter)
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                            data=md, modFunct=self._defModFunct,
-                            accessSystem=self.accessSystem) for mi, md in res]
-    get_top50_movies_by_genres = get_top_movies_by_genres
-
-    def get_top_tv_by_genres(self, genres):
-        """Return the list of the top tv series and mini series by genres.
-
-        :param genres: Name genre or list of genre's names."""
-        if isinstance(genres, list):
-            genres = ','.join(map(str, genres))
-        tv_filter = '&title_type=tv_series,mini_series'
-        res = self._get_top_movies_or_tv_by_genres(genres, tv_filter)
-        return [Movie.Movie(movieID=self._get_real_movieID(mi),
-                            data=md, modFunct=self._defModFunct,
-                            accessSystem=self.accessSystem) for mi, md in res]
-    get_top50_tv_by_genres = get_top_tv_by_genres
-
-    def _get_showtimes(self):
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def get_showtimes(self):
-        """Return a list of objects like this:
-        [{'cinema': 'Cinema Name', 'address and contacts': '...',
-          'movies': [{'movie': MovieObject, 'showtimes': 'showtimes info'}}, ...]"""
-        return self._get_showtimes()
-
-    def new_movie(self, *arguments, **keywords):
-        """Return a Movie object."""
-        # XXX: not really useful...
-        return Movie.Movie(accessSystem=self.accessSystem, *arguments, **keywords)
-
-    def new_person(self, *arguments, **keywords):
-        """Return a Person object."""
-        # XXX: not really useful...
-        return Person.Person(accessSystem=self.accessSystem, *arguments, **keywords)
-
-    def new_character(self, *arguments, **keywords):
-        """Return a Character object."""
-        # XXX: not really useful...
-        return Character.Character(accessSystem=self.accessSystem, *arguments, **keywords)
-
-    def new_company(self, *arguments, **keywords):
-        """Return a Company object."""
-        # XXX: not really useful...
-        return Company.Company(accessSystem=self.accessSystem, *arguments, **keywords)
-
     def update(self, mop, info=None, override=0):
         """Given a Movie, Person, Character or Company object with only
         partial information, retrieve the required set of information.
@@ -922,146 +619,6 @@ class IMDbBase:
             mop.update_charactersRefs(ret['charactersRefs'])
         mop.set_data(res, override=0)
 
-    def get_imdbMovieID(self, movieID):
-        """Translate a movieID in an imdbID (the ID used by the IMDb
-        web server); must be overridden by the subclass."""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def get_imdbPersonID(self, personID):
-        """Translate a personID in a imdbID (the ID used by the IMDb
-        web server); must be overridden by the subclass."""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def get_imdbCharacterID(self, characterID):
-        """Translate a characterID in a imdbID (the ID used by the IMDb
-        web server); must be overridden by the subclass."""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def get_imdbCompanyID(self, companyID):
-        """Translate a companyID in a imdbID (the ID used by the IMDb
-        web server); must be overridden by the subclass."""
-        # XXX: for the real implementation, see the method of the
-        #      subclass, somewhere under the imdb.parser package.
-        raise NotImplementedError('override this method')
-
-    def _searchIMDb(self, kind, ton, title_kind=None):
-        """Search the IMDb www server for the given title or name."""
-        if not ton:
-            return None
-        ton = ton.strip('"')
-        aSystem = IMDb()
-        if kind == 'tt':
-            searchFunct = aSystem.search_movie
-            check = 'long imdb title'
-        elif kind == 'nm':
-            searchFunct = aSystem.search_person
-            check = 'long imdb name'
-        elif kind == 'char':
-            searchFunct = aSystem.search_character
-            check = 'long imdb name'
-        elif kind == 'co':
-            # XXX: are [COUNTRY] codes included in the results?
-            searchFunct = aSystem.search_company
-            check = 'long imdb name'
-        try:
-            searchRes = searchFunct(ton)
-        except IMDbError:
-            return None
-        # When only one result is returned, assume it was from an
-        # exact match.
-        if len(searchRes) == 1:
-            return searchRes[0].getID()
-        title_only_matches = []
-        for item in searchRes:
-            # Return the first perfect match.
-            if item[check].strip('"') == ton:
-                # For titles do additional check for kind
-                if kind != 'tt' or title_kind == item['kind']:
-                    return item.getID()
-                elif kind == 'tt':
-                    title_only_matches.append(item.getID())
-        # imdbpy2sql.py could detected wrong type, so if no title and kind
-        # matches found - collect all results with title only match
-        # Return list of IDs if multiple matches (can happen when searching
-        # titles with no title_kind specified)
-        # Example: DB: Band of Brothers "tv series" vs "tv mini-series"
-        if title_only_matches:
-            if len(title_only_matches) == 1:
-                return title_only_matches[0]
-            else:
-                return title_only_matches
-        return None
-
-    def title2imdbID(self, title, kind=None):
-        """Translate a movie title (in the plain text data files format)
-        to an imdbID.
-        Try an Exact Primary Title search on IMDb;
-        return None if it's unable to get the imdbID;
-        Always specify kind: movie, tv series, video game etc. or search can
-        return list of IDs if multiple matches found
-        """
-        return self._searchIMDb('tt', title, kind)
-
-    def name2imdbID(self, name):
-        """Translate a person name in an imdbID.
-        Try an Exact Primary Name search on IMDb;
-        return None if it's unable to get the imdbID."""
-        return self._searchIMDb('nm', name)
-
-    def character2imdbID(self, name):
-        """Translate a character name in an imdbID.
-        Try an Exact Primary Name search on IMDb;
-        return None if it's unable to get the imdbID."""
-        return self._searchIMDb('char', name)
-
-    def company2imdbID(self, name):
-        """Translate a company name in an imdbID.
-        Try an Exact Primary Name search on IMDb;
-        return None if it's unable to get the imdbID."""
-        return self._searchIMDb('co', name)
-
-    def get_imdbID(self, mop):
-        """Return the imdbID for the given Movie, Person, Character or Company
-        object."""
-        imdbID = None
-        if mop.accessSystem == self.accessSystem:
-            aSystem = self
-        else:
-            aSystem = IMDb(mop.accessSystem)
-        if isinstance(mop, Movie.Movie):
-            if mop.movieID is not None:
-                imdbID = aSystem.get_imdbMovieID(mop.movieID)
-            else:
-                imdbID = aSystem.title2imdbID(build_title(mop, canonical=0,
-                                                          ptdf=0, appendKind=False),
-                                              mop['kind'])
-        elif isinstance(mop, Person.Person):
-            if mop.personID is not None:
-                imdbID = aSystem.get_imdbPersonID(mop.personID)
-            else:
-                imdbID = aSystem.name2imdbID(build_name(mop, canonical=False))
-        elif isinstance(mop, Character.Character):
-            if mop.characterID is not None:
-                imdbID = aSystem.get_imdbCharacterID(mop.characterID)
-            else:
-                # canonical=0 ?
-                imdbID = aSystem.character2imdbID(build_name(mop, canonical=False))
-        elif isinstance(mop, Company.Company):
-            if mop.companyID is not None:
-                imdbID = aSystem.get_imdbCompanyID(mop.companyID)
-            else:
-                imdbID = aSystem.company2imdbID(build_company_name(mop))
-        else:
-            raise IMDbError('object ' + repr(mop) +
-                            ' is not a Movie, Person or Character instance')
-        return imdbID
-
     def get_imdbURL(self, mop):
         """Return the main IMDb URL for the given Movie, Person,
         Character or Company object, or None if unable to get it."""
@@ -1074,11 +631,9 @@ class IMDbBase:
             url_firstPart = imdbURL_person_main
         elif isinstance(mop, Character.Character):
             url_firstPart = imdbURL_character_main
-        elif isinstance(mop, Company.Company):
-            url_firstPart = imdbURL_company_main
         else:
             raise IMDbError('object ' + repr(mop) +
-                            ' is not a Movie, Person, Character or Company instance')
+                            ' is not a Movie, Person, or Character instance')
         return url_firstPart % imdbID
 
     def get_special_methods(self):

@@ -19,7 +19,7 @@ This package provides the IMDbS3AccessSystem class used to access IMDb's data
 through the Amazon S3 dataset.
 
 The :func:`imdb.IMDb` function will return an instance of this class when
-called with the ``accessSystem`` parameter is set to "s3" or "s3dataset".
+called with the ``accessSystem`` parameter is set to "s3" or an s3 alias.
 """
 
 import logging

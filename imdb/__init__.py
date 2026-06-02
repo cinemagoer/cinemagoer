@@ -61,6 +61,14 @@ imdbURL_character_main = imdbURL_character_base + 'ch%s/'
 # Name of the configuration files.
 confFileNames = ['cinemagoer.cfg', 'imdbpy.cfg']
 
+_S3_ALIASES = ('s3', 's3dataset', 'imdbws', 'dataset', 'datasets')
+
+
+def _normalize_access_system(value):
+    if isinstance(value, str):
+        return value.lower()
+    return value
+
 
 class ConfigParserWithCase(configparser.ConfigParser):
     """A case-sensitive parser for configuration files."""
@@ -163,15 +171,11 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             logging.config.fileConfig(os.path.expanduser(logCfg))
         except Exception as e:
             _imdb_logger.warn('unable to read logger config: %s' % e)
-    if accessSystem in ('http', 'https', 'web', 'html'):
-        raise IMDbError('data access system "http" is no longer supported; please use "s3" instead')
-    if accessSystem in ('s3', 's3dataset', 'imdbws', 'dataset', 'datasets'):
+    accessSystem = _normalize_access_system(accessSystem)
+    if accessSystem in _S3_ALIASES:
         from .parser.s3 import IMDbS3AccessSystem
         return IMDbS3AccessSystem(*arguments, **keywords)
-    elif accessSystem in ('sql', 'db', 'database'):
-        raise IMDbError('data access system "sql" is no longer supported; please use "s3" instead')
-    else:
-        raise IMDbError('unknown kind of data access system: "%s"' % accessSystem)
+    raise IMDbError('unknown kind of data access system: "%s"' % accessSystem)
 
 
 # Cinemagoer alias

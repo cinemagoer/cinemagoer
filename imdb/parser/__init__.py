@@ -14,10 +14,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-"""
-This package provides various parsers to access IMDb data, such as
-a parser for the web/http interface, a parser for the SQL database interface,
-etc. So far, the http, s3 and sql parsers are implemented.
+"""Parsers for accessing IMDb data.
+
+Currently only the s3 dataset parser is implemented, but the package layout
+keeps room for additional access systems in the future.
 """
 
 __all__ = ['s3']  # noqa: F822

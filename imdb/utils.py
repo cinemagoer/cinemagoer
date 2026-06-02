@@ -1411,12 +1411,8 @@ class _Container:
         # XXX: does it always work correctly?
         theID = self.getID()
         if theID is not None and self.accessSystem not in ('UNKNOWN', None):
-            # Handle 'http' and 'mobile' as they are the same access system.
-            acs = self.accessSystem
-            if acs in ('mobile', 'httpThin'):
-                acs = 'http'
             # There must be some indication of the kind of the object, too.
-            s4h = '%s:%s[%s]' % (self.__class__.__name__, theID, acs)
+            s4h = '%s:%s[%s]' % (self.__class__.__name__, theID, self.accessSystem)
         else:
             s4h = repr(self)
         return hash(s4h)

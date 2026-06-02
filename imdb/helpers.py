@@ -1,4 +1,4 @@
-# Copyright 2006-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2006-2018 Davide Alberani <da@mimante.net>
 #                2012 Alberto Malagoli <albemala AT gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify

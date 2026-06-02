@@ -1,4 +1,4 @@
-# Copyright 2004-2022 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2022 Davide Alberani <da@mimante.net>
 #                2009 H. Turgut Uyar <uyar@tekir.org>
 #
 # This program is free software; you can redistribute it and/or modify

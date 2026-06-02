@@ -5,7 +5,7 @@ s32cinemagoer.py script.
 
 This script imports the s3 dataset distributed by IMDb into a SQL database.
 
-Copyright 2017-2018 Davide Alberani <da@erlug.linux.it>
+Copyright 2017-2018 Davide Alberani <da@mimante.net>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -26,6 +26,12 @@ from imdb import VERSION, IMDb
 DEFAULT_RESULT_SIZE = 20
 
 
+def get_connection(args):
+    if args.uri:
+        return IMDb('s3', uri=args.uri)
+    return IMDb()
+
+
 def list_results(items, type_, n=None):
     field = 'title' if type_ == 'movie' else 'name'
     print('  # IMDb id %s' % field)
@@ -39,7 +45,7 @@ def list_results(items, type_, n=None):
 
 
 def search_item(args):
-    connection = IMDb()
+    connection = get_connection(args)
     if args.type == 'movie':
         items = connection.search_movie(args.key)
     else:
@@ -53,7 +59,7 @@ def search_item(args):
 
 
 def get_item(args):
-    connection = IMDb()
+    connection = get_connection(args)
     if args.type == 'movie':
         item = connection.get_movie(args.key)
     else:
@@ -64,6 +70,7 @@ def get_item(args):
 def make_parser(prog):
     parser = ArgumentParser(prog)
     parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
+    parser.add_argument('--uri', help='database URI for the s3 access system')
 
     command_parsers = parser.add_subparsers(metavar='command', dest='command')
     command_parsers.required = True

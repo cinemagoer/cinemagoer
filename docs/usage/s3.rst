@@ -5,7 +5,6 @@ S3 datasets
 
 IMDb distributes some of its data as downloadable `datasets`_. Cinemagoer can
 import this data into a database and make it accessible through its API.
-[#ptdf]_
 
 For this, you will first need to install `SQLAlchemy`_ and the libraries
 that are needed for the database server you want to use. Check out
@@ -59,14 +58,6 @@ and you can use the normal Cinemagoer API:
 
    Installing the `tqdm`_ package, a progress bar is shown while the database
    is populated and the --verbose argument is used.
-
-
-.. [#ptdf]
-
-   Until the end of 2017, IMDb used to distribute a more comprehensive subset
-   of its data in a different format. Cinemagoer can also import that data
-   but note that the data is not being updated anymore. For more information,
-   see :ref:`ptdf`.
 
 
 .. _datasets: https://www.imdb.com/interfaces/

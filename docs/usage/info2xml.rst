@@ -9,7 +9,7 @@ if the key is not found). E.g.:
 .. code-block:: python
 
    from imdb import Cinemagoer
-   ia = Cinemagoer('http')
+   ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
    movie = ia.get_movie(theMovieID)
    print(movie.getAsXML('keywords'))
 

@@ -14,12 +14,8 @@ programs.
    :caption: Contents:
 
    quickstart
-   data-interface
-   role
-   series
    adult
    info2xml
    l10n
    access
    s3
-   ptdf

@@ -87,6 +87,18 @@ class IMDbS3AccessSystem(IMDbBase):
                 del data[key]
         return data
 
+    def _normalize_title_data(self, row_data):
+        data = self._rename('title_basics', dict(row_data))
+        data['year'] = str(data.get('startYear') or '')
+        if 'endYear' in data and data['endYear']:
+            data['year'] += '-%s' % data['endYear']
+        genres = data.get('genres') or ''
+        data['genres'] = split_array(genres.lower())
+        if 'runtimes' in data and data['runtimes']:
+            data['runtimes'] = [data['runtimes']]
+        self._clean(data, ('startYear', 'endYear', 'movieID'))
+        return data
+
     def _fetchone(self, statement):
         with self._engine.connect() as connection:
             row = connection.execute(statement).mappings().first()
@@ -106,15 +118,7 @@ class IMDbS3AccessSystem(IMDbBase):
             return movies_cache[movieID]
         tb = self.T['title_basics']
         movie = self._fetchone(sqlalchemy.select(tb).where(tb.c.tconst == movieID)) or {}
-        data = self._rename('title_basics', movie)
-        data['year'] = str(data.get('startYear') or '')
-        if 'endYear' in data and data['endYear']:
-            data['year'] += '-%s' % data['endYear']
-        genres = data.get('genres') or ''
-        data['genres'] = split_array(genres.lower())
-        if 'runtimes' in data and data['runtimes']:
-            data['runtimes'] = [data['runtimes']]
-        self._clean(data, ('startYear', 'endYear', 'movieID'))
+        data = self._normalize_title_data(movie)
         movies_cache[movieID] = data
         return data
 
@@ -254,7 +258,7 @@ class IMDbS3AccessSystem(IMDbBase):
             conditions.append(tb.c.titleType == 'episode')
         statement = sqlalchemy.select(tb).where(sqlalchemy.and_(*conditions))
         results = self._fetchall(statement)
-        results = [(x['tconst'], self._clean(self._rename('title_basics', dict(x)), ('t_soundex',)))
+        results = [(x['tconst'], self._clean(self._normalize_title_data(x), ('t_soundex',)))
                    for x in results]
 
         # Also search the AKAs

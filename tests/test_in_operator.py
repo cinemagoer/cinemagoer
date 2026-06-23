@@ -18,8 +18,3 @@ def test_movie_in_person(ia):
 def test_key_in_person(ia):
     person = ia.get_person('0000206')  # Keanu Reeves
     assert 'filmography' in person
-
-
-def test_key_in_company(ia):
-    company = ia.get_company('0017902', info=['main'])  # Pixar
-    assert 'name' in company

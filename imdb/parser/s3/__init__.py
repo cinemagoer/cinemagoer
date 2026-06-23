@@ -65,9 +65,8 @@ class IMDbS3AccessSystem(IMDbBase):
     def __init__(self, uri='sqlite://cinemagoer.db', adultSearch=True, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
-        self._engine = sqlalchemy.create_engine(uri, encoding='utf-8', echo=False)
-        self._metadata.bind = self._engine
-        self._metadata.reflect()
+        self._engine = sqlalchemy.create_engine(uri, echo=False)
+        self._metadata.reflect(bind=self._engine)
         self.T = self._metadata.tables
 
     def _rename(self, table, data):
@@ -88,6 +87,16 @@ class IMDbS3AccessSystem(IMDbBase):
                 del data[key]
         return data
 
+    def _fetchone(self, statement):
+        with self._engine.connect() as connection:
+            row = connection.execute(statement).mappings().first()
+        return dict(row) if row else None
+
+    def _fetchall(self, statement):
+        with self._engine.connect() as connection:
+            rows = connection.execute(statement).mappings().all()
+        return [dict(row) for row in rows]
+
     def _base_title_info(self, movieID, movies_cache=None, persons_cache=None):
         if movies_cache is None:
             movies_cache = {}
@@ -96,8 +105,8 @@ class IMDbS3AccessSystem(IMDbBase):
         if movieID in movies_cache:
             return movies_cache[movieID]
         tb = self.T['title_basics']
-        movie = tb.select(tb.c.tconst == movieID).execute().fetchone() or {}
-        data = self._rename('title_basics', dict(movie))
+        movie = self._fetchone(sqlalchemy.select(tb).where(tb.c.tconst == movieID)) or {}
+        data = self._rename('title_basics', movie)
         data['year'] = str(data.get('startYear') or '')
         if 'endYear' in data and data['endYear']:
             data['year'] += '-%s' % data['endYear']
@@ -117,8 +126,8 @@ class IMDbS3AccessSystem(IMDbBase):
         if personID in persons_cache:
             return persons_cache[personID]
         nb = self.T['name_basics']
-        person = nb.select(nb.c.nconst == personID).execute().fetchone() or {}
-        data = self._rename('name_basics', dict(person))
+        person = self._fetchone(sqlalchemy.select(nb).where(nb.c.nconst == personID)) or {}
+        data = self._rename('name_basics', person)
         movies = []
         for movieID in split_array(data.get('known for') or ''):
             if not movieID:
@@ -139,8 +148,8 @@ class IMDbS3AccessSystem(IMDbBase):
         _persons_cache = {}
 
         tc = self.T['title_crew']
-        movie = tc.select(tc.c.tconst == movieID).execute().fetchone() or {}
-        tc_data = self._rename('title_crew', dict(movie))
+        movie = self._fetchone(sqlalchemy.select(tc).where(tc.c.tconst == movieID)) or {}
+        tc_data = self._rename('title_crew', movie)
         writers = []
         directors = []
         for key, target in (('director', directors), ('writer', writers)):
@@ -158,18 +167,17 @@ class IMDbS3AccessSystem(IMDbBase):
         data.update(tc_data)
 
         te = self.T['title_episode']
-        movie = te.select(te.c.tconst == movieID).execute().fetchone() or {}
-        te_data = self._rename('title_episode', dict(movie))
+        movie = self._fetchone(sqlalchemy.select(te).where(te.c.tconst == movieID)) or {}
+        te_data = self._rename('title_episode', movie)
         if 'parentTconst' in te_data:
             te_data['episodes of'] = self._base_title_info(te_data['parentTconst'])
         self._clean(te_data, ('parentTconst',))
         data.update(te_data)
 
         tp = self.T['title_principals']
-        movie_rows = tp.select(tp.c.tconst == movieID).execute().fetchall() or {}
+        movie_rows = self._fetchall(sqlalchemy.select(tp).where(tp.c.tconst == movieID)) or []
         roles = {}
         for movie_row in movie_rows:
-            movie_row = dict(movie_row)
             tp_data = self._rename('title_principals', dict(movie_row))
             category = tp_data.get('category')
             if not category:
@@ -196,15 +204,15 @@ class IMDbS3AccessSystem(IMDbBase):
             data[role] = persons
 
         tr = self.T['title_ratings']
-        movie = tr.select(tr.c.tconst == movieID).execute().fetchone() or {}
-        tr_data = self._rename('title_ratings', dict(movie))
+        movie = self._fetchone(sqlalchemy.select(tr).where(tr.c.tconst == movieID)) or {}
+        tr_data = self._rename('title_ratings', movie)
         data.update(tr_data)
 
         ta = self.T['title_akas']
-        akas = ta.select(ta.c.titleId == movieID).execute()
+        akas = self._fetchall(sqlalchemy.select(ta).where(ta.c.titleId == movieID))
         akas_list = []
         for aka in akas:
-            ta_data = self._rename('title_akas', dict(aka)) or {}
+            ta_data = self._rename('title_akas', aka) or {}
             for key in list(ta_data.keys()):
                 if not ta_data[key]:
                     del ta_data[key]
@@ -244,7 +252,8 @@ class IMDbS3AccessSystem(IMDbBase):
         conditions = [tb.c.t_soundex == t_soundex]
         if _episodes:
             conditions.append(tb.c.titleType == 'episode')
-        results = tb.select(sqlalchemy.and_(*conditions)).execute()
+        statement = sqlalchemy.select(tb).where(sqlalchemy.and_(*conditions))
+        results = self._fetchall(statement)
         results = [(x['tconst'], self._clean(self._rename('title_basics', dict(x)), ('t_soundex',)))
                    for x in results]
 
@@ -254,7 +263,8 @@ class IMDbS3AccessSystem(IMDbBase):
             ta_conditions = [ta.c.t_soundex == t_soundex]
         else:
             ta_conditions = [ta.c.title.ilike('%%%s%%' % title)]
-        ta_results = ta.select(sqlalchemy.and_(*ta_conditions)).execute()
+        ta_statement = sqlalchemy.select(ta).where(sqlalchemy.and_(*ta_conditions))
+        ta_results = self._fetchall(ta_statement)
         ta_results = [(x['titleId'], self._clean(self._rename('title_akas', dict(x)), ('t_soundex',)))
                       for x in ta_results]
         results += ta_results
@@ -281,7 +291,8 @@ class IMDbS3AccessSystem(IMDbBase):
             conditions.append(nb.c.sn_soundex == sn_soundex)
         if s_soundex:
             conditions.append(nb.c.s_soundex == s_soundex)
-        results = nb.select(sqlalchemy.or_(*conditions)).execute()
+        statement = sqlalchemy.select(nb).where(sqlalchemy.or_(*conditions))
+        results = self._fetchall(statement)
         results = [(x['nconst'], self._clean(self._rename('name_basics', dict(x)),
                                              ('ns_soundex', 'sn_soundex', 's_soundex')))
                    for x in results]

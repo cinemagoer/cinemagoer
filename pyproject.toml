@@ -44,7 +44,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "lxml>=6.1.1",
-    "sqlalchemy~=2.0.41",
+    "sqlalchemy>=2.0.50,<2.1",
 ]
 
 [dependency-groups]

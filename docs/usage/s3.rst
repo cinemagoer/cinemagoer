@@ -21,7 +21,7 @@ Then, follow these steps:
 
       s32cinemagoer.py /path/to/the/tsv.gz/files/ URI
 
-   *URI* is the identifier used to access the SQL database. For example::
+   *URI* is the identifier used to access the target database. For example::
 
       s32cinemagoer.py ~/Download/imdb-s3-dataset-2018-02-07/ \
           postgresql://user:password@localhost/imdb
@@ -30,7 +30,7 @@ Please notice that for some database engines (like MySQL and MariaDB) you may ne
 to specify the charset on the URI and sometimes also the dialect, with something like 'mysql+mysqldb://username:password@localhost/imdb?charset=utf8'
 
 Once the import is finished - which should take about an hour or less
-on a modern system - you will have a SQL database with all the information
+on a modern system - you will have a database with all the information
 and you can use the normal Cinemagoer API:
 
 .. code-block:: python
@@ -62,5 +62,5 @@ and you can use the normal Cinemagoer API:
 
 .. _datasets: https://www.imdb.com/interfaces/
 .. _SQLAlchemy: https://www.sqlalchemy.org/
-.. _SQLAlchemy dialects: http://docs.sqlalchemy.org/en/latest/dialects/
+.. _SQLAlchemy dialects: https://docs.sqlalchemy.org/en/latest/dialects/
 .. _tqdm: https://github.com/tqdm/tqdm

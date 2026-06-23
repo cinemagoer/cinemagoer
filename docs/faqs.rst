@@ -14,11 +14,6 @@ FAQs
 :A: Yes! The data from https://datasets.imdbws.com/ contains the original IDs.
 
 
-:Q: Importing the data using the old 'sql' method, are the imdbID available?
-
-:A: No. The old 'sql' method generates sequential imdbIDs that are unrelated to the ones used by the web site.
-
-
 :Q: I have an URL (of a movie, person or something else), how can I
     get a Movie/Person/... instance?
 

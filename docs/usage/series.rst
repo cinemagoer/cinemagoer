@@ -9,12 +9,12 @@ to distinguish series and episodes from movies:
 
    >>> series = ia.get_movie('0389564')
    >>> series
-   <Movie id:0389564[http] title:_"The 4400" (2004)_>
+   <Movie id:0389564[s3] title:_"The 4400" (2004)_>
    >>> series['kind']
    'tv series'
    >>> episode = ia.get_movie('0502803')
    >>> episode
-   <Movie id:0502803[http] title:_"The 4400" Pilot (2004)_>
+   <Movie id:0502803[s3] title:_"The 4400" Pilot (2004)_>
    >>> episode['kind']
    'episode'
 
@@ -34,7 +34,7 @@ start from 0; they are the numbers given by the IMDb:
    13
    >>> episode = series['episodes'][4][2]
    >>> episode
-   <Movie id:1038701[http] title:_"The 4400" Fear Itself (2007)_>
+   <Movie id:1038701[s3] title:_"The 4400" Fear Itself (2007)_>
    >>> episode['season']
    4
    >>> episode['episode']
@@ -56,9 +56,9 @@ we started with:
 .. code-block:: python
 
    >>> episode['episode of']
-   <Movie id:0389564[http] title:_"The 4400" (None)_>
+   <Movie id:0389564[s3] title:_"The 4400" (None)_>
    >>> series
-   <Movie id:0389564[http] title:_"The 4400" (2004)_>
+   <Movie id:0389564[s3] title:_"The 4400" (2004)_>
 
 
 Titles
@@ -66,7 +66,7 @@ Titles
 
 The ``analyze_title()`` and ``build_title()`` functions now support
 TV episodes. You can pass a string to the ``analyze_title`` function
-in the format used by the web server (``"The Series" The Episode (2005)``)
+in the format used by Cinemagoer episode titles (``"The Series" The Episode (2005)``)
 or in the format of the plain text data files
 (``"The Series" (2004) {The Episode (#ser.epi)}``).
 
@@ -92,7 +92,7 @@ with the same information.
 
 The ``build_title()`` function takes an optional argument: ``ptdf``,
 which when set to false (the default) returns the title of the episode
-in the format used by the IMDb's web server
+in the default Cinemagoer display format
 ("The Series" An Episode (2006)); otherwise, it uses the format used
 by the plain text data files (something like
 "The Series" (2004) {An Episode (#2.5)})
@@ -109,10 +109,10 @@ the complete list of cast and crew with the "full credits" data set:
 
    >>> series = ia.get_movie('0285331')
    >>> series
-   <Movie id:0285331[http] title:_"24" (2001)_>
+   <Movie id:0285331[s3] title:_"24" (2001)_>
    >>> len(series['cast'])
    50
-   >>> ia.update(series, 'full credits')
+   >>> ia.update(series, 'full credits')
    >>> len(series['cast'])
    2514
 
@@ -135,11 +135,11 @@ by a person.
    from imdb import Cinemagoer
    i = Cinemagoer()
    p = i.get_person('0005041')  # Laura Innes
-   p['filmography']['actress'][0]   # <Movie id:0568152[http] title:_"ER" (????)_>
+   p['filmography']['actress'][0]   # <Movie id:0568152[s3] title:_"ER" (????)_>
 
    # At this point you have an entry (in keys like 'actor', 'actress',
    # 'director', ...) for every series the person starred/worked in, but
-   # you knows nothing about singles episodes.
+   # you know nothing about single episodes.
    i.update(p, 'episodes')  # updates information about single episodes.
 
    p['episodes']    # a dictionary with the format:
@@ -155,7 +155,7 @@ by a person.
    p['episodes'][er]     # list of Movie objects; one for every ER episode
                          # she starred/worked in
 
-   p['episodes'][er][0]  # <Movie id:0568154[http] title:_"ER" Welcome Back Carter! (1995)_>
+   p['episodes'][er][0]  # <Movie id:0568154[s3] title:_"ER" Welcome Back Carter! (1995)_>
    p['episodes'][er]['kind']   # 'episode'
    p['episodes'][er][0].currentRole   # 'Dr. Kerry Weaver'
 
@@ -188,4 +188,4 @@ lists of episodes:
      >>> m = i.get_movie('0411008')
      >>> i.update(m, 'episodes')
      >>> sortedEpisodes(m, season=1)
-     [<Movie id:0636289[http] title:_"Lost" Pilot: Part 1 (2004)_>, <Movie id:0636290[http] title:_"Lost" Pilot: Part 2 (2004)_>, ...]
+       [<Movie id:0636289[s3] title:_"Lost" Pilot: Part 1 (2004)_>, <Movie id:0636290[s3] title:_"Lost" Pilot: Part 2 (2004)_>, ...]

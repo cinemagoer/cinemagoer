@@ -1,16 +1,16 @@
 Data interface
 ==============
 
-The Cinemagoer objects that represent movies, people and companies provide
+The Cinemagoer objects that represent movies and people provide
 a dictionary-like interface where the key identifies the information
 you want to get out of the object.
 
 At this point, I have really bad news: what the keys are is a little unclear!
 
-In general, the key is the label of the section as used by the IMDb web server
-to present the data. If the information is grouped into subsections,
-such as cast members, certifications, distributor companies, etc.,
-the subsection label in the HTML page is used as the key.
+In general, keys follow the naming used by Cinemagoer data structures.
+If the information is grouped into subsections,
+such as cast members and certifications, the subsection label is used
+as the key.
 
 The key is almost always lowercase; underscores and dashes are replaced
 with spaces. Some keys aren't taken from the HTML page, but are defined
@@ -20,15 +20,13 @@ within the respective class.
 Information sets
 ----------------
 
-Cinemagoer can retrieve almost every piece of information of a movie or person
-This can be a problem, because (at least for the "http" data access
-system) it means that a lot of web pages must be fetched and parsed.
-This can be both time- and bandwidth-consuming, especially if you're interested
-in only a small part of the information.
+Cinemagoer can retrieve a lot of information for a movie or person.
+Depending on the selected information sets, this can mean additional
+database queries, especially if you're interested in only a small part
+of the information.
 
 The :meth:`get_movie <imdb.IMDbBase.get_movie>`,
-:meth:`get_person <imdb.IMDbBase.get_person>` and
-:meth:`get_company <imdb.IMDbBase.get_company>` methods take an optional
+:meth:`get_person <imdb.IMDbBase.get_person>` methods take an optional
 ``info`` parameter, which can be used to specify the kinds of data to fetch.
 Each group of data that gets fetched together is called an "information set".
 
@@ -47,15 +45,12 @@ using the access object:
    ['airing', 'akas', ..., 'video clips', 'vote details']
    >>> ia.get_person_infoset()
    ['awards', 'biography', ..., 'other works', 'publicity']
-   >>> ia.get_company_infoset()
-   ['main']
 
 For each object type, only the important information will be retrieved
 by default:
 
 - for a movie: "main", "plot"
 - for a person: "main", "filmography", "biography"
-- for a company: "main"
 
 These defaults can be retrieved from the ``default_info`` attributes
 of the classes:
@@ -101,7 +96,7 @@ available on a movie get operation:
    >>> movies = ia.search_movie('matrix')
    >>> movie = movies[0]
    >>> movie
-   <Movie id:0133093[http] title:_The Matrix (1999)_>
+   <Movie id:0133093[s3] title:_The Matrix (1999)_>
    >>> movie.current_info
    []
    >>> 'genres' in movie
@@ -124,10 +119,8 @@ information sets. Continuing from the example above:
    >>> movie.current_info
    ['taglines', 'vote details', 'plot', 'synopsis']
 
-Beware that the information sets vary between access systems:
-locally not every piece of data is accessible, whereas -for example for SQL-
-accessing one set of data means automatically accessing a number of other
-information (without major performance drawbacks).
+Beware that not every possible piece of data is available through the
+S3 dataset access system.
 
 
 Composite data
@@ -169,7 +162,7 @@ imdb.utils module.
 
 The function used to modify the strings can be set with the ``defaultModFunct``
 parameter of the IMDb class or with the ``modFunct`` parameter
-of the ``get_movie``, ``get_person``, and ``get_character`` methods:
+of the ``get_movie`` and ``get_person`` methods:
 
 .. code-block:: python
 

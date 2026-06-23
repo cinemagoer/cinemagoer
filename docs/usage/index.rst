@@ -14,6 +14,10 @@ programs.
    :caption: Contents:
 
    quickstart
+   data-interface
+   query
+   role
+   series
    adult
    info2xml
    l10n

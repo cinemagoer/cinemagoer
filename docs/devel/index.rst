@@ -7,11 +7,11 @@ that you create a virtual environment for it. For example::
    python -m venv ~/.virtualenvs/cinemagoer
    . ~/.virtualenvs/cinemagoer/bin/activate
 
-In the virtual environment, install Cinemagoer in editable mode and include
-the extra packages. In the top level directory of the project (where
-the :file:`setup.py` file resides), run::
+In the virtual environment, install Cinemagoer in editable mode. In the top
+level directory of the project (where the :file:`pyproject.toml` file resides),
+run::
 
-   pip install -e .[dev,doc]
+      pip install -e .
 
 
 .. packages

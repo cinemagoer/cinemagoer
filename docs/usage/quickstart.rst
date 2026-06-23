@@ -100,3 +100,10 @@ the :class:`imdb.IMDbError` exception:
        people = ia.search_person('Mel Gibson')
    except IMDbError as e:
        print(e)
+
+
+   See also
+   --------
+
+   For more details about available methods and objects, see
+   :doc:`query`, :doc:`data-interface`, :doc:`role`, and :doc:`series`.

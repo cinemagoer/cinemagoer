@@ -147,7 +147,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "lxml", specifier = ">=6.1.1" },
-    { name = "sqlalchemy", specifier = "~=2.0.41" },
+    { name = "sqlalchemy", specifier = ">=2.0.50,<2.1" },
 ]
 
 [package.metadata.requires-dev]

@@ -30,6 +30,7 @@ import sqlalchemy
 from imdb import IMDbBase
 from imdb.Movie import Movie
 from imdb.Person import Person
+from imdb.utils import analyze_title
 
 from .utils import (
     DB_TRANSFORM,
@@ -259,70 +260,88 @@ class IMDbS3AccessSystem(IMDbBase):
         title = title.strip()
         if not title:
             return []
-        results = []
-        t_soundex = title_soundex(title)
-        tb = self.T['title_basics']
-        conditions = [tb.c.t_soundex == t_soundex]
-        filter_conditions = []
-        if _episodes:
-            title_type_col = getattr(tb.c, 'titleType', None)
-            if title_type_col is None:
-                title_type_col = getattr(tb.c, 'kind', None)
-            if title_type_col is not None:
-                episode_condition = title_type_col.in_(('episode', 'tvEpisode'))
-                conditions.append(episode_condition)
-                filter_conditions.append(episode_condition)
-        if adult is not None:
-            adult_col = getattr(tb.c, 'isAdult', None)
-            if adult_col is None:
-                adult_col = getattr(tb.c, 'adult', None)
-            if adult_col is not None:
-                adult_condition = adult_col == bool(adult)
-                conditions.append(adult_condition)
-                filter_conditions.append(adult_condition)
-        if title_types:
-            if isinstance(title_types, str):
-                title_types = [title_types]
-            normalized_types = []
-            for t in title_types:
-                if t in self._KIND_REV:
-                    normalized_types.append(self._KIND_REV[t])
+
+        title_info = analyze_title(title)
+        search_title = title_info.get('title', title).strip()
+        search_year = title_info.get('year')
+        search_title_types = title_types
+
+        def _search(search_title, search_year=None):
+            t_soundex = title_soundex(search_title)
+            tb = self.T['title_basics']
+            conditions = [tb.c.t_soundex == t_soundex]
+            filter_conditions = []
+            if search_year is not None:
+                year_condition = tb.c.startYear == search_year
+                conditions.append(year_condition)
+                filter_conditions.append(year_condition)
+            if _episodes:
+                title_type_col = getattr(tb.c, 'titleType', None)
+                if title_type_col is None:
+                    title_type_col = getattr(tb.c, 'kind', None)
+                if title_type_col is not None:
+                    episode_condition = title_type_col.in_(('episode', 'tvEpisode'))
+                    conditions.append(episode_condition)
+                    filter_conditions.append(episode_condition)
+            if adult is not None:
+                adult_col = getattr(tb.c, 'isAdult', None)
+                if adult_col is None:
+                    adult_col = getattr(tb.c, 'adult', None)
+                if adult_col is not None:
+                    adult_condition = adult_col == bool(adult)
+                    conditions.append(adult_condition)
+                    filter_conditions.append(adult_condition)
+            if search_title_types:
+                if isinstance(search_title_types, str):
+                    normalized_title_types = [search_title_types]
                 else:
-                    normalized_types.append(t)
-            title_type_col = getattr(tb.c, 'titleType', None)
-            if title_type_col is None:
-                title_type_col = getattr(tb.c, 'kind', None)
-            if title_type_col is not None:
-                title_type_condition = title_type_col.in_(normalized_types)
-                conditions.append(title_type_condition)
-                filter_conditions.append(title_type_condition)
-        statement = sqlalchemy.select(tb).where(sqlalchemy.and_(*conditions))
-        results = self._fetchall(statement)
-        results = [(x['tconst'], self._clean(self._normalize_title_data(x), ('t_soundex',)))
-                   for x in results]
+                    normalized_title_types = list(search_title_types)
+                normalized_types = []
+                for t in normalized_title_types:
+                    if t in self._KIND_REV:
+                        normalized_types.append(self._KIND_REV[t])
+                    else:
+                        normalized_types.append(t)
+                title_type_col = getattr(tb.c, 'titleType', None)
+                if title_type_col is None:
+                    title_type_col = getattr(tb.c, 'kind', None)
+                if title_type_col is not None:
+                    title_type_condition = title_type_col.in_(normalized_types)
+                    conditions.append(title_type_condition)
+                    filter_conditions.append(title_type_condition)
 
-        # Also search the AKAs
-        ta = self.T['title_akas']
-        if t_soundex is not None:
-            ta_conditions = [ta.c.t_soundex == t_soundex]
-        else:
-            ta_conditions = [ta.c.title.ilike('%%%s%%' % title)]
-        if filter_conditions:
-            ta_statement = (
-                sqlalchemy.select(ta)
-                .join(tb, ta.c.titleId == tb.c.tconst)
-                .where(sqlalchemy.and_(*(ta_conditions + filter_conditions)))
-            )
-        else:
-            ta_statement = sqlalchemy.select(ta).where(sqlalchemy.and_(*ta_conditions))
-        ta_results = self._fetchall(ta_statement)
-        ta_results = [(x['titleId'], self._clean(self._rename('title_akas', dict(x)), ('t_soundex',)))
-                      for x in ta_results]
-        results += ta_results
+            statement = sqlalchemy.select(tb).where(sqlalchemy.and_(*conditions))
+            results = self._fetchall(statement)
+            results = [(x['tconst'], self._clean(self._normalize_title_data(x), ('t_soundex',)))
+                       for x in results]
 
-        results = scan_titles(results, title)
-        results = [x[1] for x in results]
-        return results
+            # Also search the AKAs
+            ta = self.T['title_akas']
+            if t_soundex is not None:
+                ta_conditions = [ta.c.t_soundex == t_soundex]
+            else:
+                ta_conditions = [ta.c.title.ilike('%%%s%%' % search_title)]
+            if filter_conditions:
+                ta_statement = (
+                    sqlalchemy.select(ta)
+                    .join(tb, ta.c.titleId == tb.c.tconst)
+                    .where(sqlalchemy.and_(*(ta_conditions + filter_conditions)))
+                )
+            else:
+                ta_statement = sqlalchemy.select(ta).where(sqlalchemy.and_(*ta_conditions))
+            ta_results = self._fetchall(ta_statement)
+            ta_results = [(x['titleId'], self._clean(self._rename('title_akas', dict(x)), ('t_soundex',)))
+                          for x in ta_results]
+            results += ta_results
+
+            results = scan_titles(results, search_title)
+            return [x[1] for x in results]
+
+        if search_year is not None:
+            results = _search(search_title, search_year)
+            if results:
+                return results
+        return _search(search_title)
 
     def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None,
                                sort_dir=None, title_types=None):
@@ -338,11 +357,14 @@ class IMDbS3AccessSystem(IMDbBase):
         results = []
         ns_soundex, sn_soundex, s_soundex = name_soundexes(name)
         nb = self.T['name_basics']
-        conditions = [nb.c.ns_soundex == ns_soundex]
-        if sn_soundex:
-            conditions.append(nb.c.sn_soundex == sn_soundex)
-        if s_soundex:
-            conditions.append(nb.c.s_soundex == s_soundex)
+        query_soundexes = [x for x in (ns_soundex, sn_soundex, s_soundex) if x]
+        conditions = []
+        for query_soundex in query_soundexes:
+            conditions.extend([
+                nb.c.ns_soundex == query_soundex,
+                nb.c.sn_soundex == query_soundex,
+                nb.c.s_soundex == query_soundex,
+            ])
         statement = sqlalchemy.select(nb).where(sqlalchemy.or_(*conditions))
         results = self._fetchall(statement)
         results = [(x['nconst'], self._clean(self._rename('name_basics', dict(x)),

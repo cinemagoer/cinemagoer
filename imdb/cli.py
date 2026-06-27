@@ -36,12 +36,18 @@ def get_connection(args):
 
 def list_results(items, type_, n=None):
     field = 'title' if type_ == 'movie' else 'name'
-    print('  # IMDb id %s' % field)
-    print('=== ======= %s' % ('=' * len(field),))
-    for i, item in enumerate(items[:n]):
-        print('%(index)3d %(imdb_id)7s %(title)s' % {
+    items = items[:n]
+    imdb_id_width = max(
+        len('IMDb id'),
+        *(len(str(getattr(item, type_ + 'ID'))) for item in items),
+    ) if items else len('IMDb id')
+    print('  # %s%s' % ('IMDb id'.ljust(imdb_id_width), field))
+    print('=== %s %s' % ('=' * imdb_id_width, '=' * len(field)))
+    for i, item in enumerate(items):
+        imdb_id = str(getattr(item, type_ + 'ID'))
+        print('%(index)3d %(imdb_id)s %(title)s' % {
             'index': i + 1,
-            'imdb_id': getattr(item, type_ + 'ID'),
+            'imdb_id': imdb_id.rjust(imdb_id_width),
             'title': item['long imdb ' + field]
         })
 

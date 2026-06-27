@@ -278,6 +278,8 @@ def scan_names(name_list, name, results=0, ro_threshold=RO_THRESHOLD):
     sm2 = SequenceMatcher()
     sm1.set_seq1(name.lower())
     sm2.set_seq1(canonical_name.lower())
+    exact_name = name.strip().lower()
+    exact_canonical_name = canonical_name.strip().lower()
     resd = {}
     for i, n_data in name_list:
         nil = n_data['name']
@@ -285,6 +287,8 @@ def scan_names(name_list, name, results=0, ro_threshold=RO_THRESHOLD):
         ratios = [ratcliff(name, nil, sm1) + 0.1,
                   ratcliff(name, canonicalName(nil).replace(',', ''), sm2)]
         ratio = max(ratios)
+        if exact_name == nil.lower() or exact_canonical_name == nil.lower():
+            ratio = max(ratio, 2.0)
         if ratio >= ro_threshold:
             if i in resd:
                 if ratio > resd[i][0]:

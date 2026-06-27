@@ -13,8 +13,8 @@ such as cast members and certifications, the subsection label is used
 as the key.
 
 The key is almost always lowercase; underscores and dashes are replaced
-with spaces. Some keys aren't taken from the HTML page, but are defined
-within the respective class.
+with spaces. Some keys are computed by Cinemagoer and are not direct fields
+from the datasets.
 
 
 Information sets
@@ -40,7 +40,7 @@ using the access object:
 .. code-block:: python
 
    >>> from imdb import Cinemagoer
-   >>> ia = Cinemagoer()
+   >>> ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
    >>> ia.get_movie_infoset()
    ['airing', 'akas', ..., 'video clips', 'vote details']
    >>> ia.get_person_infoset()
@@ -167,12 +167,16 @@ of the ``get_movie`` and ``get_person`` methods:
 .. code-block:: python
 
    import imdb
-   i = imdb.Cinemagoer(defaultModFunct=imdb.utils.modHtmlLinks)
+   i = imdb.Cinemagoer(
+       accessSystem='s3',
+       uri='sqlite:///cinemagoer.db',
+       defaultModFunct=imdb.utils.modHtmlLinks
+   )
 
 or:
 
 .. code-block:: python
 
    import imdb
-   i = imdb.Cinemagoer()
+   i = imdb.Cinemagoer(accessSystem='s3', uri='sqlite:///cinemagoer.db')
    i.get_person('0000154', modFunct=imdb.utils.modHtmlLinks)

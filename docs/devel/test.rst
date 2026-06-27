@@ -10,7 +10,7 @@ is to run the following command in the top level directory of the project::
 
 You can execute a specific test module::
 
-   pytest tests/test_http_movie_combined.py
+   pytest tests/test_in_operator.py
 
 Or execute test functions that match a given keyword::
 
@@ -68,13 +68,14 @@ already installed), execute::
 S3 dataset
 ----------
 
-The tests will use the HTTP access system by default. If you would also like
-to test the database generated from the S3 dataset, define the ``CINEMAGOER_S3_URI``
-environment variable::
+Tests run against the dataset-backed access system. To test with your own
+database generated from IMDb non-commercial datasets, define the
+``CINEMAGOER_S3_URI`` environment variable::
 
-   CINEMAGOER_S3_URI='postgres://imdb@localhost/imdb' pytest
+   CINEMAGOER_S3_URI='sqlite:///cinemagoer.db' pytest
 
-This will run the tests for both HTTP and S3 access systems.
+You can populate this database with :file:`s32cinemagoer.py` before running
+the test suite.
 
 
 .. _pytest: https://pytest.org/

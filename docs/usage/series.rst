@@ -133,7 +133,7 @@ by a person.
 .. code-block:: python
 
    from imdb import Cinemagoer
-   i = Cinemagoer()
+   i = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
    p = i.get_person('0005041')  # Laura Innes
    p['filmography']['actress'][0]   # <Movie id:0568152[s3] title:_"ER" (????)_>
 
@@ -170,12 +170,12 @@ lists of episodes:
 
   .. code-block:: python
 
-     >>> from imdb import Cinemagoer
-     >>> i = Cinemagoer()
-     >>> m = i.get_movie('0411008')
-     >>> i.update(m, 'episodes')
-     >>> sortedSeasons(m)
-     [1, 2]
+         >>> from imdb import Cinemagoer
+         >>> i = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
+         >>> m = i.get_movie('0411008')
+         >>> i.update(m, 'episodes')
+         >>> sortedSeasons(m)
+         [1, 2]
 
 - ``sortedEpisodes(m, season=None)`` returns a sorted list of episodes of the
   the given series for only the specified season(s) (if None, every season),
@@ -183,9 +183,9 @@ lists of episodes:
 
   .. code-block:: python
 
-     >>> from imdb import Cinemagoer
-     >>> i = Cinemagoer()
-     >>> m = i.get_movie('0411008')
-     >>> i.update(m, 'episodes')
-     >>> sortedEpisodes(m, season=1)
-       [<Movie id:0636289[s3] title:_"Lost" Pilot: Part 1 (2004)_>, <Movie id:0636290[s3] title:_"Lost" Pilot: Part 2 (2004)_>, ...]
+         >>> from imdb import Cinemagoer
+         >>> i = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
+         >>> m = i.get_movie('0411008')
+         >>> i.update(m, 'episodes')
+         >>> sortedEpisodes(m, season=1)
+         [<Movie id:0636289[s3] title:_"Lost" Pilot: Part 1 (2004)_>, <Movie id:0636290[s3] title:_"Lost" Pilot: Part 2 (2004)_>, ...]

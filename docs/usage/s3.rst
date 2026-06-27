@@ -3,31 +3,34 @@
 S3 datasets
 ===========
 
-IMDb distributes some of its data as downloadable `datasets`_. Cinemagoer can
-import this data into a database and make it accessible through its API.
+IMDb distributes part of its data as non-commercial downloadable `datasets`_.
+Cinemagoer imports this data into a local database and accesses it through the
+standard API.
 
-For this, you will first need to install `SQLAlchemy`_ and the libraries
-that are needed for the database server you want to use. Check out
-the `SQLAlchemy dialects`_ documentation for more detail.
+For this, you will first need to install `SQLAlchemy`_ and a database driver
+for the database engine you choose.
+
+Cinemagoer supports all databases supported by SQLAlchemy. In this
+documentation we use SQLite in examples because it is the simplest setup.
 
 Then, follow these steps:
 
 #. Download the files from the following address and put all of them
    in the same directory: https://datasets.imdbws.com/
 
-#. Create a database. Use a collation like ``utf8_unicode_ci``.
+#. Create or choose a database.
 
 #. Import the data using the :file:`s32cinemagoer.py` script::
 
       s32cinemagoer.py /path/to/the/tsv.gz/files/ URI
 
-   *URI* is the identifier used to access the target database. For example::
+   ``URI`` is the SQLAlchemy connection string used to access the database.
 
-      s32cinemagoer.py ~/Download/imdb-s3-dataset-2018-02-07/ \
-          postgresql://user:password@localhost/imdb
+   For SQLite, use a URI like::
 
-Please notice that for some database engines (like MySQL and MariaDB) you may need
-to specify the charset on the URI and sometimes also the dialect, with something like 'mysql+mysqldb://username:password@localhost/imdb?charset=utf8'
+      s32cinemagoer.py ~/Downloads/imdb-datasets/ sqlite:///cinemagoer.db
+
+   You can also use other SQLAlchemy-supported database URIs.
 
 Once the import is finished - which should take about an hour or less
 on a modern system - you will have a database with all the information
@@ -37,7 +40,7 @@ and you can use the normal Cinemagoer API:
 
    from imdb import Cinemagoer
 
-   ia = Cinemagoer('s3', 'postgresql://user:password@localhost/imdb')
+   ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
 
    results = ia.search_movie('the matrix')
    for result in results:
@@ -56,11 +59,10 @@ and you can use the normal Cinemagoer API:
 
 .. note::
 
-   Installing the `tqdm`_ package, a progress bar is shown while the database
-   is populated and the --verbose argument is used.
+   If you install `tqdm`_, a progress bar is shown while the database is
+   populated when using the ``--verbose`` argument.
 
 
 .. _datasets: https://www.imdb.com/interfaces/
 .. _SQLAlchemy: https://www.sqlalchemy.org/
-.. _SQLAlchemy dialects: https://docs.sqlalchemy.org/en/latest/dialects/
 .. _tqdm: https://github.com/tqdm/tqdm

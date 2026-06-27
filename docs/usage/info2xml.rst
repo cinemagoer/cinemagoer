@@ -6,6 +6,11 @@ and Company instances in XML format. It's possible to get a single information
 (a key) in XML format, using the ``getAsXML(key)`` method (it will return None
 if the key is not found). E.g.:
 
+.. note::
+
+   This page assumes your SQLite database has already been populated from IMDb
+   non-commercial datasets with :file:`s32cinemagoer.py`.
+
 .. code-block:: python
 
    from imdb import Cinemagoer

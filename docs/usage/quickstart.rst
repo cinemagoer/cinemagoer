@@ -4,6 +4,19 @@ Quick start
 The first thing to do is to import :mod:`imdb` and call the :mod:`imdb.IMDb`
 function to get an access object through which IMDb data can be retrieved:
 
+.. important::
+
+   Before creating the access object, download IMDb non-commercial datasets
+   from https://datasets.imdbws.com/ and import them into SQLite:
+
+   .. code-block:: bash
+
+      s32cinemagoer.py /path/to/imdb-tsv-files/ sqlite:///cinemagoer.db
+
+   All examples on this page assume that this database is already populated.
+   SQLite is used here for simplicity; Cinemagoer also supports other
+   SQLAlchemy-supported databases.
+
 .. code-block:: python
 
    >>> import imdb
@@ -96,14 +109,14 @@ the :class:`imdb.IMDbError` exception:
    from imdb import Cinemagoer, IMDbError
 
    try:
-       ia = Cinemagoer()
-       people = ia.search_person('Mel Gibson')
+      ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
+      people = ia.search_person('Mel Gibson')
    except IMDbError as e:
        print(e)
 
 
-   See also
-   --------
+See also
+--------
 
-   For more details about available methods and objects, see
-   :doc:`query`, :doc:`data-interface`, :doc:`role`, and :doc:`series`.
+For more details about available methods and objects, see
+:doc:`query`, :doc:`data-interface`, :doc:`role`, and :doc:`series`.

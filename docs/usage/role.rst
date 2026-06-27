@@ -115,7 +115,7 @@ E.g.:
 
    import imdb
    myPrint = imdb.helpers.makeObject2Txt(personTxt=u'%(name)s ... %(currentRole)s')
-   i = imdb.Cinemagoer()
+    i = imdb.Cinemagoer(accessSystem='s3', uri='sqlite:///cinemagoer.db')
    m = i.get_movie('0057012')
    ps = m['cast'][0]
    print(myPrint(ps))

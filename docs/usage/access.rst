@@ -4,6 +4,11 @@ Access systems
 ==============
 
 Cinemagoer uses a single access system based on IMDb downloadable datasets.
+Before querying data, download IMDb non-commercial datasets and import them
+with :file:`s32cinemagoer.py` into a local database (for example,
+``sqlite:///cinemagoer.db``).
+
+The database can be SQLite or any other engine supported by SQLAlchemy.
 
 +------------------+-------------+----------------------+
 | access system    | aliases     | data source          |

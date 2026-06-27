@@ -19,6 +19,7 @@ This module provides the command line interface for Cinemagoer.
 """
 
 import sys
+import os
 from argparse import ArgumentParser
 
 from imdb import VERSION, IMDb
@@ -27,8 +28,9 @@ DEFAULT_RESULT_SIZE = 20
 
 
 def get_connection(args):
-    if args.uri:
-        return IMDb('s3', uri=args.uri)
+    uri = args.uri or os.getenv('CINEMAGOER_S3_URI')
+    if uri:
+        return IMDb('s3', uri=uri)
     return IMDb()
 
 
@@ -70,7 +72,8 @@ def get_item(args):
 def make_parser(prog):
     parser = ArgumentParser(prog)
     parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
-    parser.add_argument('--uri', help='database URI for the s3 access system')
+    parser.add_argument('--uri', default=os.getenv('CINEMAGOER_S3_URI'),
+                        help='database URI for the s3 access system')
 
     command_parsers = parser.add_subparsers(metavar='command', dest='command')
     command_parsers.required = True

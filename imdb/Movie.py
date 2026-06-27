@@ -323,7 +323,7 @@ class Movie(_Container):
             s += 'Cast: %s.\n' % _nameAndRole(cast)
         runtime = self.get('runtimes')
         if runtime:
-            s += 'Runtime: %s.\n' % ', '.join(runtime)
+            s += 'Runtime: %s.\n' % ', '.join(str(item) for item in runtime)
         countries = self.get('countries')
         if countries:
             s += 'Country: %s.\n' % ', '.join(countries)

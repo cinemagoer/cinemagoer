@@ -33,6 +33,7 @@ from imdb.Person import Person
 
 from .utils import (
     DB_TRANSFORM,
+    KIND,
     name_soundexes,
     scan_names,
     scan_titles,
@@ -59,6 +60,14 @@ class IMDbS3AccessSystem(IMDbBase):
     """The class used to access IMDb's data through the s3 dataset."""
 
     accessSystem = 's3'
+
+    _KIND_REV = {v: k for k, v in KIND.items()}
+
+    def get_movie_infoset(self):
+        return ['main', 'plot']
+
+    def get_person_infoset(self):
+        return ['main', 'filmography', 'biography']
     _s3_logger = logging.getLogger('imdbpy.parser.s3')
     _metadata = sqlalchemy.MetaData()
 
@@ -246,7 +255,7 @@ class IMDbS3AccessSystem(IMDbBase):
     get_person_filmography = get_person_main
     get_person_biography = get_person_main
 
-    def _search_movie(self, title, results, _episodes=False):
+    def _search_movie(self, title, results, _episodes=False, adult=None, title_types=None):
         title = title.strip()
         if not title:
             return []
@@ -254,8 +263,39 @@ class IMDbS3AccessSystem(IMDbBase):
         t_soundex = title_soundex(title)
         tb = self.T['title_basics']
         conditions = [tb.c.t_soundex == t_soundex]
+        filter_conditions = []
         if _episodes:
-            conditions.append(tb.c.titleType == 'episode')
+            title_type_col = getattr(tb.c, 'titleType', None)
+            if title_type_col is None:
+                title_type_col = getattr(tb.c, 'kind', None)
+            if title_type_col is not None:
+                episode_condition = title_type_col.in_(('episode', 'tvEpisode'))
+                conditions.append(episode_condition)
+                filter_conditions.append(episode_condition)
+        if adult is not None:
+            adult_col = getattr(tb.c, 'isAdult', None)
+            if adult_col is None:
+                adult_col = getattr(tb.c, 'adult', None)
+            if adult_col is not None:
+                adult_condition = adult_col == bool(adult)
+                conditions.append(adult_condition)
+                filter_conditions.append(adult_condition)
+        if title_types:
+            if isinstance(title_types, str):
+                title_types = [title_types]
+            normalized_types = []
+            for t in title_types:
+                if t in self._KIND_REV:
+                    normalized_types.append(self._KIND_REV[t])
+                else:
+                    normalized_types.append(t)
+            title_type_col = getattr(tb.c, 'titleType', None)
+            if title_type_col is None:
+                title_type_col = getattr(tb.c, 'kind', None)
+            if title_type_col is not None:
+                title_type_condition = title_type_col.in_(normalized_types)
+                conditions.append(title_type_condition)
+                filter_conditions.append(title_type_condition)
         statement = sqlalchemy.select(tb).where(sqlalchemy.and_(*conditions))
         results = self._fetchall(statement)
         results = [(x['tconst'], self._clean(self._normalize_title_data(x), ('t_soundex',)))
@@ -267,7 +307,14 @@ class IMDbS3AccessSystem(IMDbBase):
             ta_conditions = [ta.c.t_soundex == t_soundex]
         else:
             ta_conditions = [ta.c.title.ilike('%%%s%%' % title)]
-        ta_statement = sqlalchemy.select(ta).where(sqlalchemy.and_(*ta_conditions))
+        if filter_conditions:
+            ta_statement = (
+                sqlalchemy.select(ta)
+                .join(tb, ta.c.titleId == tb.c.tconst)
+                .where(sqlalchemy.and_(*(ta_conditions + filter_conditions)))
+            )
+        else:
+            ta_statement = sqlalchemy.select(ta).where(sqlalchemy.and_(*ta_conditions))
         ta_results = self._fetchall(ta_statement)
         ta_results = [(x['titleId'], self._clean(self._rename('title_akas', dict(x)), ('t_soundex',)))
                       for x in ta_results]
@@ -279,7 +326,7 @@ class IMDbS3AccessSystem(IMDbBase):
 
     def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None,
                                sort_dir=None, title_types=None):
-        return self._search_movie(title, results)
+        return self._search_movie(title, results, adult=adult, title_types=title_types)
 
     def _search_episode(self, title, results):
         return self._search_movie(title, results=results, _episodes=True)

@@ -71,7 +71,7 @@ Here's an example that demonstrates how to use Cinemagoer:
 
     1. Download the ``*.tsv.gz`` files from https://datasets.imdbws.com/
        (or run ``download-from-s3``)
-    2. Import them with :file:`s32cinemagoer.py`
+    2. Import them with ``s32cinemagoer.py``
     3. Open the populated database with Cinemagoer
 
     SQLite is used in examples for simplicity, but any SQLAlchemy-supported

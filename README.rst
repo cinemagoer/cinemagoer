@@ -21,14 +21,20 @@ This project and its authors are not affiliated in any way to Internet Movie Dat
 .. admonition:: Revamp notice
    :class: note
 
-   Starting on May 2026, the scope of this project shifted significantly due to the introduction of a WAF in front of the IMDb website.
+   Starting on April 2026, the scope of this project shifted significantly due to the introduction of a WAF in front of the IMDb website.
    From that day we can no longer guarantee that the package will work as expected with IMDb data (from a technical and legal standpoints),
    and we limited the scope of Cinemagoer to the handling of the dataset that is freely distributed by IMDb.
+
+    If you still need IMDb web-page parsing, see `cinemagoerng`_.
+    It is focused on parsing IMDb web pages, but requires you to provide
+    the function used to fetch those pages.
+
+   
 
 Main features
 -------------
 
-- written in Python 3 (compatible with Python 2.7)
+- written in Python 3
 
 - platform-independent
 
@@ -132,6 +138,7 @@ NOTE: See also the recommendations in the `DISCLAIMER.txt`_ file.
 .. _support: https://cinemagoer.github.io/support/
 .. _Read The Docs: https://cinemagoer.readthedocs.io/
 .. _GitHub: https://github.com/cinemagoer/cinemagoer
+.. _cinemagoerng: https://github.com/cinemagoer/cinemagoerng
 .. _CONTRIBUTOR_GUIDE.rst: https://github.com/ethorne2/cinemagoer/blob/documentation-add-contributor-guide/CONTRIBUTOR_GUIDE.rst
 .. _LICENSE.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/LICENSE.txt
 .. _CONTRIBUTORS.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/CONTRIBUTORS.txt

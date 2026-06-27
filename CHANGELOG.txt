@@ -1,21 +1,14 @@
 * What's new in the next release
 
+* What's new in release 2026.06.27 (The Lost Boys)
+
   [general]
 
+  - the support for parsing IMDb web pages was removed, leaving the non-commercial databases as the only available data source
   - drop support for python 2
   - drop support for python versions prior to 3.10
   - switch to pyproject.toml configuration
   - switch to using uv for management
-
-  [http]
-
-  - #358: access the "actress" key with "actor"
-  - #390: fix i18n titles now being written between parenthesis (courtesy of Raphaël Droz)
-  - #467: fix movies trivia parser (courtesy of Anthony Lipphardt)
-  - #470: add parser for movie stars (courtesy of Jesús Cea)
-  - #472: fix for metascore on critic reviews (courtesy of theotherp)
-  - #350: avoid empty names in XML output (courtesy of reubot)
-  - #478: fix top/bottom chart parsers
 
 
 * What's new in release 2023.05.01 (1922)

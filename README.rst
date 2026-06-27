@@ -123,7 +123,7 @@ Visit the `CONTRIBUTOR_GUIDE.rst`_ to learn how you can contribute to the Cinema
 License
 -------
 
-Copyright (C) 2004-2022 Davide Alberani <da --> mimante.net> et al.
+Copyright (C) 2004-2026 Davide Alberani <da@mimante.net> et al.
 
 Cinemagoer is released under the GPL license, version 2 or later.
 Read the included `LICENSE.txt`_ file for details.

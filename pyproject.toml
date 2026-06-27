@@ -1,6 +1,6 @@
 [project]
 name = "cinemagoer"
-version = "2025.05.19"
+version = "2026.06.27"
 description = "Retrieve data from IMDb."
 readme = "README.rst"
 
@@ -31,6 +31,7 @@ classifiers = [
     "Natural Language :: Italian",
     "Natural Language :: Turkish",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.11",
@@ -40,10 +41,10 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
-requires-python = "~=3.10"
+requires-python = ">=3.10"
 dependencies = [
-    "lxml~=5.4.0",
-    "sqlalchemy~=2.0.41",
+    "lxml>=6.1.1",
+    "sqlalchemy>=2.0.50,<2.1",
 ]
 
 [dependency-groups]
@@ -75,6 +76,11 @@ cinemagoer = "imdb.cli:main"
 
 [tool.setuptools]
 include-package-data = false
+script-files = [
+    "bin/s32cinemagoer.py",
+    "bin/download-from-s3",
+    "bin/s3-reduce",
+]
 
 [tool.setuptools.package-data]
 "imdb.locale" =  [
@@ -99,7 +105,7 @@ line-length = 79
 [tool.ruff.lint]
 select = ["A", "E", "F", "I", "T", "W"]
 ignore = ["E501", "E731"]
-exclude = ["imdb/parser/sql/**/*.py"]
+exclude = []
 
 [tool.ruff.lint.per-file-ignores]
 "imdb/cli.py" = ["T201"]

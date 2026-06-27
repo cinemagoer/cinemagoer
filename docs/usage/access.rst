@@ -3,29 +3,23 @@
 Access systems
 ==============
 
-Cinemagoer supports different ways of accessing the IMDb data:
+Cinemagoer uses a single access system based on IMDb downloadable datasets.
+Before querying data, download IMDb non-commercial datasets and import them
+with :file:`s32cinemagoer.py` into a local database (for example,
+``sqlite:///cinemagoer.db``).
 
-- Fetching data directly from the web server.
-
-- Getting the data from a SQL database that can be created from
-  the downloadable data sets provided by the IMDb.
+The database can be SQLite or any other engine supported by SQLAlchemy.
 
 +------------------+-------------+----------------------+
 | access system    | aliases     | data source          |
 +==================+=============+======================+
-| (default) 'http' | 'https'     | imdb.com web server  |
+| (default) 's3'   | 's3dataset' | downloadable dataset |
 |                  |             |                      |
-|                  | 'web'       |                      |
+|                  | 'imdbws'    |                      |
 |                  |             |                      |
-|                  | 'html'      |                      |
-+------------------+-------------+----------------------+
-|            's3'  | 's3dataset' | downloadable dataset |
+|                  | 'dataset'   |                      |
 |                  |             |                      |
-|                  |             | *after Dec 2017*     |
-+------------------+-------------+----------------------+
-|            'sql' | 'db'        | downloadable dataset |
-|                  |             |                      |
-|                  | 'database'  | *until Dec 2017*     |
+|                  | 'datasets'  |                      |
 +------------------+-------------+----------------------+
 
 .. note::
@@ -35,8 +29,7 @@ Cinemagoer supports different ways of accessing the IMDb data:
    commented with indication of the location where it can be put,
    and how to modify it.
 
-   If no :file:`imdbpy.cfg` file is found (or is not readable or
-   it can't be parsed), 'http' will be used the default.
+  If no :file:`imdbpy.cfg` file is found (or is not readable or
+  it can't be parsed), 's3' will be used as the default.
 
-See the :ref:`s3` and :ref:`ptdf` documents for more information about
-SQL based access systems.
+See :ref:`s3` for setup and usage details.

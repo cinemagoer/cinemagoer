@@ -1,6 +1,0 @@
-#!/bin/sh
-
-today="`date +'%Y-%m-%d'`"
-
-wget --mirror --no-parent -A tsv.gz --no-host-directories --directory-prefix=imdb-dataset-${today}  https://datasets.imdbws.com/
-

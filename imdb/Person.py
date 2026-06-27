@@ -1,4 +1,4 @@
-# Copyright 2004-2019 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2019 Davide Alberani <da@mimante.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,8 @@ class Person(_Container):
     see the keys_alias dictionary.
     """
     # The default sets of information retrieved.
-    default_info = ('main', 'filmography', 'biography')
+    # In the S3 dataset backend, only "main" is guaranteed.
+    default_info = ('main',)
 
     # Aliases for some not-so-intuitive keys.
     keys_alias = {

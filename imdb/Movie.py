@@ -1,4 +1,4 @@
-# Copyright 2004-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2004-2018 Davide Alberani <da@mimante.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,8 @@ class Movie(_Container):
     the keys_alias dictionary.
     """
     # The default sets of information retrieved.
-    default_info = ('main', 'plot')
+    # In the S3 dataset backend, only "main" is guaranteed.
+    default_info = ('main',)
 
     # Aliases for some not-so-intuitive keys.
     keys_alias = {
@@ -322,7 +323,7 @@ class Movie(_Container):
             s += 'Cast: %s.\n' % _nameAndRole(cast)
         runtime = self.get('runtimes')
         if runtime:
-            s += 'Runtime: %s.\n' % ', '.join(runtime)
+            s += 'Runtime: %s.\n' % ', '.join(str(item) for item in runtime)
         countries = self.get('countries')
         if countries:
             s += 'Country: %s.\n' % ', '.join(countries)

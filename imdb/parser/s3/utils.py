@@ -1,4 +1,4 @@
-# Copyright 2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2018 Davide Alberani <da@mimante.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,21 +51,21 @@ def transf_multi_character(x):
 def transf_int(x):
     try:
         return int(x)
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 
 def transf_float(x):
     try:
         return float(x)
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 
 def transf_bool(x):
     try:
         return x == '1'
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 
@@ -278,6 +278,8 @@ def scan_names(name_list, name, results=0, ro_threshold=RO_THRESHOLD):
     sm2 = SequenceMatcher()
     sm1.set_seq1(name.lower())
     sm2.set_seq1(canonical_name.lower())
+    exact_name = name.strip().lower()
+    exact_canonical_name = canonical_name.strip().lower()
     resd = {}
     for i, n_data in name_list:
         nil = n_data['name']
@@ -285,6 +287,8 @@ def scan_names(name_list, name, results=0, ro_threshold=RO_THRESHOLD):
         ratios = [ratcliff(name, nil, sm1) + 0.1,
                   ratcliff(name, canonicalName(nil).replace(',', ''), sm2)]
         ratio = max(ratios)
+        if exact_name == nil.lower() or exact_canonical_name == nil.lower():
+            ratio = max(ratio, 2.0)
         if ratio >= ro_threshold:
             if i in resd:
                 if ratio > resd[i][0]:
@@ -326,6 +330,27 @@ def scan_titles(titles_list, title, results=0, ro_threshold=RO_THRESHOLD):
     sm2 = SequenceMatcher()
     sm2.set_seq2(no_article_title.lower())
     resd = {}
+
+    kind_scores = {
+        'movie': 6,
+        'tv movie': 5,
+        'tv series': 4,
+        'tv mini series': 4,
+        'tv special': 3,
+        'tv short': 2,
+        'short': 1,
+        'video': 1,
+        'episode': 0,
+    }
+
+    def _sort_score(t_data):
+        kind = t_data.get('kind')
+        year = t_data.get('year')
+        return (
+            kind_scores.get(kind, 0),
+            1 if year not in (None, '', 'None') else 0,
+        )
+
     for i, t_data in titles_list:
         til = t_data['title']
         ratios = [ratcliff(title, til, sm1) + 0.1,
@@ -340,8 +365,7 @@ def scan_titles(titles_list, title, results=0, ro_threshold=RO_THRESHOLD):
             else:
                 resd[i] = (ratio, (i, t_data))
     res = list(resd.values())
-    res.sort()
-    res.reverse()
+    res.sort(key=lambda item: (item[0],) + _sort_score(item[1][1]), reverse=True)
     if results > 0:
         res[:] = res[:results]
     return res

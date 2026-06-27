@@ -5,6 +5,7 @@
 *.egg-info
 *.mo
 *.so
+cinemagoer.db
 __pycache__
 _build/
 build/

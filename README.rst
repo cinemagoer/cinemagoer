@@ -13,26 +13,28 @@
     :alt: Project license.
 
 
-**Cinemagoer** (previously known as *IMDbPY*) is a Python package for retrieving and managing the data
-of the `IMDb`_ movie database about movies, people and companies.
+**Cinemagoer** (previously known as *IMDbPY*) is a Python package for retrieving and managing IMDb
+data about movies, people and companies from IMDb non-commercial downloadable datasets.
 
 This project and its authors are not affiliated in any way to Internet Movie Database Inc.; see the `DISCLAIMER.txt`_ file for details about data licenses.
 
 .. admonition:: Revamp notice
    :class: note
 
-   Starting on November 2017, many things were improved and simplified:
+   Starting on April 2026, the scope of this project shifted significantly due to the introduction of a WAF in front of the IMDb website.
+   From that day we can no longer guarantee that the package will work as expected with IMDb data (from a technical and legal standpoints),
+   and we limited the scope of Cinemagoer to the handling of the dataset that is freely distributed by IMDb.
 
-   - moved the package to Python 3 (compatible with Python 2.7)
-   - removed dependencies: SQLObject, C compiler, BeautifulSoup
-   - removed the "mobile" and "httpThin" parsers
-   - introduced a test suite (`please help with it!`_)
+    If you still need IMDb web-page parsing, see `cinemagoerng`_.
+    It is focused on parsing IMDb web pages, but requires you to provide
+    the function used to fetch those pages.
 
+   
 
 Main features
 -------------
 
-- written in Python 3 (compatible with Python 2.7)
+- written in Python 3
 
 - platform-independent
 
@@ -62,12 +64,29 @@ Example
 
 Here's an example that demonstrates how to use Cinemagoer:
 
+.. note::
+
+    Cinemagoer reads data from a local database populated from IMDb datasets.
+    Before running Python examples:
+
+    1. Download the ``*.tsv.gz`` files from https://datasets.imdbws.com/
+       (or run ``download-from-s3``)
+    2. Import them with :file:`s32cinemagoer.py`
+    3. Open the populated database with Cinemagoer
+
+    SQLite is used in examples for simplicity, but any SQLAlchemy-supported
+    database can be used.
+
+.. code-block:: bash
+
+    s32cinemagoer.py /path/to/imdb-tsv-files/ sqlite:///cinemagoer.db
+
 .. code-block:: python
 
    from imdb import Cinemagoer
 
-   # create an instance of the Cinemagoer class
-   ia = Cinemagoer()
+    # Open the SQLite database populated with s32cinemagoer.py.
+    ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
 
    # get a movie
    movie = ia.get_movie('0133093')
@@ -120,6 +139,7 @@ NOTE: See also the recommendations in the `DISCLAIMER.txt`_ file.
 .. _support: https://cinemagoer.github.io/support/
 .. _Read The Docs: https://cinemagoer.readthedocs.io/
 .. _GitHub: https://github.com/cinemagoer/cinemagoer
+.. _cinemagoerng: https://github.com/cinemagoer/cinemagoerng
 .. _CONTRIBUTOR_GUIDE.rst: https://github.com/ethorne2/cinemagoer/blob/documentation-add-contributor-guide/CONTRIBUTOR_GUIDE.rst
 .. _LICENSE.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/LICENSE.txt
 .. _CONTRIBUTORS.txt: https://raw.githubusercontent.com/cinemagoer/cinemagoer/master/CONTRIBUTORS.txt

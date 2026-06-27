@@ -1,4 +1,4 @@
-# Copyright 2006-2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2006-2018 Davide Alberani <da@mimante.net>
 #                2012 Alberto Malagoli <albemala AT gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -318,20 +318,18 @@ def get_byURL(url, info=None, args=None, kwds=None):
         args = []
     if kwds is None:
         kwds = {}
-    ia = IMDb(*args, **kwds)
     match = _re_imdbIDurl.search(url)
     if not match:
         return None
     imdbtype = match.group(1)
     imdbID = match.group(2)
+    if imdbtype in ('ch', 'co'):
+        raise IMDbError('unsupported IMDb URL type for S3 access system: %s' % imdbtype)
+    ia = IMDb(*args, **kwds)
     if imdbtype == 'tt':
         return ia.get_movie(imdbID, info=info)
     elif imdbtype == 'nm':
         return ia.get_person(imdbID, info=info)
-    elif imdbtype == 'ch':
-        return ia.get_character(imdbID, info=info)
-    elif imdbtype == 'co':
-        return ia.get_company(imdbID, info=info)
     return None
 
 

@@ -5,7 +5,7 @@ s32cinemagoer.py script.
 
 This script imports the s3 dataset distributed by IMDb into a SQL database.
 
-Copyright 2017-2018 Davide Alberani <da@erlug.linux.it>
+Copyright 2017-2018 Davide Alberani <da@mimante.net>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -127,7 +127,6 @@ def import_file(fn, engine):
     :type engine: :class:`sqlalchemy.engine.base.Engine`
     """
     logging.info('begin processing file %s' % fn)
-    connection = engine.connect()
     count = 0
     nr_of_lines = 0
     fn_basename = os.path.basename(fn)
@@ -139,26 +138,27 @@ def import_file(fn, engine):
         headers = gz_file.readline().decode('utf-8').strip().split('\t')
         logging.debug('headers of file %s: %s' % (fn, ','.join(headers)))
         table = build_table(fn_basename, headers)
-        try:
-            table.drop()
-            logging.debug('table %s dropped' % table.name)
-        except:
-            pass
         insert = table.insert()
-        metadata.create_all(tables=[table])
         if HAS_TQDM and logger.isEnabledFor(logging.DEBUG):
             tqdm_ = tqdm
         else:
             tqdm_ = lambda it, **kwargs: it
         try:
-            for block in generate_content(tqdm_(gz_file, total=nr_of_lines), headers, table):
+            with engine.begin() as connection:
                 try:
-                    connection.execute(insert, block)
-                except Exception as e:
-                    logging.error('error processing data: %d entries lost: %s' % (len(block), e))
-                    continue
-                count += len(block)
-                percent = count * 100 / nr_of_lines
+                    table.drop(bind=connection, checkfirst=True)
+                    logging.debug('table %s dropped' % table.name)
+                except Exception:
+                    pass
+                metadata.create_all(bind=connection, tables=[table])
+                for block in generate_content(tqdm_(gz_file, total=nr_of_lines), headers, table):
+                    try:
+                        connection.execute(insert, block)
+                    except Exception as e:
+                        logging.error('error processing data: %d entries lost: %s' % (len(block), e))
+                        continue
+                    count += len(block)
+                    percent = count * 100 / nr_of_lines
         except Exception as e:
             logging.error('error processing data on table %s: %s' % (table.name, e))
         logging.info('processed file %s: %d entries' % (fn, count))
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     if args.verbose:
         logger.setLevel(logging.DEBUG)
     cleanup = args.cleanup
-    engine = sqlalchemy.create_engine(db_uri, encoding='utf-8', echo=False)
+    engine = sqlalchemy.create_engine(db_uri, echo=False)
     metadata.bind = engine
     import_dir(dir_name, engine, cleanup)
 

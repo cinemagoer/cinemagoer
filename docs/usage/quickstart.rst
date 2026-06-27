@@ -4,14 +4,27 @@ Quick start
 The first thing to do is to import :mod:`imdb` and call the :mod:`imdb.IMDb`
 function to get an access object through which IMDb data can be retrieved:
 
+.. important::
+
+   Before creating the access object, download IMDb non-commercial datasets
+   from https://datasets.imdbws.com/ (or run ``download-from-s3``)
+   and import them into SQLite:
+
+   .. code-block:: bash
+
+      s32cinemagoer.py /path/to/imdb-tsv-files/ sqlite:///cinemagoer.db
+
+   All examples on this page assume that this database is already populated.
+   SQLite is used here for simplicity; Cinemagoer also supports other
+   SQLAlchemy-supported databases.
+
 .. code-block:: python
 
    >>> import imdb
-   >>> ia = imdb.Cinemagoer()
+   >>> ia = imdb.Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
 
-By default this will fetch the data from the IMDb web server but there are
-other options. See the :ref:`access systems <access>` document
-for more information.
+This uses the S3 dataset access system. See :ref:`s3` for dataset import and
+database setup.
 
 Searching
 ---------
@@ -24,24 +37,20 @@ For example, to search for movies with titles like "matrix":
 
    >>> movies = ia.search_movie('matrix')
    >>> movies[0]
-   <Movie id:0133093[http] title:_The Matrix (1999)_>
+   <Movie id:0133093[s3] title:_The Matrix (1999)_>
 
-Similarly, you can search for people and companies using
-the :meth:`search_person <imdb.IMDbBase.search_person>` and
-the :meth:`search_company <imdb.IMDbBase.search_company>` methods:
+Similarly, you can search for people using
+the :meth:`search_person <imdb.IMDbBase.search_person>` method:
 
 .. code-block:: python
 
    >>> people = ia.search_person('angelina')
    >>> people[0]
-   <Person id:0001401[http] name:_Jolie, Angelina_>
-   >>> companies = ia.search_company('rko')
-   >>> companies[0]
-   <Company id:0226417[http] name:_RKO_>
+   <Person id:0001401[s3] name:_Jolie, Angelina_>
 
 As the examples indicate, the results are lists of
-:class:`Movie <imdb.Movie.Movie>`, :class:`Person <imdb.Person.Person>`, or
-:class:`Company <imdb.Company.Company>` objects. These behave like
+:class:`Movie <imdb.Movie.Movie>` and :class:`Person <imdb.Person.Person>`
+objects. These behave like
 dictionaries, i.e. they can be queried by giving the key of the data
 you want to obtain:
 
@@ -51,12 +60,9 @@ you want to obtain:
    'The Matrix'
    >>> people[0]['name']
    'Angelina Jolie'
-   >>> companies[0]['name']
-   'RKO'
 
-Movie, person, and company objects have id attributes which
--when fetched through the IMDb web server- store the IMDb id
-of the object:
+Movie and person objects have id attributes that store the IMDb id of
+the object:
 
 .. code-block:: python
 
@@ -64,8 +70,6 @@ of the object:
    '0133093'
    >>> people[0].personID
    '0001401'
-   >>> companies[0].companyID
-   '0226417'
 
 
 
@@ -81,12 +85,10 @@ For example, the movie "The Untouchables" by Brian De Palma has the id
 
    >>> movie = ia.get_movie('0094226')
    >>> movie
-   <Movie id:0094226[http] title:_The Untouchables (1987)_>
+   <Movie id:0094226[s3] title:_The Untouchables (1987)_>
 
-Similarly, the :meth:`get_person <imdb.IMDbBase.get_person>` and
-the :meth:`get_company <imdb.IMDbBase.get_company>` methods can be used
-for retrieving :class:`Person <imdb.Person.Person>` and
-:class:`Company <imdb.Company.Company>` data:
+Similarly, the :meth:`get_person <imdb.IMDbBase.get_person>` method can be
+used for retrieving :class:`Person <imdb.Person.Person>` data:
 
 .. code-block:: python
 
@@ -95,48 +97,6 @@ for retrieving :class:`Person <imdb.Person.Person>` and
    'Keanu Reeves'
    >>> person['birth date']
    '1964-9-2'
-   >>> company = ia.get_company('0017902')
-   >>> company['name']
-   'Pixar Animation Studios'
-
-
-Keywords
---------
-
-You can search for keywords similar to the one provided:
-
-.. code-block:: python
-
-   >>> keywords = ia.search_keyword('dystopia')
-   >>> keywords
-   ['dystopia', 'dystopian-future', ..., 'dystopic-future']
-
-And movies that match a given keyword:
-
-.. code-block:: python
-
-   >>> movies = ia.get_keyword('dystopia')
-   >>> len(movies)
-   50
-   >>> movies[0]
-   <Movie id:1677720[http] title:_Ready Player One (2018)_>
-
-
-Top / bottom movies
--------------------
-
-It's possible to retrieve the list of top 250 and bottom 100 movies:
-
-.. code-block:: python
-
-   >>> top = ia.get_top250_movies()
-   >>> top[0]
-   <Movie id:0111161[http] title:_The Shawshank Redemption (1994)_>
-   >>> bottom = ia.get_bottom100_movies()
-   >>> bottom[0]
-   <Movie id:4458206[http] title:_Code Name: K.O.Z. (2015)_>
-
-The :meth:`get_top250_tv <imdb.IMDbBase.get_top250_tv>`, :meth:`get_popular100_movies <imdb.IMDbBase.get_popular100_movies>`, :meth:`get_popular100_movies <imdb.IMDbBase.get_popular100_movies>` and :meth:`get_top250_indian_movies <imdb.IMDbBase.get_top250_indian_movies>` methods are also available.
 
 
 Exceptions
@@ -150,7 +110,14 @@ the :class:`imdb.IMDbError` exception:
    from imdb import Cinemagoer, IMDbError
 
    try:
-       ia = Cinemagoer()
-       people = ia.search_person('Mel Gibson')
+      ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
+      people = ia.search_person('Mel Gibson')
    except IMDbError as e:
        print(e)
+
+
+See also
+--------
+
+For more details about available methods and objects, see
+:doc:`query`, :doc:`data-interface`, :doc:`role`, and :doc:`series`.

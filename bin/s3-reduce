@@ -1,5 +1,5 @@
 #!/bin/sh
-# Copyright 2018 Davide Alberani <da@erlug.linux.it>
+# Copyright 2018 Davide Alberani <da@mimante.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,20 +17,22 @@
 #
 # s3-reduce.sh: create smaller versions of .tsv.gz files
 
-COUNT="100"
+set -eu
 
-if [ "x$1" != "x" ] ; then
-    pushd "$1"
+COUNT="100"
+START_DIR="$(pwd)"
+
+if [ "${1:-}" != "" ] ; then
+    cd "$1"
 fi
 
 mkdir -p partials
 
 for fname in *.tsv.gz
 do
-    zcat "${fname}" | head -${COUNT} | gzip -f - > "partials/${fname}"
+    zcat "${fname}" | head -"${COUNT}" | gzip -f - > "partials/${fname}"
 done
 
-
-if [ "x$1" != "x" ] ; then
-    popd
+if [ "${1:-}" != "" ] ; then
+    cd "${START_DIR}"
 fi

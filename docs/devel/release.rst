@@ -26,9 +26,7 @@ How to make a release
 - Add an annotated tag like *year.month.day*; e.g.: ``git tag -a 2020.09.25``
   (the commit message is not important).
 
-- ``python3 setup.py sdist``
-
-- ``python3 setup.py bdist_wheel``
+- ``python3 -m build``
 
 - ``git push``
 
@@ -37,8 +35,8 @@ How to make a release
 - Don't forget to push both sources and tags to both the GitHub and Bitbucket
   repositories (they are kept in sync).
 
-- Upload to pypi: ``twine upload dist/cinemagoer-*`` (you probably need a recent
-  version of twine and the appropriate ~/.pypi file)
+- Upload to pypi: ``python3 -m twine upload dist/cinemagoer-*`` (you probably need
+  a recent version of twine and the appropriate ~/.pypi file)
 
 - The new tar.gz must also be uploaded
   to https://sourceforge.net/projects/cinemagoer/ (along with a new "news").

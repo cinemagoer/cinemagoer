@@ -277,7 +277,8 @@ class IMDbS3AccessSystem(IMDbBase):
         results = [x[1] for x in results]
         return results
 
-    def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None, sort_dir=None):
+    def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None,
+                               sort_dir=None, title_types=None):
         return self._search_movie(title, results)
 
     def _search_episode(self, title, results):

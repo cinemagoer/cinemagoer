@@ -30,15 +30,6 @@ The ``search_person(name)``, ``get_person(personID)``,
 methods work the same way as ``search_movie(title)`` and
 ``get_movie(movieID)``.
 
-The ``get_imdbMovieID(movieID)`` and ``get_imdbPersonID(personID)``
-methods take a movieID or personID and return the relative imdbID; it's
-safer to use the ``get_imdbID(MovieOrPersonObject)`` method.
-
-The ``title2imdbID(title)`` and ``name2imdbID(name)`` methods take,
-respectively, a movie title and a person name and return the relative imdbID;
-when possible it's safer to use the ``get_imdbID(MovieOrPersonObject)``
-method.
-
 The ``get_imdbID(MovieOrPersonObject)`` method returns the imdbID for
 the given Movie or Person object.
 
@@ -67,12 +58,12 @@ Example:
    i.update(first_match)
    # a lot of information will be printed!
    print(first_match.summary())
-  # retrieve trivia information
-  i.update(first_match, 'trivia')
-  print(first_match['trivia'])
+    # retrieve trivia information
+    i.update(first_match, 'trivia')
+    print(first_match['trivia'])
    # retrieve both 'quotes' and 'goofs' information (with a list or tuple)
-  i.update(first_match, ['quotes', 'goofs'])
-  print(first_match['quotes'])
-  print(first_match['goofs'])
+    i.update(first_match, ['quotes', 'goofs'])
+    print(first_match['quotes'])
+    print(first_match['goofs'])
    # retrieve every available information.
-  i.update(first_match, 'all')
+    i.update(first_match, 'all')

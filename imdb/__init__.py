@@ -391,7 +391,8 @@ class IMDbBase:
                 data=md, modFunct=self._defModFunct,
                 accessSystem=self.accessSystem) for mi, md in res if mi and md][:results]
 
-    def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None, sort_dir=None):
+    def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None,
+                               sort_dir=None, title_types=None):
         """Return a list of tuples (movieID, {movieData})"""
         # XXX: for the real implementation, see the method of the
         #      subclass, somewhere under the imdb.parser package.
@@ -622,6 +623,21 @@ class IMDbBase:
         if 'charactersRefs' in ret:
             mop.update_charactersRefs(ret['charactersRefs'])
         mop.set_data(res, override=0)
+
+    def get_imdbID(self, mop):
+        """Return the IMDb ID for the given Movie, Person or Character object."""
+        if isinstance(mop, Movie.Movie):
+            imdbID = mop.movieID
+        elif isinstance(mop, Person.Person):
+            imdbID = mop.personID
+        elif isinstance(mop, Character.Character):
+            imdbID = mop.characterID
+        else:
+            raise IMDbError('object ' + repr(mop) +
+                            ' is not a Movie, Person, or Character instance')
+        if imdbID is None:
+            return None
+        return str(imdbID).zfill(7)
 
     def get_imdbURL(self, mop):
         """Return the main IMDb URL for the given Movie, Person,

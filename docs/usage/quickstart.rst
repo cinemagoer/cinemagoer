@@ -7,7 +7,8 @@ function to get an access object through which IMDb data can be retrieved:
 .. important::
 
    Before creating the access object, download IMDb non-commercial datasets
-   from https://datasets.imdbws.com/ and import them into SQLite:
+   from https://datasets.imdbws.com/ (or run ``download-from-s3``)
+   and import them into SQLite:
 
    .. code-block:: bash
 

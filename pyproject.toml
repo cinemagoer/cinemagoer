@@ -76,6 +76,11 @@ cinemagoer = "imdb.cli:main"
 
 [tool.setuptools]
 include-package-data = false
+script-files = [
+    "bin/s32cinemagoer.py",
+    "bin/download-from-s3",
+    "bin/s3-reduce",
+]
 
 [tool.setuptools.package-data]
 "imdb.locale" =  [

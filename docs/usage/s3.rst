@@ -15,8 +15,16 @@ documentation we use SQLite in examples because it is the simplest setup.
 
 Then, follow these steps:
 
-#. Download the files from the following address and put all of them
-   in the same directory: https://datasets.imdbws.com/
+#. Download the files from https://datasets.imdbws.com/ and put all of them
+   in the same directory.
+
+   You can download all IMDb dataset files with the installed
+   ``download-from-s3`` command::
+
+      download-from-s3
+
+   This creates a timestamped directory named like
+   ``imdb-dataset-YYYY-MM-DD`` with the ``*.tsv.gz`` files.
 
 #. Create or choose a database.
 
@@ -31,6 +39,13 @@ Then, follow these steps:
       s32cinemagoer.py ~/Downloads/imdb-datasets/ sqlite:///cinemagoer.db
 
    You can also use other SQLAlchemy-supported database URIs.
+
+   For faster local iteration while developing, you can create reduced
+   dataset files with ``s3-reduce``::
+
+      s3-reduce /path/to/the/tsv.gz/files/
+
+   This writes smaller files under ``partials/`` in that directory.
 
 Once the import is finished - which should take about an hour or less
 on a modern system - you will have a database with all the information

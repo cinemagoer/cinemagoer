@@ -37,16 +37,13 @@ The ``get_imdbURL(MovieOrPersonObject)`` method returns a string with the
 main IMDb URL for the given Movie or Person object.
 
 The ``update(MovieOrPersonObject)`` method takes an instance of a Movie
-or Person class, and retrieves other available information.
+or Person class, and retrieves additional available information sets.
 
-Remember that the ``search_*(txt)`` methods will return a list of Movie
-or Person objects with only basic information,
-such as the movie title or the person name. So, ``update()`` can be
-used to retrieve every other information.
+Remember that the ``search_*(txt)`` methods return objects with basic
+information. In the S3 dataset backend, ``update()`` is mainly used to
+retrieve the ``main`` infoset for those objects.
 
-By default a "reasonable" set of information are retrieved: 'main',
-'filmography', and 'biography' for a Person object; 'main' and 'plot'
-for a Movie object.
+By default, both Movie and Person objects request only the ``main`` infoset.
 
 Example:
 
@@ -54,16 +51,9 @@ Example:
 
    # only basic information like the title will be printed.
    print(first_match.summary())
-   # update the information for this movie.
+  # update the information for this movie.
    i.update(first_match)
-   # a lot of information will be printed!
+  # now the object contains the available "main" dataset fields.
    print(first_match.summary())
-    # retrieve trivia information
-    i.update(first_match, 'trivia')
-    print(first_match['trivia'])
-   # retrieve both 'quotes' and 'goofs' information (with a list or tuple)
-    i.update(first_match, ['quotes', 'goofs'])
-    print(first_match['quotes'])
-    print(first_match['goofs'])
-   # retrieve every available information.
-    i.update(first_match, 'all')
+  # retrieve all available infosets for this backend.
+  i.update(first_match, 'all')

@@ -1,8 +1,9 @@
 Information in XML format
 =========================
 
-Since version 4.0, Cinemagoer can output information of Movie, Person, Character,
-and Company instances in XML format. It's possible to get a single information
+Since version 4.0, Cinemagoer can output information of Movie and Person
+instances (and nested Character/Company objects when present) in XML format.
+It's possible to get a single information
 (a key) in XML format, using the ``getAsXML(key)`` method (it will return None
 if the key is not found). E.g.:
 

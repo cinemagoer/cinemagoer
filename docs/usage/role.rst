@@ -71,28 +71,18 @@ to get a list of movies acted by Mel Gibson, you'll get a KeyError exception,
 because the Person object doesn't contain this kind of information.
 
 
-The same is true when parsing person data: you'll find a list of movie
-the person worked on and, for every movie, the currentRole instance variable
-is set to a string describing the role of the considered person:
+When parsing person data in the S3 backend, you'll get dataset-backed fields
+such as ``primary profession`` and ``known for`` titles:
 
 .. code-block:: python
 
-    julia = i.get_person('0000210')
-    for job in julia['filmography'].keys():
-        print('# Job: ', job)
-        for movie in julia['filmography'][job]:
-            print('\t%s %s (role: %s)' % (movie.movieID, movie['title'], movie.currentRole))
-
-Here the various Movie objects only contain minimal information,
-like the title and the year; the latest movie with Julia Roberts:
-
-.. code-block:: python
-
-    last = julia['filmography']['actress'][0]
-    # Retrieve full information
-    i.update(last)
-    # name of the first director
-    print(last['director'][0]['name'])
+   >>> person = ia.get_person('0000210')
+   >>> person['name']
+   'Julia Roberts'
+   >>> person['primary profession']
+   ['...']
+   >>> person['known for'][0]['title']
+   '...'
 
 
 The ``currentRole`` attribute is still available and can contain role names

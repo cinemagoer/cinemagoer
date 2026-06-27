@@ -20,37 +20,32 @@ from the datasets.
 Information sets
 ----------------
 
-Cinemagoer can retrieve a lot of information for a movie or person.
-Depending on the selected information sets, this can mean additional
-database queries, especially if you're interested in only a small part
-of the information.
+Cinemagoer retrieves data grouped in "information sets". In the current
+S3-only backend, the guaranteed infoset is ``main`` for both movies and
+people.
 
-The :meth:`get_movie <imdb.IMDbBase.get_movie>`,
-:meth:`get_person <imdb.IMDbBase.get_person>` methods take an optional
-``info`` parameter, which can be used to specify the kinds of data to fetch.
-Each group of data that gets fetched together is called an "information set".
+The :meth:`get_movie <imdb.IMDbBase.get_movie>` and
+:meth:`get_person <imdb.IMDbBase.get_person>` methods accept an optional
+``info`` parameter. Each requested group of data is an "information set".
 
-Different types of objects have their own available information sets.
-For example, the movie objects have a set called "vote details" for
-the number of votes and their demographic breakdowns, whereas person objects
-have a set called "other works" for miscellaneous works of the person.
-Available information sets for each object type can be queried
-using the access object:
+Available information sets can be queried using the access object:
 
 .. code-block:: python
 
    >>> from imdb import Cinemagoer
    >>> ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
    >>> ia.get_movie_infoset()
-   ['airing', 'akas', ..., 'video clips', 'vote details']
+   ['main', 'plot']
    >>> ia.get_person_infoset()
-   ['awards', 'biography', ..., 'other works', 'publicity']
+   ['main', 'biography', 'filmography']
 
-For each object type, only the important information will be retrieved
-by default:
+In the S3 backend, ``plot`` for movies and ``biography``/``filmography`` for
+people are compatibility aliases of ``main``.
 
-- for a movie: "main", "plot"
-- for a person: "main", "filmography", "biography"
+By default, only ``main`` is requested:
+
+- for a movie: ``main``
+- for a person: ``main``
 
 These defaults can be retrieved from the ``default_info`` attributes
 of the classes:
@@ -59,7 +54,7 @@ of the classes:
 
    >>> from imdb.Person import Person
    >>> Person.default_info
-   ('main', 'filmography', 'biography')
+   ('main',)
 
 Each instance also has a ``current_info`` attribute for tracking
 the information sets that have already been retrieved:
@@ -68,7 +63,7 @@ the information sets that have already been retrieved:
 
    >>> movie = ia.get_movie('0133093')
    >>> movie.current_info
-   ['main', 'plot', 'synopsis']
+   ['main']
 
 The list of retrieved information sets and the keys they provide can be
 taken from the ``infoset2keys`` attribute:
@@ -76,14 +71,10 @@ taken from the ``infoset2keys`` attribute:
 .. code-block:: python
 
    >>> movie = ia.get_movie('0133093')
-   >>> movie.infoset2keys
-   {'main': ['cast', 'genres', ..., 'top 250 rank'], 'plot': ['plot', 'synopsis']}
-   >>> movie = ia.get_movie('0094226', info=['taglines', 'plot'])
-   >>> movie.infoset2keys
-   {'taglines': ['taglines'], 'plot': ['plot', 'synopsis']}
+   >>> sorted(movie.infoset2keys)
+   ['main']
    >>> movie.get('title')
-   >>> movie.get('taglines')[0]
-   'The Chicago Dream is that big'
+   'The Matrix'
 
 Search operations retrieve a fixed set of data and don't have the concept
 of information sets. Therefore objects listed in searches will have even less
@@ -103,24 +94,23 @@ available on a movie get operation:
    False
 
 Once an object is retrieved (through a get or a search), its data can be
-updated using the :meth:`update <imdb.IMDbBase.update>` method with the desired
-information sets. Continuing from the example above:
+updated using :meth:`update <imdb.IMDbBase.update>`. In the S3 backend,
+this is mainly useful for expanding search results from basic fields to
+the ``main`` infoset:
 
 .. code-block:: python
 
-   >>> 'median' in movie
+   >>> 'cast' in movie
    False
-   >>> ia.update(movie, info=['taglines', 'vote details'])
+   >>> ia.update(movie)
    >>> movie.current_info
-   ['taglines', 'vote details']
-   >>> movie['median']
-   9
-   >>> ia.update(movie, info=['plot'])
-   >>> movie.current_info
-   ['taglines', 'vote details', 'plot', 'synopsis']
+   ['main']
+   >>> 'cast' in movie
+   True
 
-Beware that not every possible piece of data is available through the
-S3 dataset access system.
+Only data present in IMDb non-commercial datasets is available through
+the S3 access system. Legacy infosets like trivia, quotes, goofs,
+full credits, vote details, and publicity are not available.
 
 
 Composite data

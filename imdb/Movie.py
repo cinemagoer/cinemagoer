@@ -45,7 +45,8 @@ class Movie(_Container):
     the keys_alias dictionary.
     """
     # The default sets of information retrieved.
-    default_info = ('main', 'plot')
+    # In the S3 dataset backend, only "main" is guaranteed.
+    default_info = ('main',)
 
     # Aliases for some not-so-intuitive keys.
     keys_alias = {

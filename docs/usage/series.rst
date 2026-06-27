@@ -18,27 +18,13 @@ to distinguish series and episodes from movies:
    >>> episode['kind']
    'episode'
 
-The episodes of a series can be fetched using the "episodes" infoset. This
-infoset adds an ``episodes`` key which is a dictionary from season numbers
-to episodes. And each season is a dictionary from episode numbers within
-the season to the episodes. Note that the season and episode numbers don't
-start from 0; they are the numbers given by the IMDb:
+With the current S3 dataset backend, Cinemagoer does not provide the legacy
+``episodes`` infoset that expands a whole series into nested season/episode
+dictionaries.
 
-.. code-block:: python
-
-   >>> ia.update(series, 'episodes')
-   >>> sorted(series['episodes'].keys())
-   [1, 2, 3, 4]
-   >>> season4 = series['episodes'][4]
-   >>> len(season4)
-   13
-   >>> episode = series['episodes'][4][2]
-   >>> episode
-   <Movie id:1038701[s3] title:_"The 4400" Fear Itself (2007)_>
-   >>> episode['season']
-   4
-   >>> episode['episode']
-   2
+If you already know an episode IMDb id, you can retrieve it directly and read
+its episode metadata fields from ``title.episode.tsv.gz`` (for example,
+``seasonNr`` and ``episodeNr`` when present).
 
 The title of the episode doesn't contain the title of the series:
 
@@ -46,19 +32,11 @@ The title of the episode doesn't contain the title of the series:
 
    >>> episode['title']
    'Fear Itself'
-   >>> episode['series title']
-   'The 4400'
+   >>> episode.get('kind')
+   'episode'
 
-The episode also contains a key that refers to the series, but beware that,
-to avoid circular references, it's not the same object as the series object
-we started with:
-
-.. code-block:: python
-
-   >>> episode['episode of']
-   <Movie id:0389564[s3] title:_"The 4400" (None)_>
-   >>> series
-   <Movie id:0389564[s3] title:_"The 4400" (2004)_>
+Depending on imported rows, episode objects can also include a reference to
+their parent series.
 
 
 Titles
@@ -98,94 +76,5 @@ by the plain text data files (something like
 "The Series" (2004) {An Episode (#2.5)})
 
 
-Full credits
-------------
-
-When retrieving credits for a TV series or mini-series, you may notice that
-many long lists (like "cast" and "writers") are incomplete. You can fetch
-the complete list of cast and crew with the "full credits" data set:
-
-.. code-block:: python
-
-   >>> series = ia.get_movie('0285331')
-   >>> series
-   <Movie id:0285331[s3] title:_"24" (2001)_>
-   >>> len(series['cast'])
-   50
-   >>> ia.update(series, 'full credits')
-   >>> len(series['cast'])
-   2514
-
-
-Ratings
--------
-
-You can retrieve rating information about every episode in a TV series
-or mini series using the 'episodes rating' data set.
-
-
-People
-------
-
-You can retrieve information about single episodes acted/directed/...
-by a person.
-
-.. code-block:: python
-
-   from imdb import Cinemagoer
-   i = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
-   p = i.get_person('0005041')  # Laura Innes
-   p['filmography']['actress'][0]   # <Movie id:0568152[s3] title:_"ER" (????)_>
-
-   # At this point you have an entry (in keys like 'actor', 'actress',
-   # 'director', ...) for every series the person starred/worked in, but
-   # you know nothing about single episodes.
-   i.update(p, 'episodes')  # updates information about single episodes.
-
-   p['episodes']    # a dictionary with the format:
-                    #    {<TV Series Movie Object>: [
-                    #                                <Episode Movie Object>,
-                    #                                <Episode Movie Object>,
-                    #                                ...
-                    #                               ],
-                    #     ...
-                    #    }
-
-   er = p['actress'][0]  # ER tv series
-   p['episodes'][er]     # list of Movie objects; one for every ER episode
-                         # she starred/worked in
-
-   p['episodes'][er][0]  # <Movie id:0568154[s3] title:_"ER" Welcome Back Carter! (1995)_>
-   p['episodes'][er]['kind']   # 'episode'
-   p['episodes'][er][0].currentRole   # 'Dr. Kerry Weaver'
-
-
-Goodies
--------
-
-In the ``imdb.helpers`` module there are some functions useful to manage
-lists of episodes:
-
-- ``sortedSeasons(m)`` returns a sorted list of seasons of the given series, e.g.:
-
-  .. code-block:: python
-
-         >>> from imdb import Cinemagoer
-         >>> i = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
-         >>> m = i.get_movie('0411008')
-         >>> i.update(m, 'episodes')
-         >>> sortedSeasons(m)
-         [1, 2]
-
-- ``sortedEpisodes(m, season=None)`` returns a sorted list of episodes of the
-  the given series for only the specified season(s) (if None, every season),
-  e.g.:
-
-  .. code-block:: python
-
-         >>> from imdb import Cinemagoer
-         >>> i = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
-         >>> m = i.get_movie('0411008')
-         >>> i.update(m, 'episodes')
-         >>> sortedEpisodes(m, season=1)
-         [<Movie id:0636289[s3] title:_"Lost" Pilot: Part 1 (2004)_>, <Movie id:0636290[s3] title:_"Lost" Pilot: Part 2 (2004)_>, ...]
+Full-series episode expansion, per-series episode ratings, and person-level
+episode breakdown infosets are not available in the S3 dataset backend.

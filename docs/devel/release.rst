@@ -3,9 +3,13 @@ How to make a release
 
 **During development**
 
-*imdb.version*
+*Version files*
 
-    Be sure that the ``__version__`` variable is up-to-date.
+    Keep the project version aligned in these files:
+
+    - ``imdb/version.py`` (``__version__``)
+    - ``pyproject.toml`` (``[project].version``)
+    - ``uv.lock`` (regenerate with ``uv lock`` after changing the version)
 
 *CHANGELOG.txt*
 
@@ -17,6 +21,11 @@ How to make a release
 *CHANGELOG.txt*
 
     The date of the release has to be added.
+
+*Version files*
+
+    Update ``imdb/version.py`` and ``pyproject.toml`` to the new version, then
+    run ``uv lock`` so ``uv.lock`` is refreshed.
 
 
 **How to release**

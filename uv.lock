@@ -114,7 +114,7 @@ wheels = [
 
 [[package]]
 name = "cinemagoer"
-version = "2026.6.2"
+version = "2026.06.27"
 source = { editable = "." }
 dependencies = [
     { name = "lxml" },

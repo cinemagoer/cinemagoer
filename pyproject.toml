@@ -1,6 +1,6 @@
 [project]
 name = "cinemagoer"
-version = "2026.06.02"
+version = "2026.06.27"
 description = "Retrieve data from IMDb."
 readme = "README.rst"
 

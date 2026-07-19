@@ -21,6 +21,109 @@ set -eu
 
 COUNT="100"
 START_DIR="$(pwd)"
+MODE="head"
+
+usage() {
+    cat <<'EOF'
+Usage: s3-reduce [options] [directory]
+
+Create reduced versions of .tsv.gz files in the partials/ directory.
+
+Options:
+  -l, --lines N      Keep N lines from the head and N lines from the tail.
+  -p, --percent P    Keep P percent (1-100) of lines, split between head and tail.
+  -h, --help         Show this help and exit.
+
+Default behavior (no options): keep the first 100 lines.
+The first line is always preserved.
+EOF
+}
+
+die() {
+    echo "Error: $*" >&2
+    exit 1
+}
+
+is_non_negative_int() {
+    case "$1" in
+        ''|*[!0-9]*)
+            return 1
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+}
+
+OPTS="$(getopt -o l:p:h -l lines:,percent:,help -- "$@")" || {
+    usage >&2
+    exit 2
+}
+eval set -- "$OPTS"
+
+HAS_LINES=0
+HAS_PERCENT=0
+PERCENT=""
+
+while true
+do
+    case "$1" in
+        -l|--lines)
+            HAS_LINES=1
+            COUNT="$2"
+            shift 2
+            ;;
+        -p|--percent)
+            HAS_PERCENT=1
+            PERCENT="$2"
+            shift 2
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            die "unexpected option: $1"
+            ;;
+    esac
+done
+
+if [ "$HAS_LINES" -eq 1 ] && [ "$HAS_PERCENT" -eq 1 ] ; then
+    die "--lines and --percent cannot be used together"
+fi
+
+if [ "$HAS_LINES" -eq 1 ] ; then
+    MODE="lines"
+fi
+
+if [ "$HAS_PERCENT" -eq 1 ] ; then
+    MODE="percent"
+fi
+
+if ! is_non_negative_int "$COUNT" ; then
+    die "--lines requires a positive integer"
+fi
+
+if [ "$COUNT" -lt 1 ] ; then
+    die "--lines requires a positive integer"
+fi
+
+if [ "$MODE" = "percent" ] ; then
+    if ! is_non_negative_int "$PERCENT" ; then
+        die "--percent requires an integer between 1 and 100"
+    fi
+    if [ "$PERCENT" -lt 1 ] || [ "$PERCENT" -gt 100 ] ; then
+        die "--percent must be between 1 and 100"
+    fi
+fi
+
+if [ "$#" -gt 1 ] ; then
+    die "too many positional arguments"
+fi
 
 if [ "${1:-}" != "" ] ; then
     cd "$1"
@@ -30,7 +133,71 @@ mkdir -p partials
 
 for fname in *.tsv.gz
 do
-    zcat "${fname}" | head -"${COUNT}" | gzip -f - > "partials/${fname}"
+    [ -e "${fname}" ] || continue
+
+    case "$MODE" in
+        head)
+            zcat "${fname}" | head -"${COUNT}" | gzip -f - > "partials/${fname}"
+            ;;
+        lines)
+            zcat "${fname}" | awk -v n="${COUNT}" '
+                {
+                    if (NR <= n) {
+                        print
+                    }
+                    if (n > 0) {
+                        tail[NR % n] = $0
+                    }
+                    total = NR
+                }
+                END {
+                    if (n <= 0) {
+                        exit
+                    }
+                    start = total - n + 1
+                    if (start <= n + 1) {
+                        start = n + 1
+                    }
+                    for (i = start; i <= total; i++) {
+                        print tail[i % n]
+                    }
+                }
+            ' | gzip -f - > "partials/${fname}"
+            ;;
+        percent)
+            total_lines="$(zcat "${fname}" | wc -l)"
+            keep_lines=$((total_lines * PERCENT / 100))
+            if [ "$keep_lines" -lt 1 ] ; then
+                keep_lines=1
+            fi
+
+            head_lines=$((keep_lines / 2))
+            tail_lines=$((keep_lines - head_lines))
+
+            if [ "$head_lines" -lt 1 ] ; then
+                head_lines=1
+                if [ "$keep_lines" -gt 1 ] ; then
+                    tail_lines=$((keep_lines - 1))
+                else
+                    tail_lines=0
+                fi
+            fi
+
+            if [ "$total_lines" -le "$head_lines" ] || [ "$total_lines" -le $((head_lines + tail_lines)) ] ; then
+                zcat "${fname}" | gzip -f - > "partials/${fname}"
+            elif [ "$tail_lines" -le 0 ] ; then
+                zcat "${fname}" | head -"${head_lines}" | gzip -f - > "partials/${fname}"
+            else
+                {
+                    zcat "${fname}" | head -"${head_lines}"
+                    zcat "${fname}" | tail -"${tail_lines}"
+                } | gzip -f - > "partials/${fname}"
+            fi
+            ;;
+        *)
+            die "internal error: invalid mode ${MODE}"
+            ;;
+    esac
 done
 
 if [ "${1:-}" != "" ] ; then

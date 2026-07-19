@@ -62,22 +62,31 @@ def generate_content(fd, headers, table):
     headers_len = len(headers)
     data_transf = {}
     table_name = table.name
+    soundex_key = None
+    soundex_fn = None
     for column, conf in DB_TRANSFORM.get(table_name, {}).items():
         if 'transform' in conf:
             data_transf[column] = conf['transform']
+    if table_name == 'title_basics':
+        soundex_key = 'primaryTitle'
+        soundex_fn = title_soundex
+    elif table_name == 'title_akas':
+        soundex_key = 'title'
+        soundex_fn = title_soundex
     for line in fd:
         s_line = line.decode('utf-8').strip().split('\t')
         if len(s_line) != headers_len:
             continue
-        info = dict(zip(headers, [x if x != r'\N' else None for x in s_line]))
+        info = {
+            header: (value if value != r'\N' else None)
+            for header, value in zip(headers, s_line)
+        }
         for key, tranf in data_transf.items():
             if key not in info:
                 continue
             info[key] = tranf(info[key])
-        if table_name == 'title_basics':
-            info['t_soundex'] = title_soundex(info['primaryTitle'])
-        elif table_name == 'title_akas':
-            info['t_soundex'] = title_soundex(info['title'])
+        if soundex_fn is not None:
+            info['t_soundex'] = soundex_fn(info[soundex_key])
         elif table_name == 'name_basics':
             info['ns_soundex'], info['sn_soundex'], info['s_soundex'] = name_soundexes(info['primaryName'])
         data.append(info)
@@ -89,7 +98,7 @@ def generate_content(fd, headers, table):
         data = []
 
 
-def build_table(fn, headers):
+def build_table(fn, headers, create_indexes=True):
     """Build a Table object from a .tsv.gz file.
 
     :param fn: the .tsv.gz file
@@ -101,6 +110,7 @@ def build_table(fn, headers):
     table_name = fn.replace(TSV_EXT, '').replace('.', '_')
     table_map = DB_TRANSFORM.get(table_name) or {}
     columns = []
+    indexed_columns = []
     all_headers = set(headers)
     all_headers.update(table_map.keys())
     for header in all_headers:
@@ -111,11 +121,23 @@ def build_table(fn, headers):
         col_args = {
             'name': header,
             'type_': col_type,
-            'index': col_info.get('index', False)
+            'index': bool(col_info.get('index', False) and create_indexes)
         }
+        if col_info.get('index', False):
+            indexed_columns.append(header)
         col_obj = sqlalchemy.Column(**col_args)
         columns.append(col_obj)
-    return sqlalchemy.Table(table_name, metadata, *columns)
+    table = sqlalchemy.Table(table_name, metadata, *columns)
+    table.info['indexed_columns'] = indexed_columns
+    return table
+
+
+def create_table_indexes(connection, table):
+    """Create indexes for a table after bulk loading data."""
+    for column_name in table.info.get('indexed_columns', []):
+        index_name = 'ix_%s_%s' % (table.name, column_name)
+        index = sqlalchemy.Index(index_name, table.c[column_name])
+        index.create(connection, checkfirst=True)
 
 
 def import_file(fn, engine):
@@ -128,21 +150,13 @@ def import_file(fn, engine):
     """
     logging.info('begin processing file %s' % fn)
     count = 0
-    nr_of_lines = 0
     fn_basename = os.path.basename(fn)
-    with gzip.GzipFile(fn, 'rb') as gz_file:
-        gz_file.readline()
-        for line in gz_file:
-            nr_of_lines += 1
     with gzip.GzipFile(fn, 'rb') as gz_file:
         headers = gz_file.readline().decode('utf-8').strip().split('\t')
         logging.debug('headers of file %s: %s' % (fn, ','.join(headers)))
-        table = build_table(fn_basename, headers)
+        table = build_table(fn_basename, headers, create_indexes=False)
         insert = table.insert()
-        if HAS_TQDM and logger.isEnabledFor(logging.DEBUG):
-            tqdm_ = tqdm
-        else:
-            tqdm_ = lambda it, **kwargs: it
+        use_tqdm = HAS_TQDM and logger.isEnabledFor(logging.DEBUG)
         try:
             with engine.begin() as connection:
                 try:
@@ -150,15 +164,16 @@ def import_file(fn, engine):
                     logging.debug('table %s dropped' % table.name)
                 except Exception:
                     pass
-                metadata.create_all(bind=connection, tables=[table])
-                for block in generate_content(tqdm_(gz_file, total=nr_of_lines), headers, table):
+                table.create(bind=connection, checkfirst=True)
+                iterator = tqdm(gz_file) if use_tqdm else gz_file
+                for block in generate_content(iterator, headers, table):
                     try:
                         connection.execute(insert, block)
                     except Exception as e:
                         logging.error('error processing data: %d entries lost: %s' % (len(block), e))
                         continue
                     count += len(block)
-                    percent = count * 100 / nr_of_lines
+                create_table_indexes(connection, table)
         except Exception as e:
             logging.error('error processing data on table %s: %s' % (table.name, e))
         logging.info('processed file %s: %d entries' % (fn, count))

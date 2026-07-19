@@ -1,5 +1,11 @@
 * What's new in the next release
 
+  [s3]
+
+  - improve performances of s32cinemagoer.py script
+  - add more options to s3-reduce
+  - fixes for readthedocs
+
 * What's new in release 2026.06.27 (The Lost Boys)
 
   [general]

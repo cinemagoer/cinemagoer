@@ -44,26 +44,26 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "lxml>=6.1.1",
-    "sqlalchemy>=2.0.50,<2.1",
+    "sqlalchemy>=2.0.51,<2.1",
 ]
 
 [dependency-groups]
 test = [
-    "pytest>=8.3.5",
-    "pytest-cov>=6.1.1",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
 ]
 style = [
-    "ruff>=0.11.10",
+    "ruff>=0.15.22",
 ]
 doc = [
-    "sphinx>=8.1.3",
-    "sphinx-rtd-theme>=3.0.2",
+    "sphinx>=8.1.3,<9",
+    "sphinx-rtd-theme>=3.1.0",
 ]
 dev = [
     {include-group = "test"},
     {include-group = "style"},
     {include-group = "doc"},
-    "tox-uv>=1.25.0",
+    "tox-uv>=1.35.2",
 ]
 
 [project.urls]

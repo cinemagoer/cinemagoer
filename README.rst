@@ -58,6 +58,12 @@ But if you want, you can also install the latest release from PyPI::
 
    pip install cinemagoer
 
+This base installation includes native SQLite support.  To use PostgreSQL,
+MariaDB, MySQL, or an explicitly selected SQLAlchemy dialect, install the
+optional integration and your chosen database driver::
+
+   pip install "cinemagoer[sqlalchemy]"
+
 
 Example
 -------
@@ -74,8 +80,8 @@ Here's an example that demonstrates how to use Cinemagoer:
     2. Import them with ``s32cinemagoer.py``
     3. Open the populated database with Cinemagoer
 
-    SQLite is used in examples for simplicity, but any SQLAlchemy-supported
-    database can be used.
+    SQLite works with a base installation. Any SQLAlchemy-supported database
+    can be used after installing the ``sqlalchemy`` extra and its DBAPI driver.
 
 .. code-block:: bash
 

@@ -21,8 +21,6 @@ This package provides utilities for the s3 dataset.
 import re
 from difflib import SequenceMatcher
 
-import sqlalchemy
-
 from imdb.utils import _unicodeArticles, canonicalName, canonicalTitle
 
 SOUNDEX_LENGTH = 5
@@ -84,85 +82,86 @@ def transf_kind(x):
 
 
 # Database mapping.
-# 'type' force a conversion to a specific SQL type
+# 'type' forces conversion to a neutral database type descriptor.  Adapters
+# map these values to their own concrete types.
 # 'transform' applies a conversion to the content (changes the data in the database)
 # 'rename' is applied when reading the column names (the columns names are unchanged, in the database)
 # 'index' mark the columns that need to be indexed
 # 'length' is applied to VARCHAR fields
 DB_TRANSFORM = {
     'title_basics': {
-        'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+        'tconst': {'type': 'integer', 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
-        'titleType': {'type': sqlalchemy.String, 'transform': transf_kind,
+        'titleType': {'type': 'string', 'transform': transf_kind,
                       'rename': 'kind', 'length': 16, 'index': True},
         'primaryTitle': {'rename': 'title'},
         'originalTitle': {'rename': 'original title'},
-        'isAdult': {'type': sqlalchemy.Boolean, 'transform': transf_bool, 'rename': 'adult', 'index': True},
-        'startYear': {'type': sqlalchemy.Integer, 'transform': transf_int, 'index': True},
-        'endYear': {'type': sqlalchemy.Integer, 'transform': transf_int},
-        'runtimeMinutes': {'type': sqlalchemy.Integer, 'transform': transf_int,
+        'isAdult': {'type': 'boolean', 'transform': transf_bool, 'rename': 'adult', 'index': True},
+        'startYear': {'type': 'integer', 'transform': transf_int, 'index': True},
+        'endYear': {'type': 'integer', 'transform': transf_int},
+        'runtimeMinutes': {'type': 'integer', 'transform': transf_int,
                            'rename': 'runtimes', 'index': True},
-        't_soundex': {'type': sqlalchemy.String, 'length': 5, 'index': True}
+        't_soundex': {'type': 'string', 'length': 5, 'index': True}
     },
     'name_basics': {
-        'nconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+        'nconst': {'type': 'integer', 'transform': transf_imdbid,
                    'rename': 'personID', 'index': True},
         'primaryName': {'rename': 'name'},
-        'birthYear': {'type': sqlalchemy.Integer, 'transform': transf_int,
+        'birthYear': {'type': 'integer', 'transform': transf_int,
                       'rename': 'birth date', 'index': True},
-        'deathYear': {'type': sqlalchemy.Integer, 'transform': transf_int,
+        'deathYear': {'type': 'integer', 'transform': transf_int,
                       'rename': 'death date', 'index': True},
         'primaryProfession': {'rename': 'primary profession'},
         'knownForTitles': {'transform': transf_multi_imdbid, 'rename': 'known for'},
-        'ns_soundex': {'type': sqlalchemy.String, 'length': 5, 'index': True},
-        'sn_soundex': {'type': sqlalchemy.String, 'length': 5, 'index': True},
-        's_soundex': {'type': sqlalchemy.String, 'length': 5, 'index': True},
+        'ns_soundex': {'type': 'string', 'length': 5, 'index': True},
+        'sn_soundex': {'type': 'string', 'length': 5, 'index': True},
+        's_soundex': {'type': 'string', 'length': 5, 'index': True},
     },
     'title_akas': {
-        'titleId': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+        'titleId': {'type': 'integer', 'transform': transf_imdbid,
                     'rename': 'movieID', 'index': True},
-        'ordering': {'type': sqlalchemy.Integer, 'transform': transf_int},
+        'ordering': {'type': 'integer', 'transform': transf_int},
         'title': {},
-        'region': {'type': sqlalchemy.String, 'length': 5, 'index': True},
-        'language': {'type': sqlalchemy.String, 'length': 5, 'index': True},
-        'types': {'type': sqlalchemy.String, 'length': 31, 'index': True},
-        'attributes': {'type': sqlalchemy.String, 'length': 127},
-        'isOriginalTitle': {'type': sqlalchemy.Boolean, 'transform': transf_bool,
+        'region': {'type': 'string', 'length': 5, 'index': True},
+        'language': {'type': 'string', 'length': 5, 'index': True},
+        'types': {'type': 'string', 'length': 31, 'index': True},
+        'attributes': {'type': 'string', 'length': 127},
+        'isOriginalTitle': {'type': 'boolean', 'transform': transf_bool,
                             'rename': 'original', 'index': True},
-        't_soundex': {'type': sqlalchemy.String, 'length': 5, 'index': True}
+        't_soundex': {'type': 'string', 'length': 5, 'index': True}
     },
     'title_crew': {
-        'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+        'tconst': {'type': 'integer', 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
         'directors': {'transform': transf_multi_imdbid, 'rename': 'director'},
         'writers': {'transform': transf_multi_imdbid, 'rename': 'writer'}
     },
     'title_episode': {
-        'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+        'tconst': {'type': 'integer', 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
-        'parentTconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid, 'index': True},
-        'seasonNumber': {'type': sqlalchemy.Integer, 'transform': transf_int,
+        'parentTconst': {'type': 'integer', 'transform': transf_imdbid, 'index': True},
+        'seasonNumber': {'type': 'integer', 'transform': transf_int,
                          'rename': 'seasonNr'},
-        'episodeNumber': {'type': sqlalchemy.Integer, 'transform': transf_int,
+        'episodeNumber': {'type': 'integer', 'transform': transf_int,
                           'rename': 'episodeNr'}
     },
     'title_principals': {
-        'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+        'tconst': {'type': 'integer', 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
-        'ordering': {'type': sqlalchemy.Integer, 'transform': transf_int},
-        'nconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+        'ordering': {'type': 'integer', 'transform': transf_int},
+        'nconst': {'type': 'integer', 'transform': transf_imdbid,
                    'rename': 'personID', 'index': True},
-        'category': {'type': sqlalchemy.String, 'length': 64},
-        'job': {'type': sqlalchemy.String, 'length': 1024},
-        'characters': {'type': sqlalchemy.String, 'length': 1024,
+        'category': {'type': 'string', 'length': 64},
+        'job': {'type': 'string', 'length': 1024},
+        'characters': {'type': 'string', 'length': 1024,
                        'transform': transf_multi_character}
     },
     'title_ratings': {
-        'tconst': {'type': sqlalchemy.Integer, 'transform': transf_imdbid,
+        'tconst': {'type': 'integer', 'transform': transf_imdbid,
                    'rename': 'movieID', 'index': True},
-        'averageRating': {'type': sqlalchemy.Float, 'transform': transf_float,
+        'averageRating': {'type': 'float', 'transform': transf_float,
                           'rename': 'rating', 'index': True},
-        'numVotes': {'type': sqlalchemy.Integer, 'transform': transf_int,
+        'numVotes': {'type': 'integer', 'transform': transf_int,
                      'rename': 'votes', 'index': True}
     }
 }

@@ -132,10 +132,14 @@ wheels = [
 
 [[package]]
 name = "cinemagoer"
-version = "2026.6.27"
+version = "2026.8.16"
 source = { editable = "." }
 dependencies = [
     { name = "lxml" },
+]
+
+[package.optional-dependencies]
+sqlalchemy = [
     { name = "sqlalchemy" },
 ]
 
@@ -146,6 +150,7 @@ dev = [
     { name = "ruff" },
     { name = "sphinx" },
     { name = "sphinx-rtd-theme" },
+    { name = "sqlalchemy" },
     { name = "tox-uv" },
 ]
 doc = [
@@ -163,8 +168,9 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "lxml", specifier = ">=6.1.1" },
-    { name = "sqlalchemy", specifier = ">=2.0.51,<2.1" },
+    { name = "sqlalchemy", marker = "extra == 'sqlalchemy'", specifier = ">=2.0.51,<2.1" },
 ]
+provides-extras = ["sqlalchemy"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -173,6 +179,7 @@ dev = [
     { name = "ruff", specifier = ">=0.15.22" },
     { name = "sphinx", specifier = ">=8.1.3,<9" },
     { name = "sphinx-rtd-theme", specifier = ">=3.1.0" },
+    { name = "sqlalchemy", specifier = ">=2.0.51,<2.1" },
     { name = "tox-uv", specifier = ">=1.35.2" },
 ]
 doc = [

@@ -9,8 +9,8 @@ programs.
    Cinemagoer is dataset-based: before running any example you must download
    IMDb non-commercial datasets, import them with :file:`s32cinemagoer.py`, and
    connect to the populated database. SQLite is used in examples
-   (``sqlite:///cinemagoer.db``), but other SQLAlchemy-supported databases are
-   supported too. See :ref:`s3`.
+   (``sqlite:///cinemagoer.db``). Other SQLAlchemy-supported databases require
+   the ``sqlalchemy`` extra and a suitable database driver. See :ref:`s3`.
 
 .. warning::
 

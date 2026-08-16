@@ -44,6 +44,10 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "lxml>=6.1.1",
+]
+
+[project.optional-dependencies]
+sqlalchemy = [
     "sqlalchemy>=2.0.51,<2.1",
 ]
 
@@ -64,6 +68,7 @@ dev = [
     {include-group = "style"},
     {include-group = "doc"},
     "tox-uv>=1.35.2",
+    "sqlalchemy>=2.0.51,<2.1",
 ]
 
 [project.urls]

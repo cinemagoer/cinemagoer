@@ -2,6 +2,10 @@
 
   [s3]
 
+  - make SQLAlchemy optional and provide native sqlite3 access and importing
+  - IMPORTANT: existing PostgreSQL, MariaDB, MySQL, and other non-SQLite users
+    must install ``cinemagoer[sqlalchemy]`` plus their database driver when
+    upgrading
   - improve performances of s32cinemagoer.py script
   - add more options to s3-reduce
   - fixes for readthedocs

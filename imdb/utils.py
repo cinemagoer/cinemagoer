@@ -626,10 +626,33 @@ class _LastC:
         return False
 
     def __eq__(self, other):
-        return not isinstance(other, self.__class__)
+        return isinstance(other, self.__class__)
 
 
 _last = _LastC()
+
+
+def _cmp_container_ids(first, second, reverse=False):
+    """Compare container IDs and access systems as a final tie-breaker."""
+    first_get_id = getattr(first, 'getID', None)
+    second_get_id = getattr(second, 'getID', None)
+    first_id = first_get_id() if callable(first_get_id) else None
+    second_id = second_get_id() if callable(second_get_id) else None
+    first_key = (
+        first_id is None,
+        str(first_id) if first_id is not None else '',
+        str(getattr(first, 'accessSystem', None)),
+    )
+    second_key = (
+        second_id is None,
+        str(second_id) if second_id is not None else '',
+        str(getattr(second, 'accessSystem', None)),
+    )
+    if first_key < second_key:
+        return 1 if reverse else -1
+    if first_key > second_key:
+        return -1 if reverse else 1
+    return 0
 
 
 def cmpMovies(m1, m2):
@@ -691,17 +714,7 @@ def cmpMovies(m1, m2):
         return -1
     if m1i < m2i:
         return 1
-    m1id = getattr(m1, 'movieID', None)
-    # Introduce this check even for other comparisons functions?
-    # XXX: is it safe to check without knowing the data access system?
-    #      probably not a great idea.  Check for 'kind', instead?
-    if m1id is not None:
-        m2id = getattr(m2, 'movieID', None)
-        if m1id > m2id:
-            return -1
-        elif m1id < m2id:
-            return 1
-    return 0
+    return _cmp_container_ids(m1, m2, reverse=True)
 
 
 def cmpPeople(p1, p2):
@@ -727,7 +740,7 @@ def cmpPeople(p1, p2):
         return 1
     if p1i < p2i:
         return -1
-    return 0
+    return _cmp_container_ids(p1, p2)
 
 
 def cmpCompanies(p1, p2):
@@ -747,7 +760,7 @@ def cmpCompanies(p1, p2):
         return 1
     if p1i < p2i:
         return -1
-    return 0
+    return _cmp_container_ids(p1, p2)
 
 
 # References to titles, names and characters.
@@ -1396,30 +1409,41 @@ class _Container:
             return False
         if not isinstance(other, self.__class__):
             return False
+        if self == other:
+            return False
         return self.cmpFunct(other) == -1
 
     def __eq__(self, other):
         """Compare two Movie, Person, Character or Company objects."""
+        if self is other:
+            return True
         if self.cmpFunct is None:
             return False
         if not isinstance(other, self.__class__):
             return False
-        return self.cmpFunct(other)
+        self_id = self.getID()
+        other_id = other.getID()
+        if self_id is not None or other_id is not None:
+            return (
+                self_id is not None
+                and other_id is not None
+                and str(self_id) == str(other_id)
+                and self.accessSystem == other.accessSystem
+            )
+        return self.cmpFunct(other) == 0
 
     def __hash__(self):
         """Hash for this object."""
-        # XXX: does it always work correctly?
         theID = self.getID()
-        if theID is not None and self.accessSystem not in ('UNKNOWN', None):
-            # There must be some indication of the kind of the object, too.
-            s4h = '%s:%s[%s]' % (self.__class__.__name__, theID, self.accessSystem)
-        else:
-            s4h = repr(self)
-        return hash(s4h)
+        if theID is not None:
+            return hash((self.__class__, str(theID), self.accessSystem))
+        # Containers without IDs can compare equal by their descriptive data.
+        # A class-level hash preserves that contract without hashing mutable data.
+        return hash(self.__class__)
 
     def isSame(self, other):
         """Return True if the two represent the same object."""
-        return isinstance(other, self.__class__) and hash(self) == hash(other)
+        return self == other
 
     def __len__(self):
         """Number of items in the data dictionary."""

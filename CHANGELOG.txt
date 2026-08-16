@@ -10,6 +10,7 @@
   [general]
 
   - #94: add computed ``first name`` and ``last name`` keys to Person objects
+  - #387: fix ``__eq__`` semantics of Movie, Person, Character and Company objects
 
 * What's new in release 2026.06.27 (The Lost Boys)
 

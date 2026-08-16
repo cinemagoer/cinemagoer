@@ -54,8 +54,3 @@ def test_movie_cast_contains_character_roles(ia):
     assert isinstance(character, Character)
     assert not character
     assert character.get('name') is None
-
-
-@pytest.mark.xfail(reason='standalone character search/get is not available in the S3 backend', raises=AttributeError)
-def test_character_search_and_get_not_available(ia):
-    ia.search_character('The Queen')

@@ -18,6 +18,8 @@ def test_search_and_get_person(ia):
     fetched = ia.get_person(str(person.personID))
     assert fetched.personID == str(person.personID)
     assert fetched['name'] == 'Fred Astaire'
+    assert fetched['first name'] == 'Fred'
+    assert fetched['last name'] == 'Astaire'
     assert fetched['primary profession'] == 'actor,miscellaneous,producer'
     assert len(fetched['known for']) == 4
     assert fetched.current_info == ['main', 'filmography', 'biography']

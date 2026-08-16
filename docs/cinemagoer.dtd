@@ -196,6 +196,7 @@
   | director
   | editor
   | episodes
+  | first-name
   | full-size-headshot
   | genres
   | headshot
@@ -204,6 +205,7 @@
   | in-development
   | interview
   | keywords
+  | last-name
   | long-imdb-canonical-name
   | long-imdb-name
   | magazine-cover-photo
@@ -989,6 +991,8 @@
 <!ATTLIST external-reviews %common.attrs;>
 <!ELEMENT feature (movie)*>
 <!ATTLIST feature %common.attrs;>
+<!ELEMENT first-name (#PCDATA)>
+<!ATTLIST first-name %common.attrs;>
 <!ELEMENT full-size-cover-url (#PCDATA)>
 <!ATTLIST full-size-cover-url %common.attrs;>
 <!ELEMENT full-size-headshot (#PCDATA)>
@@ -1003,6 +1007,8 @@
 <!ATTLIST introduction %common.attrs;>
 <!ELEMENT kind (#PCDATA)>
 <!ATTLIST kind %common.attrs;>
+<!ELEMENT last-name (#PCDATA)>
+<!ATTLIST last-name %common.attrs;>
 <!ELEMENT long-imdb-canonical-name (#PCDATA)>
 <!ATTLIST long-imdb-canonical-name %common.attrs;>
 <!ELEMENT long-imdb-canonical-title (#PCDATA)>

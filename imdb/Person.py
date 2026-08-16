@@ -31,6 +31,32 @@ from imdb.utils import (
     normalizeName,
 )
 
+_NAME_SUFFIXES = frozenset(('jr', 'sr', 'ii', 'iii', 'iv', 'v', 'vi'))
+
+
+def _strip_name_suffix(name):
+    """Return *name* without a trailing generational suffix."""
+    parts = name.split()
+    while parts and parts[-1].rstrip('.,').lower() in _NAME_SUFFIXES:
+        parts.pop()
+    return ' '.join(parts)
+
+
+def _split_name(name):
+    """Best-effort split of a name into its given-name and surname parts."""
+    if ', ' in name:
+        parts = name.split(', ')
+        last_name = _strip_name_suffix(parts[0])
+        first_name = parts[1] if len(parts) > 1 else ''
+        return first_name, last_name
+
+    name = _strip_name_suffix(name)
+    canonical_name = canonicalName(name)
+    last_name, separator, first_name = canonical_name.partition(', ')
+    if not separator:
+        first_name = ''
+    return first_name, last_name
+
 
 class Person(_Container):
     """A Person.
@@ -156,8 +182,10 @@ class Person(_Container):
         """Valid keys to append to the data.keys() list."""
         addkeys = []
         if 'name' in self.data:
-            addkeys += ['canonical name', 'long imdb name',
-                        'long imdb canonical name']
+            addkeys += [
+                'first name', 'last name', 'canonical name',
+                'long imdb name', 'long imdb canonical name'
+            ]
         if 'headshot' in self.data:
             addkeys += ['full-size headshot']
         return addkeys
@@ -167,6 +195,9 @@ class Person(_Container):
         if 'name' in self.data:
             if key == 'name':
                 return normalizeName(self.data['name'])
+            elif key in ('first name', 'last name'):
+                first_name, last_name = _split_name(self.data['name'])
+                return first_name if key == 'first name' else last_name
             elif key == 'canonical name':
                 return canonicalName(self.data['name'])
             elif key == 'long imdb name':

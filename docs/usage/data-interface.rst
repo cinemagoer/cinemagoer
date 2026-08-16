@@ -16,6 +16,23 @@ The key is almost always lowercase; underscores and dashes are replaced
 with spaces. Some keys are computed by Cinemagoer and are not direct fields
 from the datasets.
 
+For example, a person's ``name`` is kept in the form supplied by the IMDb
+dataset. The ``first name`` and ``last name`` keys provide a best-effort split
+for applications that need separate values:
+
+.. code-block:: python
+
+   >>> person['name']
+   'Frederick Austerlitz Jr.'
+   >>> person['first name']
+   'Frederick'
+   >>> person['last name']
+   'Austerlitz'
+
+Name conventions vary between cultures, so these computed components can be
+ambiguous. The original ``name`` value should be preferred when an exact
+representation is required.
+
 
 Information sets
 ----------------

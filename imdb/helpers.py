@@ -282,7 +282,10 @@ modHtmlLinksASCII = makeModCGILinks(movieTxt=_movieTxt, personTxt=_personTxt,
 def sortedSeasons(m):
     """Return a sorted list of seasons of the given series."""
     seasons = list(m.get('episodes', {}).keys())
-    seasons.sort()
+    seasons.sort(key=lambda value: (
+        not isinstance(value, int),
+        value if isinstance(value, int) else str(value),
+    ))
     return seasons
 
 
@@ -298,7 +301,10 @@ def sortedEpisodes(m, season=None):
             seasons = [season]
     for s in seasons:
         eps_indx = list(m.get('episodes', {}).get(s, {}).keys())
-        eps_indx.sort()
+        eps_indx.sort(key=lambda value: (
+            not isinstance(value, int),
+            value if isinstance(value, int) else str(value),
+        ))
         for e in eps_indx:
             episodes.append(m['episodes'][s][e])
     return episodes

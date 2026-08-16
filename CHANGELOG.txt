@@ -5,6 +5,7 @@
   - improve performances of s32cinemagoer.py script
   - add more options to s3-reduce
   - fixes for readthedocs
+  - #264: retrieve complete series episode lists from the IMDb datasets
 
   [general]
 

@@ -65,17 +65,17 @@ class IMDbS3AccessSystem(IMDbBase):
     _KIND_REV = {v: k for k, v in KIND.items()}
 
     def get_movie_infoset(self):
-        return ['main', 'plot']
+        return ['main', 'plot', 'episodes']
 
     def get_person_infoset(self):
         return ['main', 'filmography', 'biography']
     _s3_logger = logging.getLogger('imdbpy.parser.s3')
-    _metadata = sqlalchemy.MetaData()
 
     def __init__(self, uri='sqlite://cinemagoer.db', adultSearch=True, *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
         self._engine = sqlalchemy.create_engine(uri, echo=False)
+        self._metadata = sqlalchemy.MetaData()
         self._metadata.reflect(bind=self._engine)
         self.T = self._metadata.tables
 
@@ -184,7 +184,13 @@ class IMDbS3AccessSystem(IMDbBase):
         movie = self._fetchone(sqlalchemy.select(te).where(te.c.tconst == movieID)) or {}
         te_data = self._rename('title_episode', movie)
         if 'parentTconst' in te_data:
-            te_data['episodes of'] = self._base_title_info(te_data['parentTconst'])
+            parent_id = te_data['parentTconst']
+            parent_data = self._base_title_info(parent_id)
+            te_data['episode of'] = Movie(
+                movieID=parent_id,
+                data=parent_data,
+                accessSystem=self.accessSystem,
+            )
         self._clean(te_data, ('parentTconst',))
         data.update(te_data)
 
@@ -242,10 +248,104 @@ class IMDbS3AccessSystem(IMDbBase):
             data['akas'] = akas_list
 
         self._clean(data, ('movieID', 't_soundex'))
-        return {'data': data, 'info sets': self.get_movie_infoset()}
+        return {'data': data, 'info sets': ['main', 'plot']}
 
     # we don't really have plot information, yet
     get_movie_plot = get_movie_main
+
+    def get_movie_episodes(self, movieID, season_nums='all'):
+        """Return all known episodes of a series, optionally by season."""
+        movieID = int(movieID)
+        if season_nums == 'all':
+            selected_seasons = None
+        else:
+            if isinstance(season_nums, (int, str)):
+                season_nums = (season_nums,)
+            selected_seasons = {
+                int(season) if isinstance(season, str) and season.isdigit() else season
+                for season in season_nums
+            }
+
+        te = self.T['title_episode']
+        tb = self.T['title_basics']
+        tr = self.T['title_ratings']
+        title_columns = [
+            column.label('_title_%s' % column.name)
+            for column in tb.c
+        ]
+        rating_columns = [
+            column.label('_rating_%s' % column.name)
+            for column in tr.c
+        ]
+        episode_rows = self._fetchall(
+            sqlalchemy.select(*te.c, *title_columns, *rating_columns)
+            .select_from(te)
+            .outerjoin(tb, tb.c.tconst == te.c.tconst)
+            .outerjoin(tr, tr.c.tconst == te.c.tconst)
+            .where(te.c.parentTconst == movieID)
+        )
+        if not episode_rows:
+            return {
+                'data': {'episodes': {}, 'number of episodes': 0},
+                'info sets': ['episodes'],
+            }
+
+        parent_data = self._base_title_info(movieID)
+        parent = Movie(
+            movieID=movieID,
+            data=parent_data,
+            accessSystem=self.accessSystem,
+        )
+
+        episodes = {}
+        number_of_episodes = 0
+        for row in episode_rows:
+            episode_id = row['tconst']
+            season_number = row.get('seasonNumber')
+            episode_number = row.get('episodeNumber')
+            season_key = season_number if season_number is not None else 'unknown season'
+            if selected_seasons is not None and season_key not in selected_seasons:
+                continue
+
+            title_data = {
+                column.name: row['_title_%s' % column.name]
+                for column in tb.c
+            }
+            data = self._normalize_title_data(title_data)
+            rating_data = {
+                column.name: row['_rating_%s' % column.name]
+                for column in tr.c
+            }
+            rating_data = self._rename('title_ratings', rating_data)
+            data.update(self._clean(rating_data, ('movieID',)))
+            episode_data = {
+                column.name: row[column.name]
+                for column in te.c
+            }
+            episode_data = self._rename('title_episode', episode_data)
+            self._clean(episode_data, ('movieID', 'parentTconst'))
+            data.update(episode_data)
+            data['episode of'] = parent
+            episode = Movie(
+                movieID=episode_id,
+                data=data,
+                accessSystem=self.accessSystem,
+            )
+
+            season = episodes.setdefault(season_key, {})
+            episode_key = episode_number
+            if episode_key is None or episode_key in season:
+                episode_key = 'tt%07d' % episode_id
+            season[episode_key] = episode
+            number_of_episodes += 1
+
+        return {
+            'data': {
+                'episodes': episodes,
+                'number of episodes': number_of_episodes,
+            },
+            'info sets': ['episodes'],
+        }
 
     def get_person_main(self, personID):
         personID = int(personID)

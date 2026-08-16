@@ -18,9 +18,27 @@ to distinguish series and episodes from movies:
    >>> episode['kind']
    'episode'
 
-With the current S3 dataset backend, Cinemagoer does not provide the legacy
-``episodes`` infoset that expands a whole series into nested season/episode
-dictionaries.
+The S3 dataset backend provides the ``episodes`` infoset, which expands a
+series into nested season/episode dictionaries:
+
+.. code-block:: python
+
+   >>> series = ia.get_movie('0988824', info=['episodes'])
+   >>> series['number of episodes']
+   501
+   >>> numbered_episodes = series['episodes'][1]
+   >>> numbered_episodes[500]['title']
+   'Iwai no kotoba'
+
+Episodes without a season number are grouped under ``'unknown season'``.
+Within a season, episodes normally use their episode number as the dictionary
+key. If the number is missing or duplicates another entry, the IMDb title ID
+(for example, ``'tt6163054'``) is used so that no episode is discarded.
+
+Use :meth:`imdb.IMDbBase.update_series_seasons` to retrieve only selected
+seasons. Episode years come from ``title.basics.tsv.gz``, so callers can also
+group the returned objects by their ``year`` key without fetching separate
+year pages.
 
 If you already know an episode IMDb id, you can retrieve it directly and read
 its episode metadata fields from ``title.episode.tsv.gz`` (for example,
@@ -76,5 +94,5 @@ by the plain text data files (something like
 "The Series" (2004) {An Episode (#2.5)})
 
 
-Full-series episode expansion, per-series episode ratings, and person-level
-episode breakdown infosets are not available in the S3 dataset backend.
+Person-level episode breakdown infosets are not available in the S3 dataset
+backend.

@@ -60,9 +60,6 @@ How to make a release
 
 - add a news on https://sourceforge.net/p/cinemagoer/news/new
 
-- send an email to imdbpy-devel@lists.sourceforge.net and imdbpy-help@lists.sourceforge.net
-
-
 **After the release**
 
 *CHANGELOG.txt*

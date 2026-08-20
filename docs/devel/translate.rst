@@ -6,7 +6,7 @@ How to translate
 .. note::
 
    You can (but you don't have to) use Transifex to manage/coordinate
-   your translations: http://www.transifex.net/projects/p/imdbpy/
+   your translations: https://app.transifex.com/davide_alberani/cinemagoer
 
 The :mod:`imdb.locale` package contains some scripts that are useful
 for building your own internationalization files:
@@ -29,5 +29,4 @@ utility which is part of the GNU gettext suite::
   msgmerge -N imdbpy-fr.po imdbpy.pot > new-imdbpy-fr.po
 
 If you create a new translation or update an existing one, you can send
-it to the <imdbpy-devel@lists.sourceforge.net> mailing list, for inclusion
-in upcoming releases.
+it to the GitHub discussion page for inclusion in the upcoming releases: https://github.com/cinemagoer/cinemagoer/discussions .

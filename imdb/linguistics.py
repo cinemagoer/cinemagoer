@@ -55,8 +55,8 @@ GENERIC_ARTICLES = (
 
 # Lists of articles separated by language.  If possible, the list should
 # be sorted by frequency (not very important, but...)
-# If you want to add a list of articles for another language, mail it
-# it at imdbpy-devel@lists.sourceforge.net
+# If you want to add a list of articles for another language notify it
+# in the GitHub discussion page: https://github.com/cinemagoer/cinemagoer/discussions
 LANG_ARTICLES = {
     'English': ('the', 'a', 'an'),
     'Italian': ('la', 'le', "l'", 'il', 'i', 'un', 'una', 'gli', 'lo', "un'", 'uno'),
@@ -71,8 +71,8 @@ LANG_ARTICLESget = LANG_ARTICLES.get
 
 
 # Maps a language to countries where it is the main language.
-# If you want to add an entry for another language or country, mail it at
-# imdbpy-devel@lists.sourceforge.net .
+# If you want to add an entry for another language or country, notify it
+# in the GitHub discussion page: https://github.com/cinemagoer/cinemagoer/discussions
 LANG_COUNTRIES = {
     'English': (
         'Canada', 'Swaziland', 'Ghana', 'St. Lucia', 'Liberia', 'Jamaica', 'Bahamas',

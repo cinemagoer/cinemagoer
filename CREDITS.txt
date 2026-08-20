@@ -7,7 +7,7 @@ Other very special thanks go to some people who followed the development
 of Cinemagoer very closely, providing hints and insights: Ori Cohen, James Rubino,
 Tero Saarni, and Jesper Noer (for a lot of help, and also for the wonderful
 https://bitbucket.org/); and let's not forget all the translators
-on https://www.transifex.com/davide_alberani/imdbpy/
+on https://app.transifex.com/davide_alberani/cinemagoer
 
 The list of people contributing to Cinemagoer is getting too long, so
 starting from 20221222 we no longer add people to the list; see https://github.com/cinemagoer/cinemagoer/graphs/contributors

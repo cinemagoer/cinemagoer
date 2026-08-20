@@ -58,6 +58,54 @@ Then, follow these steps:
 
    This writes smaller files under ``partials/`` in that directory.
 
+PostgreSQL with Docker
+----------------------
+
+The following example starts PostgreSQL 17 in Docker and stores its data in a
+named volume, so the imported database survives container restarts. Replace
+the example password before using this setup beyond local development::
+
+   docker volume create cinemagoer-postgres-data
+   docker run --name cinemagoer-postgres --detach \
+       --env POSTGRES_USER=cinemagoer \
+       --env POSTGRES_PASSWORD=change-this-password \
+       --env POSTGRES_DB=cinemagoer \
+       --publish 127.0.0.1:55432:5432 \
+       --volume cinemagoer-postgres-data:/var/lib/postgresql/data \
+       postgres:17
+
+Wait until PostgreSQL is ready to accept connections::
+
+   until docker exec cinemagoer-postgres \
+       pg_isready --username cinemagoer --dbname cinemagoer
+   do
+       sleep 1
+   done
+
+Install the optional SQLAlchemy integration and the PostgreSQL driver, then
+import the datasets::
+
+   pip install "cinemagoer[sqlalchemy]" "psycopg[binary]"
+
+   export CINEMAGOER_DATABASE_URI='postgresql+psycopg://cinemagoer:change-this-password@127.0.0.1:55432/cinemagoer'
+   s32cinemagoer.py /path/to/the/tsv.gz/files/ "$CINEMAGOER_DATABASE_URI"
+
+Use the same URI in Cinemagoer:
+
+.. code-block:: python
+
+   import os
+
+   from imdb import Cinemagoer
+
+   ia = Cinemagoer('s3', uri=os.environ['CINEMAGOER_DATABASE_URI'])
+   print(ia.get_movie('0133093'))
+
+Stop the container with ``docker stop cinemagoer-postgres``. Start it again
+with ``docker start cinemagoer-postgres``; the named volume retains the
+database. The import command rebuilds Cinemagoer's tables, so do not run it
+against a database containing data you need to preserve.
+
 Once the import is finished - which should take about an hour or less
 on a modern system - you will have a database with all the information
 and you can use the normal Cinemagoer API:

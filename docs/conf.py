@@ -24,9 +24,9 @@ copyright = '2026, Davide Alberani, H. Turgut Uyar'
 author = 'Davide Alberani, H. Turgut Uyar'
 
 # The short X.Y version
-version = '2026.06.27'
+version = '2026.08.20'
 # The full version, including alpha/beta/rc tags
-release = '2026.06.27'
+release = '2026.08.20'
 
 
 # -- General configuration ---------------------------------------------------

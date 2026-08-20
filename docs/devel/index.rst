@@ -44,6 +44,7 @@ the ``accessSystem`` instance variable is set to identify the active system.
    :maxdepth: 2
    :caption: Contents:
 
+   packaging
    test
    translate
    release

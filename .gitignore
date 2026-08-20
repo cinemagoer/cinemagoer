@@ -12,6 +12,7 @@ build/
 dist/
 prof
 .cache
+.codegraph/
 .pytest_cache/
 .tox
 .coverage

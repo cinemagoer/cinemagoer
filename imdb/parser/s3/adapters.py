@@ -58,13 +58,24 @@ class SQLiteAdapter:
             ) from exc
         self._sqlite3 = sqlite3
         self.database = database
+        self._database_uri = None
         self.connection = None
         try:
             if database == ':memory:':
                 self.connection = self._connect()
             else:
+                database_path = Path(database)
+                if not database_path.is_file():
+                    raise IMDbDataAccessError(
+                        'SQLite database does not exist or is not a file: %r'
+                        % database
+                    )
+                self._database_uri = '%s?mode=ro' % \
+                    database_path.resolve().as_uri()
                 connection = self._connect()
                 connection.close()
+        except IMDbDataAccessError:
+            raise
         except sqlite3.Error as exc:
             raise IMDbDataAccessError(
                 'unable to open SQLite database %r: %s' % (database, exc)
@@ -76,7 +87,10 @@ class SQLiteAdapter:
             self.connection = None
 
     def _connect(self):
-        connection = self._sqlite3.connect(self.database)
+        if self._database_uri is None:
+            connection = self._sqlite3.connect(self.database)
+        else:
+            connection = self._sqlite3.connect(self._database_uri, uri=True)
         connection.row_factory = self._sqlite3.Row
         return connection
 

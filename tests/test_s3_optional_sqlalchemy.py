@@ -8,7 +8,7 @@ import sqlite3
 from pathlib import Path
 
 from imdb import Cinemagoer
-from imdb._exceptions import IMDbError
+from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb.parser.s3.adapters import SQLiteAdapter, sqlite_path_from_uri
 from imdb.parser.s3.importer import (
     DATASET_HEADERS,
@@ -113,6 +113,7 @@ def test_transform_character_names(value, expected):
 
 def test_canonical_sqlite_uris_use_native_adapter(tmp_path):
     database = tmp_path / 'native.db'
+    database.touch()
     ia = Cinemagoer('s3', uri=f'sqlite:///{database}')
 
     assert isinstance(ia._adapter, SQLiteAdapter)
@@ -121,6 +122,81 @@ def test_canonical_sqlite_uris_use_native_adapter(tmp_path):
     assert sqlite_path_from_uri('sqlite:///relative.db') == 'relative.db'
     assert sqlite_path_from_uri('sqlite:////tmp/absolute.db') == \
         '/tmp/absolute.db'
+
+
+@pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
+def test_query_adapter_does_not_create_missing_sqlite_database(
+        tmp_path, monkeypatch, scheme):
+    if scheme == 'sqlite+pysqlite':
+        pytest.importorskip('sqlalchemy')
+    monkeypatch.chdir(tmp_path)
+    database = Path('missing.db')
+
+    with pytest.raises(IMDbDataAccessError, match='does not exist'):
+        Cinemagoer('s3', uri=f'{scheme}:///missing.db')
+
+    assert not database.exists()
+
+
+@pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
+def test_file_backed_query_adapters_are_read_only(tmp_path, scheme):
+    sqlalchemy = None
+    if scheme == 'sqlite+pysqlite':
+        sqlalchemy = pytest.importorskip('sqlalchemy')
+    database = tmp_path / 'existing.db'
+    with sqlite3.connect(database) as connection:
+        connection.execute('CREATE TABLE marker (id INTEGER, value TEXT)')
+        connection.execute("INSERT INTO marker VALUES (1, 'original')")
+
+    ia = Cinemagoer('s3', uri=f'{scheme}:///{database}')
+    assert ia._adapter.get_row('marker', 'id', 1)['value'] == 'original'
+
+    if scheme == 'sqlite':
+        with ia._adapter._connect() as connection:
+            with pytest.raises(sqlite3.OperationalError, match='readonly'):
+                connection.execute("INSERT INTO marker VALUES (2, 'changed')")
+    else:
+        with pytest.raises(sqlalchemy.exc.DBAPIError, match='readonly'):
+            with ia._adapter.engine.begin() as connection:
+                connection.execute(
+                    sqlalchemy.text("INSERT INTO marker VALUES (2, 'changed')")
+                )
+
+    ia._adapter.close()
+    with sqlite3.connect(database) as connection:
+        rows = connection.execute('SELECT id, value FROM marker').fetchall()
+    assert rows == [(1, 'original')]
+
+
+@pytest.mark.parametrize('uri', ['sqlite://', 'sqlite+pysqlite://'])
+def test_in_memory_query_database_lives_for_adapter_lifetime(
+        tmp_path, monkeypatch, uri):
+    sqlalchemy = None
+    if uri.startswith('sqlite+'):
+        sqlalchemy = pytest.importorskip('sqlalchemy')
+    monkeypatch.chdir(tmp_path)
+    ia = Cinemagoer('s3', uri=uri)
+
+    if uri == 'sqlite://':
+        ia._adapter.connection.execute(
+            'CREATE TABLE marker (id INTEGER, value TEXT)'
+        )
+        ia._adapter.connection.execute(
+            "INSERT INTO marker VALUES (1, 'in memory')"
+        )
+    else:
+        with ia._adapter.engine.begin() as connection:
+            connection.execute(sqlalchemy.text(
+                'CREATE TABLE marker (id INTEGER, value TEXT)'
+            ))
+            connection.execute(sqlalchemy.text(
+                "INSERT INTO marker VALUES (1, 'in memory')"
+            ))
+        ia._adapter.metadata.reflect(bind=ia._adapter.engine)
+
+    assert ia._adapter.get_row('marker', 'id', 1)['value'] == 'in memory'
+    assert not list(tmp_path.iterdir())
+    ia._adapter.close()
 
 
 def test_invalid_sqlite_uri_is_actionable():

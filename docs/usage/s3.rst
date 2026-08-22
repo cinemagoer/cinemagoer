@@ -166,5 +166,19 @@ queries, then switch the application URI to the staged database. Keep the old
 database and source archives until that switch has been validated.
 
 
+Read-only query connections
+---------------------------
+
+Opening a file-backed SQLite URI with ``Cinemagoer`` never creates a database.
+The file must already exist, and both the native ``sqlite:`` adapter and an
+explicit SQLAlchemy SQLite adapter open it for read-only queries. Use
+``s32cinemagoer.py`` when a database needs to be created or rebuilt.
+
+The ``sqlite://`` and ``sqlite:///:memory:`` forms, and their explicit
+SQLAlchemy equivalents, remain available for short-lived in-memory query
+adapters. Their database exists only for the lifetime of that adapter and is
+never written to the filesystem.
+
+
 .. _datasets: https://www.imdb.com/interfaces/
 .. _SQLAlchemy: https://www.sqlalchemy.org/

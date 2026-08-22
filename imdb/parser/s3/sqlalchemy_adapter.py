@@ -7,6 +7,8 @@
 
 """Optional SQLAlchemy adapter for non-native database dialects."""
 
+from pathlib import Path
+
 import sqlalchemy
 
 from imdb._exceptions import IMDbDataAccessError
@@ -17,14 +19,46 @@ class SQLAlchemyAdapter:
 
     def __init__(self, uri):
         try:
-            self.engine = sqlalchemy.create_engine(uri, echo=False)
+            url = sqlalchemy.engine.make_url(uri)
+        except sqlalchemy.exc.ArgumentError as exc:
+            raise IMDbDataAccessError(
+                'invalid SQLAlchemy database URI %r: %s' % (uri, exc)
+            ) from exc
+        sqlite_path = None
+        engine_uri = uri
+        if url.get_backend_name() == 'sqlite' and \
+                url.database not in (None, '', ':memory:'):
+            sqlite_path = Path(url.database)
+            if not sqlite_path.is_file():
+                raise IMDbDataAccessError(
+                    'SQLite database does not exist or is not a file: %r'
+                    % url.database
+                )
+            query = dict(url.query)
+            query.update({'mode': 'ro', 'uri': 'true'})
+            engine_uri = url.set(
+                database='file:%s' % sqlite_path.resolve().as_posix(),
+                query=query,
+            )
+        try:
+            self.engine = sqlalchemy.create_engine(engine_uri, echo=False)
         except ModuleNotFoundError as exc:
             raise IMDbDataAccessError(
                 'the database driver required by %r is not installed: %s'
                 % (uri, exc)
             ) from exc
+        if sqlite_path is not None:
+            @sqlalchemy.event.listens_for(self.engine, 'connect')
+            def _set_query_only(dbapi_connection, _connection_record):
+                dbapi_connection.execute('PRAGMA query_only = ON')
         self.metadata = sqlalchemy.MetaData()
-        self.metadata.reflect(bind=self.engine)
+        try:
+            self.metadata.reflect(bind=self.engine)
+        except sqlalchemy.exc.SQLAlchemyError as exc:
+            self.engine.dispose()
+            raise IMDbDataAccessError(
+                'unable to inspect database %r: %s' % (uri, exc)
+            ) from exc
         self.tables = self.metadata.tables
 
     def close(self):

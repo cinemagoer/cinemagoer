@@ -15,14 +15,28 @@ from imdb.parser.s3.importer import import_dir
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('tsv_files_dir')
-    parser.add_argument('db_uri')
+    parser = argparse.ArgumentParser(
+        description=(
+            'Preflight and import a complete IMDb dataset. The destination '
+            'tables are rebuilt only after every source archive validates.'
+        )
+    )
+    parser.add_argument(
+        'tsv_files_dir', help='directory containing all seven IMDb TSV archives'
+    )
+    parser.add_argument(
+        'db_uri', help='persistent destination URI; in-memory SQLite is rejected'
+    )
     parser.add_argument(
         '--verbose', help='increase verbosity', action='store_true'
     )
     parser.add_argument(
-        '--cleanup', help='remove files after importing', action='store_true'
+        '--cleanup',
+        help=(
+            'IRREVERSIBLE: remove every source archive only after the entire '
+            'database import commits; make a backup first'
+        ),
+        action='store_true',
     )
     args = parser.parse_args()
     logging.basicConfig(

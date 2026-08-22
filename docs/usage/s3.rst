@@ -137,5 +137,34 @@ and you can use the normal Cinemagoer API:
    ``title_principals`` table.
 
 
+Import safety and recovery
+--------------------------
+
+Before opening the destination database, ``s32cinemagoer.py`` validates that
+the source directory contains all seven supported ``*.tsv.gz`` archives. It
+reads every archive completely, verifies its header and row widths, exercises
+the field transformations, and rejects empty or corrupt inputs. In-memory
+SQLite destinations are rejected because closing them would discard the
+finished import.
+
+The import writes ``cinemagoer-import-manifest.json`` in the dataset directory.
+The manifest records the Cinemagoer version, source filenames and sizes,
+preflight and imported row counts, cleanup results, and completion status. Do
+not switch applications to the rebuilt database until the status is
+``completed`` and every table has matching non-zero row counts.
+
+``--cleanup`` is irreversible. Source archives are removed only after every
+table imports and the database transaction commits; each removed path is
+logged. A failed import leaves all source archives in place and records a
+``failed`` manifest.
+
+SQLite and databases such as PostgreSQL that support transactional DDL can
+roll back the complete multi-table import. Some databases, including MySQL and
+MariaDB configurations, implicitly commit DDL statements. For those systems,
+import into a new empty staging database, verify its completed manifest and
+queries, then switch the application URI to the staged database. Keep the old
+database and source archives until that switch has been validated.
+
+
 .. _datasets: https://www.imdb.com/interfaces/
 .. _SQLAlchemy: https://www.sqlalchemy.org/

@@ -1,3 +1,5 @@
+import pytest
+
 import sqlite3
 
 from imdb import Cinemagoer
@@ -15,6 +17,45 @@ def test_exact_movie_title_ranks_before_aka_and_no_year_noise():
     ranked = scan_titles(candidates, 'The Matrix', results=10)
 
     assert [item[1][0] for item in ranked[:3]] == [133093, 40123928, 9851526]
+
+
+@pytest.mark.parametrize(
+    ('query', 'matching_title', 'competing_title'),
+    [
+        ('Matrix, The', 'The Matrix', 'Matrix Reloaded'),
+        ('Vita è bella, La', 'La vita è bella', 'Vita da cani'),
+        ('Himmel über Berlin, Der', 'Der Himmel über Berlin', 'Himmel ohne Sterne'),
+        (
+            'Fabuleux destin d’Amélie Poulain, Le',
+            'Le fabuleux destin d’Amélie Poulain',
+            'Fabuleux voyage',
+        ),
+    ],
+)
+def test_canonical_article_queries_rank_leading_article_titles_first(
+        query, matching_title, competing_title):
+    candidates = [
+        (1, {'title': matching_title, 'kind': 'movie'}),
+        (2, {'title': competing_title, 'kind': 'movie'}),
+    ]
+
+    ranked = scan_titles(candidates, query)
+
+    assert ranked[0][1][0] == 1
+
+
+def test_article_insensitive_ranking_preserves_deduplication_kind_and_limits():
+    candidates = [
+        (1, {'title': 'The Matrix', 'kind': 'episode', 'year': '1999'}),
+        (2, {'title': 'The Matrix', 'kind': 'short', 'year': '1999'}),
+        (3, {'title': 'The Matrix', 'kind': 'movie', 'year': '1999'}),
+        # An AKA-style duplicate for the same title ID must not add a result.
+        (3, {'title': 'Matrix, The'}),
+    ]
+
+    ranked = scan_titles(candidates, 'Matrix', results=2)
+
+    assert [item[1][0] for item in ranked] == [3, 2]
 
 
 def test_title_query_year_is_respected_in_search(tmp_path):
@@ -47,7 +88,7 @@ def test_title_query_year_is_respected_in_search(tmp_path):
 
     ia = Cinemagoer('s3', uri=f'sqlite:///{database}')
 
-    movies = ia.search_movie('The Matrix (2016)', results=5)
+    movies = ia.search_movie('Matrix, The (2016)', results=5)
 
     assert movies[0].movieID == 9642498
     assert movies[0]['title'] == 'The Matrix'

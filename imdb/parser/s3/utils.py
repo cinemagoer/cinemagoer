@@ -327,7 +327,7 @@ def scan_titles(titles_list, title, results=0, ro_threshold=RO_THRESHOLD):
     sm1 = SequenceMatcher()
     sm1.set_seq1(title.lower())
     sm2 = SequenceMatcher()
-    sm2.set_seq2(no_article_title.lower())
+    sm2.set_seq1(no_article_title.lower())
     resd = {}
 
     kind_scores = {

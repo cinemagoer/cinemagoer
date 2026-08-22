@@ -1,5 +1,7 @@
-from imdb.parser.s3.utils import scan_titles
+import sqlite3
+
 from imdb import Cinemagoer
+from imdb.parser.s3.utils import scan_titles, title_soundex
 
 
 def test_exact_movie_title_ranks_before_aka_and_no_year_noise():
@@ -15,8 +17,35 @@ def test_exact_movie_title_ranks_before_aka_and_no_year_noise():
     assert [item[1][0] for item in ranked[:3]] == [133093, 40123928, 9851526]
 
 
-def test_title_query_year_is_respected_in_search():
-    ia = Cinemagoer('s3', uri='sqlite:////home/da/git/cinemagoer/cinemagoer.db')
+def test_title_query_year_is_respected_in_search(tmp_path):
+    database = tmp_path / 'ranking.db'
+    matrix_soundex = title_soundex('The Matrix')
+    with sqlite3.connect(database) as connection:
+        connection.executescript(
+            '''
+            CREATE TABLE title_basics (
+                tconst INTEGER,
+                primaryTitle TEXT,
+                titleType TEXT,
+                startYear INTEGER,
+                t_soundex TEXT
+            );
+            CREATE TABLE title_akas (
+                titleId INTEGER,
+                title TEXT,
+                t_soundex TEXT
+            );
+            '''
+        )
+        connection.executemany(
+            'INSERT INTO title_basics VALUES (?, ?, ?, ?, ?)',
+            [
+                (133093, 'The Matrix', 'movie', 1999, matrix_soundex),
+                (9642498, 'The Matrix', 'movie', 2016, matrix_soundex),
+            ],
+        )
+
+    ia = Cinemagoer('s3', uri=f'sqlite:///{database}')
 
     movies = ia.search_movie('The Matrix (2016)', results=5)
 
@@ -25,9 +54,7 @@ def test_title_query_year_is_respected_in_search():
     assert movies[0]['year'] == '2016'
 
 
-def test_reversed_person_name_query_ranks_the_intended_person_first():
-    ia = Cinemagoer('s3', uri='sqlite:////home/da/git/cinemagoer/cinemagoer.db')
-
+def test_reversed_person_name_query_ranks_the_intended_person_first(ia):
     normal_people = ia.search_person('Fred Astaire', results=5)
     reversed_people = ia.search_person('Astaire Fred', results=5)
 

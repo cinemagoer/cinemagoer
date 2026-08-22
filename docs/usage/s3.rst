@@ -98,8 +98,10 @@ Use the same URI in Cinemagoer:
 
    from imdb import Cinemagoer
 
-   ia = Cinemagoer('s3', uri=os.environ['CINEMAGOER_DATABASE_URI'])
-   print(ia.get_movie('0133093'))
+   with Cinemagoer(
+       's3', uri=os.environ['CINEMAGOER_DATABASE_URI']
+   ) as ia:
+       print(ia.get_movie('0133093'))
 
 Stop the container with ``docker stop cinemagoer-postgres``. Start it again
 with ``docker start cinemagoer-postgres``; the named volume retains the
@@ -114,15 +116,18 @@ and you can use the normal Cinemagoer API:
 
    from imdb import Cinemagoer
 
-   ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
+   with Cinemagoer('s3', uri='sqlite:///cinemagoer.db') as ia:
+       results = ia.search_movie('the matrix')
+       for result in results:
+           print(result.movieID, result)
 
-   results = ia.search_movie('the matrix')
-   for result in results:
-       print(result.movieID, result)
+       matrix = results[0]
+       ia.update(matrix)
+       print(matrix.keys())
 
-   matrix = results[0]
-   ia.update(matrix)
-   print(matrix.keys())
+Use the access system as a context manager when possible. For longer-lived
+instances, call :meth:`~imdb.parser.s3.IMDbS3AccessSystem.close` explicitly;
+repeated calls are safe.
 
 
 .. note::

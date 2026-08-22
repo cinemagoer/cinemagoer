@@ -18,8 +18,8 @@
 This module provides the command line interface for Cinemagoer.
 """
 
-import sys
 import os
+import sys
 from argparse import ArgumentParser
 
 from imdb import VERSION, IMDb
@@ -54,25 +54,31 @@ def list_results(items, type_, n=None):
 
 def search_item(args):
     connection = get_connection(args)
-    if args.type == 'movie':
-        items = connection.search_movie(args.key)
-    else:
-        items = connection.search_person(args.key)
+    try:
+        if args.type == 'movie':
+            items = connection.search_movie(args.key)
+        else:
+            items = connection.search_person(args.key)
 
-    if args.first:
-        connection.update(items[0])
-        print(items[0].summary())
-    else:
-        list_results(items, type_=args.type, n=args.n)
+        if args.first:
+            connection.update(items[0])
+            print(items[0].summary())
+        else:
+            list_results(items, type_=args.type, n=args.n)
+    finally:
+        connection.close()
 
 
 def get_item(args):
     connection = get_connection(args)
-    if args.type == 'movie':
-        item = connection.get_movie(args.key)
-    else:
-        item = connection.get_person(args.key)
-    print(item.summary())
+    try:
+        if args.type == 'movie':
+            item = connection.get_movie(args.key)
+        else:
+            item = connection.get_person(args.key)
+        print(item.summary())
+    finally:
+        connection.close()
 
 
 def make_parser(prog):

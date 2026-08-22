@@ -83,10 +83,25 @@ class IMDbS3AccessSystem(IMDbBase):
         IMDbBase.__init__(self, *arguments, **keywords)
         self._adapter = adapter_for_uri(uri)
 
-    def __del__(self):
+    def close(self):
+        """Close database resources held by this access system."""
         adapter = getattr(self, '_adapter', None)
-        if adapter is not None:
-            adapter.close()
+        if adapter is None:
+            return
+        self._adapter = None
+        adapter.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
 
     def _rename(self, table, data):
         for column, conf in DB_TRANSFORM.get(table, {}).items():

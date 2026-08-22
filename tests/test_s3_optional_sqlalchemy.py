@@ -5,10 +5,12 @@ import importlib.util
 import json
 import logging
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 from imdb import Cinemagoer
 from imdb._exceptions import IMDbDataAccessError, IMDbError
+from imdb.parser import s3 as s3_parser
 from imdb.parser.s3.adapters import (
     NO_SOUNDEX_TITLE_LIMIT,
     SQLiteAdapter,
@@ -115,12 +117,46 @@ def test_transform_character_names(value, expected):
     assert transf_multi_character(value) == expected
 
 
+class _TrackingAdapter:
+    def __init__(self):
+        self.close_calls = 0
+
+    def close(self):
+        self.close_calls += 1
+
+
+def test_access_system_context_manager_and_close_are_deterministic(monkeypatch):
+    adapter = _TrackingAdapter()
+    monkeypatch.setattr(s3_parser, 'adapter_for_uri', lambda _uri: adapter)
+    access = s3_parser.IMDbS3AccessSystem(uri='tracking://')
+
+    with access as entered:
+        assert entered is access
+
+    assert access._adapter is None
+    assert adapter.close_calls == 1
+
+    access.close()
+    assert adapter.close_calls == 1
+
+
+def test_access_system_context_manager_preserves_exceptions(monkeypatch):
+    adapter = _TrackingAdapter()
+    monkeypatch.setattr(s3_parser, 'adapter_for_uri', lambda _uri: adapter)
+
+    with pytest.raises(RuntimeError, match='inside context'):
+        with s3_parser.IMDbS3AccessSystem(uri='tracking://'):
+            raise RuntimeError('inside context')
+
+    assert adapter.close_calls == 1
+
+
 def test_canonical_sqlite_uris_use_native_adapter(tmp_path):
     database = tmp_path / 'native.db'
     database.touch()
-    ia = Cinemagoer('s3', uri=f'sqlite:///{database}')
 
-    assert isinstance(ia._adapter, SQLiteAdapter)
+    with Cinemagoer('s3', uri=f'sqlite:///{database}') as ia:
+        assert isinstance(ia._adapter, SQLiteAdapter)
     assert sqlite_path_from_uri('sqlite://') == ':memory:'
     assert sqlite_path_from_uri('sqlite:///:memory:') == ':memory:'
     assert sqlite_path_from_uri('sqlite:///relative.db') == 'relative.db'
@@ -148,26 +184,25 @@ def test_file_backed_query_adapters_are_read_only(tmp_path, scheme):
     if scheme == 'sqlite+pysqlite':
         sqlalchemy = pytest.importorskip('sqlalchemy')
     database = tmp_path / 'existing.db'
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         connection.execute('CREATE TABLE marker (id INTEGER, value TEXT)')
         connection.execute("INSERT INTO marker VALUES (1, 'original')")
 
-    ia = Cinemagoer('s3', uri=f'{scheme}:///{database}')
-    assert ia._adapter.get_row('marker', 'id', 1)['value'] == 'original'
+    with Cinemagoer('s3', uri=f'{scheme}:///{database}') as ia:
+        assert ia._adapter.get_row('marker', 'id', 1)['value'] == 'original'
 
-    if scheme == 'sqlite':
-        with ia._adapter._connect() as connection:
-            with pytest.raises(sqlite3.OperationalError, match='readonly'):
-                connection.execute("INSERT INTO marker VALUES (2, 'changed')")
-    else:
-        with pytest.raises(sqlalchemy.exc.DBAPIError, match='readonly'):
-            with ia._adapter.engine.begin() as connection:
-                connection.execute(
-                    sqlalchemy.text("INSERT INTO marker VALUES (2, 'changed')")
-                )
+        if scheme == 'sqlite':
+            with closing(ia._adapter._connect()) as connection, connection:
+                with pytest.raises(sqlite3.OperationalError, match='readonly'):
+                    connection.execute("INSERT INTO marker VALUES (2, 'changed')")
+        else:
+            with pytest.raises(sqlalchemy.exc.DBAPIError, match='readonly'):
+                with ia._adapter.engine.begin() as connection:
+                    connection.execute(
+                        sqlalchemy.text("INSERT INTO marker VALUES (2, 'changed')")
+                    )
 
-    ia._adapter.close()
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         rows = connection.execute('SELECT id, value FROM marker').fetchall()
     assert rows == [(1, 'original')]
 
@@ -179,28 +214,30 @@ def test_in_memory_query_database_lives_for_adapter_lifetime(
     if uri.startswith('sqlite+'):
         sqlalchemy = pytest.importorskip('sqlalchemy')
     monkeypatch.chdir(tmp_path)
-    ia = Cinemagoer('s3', uri=uri)
-
-    if uri == 'sqlite://':
-        ia._adapter.connection.execute(
-            'CREATE TABLE marker (id INTEGER, value TEXT)'
-        )
-        ia._adapter.connection.execute(
-            "INSERT INTO marker VALUES (1, 'in memory')"
-        )
-    else:
-        with ia._adapter.engine.begin() as connection:
-            connection.execute(sqlalchemy.text(
+    with Cinemagoer('s3', uri=uri) as ia:
+        adapter = ia._adapter
+        if uri == 'sqlite://':
+            adapter.connection.execute(
                 'CREATE TABLE marker (id INTEGER, value TEXT)'
-            ))
-            connection.execute(sqlalchemy.text(
+            )
+            adapter.connection.execute(
                 "INSERT INTO marker VALUES (1, 'in memory')"
-            ))
-        ia._adapter.metadata.reflect(bind=ia._adapter.engine)
+            )
+        else:
+            with adapter.engine.begin() as connection:
+                connection.execute(sqlalchemy.text(
+                    'CREATE TABLE marker (id INTEGER, value TEXT)'
+                ))
+                connection.execute(sqlalchemy.text(
+                    "INSERT INTO marker VALUES (1, 'in memory')"
+                ))
+            adapter.metadata.reflect(bind=adapter.engine)
 
-    assert ia._adapter.get_row('marker', 'id', 1)['value'] == 'in memory'
-    assert not list(tmp_path.iterdir())
-    ia._adapter.close()
+        assert adapter.get_row('marker', 'id', 1)['value'] == 'in memory'
+        assert not list(tmp_path.iterdir())
+    assert ia._adapter is None
+    if uri == 'sqlite://':
+        assert adapter.connection is None
 
 
 def test_invalid_sqlite_uri_is_actionable():
@@ -232,10 +269,9 @@ def test_missing_database_driver_is_not_reported_as_missing_sqlalchemy():
 def test_incomplete_sqlite_schema_is_actionable(tmp_path):
     database = tmp_path / 'empty.db'
     database.touch()
-    ia = Cinemagoer('s3', uri=f'sqlite:///{database}')
-
-    with pytest.raises(IMDbError, match='invalid or incomplete'):
-        ia.search_movie('Missing tables')
+    with Cinemagoer('s3', uri=f'sqlite:///{database}') as ia:
+        with pytest.raises(IMDbError, match='invalid or incomplete'):
+            ia.search_movie('Missing tables')
 
 
 @pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
@@ -244,7 +280,7 @@ def test_no_soundex_search_does_not_scan_unindexed_title_tables(
     if scheme == 'sqlite+pysqlite':
         pytest.importorskip('sqlalchemy')
     database = tmp_path / 'unindexed-no-soundex.db'
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         connection.executescript(
             '''
             CREATE TABLE title_basics (
@@ -262,10 +298,9 @@ def test_no_soundex_search_does_not_scan_unindexed_title_tables(
             '''
         )
 
-    ia = Cinemagoer('s3', uri=f'{scheme}:///{database}')
-
-    assert ia.search_movie('!!!', results=5) == []
-    assert ia.search_movie('123', results=5) == []
+    with Cinemagoer('s3', uri=f'{scheme}:///{database}') as ia:
+        assert ia.search_movie('!!!', results=5) == []
+        assert ia.search_movie('123', results=5) == []
 
 
 @pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
@@ -274,7 +309,7 @@ def test_searches_without_soundex_are_exact_bounded_and_consistent(
     if scheme == 'sqlite+pysqlite':
         pytest.importorskip('sqlalchemy')
     database = tmp_path / 'no-soundex.db'
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         connection.executescript(
             '''
             CREATE TABLE title_basics (
@@ -325,25 +360,24 @@ def test_searches_without_soundex_are_exact_bounded_and_consistent(
             ],
         )
 
-    ia = Cinemagoer('s3', uri=f'{scheme}:///{database}')
+    with Cinemagoer('s3', uri=f'{scheme}:///{database}') as ia:
+        assert ia.search_movie('!!', results=5) == []
+        assert ia.search_movie('!!! (2026)', results=5)[0].movieID == 3001
+        assert ia.search_movie('東京', results=5)[0].movieID == 3002
+        assert len(ia.search_movie('123', results=5)) == 5
 
-    assert ia.search_movie('!!', results=5) == []
-    assert ia.search_movie('!!! (2026)', results=5)[0].movieID == 3001
-    assert ia.search_movie('東京', results=5)[0].movieID == 3002
-    assert len(ia.search_movie('123', results=5)) == 5
+        title_rows, _ = ia._adapter.search_titles(None, '!!!')
+        _, aka_rows = ia._adapter.search_titles(None, '123')
+        assert len(title_rows) == NO_SOUNDEX_TITLE_LIMIT
+        assert len(aka_rows) == NO_SOUNDEX_TITLE_LIMIT
+        assert ia._adapter.search_people([]) == []
 
-    title_rows, _ = ia._adapter.search_titles(None, '!!!')
-    _, aka_rows = ia._adapter.search_titles(None, '123')
-    assert len(title_rows) == NO_SOUNDEX_TITLE_LIMIT
-    assert len(aka_rows) == NO_SOUNDEX_TITLE_LIMIT
-    assert ia._adapter.search_people([]) == []
+        def fail_if_called(_soundexes):
+            pytest.fail('person adapter called without a usable soundex')
 
-    def fail_if_called(_soundexes):
-        pytest.fail('person adapter called without a usable soundex')
-
-    monkeypatch.setattr(ia._adapter, 'search_people', fail_if_called)
-    assert ia.search_person('!!!', results=5) == []
-    assert ia.search_person('123', results=5) == []
+        monkeypatch.setattr(ia._adapter, 'search_people', fail_if_called)
+        assert ia.search_person('!!!', results=5) == []
+        assert ia.search_person('123', results=5) == []
 
 
 @pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
@@ -356,25 +390,25 @@ def test_importer_round_trip(tmp_path, scheme):
     database = tmp_path / 'imported.db'
     manifest = import_dir(str(datasets), f'{scheme}:///{database}')
 
-    ia = Cinemagoer('s3', uri=f'{scheme}:///{database}')
-    result = ia.search_movie('Example Movie', results=5)[0]
-    assert result.movieID == 1
-    assert result['year'] == '2026'
-    assert result['runtimes'] == [95]
+    with Cinemagoer('s3', uri=f'{scheme}:///{database}') as ia:
+        result = ia.search_movie('Example Movie', results=5)[0]
+        assert result.movieID == 1
+        assert result['year'] == '2026'
+        assert result['runtimes'] == [95]
 
-    aka_result = ia.search_movie('Example Alternate', results=5)[0]
-    assert aka_result.movieID == 1
+        aka_result = ia.search_movie('Example Alternate', results=5)[0]
+        assert aka_result.movieID == 1
 
-    movie = ia.get_movie('1')
-    actor = movie['cast'][0]
-    assert isinstance(actor.currentRole, RolesList)
-    assert [role['name'] for role in actor.currentRole] == [
-        'Hero', 'Narrator',
-    ]
-    assert str(actor.currentRole) == 'Hero / Narrator'
-    assert '<name>Hero</name>' in actor.asXML()
-    assert '<name>Narrator</name>' in actor.asXML()
-    assert 'Example Actor (Hero / Narrator)' in movie.summary()
+        movie = ia.get_movie('1')
+        actor = movie['cast'][0]
+        assert isinstance(actor.currentRole, RolesList)
+        assert [role['name'] for role in actor.currentRole] == [
+            'Hero', 'Narrator',
+        ]
+        assert str(actor.currentRole) == 'Hero / Narrator'
+        assert '<name>Hero</name>' in actor.asXML()
+        assert '<name>Narrator</name>' in actor.asXML()
+        assert 'Example Actor (Hero / Narrator)' in movie.summary()
     assert manifest['status'] == 'completed'
     assert all(file_info['source_rows'] == 1
                for file_info in manifest['files'])
@@ -383,7 +417,7 @@ def test_importer_round_trip(tmp_path, scheme):
     manifest_path = datasets / MANIFEST_FILENAME
     assert json.loads(manifest_path.read_text(encoding='utf-8')) == manifest
 
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         indexes = connection.execute(
             "SELECT name FROM sqlite_master WHERE type = 'index'"
         ).fetchall()
@@ -460,14 +494,14 @@ def test_corrupt_dataset_does_not_change_database(tmp_path):
     _write_complete_dataset(datasets)
     (datasets / 'title.crew.tsv.gz').write_bytes(b'not a gzip archive')
     database = tmp_path / 'existing.db'
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         connection.execute('CREATE TABLE marker (value TEXT)')
         connection.execute("INSERT INTO marker VALUES ('original')")
 
     with pytest.raises(IMDbError, match='unreadable gzip archive'):
         import_dir(str(datasets), f'sqlite:///{database}')
 
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         value = connection.execute('SELECT value FROM marker').fetchone()[0]
     assert value == 'original'
 
@@ -484,7 +518,7 @@ def test_malformed_row_reports_file_and_line_without_changing_database(
         [['tt0000001', 'movie']],
     )
     database = tmp_path / 'existing.db'
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         connection.execute('CREATE TABLE marker (value TEXT)')
         connection.execute("INSERT INTO marker VALUES ('original')")
 
@@ -492,7 +526,7 @@ def test_malformed_row_reports_file_and_line_without_changing_database(
             IMDbError, match=r'title\.basics\.tsv\.gz:2: expected 9 fields'):
         import_dir(str(datasets), f'sqlite:///{database}')
 
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         value = connection.execute('SELECT value FROM marker').fetchone()[0]
     assert value == 'original'
 
@@ -548,7 +582,7 @@ def test_later_import_failure_rolls_back_and_preserves_sources(
     datasets.mkdir()
     _write_complete_dataset(datasets)
     database = tmp_path / 'existing.db'
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         connection.execute(
             'CREATE TABLE name_basics (nconst INTEGER, primaryName TEXT)'
         )
@@ -577,7 +611,7 @@ def test_later_import_failure_rolls_back_and_preserves_sources(
     )
     assert manifest['status'] == 'failed'
     assert manifest['removed_files'] == []
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         rows = connection.execute(
             'SELECT nconst, primaryName FROM name_basics'
         ).fetchall()
@@ -606,22 +640,21 @@ def test_cleanup_runs_only_after_success_and_reports_removed_files(
 
 def test_existing_partial_database_uses_native_adapter():
     database = Path(__file__).with_name('partial.db').resolve()
-    ia = Cinemagoer('s3', uri=f'sqlite:///{database}')
 
-    assert isinstance(ia._adapter, SQLiteAdapter)
-    assert ia.search_movie('Miss Jerry', results=5)[0].movieID == 9
+    with Cinemagoer('s3', uri=f'sqlite:///{database}') as ia:
+        assert isinstance(ia._adapter, SQLiteAdapter)
+        assert ia.search_movie('Miss Jerry', results=5)[0].movieID == 9
 
 
 def test_sqlalchemy_sqlite_adapter_parity_when_installed():
     pytest.importorskip('sqlalchemy')
     database = Path(__file__).with_name('partial.db').resolve()
-    native = Cinemagoer('s3', uri=f'sqlite:///{database}')
-    sqlalchemy_access = Cinemagoer(
-        's3', uri=f'sqlite+pysqlite:///{database}'
-    )
-
-    assert [movie.movieID for movie in native.search_movie('Miss Jerry')] == [
-        movie.movieID for movie in sqlalchemy_access.search_movie('Miss Jerry')
-    ]
-    assert native.get_movie('9')['title'] == \
-        sqlalchemy_access.get_movie('9')['title']
+    with Cinemagoer('s3', uri=f'sqlite:///{database}') as native, \
+            Cinemagoer(
+                's3', uri=f'sqlite+pysqlite:///{database}'
+            ) as sqlalchemy_access:
+        assert [movie.movieID for movie in native.search_movie('Miss Jerry')] == [
+            movie.movieID for movie in sqlalchemy_access.search_movie('Miss Jerry')
+        ]
+        assert native.get_movie('9')['title'] == \
+            sqlalchemy_access.get_movie('9')['title']

@@ -1,4 +1,5 @@
 import sqlite3
+from contextlib import closing
 
 from imdb import Cinemagoer
 from imdb.helpers import sortedEpisodes, sortedSeasons
@@ -49,7 +50,7 @@ def test_update_selected_series_seasons_from_partial_database(ia):
 
 def test_episode_titles_years_ratings_and_duplicate_numbers(tmp_path):
     database = tmp_path / 'episodes.db'
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         connection.executescript(
             '''
             CREATE TABLE title_basics (
@@ -82,8 +83,8 @@ def test_episode_titles_years_ratings_and_duplicate_numbers(tmp_path):
             '''
         )
 
-    ia = Cinemagoer('s3', uri=f'sqlite:///{database}')
-    series = ia.get_movie('100', info=['episodes'])
+    with Cinemagoer('s3', uri=f'sqlite:///{database}') as ia:
+        series = ia.get_movie('100', info=['episodes'])
 
     assert series['number of episodes'] == 3
     pilot = series['episodes'][1][1]

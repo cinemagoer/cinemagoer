@@ -331,11 +331,11 @@ def get_byURL(url, info=None, args=None, kwds=None):
     imdbID = match.group(2)
     if imdbtype in ('ch', 'co'):
         raise IMDbError('unsupported IMDb URL type for S3 access system: %s' % imdbtype)
-    ia = IMDb(*args, **kwds)
-    if imdbtype == 'tt':
-        return ia.get_movie(imdbID, info=info)
-    elif imdbtype == 'nm':
-        return ia.get_person(imdbID, info=info)
+    with IMDb(*args, **kwds) as ia:
+        if imdbtype == 'tt':
+            return ia.get_movie(imdbID, info=info)
+        elif imdbtype == 'nm':
+            return ia.get_person(imdbID, info=info)
     return None
 
 

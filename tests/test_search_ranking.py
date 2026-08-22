@@ -1,6 +1,7 @@
 import pytest
 
 import sqlite3
+from contextlib import closing
 
 from imdb import Cinemagoer
 from imdb.parser.s3.utils import scan_titles, title_soundex
@@ -61,7 +62,7 @@ def test_article_insensitive_ranking_preserves_deduplication_kind_and_limits():
 def test_title_query_year_is_respected_in_search(tmp_path):
     database = tmp_path / 'ranking.db'
     matrix_soundex = title_soundex('The Matrix')
-    with sqlite3.connect(database) as connection:
+    with closing(sqlite3.connect(database)) as connection, connection:
         connection.executescript(
             '''
             CREATE TABLE title_basics (
@@ -86,9 +87,8 @@ def test_title_query_year_is_respected_in_search(tmp_path):
             ],
         )
 
-    ia = Cinemagoer('s3', uri=f'sqlite:///{database}')
-
-    movies = ia.search_movie('Matrix, The (2016)', results=5)
+    with Cinemagoer('s3', uri=f'sqlite:///{database}') as ia:
+        movies = ia.search_movie('Matrix, The (2016)', results=5)
 
     assert movies[0].movieID == 9642498
     assert movies[0]['title'] == 'The Matrix'

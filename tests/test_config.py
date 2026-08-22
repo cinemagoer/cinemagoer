@@ -109,9 +109,9 @@ def test_configuration_applies_logging_level_and_exception_boolean(tmp_path):
     previous_level = imdbpyLogger.level
 
     try:
-        access = Cinemagoer(confFile=config)
-        assert imdbpyLogger.level == logging.DEBUG
-        assert access._reraise_exceptions is False
+        with Cinemagoer(confFile=config) as access:
+            assert imdbpyLogger.level == logging.DEBUG
+            assert access._reraise_exceptions is False
     finally:
         imdbpyLogger.setLevel(previous_level)
 
@@ -130,6 +130,5 @@ def test_exceptions_are_reraised_by_default(tmp_path):
     database = tmp_path / 'default.db'
     database.touch()
 
-    access = Cinemagoer('s3', uri=f'sqlite:///{database}')
-
-    assert access._reraise_exceptions is True
+    with Cinemagoer('s3', uri=f'sqlite:///{database}') as access:
+        assert access._reraise_exceptions is True

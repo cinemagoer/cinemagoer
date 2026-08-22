@@ -17,8 +17,13 @@ if not os.path.exists(cache_dir):
 partial_db = Path(__file__).with_name('partial.db').resolve()
 s3_uri = os.getenv('CINEMAGOER_S3_URI', f'sqlite:///{partial_db}')
 
+
 @fixture(params=['s3'])
 def ia(request):
     """Access to IMDb data."""
     if request.param == 's3':
-        yield Cinemagoer('s3', uri=s3_uri)
+        access = Cinemagoer('s3', uri=s3_uri)
+        try:
+            yield access
+        finally:
+            access.close()

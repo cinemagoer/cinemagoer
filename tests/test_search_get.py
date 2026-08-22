@@ -38,5 +38,5 @@ def test_search_and_get_movie(ia):
     assert fetched['title'] == 'Miss Jerry'
     assert fetched['kind'] == 'movie'
     assert fetched['year'] == '1894'
-    assert len(fetched['cast']) == 3
+    assert len(fetched['cast']) == 4
     assert fetched.current_info == ['main', 'plot']

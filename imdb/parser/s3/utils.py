@@ -18,6 +18,7 @@
 This package provides utilities for the s3 dataset.
 """
 
+import json
 import re
 from difflib import SequenceMatcher
 
@@ -27,7 +28,6 @@ SOUNDEX_LENGTH = 5
 RO_THRESHOLD = 0.6
 STRING_MAXLENDIFFER = 0.7
 re_imdbids = re.compile(r'(nm|tt)')
-re_characters = re.compile(r'"(.+?)"')
 
 
 def transf_imdbid(x):
@@ -43,7 +43,7 @@ def transf_multi_imdbid(x):
 def transf_multi_character(x):
     if not x:
         return x
-    ' / '.join(re_characters.findall(x))
+    return ' / '.join(json.loads(x))
 
 
 def transf_int(x):

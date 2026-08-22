@@ -1,8 +1,3 @@
-import pytest
-
-from imdb.Character import Character
-
-
 def test_search_and_get_person(ia):
     people = ia.search_person('Fred Astaire', results=5)
     assert people
@@ -45,12 +40,3 @@ def test_search_and_get_movie(ia):
     assert fetched['year'] == '1894'
     assert len(fetched['cast']) == 3
     assert fetched.current_info == ['main', 'plot']
-
-
-def test_movie_cast_contains_character_roles(ia):
-    movie = ia.get_movie('9')
-    character = movie['cast'][0].currentRole
-
-    assert isinstance(character, Character)
-    assert not character
-    assert character.get('name') is None

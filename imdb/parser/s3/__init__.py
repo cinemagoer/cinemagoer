@@ -56,6 +56,13 @@ def split_array(text):
     return text.split(sep)
 
 
+def split_characters(text):
+    """Return one role name or an ordered list of role names."""
+    if not isinstance(text, str) or ' / ' not in text:
+        return text
+    return text.split(' / ')
+
+
 class IMDbS3AccessSystem(IMDbBase):
     """The class used to access IMDb's data through the s3 dataset."""
 
@@ -206,7 +213,9 @@ class IMDbS3AccessSystem(IMDbBase):
                                                      persons_cache=_persons_cache)
                 person = Person(personID=personID, data=person_data,
                                 billingPos=person_info.get('ordering'),
-                                currentRole=person_info.get('characters'),
+                                currentRole=split_characters(
+                                    person_info.get('characters')
+                                ),
                                 notes=person_info.get('job'),
                                 accessSystem=self.accessSystem)
                 persons.append(person)

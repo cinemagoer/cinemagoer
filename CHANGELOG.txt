@@ -1,5 +1,10 @@
 * What's new in the next release
 
+  [s3]
+
+  - preserve cast character names while importing ``title.principals.tsv.gz``;
+    existing databases must be backed up and reimported to restore the data
+
 * What's new in release 2026.08.20 (The Life of Chuck)
 
   [s3]

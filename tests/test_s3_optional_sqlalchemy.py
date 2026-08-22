@@ -9,6 +9,8 @@ from imdb import Cinemagoer
 from imdb._exceptions import IMDbError
 from imdb.parser.s3.adapters import SQLiteAdapter, sqlite_path_from_uri
 from imdb.parser.s3.importer import import_dir
+from imdb.parser.s3.utils import transf_multi_character
+from imdb.utils import RolesList
 
 
 def _write_dataset(directory, name, headers, rows):
@@ -17,6 +19,22 @@ def _write_dataset(directory, name, headers, rows):
         stream.write('\t'.join(headers) + '\n')
         for row in rows:
             stream.write('\t'.join(row) + '\n')
+
+
+@pytest.mark.parametrize(
+    ('value', 'expected'),
+    [
+        (None, None),
+        ('', ''),
+        ('[]', ''),
+        ('["Neo"]', 'Neo'),
+        ('["Neo","Thomas Anderson"]', 'Neo / Thomas Anderson'),
+        ('["The \\"Dude\\""]', 'The "Dude"'),
+        ('["Amélie"]', 'Amélie'),
+    ],
+)
+def test_transform_character_names(value, expected):
+    assert transf_multi_character(value) == expected
 
 
 def test_canonical_sqlite_uris_use_native_adapter(tmp_path):
@@ -96,6 +114,45 @@ def test_importer_round_trip(tmp_path, scheme):
             r'\N', '0',
         ]],
     )
+    _write_dataset(
+        datasets,
+        'name.basics',
+        [
+            'nconst', 'primaryName', 'birthYear', 'deathYear',
+            'primaryProfession', 'knownForTitles',
+        ],
+        [[
+            'nm0000001', 'Example Actor', r'\N', r'\N', 'actor',
+            'tt0000001',
+        ]],
+    )
+    _write_dataset(
+        datasets,
+        'title.principals',
+        ['tconst', 'ordering', 'nconst', 'category', 'job', 'characters'],
+        [[
+            'tt0000001', '1', 'nm0000001', 'actor', r'\N',
+            '["Hero","Narrator"]',
+        ]],
+    )
+    _write_dataset(
+        datasets,
+        'title.crew',
+        ['tconst', 'directors', 'writers'],
+        [['tt0000001', r'\N', r'\N']],
+    )
+    _write_dataset(
+        datasets,
+        'title.episode',
+        ['tconst', 'parentTconst', 'seasonNumber', 'episodeNumber'],
+        [],
+    )
+    _write_dataset(
+        datasets,
+        'title.ratings',
+        ['tconst', 'averageRating', 'numVotes'],
+        [['tt0000001', '7.5', '100']],
+    )
     database = tmp_path / 'imported.db'
     import_dir(str(datasets), f'{scheme}:///{database}')
 
@@ -107,6 +164,18 @@ def test_importer_round_trip(tmp_path, scheme):
 
     aka_result = ia.search_movie('Example Alternate', results=5)[0]
     assert aka_result.movieID == 1
+
+    movie = ia.get_movie('1')
+    actor = movie['cast'][0]
+    assert isinstance(actor.currentRole, RolesList)
+    assert [role['name'] for role in actor.currentRole] == [
+        'Hero', 'Narrator',
+    ]
+    assert str(actor.currentRole) == 'Hero / Narrator'
+    assert '<name>Hero</name>' in actor.asXML()
+    assert '<name>Narrator</name>' in actor.asXML()
+    assert 'Example Actor (Hero / Narrator)' in movie.summary()
+
     with sqlite3.connect(database) as connection:
         indexes = connection.execute(
             "SELECT name FROM sqlite_master WHERE type = 'index'"

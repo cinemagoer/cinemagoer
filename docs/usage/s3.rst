@@ -130,6 +130,12 @@ and you can use the normal Cinemagoer API:
    Running the script again will drop the current tables and import
    the data again.
 
+   Databases imported before the cast-character fix have lost those names from
+   ``title.principals.tsv.gz``. Back up the database, then run the import again
+   with the original dataset files to restore them. They cannot be recovered
+   from the existing database, and the import rebuilds the
+   ``title_principals`` table.
+
 
 .. _datasets: https://www.imdb.com/interfaces/
 .. _SQLAlchemy: https://www.sqlalchemy.org/

@@ -400,6 +400,8 @@ class IMDbS3AccessSystem(IMDbBase):
             return []
         ns_soundex, sn_soundex, s_soundex = name_soundexes(name)
         query_soundexes = [x for x in (ns_soundex, sn_soundex, s_soundex) if x]
+        if not query_soundexes:
+            return []
         results = self._adapter.search_people(query_soundexes)
         results = [(x['nconst'], self._clean(self._rename('name_basics', dict(x)),
                                              ('ns_soundex', 'sn_soundex', 's_soundex')))

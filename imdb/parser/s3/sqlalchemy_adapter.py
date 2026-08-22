@@ -13,6 +13,8 @@ import sqlalchemy
 
 from imdb._exceptions import IMDbDataAccessError
 
+from .adapters import NO_SOUNDEX_TITLE_LIMIT
+
 
 class SQLAlchemyAdapter:
     """Dialect-neutral query adapter backed by SQLAlchemy."""
@@ -77,6 +79,13 @@ class SQLAlchemyAdapter:
     def column_names(self, table):
         return set(self.tables[table].c.keys())
 
+    def _column_is_indexed(self, table, column):
+        return any(
+            indexed_column.name == column
+            for index in self.tables[table].indexes
+            for indexed_column in index.columns
+        )
+
     def get_row(self, table, column, value):
         table_obj = self.tables[table]
         return self._fetchone(
@@ -110,7 +119,13 @@ class SQLAlchemyAdapter:
     def search_titles(self, soundex, search_title, year=None, episodes=False,
                       adult=None, title_types=None):
         tb = self.tables['title_basics']
-        conditions = [tb.c.t_soundex == soundex]
+        if soundex is None:
+            conditions = [
+                tb.c.t_soundex.is_(None),
+                tb.c.primaryTitle == search_title,
+            ]
+        else:
+            conditions = [tb.c.t_soundex == soundex]
         filters = []
         if year is not None:
             filters.append(tb.c.startYear == year)
@@ -126,24 +141,43 @@ class SQLAlchemyAdapter:
             filters.append(adult_column == bool(adult))
         if title_types and kind_column is not None:
             filters.append(kind_column.in_(title_types))
-        title_rows = self._fetchall(
-            sqlalchemy.select(tb).where(sqlalchemy.and_(*(conditions + filters)))
+        title_statement = sqlalchemy.select(tb).where(
+            sqlalchemy.and_(*(conditions + filters))
         )
+        if soundex is None:
+            title_statement = title_statement.limit(NO_SOUNDEX_TITLE_LIMIT)
+        if soundex is not None or \
+                self._column_is_indexed('title_basics', 'primaryTitle'):
+            title_rows = self._fetchall(title_statement)
+        else:
+            title_rows = []
 
         ta = self.tables['title_akas']
-        aka_conditions = [
-            ta.c.t_soundex == soundex if soundex is not None
-            else ta.c.title.ilike('%%%s%%' % search_title)
-        ]
+        if soundex is None:
+            aka_conditions = [
+                ta.c.t_soundex.is_(None),
+                ta.c.title == search_title,
+            ]
+        else:
+            aka_conditions = [ta.c.t_soundex == soundex]
         statement = sqlalchemy.select(ta)
         if filters:
             statement = statement.join(tb, ta.c.titleId == tb.c.tconst)
-        aka_rows = self._fetchall(
-            statement.where(sqlalchemy.and_(*(aka_conditions + filters)))
+        statement = statement.where(
+            sqlalchemy.and_(*(aka_conditions + filters))
         )
+        if soundex is None:
+            statement = statement.limit(NO_SOUNDEX_TITLE_LIMIT)
+        if soundex is not None or \
+                self._column_is_indexed('title_akas', 'title'):
+            aka_rows = self._fetchall(statement)
+        else:
+            aka_rows = []
         return title_rows, aka_rows
 
     def search_people(self, soundexes):
+        if not soundexes:
+            return []
         nb = self.tables['name_basics']
         conditions = []
         for soundex in soundexes:

@@ -12,6 +12,8 @@ from urllib.parse import unquote
 
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 
+NO_SOUNDEX_TITLE_LIMIT = 100
+
 
 def sqlite_path_from_uri(uri):
     """Return the sqlite3 filename represented by a canonical SQLite URI."""
@@ -118,6 +120,17 @@ class SQLiteAdapter:
         rows = self._fetchall('PRAGMA table_info("%s")' % table)
         return {row['name'] for row in rows}
 
+    def _column_is_indexed(self, table, column):
+        indexes = self._fetchall('PRAGMA index_list("%s")' % table)
+        for index in indexes:
+            index_name = index['name'].replace('"', '""')
+            indexed_columns = self._fetchall(
+                'PRAGMA index_info("%s")' % index_name
+            )
+            if any(item['name'] == column for item in indexed_columns):
+                return True
+        return False
+
     def get_row(self, table, column, value):
         return self._fetchone(
             'SELECT * FROM "%s" WHERE "%s" = ? LIMIT 1' % (table, column),
@@ -161,8 +174,11 @@ class SQLiteAdapter:
         elif 'adult' in columns:
             adult_column = 'adult'
         if soundex is None:
-            conditions = ['tb.t_soundex IS NULL']
-            parameters = []
+            conditions = [
+                'tb.t_soundex IS NULL',
+                'tb.primaryTitle = ?',
+            ]
+            parameters = [search_title]
         else:
             conditions = ['tb.t_soundex = ?']
             parameters = [soundex]
@@ -184,25 +200,42 @@ class SQLiteAdapter:
             )
             filter_parameters.extend(title_types)
         where = ' AND '.join(conditions + filter_conditions)
-        rows = self._fetchall(
-            'SELECT tb.* FROM title_basics AS tb WHERE ' + where,
-            parameters + filter_parameters,
-        )
+        title_limit = ' LIMIT %d' % NO_SOUNDEX_TITLE_LIMIT \
+            if soundex is None else ''
+        if soundex is not None or \
+                self._column_is_indexed('title_basics', 'primaryTitle'):
+            rows = self._fetchall(
+                'SELECT tb.* FROM title_basics AS tb WHERE ' + where + title_limit,
+                parameters + filter_parameters,
+            )
+        else:
+            rows = []
 
-        aka_condition = 'ta.t_soundex = ?' if soundex is not None else \
-            'LOWER(ta.title) LIKE LOWER(?)'
-        aka_parameters = [soundex if soundex is not None else '%%%s%%' % search_title]
-        aka_where = ' AND '.join([aka_condition] + filter_conditions)
+        if soundex is None:
+            aka_conditions = ['ta.t_soundex IS NULL', 'ta.title = ?']
+            aka_parameters = [search_title]
+        else:
+            aka_conditions = ['ta.t_soundex = ?']
+            aka_parameters = [soundex]
+        aka_where = ' AND '.join(aka_conditions + filter_conditions)
         aka_parameters.extend(filter_parameters)
         join = ' JOIN title_basics AS tb ON ta.titleId = tb.tconst' \
             if filter_conditions else ''
-        aka_rows = self._fetchall(
-            'SELECT ta.* FROM title_akas AS ta%s WHERE %s' % (join, aka_where),
-            aka_parameters,
-        )
+        if soundex is not None or \
+                self._column_is_indexed('title_akas', 'title'):
+            aka_rows = self._fetchall(
+                'SELECT ta.* FROM title_akas AS ta%s WHERE %s%s' % (
+                    join, aka_where, title_limit,
+                ),
+                aka_parameters,
+            )
+        else:
+            aka_rows = []
         return rows, aka_rows
 
     def search_people(self, soundexes):
+        if not soundexes:
+            return []
         conditions = []
         parameters = []
         for soundex in soundexes:

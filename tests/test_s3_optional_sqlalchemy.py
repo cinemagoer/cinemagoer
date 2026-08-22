@@ -9,7 +9,11 @@ from pathlib import Path
 
 from imdb import Cinemagoer
 from imdb._exceptions import IMDbDataAccessError, IMDbError
-from imdb.parser.s3.adapters import SQLiteAdapter, sqlite_path_from_uri
+from imdb.parser.s3.adapters import (
+    NO_SOUNDEX_TITLE_LIMIT,
+    SQLiteAdapter,
+    sqlite_path_from_uri,
+)
 from imdb.parser.s3.importer import (
     DATASET_HEADERS,
     MANIFEST_FILENAME,
@@ -235,6 +239,114 @@ def test_incomplete_sqlite_schema_is_actionable(tmp_path):
 
 
 @pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
+def test_no_soundex_search_does_not_scan_unindexed_title_tables(
+        tmp_path, scheme):
+    if scheme == 'sqlite+pysqlite':
+        pytest.importorskip('sqlalchemy')
+    database = tmp_path / 'unindexed-no-soundex.db'
+    with sqlite3.connect(database) as connection:
+        connection.executescript(
+            '''
+            CREATE TABLE title_basics (
+                tconst INTEGER,
+                primaryTitle TEXT,
+                t_soundex TEXT
+            );
+            CREATE TABLE title_akas (
+                titleId INTEGER,
+                title TEXT,
+                t_soundex TEXT
+            );
+            INSERT INTO title_basics VALUES (1, '!!!', NULL);
+            INSERT INTO title_akas VALUES (1, '123', NULL);
+            '''
+        )
+
+    ia = Cinemagoer('s3', uri=f'{scheme}:///{database}')
+
+    assert ia.search_movie('!!!', results=5) == []
+    assert ia.search_movie('123', results=5) == []
+
+
+@pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
+def test_searches_without_soundex_are_exact_bounded_and_consistent(
+        tmp_path, monkeypatch, scheme):
+    if scheme == 'sqlite+pysqlite':
+        pytest.importorskip('sqlalchemy')
+    database = tmp_path / 'no-soundex.db'
+    with sqlite3.connect(database) as connection:
+        connection.executescript(
+            '''
+            CREATE TABLE title_basics (
+                tconst INTEGER,
+                primaryTitle TEXT,
+                titleType TEXT,
+                startYear INTEGER,
+                t_soundex TEXT
+            );
+            CREATE TABLE title_akas (
+                titleId INTEGER,
+                title TEXT,
+                t_soundex TEXT
+            );
+            CREATE TABLE name_basics (
+                nconst INTEGER,
+                primaryName TEXT,
+                ns_soundex TEXT,
+                sn_soundex TEXT,
+                s_soundex TEXT
+            );
+            CREATE INDEX ix_title_basics_primaryTitle
+                ON title_basics (primaryTitle);
+            CREATE INDEX ix_title_akas_title ON title_akas (title);
+            '''
+        )
+        connection.executemany(
+            'INSERT INTO title_basics VALUES (?, ?, ?, ?, ?)',
+            [
+                (movie_id, str(movie_id), 'movie', 2025, None)
+                for movie_id in range(1, 1001)
+            ] + [
+                (2001 + offset, '!!!', 'movie', 2025, None)
+                for offset in range(NO_SOUNDEX_TITLE_LIMIT + 5)
+            ] + [
+                (3001, '!!!', 'movie', 2026, None),
+                (3002, '東京', 'movie', 2026, None),
+            ],
+        )
+        connection.executemany(
+            'INSERT INTO title_akas VALUES (?, ?, ?)',
+            [
+                (movie_id, str(movie_id + 10000), None)
+                for movie_id in range(1, 1001)
+            ] + [
+                (movie_id, '123', None)
+                for movie_id in range(1, NO_SOUNDEX_TITLE_LIMIT + 6)
+            ],
+        )
+
+    ia = Cinemagoer('s3', uri=f'{scheme}:///{database}')
+
+    assert ia.search_movie('!!', results=5) == []
+    assert ia.search_movie('!!! (2026)', results=5)[0].movieID == 3001
+    assert ia.search_movie('東京', results=5)[0].movieID == 3002
+    assert len(ia.search_movie('123', results=5)) == 5
+
+    title_rows, _ = ia._adapter.search_titles(None, '!!!')
+    _, aka_rows = ia._adapter.search_titles(None, '123')
+    assert len(title_rows) == NO_SOUNDEX_TITLE_LIMIT
+    assert len(aka_rows) == NO_SOUNDEX_TITLE_LIMIT
+    assert ia._adapter.search_people([]) == []
+
+    def fail_if_called(_soundexes):
+        pytest.fail('person adapter called without a usable soundex')
+
+    monkeypatch.setattr(ia._adapter, 'search_people', fail_if_called)
+    assert ia.search_person('!!!', results=5) == []
+    assert ia.search_person('123', results=5) == []
+
+
+@pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
 def test_importer_round_trip(tmp_path, scheme):
     if scheme == 'sqlite+pysqlite':
         pytest.importorskip('sqlalchemy')
@@ -276,6 +388,8 @@ def test_importer_round_trip(tmp_path, scheme):
             "SELECT name FROM sqlite_master WHERE type = 'index'"
         ).fetchall()
     assert ('ix_title_basics_tconst',) in indexes
+    assert ('ix_title_basics_primaryTitle',) in indexes
+    assert ('ix_title_akas_title',) in indexes
 
 
 @pytest.mark.parametrize('directory_state', ['missing', 'empty'])

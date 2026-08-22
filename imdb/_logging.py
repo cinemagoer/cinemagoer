@@ -41,7 +41,11 @@ imdbpyLogger.addHandler(imdbpyStreamHandler)
 
 def setLevel(level):
     """Set logging level for the main logger."""
+    if not isinstance(level, str):
+        raise ValueError('logging level must be a string')
     level = level.lower().strip()
-    imdbpyLogger.setLevel(LEVELS.get(level, logging.NOTSET))
+    if level not in LEVELS:
+        raise ValueError('unknown logging level %r' % level)
+    imdbpyLogger.setLevel(LEVELS[level])
     imdbpyLogger.log(logging.INFO, 'set logging threshold to "%s"',
                      logging.getLevelName(imdbpyLogger.level))

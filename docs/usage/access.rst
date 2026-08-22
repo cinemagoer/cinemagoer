@@ -24,12 +24,15 @@ The database can be SQLite or any other engine supported by SQLAlchemy.
 
 .. note::
 
-   Since release 3.4, the :file:`imdbpy.cfg` configuration file is available,
-   so that you can set a system-wide (or per-user) default. The file is
-   commented with indication of the location where it can be put,
-   and how to modify it.
+   The :file:`cinemagoer.cfg` configuration file lets you set a system-wide,
+   per-user, or current-directory default. The legacy :file:`imdbpy.cfg` name
+   is also recognized, but :file:`cinemagoer.cfg` takes precedence at each
+   searched location. See the commented sample configuration for the complete
+   discovery order and available options.
 
-  If no :file:`imdbpy.cfg` file is found (or is not readable or
-  it can't be parsed), 's3' will be used as the default.
+   If no configuration file is found (or no file can be read and parsed),
+   ``s3`` is used by default. Exceptions are re-raised by default; set
+   ``reraiseExceptions = off`` to retain errors only in the log. Configuration
+   comments start with ``#`` or ``;``.
 
 See :ref:`s3` for setup and usage details.

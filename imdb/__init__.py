@@ -27,7 +27,9 @@ from types import FunctionType, MethodType
 
 from imdb import Character, Company, Movie, Person
 from imdb._exceptions import IMDbDataAccessError, IMDbError
+from imdb._logging import LEVELS as _LOGGING_LEVELS
 from imdb._logging import imdbpyLogger as _imdb_logger
+from imdb._logging import setLevel as _set_logging_level
 from imdb.utils import build_company_name, build_name, build_title
 from imdb.version import __version__
 
@@ -70,6 +72,30 @@ def _normalize_access_system(value):
     return value
 
 
+def _config_file_candidates():
+    """Return configuration paths in discovery-precedence order."""
+    current_directory = os.getcwd()
+    home_directory = os.path.expanduser('~')
+    locations = [
+        (current_directory, False),
+        (current_directory, True),
+        (home_directory, False),
+        (home_directory, True),
+    ]
+    if os.name == 'posix':
+        locations.extend((('/etc', False), ('/etc/conf.d', False)))
+    else:
+        locations.append((os.path.join(sys.prefix, 'etc'), False))
+
+    candidates = []
+    for directory, dotted in locations:
+        for filename in confFileNames:
+            if dotted:
+                filename = '.' + filename
+            candidates.append(os.path.join(directory, filename))
+    return candidates
+
+
 class ConfigParserWithCase(configparser.ConfigParser):
     """A case-sensitive parser for configuration files."""
     def __init__(self, defaults=None, confFile=None, *args, **kwds):
@@ -79,29 +105,26 @@ class ConfigParserWithCase(configparser.ConfigParser):
         *confFile* -- the file (or list of files) to parse."""
         super().__init__(defaults=defaults)
         if confFile is None:
-            for confFileName in confFileNames:
-                dotFileName = '.' + confFileName
-                # Current and home directory.
-                confFile = [os.path.join(os.getcwd(), confFileName),
-                            os.path.join(os.getcwd(), dotFileName),
-                            os.path.join(os.path.expanduser('~'), confFileName),
-                            os.path.join(os.path.expanduser('~'), dotFileName)]
-                if os.name == 'posix':
-                    sep = getattr(os.path, 'sep', '/')
-                    # /etc/ and /etc/conf.d/
-                    confFile.append(os.path.join(sep, 'etc', confFileName))
-                    confFile.append(os.path.join(sep, 'etc', 'conf.d', confFileName))
-                else:
-                    # etc subdirectory of sys.prefix, for non-unix systems.
-                    confFile.append(os.path.join(sys.prefix, 'etc', confFileName))
+            confFile = _config_file_candidates()
+        elif isinstance(confFile, (str, bytes, os.PathLike)):
+            confFile = [os.fspath(confFile)]
         for fname in confFile:
+            candidate = configparser.ConfigParser()
+            candidate.optionxform = self.optionxform
+            if defaults:
+                candidate.read_dict({'DEFAULT': defaults})
             try:
-                self.read(fname)
+                loaded = candidate.read(fname)
             except (configparser.MissingSectionHeaderError,
                     configparser.ParsingError) as e:
-                _aux_logger.warn('Troubles reading config file: %s' % e)
+                _aux_logger.warning('Troubles reading config file: %s', e)
+                continue
             # Stop at the first valid file.
-            if self.has_section('imdbpy'):
+            if loaded and candidate.has_section('imdbpy'):
+                for section in candidate.sections():
+                    self.add_section(section)
+                    for option, value in candidate.items(section, raw=True):
+                        self.set(section, option, value)
                 break
 
     def optionxform(self, optionstr):
@@ -161,8 +184,15 @@ def IMDb(accessSystem=None, *arguments, **keywords):
             # the 's3' accessSystem.
             accessSystem = 's3'
     if 'loggingLevel' in keywords:
-        _imdb_logger.setLevel(keywords['loggingLevel'])
-        del keywords['loggingLevel']
+        logging_level = keywords.pop('loggingLevel')
+        try:
+            _set_logging_level(logging_level)
+        except (AttributeError, ValueError) as e:
+            valid_levels = ', '.join(sorted(_LOGGING_LEVELS))
+            raise IMDbError(
+                'invalid loggingLevel %r; expected one of: %s'
+                % (logging_level, valid_levels)
+            ) from e
     if 'loggingConfig' in keywords:
         logCfg = keywords['loggingConfig']
         del keywords['loggingConfig']

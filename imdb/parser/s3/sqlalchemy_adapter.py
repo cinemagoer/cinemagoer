@@ -13,6 +13,7 @@ import sqlalchemy
 
 from imdb._exceptions import IMDbDataAccessError
 
+from ._uri import redact_uri_secrets
 from .adapters import NO_SOUNDEX_TITLE_LIMIT
 
 
@@ -20,11 +21,13 @@ class SQLAlchemyAdapter:
     """Dialect-neutral query adapter backed by SQLAlchemy."""
 
     def __init__(self, uri):
+        self._display_uri = redact_uri_secrets(uri)
         try:
             url = sqlalchemy.engine.make_url(uri)
         except sqlalchemy.exc.ArgumentError as exc:
             raise IMDbDataAccessError(
-                'invalid SQLAlchemy database URI %r: %s' % (uri, exc)
+                'invalid SQLAlchemy database URI %r: %s'
+                % (self._display_uri, redact_uri_secrets(exc))
             ) from exc
         sqlite_path = None
         engine_uri = uri
@@ -47,7 +50,12 @@ class SQLAlchemyAdapter:
         except ModuleNotFoundError as exc:
             raise IMDbDataAccessError(
                 'the database driver required by %r is not installed: %s'
-                % (uri, exc)
+                % (self._display_uri, redact_uri_secrets(exc))
+            ) from exc
+        except sqlalchemy.exc.SQLAlchemyError as exc:
+            raise IMDbDataAccessError(
+                'unable to configure database %r: %s'
+                % (self._display_uri, redact_uri_secrets(exc))
             ) from exc
         if sqlite_path is not None:
             @sqlalchemy.event.listens_for(self.engine, 'connect')
@@ -59,7 +67,8 @@ class SQLAlchemyAdapter:
         except sqlalchemy.exc.SQLAlchemyError as exc:
             self.engine.dispose()
             raise IMDbDataAccessError(
-                'unable to inspect database %r: %s' % (uri, exc)
+                'unable to inspect database %r: %s'
+                % (self._display_uri, redact_uri_secrets(exc))
             ) from exc
         self.tables = self.metadata.tables
 
@@ -67,68 +76,107 @@ class SQLAlchemyAdapter:
         self.engine.dispose()
 
     def _fetchone(self, statement):
-        with self.engine.connect() as connection:
-            row = connection.execute(statement).mappings().first()
+        try:
+            with self.engine.connect() as connection:
+                row = connection.execute(statement).mappings().first()
+        except sqlalchemy.exc.SQLAlchemyError as exc:
+            raise self._database_error('query', exc) from exc
         return dict(row) if row else None
 
     def _fetchall(self, statement):
-        with self.engine.connect() as connection:
-            rows = connection.execute(statement).mappings().all()
+        try:
+            with self.engine.connect() as connection:
+                rows = connection.execute(statement).mappings().all()
+        except sqlalchemy.exc.SQLAlchemyError as exc:
+            raise self._database_error('query', exc) from exc
         return [dict(row) for row in rows]
 
+    def _database_error(self, operation, exc):
+        return IMDbDataAccessError(
+            'unable to %s database %r: %s'
+            % (operation, self._display_uri, redact_uri_secrets(exc))
+        )
+
+    def _table(self, name):
+        try:
+            return self.tables[name]
+        except KeyError as exc:
+            raise IMDbDataAccessError(
+                'invalid or incomplete Cinemagoer database %r: '
+                'missing table %r' % (self._display_uri, name)
+            ) from exc
+
+    def _column(self, table, name):
+        try:
+            return table.c[name]
+        except KeyError as exc:
+            raise IMDbDataAccessError(
+                'invalid or incomplete Cinemagoer database %r: '
+                'missing column %r in table %r'
+                % (self._display_uri, name, table.name)
+            ) from exc
+
     def column_names(self, table):
-        return set(self.tables[table].c.keys())
+        return set(self._table(table).c.keys())
 
     def _column_is_indexed(self, table, column):
         return any(
             indexed_column.name == column
-            for index in self.tables[table].indexes
+            for index in self._table(table).indexes
             for indexed_column in index.columns
         )
 
     def get_row(self, table, column, value):
-        table_obj = self.tables[table]
+        table_obj = self._table(table)
         return self._fetchone(
-            sqlalchemy.select(table_obj).where(table_obj.c[column] == value)
+            sqlalchemy.select(table_obj).where(
+                self._column(table_obj, column) == value
+            )
         )
 
     def get_rows(self, table, column, value):
-        table_obj = self.tables[table]
+        table_obj = self._table(table)
         return self._fetchall(
-            sqlalchemy.select(table_obj).where(table_obj.c[column] == value)
+            sqlalchemy.select(table_obj).where(
+                self._column(table_obj, column) == value
+            )
         )
 
     def episode_rows(self, parent_id):
-        te = self.tables['title_episode']
-        tb = self.tables['title_basics']
-        tr = self.tables['title_ratings']
+        te = self._table('title_episode')
+        tb = self._table('title_basics')
+        tr = self._table('title_ratings')
         title_columns = [
             column.label('_title_%s' % column.name) for column in tb.c
         ]
         rating_columns = [
             column.label('_rating_%s' % column.name) for column in tr.c
         ]
+        tb_tconst = self._column(tb, 'tconst')
+        te_tconst = self._column(te, 'tconst')
+        tr_tconst = self._column(tr, 'tconst')
         return self._fetchall(
             sqlalchemy.select(*te.c, *title_columns, *rating_columns)
             .select_from(te)
-            .outerjoin(tb, tb.c.tconst == te.c.tconst)
-            .outerjoin(tr, tr.c.tconst == te.c.tconst)
-            .where(te.c.parentTconst == parent_id)
+            .outerjoin(tb, tb_tconst == te_tconst)
+            .outerjoin(tr, tr_tconst == te_tconst)
+            .where(self._column(te, 'parentTconst') == parent_id)
         )
 
     def search_titles(self, soundex, search_title, year=None, episodes=False,
                       adult=None, title_types=None):
-        tb = self.tables['title_basics']
+        tb = self._table('title_basics')
+        title_soundex = self._column(tb, 't_soundex')
         if soundex is None:
             conditions = [
-                tb.c.t_soundex.is_(None),
-                tb.c.primaryTitle == search_title,
+                title_soundex.is_(None),
+                self._column(tb, 'primaryTitle') == search_title,
             ]
         else:
-            conditions = [tb.c.t_soundex == soundex]
+            conditions = [title_soundex == soundex]
         filters = []
         if year is not None:
-            filters.append(tb.c.startYear == year)
+            filters.append(self._column(tb, 'startYear') == year)
         kind_column = tb.c.get('titleType')
         if kind_column is None:
             kind_column = tb.c.get('kind')
@@ -152,17 +200,21 @@ class SQLAlchemyAdapter:
         else:
             title_rows = []
 
-        ta = self.tables['title_akas']
+        ta = self._table('title_akas')
+        aka_soundex = self._column(ta, 't_soundex')
         if soundex is None:
             aka_conditions = [
-                ta.c.t_soundex.is_(None),
-                ta.c.title == search_title,
+                aka_soundex.is_(None),
+                self._column(ta, 'title') == search_title,
             ]
         else:
-            aka_conditions = [ta.c.t_soundex == soundex]
+            aka_conditions = [aka_soundex == soundex]
         statement = sqlalchemy.select(ta)
         if filters:
-            statement = statement.join(tb, ta.c.titleId == tb.c.tconst)
+            statement = statement.join(
+                tb,
+                self._column(ta, 'titleId') == self._column(tb, 'tconst'),
+            )
         statement = statement.where(
             sqlalchemy.and_(*(aka_conditions + filters))
         )
@@ -178,13 +230,13 @@ class SQLAlchemyAdapter:
     def search_people(self, soundexes):
         if not soundexes:
             return []
-        nb = self.tables['name_basics']
+        nb = self._table('name_basics')
         conditions = []
         for soundex in soundexes:
             conditions.extend((
-                nb.c.ns_soundex == soundex,
-                nb.c.sn_soundex == soundex,
-                nb.c.s_soundex == soundex,
+                self._column(nb, 'ns_soundex') == soundex,
+                self._column(nb, 'sn_soundex') == soundex,
+                self._column(nb, 's_soundex') == soundex,
             ))
         return self._fetchall(
             sqlalchemy.select(nb).where(sqlalchemy.or_(*conditions))

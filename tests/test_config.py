@@ -126,6 +126,26 @@ def test_invalid_logging_level_is_actionable(tmp_path):
         Cinemagoer(confFile=config)
 
 
+def test_exception_construction_is_silent(caplog, capsys):
+    with caplog.at_level(logging.DEBUG, logger='imdbpy'):
+        error = IMDbError('expected failure')
+
+    assert str(error) == 'expected failure'
+    assert caplog.records == []
+    assert capsys.readouterr() == ('', '')
+
+
+def test_library_logger_uses_a_null_handler():
+    assert any(
+        isinstance(handler, logging.NullHandler)
+        for handler in imdbpyLogger.handlers
+    )
+    assert not any(
+        isinstance(handler, logging.StreamHandler)
+        for handler in imdbpyLogger.handlers
+    )
+
+
 def test_exceptions_are_reraised_by_default(tmp_path):
     database = tmp_path / 'default.db'
     database.touch()

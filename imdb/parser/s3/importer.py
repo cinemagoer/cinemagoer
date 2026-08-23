@@ -16,6 +16,7 @@ import tempfile
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb.version import __version__
 
+from ._uri import redact_uri_secrets
 from .adapters import sqlite_path_from_uri
 from .utils import DB_TRANSFORM, name_soundexes, title_soundex
 
@@ -196,13 +197,16 @@ def preflight_directory(directory):
 def validate_destination_uri(uri):
     """Reject invalid and ephemeral importer destinations."""
     if not isinstance(uri, str) or '://' not in uri:
-        raise IMDbError('invalid database URI %r' % uri)
+        raise IMDbError(
+            'invalid database URI %r' % redact_uri_secrets(uri)
+        )
     if uri.startswith('sqlite:'):
         database = sqlite_path_from_uri(uri)
         if database == ':memory:':
             raise IMDbError(
                 'the importer requires a persistent database; '
-                'in-memory SQLite URI %r is not supported' % uri
+                'in-memory SQLite URI %r is not supported'
+                % redact_uri_secrets(uri)
             )
     elif uri.startswith('sqlite+'):
         location = uri.partition('://')[2].partition('?')[0]
@@ -210,7 +214,8 @@ def validate_destination_uri(uri):
                 'mode=memory' in uri:
             raise IMDbError(
                 'the importer requires a persistent database; '
-                'in-memory SQLite URI %r is not supported' % uri
+                'in-memory SQLite URI %r is not supported'
+                % redact_uri_secrets(uri)
             )
 
 
@@ -266,6 +271,8 @@ class SQLiteImporter:
             raise IMDbError(
                 'this Python installation does not provide SQLite support'
             ) from exc
+        self._sqlite3 = sqlite3
+        self.database = database
         try:
             self.connection = sqlite3.connect(database)
         except sqlite3.Error as exc:
@@ -273,57 +280,82 @@ class SQLiteImporter:
                 'unable to open SQLite database %r: %s' % (database, exc)
             ) from exc
 
+    def _database_error(self, operation, exc):
+        return IMDbDataAccessError(
+            'unable to %s SQLite database %r: %s'
+            % (operation, self.database, exc)
+        )
+
     def check_connection(self):
-        self.connection.execute('SELECT 1')
+        try:
+            self.connection.execute('SELECT 1')
+        except self._sqlite3.Error as exc:
+            raise self._database_error('check', exc) from exc
 
     def begin(self):
-        self.connection.execute('BEGIN')
+        try:
+            self.connection.execute('BEGIN')
+        except self._sqlite3.Error as exc:
+            raise self._database_error('begin a transaction in', exc) from exc
 
     def commit(self):
-        self.connection.commit()
+        try:
+            self.connection.commit()
+        except self._sqlite3.Error as exc:
+            raise self._database_error('commit', exc) from exc
 
     def rollback(self):
-        self.connection.rollback()
+        try:
+            self.connection.rollback()
+        except self._sqlite3.Error as exc:
+            raise self._database_error('roll back', exc) from exc
 
     def close(self):
         self.connection.close()
 
     def import_file(self, filename):
-        count = 0
-        with gzip.GzipFile(filename, 'rb') as gz_file:
-            headers = _read_headers(gz_file, filename)
-            table_name, columns = table_definition(filename, headers)
-            definitions = ', '.join(
-                '"%s" %s' % (name, self._TYPES[conf.get('type')])
-                for name, conf in columns
-            )
-            column_names = [name for name, _conf in columns]
-            quoted_columns = ', '.join('"%s"' % name for name in column_names)
-            placeholders = ', '.join('?' for _ in column_names)
-            insert = 'INSERT INTO "%s" (%s) VALUES (%s)' % (
-                table_name, quoted_columns, placeholders
-            )
-            self.connection.execute('DROP TABLE IF EXISTS "%s"' % table_name)
-            self.connection.execute(
-                'CREATE TABLE "%s" (%s)' % (table_name, definitions)
-            )
-            for block in generate_content(
-                    gz_file, headers, table_name, filename=filename):
-                values = [
-                    tuple(row.get(column) for column in column_names)
-                    for row in block
-                ]
-                self.connection.executemany(insert, values)
-                count += len(block)
-            for column, conf in columns:
-                if conf.get('index'):
-                    index_name = 'ix_%s_%s' % (table_name, column)
-                    self.connection.execute(
-                        'CREATE INDEX "%s" ON "%s" ("%s")' % (
-                            index_name, table_name, column
+        try:
+            count = 0
+            with gzip.GzipFile(filename, 'rb') as gz_file:
+                headers = _read_headers(gz_file, filename)
+                table_name, columns = table_definition(filename, headers)
+                definitions = ', '.join(
+                    '"%s" %s' % (name, self._TYPES[conf.get('type')])
+                    for name, conf in columns
+                )
+                column_names = [name for name, _conf in columns]
+                quoted_columns = ', '.join(
+                    '"%s"' % name for name in column_names
+                )
+                placeholders = ', '.join('?' for _ in column_names)
+                insert = 'INSERT INTO "%s" (%s) VALUES (%s)' % (
+                    table_name, quoted_columns, placeholders
+                )
+                self.connection.execute(
+                    'DROP TABLE IF EXISTS "%s"' % table_name
+                )
+                self.connection.execute(
+                    'CREATE TABLE "%s" (%s)' % (table_name, definitions)
+                )
+                for block in generate_content(
+                        gz_file, headers, table_name, filename=filename):
+                    values = [
+                        tuple(row.get(column) for column in column_names)
+                        for row in block
+                    ]
+                    self.connection.executemany(insert, values)
+                    count += len(block)
+                for column, conf in columns:
+                    if conf.get('index'):
+                        index_name = 'ix_%s_%s' % (table_name, column)
+                        self.connection.execute(
+                            'CREATE INDEX "%s" ON "%s" ("%s")' % (
+                                index_name, table_name, column
+                            )
                         )
-                    )
-            return count
+                return count
+        except self._sqlite3.Error as exc:
+            raise self._database_error('import into', exc) from exc
 
 
 class SQLAlchemyImporter:
@@ -338,42 +370,63 @@ class SQLAlchemyImporter:
                 'and an appropriate database driver'
             ) from exc
         self.sqlalchemy = sqlalchemy
+        self._display_uri = redact_uri_secrets(uri)
         try:
             self.engine = sqlalchemy.create_engine(uri, echo=False)
         except ModuleNotFoundError as exc:
             raise IMDbDataAccessError(
                 'the database driver required by %r is not installed: %s'
-                % (uri, exc)
+                % (self._display_uri, redact_uri_secrets(exc))
+            ) from exc
+        except sqlalchemy.exc.SQLAlchemyError as exc:
+            raise IMDbDataAccessError(
+                'unable to configure database %r: %s'
+                % (self._display_uri, redact_uri_secrets(exc))
             ) from exc
         self.metadata = sqlalchemy.MetaData()
         self.connection = None
         self.transaction = None
+
+    def _database_error(self, operation, exc):
+        return IMDbDataAccessError(
+            'unable to %s database %r: %s'
+            % (operation, self._display_uri, redact_uri_secrets(exc))
+        )
 
     def check_connection(self):
         try:
             with self.engine.connect() as connection:
                 connection.execute(self.sqlalchemy.text('SELECT 1'))
         except self.sqlalchemy.exc.SQLAlchemyError as exc:
-            raise IMDbDataAccessError(
-                'unable to connect to database: %s' % exc
-            ) from exc
+            raise self._database_error('connect to', exc) from exc
 
     def begin(self):
-        self.connection = self.engine.connect()
-        self.transaction = self.connection.begin()
-        if self.engine.dialect.name == 'sqlite':
-            # The sqlite3 driver otherwise uses legacy transaction control,
-            # where DDL can auto-commit before the first data-changing DML.
-            self.connection.exec_driver_sql('BEGIN')
+        try:
+            self.connection = self.engine.connect()
+            self.transaction = self.connection.begin()
+            if self.engine.dialect.name == 'sqlite':
+                # The sqlite3 driver otherwise uses legacy transaction control,
+                # where DDL can auto-commit before the first data-changing DML.
+                self.connection.exec_driver_sql('BEGIN')
+        except self.sqlalchemy.exc.SQLAlchemyError as exc:
+            self._close_connection()
+            self.transaction = None
+            raise self._database_error('begin a transaction in', exc) from exc
 
     def commit(self):
-        self.transaction.commit()
-        self.transaction = None
+        try:
+            self.transaction.commit()
+            self.transaction = None
+        except self.sqlalchemy.exc.SQLAlchemyError as exc:
+            raise self._database_error('commit', exc) from exc
 
     def rollback(self):
         if self.transaction is not None:
-            self.transaction.rollback()
-            self.transaction = None
+            try:
+                self.transaction.rollback()
+                self.transaction = None
+            except self.sqlalchemy.exc.SQLAlchemyError as exc:
+                raise self._database_error('roll back', exc) from exc
 
     def _close_connection(self):
         if self.connection is not None:
@@ -408,24 +461,27 @@ class SQLAlchemyImporter:
         return table
 
     def import_file(self, filename):
-        count = 0
-        with gzip.GzipFile(filename, 'rb') as gz_file:
-            headers = _read_headers(gz_file, filename)
-            table = self._table(filename, headers)
-            connection = self.connection
-            table.drop(bind=connection, checkfirst=True)
-            table.create(bind=connection, checkfirst=True)
-            for block in generate_content(
-                    gz_file, headers, table.name, filename=filename):
-                connection.execute(table.insert(), block)
-                count += len(block)
-            for column_name in table.info['indexed_columns']:
-                index = self.sqlalchemy.Index(
-                    'ix_%s_%s' % (table.name, column_name),
-                    table.c[column_name],
-                )
-                index.create(connection, checkfirst=True)
-        return count
+        try:
+            count = 0
+            with gzip.GzipFile(filename, 'rb') as gz_file:
+                headers = _read_headers(gz_file, filename)
+                table = self._table(filename, headers)
+                connection = self.connection
+                table.drop(bind=connection, checkfirst=True)
+                table.create(bind=connection, checkfirst=True)
+                for block in generate_content(
+                        gz_file, headers, table.name, filename=filename):
+                    connection.execute(table.insert(), block)
+                    count += len(block)
+                for column_name in table.info['indexed_columns']:
+                    index = self.sqlalchemy.Index(
+                        'ix_%s_%s' % (table.name, column_name),
+                        table.c[column_name],
+                    )
+                    index.create(connection, checkfirst=True)
+            return count
+        except self.sqlalchemy.exc.SQLAlchemyError as exc:
+            raise self._database_error('import into', exc) from exc
 
 
 def importer_for_uri(uri):

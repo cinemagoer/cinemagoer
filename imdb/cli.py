@@ -23,7 +23,6 @@ import sys
 from argparse import ArgumentParser, ArgumentTypeError
 
 from imdb import VERSION, IMDb, IMDbError
-from imdb._logging import imdbpyLogger
 
 DEFAULT_RESULT_SIZE = 20
 EXIT_ERROR = 1
@@ -155,19 +154,13 @@ def main(argv=None):
     argv = argv if argv is not None else sys.argv
     parser = make_parser()
     arguments = parser.parse_args(argv[1:])
-    logger_disabled = imdbpyLogger.disabled
-    if not arguments.debug:
-        imdbpyLogger.disabled = True
     try:
-        try:
-            arguments.func(arguments)
-        except (CLIError, IMDbError) as exc:
-            if arguments.debug:
-                raise
-            print('%s: error: %s' % (parser.prog, exc), file=sys.stderr)
-            return EXIT_ERROR
-    finally:
-        imdbpyLogger.disabled = logger_disabled
+        arguments.func(arguments)
+    except (CLIError, IMDbError) as exc:
+        if arguments.debug:
+            raise
+        print('%s: error: %s' % (parser.prog, exc), file=sys.stderr)
+        return EXIT_ERROR
     return 0
 
 

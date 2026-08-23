@@ -11,6 +11,7 @@ from pathlib import Path
 from imdb import Cinemagoer
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 from imdb.parser import s3 as s3_parser
+from imdb.parser.s3._uri import redact_uri_secrets
 from imdb.parser.s3.adapters import (
     NO_SOUNDEX_TITLE_LIMIT,
     SQLiteAdapter,
@@ -260,18 +261,61 @@ def test_missing_database_driver_is_not_reported_as_missing_sqlalchemy():
     if importlib.util.find_spec('psycopg') is not None:
         pytest.skip('psycopg is installed in this test environment')
 
+    uri = (
+        'postgresql+psycopg://user:uri-password@localhost/cinemagoer'
+        '?password=query-password&token=query-token'
+    )
     with pytest.raises(IMDbError, match='database driver') as exc_info:
-        Cinemagoer('s3', uri='postgresql+psycopg://localhost/cinemagoer')
+        Cinemagoer('s3', uri=uri)
 
     assert 'cinemagoer[sqlalchemy]' not in str(exc_info.value)
+    assert 'uri-password' not in str(exc_info.value)
+    assert 'query-password' not in str(exc_info.value)
+    assert 'query-token' not in str(exc_info.value)
+    assert '***' in str(exc_info.value)
 
 
-def test_incomplete_sqlite_schema_is_actionable(tmp_path):
+@pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
+def test_incomplete_sqlite_schema_is_actionable(tmp_path, scheme):
+    if scheme == 'sqlite+pysqlite':
+        pytest.importorskip('sqlalchemy')
     database = tmp_path / 'empty.db'
     database.touch()
-    with Cinemagoer('s3', uri=f'sqlite:///{database}') as ia:
-        with pytest.raises(IMDbError, match='invalid or incomplete'):
+    with Cinemagoer('s3', uri=f'{scheme}:///{database}') as ia:
+        with pytest.raises(
+                IMDbDataAccessError, match='invalid or incomplete') as exc_info:
             ia.search_movie('Missing tables')
+
+    cause_type = sqlite3.Error if scheme == 'sqlite' else KeyError
+    assert isinstance(exc_info.value.__cause__, cause_type)
+
+
+def test_uri_redaction_hides_credentials_and_common_query_secrets():
+    uri = (
+        'postgresql://user:password@database.example/cinemagoer'
+        '?sslmode=require&api_key=key-value&access_token=token-value'
+    )
+
+    redacted = redact_uri_secrets(uri)
+
+    assert redacted == (
+        'postgresql://user:***@database.example/cinemagoer'
+        '?sslmode=require&api_key=***&access_token=***'
+    )
+
+
+def test_sqlalchemy_query_errors_are_wrapped_with_their_cause(tmp_path):
+    sqlalchemy = pytest.importorskip('sqlalchemy')
+    database = tmp_path / 'empty.db'
+    database.touch()
+    with Cinemagoer('s3', uri=f'sqlite+pysqlite:///{database}') as ia:
+        with pytest.raises(
+                IMDbDataAccessError, match='unable to query') as exc_info:
+            ia._adapter._fetchall(sqlalchemy.text('SELECT * FROM missing'))
+
+    assert isinstance(
+        exc_info.value.__cause__, sqlalchemy.exc.SQLAlchemyError
+    )
 
 
 @pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])

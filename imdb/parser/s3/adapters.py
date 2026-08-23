@@ -12,6 +12,8 @@ from urllib.parse import unquote
 
 from imdb._exceptions import IMDbDataAccessError, IMDbError
 
+from ._uri import redact_uri_secrets
+
 NO_SOUNDEX_TITLE_LIMIT = 100
 
 
@@ -22,11 +24,14 @@ def sqlite_path_from_uri(uri):
     if not uri.startswith('sqlite:///'):
         raise IMDbError(
             'invalid SQLite URI %r; use sqlite:///relative.db, '
-            'sqlite:////absolute/path.db, or sqlite://' % uri
+            'sqlite:////absolute/path.db, or sqlite://'
+            % redact_uri_secrets(uri)
         )
     path = unquote(uri[len('sqlite:///'):])
     if not path or '?' in path or '#' in path:
-        raise IMDbError('invalid SQLite URI %r' % uri)
+        raise IMDbError(
+            'invalid SQLite URI %r' % redact_uri_secrets(uri)
+        )
     if path.startswith('/'):
         return path
     return str(Path(path))

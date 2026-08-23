@@ -16,6 +16,9 @@
 
 """
 This module provides the logging facilities used by the imdb package.
+
+The library installs only a :class:`logging.NullHandler`; applications can
+configure handlers and formatting through the standard logging APIs.
 """
 
 import logging
@@ -31,10 +34,12 @@ LEVELS = {
 
 
 imdbpyLogger = logging.getLogger('imdbpy')
-imdbpyStreamHandler = logging.StreamHandler()
 imdbpyFormatter = logging.Formatter(
     '%(asctime)s %(levelname)s [%(name)s] %(pathname)s:%(lineno)d: %(message)s'
 )
+# Keep the historical name for callers which imported it, but leave handler
+# selection and formatting to applications using the library.
+imdbpyStreamHandler = logging.NullHandler()
 imdbpyStreamHandler.setFormatter(imdbpyFormatter)
 imdbpyLogger.addHandler(imdbpyStreamHandler)
 

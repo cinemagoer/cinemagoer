@@ -61,11 +61,14 @@ doc = [
     "sphinx>=8.1.3,<9",
     "sphinx-rtd-theme>=3.1.0",
 ]
+tox = [
+    "tox-uv>=1.35.2",
+]
 dev = [
     {include-group = "test"},
     {include-group = "style"},
     {include-group = "doc"},
-    "tox-uv>=1.35.2",
+    {include-group = "tox"},
     "sqlalchemy>=2.0.51,<2.1",
 ]
 
@@ -111,6 +114,7 @@ filterwarnings = [
 source_pkgs = ["imdb"]
 
 [tool.coverage.report]
+fail_under = 60
 show_missing = true
 skip_covered = true
 
@@ -129,28 +133,32 @@ exclude = []
 [tool.tox]
 legacy_tox_ini = """
 [tox]
-envlist = py3{10,11,12,13}, style, doc
+envlist = py3{10,11,12,13,14}, coverage, style, docs
 isolated_build = true
 
 [testenv]
 runner = uv-venv-lock-runner
 package = wheel
 wheel_build_env = .pkg
+dependency_groups = test
 commands =
     pytest
 
 [testenv:coverage]
 commands =
-    pytest --cov
+    pytest --cov --cov-report=term-missing
 
 [testenv:style]
+package = skip
+dependency_groups = style
 commands =
-    ruff check --preview imdb tests
+    ruff check --preview imdb tests build_support.py rebuildmo.py tools
 
 [testenv:docs]
 changedir = docs/
+dependency_groups = doc
 commands =
-    sphinx-build -b html ./ _build/
+    sphinx-build -W --keep-going -b html ./ _build/
 """
 
 [build-system]

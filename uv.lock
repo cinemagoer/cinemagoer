@@ -161,6 +161,9 @@ test = [
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
+tox = [
+    { name = "tox-uv" },
+]
 
 [package.metadata]
 requires-dist = [{ name = "sqlalchemy", marker = "extra == 'sqlalchemy'", specifier = ">=2.0.51,<2.1" }]
@@ -185,6 +188,7 @@ test = [
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
 ]
+tox = [{ name = "tox-uv", specifier = ">=1.35.2" }]
 
 [[package]]
 name = "colorama"

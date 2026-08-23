@@ -32,13 +32,43 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --locked --group dev
+        run: uv sync --locked --no-default-groups --group test
 
       - name: Build translations
-        run: uv run python rebuildmo.py
+        run: >-
+          uv run --no-default-groups --group test
+          python rebuildmo.py
+
+      - name: Verify the base dependency boundary
+        run: >-
+          uv run --no-default-groups --group test python -c
+          "import importlib.util;
+          assert importlib.util.find_spec('sqlalchemy') is None"
 
       - name: Run tests
-        run: uv run pytest
+        run: uv run --no-default-groups --group test pytest
+
+  quality:
+    name: Ruff, coverage, documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+          python-version: "3.14"
+
+      - name: Install tox without optional database dependencies
+        run: uv sync --locked --no-default-groups --group tox
+
+      - name: Run required quality gates
+        run: >-
+          uv run --no-default-groups --group tox
+          tox run -e coverage,style,docs
 
   distributions:
     name: Verify built distributions

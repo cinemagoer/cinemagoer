@@ -22,7 +22,6 @@ from the IMDb database. It can parse the data from https://datasets.imdbws.com/
 import configparser
 import os
 import sys
-from importlib.util import find_spec
 from types import FunctionType, MethodType
 
 from imdb import Character, Company, Movie, Person
@@ -33,8 +32,11 @@ from imdb._logging import setLevel as _set_logging_level
 from imdb.utils import build_company_name, build_name, build_title
 from imdb.version import __version__
 
-__all__ = ['Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character', 'Company',
-           'available_access_systems']
+__all__ = [
+    'Cinemagoer', 'IMDb', 'IMDbError', 'Movie', 'Person', 'Character',
+    'Company', 'available_access_systems', 'build_company_name', 'build_name',
+    'build_title',
+]
 
 VERSION = __version__
 

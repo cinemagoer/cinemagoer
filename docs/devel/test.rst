@@ -3,66 +3,70 @@
 How to test
 ===========
 
-Cinemagoer has a test suite based on `pytest`_. The simplest way to run the tests
-is to run the following command in the top level directory of the project::
+Cinemagoer has a test suite based on `pytest`_. Install the locked development
+environment and compile the ignored translation catalogs first::
 
-   pytest
+   uv sync --locked --group dev
+   uv run python rebuildmo.py
+
+Then run the suite from the top-level directory::
+
+   uv run pytest
 
 You can execute a specific test module::
 
-   pytest tests/test_in_operator.py
+   uv run pytest tests/test_in_operator.py
 
 Or execute test functions that match a given keyword::
 
-   pytest -k cover
+   uv run pytest -k cover
 
 
-make
-----
+Base package
+------------
 
-A :file:`Makefile` is provided for easier invocation of jobs.
-The following targets are defined (among others, run "make" to see
-the full list):
+The default ``dev`` group includes SQLAlchemy so its adapter tests can run. To
+test the base package without SQLAlchemy, install only the test tools::
 
-test
-   Run tests quickly with the default Python.
+   uv sync --locked --no-default-groups --group test
+   uv run --no-default-groups --group test python rebuildmo.py
+   uv run --no-default-groups --group test pytest
 
-lint
-   Check style with flake8.
+This is the dependency mode used by the required Python-version and coverage
+CI jobs. SQLAlchemy-specific tests are expected to skip in this environment;
+native SQLite behavior and the actionable missing-extra error must pass.
 
-docs
-   Generate Sphinx HTML documentation, including API docs.
 
-coverage
-   Check code coverage quickly with the default Python.
+Quality checks
+--------------
 
-clean
-   Clean everything.
+Run the same required quality environments used by CI with::
+
+   uv run --no-default-groups --group tox tox run -e coverage,style,docs
+
+The individual underlying commands are::
+
+   uv run --no-default-groups --group test pytest --cov --cov-report=term-missing
+   uv run --no-default-groups --group style ruff check --preview imdb tests build_support.py rebuildmo.py tools
+   uv run --no-default-groups --group doc sphinx-build -W --keep-going -b html docs docs/_build
 
 
 tox
 ---
 
-Multiple test environments can be tested using tox::
+The tox configuration covers Python 3.10 through 3.14, coverage, style, and
+documentation. Run every configured environment with::
 
-   tox
+   uv run --no-default-groups --group tox tox
 
-This will test all the environments listed in the :file:`tox.ini` file.
-If you want to run all tests for a specific environment, for example python 3.4,
-supply it as an argument to tox::
+Run a specific Python or quality environment with::
 
-   tox -e py34
+   uv run --no-default-groups --group tox tox run -e py314
+   uv run --no-default-groups --group tox tox run -e style
 
-You can supply commands that will be executed in the given environment.
-For example, to run the test function that have the string "cover" in them
-using pypy3, execute::
+Additional pytest arguments can be passed after ``--``::
 
-   tox -e pypy3 -- pytest -k cover
-
-Or to get a Python prompt under Python 3.5 (with Cinemagoer and all dependencies
-already installed), execute::
-
-   tox -e py35 -- python
+   uv run --no-default-groups --group tox tox run -e py314 -- pytest -k cover
 
 
 S3 dataset
@@ -72,7 +76,8 @@ Tests run against the dataset-backed access system. To test with your own
 database generated from IMDb non-commercial datasets, define the
 ``CINEMAGOER_S3_URI`` environment variable::
 
-   CINEMAGOER_S3_URI='sqlite:///cinemagoer.db' pytest
+   CINEMAGOER_S3_URI='sqlite:///cinemagoer.db' \
+       uv run --no-default-groups --group test pytest
 
 You can populate this database with :file:`s32cinemagoer.py` before running
 the test suite.

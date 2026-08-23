@@ -1,5 +1,5 @@
 Cinemagoer
-======
+==========
 
 .. include:: ../README.rst
 

@@ -19,6 +19,14 @@ Method descriptions:
   when searching for just the title of the episode, *without* the title
   of the TV series.
 
+``search_movie_advanced(title=None, adult=None, results=None, sort=None, sort_dir=None, title_types=None)``
+  Adds adult and title-type filters. ``adult=True`` selects adult titles,
+  ``adult=False`` selects non-adult titles, and ``adult=None`` uses the
+  instance's ``adultSearch`` policy. ``title_types`` accepts raw IMDb dataset
+  values such as ``tvSeries`` and public values such as ``tv series``. Custom
+  sorting is not supported by the S3 backend; passing ``sort`` or ``sort_dir``
+  raises :class:`imdb.IMDbError`.
+
 ``get_movie(movieID)``
   This will fetch the needed data and return a Movie object for the movie
   referenced by the given movieID. The Movie class can be found in the Movie

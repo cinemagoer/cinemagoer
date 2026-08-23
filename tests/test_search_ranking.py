@@ -4,6 +4,7 @@ import sqlite3
 from contextlib import closing
 
 from imdb import Cinemagoer
+from imdb._exceptions import IMDbError
 from imdb.parser.s3.utils import scan_titles, title_soundex
 
 
@@ -93,6 +94,90 @@ def test_title_query_year_is_respected_in_search(tmp_path):
     assert movies[0].movieID == 9642498
     assert movies[0]['title'] == 'The Matrix'
     assert movies[0]['year'] == '2016'
+
+
+def _search_options_database(path):
+    shared_soundex = title_soundex('Shared Title')
+    series_soundex = title_soundex('Example Series')
+    with closing(sqlite3.connect(path)) as connection, connection:
+        connection.executescript(
+            '''
+            CREATE TABLE title_basics (
+                tconst INTEGER,
+                primaryTitle TEXT,
+                titleType TEXT,
+                isAdult INTEGER,
+                t_soundex TEXT
+            );
+            CREATE TABLE title_akas (
+                titleId INTEGER,
+                title TEXT,
+                t_soundex TEXT
+            );
+            '''
+        )
+        connection.executemany(
+            'INSERT INTO title_basics VALUES (?, ?, ?, ?, ?)',
+            [
+                (1, 'Shared Title', 'movie', 0, shared_soundex),
+                (2, 'Shared Title', 'movie', 1, shared_soundex),
+                (3, 'Example Series', 'tv series', 0, series_soundex),
+                (4, 'Example Series', 'tvSeries', 0, series_soundex),
+            ],
+        )
+
+
+def test_adult_search_constructor_sets_default_policy(tmp_path):
+    database = tmp_path / 'search-options.db'
+    _search_options_database(database)
+
+    with Cinemagoer(
+        's3', uri=f'sqlite:///{database}', adultSearch=False
+    ) as restricted:
+        default_results = restricted.search_movie('Shared Title')
+        adult_results = restricted.search_movie_advanced(
+            'Shared Title', adult=True
+        )
+    with Cinemagoer('s3', uri=f'sqlite:///{database}') as unrestricted:
+        all_results = unrestricted.search_movie('Shared Title')
+        nonadult_results = unrestricted.search_movie_advanced(
+            'Shared Title', adult=False
+        )
+
+    assert {movie.movieID for movie in default_results} == {1}
+    assert {movie.movieID for movie in adult_results} == {2}
+    assert {movie.movieID for movie in all_results} == {1, 2}
+    assert {movie.movieID for movie in nonadult_results} == {1}
+
+
+@pytest.mark.parametrize('title_types', [['tvSeries'], 'tv series'])
+def test_title_type_filter_supports_raw_and_transformed_values(
+        tmp_path, title_types):
+    database = tmp_path / 'search-options.db'
+    _search_options_database(database)
+
+    with Cinemagoer('s3', uri=f'sqlite:///{database}') as ia:
+        results = ia.search_movie_advanced(
+            'Example Series', title_types=title_types
+        )
+
+    assert {movie.movieID for movie in results} == {3, 4}
+
+
+@pytest.mark.parametrize(
+    'options',
+    [
+        {'sort': 'year'},
+        {'sort_dir': 'asc'},
+        {'sort': 'title', 'sort_dir': 'desc'},
+    ],
+)
+def test_advanced_search_rejects_unsupported_sort_options(ia, options):
+    with pytest.raises(
+        IMDbError,
+        match='sort and sort_dir are not supported.*omit both arguments',
+    ):
+        ia.search_movie_advanced('Miss Jerry', **options)
 
 
 def test_reversed_person_name_query_ranks_the_intended_person_first(ia):

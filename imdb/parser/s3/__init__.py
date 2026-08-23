@@ -26,6 +26,7 @@ import logging
 from operator import itemgetter
 
 from imdb import IMDbBase
+from imdb._exceptions import IMDbError
 from imdb.Movie import Movie
 from imdb.Person import Person
 from imdb.utils import analyze_title
@@ -81,6 +82,7 @@ class IMDbS3AccessSystem(IMDbBase):
                  *arguments, **keywords):
         """Initialize the access system."""
         IMDbBase.__init__(self, *arguments, **keywords)
+        self._adult_search = bool(adultSearch)
         self._adapter = adapter_for_uri(uri)
 
     def close(self):
@@ -357,6 +359,9 @@ class IMDbS3AccessSystem(IMDbBase):
         if not title:
             return []
 
+        if adult is None and not self._adult_search:
+            adult = False
+
         title_info = analyze_title(title)
         search_title = title_info.get('title', title).strip()
         search_year = title_info.get('year')
@@ -372,10 +377,16 @@ class IMDbS3AccessSystem(IMDbBase):
                     normalized_title_types = list(search_title_types)
                 normalized_types = []
                 for t in normalized_title_types:
-                    if t in self._KIND_REV:
-                        normalized_types.append(self._KIND_REV[t])
-                    else:
-                        normalized_types.append(t)
+                    # Current imports store transformed public kinds, while
+                    # older databases may retain raw IMDb dataset values.
+                    # Accept either spelling against both schema variants.
+                    for candidate in (
+                        t,
+                        KIND.get(t, t),
+                        self._KIND_REV.get(t, t),
+                    ):
+                        if candidate not in normalized_types:
+                            normalized_types.append(candidate)
 
             results, ta_results = self._adapter.search_titles(
                 t_soundex,
@@ -404,6 +415,11 @@ class IMDbS3AccessSystem(IMDbBase):
 
     def _search_movie_advanced(self, title=None, adult=None, results=None, sort=None,
                                sort_dir=None, title_types=None):
+        if sort is not None or sort_dir is not None:
+            raise IMDbError(
+                'sort and sort_dir are not supported by the s3 access system; '
+                'omit both arguments to use relevance ranking'
+            )
         return self._search_movie(title, results, adult=adult, title_types=title_types)
 
     def _search_episode(self, title, results):

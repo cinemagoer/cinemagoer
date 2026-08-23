@@ -9,6 +9,9 @@
     commit, and write a completed import manifest
   - prevent query adapters from creating missing SQLite databases and open
     existing file-backed SQLite databases read-only
+  - honor the ``adultSearch`` default policy, allow explicit advanced-search
+    adult filters, match raw and transformed title types, and reject unsupported
+    sort options instead of silently ignoring them
 
   [general]
 

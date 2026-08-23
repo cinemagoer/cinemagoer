@@ -37,6 +37,9 @@
   - make Ruff, warning-clean documentation, coverage, base-only Python tests,
     and distribution verification required CI gates without requiring
     SQLAlchemy
+  - audit and document compatibility helpers, retain dataset/container/caller-
+    data utilities, and remove the obsolete web-parser-only
+    ``fullSizeCoverURL`` wrapper
 
 * What's new in release 2026.08.20 (The Life of Chuck)
 

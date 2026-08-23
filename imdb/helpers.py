@@ -313,7 +313,7 @@ def sortedEpisodes(m, season=None):
 
 
 # Idea and portions of the code courtesy of none none (dclist at gmail.com)
-_re_imdbIDurl = re.compile(r'\b(nm|tt|ch|co)([0-9]{7,8})\b')
+_re_imdbIDurl = re.compile(r'\b(nm|tt|ch|co)([0-9]{7,})\b')
 
 
 def get_byURL(url, info=None, args=None, kwds=None):
@@ -339,18 +339,6 @@ def get_byURL(url, info=None, args=None, kwds=None):
         elif imdbtype == 'nm':
             return ia.get_person(imdbID, info=info)
     return None
-
-
-# Idea and portions of code courtesy of Basil Shubin.
-# Beware that these information are now available directly by
-# the Movie/Person/Character instances.
-def fullSizeCoverURL(obj):
-    """Given an URL string or a Movie, Person or Character instance,
-    returns an URL to the full-size version of the cover/headshot,
-    or None otherwise.  This function is obsolete: the same information
-    are available as keys: 'full-size cover url' and 'full-size headshot',
-    respectively for movies and persons/characters."""
-    return obj.get_fullsizeURL()
 
 
 def keyToXML(key):

@@ -23,7 +23,8 @@ FAQs
 :Q: I'm writing an interface based on Cinemagoer and I have problems handling
     encoding, chars conversions, replacements of references and so on.
 
-:A: See the many functions in the imdb.helpers module.
+:A: See :doc:`usage/helpers` for the supported dataset, container, formatting,
+    XML, and caller-data helpers.
 
 
 :Q: How can I resize an image URL I already have?

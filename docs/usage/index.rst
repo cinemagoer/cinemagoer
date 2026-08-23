@@ -24,6 +24,7 @@ programs.
    quickstart
    cli
    data-interface
+   helpers
    query
    role
    series

@@ -132,7 +132,7 @@ wheels = [
 
 [[package]]
 name = "cinemagoer"
-version = "2026.8.22"
+version = "2026.8.23"
 source = { editable = "." }
 
 [package.optional-dependencies]

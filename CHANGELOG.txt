@@ -18,6 +18,9 @@
     containers, and infoset metadata
   - replace ``lxml`` with the standard-library XML parser, leaving the base
     package without mandatory third-party runtime dependencies
+  - make the ``cinemagoer`` CLI report no-result and expected database errors
+    without tracebacks, validate positive result counts and IMDb IDs, and add
+    an opt-in ``--debug`` traceback mode
 
 * What's new in release 2026.08.20 (The Life of Chuck)
 

@@ -22,6 +22,7 @@ programs.
    :caption: Contents:
 
    quickstart
+   cli
    data-interface
    query
    role

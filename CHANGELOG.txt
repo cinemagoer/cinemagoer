@@ -21,6 +21,8 @@
   - make the ``cinemagoer`` CLI report no-result and expected database errors
     without tracebacks, validate positive result counts and IMDb IDs, and add
     an opt-in ``--debug`` traceback mode
+  - add a packaged ``bin/cinemagoer-cli`` executable that delegates to the
+    same CLI implementation as the preferred ``cinemagoer`` entry point
 
 * What's new in release 2026.08.20 (The Life of Chuck)
 

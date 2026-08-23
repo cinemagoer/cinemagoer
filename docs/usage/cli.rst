@@ -11,6 +11,14 @@ configuration file::
   cinemagoer --uri sqlite:///cinemagoer.db get movie tt0000009
   cinemagoer --uri sqlite:///cinemagoer.db get person nm0000001
 
+The repository also provides :file:`bin/cinemagoer-cli`, a thin executable
+wrapper around the same implementation. It is useful when working from a
+source checkout and is installed as :command:`cinemagoer-cli` for distributors
+that use the declared script files. The :command:`cinemagoer` console entry
+point remains the preferred installed command::
+
+  uv run ./bin/cinemagoer-cli --uri sqlite:///cinemagoer.db get movie tt0000009
+
 ``-n`` must be a positive integer. Movie and person IDs can be supplied as
 digits or with their usual ``tt`` and ``nm`` prefixes.
 

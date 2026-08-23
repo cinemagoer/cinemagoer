@@ -130,6 +130,23 @@ def test_cli_search_and_get_subprocesses(arguments, expected):
     assert result.stderr == ''
 
 
+def test_bin_cli_wrapper_runs_as_executable():
+    script = REPO_ROOT / 'bin' / 'cinemagoer-cli'
+
+    assert os.access(script, os.X_OK)
+    result = subprocess.run(
+        [
+            script, '--uri', f'sqlite:///{PARTIAL_DB}',
+            'get', 'movie', 'tt0000009',
+        ],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False,
+    )
+
+    assert result.returncode == 0
+    assert 'Title: Miss Jerry (1894)' in result.stdout
+    assert result.stderr == ''
+
+
 def test_cli_no_result_is_concise_failure():
     result = run_cli(
         'search', 'movie', 'a-title-that-does-not-exist', '--first'

@@ -26,6 +26,9 @@
   - stop exceptions from logging during construction, leave log handling to
     applications, redact database URI secrets, and consistently wrap database
     operational and schema failures as ``IMDbDataAccessError``
+  - compile translations during wheel builds, ship the complete downstream
+    test fixture and locale compiler in sdists, and verify clean installs of
+    wheels built both directly and from the sdist
 
 * What's new in release 2026.08.20 (The Life of Chuck)
 

@@ -22,23 +22,31 @@ import glob
 import os
 import os.path
 import sys
+from pathlib import Path
 from subprocess import check_call
 
+ROOT_DIR = Path(__file__).resolve().parent
 
-def rebuildmo():
+
+def rebuildmo(locale_dir=None, force=False):
+    """Compile translation catalogs below *locale_dir*."""
     created = []
-    locale_dir = os.path.join("imdb", "locale")
+    locale_dir = Path(locale_dir) if locale_dir else ROOT_DIR / 'imdb' / 'locale'
     po_files = os.path.join(locale_dir, "imdbpy-*.po")
     for po_file in sorted(glob.glob(po_files)):
         lang = os.path.basename(po_file)[7:-3]
         lang_dir = os.path.join(locale_dir, lang)
         mo_dir = os.path.join(lang_dir, "LC_MESSAGES")
         mo_file = os.path.join(mo_dir, "imdbpy.mo")
-        if os.path.exists(mo_file) and (os.stat(po_file).st_mtime < os.stat(mo_file).st_mtime):
+        if not force and os.path.exists(mo_file) and \
+                os.stat(po_file).st_mtime < os.stat(mo_file).st_mtime:
             continue
         if not os.path.exists(mo_dir):
             os.makedirs(mo_dir)
-        check_call([sys.executable, "msgfmt.py", "-o", mo_file, po_file])
+        check_call([
+            sys.executable, str(ROOT_DIR / 'msgfmt.py'),
+            '-o', mo_file, po_file,
+        ])
         created.append(lang)
     return created
 
@@ -46,4 +54,4 @@ def rebuildmo():
 if __name__ == '__main__':
     languages = rebuildmo()
     if len(languages) > 0:
-        print('Created locale for: %s.' % ' '.join(languages))
+        print('Created locale for: %s.' % ' '.join(languages))  # noqa: T201

@@ -86,6 +86,13 @@ script-files = [
     "bin/s3-reduce",
 ]
 
+[tool.setuptools.packages.find]
+include = ["imdb", "imdb.*"]
+namespaces = false
+
+[tool.setuptools.cmdclass]
+build_py = "build_support.BuildPy"
+
 [tool.setuptools.package-data]
 "imdb.locale" =  [
     "imdbpy.pot",
@@ -117,6 +124,7 @@ exclude = []
 
 [tool.ruff.lint.per-file-ignores]
 "imdb/cli.py" = ["T201"]
+"tools/verify_distributions.py" = ["T201"]
 
 [tool.tox]
 legacy_tox_ini = """

@@ -19,8 +19,9 @@ for building your own internationalization files:
   (for example :file:`imdbpy-fr.po` for French) and modify it according
   to your language.
 
-- Then you have to run the :file:`rebuildmo.py` script (which is automatically
-  executed at install time) to create the ``.mo`` files.
+- Run the :file:`rebuildmo.py` script to test the translation from a source
+  checkout. PEP 517 builds compile all catalogs automatically into the wheel,
+  so generated ``.mo`` files are not committed.
 
 If you need to upgrade an existing translation, after changes to the ``.pot``
 file (usually because the DTD was changed), you can use the ``msgmerge``

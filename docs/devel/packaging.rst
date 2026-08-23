@@ -50,6 +50,23 @@ import :mod:`imdb.parser.s3.sqlalchemy_adapter` from the base SQLite path.
 Downstream smoke tests
 ----------------------
 
+The PEP 517 build compiles every shipped ``.po`` catalog into the wheel; the
+generated ``.mo`` files do not need to be stored in a source checkout. The
+source distribution includes the catalog compiler, the test suite, and
+``tests/partial.db`` so downstream maintainers can rebuild the wheel and run
+the default tests without obtaining additional data.
+
+Upstream verifies both a wheel built directly from the repository and a wheel
+rebuilt from the sdist. The standard-library verification tool installs each
+wheel without dependencies in a clean virtual environment and checks imports,
+version metadata, translations, the CLI entry point, and a native SQLite
+query::
+
+   python tools/verify_distributions.py \
+       --sdist dist/cinemagoer-*.tar.gz \
+       --wheel dist/direct/cinemagoer-*.whl \
+       --wheel dist/from-sdist/cinemagoer-*.whl
+
 In an environment containing only the base distribution package, verify that
 SQLAlchemy is absent and that Cinemagoer selects its native adapter::
 

@@ -3,10 +3,8 @@ FAQs
 
 :Q: Is Cinemagoer compatible with Python 3?
 
-:A: Yes. Versions after 6.0 are compatible with Python 3.x, but should
-    also work with Python 2.7.
-    If you need an older, unmaintained, version for Python, see the
-    imdbpy-legacy branch in the repository.
+:A: Yes. The current release requires Python 3.10 or newer. The unmaintained
+    ``imdbpy-legacy`` branch is available only for historical Python releases.
 
 
 :Q: Importing the data using the 's3' method, are the imdbID available?
@@ -17,7 +15,9 @@ FAQs
 :Q: I have an URL (of a movie, person or something else), how can I
     get a Movie/Person/... instance?
 
-:A: Import the ``imdb.helpers`` module and use the ``get_byURL`` function.
+:A: Import the ``imdb.helpers`` module and use ``get_byURL``. Pass the same
+    dataset database arguments you would pass to ``Cinemagoer``; only movie
+    (``tt``) and person (``nm``) URLs are supported by the S3 backend.
 
 
 :Q: I'm writing an interface based on Cinemagoer and I have problems handling
@@ -26,6 +26,9 @@ FAQs
 :A: See the many functions in the imdb.helpers module.
 
 
-:Q: How can I get a link to an image (movie cover or people headshot) with a specific size?
+:Q: How can I resize an image URL I already have?
 
-:A: You can use the ``imdb.helpers.resizeImage`` function to get a link to a resized and/or cropped version of the image.
+:A: You can use ``imdb.helpers.resizeImage`` for a compatible caller-provided
+    URL. IMDb's downloadable datasets do not contain movie-cover or person-
+    headshot URLs, so objects retrieved by the S3 backend cannot supply the
+    input URL.

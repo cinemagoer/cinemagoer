@@ -5,11 +5,15 @@ How to make a release
 
 *Version files*
 
-    Keep the project version aligned in these files:
+    Keep the project version aligned in these sources:
 
     - ``imdb/version.py`` (``__version__``)
     - ``pyproject.toml`` (``[project].version``)
-    - ``uv.lock`` (regenerate with ``uv lock`` after changing the version)
+
+    After changing them, run ``uv lock`` to refresh the local project entry in
+    ``uv.lock``. Sphinx reads its ``version`` and ``release`` values from the
+    installed distribution metadata, so ``docs/conf.py`` has no separate
+    version string to update.
 
 *CHANGELOG.txt*
 
@@ -27,6 +31,34 @@ How to make a release
     Update ``imdb/version.py`` and ``pyproject.toml`` to the new version, then
     run ``uv lock`` so ``uv.lock`` is refreshed.
 
+*Translations*
+
+    Compile the locale catalogs before tests and documentation checks::
+
+      uv run python rebuildmo.py
+
+    Generated ``.mo`` files are ignored and should not be committed. The PEP
+    517 build compiles the shipped ``.po`` sources into each wheel.
+
+*Checks and artifacts*
+
+    Run the required quality checks and build both the source distribution and
+    wheels from the repository and from that source distribution::
+
+      uv run tox
+      uv build --sdist --out-dir dist
+      uv build --wheel --out-dir dist/direct .
+      uv build --wheel --out-dir dist/from-sdist dist/*.tar.gz
+      uv run --no-project python tools/verify_distributions.py \
+          --sdist dist/*.tar.gz \
+          --wheel dist/direct/*.whl \
+          --wheel dist/from-sdist/*.whl
+
+    Start with an empty ``dist`` directory so stale artifacts cannot satisfy a
+    wildcard. The verifier checks sdist contents, compiled translations,
+    metadata and dependency boundaries, the installed CLI, and a native SQLite
+    query. See :doc:`packaging` for downstream packaging details.
+
 
 **How to release**
 
@@ -35,7 +67,7 @@ How to make a release
 - Add an annotated tag like *year.month.day*; e.g.: ``git tag -a 2020.09.25``
   (the commit message is not important).
 
-- ``python3 -m build``
+- Build and verify the artifacts using the commands above.
 
 - ``git push``
 

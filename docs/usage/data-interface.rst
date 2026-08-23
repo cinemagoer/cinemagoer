@@ -52,12 +52,14 @@ Available information sets can be queried using the access object:
    >>> from imdb import Cinemagoer
    >>> ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
    >>> ia.get_movie_infoset()
-   ['main', 'plot']
+   ['main', 'plot', 'episodes']
    >>> ia.get_person_infoset()
    ['main', 'biography', 'filmography']
 
 In the S3 backend, ``plot`` for movies and ``biography``/``filmography`` for
-people are compatibility aliases of ``main``.
+people are compatibility aliases of ``main``. They do not add plots,
+biographies, or filmographies because those fields are not present in the
+downloadable datasets. The ``episodes`` movie infoset expands series episodes.
 
 By default, only ``main`` is requested:
 
@@ -80,7 +82,7 @@ the information sets that have already been retrieved:
 
    >>> movie = ia.get_movie('0133093')
    >>> movie.current_info
-   ['main']
+   ['main', 'plot']
 
 The list of retrieved information sets and the keys they provide can be
 taken from the ``infoset2keys`` attribute:
@@ -130,60 +132,15 @@ the S3 access system. Legacy infosets like trivia, quotes, goofs,
 full credits, vote details, and publicity are not available.
 
 
-Composite data
---------------
+Legacy text helpers
+-------------------
 
-In some data, the (not-so) universal ``::`` separator is used to delimit
-parts of the data inside a string, like the plot of a movie and its author:
+The public containers retain compatibility support for ``TEXT::NOTE`` strings
+and ``(qv)`` title/name references. The
+:func:`imdb.helpers.makeTextNotes` helper can format caller-provided composite
+strings, and ``defaultModFunct``/``modFunct`` can transform references stored
+in manually constructed or deserialized objects.
 
-.. code-block:: python
-
-   >>> movie = ia.get_movie('0094226')
-   >>> plot = movie['plot'][0]
-   >>> plot
-   "1920's prohibition ... way to get him.::Jeremy Perkins <jwp@aber.ac.uk>"
-
-As a rule, there's at most one such separator inside a string. Splitting
-the string will result in two logical pieces as in ``TEXT::NOTE``.
-The :func:`imdb.helpers.makeTextNotes` function can be used to create a custom
-function to pretty-print this kind of information.
-
-
-References
-----------
-
-Sometimes the collected data contains strings with references to other movies
-or persons, e.g. in the plot of a movie or the biography of a person.
-These references are stored in the Movie, Person, and Character instances;
-in the strings you will find values like _A Movie (2003)_ (qv)
-or 'A Person' (qv) or '#A Character# (qv)'. When these strings are accessed
-(like movie['plot'] or person['biography']), they will be modified using
-a provided function, which must take the string and two dictionaries
-containing titles and names references as parameters.
-
-By default the (qv) strings are converted in the "normal" format
-("A Movie (2003)", "A Person" and "A Character").
-
-You can find some examples of these functions in the
-imdb.utils module.
-
-The function used to modify the strings can be set with the ``defaultModFunct``
-parameter of the IMDb class or with the ``modFunct`` parameter
-of the ``get_movie`` and ``get_person`` methods:
-
-.. code-block:: python
-
-   import imdb
-   i = imdb.Cinemagoer(
-       accessSystem='s3',
-       uri='sqlite:///cinemagoer.db',
-       defaultModFunct=imdb.utils.modHtmlLinks
-   )
-
-or:
-
-.. code-block:: python
-
-   import imdb
-   i = imdb.Cinemagoer(accessSystem='s3', uri='sqlite:///cinemagoer.db')
-   i.get_person('0000154', modFunct=imdb.utils.modHtmlLinks)
+The current S3 backend does not populate the legacy plot, biography, or
+reference-map fields used by older examples. Consequently these helpers do
+not transform ordinary objects retrieved from the downloadable datasets.

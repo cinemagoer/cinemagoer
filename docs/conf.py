@@ -6,6 +6,8 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/stable/config
 
+from importlib.metadata import version as distribution_version
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -20,13 +22,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Cinemagoer'
-copyright = '2026, Davide Alberani, H. Turgut Uyar'
+copyright = '2026, Davide Alberani, H. Turgut Uyar'  # noqa: A001
 author = 'Davide Alberani, H. Turgut Uyar'
 
-# The short X.Y version
-version = '2026.08.20'
-# The full version, including alpha/beta/rc tags
-release = '2026.08.20'
+# Read the installed distribution metadata so documentation and package
+# releases cannot drift apart.
+release = distribution_version('cinemagoer')
+version = release
 
 
 # -- General configuration ---------------------------------------------------

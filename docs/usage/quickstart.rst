@@ -15,8 +15,8 @@ function to get an access object through which IMDb data can be retrieved:
       s32cinemagoer.py /path/to/imdb-tsv-files/ sqlite:///cinemagoer.db
 
    All examples on this page assume that this database is already populated.
-   SQLite is used here for simplicity; Cinemagoer also supports other
-   SQLAlchemy-supported databases.
+   SQLite is used here for simplicity. Other database engines require the
+   ``sqlalchemy`` extra and a suitable DBAPI driver.
 
 .. code-block:: python
 
@@ -31,22 +31,22 @@ Searching
 
 You can use the :meth:`search_movie <imdb.IMDbBase.search_movie>` method
 of the access object to search for movies with a given (or similar) title.
-For example, to search for movies with titles like "matrix":
+For example, search with the complete title and year when they are known:
 
 .. code-block:: python
 
-   >>> movies = ia.search_movie('matrix')
+   >>> movies = ia.search_movie('Miss Jerry (1894)')
    >>> movies[0]
-   <Movie id:0133093[s3] title:_The Matrix (1999)_>
+   <Movie id:9[s3] title:_Miss Jerry (1894)_>
 
 Similarly, you can search for people using
 the :meth:`search_person <imdb.IMDbBase.search_person>` method:
 
 .. code-block:: python
 
-   >>> people = ia.search_person('angelina')
+   >>> people = ia.search_person('Fred Astaire')
    >>> people[0]
-   <Person id:0001401[s3] name:_Jolie, Angelina_>
+   <Person id:1[s3] name:_Fred Astaire_>
 
 As the examples indicate, the results are lists of
 :class:`Movie <imdb.Movie.Movie>` and :class:`Person <imdb.Person.Person>`
@@ -57,19 +57,19 @@ you want to obtain:
 .. code-block:: python
 
    >>> movies[0]['title']
-   'The Matrix'
+   'Miss Jerry'
    >>> people[0]['name']
-   'Angelina Jolie'
+   'Fred Astaire'
 
-Movie and person objects have id attributes that store the IMDb id of
-the object:
+Movie and person objects have ID attributes that store the numeric IMDb ID.
+Search results from the dataset backend expose these IDs as integers:
 
 .. code-block:: python
 
    >>> movies[0].movieID
-   '0133093'
+   9
    >>> people[0].personID
-   '0001401'
+   1
 
 
 
@@ -78,25 +78,27 @@ Retrieving
 
 If you know the IMDb id of a movie, you can use
 the :meth:`get_movie <imdb.IMDbBase.get_movie>` method to retrieve its data.
-For example, the movie "The Untouchables" by Brian De Palma has the id
-"0094226":
+Pass the numeric part of the IMDb ID as a string. For example:
 
 .. code-block:: python
 
-   >>> movie = ia.get_movie('0094226')
+   >>> movie = ia.get_movie('0000009')
    >>> movie
-   <Movie id:0094226[s3] title:_The Untouchables (1987)_>
+   <Movie id:0000009[s3] title:_Miss Jerry (1894)_>
 
 Similarly, the :meth:`get_person <imdb.IMDbBase.get_person>` method can be
 used for retrieving :class:`Person <imdb.Person.Person>` data:
 
 .. code-block:: python
 
-   >>> person = ia.get_person('0000206')
+   >>> person = ia.get_person('0000001')
    >>> person['name']
-   'Keanu Reeves'
+   'Fred Astaire'
    >>> person['birth date']
-   '1964-9-2'
+   1899
+
+The downloadable name dataset contains a birth year, not a complete date, so
+``birth date`` is an integer year when it is present.
 
 
 Exceptions

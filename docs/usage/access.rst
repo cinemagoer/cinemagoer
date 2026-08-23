@@ -31,8 +31,13 @@ The database can be SQLite or any other engine supported by SQLAlchemy.
    discovery order and available options.
 
    If no configuration file is found (or no file can be read and parsed),
-   ``s3`` is used by default. Exceptions are re-raised by default; set
-   ``reraiseExceptions = off`` to retain errors only in the log. Configuration
-   comments start with ``#`` or ``;``.
+   ``s3`` is used by default. Exceptions are re-raised by default. Setting
+   ``reraiseExceptions = off`` suppresses access errors after recording them
+   through the ``imdbpy`` logger. The library installs only a
+   :class:`logging.NullHandler`, so applications must configure standard
+   Python logging (or set ``loggingConfig`` to a logging configuration file)
+   to emit those records. ``loggingLevel`` accepts ``debug``, ``info``,
+   ``warn``/``warning``, ``error``, or ``critical`` and controls the logger's
+   threshold. Configuration comments start with ``#`` or ``;``.
 
 See :ref:`s3` for setup and usage details.

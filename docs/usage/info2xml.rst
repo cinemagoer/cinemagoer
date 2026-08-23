@@ -17,7 +17,7 @@ if the key is not found). E.g.:
    from imdb import Cinemagoer
    ia = Cinemagoer('s3', uri='sqlite:///cinemagoer.db')
    movie = ia.get_movie(theMovieID)
-   print(movie.getAsXML('keywords'))
+   print(movie.getAsXML('genres'))
 
 It's also possible to get a representation of a whole object, using
 the ``asXML()`` method::
@@ -32,18 +32,17 @@ to False (default: True) to exclude the dynamically generated keys
 XML format
 ----------
 
-Keywords are converted to tags, items in lists are enclosed in
-a 'item' tag,  e.g.:
+Data keys are converted to tags, and values in lists are enclosed in an
+``item`` tag, e.g.:
 
 .. code-block:: xml
 
-   <keywords>
-     <item>a keyword</item>
-     <item>another keyword</item>
-   </keywords>
+   <genres infoset="main">
+     <item>romance</item>
+   </genres>
 
-Except when keys are known to be not fixed (e.g.: a list of keywords),
-in which case this schema is used:
+When a dictionary key cannot be represented directly as a fixed XML tag, this
+schema is used:
 
 .. code-block:: xml
 
@@ -76,8 +75,8 @@ Every 'id' can be empty.
 The returned XML string is mostly not pretty-printed.
 
 
-References
-----------
+Legacy references
+-----------------
 
 Some text keys can contain references to other movies, persons and characters.
 The user can provide the ``defaultModFunct`` function (see
@@ -85,6 +84,10 @@ the "MOVIE TITLES AND PERSON/CHARACTER NAMES REFERENCES" section of
 the README.package file), to replace these references with their own strings
 (e.g.: a link to a web page); it's up to the user, to be sure
 that the output of the defaultModFunct function is valid XML.
+
+IMDb's downloadable datasets do not populate these legacy text-reference maps.
+This behavior is retained for manually constructed objects and XML imported
+from older applications; it does not affect ordinary S3 retrieval results.
 
 
 DTD

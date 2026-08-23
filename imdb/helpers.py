@@ -27,7 +27,9 @@ but useful for Cinemagoer-based programs.
 
 import difflib
 import gettext
+import json
 import re
+import xml.etree.ElementTree as ET
 from html import escape
 
 from imdb import (
@@ -396,6 +398,16 @@ def _valueWithType(tag, tagValue):
     return tagValue
 
 
+def _storeInfoset(tag, name, infoset2keys, key2infoset):
+    """Store the infoset associated with a serialized data key."""
+    infoset = tag.get('infoset')
+    if infoset:
+        key2infoset[name] = infoset
+        keys = infoset2keys.setdefault(infoset, [])
+        if name not in keys:
+            keys.append(name)
+
+
 # Extra tags to get (if values were not already read from title/name).
 _titleTags = ('imdbindex', 'kind', 'year')
 _nameTags = ('imdbindex',)
@@ -412,17 +424,14 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
     if _key2infoset is None:
         _key2infoset = {}
     name = tagToKey(tag)
-    firstChild = (tag.getchildren() or [None])[0]
+    firstChild = (list(tag) or [None])[0]
     tagStr = (tag.text or '').strip()
-    if not tagStr and name == 'item':
-        # Handles 'item' tags containing text and a 'notes' sub-tag.
-        tagContent = tag.getchildren()
-        if tagContent and tagContent[0].text:
-            tagStr = (tagContent[0].text or '').strip()
-    infoset = tag.get('infoset')
-    if infoset:
-        _key2infoset[name] = infoset
-        _infoset2keys.setdefault(infoset, []).append(name)
+    _storeInfoset(tag, name, _infoset2keys, _key2infoset)
+    if _topLevel and tag.tag in _MAP_TOP_OBJ:
+        for child in tag:
+            _storeInfoset(
+                child, tagToKey(child), _infoset2keys, _key2infoset
+            )
     # Here we use tag.name to avoid tags like <item title="company">
     if tag.tag in _MAP_TOP_OBJ:
         # One of the subclasses of _Container.
@@ -441,14 +450,16 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
             tagsToGet = _titleTags
             ttitle = tag.find('title')
             if ttitle is not None:
-                item.set_title(ttitle.text)
+                _storeInfoset(ttitle, tagToKey(ttitle), _infoset2keys, _key2infoset)
+                if ttitle.text:
+                    item.set_title(ttitle.text)
                 tag.remove(ttitle)
         else:
             if name == 'person':
                 item.personID = theID
                 tagsToGet = _nameTags
                 theName = tag.find('long imdb canonical name')
-                if not theName:
+                if theName is None:
                     theName = tag.find('name')
             elif name == 'character':
                 item.characterID = theID
@@ -459,7 +470,9 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
                 tagsToGet = _companyTags
                 theName = tag.find('name')
             if theName is not None:
-                item.set_name(theName.text)
+                _storeInfoset(theName, tagToKey(theName), _infoset2keys, _key2infoset)
+                if theName.text:
+                    item.set_name(theName.text)
                 tag.remove(theName)
         for t in tagsToGet:
             if t in item.data:
@@ -469,20 +482,41 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
                 item.data[tagToKey(dataTag)] = _valueWithType(dataTag, dataTag.text)
         notesTag = tag.find('notes')
         if notesTag is not None:
-            item.notes = notesTag.text
+            item.notes = notesTag.text or ''
             tag.remove(notesTag)
         episodeOf = tag.find('episode-of')
         if episodeOf is not None:
-            item.data['episode of'] = parseTags(episodeOf, _topLevel=False,
-                                                _as=_as, _infoset2keys=_infoset2keys,
-                                                _key2infoset=_key2infoset)
+            _storeInfoset(episodeOf, 'episode of', _infoset2keys, _key2infoset)
+            episodeChildren = [child for child in episodeOf if child.tag in _MAP_TOP_OBJ]
+            episodeTag = episodeChildren[0] if episodeChildren else episodeOf
+            item.data['episode of'] = parseTags(
+                episodeTag, _topLevel=False, _as=_as,
+                _infoset2keys=_infoset2keys, _key2infoset=_key2infoset
+            )
             tag.remove(episodeOf)
-        cRole = tag.find('current-role')
-        if cRole is not None:
-            cr = parseTags(cRole, _topLevel=False, _as=_as,
-                           _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
-            item.currentRole = cr
+        currentRoles = []
+        for cRole in tag.findall('current-role'):
+            roleChildren = [child for child in cRole if child.tag in _MAP_TOP_OBJ]
+            if roleChildren:
+                for roleTag in roleChildren:
+                    role = parseTags(
+                        roleTag, _topLevel=False, _as=_as,
+                        _infoset2keys=_infoset2keys, _key2infoset=_key2infoset
+                    )
+                    roleNotes = cRole.find('notes')
+                    if roleNotes is not None:
+                        role.notes = roleNotes.text or ''
+                    currentRoles.append(role)
+            else:
+                role = parseTags(
+                    cRole, _topLevel=False, _as=_as,
+                    _infoset2keys=_infoset2keys, _key2infoset=_key2infoset
+                )
+                if role is not None:
+                    currentRoles.append(role)
             tag.remove(cRole)
+        if currentRoles:
+            item.currentRole = currentRoles[0] if len(currentRoles) == 1 else currentRoles
         # XXX: big assumption, here.  What about Movie instances used
         #      as keys in dictionaries?  What about other keys (season and
         #      episode number, for example?)
@@ -508,33 +542,43 @@ def parseTags(tag, _topLevel=True, _as=None, _infoset2keys=None, _key2infoset=No
             item = {}
             _adder = lambda key, value: item.update({key: value})
     else:
-        item = {}
-        _adder = lambda key, value: item.update({name: value})
-    for subTag in tag.getchildren():
+        return ''
+    for subTag in tag:
         subTagKey = tagToKey(subTag)
         # Exclude dinamically generated keys.
         if tag.tag in _MAP_TOP_OBJ and subTagKey in item._additional_keys():
             continue
         subItem = parseTags(subTag, _topLevel=False, _as=_as,
                             _infoset2keys=_infoset2keys, _key2infoset=_key2infoset)
-        if subItem:
+        if subItem is not None:
             _adder(subTagKey, subItem)
     if _topLevel and name in _MAP_TOP_OBJ:
         # Add information about 'info sets', but only to the top-level object.
         item.infoset2keys = _infoset2keys
         item.key2infoset = _key2infoset
-        item.current_info = list(_infoset2keys.keys())
+        serializedCurrentInfo = tag.get('current-info')
+        if serializedCurrentInfo:
+            try:
+                currentInfo = json.loads(serializedCurrentInfo)
+            except (TypeError, ValueError):
+                currentInfo = None
+            if isinstance(currentInfo, list) and all(
+                    isinstance(value, str) for value in currentInfo):
+                item.current_info = currentInfo
+            else:
+                item.current_info = list(_infoset2keys.keys())
+        else:
+            item.current_info = list(_infoset2keys.keys())
     return item
 
 
 def parseXML(xml):
     """Parse a XML string, returning an appropriate object (usually an
     instance of a subclass of _Container."""
-    import lxml.etree
-    return parseTags(lxml.etree.fromstring(xml))
+    return parseTags(ET.fromstring(xml))
 
 
-_re_akas_lang = re.compile('(?:[(])([a-zA-Z]+?)(?: title[)])')
+_re_akas_lang = re.compile(r'(?:^|\()([a-zA-Z]+?) title(?:\)|$)')
 _re_akas_country = re.compile(r'\(.*?\)')
 
 
@@ -544,26 +588,34 @@ def akasLanguages(movie):
     """Given a movie, return a list of tuples in (lang, AKA) format;
     lang can be None, if unable to detect."""
     lang_and_aka = []
-    akas = set((movie.get('akas') or []) + (movie.get('akas from release info') or []))
+    akas = (movie.get('akas') or []) + (movie.get('akas from release info') or [])
     for aka in akas:
-        # split aka
-        aka = re.search(r'^(.*) \((.*?)\)', aka).group(1, 2)
-        # sometimes there is no countries information
-        if len(aka) == 2:
-            # search for something like "(... title)" where ... is a language
-            language = _re_akas_lang.search(aka[1])
-            if language:
-                language = language.groups()[0]
-            else:
-                # split countries using , and keep only the first one (it's sufficient)
-                country = aka[1].split(',')[0]
-                # remove parenthesis
-                country = _re_akas_country.sub('', country).strip()
-                # given the country, get corresponding language from dictionary
-                language = COUNTRY_LANG.get(country)
-        else:
+        if isinstance(aka, dict):
+            title = aka.get('title')
+            if not isinstance(title, str):
+                continue
+            language = aka.get('language')
+            if not language:
+                language = COUNTRY_LANG.get(aka.get('region'))
+            parsed_aka = re.search(r'^(.*) \((.*?)\)$', title)
+        elif isinstance(aka, str):
+            title = aka
             language = None
-        lang_and_aka.append((language, aka[0]))
+            parsed_aka = re.search(r'^(.*) \((.*?)\)$', title)
+        else:
+            continue
+        if not language and parsed_aka:
+            title, details = parsed_aka.group(1, 2)
+            language_match = _re_akas_lang.search(details)
+            if language_match:
+                language = language_match.group(1)
+            else:
+                country = details.split(',')[0]
+                country = _re_akas_country.sub('', country).strip()
+                language = COUNTRY_LANG.get(country)
+        language_and_title = (language, title)
+        if language_and_title not in lang_and_aka:
+            lang_and_aka.append(language_and_title)
     return lang_and_aka
 
 
@@ -590,7 +642,7 @@ def sortAKAsBySimilarity(movie, title, _titlesOnly=True, _preferredLang=None):
         if _preferredLang and _preferredLang == language:
             score += 1
         scores.append((score, aka, language))
-    scores.sort(reverse=True)
+    scores.sort(key=lambda item: (item[0], item[1]), reverse=True)
     if _titlesOnly:
         return [x[1] for x in scores]
     return scores
@@ -607,9 +659,11 @@ def getAKAsInLanguage(movie, lang, _searchedTitle=None):
     if _searchedTitle:
         scores = []
         for aka in akas:
-            scores.append(difflib.SequenceMatcher(None, aka.lower(),
-                                                  _searchedTitle.lower()), aka)
-        scores.sort(reverse=True)
+            score = difflib.SequenceMatcher(
+                None, aka.lower(), _searchedTitle.lower()
+            ).ratio()
+            scores.append((score, aka))
+        scores.sort(key=lambda item: (item[0], item[1]), reverse=True)
         akas = [x[1] for x in scores]
     return akas
 

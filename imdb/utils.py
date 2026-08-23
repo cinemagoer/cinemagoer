@@ -19,6 +19,7 @@
 This module provides basic utilities for the imdb package.
 """
 
+import json
 import re
 import string
 from copy import copy, deepcopy
@@ -877,7 +878,9 @@ _re_amp = re.compile(r'&(?![^a-zA-Z0-9_#]{1,5};)')
 
 def escape4xml(value):
     """Escape some chars that can't be present in a XML value."""
-    if isinstance(value, (int, float)):
+    if isinstance(value, bool):
+        value = str(int(value))
+    elif isinstance(value, (int, float)):
         value = str(value)
     value = _re_amp.sub('&amp;', value)
     value = value.replace('"', '&quot;').replace("'", '&apos;')
@@ -954,7 +957,9 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
     value = _normalizeValue(value)
     extras = ''
     crl = ton.currentRole
-    if crl:
+    if crl or (
+            isinstance(crl, _Container)
+            and (crl.getID() is not None or crl.notes)):
         if not isinstance(crl, list):
             crl = [crl]
         for cr in crl:
@@ -988,6 +993,12 @@ def _tag4TON(ton, addAccessSystem=False, _containerOnly=False):
                 beginTag = '<%s><%s>%s</%s>' % (tag, what, value, what)
         else:
             beginTag = '<%s>' % tag
+    if addAccessSystem and ton.current_info and beginTag:
+        currentInfo = escape4xml(json.dumps(ton.current_info, ensure_ascii=False))
+        endOfOpenTag = beginTag.find('>')
+        beginTag = '%s current-info="%s"%s' % (
+            beginTag[:endOfOpenTag], currentInfo, beginTag[endOfOpenTag:]
+        )
     beginTag += extras
     if ton.notes:
         beginTag += '<notes>%s</notes>' % _normalizeValue(ton.notes)
@@ -1119,7 +1130,7 @@ def _seq2xml(seq, _l=None, withRefs=False, modFunct=None,
     else:
         if isinstance(seq, _Container):
             _l.extend(_tag4TON(seq))
-        elif seq:
+        elif seq is not None:
             # Text, ints, floats and the like.
             _l.append(_normalizeValue(seq, withRefs=withRefs,
                                       modFunct=modFunct,
@@ -1212,7 +1223,7 @@ class _Container:
 
     def _get_roleID(self):
         """Return the characterID or personID of the currentRole object."""
-        if not self.__role:
+        if self.__role is None:
             return None
         if isinstance(self.__role, list):
             return [x.getID() for x in self.__role]
@@ -1220,11 +1231,11 @@ class _Container:
 
     def _set_roleID(self, roleID):
         """Set the characterID or personID of the currentRole object."""
-        if not self.__role:
+        if self.__role is None:
             # XXX: needed?  Just ignore it?  It's probably safer to
             #      ignore it, to prevent some bugs in the parsers.
             # raise IMDbError,"Can't set ID of an empty Character/Person object."
-            pass
+            return
         if not self._roleIsPerson:
             if not isinstance(roleID, (list, tuple)):
                 self.currentRole.characterID = roleID
@@ -1245,7 +1256,7 @@ class _Container:
 
     def _get_currentRole(self):
         """Return a Character or Person instance."""
-        if self.__role:
+        if self.__role is not None:
             return self.__role
         return self._roleClass(name='', accessSystem=self.accessSystem, modFunct=self.modFunct)
 

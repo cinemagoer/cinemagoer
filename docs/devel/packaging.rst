@@ -2,10 +2,12 @@ Distribution maintainers
 ========================
 
 Cinemagoer's core runtime dependencies are declared in the ``dependencies``
-array of :file:`pyproject.toml`. As of this release, SQLAlchemy is no longer a
-core dependency: it is declared in the ``sqlalchemy`` optional-dependency
-extra. Maintainers upgrading an existing distribution package should remove
-SQLAlchemy from the mandatory dependency set.
+array of :file:`pyproject.toml`. The base package currently has no mandatory
+third-party runtime dependencies: XML handling uses the standard-library
+:mod:`xml.etree.ElementTree` module, and SQLAlchemy is declared in the
+``sqlalchemy`` optional-dependency extra. Maintainers upgrading an existing
+distribution package should remove both ``lxml`` and SQLAlchemy from the
+mandatory dependency set.
 
 The base package supports SQLite without SQLAlchemy. It uses Python's
 standard-library :mod:`sqlite3` module for both importing datasets and querying

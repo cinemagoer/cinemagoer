@@ -59,7 +59,8 @@ Movie, Person, Character and Company instances are converted as follows
 
 .. code-block:: xml
 
-   <movie id="movieID" access-system="accessSystem">
+   <movie id="movieID" access-system="accessSystem"
+          current-info='["main", "plot"]'>
      <title>A Long IMDb Movie Title (YEAR)</title>
      [<current-role>
         <person id="personID" access-system="accessSystem">
@@ -110,3 +111,10 @@ in a file, using it -later- to rebuild the original object.
 In the ``imdb.helpers`` module there's the ``parseXML()`` function which
 takes a string as input and returns -if possible- an instance of the Movie,
 Person, Character or Company class.
+
+``parseXML()`` uses Python's standard-library XML parser and requires no
+third-party XML package. XML produced by ``asXML()`` records loaded information
+sets in the optional ``current-info`` attribute. This lets ``parseXML()``
+preserve ``current_info`` entries even when an information set returned no
+data; older XML without the attribute continues to reconstruct that state from
+the per-key ``infoset`` attributes.

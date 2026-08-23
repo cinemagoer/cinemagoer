@@ -15,13 +15,13 @@ def test_get_all_series_episodes_from_partial_database(ia):
     assert sorted(series['episodes'][2]) == [8, 16]
 
     episode = series['episodes'][2][8]
-    assert episode.movieID == 43693
+    assert episode.movieID == '0043693'
     assert episode['seasonNr'] == 2
     assert episode['episodeNr'] == 8
-    assert episode['episode of'].movieID == 989125
+    assert episode['episode of'].movieID == '0989125'
 
     unknown_episode = series['episodes']['unknown season']['tt0042889']
-    assert unknown_episode.movieID == 42889
+    assert unknown_episode.movieID == '0042889'
     assert unknown_episode.get('seasonNr') is None
     assert unknown_episode.get('episodeNr') is None
 
@@ -33,7 +33,7 @@ def test_get_all_series_episodes_from_partial_database(ia):
 def test_get_episode_links_to_its_parent_series(ia):
     episode = ia.get_movie('42816')
 
-    assert episode['episode of'].movieID == 989125
+    assert episode['episode of'].movieID == '0989125'
     assert episode['seasonNr'] == 1
     assert episode['episodeNr'] == 17
 

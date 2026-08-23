@@ -51,6 +51,7 @@ with Cinemagoer('s3', uri=database_uri) as access:
     results = access.search_movie('Miss Jerry')
     assert results
     assert results[0]['title'] == 'Miss Jerry'
+    assert results[0].movieID == '0000009'
 '''
 
 

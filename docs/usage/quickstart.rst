@@ -37,7 +37,7 @@ For example, search with the complete title and year when they are known:
 
    >>> movies = ia.search_movie('Miss Jerry (1894)')
    >>> movies[0]
-   <Movie id:9[s3] title:_Miss Jerry (1894)_>
+   <Movie id:0000009[s3] title:_Miss Jerry (1894)_>
 
 Similarly, you can search for people using
 the :meth:`search_person <imdb.IMDbBase.search_person>` method:
@@ -46,7 +46,7 @@ the :meth:`search_person <imdb.IMDbBase.search_person>` method:
 
    >>> people = ia.search_person('Fred Astaire')
    >>> people[0]
-   <Person id:1[s3] name:_Fred Astaire_>
+   <Person id:0000001[s3] name:_Fred Astaire_>
 
 As the examples indicate, the results are lists of
 :class:`Movie <imdb.Movie.Movie>` and :class:`Person <imdb.Person.Person>`
@@ -61,15 +61,17 @@ you want to obtain:
    >>> people[0]['name']
    'Fred Astaire'
 
-Movie and person objects have ID attributes that store the numeric IMDb ID.
-Search results from the dataset backend expose these IDs as integers:
+Movie and person objects have ID attributes containing the canonical numeric
+part of the IMDb ID: a string padded to at least seven digits, without the
+``tt`` or ``nm`` prefix. This representation is the same for search results,
+retrieved objects, and nested objects:
 
 .. code-block:: python
 
    >>> movies[0].movieID
-   9
+   '0000009'
    >>> people[0].personID
-   1
+   '0000001'
 
 
 
@@ -78,11 +80,12 @@ Retrieving
 
 If you know the IMDb id of a movie, you can use
 the :meth:`get_movie <imdb.IMDbBase.get_movie>` method to retrieve its data.
-Pass the numeric part of the IMDb ID as a string. For example:
+Retrieval accepts an integer, a digit string with or without zero padding, or
+the matching ``tt``/``nm`` prefix. For example:
 
 .. code-block:: python
 
-   >>> movie = ia.get_movie('0000009')
+   >>> movie = ia.get_movie('tt0000009')
    >>> movie
    <Movie id:0000009[s3] title:_Miss Jerry (1894)_>
 
@@ -91,7 +94,7 @@ used for retrieving :class:`Person <imdb.Person.Person>` data:
 
 .. code-block:: python
 
-   >>> person = ia.get_person('0000001')
+   >>> person = ia.get_person('nm0000001')
    >>> person['name']
    'Fred Astaire'
    >>> person['birth date']

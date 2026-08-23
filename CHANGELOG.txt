@@ -12,6 +12,8 @@
   - honor the ``adultSearch`` default policy, allow explicit advanced-search
     adult filters, match raw and transformed title types, and reject unsupported
     sort options instead of silently ignoring them
+  - expose S3 movie and person IDs consistently as zero-padded digit strings,
+    while accepting integer, digit-string, and ``tt``/``nm``-prefixed inputs
 
   [general]
 

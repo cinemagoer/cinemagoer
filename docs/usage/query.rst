@@ -11,7 +11,8 @@ Method descriptions:
   set to true then episodes containing the title parameter are also returned:
 
    - ``movieID`` is the identifier to pass to ``get_movie()`` in order to
-     retrieve full information about the title.
+     retrieve full information about the title. The S3 backend exposes it as a
+     zero-padded digit string without the ``tt`` prefix.
 
 ``search_episode(title)``
   This is identical to ``search_movie()``, except that it is tailored
@@ -36,7 +37,9 @@ Method descriptions:
 
 The ``search_person(name)``, ``get_person(personID)``,
 methods work the same way as ``search_movie(title)`` and
-``get_movie(movieID)``.
+``get_movie(movieID)``. Person IDs use the same canonical representation,
+without the ``nm`` prefix. Both retrieval methods accept integers, digit
+strings, and appropriately prefixed IMDb IDs as input.
 
 The ``get_imdbID(MovieOrPersonObject)`` method returns the imdbID for
 the given Movie or Person object.

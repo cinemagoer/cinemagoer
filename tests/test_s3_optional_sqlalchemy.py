@@ -406,8 +406,8 @@ def test_searches_without_soundex_are_exact_bounded_and_consistent(
 
     with Cinemagoer('s3', uri=f'{scheme}:///{database}') as ia:
         assert ia.search_movie('!!', results=5) == []
-        assert ia.search_movie('!!! (2026)', results=5)[0].movieID == 3001
-        assert ia.search_movie('東京', results=5)[0].movieID == 3002
+        assert ia.search_movie('!!! (2026)', results=5)[0].movieID == '0003001'
+        assert ia.search_movie('東京', results=5)[0].movieID == '0003002'
         assert len(ia.search_movie('123', results=5)) == 5
 
         title_rows, _ = ia._adapter.search_titles(None, '!!!')
@@ -436,12 +436,12 @@ def test_importer_round_trip(tmp_path, scheme):
 
     with Cinemagoer('s3', uri=f'{scheme}:///{database}') as ia:
         result = ia.search_movie('Example Movie', results=5)[0]
-        assert result.movieID == 1
+        assert result.movieID == '0000001'
         assert result['year'] == '2026'
         assert result['runtimes'] == [95]
 
         aka_result = ia.search_movie('Example Alternate', results=5)[0]
-        assert aka_result.movieID == 1
+        assert aka_result.movieID == '0000001'
 
         movie = ia.get_movie('1')
         actor = movie['cast'][0]
@@ -687,7 +687,7 @@ def test_existing_partial_database_uses_native_adapter():
 
     with Cinemagoer('s3', uri=f'sqlite:///{database}') as ia:
         assert isinstance(ia._adapter, SQLiteAdapter)
-        assert ia.search_movie('Miss Jerry', results=5)[0].movieID == 9
+        assert ia.search_movie('Miss Jerry', results=5)[0].movieID == '0000009'
 
 
 def test_sqlalchemy_sqlite_adapter_parity_when_installed():

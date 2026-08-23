@@ -91,7 +91,7 @@ def test_title_query_year_is_respected_in_search(tmp_path):
     with Cinemagoer('s3', uri=f'sqlite:///{database}') as ia:
         movies = ia.search_movie('Matrix, The (2016)', results=5)
 
-    assert movies[0].movieID == 9642498
+    assert movies[0].movieID == '9642498'
     assert movies[0]['title'] == 'The Matrix'
     assert movies[0]['year'] == '2016'
 
@@ -144,10 +144,12 @@ def test_adult_search_constructor_sets_default_policy(tmp_path):
             'Shared Title', adult=False
         )
 
-    assert {movie.movieID for movie in default_results} == {1}
-    assert {movie.movieID for movie in adult_results} == {2}
-    assert {movie.movieID for movie in all_results} == {1, 2}
-    assert {movie.movieID for movie in nonadult_results} == {1}
+    assert {movie.movieID for movie in default_results} == {'0000001'}
+    assert {movie.movieID for movie in adult_results} == {'0000002'}
+    assert {movie.movieID for movie in all_results} == {
+        '0000001', '0000002',
+    }
+    assert {movie.movieID for movie in nonadult_results} == {'0000001'}
 
 
 @pytest.mark.parametrize('title_types', [['tvSeries'], 'tv series'])
@@ -161,7 +163,7 @@ def test_title_type_filter_supports_raw_and_transformed_values(
             'Example Series', title_types=title_types
         )
 
-    assert {movie.movieID for movie in results} == {3, 4}
+    assert {movie.movieID for movie in results} == {'0000003', '0000004'}
 
 
 @pytest.mark.parametrize(

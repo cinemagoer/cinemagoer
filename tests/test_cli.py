@@ -130,6 +130,14 @@ def test_cli_search_and_get_subprocesses(arguments, expected):
     assert result.stderr == ''
 
 
+def test_cli_search_uses_canonical_public_id():
+    result = run_cli('search', 'movie', 'Miss Jerry', '-n', '1')
+
+    assert result.returncode == 0
+    assert '  1 0000009 Miss Jerry (1894)' in result.stdout
+    assert result.stderr == ''
+
+
 def test_bin_cli_wrapper_runs_as_executable():
     script = REPO_ROOT / 'bin' / 'cinemagoer-cli'
 

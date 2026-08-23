@@ -64,6 +64,28 @@ def split_characters(text):
     return text.split(' / ')
 
 
+def _normalize_imdb_id(value, prefix, label):
+    """Return a canonical public IMDb ID for an S3 movie or person."""
+    original_value = value
+    if isinstance(value, str):
+        value = value.strip()
+        if value.lower().startswith(prefix):
+            value = value[len(prefix):]
+    elif isinstance(value, int) and not isinstance(value, bool):
+        value = str(value)
+    else:
+        raise IMDbError(
+            'invalid %s IMDb id %r; expected digits or an optional %s prefix'
+            % (label, original_value, prefix)
+        )
+    if not value.isdigit():
+        raise IMDbError(
+            'invalid %s IMDb id %r; expected digits or an optional %s prefix'
+            % (label, original_value, prefix)
+        )
+    return str(int(value)).zfill(7)
+
+
 class IMDbS3AccessSystem(IMDbBase):
     """The class used to access IMDb's data through the s3 dataset."""
 
@@ -77,6 +99,18 @@ class IMDbS3AccessSystem(IMDbBase):
     def get_person_infoset(self):
         return ['main', 'filmography', 'biography']
     _s3_logger = logging.getLogger('imdbpy.parser.s3')
+
+    def _normalize_movieID(self, movieID):
+        return _normalize_imdb_id(movieID, 'tt', 'movie')
+
+    def _normalize_personID(self, personID):
+        return _normalize_imdb_id(personID, 'nm', 'person')
+
+    def _get_real_movieID(self, movieID):
+        return self._normalize_movieID(movieID)
+
+    def _get_real_personID(self, personID):
+        return self._normalize_personID(personID)
 
     def __init__(self, uri='sqlite:///cinemagoer.db', adultSearch=True,
                  *arguments, **keywords):
@@ -162,7 +196,11 @@ class IMDbS3AccessSystem(IMDbBase):
                 continue
             movieID = int(movieID)
             movie_data = self._base_title_info(movieID, movies_cache=movies_cache, persons_cache=persons_cache)
-            movie = Movie(movieID=movieID, data=movie_data, accessSystem=self.accessSystem)
+            movie = Movie(
+                movieID=self._normalize_movieID(movieID),
+                data=movie_data,
+                accessSystem=self.accessSystem,
+            )
             movies.append(movie)
         data['known for'] = movies
         self._clean(data, ('ns_soundex', 'sn_soundex', 's_soundex', 'personID'))
@@ -187,7 +225,11 @@ class IMDbS3AccessSystem(IMDbBase):
                 person_data = self._base_person_info(personID,
                                                      movies_cache=_movies_cache,
                                                      persons_cache=_persons_cache)
-                person = Person(personID=personID, data=person_data, accessSystem=self.accessSystem)
+                person = Person(
+                    personID=self._normalize_personID(personID),
+                    data=person_data,
+                    accessSystem=self.accessSystem,
+                )
                 target.append(person)
         tc_data['director'] = directors
         tc_data['writer'] = writers
@@ -199,7 +241,7 @@ class IMDbS3AccessSystem(IMDbBase):
             parent_id = te_data['parentTconst']
             parent_data = self._base_title_info(parent_id)
             te_data['episode of'] = Movie(
-                movieID=parent_id,
+                movieID=self._normalize_movieID(parent_id),
                 data=parent_data,
                 accessSystem=self.accessSystem,
             )
@@ -228,7 +270,8 @@ class IMDbS3AccessSystem(IMDbBase):
                 person_data = self._base_person_info(personID,
                                                      movies_cache=_movies_cache,
                                                      persons_cache=_persons_cache)
-                person = Person(personID=personID, data=person_data,
+                person = Person(personID=self._normalize_personID(personID),
+                                data=person_data,
                                 billingPos=person_info.get('ordering'),
                                 currentRole=split_characters(
                                     person_info.get('characters')
@@ -288,7 +331,7 @@ class IMDbS3AccessSystem(IMDbBase):
 
         parent_data = self._base_title_info(movieID)
         parent = Movie(
-            movieID=movieID,
+            movieID=self._normalize_movieID(movieID),
             data=parent_data,
             accessSystem=self.accessSystem,
         )
@@ -325,7 +368,7 @@ class IMDbS3AccessSystem(IMDbBase):
             data.update(episode_data)
             data['episode of'] = parent
             episode = Movie(
-                movieID=episode_id,
+                movieID=self._normalize_movieID(episode_id),
                 data=data,
                 accessSystem=self.accessSystem,
             )

@@ -49,15 +49,19 @@ How to make a release
       uv build --sdist --out-dir dist
       uv build --wheel --out-dir dist/direct .
       uv build --wheel --out-dir dist/from-sdist dist/*.tar.gz
+      uv run --no-default-groups --group package twine check --strict \
+          dist/*.tar.gz dist/direct/*.whl dist/from-sdist/*.whl
       uv run --no-project python tools/verify_distributions.py \
           --sdist dist/*.tar.gz \
           --wheel dist/direct/*.whl \
           --wheel dist/from-sdist/*.whl
 
     Start with an empty ``dist`` directory so stale artifacts cannot satisfy a
-    wildcard. The verifier checks sdist contents, compiled translations,
-    metadata and dependency boundaries, the installed CLI, and a native SQLite
-    query. See :doc:`packaging` for downstream packaging details.
+    wildcard. Twine validates the metadata and rendered package description for
+    every artifact. The verifier additionally checks the PEP 639 license
+    expression and bundled license file, sdist contents, compiled translations,
+    dependency boundaries, the installed CLI, and a native SQLite query. See
+    :doc:`packaging` for downstream packaging details.
 
 
 **How to release**

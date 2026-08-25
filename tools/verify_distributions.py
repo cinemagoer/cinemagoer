@@ -22,6 +22,9 @@ from pathlib import Path, PurePosixPath
 EXPECTED_CATALOGS = {
     'ar', 'bg', 'de', 'en', 'es', 'fr', 'it', 'pt_BR', 'sr', 'tr',
 }
+MINIMUM_METADATA_VERSION = (2, 4)
+EXPECTED_LICENSE_EXPRESSION = 'GPL-2.0-or-later'
+EXPECTED_LICENSE_FILE = 'LICENSE.txt'
 SMOKE_TEST = r'''
 import gettext
 import importlib.metadata
@@ -65,11 +68,42 @@ def _relative_members(names):
     return members
 
 
+def verify_license_metadata(metadata):
+    """Check that an artifact exposes the complete PEP 639 metadata."""
+    metadata_version = metadata.get('Metadata-Version')
+    try:
+        parsed_version = tuple(
+            int(part) for part in metadata_version.split('.')
+        )
+    except (AttributeError, ValueError) as exc:
+        raise AssertionError(
+            'invalid Metadata-Version: %r' % metadata_version
+        ) from exc
+    if parsed_version < MINIMUM_METADATA_VERSION:
+        raise AssertionError(
+            'Metadata-Version differs: expected at least %s, found %r'
+            % ('.'.join(map(str, MINIMUM_METADATA_VERSION)), metadata_version)
+        )
+    license_expression = metadata.get('License-Expression')
+    if license_expression != EXPECTED_LICENSE_EXPRESSION:
+        raise AssertionError(
+            'License-Expression differs: expected %r, found %r'
+            % (EXPECTED_LICENSE_EXPRESSION, license_expression)
+        )
+    license_files = metadata.get_all('License-File', [])
+    if license_files != [EXPECTED_LICENSE_FILE]:
+        raise AssertionError(
+            'License-File differs: expected %r, found %r'
+            % ([EXPECTED_LICENSE_FILE], license_files)
+        )
+
+
 def verify_sdist(path, fixture_path):
     """Check that the sdist contains its tests and locale build support."""
     with tarfile.open(path, 'r:*') as archive:
         members = _relative_members(archive.getnames())
         required = {
+            EXPECTED_LICENSE_FILE,
             'MANIFEST.in',
             'build_support.py',
             'msgfmt.py',
@@ -95,6 +129,14 @@ def verify_sdist(path, fixture_path):
             )
         if any(name.endswith('.mo') for name in members):
             raise AssertionError('sdist must not contain generated .mo files')
+        metadata_member = next(
+            member for member in archive.getmembers()
+            if PurePosixPath(member.name).parts[1:] == ('PKG-INFO',)
+        )
+        metadata_file = archive.extractfile(metadata_member)
+        if metadata_file is None:
+            raise AssertionError('unable to read PKG-INFO from sdist')
+        verify_license_metadata(BytesParser().parse(metadata_file))
         fixture_member = next(
             member for member in archive.getmembers()
             if PurePosixPath(member.name).parts[1:] == ('tests', 'partial.db')
@@ -134,6 +176,14 @@ def inspect_wheel(path):
             name for name in names if name.endswith('.dist-info/METADATA')
         )
         metadata = BytesParser().parsebytes(archive.read(metadata_name))
+        verify_license_metadata(metadata)
+        license_path = metadata_name.removesuffix('METADATA') + (
+            'licenses/%s' % EXPECTED_LICENSE_FILE
+        )
+        if license_path not in names:
+            raise AssertionError(
+                'wheel is missing PEP 639 license file: %s' % license_path
+            )
         for requirement in metadata.get_all('Requires-Dist', []):
             if requirement.lower().startswith('sqlalchemy') and \
                     'extra ==' not in requirement:

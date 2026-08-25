@@ -39,6 +39,8 @@
   - make Ruff, warning-clean documentation, coverage, base-only Python tests,
     and distribution verification required CI gates without requiring
     SQLAlchemy
+  - publish PEP 639 license metadata with an SPDX expression and bundled
+    license file, and validate wheel and sdist metadata in CI
   - audit and document compatibility helpers, retain dataset/container/caller-
     data utilities, and remove the obsolete web-parser-only
     ``fullSizeCoverURL`` wrapper

@@ -1,6 +1,6 @@
 [project]
 name = "cinemagoer"
-version = "2026.08.23"
+version = "2026.08.25"
 description = "Retrieve data from IMDb."
 readme = "README.rst"
 
@@ -8,7 +8,8 @@ authors = [
     {name = "Davide Alberani", email = "da@mimante.net"},
     {name = "H. Turgut Uyar", email = "uyar@tekir.org"},
 ]
-license = {file = "LICENSE.txt"}
+license = "GPL-2.0-or-later"
+license-files = ["LICENSE.txt"]
 
 keywords = [
     "imdb",
@@ -26,7 +27,6 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
-    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Natural Language :: English",
     "Natural Language :: Italian",
     "Natural Language :: Turkish",
@@ -64,11 +64,15 @@ doc = [
 tox = [
     "tox-uv>=1.35.2",
 ]
+package = [
+    "twine>=6.2.0",
+]
 dev = [
     {include-group = "test"},
     {include-group = "style"},
     {include-group = "doc"},
     {include-group = "tox"},
+    {include-group = "package"},
     "sqlalchemy>=2.0.51,<2.1",
 ]
 
@@ -162,5 +166,5 @@ commands =
 """
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77.0.3"]
 build-backend = "setuptools.build_meta"

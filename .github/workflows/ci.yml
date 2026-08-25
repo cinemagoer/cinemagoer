@@ -84,6 +84,9 @@ jobs:
           enable-cache: true
           python-version: "3.14"
 
+      - name: Install distribution metadata checker
+        run: uv sync --locked --no-default-groups --group package
+
       - name: Build source distribution
         run: uv build --sdist --out-dir dist
 
@@ -91,6 +94,14 @@ jobs:
         run: |
           uv build --wheel --out-dir dist/direct .
           uv build --wheel --out-dir dist/from-sdist dist/*.tar.gz
+
+      - name: Check distribution metadata
+        run: >-
+          uv run --no-default-groups --group package
+          twine check --strict
+          dist/*.tar.gz
+          dist/direct/*.whl
+          dist/from-sdist/*.whl
 
       - name: Run the test suite from the sdist
         run: |

@@ -2,5 +2,7 @@ include build_support.py
 include msgfmt.py
 include rebuildmo.py
 include tools/verify_distributions.py
+include tools/benchmark_search.py
+include docs/devel/search-performance.rst
 recursive-include tests *.py *.db *.toml
 global-exclude *.mo

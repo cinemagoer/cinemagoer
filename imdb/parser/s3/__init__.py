@@ -29,9 +29,15 @@ from imdb import IMDbBase
 from imdb._exceptions import IMDbError
 from imdb.Movie import Movie
 from imdb.Person import Person
-from imdb.utils import analyze_title
+from imdb.utils import (
+    analyze_title,
+    canonicalName,
+    canonicalTitle,
+    normalizeName,
+    normalizeTitle,
+)
 
-from .adapters import adapter_for_uri
+from .adapters import adapter_for_uri, search_candidate_limit
 from .utils import (
     DB_TRANSFORM,
     KIND,
@@ -409,9 +415,15 @@ class IMDbS3AccessSystem(IMDbBase):
         search_title = title_info.get('title', title).strip()
         search_year = title_info.get('year')
         search_title_types = title_types
+        candidate_limit = search_candidate_limit(results)
 
         def _search(search_title, search_year=None):
             t_soundex = title_soundex(search_title)
+            exact_titles = tuple(dict.fromkeys((
+                search_title,
+                canonicalTitle(search_title),
+                normalizeTitle(search_title),
+            )))
             normalized_types = None
             if search_title_types:
                 if isinstance(search_title_types, str):
@@ -431,24 +443,40 @@ class IMDbS3AccessSystem(IMDbBase):
                         if candidate not in normalized_types:
                             normalized_types.append(candidate)
 
-            results, ta_results = self._adapter.search_titles(
+            title_rows, aka_rows = self._adapter.search_titles(
                 t_soundex,
                 search_title,
                 year=search_year,
                 episodes=_episodes,
                 adult=adult,
                 title_types=normalized_types,
+                candidate_limit=candidate_limit,
+                exact_titles=exact_titles,
             )
-            results = [(x['tconst'], self._clean(self._normalize_title_data(x), ('t_soundex',)))
-                       for x in results]
+            title_rows = [
+                (
+                    row['tconst'],
+                    self._clean(
+                        self._normalize_title_data(row), ('t_soundex',)
+                    ),
+                )
+                for row in title_rows
+            ]
 
             # Also search the AKAs
-            ta_results = [(x['titleId'], self._clean(self._rename('title_akas', dict(x)), ('t_soundex',)))
-                          for x in ta_results]
-            results += ta_results
+            aka_rows = [
+                (
+                    row['titleId'],
+                    self._clean(
+                        self._rename('title_akas', dict(row)), ('t_soundex',)
+                    ),
+                )
+                for row in aka_rows
+            ]
+            title_rows += aka_rows
 
-            results = scan_titles(results, search_title)
-            return [x[1] for x in results]
+            ranked = scan_titles(title_rows, search_title)
+            return [item[1] for item in ranked]
 
         if search_year is not None:
             results = _search(search_title, search_year)
@@ -476,7 +504,17 @@ class IMDbS3AccessSystem(IMDbBase):
         query_soundexes = [x for x in (ns_soundex, sn_soundex, s_soundex) if x]
         if not query_soundexes:
             return []
-        results = self._adapter.search_people(query_soundexes)
+        exact_names = tuple(dict.fromkeys((
+            name,
+            canonicalName(name),
+            normalizeName(name),
+        )))
+        candidate_limit = search_candidate_limit(results)
+        results = self._adapter.search_people(
+            query_soundexes,
+            candidate_limit=candidate_limit,
+            exact_names=exact_names,
+        )
         results = [(x['nconst'], self._clean(self._rename('name_basics', dict(x)),
                                              ('ns_soundex', 'sn_soundex', 's_soundex')))
                    for x in results]

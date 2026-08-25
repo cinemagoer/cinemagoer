@@ -45,6 +45,7 @@ the ``accessSystem`` instance variable is set to identify the active system.
    :caption: Contents:
 
    packaging
+   search-performance
    test
    translate
    release

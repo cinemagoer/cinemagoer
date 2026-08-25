@@ -14,7 +14,10 @@ from imdb.parser import s3 as s3_parser
 from imdb.parser.s3._uri import redact_uri_secrets
 from imdb.parser.s3.adapters import (
     NO_SOUNDEX_TITLE_LIMIT,
+    SEARCH_CANDIDATE_LIMIT,
+    SEARCH_CANDIDATE_MAX,
     SQLiteAdapter,
+    search_candidate_limit,
     sqlite_path_from_uri,
 )
 from imdb.parser.s3.importer import (
@@ -24,7 +27,7 @@ from imdb.parser.s3.importer import (
     SQLiteImporter,
     import_dir,
 )
-from imdb.parser.s3.utils import transf_multi_character
+from imdb.parser.s3.utils import name_soundexes, title_soundex, transf_multi_character
 from imdb.utils import RolesList
 
 
@@ -286,8 +289,33 @@ def test_incomplete_sqlite_schema_is_actionable(tmp_path, scheme):
                 IMDbDataAccessError, match='invalid or incomplete') as exc_info:
             ia.search_movie('Missing tables')
 
-    cause_type = sqlite3.Error if scheme == 'sqlite' else KeyError
+    if scheme == 'sqlite':
+        cause_type = sqlite3.Error
+    else:
+        import sqlalchemy
+        cause_type = sqlalchemy.exc.NoSuchTableError
     assert isinstance(exc_info.value.__cause__, cause_type)
+
+
+def test_sqlalchemy_reflects_and_caches_only_tables_as_they_are_used(tmp_path):
+    pytest.importorskip('sqlalchemy')
+    database = tmp_path / 'lazy-reflection.db'
+    with closing(sqlite3.connect(database)) as connection, connection:
+        connection.executescript(
+            '''
+            CREATE TABLE marker (id INTEGER, value TEXT);
+            CREATE TABLE unrelated (id INTEGER, value TEXT);
+            INSERT INTO marker VALUES (1, 'expected');
+            '''
+        )
+
+    with Cinemagoer('s3', uri=f'sqlite+pysqlite:///{database}') as ia:
+        adapter = ia._adapter
+        assert not adapter.tables
+        assert adapter.get_row('marker', 'id', 1)['value'] == 'expected'
+        reflected = adapter._table('marker')
+        assert set(adapter.tables) == {'marker'}
+        assert adapter._table('marker') is reflected
 
 
 def test_uri_redaction_hides_credentials_and_common_query_secrets():
@@ -422,6 +450,119 @@ def test_searches_without_soundex_are_exact_bounded_and_consistent(
         monkeypatch.setattr(ia._adapter, 'search_people', fail_if_called)
         assert ia.search_person('!!!', results=5) == []
         assert ia.search_person('123', results=5) == []
+
+
+def test_candidate_limit_scales_but_never_undercuts_requested_results():
+    assert search_candidate_limit(5) == SEARCH_CANDIDATE_LIMIT
+    assert search_candidate_limit(1000) == SEARCH_CANDIDATE_MAX
+    assert search_candidate_limit(SEARCH_CANDIDATE_MAX + 1) == \
+        SEARCH_CANDIDATE_MAX + 1
+
+
+@pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])
+def test_soundex_candidates_are_bounded_with_exact_and_reversed_matches_first(
+        tmp_path, scheme):
+    if scheme == 'sqlite+pysqlite':
+        pytest.importorskip('sqlalchemy')
+    database = tmp_path / 'bounded-search.db'
+    movie_soundex = title_soundex('Exact Movie')
+    person_soundexes = name_soundexes('Person, Exact')
+    with closing(sqlite3.connect(database)) as connection, connection:
+        connection.executescript(
+            '''
+            CREATE TABLE title_basics (
+                tconst INTEGER,
+                primaryTitle TEXT,
+                titleType TEXT,
+                startYear INTEGER,
+                t_soundex TEXT
+            );
+            CREATE TABLE title_akas (
+                titleId INTEGER,
+                ordering INTEGER,
+                title TEXT,
+                t_soundex TEXT
+            );
+            CREATE TABLE name_basics (
+                nconst INTEGER,
+                primaryName TEXT,
+                ns_soundex TEXT,
+                sn_soundex TEXT,
+                s_soundex TEXT
+            );
+            CREATE INDEX ix_title_basics_t_soundex
+                ON title_basics (t_soundex);
+            CREATE INDEX ix_title_akas_t_soundex ON title_akas (t_soundex);
+            CREATE INDEX ix_name_basics_ns_soundex
+                ON name_basics (ns_soundex);
+            CREATE INDEX ix_name_basics_sn_soundex
+                ON name_basics (sn_soundex);
+            CREATE INDEX ix_name_basics_s_soundex
+                ON name_basics (s_soundex);
+            '''
+        )
+        collision_count = SEARCH_CANDIDATE_LIMIT + 5
+        connection.executemany(
+            'INSERT INTO title_basics VALUES (?, ?, ?, ?, ?)',
+            [
+                (movie_id, 'Fuzzy Candidate', 'movie', 2025, movie_soundex)
+                for movie_id in range(1, collision_count + 1)
+            ] + [
+                (50000, 'Exact Movie', 'movie', 2026, movie_soundex),
+            ],
+        )
+        connection.executemany(
+            'INSERT INTO title_akas VALUES (?, ?, ?, ?)',
+            [
+                (movie_id, 1, 'Fuzzy Alternate', movie_soundex)
+                for movie_id in range(1, collision_count + 1)
+            ] + [
+                (60000, 1, 'Exact Movie', movie_soundex),
+            ],
+        )
+        connection.executemany(
+            'INSERT INTO name_basics VALUES (?, ?, ?, ?, ?)',
+            [
+                (
+                    person_id,
+                    'Fuzzy Candidate',
+                    person_soundexes[0],
+                    person_soundexes[1],
+                    person_soundexes[2],
+                )
+                for person_id in range(1, collision_count + 1)
+            ] + [
+                (
+                    50000,
+                    'Exact Person',
+                    person_soundexes[0],
+                    person_soundexes[1],
+                    person_soundexes[2],
+                ),
+            ],
+        )
+
+    with Cinemagoer('s3', uri=f'{scheme}:///{database}') as ia:
+        title_rows, aka_rows = ia._adapter.search_titles(
+            movie_soundex,
+            'Exact Movie',
+            exact_titles=('Exact Movie',),
+        )
+        people_rows = ia._adapter.search_people(
+            [code for code in person_soundexes if code],
+            exact_names=('Person, Exact', 'Exact Person'),
+        )
+        movies = ia.search_movie('Exact Movie', results=5)
+        people = ia.search_person('Person, Exact', results=5)
+
+    assert len(title_rows) == SEARCH_CANDIDATE_LIMIT
+    assert len(aka_rows) == SEARCH_CANDIDATE_LIMIT
+    assert len(people_rows) == SEARCH_CANDIDATE_LIMIT
+    assert title_rows[0]['tconst'] == 50000
+    assert aka_rows[0]['titleId'] == 60000
+    assert people_rows[0]['nconst'] == 50000
+    assert movies[0].movieID == '0050000'
+    assert people[0].personID == '0050000'
 
 
 @pytest.mark.parametrize('scheme', ['sqlite', 'sqlite+pysqlite'])

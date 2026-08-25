@@ -14,7 +14,7 @@ import sqlalchemy
 from imdb._exceptions import IMDbDataAccessError
 
 from ._uri import redact_uri_secrets
-from .adapters import NO_SOUNDEX_TITLE_LIMIT
+from .adapters import NO_SOUNDEX_TITLE_LIMIT, SEARCH_CANDIDATE_LIMIT
 
 
 class SQLAlchemyAdapter:
@@ -62,14 +62,6 @@ class SQLAlchemyAdapter:
             def _set_query_only(dbapi_connection, _connection_record):
                 dbapi_connection.execute('PRAGMA query_only = ON')
         self.metadata = sqlalchemy.MetaData()
-        try:
-            self.metadata.reflect(bind=self.engine)
-        except sqlalchemy.exc.SQLAlchemyError as exc:
-            self.engine.dispose()
-            raise IMDbDataAccessError(
-                'unable to inspect database %r: %s'
-                % (self._display_uri, redact_uri_secrets(exc))
-            ) from exc
         self.tables = self.metadata.tables
 
     def close(self):
@@ -98,13 +90,20 @@ class SQLAlchemyAdapter:
         )
 
     def _table(self, name):
+        table = self.tables.get(name)
+        if table is not None:
+            return table
         try:
-            return self.tables[name]
-        except KeyError as exc:
+            return sqlalchemy.Table(
+                name, self.metadata, autoload_with=self.engine
+            )
+        except sqlalchemy.exc.NoSuchTableError as exc:
             raise IMDbDataAccessError(
                 'invalid or incomplete Cinemagoer database %r: '
                 'missing table %r' % (self._display_uri, name)
             ) from exc
+        except sqlalchemy.exc.SQLAlchemyError as exc:
+            raise self._database_error('inspect', exc) from exc
 
     def _column(self, table, name):
         try:
@@ -163,8 +162,26 @@ class SQLAlchemyAdapter:
             .where(self._column(te, 'parentTconst') == parent_id)
         )
 
+    def _bounded_rows(self, statement, exact_condition, exact_order, limit):
+        """Fetch exact rows first, then fill a fixed-size candidate pool."""
+        limit = max(1, int(limit))
+        if exact_condition is None:
+            return self._fetchall(statement.limit(limit))
+        exact_rows = self._fetchall(
+            statement.where(exact_condition).order_by(*exact_order).limit(limit)
+        )
+        remaining = limit - len(exact_rows)
+        if remaining <= 0:
+            return exact_rows
+        fuzzy_rows = self._fetchall(
+            statement.where(sqlalchemy.not_(exact_condition)).limit(remaining)
+        )
+        return exact_rows + fuzzy_rows
+
     def search_titles(self, soundex, search_title, year=None, episodes=False,
-                      adult=None, title_types=None):
+                      adult=None, title_types=None,
+                      candidate_limit=SEARCH_CANDIDATE_LIMIT,
+                      exact_titles=()):
         tb = self._table('title_basics')
         title_soundex = self._column(tb, 't_soundex')
         if soundex is None:
@@ -196,7 +213,46 @@ class SQLAlchemyAdapter:
             title_statement = title_statement.limit(NO_SOUNDEX_TITLE_LIMIT)
         if soundex is not None or \
                 self._column_is_indexed('title_basics', 'primaryTitle'):
-            title_rows = self._fetchall(title_statement)
+            if soundex is None:
+                title_rows = self._fetchall(title_statement)
+            else:
+                exact_values = tuple(dict.fromkeys(
+                    value.lower() for value in exact_titles if value
+                ))
+                exact_condition = None
+                if exact_values:
+                    exact_condition = sqlalchemy.func.lower(
+                        self._column(tb, 'primaryTitle')
+                    ).in_(exact_values)
+                exact_order = []
+                if kind_column is not None:
+                    exact_order.append(sqlalchemy.case(
+                        {
+                            'movie': 6,
+                            'tv movie': 5,
+                            'tv series': 4,
+                            'tv mini series': 4,
+                            'tv special': 3,
+                            'tv short': 2,
+                            'short': 1,
+                            'video': 1,
+                        },
+                        value=kind_column,
+                        else_=0,
+                    ).desc())
+                year_column = tb.c.get('startYear')
+                if year_column is not None:
+                    exact_order.append(sqlalchemy.case(
+                        (year_column.is_(None), 0),
+                        else_=1,
+                    ).desc())
+                exact_order.append(self._column(tb, 'tconst').asc())
+                title_rows = self._bounded_rows(
+                    title_statement,
+                    exact_condition,
+                    exact_order,
+                    candidate_limit,
+                )
         else:
             title_rows = []
 
@@ -222,12 +278,34 @@ class SQLAlchemyAdapter:
             statement = statement.limit(NO_SOUNDEX_TITLE_LIMIT)
         if soundex is not None or \
                 self._column_is_indexed('title_akas', 'title'):
-            aka_rows = self._fetchall(statement)
+            if soundex is None:
+                aka_rows = self._fetchall(statement)
+            else:
+                exact_values = tuple(dict.fromkeys(
+                    value.lower() for value in exact_titles if value
+                ))
+                exact_condition = None
+                if exact_values:
+                    exact_condition = sqlalchemy.func.lower(
+                        self._column(ta, 'title')
+                    ).in_(exact_values)
+                exact_order = [self._column(ta, 'titleId').asc()]
+                ordering_column = ta.c.get('ordering')
+                if ordering_column is not None:
+                    exact_order.append(ordering_column.asc())
+                aka_rows = self._bounded_rows(
+                    statement,
+                    exact_condition,
+                    exact_order,
+                    candidate_limit,
+                )
         else:
             aka_rows = []
         return title_rows, aka_rows
 
-    def search_people(self, soundexes):
+    def search_people(self, soundexes,
+                      candidate_limit=SEARCH_CANDIDATE_LIMIT,
+                      exact_names=()):
         if not soundexes:
             return []
         nb = self._table('name_basics')
@@ -238,6 +316,18 @@ class SQLAlchemyAdapter:
                 self._column(nb, 'sn_soundex') == soundex,
                 self._column(nb, 's_soundex') == soundex,
             ))
-        return self._fetchall(
-            sqlalchemy.select(nb).where(sqlalchemy.or_(*conditions))
+        statement = sqlalchemy.select(nb).where(sqlalchemy.or_(*conditions))
+        exact_values = tuple(dict.fromkeys(
+            value.lower() for value in exact_names if value
+        ))
+        exact_condition = None
+        if exact_values:
+            exact_condition = sqlalchemy.func.lower(
+                self._column(nb, 'primaryName')
+            ).in_(exact_values)
+        return self._bounded_rows(
+            statement,
+            exact_condition,
+            [self._column(nb, 'nconst').desc()],
+            candidate_limit,
         )

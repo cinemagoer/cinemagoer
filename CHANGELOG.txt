@@ -14,6 +14,8 @@
     sort options instead of silently ignoring them
   - expose S3 movie and person IDs consistently as zero-padded digit strings,
     while accepting integer, digit-string, and ``tt``/``nm``-prefixed inputs
+  - bound soundex candidate pools before Python search ranking, prioritize
+    exact title, AKA, and name variants, and lazily reflect SQLAlchemy tables
 
   [general]
 

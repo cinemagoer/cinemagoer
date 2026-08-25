@@ -15,6 +15,20 @@ from imdb._exceptions import IMDbDataAccessError, IMDbError
 from ._uri import redact_uri_secrets
 
 NO_SOUNDEX_TITLE_LIMIT = 100
+SEARCH_CANDIDATE_LIMIT = 1000
+SEARCH_CANDIDATE_MAX = 10000
+SEARCH_CANDIDATE_MULTIPLIER = 20
+
+
+def search_candidate_limit(results):
+    """Return a bounded candidate pool sized for the requested results."""
+    try:
+        requested = max(1, int(results))
+    except (TypeError, ValueError, OverflowError):
+        requested = 1
+    scaled = max(SEARCH_CANDIDATE_LIMIT,
+                 requested * SEARCH_CANDIDATE_MULTIPLIER)
+    return max(requested, min(SEARCH_CANDIDATE_MAX, scaled))
 
 
 def sqlite_path_from_uri(uri):
@@ -165,8 +179,40 @@ class SQLiteAdapter:
                   WHERE te.parentTconst = ?''' % selected
         return self._fetchall(sql, (parent_id,))
 
+    def _bounded_rows(self, select, where, parameters, exact_condition,
+                      exact_parameters, exact_order, limit):
+        """Fetch exact rows first, then fill a fixed-size candidate pool."""
+        limit = max(1, int(limit))
+        if not exact_condition:
+            return self._fetchall(
+                '%s WHERE %s LIMIT ?' % (select, where),
+                parameters + [limit],
+            )
+
+        exact_rows = self._fetchall(
+            '%s WHERE %s AND %s%s LIMIT ?' % (
+                select,
+                where,
+                exact_condition,
+                ' ORDER BY %s' % exact_order if exact_order else '',
+            ),
+            parameters + exact_parameters + [limit],
+        )
+        remaining = limit - len(exact_rows)
+        if remaining <= 0:
+            return exact_rows
+        fuzzy_rows = self._fetchall(
+            '%s WHERE %s AND NOT (%s) LIMIT ?' % (
+                select, where, exact_condition,
+            ),
+            parameters + exact_parameters + [remaining],
+        )
+        return exact_rows + fuzzy_rows
+
     def search_titles(self, soundex, search_title, year=None, episodes=False,
-                      adult=None, title_types=None):
+                      adult=None, title_types=None,
+                      candidate_limit=SEARCH_CANDIDATE_LIMIT,
+                      exact_titles=()):
         columns = self.column_names('title_basics')
         kind_column = None
         if 'titleType' in columns:
@@ -209,10 +255,48 @@ class SQLiteAdapter:
             if soundex is None else ''
         if soundex is not None or \
                 self._column_is_indexed('title_basics', 'primaryTitle'):
-            rows = self._fetchall(
-                'SELECT tb.* FROM title_basics AS tb WHERE ' + where + title_limit,
-                parameters + filter_parameters,
-            )
+            if soundex is None:
+                rows = self._fetchall(
+                    'SELECT tb.* FROM title_basics AS tb WHERE ' +
+                    where + title_limit,
+                    parameters + filter_parameters,
+                )
+            else:
+                exact_values = tuple(dict.fromkeys(
+                    value.lower() for value in exact_titles if value
+                ))
+                exact_placeholders = ', '.join('?' for _ in exact_values)
+                exact_condition = ''
+                if exact_values:
+                    exact_condition = \
+                        'LOWER(tb.primaryTitle) IN (%s)' % exact_placeholders
+                order = []
+                if kind_column is not None:
+                    order.append(
+                        'CASE tb."%s" '
+                        "WHEN 'movie' THEN 6 WHEN 'tv movie' THEN 5 "
+                        "WHEN 'tv series' THEN 4 "
+                        "WHEN 'tv mini series' THEN 4 "
+                        "WHEN 'tv special' THEN 3 "
+                        "WHEN 'tv short' THEN 2 "
+                        "WHEN 'short' THEN 1 WHEN 'video' THEN 1 "
+                        'ELSE 0 END DESC' % kind_column
+                    )
+                if 'startYear' in columns:
+                    order.append(
+                        "CASE WHEN tb.startYear IS NULL OR "
+                        "tb.startYear = '' THEN 0 ELSE 1 END DESC"
+                    )
+                order.append('tb.tconst ASC')
+                rows = self._bounded_rows(
+                    'SELECT tb.* FROM title_basics AS tb',
+                    where,
+                    parameters + filter_parameters,
+                    exact_condition,
+                    list(exact_values),
+                    ', '.join(order),
+                    candidate_limit,
+                )
         else:
             rows = []
 
@@ -228,17 +312,42 @@ class SQLiteAdapter:
             if filter_conditions else ''
         if soundex is not None or \
                 self._column_is_indexed('title_akas', 'title'):
-            aka_rows = self._fetchall(
-                'SELECT ta.* FROM title_akas AS ta%s WHERE %s%s' % (
-                    join, aka_where, title_limit,
-                ),
-                aka_parameters,
-            )
+            if soundex is None:
+                aka_rows = self._fetchall(
+                    'SELECT ta.* FROM title_akas AS ta%s WHERE %s%s' % (
+                        join, aka_where, title_limit,
+                    ),
+                    aka_parameters,
+                )
+            else:
+                exact_values = tuple(dict.fromkeys(
+                    value.lower() for value in exact_titles if value
+                ))
+                exact_placeholders = ', '.join('?' for _ in exact_values)
+                exact_condition = ''
+                if exact_values:
+                    exact_condition = \
+                        'LOWER(ta.title) IN (%s)' % exact_placeholders
+                aka_columns = self.column_names('title_akas')
+                order = ['ta.titleId ASC']
+                if 'ordering' in aka_columns:
+                    order.append('ta.ordering ASC')
+                aka_rows = self._bounded_rows(
+                    'SELECT ta.* FROM title_akas AS ta%s' % join,
+                    aka_where,
+                    aka_parameters,
+                    exact_condition,
+                    list(exact_values),
+                    ', '.join(order),
+                    candidate_limit,
+                )
         else:
             aka_rows = []
         return rows, aka_rows
 
-    def search_people(self, soundexes):
+    def search_people(self, soundexes,
+                      candidate_limit=SEARCH_CANDIDATE_LIMIT,
+                      exact_names=()):
         if not soundexes:
             return []
         conditions = []
@@ -248,7 +357,20 @@ class SQLiteAdapter:
                 '(ns_soundex = ? OR sn_soundex = ? OR s_soundex = ?)'
             )
             parameters.extend((soundex, soundex, soundex))
-        return self._fetchall(
-            'SELECT * FROM name_basics WHERE ' + ' OR '.join(conditions),
+        exact_values = tuple(dict.fromkeys(
+            value.lower() for value in exact_names if value
+        ))
+        exact_placeholders = ', '.join('?' for _ in exact_values)
+        exact_condition = ''
+        if exact_values:
+            exact_condition = \
+                'LOWER(primaryName) IN (%s)' % exact_placeholders
+        return self._bounded_rows(
+            'SELECT * FROM name_basics',
+            '(%s)' % ' OR '.join(conditions),
             parameters,
+            exact_condition,
+            list(exact_values),
+            'nconst DESC',
+            candidate_limit,
         )

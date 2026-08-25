@@ -5,6 +5,7 @@ import importlib.util
 import json
 import logging
 import os
+import signal
 import sqlite3
 import subprocess
 import sys
@@ -650,6 +651,48 @@ def test_importer_verbose_flag_reports_coarse_progress(tmp_path):
         in verbose.stderr
 
 
+@pytest.mark.parametrize(
+    ('signum', 'exit_code'),
+    [
+        (getattr(signal, name), 128 + getattr(signal, name))
+        for name in ('SIGINT', 'SIGTERM', 'SIGHUP')
+        if hasattr(signal, name)
+    ],
+)
+def test_importer_script_stops_cleanly_on_signal(
+        tmp_path, monkeypatch, capsys, signum, exit_code):
+    script = Path(__file__).resolve().parents[1] / 'bin' / 's32cinemagoer.py'
+    spec = importlib.util.spec_from_file_location('s32cinemagoer', script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    previous_handler = signal.getsignal(signum)
+    if previous_handler == signal.SIG_IGN:
+        pytest.skip('the parent process ignores this signal')
+
+    def interrupt_import(*_args, **_kwargs):
+        signal.raise_signal(signum)
+
+    monkeypatch.setattr(module, 'import_dir', interrupt_import)
+    monkeypatch.setattr(
+        sys,
+        'argv',
+        [str(script), str(tmp_path), f'sqlite:///{tmp_path / "signal.db"}'],
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        module.main()
+
+    captured = capsys.readouterr()
+    assert exc_info.value.code == exit_code
+    assert captured.out == ''
+    assert captured.err == (
+        's32cinemagoer.py: interrupted by %s; stopped cleanly\n'
+        % signal.Signals(signum).name
+    )
+    assert 'Traceback' not in captured.err
+    assert signal.getsignal(signum) == previous_handler
+
+
 @pytest.mark.parametrize('directory_state', ['missing', 'empty'])
 def test_missing_or_empty_dataset_does_not_create_database(
         tmp_path, directory_state):
@@ -840,6 +883,91 @@ def test_later_import_failure_rolls_back_and_preserves_sources(
             'SELECT nconst, primaryName FROM name_basics'
         ).fetchall()
     assert rows == [(99, 'Original Person')]
+
+
+@pytest.mark.parametrize(
+    ('scheme', 'importer_class'),
+    [
+        ('sqlite', SQLiteImporter),
+        ('sqlite+pysqlite', SQLAlchemyImporter),
+    ],
+)
+def test_keyboard_interrupt_rolls_back_and_records_failed_manifest(
+        tmp_path, monkeypatch, scheme, importer_class):
+    if scheme == 'sqlite+pysqlite':
+        pytest.importorskip('sqlalchemy')
+    datasets = tmp_path / 'datasets'
+    datasets.mkdir()
+    _write_complete_dataset(datasets)
+    database = tmp_path / 'existing.db'
+    with closing(sqlite3.connect(database)) as connection, connection:
+        connection.execute(
+            'CREATE TABLE name_basics (nconst INTEGER, primaryName TEXT)'
+        )
+        connection.execute(
+            "INSERT INTO name_basics VALUES (99, 'Original Person')"
+        )
+
+    original_import_file = importer_class.import_file
+
+    def interrupt_on_second_file(importer, filename):
+        if filename.endswith('title.akas.tsv.gz'):
+            raise KeyboardInterrupt
+        return original_import_file(importer, filename)
+
+    monkeypatch.setattr(
+        importer_class, 'import_file', interrupt_on_second_file
+    )
+
+    with pytest.raises(KeyboardInterrupt):
+        import_dir(
+            str(datasets), f'{scheme}:///{database}', cleanup=True
+        )
+
+    manifest = json.loads(
+        (datasets / MANIFEST_FILENAME).read_text(encoding='utf-8')
+    )
+    assert manifest['status'] == 'failed'
+    assert manifest['failure_type'] == 'KeyboardInterrupt'
+    assert manifest['removed_files'] == []
+    assert sorted(path.name for path in datasets.glob('*.tsv.gz')) == \
+        sorted(DATASET_HEADERS)
+    with closing(sqlite3.connect(database)) as connection, connection:
+        rows = connection.execute(
+            'SELECT nconst, primaryName FROM name_basics'
+        ).fetchall()
+    assert rows == [(99, 'Original Person')]
+
+
+def test_keyboard_interrupt_during_cleanup_records_partial_cleanup(
+        tmp_path, monkeypatch):
+    datasets = tmp_path / 'datasets'
+    datasets.mkdir()
+    _write_complete_dataset(datasets)
+    database = tmp_path / 'imported.db'
+    original_remove = os.remove
+    removed = []
+
+    def interrupt_on_second_remove(filename):
+        if removed:
+            raise KeyboardInterrupt
+        original_remove(filename)
+        removed.append(Path(filename).name)
+
+    monkeypatch.setattr(
+        'imdb.parser.s3.importer.os.remove', interrupt_on_second_remove
+    )
+
+    with pytest.raises(KeyboardInterrupt):
+        import_dir(str(datasets), f'sqlite:///{database}', cleanup=True)
+
+    manifest = json.loads(
+        (datasets / MANIFEST_FILENAME).read_text(encoding='utf-8')
+    )
+    assert manifest['status'] == 'database-complete-cleanup-interrupted'
+    assert manifest['failure_type'] == 'KeyboardInterrupt'
+    assert manifest['removed_files'] == removed
+    assert len(list(datasets.glob('*.tsv.gz'))) == len(DATASET_HEADERS) - 1
 
 
 def test_cleanup_runs_only_after_success_and_reports_removed_files(

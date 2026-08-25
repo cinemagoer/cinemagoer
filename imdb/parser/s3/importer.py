@@ -587,7 +587,7 @@ def import_dir(directory, uri, cleanup=False):
             import_progress.update(imported_rows)
             logger.info('processed file %s: %d entries', filename, count)
         importer.commit()
-    except Exception as exc:
+    except (Exception, KeyboardInterrupt) as exc:
         if importer is not None:
             try:
                 importer.rollback()
@@ -610,6 +610,11 @@ def import_dir(directory, uri, cleanup=False):
                 os.remove(filename)
                 manifest['removed_files'].append(os.path.basename(filename))
                 logger.info('removed source archive %s', filename)
+        except KeyboardInterrupt as exc:
+            manifest['status'] = 'database-complete-cleanup-interrupted'
+            manifest['failure_type'] = type(exc).__name__
+            _write_manifest(directory, manifest)
+            raise
         except OSError as exc:
             manifest['status'] = 'database-complete-cleanup-failed'
             manifest['failure_type'] = type(exc).__name__

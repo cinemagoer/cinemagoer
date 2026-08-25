@@ -9,6 +9,8 @@
     commit, and write a completed import manifest
   - show coarse preflight and row-import percentages when
     ``s32cinemagoer.py --verbose`` is used
+  - handle interrupt, termination, and hangup signals in ``s32cinemagoer.py``
+    with transactional rollback, connection cleanup, and concise exits
   - prevent query adapters from creating missing SQLite databases and open
     existing file-backed SQLite databases read-only
   - honor the ``adultSearch`` default policy, allow explicit advanced-search

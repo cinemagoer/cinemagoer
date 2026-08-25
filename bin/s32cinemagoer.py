@@ -10,8 +10,15 @@
 
 import argparse
 import logging
+import signal
 
 from imdb.parser.s3.importer import import_dir
+
+_HANDLED_SIGNALS = tuple(
+    getattr(signal, name)
+    for name in ('SIGINT', 'SIGTERM', 'SIGHUP')
+    if hasattr(signal, name)
+)
 
 
 def main():
@@ -42,7 +49,39 @@ def main():
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO
     )
-    import_dir(args.tsv_files_dir, args.db_uri, cleanup=args.cleanup)
+    interrupted_signal = None
+    previous_handlers = {}
+    installed_signals = []
+
+    def handle_signal(signum, _frame):
+        nonlocal interrupted_signal
+        interrupted_signal = signum
+        # A second termination request should retain its usual immediate exit.
+        for installed_signal in installed_signals:
+            signal.signal(installed_signal, signal.SIG_DFL)
+        raise KeyboardInterrupt
+
+    for handled_signal in _HANDLED_SIGNALS:
+        previous_handler = signal.getsignal(handled_signal)
+        previous_handlers[handled_signal] = previous_handler
+        if previous_handler != signal.SIG_IGN:
+            signal.signal(handled_signal, handle_signal)
+            installed_signals.append(handled_signal)
+
+    try:
+        try:
+            import_dir(args.tsv_files_dir, args.db_uri, cleanup=args.cleanup)
+        except KeyboardInterrupt:
+            signum = interrupted_signal or signal.SIGINT
+            signal_name = signal.Signals(signum).name
+            parser.exit(
+                128 + signum,
+                's32cinemagoer.py: interrupted by %s; stopped cleanly\n'
+                % signal_name,
+            )
+    finally:
+        for handled_signal, previous_handler in previous_handlers.items():
+            signal.signal(handled_signal, previous_handler)
 
 
 if __name__ == '__main__':

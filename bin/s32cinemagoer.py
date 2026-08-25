@@ -28,7 +28,7 @@ def main():
         'db_uri', help='persistent destination URI; in-memory SQLite is rejected'
     )
     parser.add_argument(
-        '--verbose', help='increase verbosity', action='store_true'
+        '--verbose', help='show coarse import progress', action='store_true'
     )
     parser.add_argument(
         '--cleanup',

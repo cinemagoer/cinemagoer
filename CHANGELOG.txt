@@ -7,6 +7,8 @@
   - preflight complete dataset imports before rebuilding tables, reject
     ephemeral SQLite destinations and malformed rows, defer cleanup until
     commit, and write a completed import manifest
+  - show coarse preflight and row-import percentages when
+    ``s32cinemagoer.py --verbose`` is used
   - prevent query adapters from creating missing SQLite databases and open
     existing file-backed SQLite databases read-only
   - honor the ``adultSearch`` default policy, allow explicit advanced-search

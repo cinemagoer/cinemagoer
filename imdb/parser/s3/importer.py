@@ -48,6 +48,42 @@ DATASET_HEADERS = {
 logger = logging.getLogger(__name__)
 
 
+class _ProgressLogger:
+    """Log coarse percentage updates for one importer phase."""
+
+    def __init__(self, phase, total):
+        self.phase = phase
+        self.total = total
+        self._last_percentage = None
+        self.enabled = logger.isEnabledFor(logging.DEBUG)
+        if self.enabled:
+            self.update(0)
+
+    def update(self, completed):
+        if not self.enabled or not self.total:
+            return
+        percentage = min(100, completed * 100 // self.total)
+        if percentage != 100 and self._last_percentage is not None and \
+                percentage < self._last_percentage + 10:
+            return
+        if percentage == self._last_percentage:
+            return
+        self._last_percentage = percentage
+        logger.debug('%s progress: %d%%', self.phase, percentage)
+
+    def callback(self, offset=0, limit=None):
+        """Return a callback that maps one file onto the whole phase."""
+        if not self.enabled:
+            return None
+
+        def report(completed):
+            if limit is not None:
+                completed = min(completed, limit)
+            self.update(offset + completed)
+
+        return report
+
+
 def table_name_from_filename(filename):
     return os.path.basename(filename).replace(TSV_EXT, '').replace('.', '_')
 
@@ -127,7 +163,7 @@ def generate_content(fd, headers, table_name, block_size=BLOCK_SIZE,
         yield data
 
 
-def _preflight_file(filename):
+def _preflight_file(filename, progress=None):
     """Validate one complete archive and return its source metadata."""
     row_count = 0
     try:
@@ -137,6 +173,8 @@ def _preflight_file(filename):
             for block in generate_content(
                     gz_file, headers, table_name, filename=filename):
                 row_count += len(block)
+                if progress is not None:
+                    progress(gz_file.fileobj.tell())
     except IMDbError:
         raise
     except (EOFError, OSError) as exc:
@@ -191,7 +229,20 @@ def preflight_directory(directory):
             raise IMDbDataAccessError(
                 'dataset archive is not a regular file: %r' % filename
             )
-    return filenames, [_preflight_file(filename) for filename in filenames]
+    file_sizes = [os.path.getsize(filename) for filename in filenames]
+    progress = _ProgressLogger('preflight', sum(file_sizes))
+    completed_size = 0
+    file_metadata = []
+    for filename, file_size in zip(filenames, file_sizes):
+        file_metadata.append(
+            _preflight_file(
+                filename,
+                progress=progress.callback(completed_size, file_size),
+            )
+        )
+        completed_size += file_size
+        progress.update(completed_size)
+    return filenames, file_metadata
 
 
 def validate_destination_uri(uri):
@@ -273,6 +324,7 @@ class SQLiteImporter:
             ) from exc
         self._sqlite3 = sqlite3
         self.database = database
+        self._progress = None
         try:
             self.connection = sqlite3.connect(database)
         except sqlite3.Error as exc:
@@ -345,6 +397,8 @@ class SQLiteImporter:
                     ]
                     self.connection.executemany(insert, values)
                     count += len(block)
+                    if self._progress is not None:
+                        self._progress(count)
                 for column, conf in columns:
                     if conf.get('index'):
                         index_name = 'ix_%s_%s' % (table_name, column)
@@ -386,6 +440,7 @@ class SQLAlchemyImporter:
         self.metadata = sqlalchemy.MetaData()
         self.connection = None
         self.transaction = None
+        self._progress = None
 
     def _database_error(self, operation, exc):
         return IMDbDataAccessError(
@@ -473,6 +528,8 @@ class SQLAlchemyImporter:
                         gz_file, headers, table.name, filename=filename):
                     connection.execute(table.insert(), block)
                     count += len(block)
+                    if self._progress is not None:
+                        self._progress(count)
                 for column_name in table.info['indexed_columns']:
                     index = self.sqlalchemy.Index(
                         'ix_%s_%s' % (table.name, column_name),
@@ -510,8 +567,14 @@ def import_dir(directory, uri, cleanup=False):
         metadata_by_name = {
             item['filename']: item for item in manifest['files']
         }
+        import_progress = _ProgressLogger(
+            'row import',
+            sum(item['source_rows'] for item in manifest['files']),
+        )
+        imported_rows = 0
         for filename in filenames:
             logger.info('begin processing file %s', filename)
+            importer._progress = import_progress.callback(imported_rows)
             count = importer.import_file(filename)
             metadata = metadata_by_name[os.path.basename(filename)]
             metadata['imported_rows'] = count
@@ -520,6 +583,8 @@ def import_dir(directory, uri, cleanup=False):
                     '%s: imported %d of %d preflighted rows'
                     % (filename, count, metadata['source_rows'])
                 )
+            imported_rows += count
+            import_progress.update(imported_rows)
             logger.info('processed file %s: %d entries', filename, count)
         importer.commit()
     except Exception as exc:

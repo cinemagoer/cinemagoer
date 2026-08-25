@@ -4,7 +4,10 @@ import gzip
 import importlib.util
 import json
 import logging
+import os
 import sqlite3
+import subprocess
+import sys
 from contextlib import closing
 from pathlib import Path
 
@@ -609,6 +612,42 @@ def test_importer_round_trip(tmp_path, scheme):
     assert ('ix_title_basics_tconst',) in indexes
     assert ('ix_title_basics_primaryTitle',) in indexes
     assert ('ix_title_akas_title',) in indexes
+
+
+def test_importer_verbose_flag_reports_coarse_progress(tmp_path):
+    datasets = tmp_path / 'datasets'
+    datasets.mkdir()
+    _write_complete_dataset(datasets)
+    script = Path(__file__).resolve().parents[1] / 'bin' / 's32cinemagoer.py'
+    environment = os.environ.copy()
+    environment['PYTHONPATH'] = str(script.parents[1])
+
+    quiet = subprocess.run(
+        [
+            sys.executable, script, str(datasets),
+            f'sqlite:///{tmp_path / "quiet.db"}',
+        ],
+        env=environment, capture_output=True, text=True, check=False,
+    )
+    verbose = subprocess.run(
+        [
+            sys.executable, script, '--verbose', str(datasets),
+            f'sqlite:///{tmp_path / "verbose.db"}',
+        ],
+        env=environment, capture_output=True, text=True, check=False,
+    )
+
+    assert quiet.returncode == 0
+    assert 'progress:' not in quiet.stderr
+    assert verbose.returncode == 0
+    assert 'DEBUG:imdb.parser.s3.importer:preflight progress: 0%' \
+        in verbose.stderr
+    assert 'DEBUG:imdb.parser.s3.importer:preflight progress: 100%' \
+        in verbose.stderr
+    assert 'DEBUG:imdb.parser.s3.importer:row import progress: 0%' \
+        in verbose.stderr
+    assert 'DEBUG:imdb.parser.s3.importer:row import progress: 100%' \
+        in verbose.stderr
 
 
 @pytest.mark.parametrize('directory_state', ['missing', 'empty'])

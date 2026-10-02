@@ -659,7 +659,7 @@ def getAKAsInLanguage(movie, lang, _searchedTitle=None):
 def resizeImage(image, width=None, height=None, crop=None, custom_regex=None):
     """Return resized and cropped image url."""
 
-    regexString = custom_regex if custom_regex else r'https://m.media-amazon.com/images/\w/\w+'
+    regexString = custom_regex if custom_regex else r'https://m\.media-amazon\.com/images/\w/\w+'
 
     try:
         resultImage = re.findall(regexString, image)[0]

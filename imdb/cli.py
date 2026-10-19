@@ -20,7 +20,11 @@ This module provides the command line interface for Cinemagoer.
 
 import os
 import sys
-from argparse import ArgumentParser, ArgumentTypeError
+from argparse import (
+    ArgumentParser,
+    ArgumentTypeError,
+    RawDescriptionHelpFormatter,
+)
 
 from imdb import VERSION, IMDb, IMDbError
 
@@ -128,34 +132,93 @@ def get_item(args):
         connection.close()
 
 
+class CommandParser(ArgumentParser):
+    """Accept a bare help topic as an alias for the help option."""
+
+    def parse_known_args(self, args=None, namespace=None):
+        if args == ['help']:
+            args = ['--help']
+        return super().parse_known_args(args, namespace)
+
+
 def make_parser(prog='cinemagoer'):
-    parser = ArgumentParser(prog)
+    parser = ArgumentParser(
+        prog, description=(
+            'Search and retrieve movies and people from a local IMDb '
+            'dataset database.'
+        ),
+        formatter_class=RawDescriptionHelpFormatter,
+        epilog=(
+            'Database setup:\n'
+            '  Import downloaded IMDb datasets with s32cinemagoer.py first.\n'
+            '  Set --uri before the command or use CINEMAGOER_S3_URI.\n\n'
+            'Examples:\n'
+            f'  {prog} --uri sqlite:///cinemagoer.db '
+            'search movie "Miss Jerry" -n 5\n'
+            f'  {prog} --uri sqlite:///cinemagoer.db '
+            'search person "Fred Astaire" --first\n'
+            f'  {prog} --uri sqlite:///cinemagoer.db '
+            'get movie tt0000009\n'
+            f'  {prog} --uri sqlite:///cinemagoer.db '
+            'get person nm0000001\n\n'
+            f'Use "{prog} help COMMAND" or "{prog} COMMAND --help" '
+            f'or "{prog} COMMAND help" for command details.'
+        ),
+    )
     parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
     parser.add_argument('--uri', default=os.getenv('CINEMAGOER_S3_URI'),
-                        help='database URI for the s3 access system')
+                        help='database URI (defaults to CINEMAGOER_S3_URI)')
     parser.add_argument('--debug', action='store_true',
                         help='show a traceback for expected runtime errors')
 
-    command_parsers = parser.add_subparsers(metavar='command', dest='command')
+    command_parsers = parser.add_subparsers(
+        metavar='command', dest='command', parser_class=CommandParser
+    )
     command_parsers.required = True
 
-    command_search_parser = command_parsers.add_parser('search', help='search for items')
+    command_search_parser = command_parsers.add_parser(
+        'search', help='search for movies or people',
+        description='Search by movie title or person name.',
+    )
     command_search_parser.add_argument('type', help='type of item to search for',
                                                     choices=['movie', 'person'])
     command_search_parser.add_argument('key', help='title or name of item to search for')
     command_search_parser.add_argument(
-        '-n', type=positive_int, help='positive number of items to list'
+        '-n', type=positive_int, metavar='COUNT',
+        help='maximum items to list (default: 20; ignored with --first)'
     )
-    command_search_parser.add_argument('--first', action='store_true', help='display only the first result')
+    command_search_parser.add_argument('--first', action='store_true', help='display the full summary of the first result')
     command_search_parser.set_defaults(func=search_item)
 
-    command_get_parser = command_parsers.add_parser('get', help='retrieve information about an item')
+    command_get_parser = command_parsers.add_parser(
+        'get', help='retrieve a movie or person by IMDb id',
+        description=(
+            'Display a movie or person summary, IMDb id, and IMDb page URL. '
+            'Use digits, movie ids starting with tt, or person ids starting with nm.'
+        ),
+    )
     command_get_parser.add_argument('type', help='type of item to retrieve',
                                                 choices=['movie', 'person'])
     command_get_parser.add_argument(
         'key', help='IMDb id (digits or the appropriate tt/nm prefix)'
     )
     command_get_parser.set_defaults(func=get_item)
+
+    help_topics = {
+        'search': command_search_parser,
+        'get': command_get_parser,
+    }
+    command_help_parser = command_parsers.add_parser(
+        'help', help='show general or command-specific help',
+        description='Show help without connecting to a database.',
+    )
+    command_help_parser.add_argument(
+        'topic', nargs='?', choices=help_topics,
+        help='command to explain (default: general help)',
+    )
+    command_help_parser.set_defaults(
+        func=lambda args: help_topics.get(args.topic, parser).print_help()
+    )
 
     return parser
 

@@ -23,6 +23,10 @@
 
   [general]
 
+  - expand CLI help with database setup guidance and examples, and add
+    ``help``, ``help COMMAND``, and ``COMMAND help`` alongside ``--help``
+    and ``-h``
+
   - support current structured s3 AKA records in the public language and
     similarity helpers while retaining legacy string input support
   - make ``parseXML(movie.asXML())`` preserve empty values, roles, nested

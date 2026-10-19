@@ -298,3 +298,70 @@ raise SystemExit(cli.main(['cinemagoer', 'search', 'movie', 'anything']))
     assert result.stdout == ''
     assert result.stderr == 'cinemagoer: error: forced search failure\n'
     assert marker.read_text(encoding='utf-8') == 'closed'
+
+
+@pytest.mark.parametrize('arguments', [('--help',), ('-h',), ('help',)])
+def test_cli_general_help_without_database(arguments):
+    result = run_cli('--uri', 'unsupported://unused', *arguments, uri=None)
+
+    assert result.returncode == 0
+    assert result.stderr == ''
+    assert 'local IMDb dataset database' in result.stdout
+    assert 'CINEMAGOER_S3_URI' in result.stdout
+    assert 's32cinemagoer.py' in result.stdout
+    assert 'search movie "Miss Jerry" -n 5' in result.stdout
+    assert 'help COMMAND' in result.stdout
+
+
+@pytest.mark.parametrize('command', ['search', 'get'])
+@pytest.mark.parametrize('help_option', ['--help', '-h', 'help', 'trailing-help'])
+def test_cli_command_help_without_database(command, help_option):
+    arguments = ('help', command) if help_option == 'help' else (command, help_option)
+    if help_option == 'trailing-help':
+        arguments = (command, 'help')
+    result = run_cli('--uri', 'unsupported://unused', *arguments, uri=None)
+
+    assert result.returncode == 0
+    assert result.stderr == ''
+    assert f'usage: cinemagoer {command}' in result.stdout
+    assert '{movie,person}' in result.stdout
+    if command == 'search':
+        assert '--first' in result.stdout
+        assert 'default: 20' in result.stdout
+    else:
+        assert 'movie ids starting with tt' in ' '.join(result.stdout.split())
+        assert 'person ids starting with nm' in ' '.join(result.stdout.split())
+
+
+def test_cli_help_rejects_unknown_topic():
+    result = run_cli('help', 'unknown', uri=None)
+
+    assert result.returncode == 2
+    assert result.stdout == ''
+    assert 'invalid choice' in result.stderr
+    assert 'Traceback' not in result.stderr
+
+
+def test_bin_cli_wrapper_help():
+    result = subprocess.run(
+        [REPO_ROOT / 'bin' / 'cinemagoer-cli', 'help', 'search'],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False,
+    )
+
+    assert result.returncode == 0
+    assert 'usage: cinemagoer search' in result.stdout
+    assert '--first' in result.stdout
+    assert result.stderr == ''
+
+
+@pytest.mark.parametrize('command', ['search', 'get'])
+def test_cli_help_as_key_is_not_a_help_request(monkeypatch, command):
+    from imdb.cli import main
+
+    calls = []
+    handler = 'search_item' if command == 'search' else 'get_item'
+    monkeypatch.setattr(f'imdb.cli.{handler}', calls.append)
+
+    assert main(['cinemagoer', command, 'movie', 'help']) == 0
+    assert len(calls) == 1
+    assert calls[0].key == 'help'

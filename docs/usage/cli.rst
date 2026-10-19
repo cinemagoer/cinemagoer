@@ -19,6 +19,22 @@ point remains the preferred installed command::
 
   uv run ./bin/cinemagoer-cli --uri sqlite:///cinemagoer.db get movie tt0000009
 
+Help is available without a configured database. Use ``help``, ``--help``, or
+``-h`` for an overview, database setup guidance, and examples. For details of a
+command, use ``help COMMAND``, ``COMMAND help``, or put ``--help`` (or ``-h``)
+after its name::
+
+  cinemagoer --help
+  cinemagoer help search
+  cinemagoer search -h
+  cinemagoer help get
+  cinemagoer search help
+  cinemagoer get help
+
+The same help forms work with :command:`cinemagoer-cli`. Help exits with status
+``0``; an unknown help topic exits with status ``2``. Global options such as
+``--uri`` and ``--debug`` go before the command.
+
 ``-n`` must be a positive integer. Movie and person IDs can be supplied as
 digits or with their usual ``tt`` and ``nm`` prefixes.
 

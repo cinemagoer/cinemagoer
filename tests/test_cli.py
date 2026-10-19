@@ -63,6 +63,10 @@ class _FakeConnection:
     def __init__(self, error=None):
         self.closed = False
         self.error = error
+        self.urls = {
+            'movie_main': 'https://www.imdb.com/title/tt%s/',
+            'person_main': 'https://www.imdb.com/name/nm%s/',
+        }
 
     def search_movie(self, _key):
         if self.error is not None:
@@ -70,7 +74,7 @@ class _FakeConnection:
         return []
 
     def get_movie(self, _key):
-        return SimpleNamespace(summary=lambda: 'Movie summary')
+        return SimpleNamespace(movieID=9, summary=lambda: 'Movie summary')
 
     def close(self):
         self.closed = True
@@ -109,7 +113,10 @@ def test_get_command_closes_connection(monkeypatch, capsys):
 
     get_item(args)
 
-    assert capsys.readouterr().out == 'Movie summary\n'
+    out = capsys.readouterr().out
+    assert 'IMDb ID: tt9\n' in out
+    assert 'IMDb page: https://www.imdb.com/title/tt9/\n' in out
+    assert 'Movie summary\n' in out
     assert connection.closed is True
 
 
@@ -135,6 +142,31 @@ def test_cli_search_uses_canonical_public_id():
 
     assert result.returncode == 0
     assert '  1 0000009 Miss Jerry (1894)' in result.stdout
+    assert result.stderr == ''
+
+
+@pytest.mark.parametrize(
+    ('arguments', 'expected_id', 'expected_url'),
+    [
+        (('search', 'movie', 'Miss Jerry', '--first'),
+         'IMDb ID: tt0000009',
+         'IMDb page: https://www.imdb.com/title/tt0000009/'),
+        (('get', 'movie', 'tt0000009'),
+         'IMDb ID: tt0000009',
+         'IMDb page: https://www.imdb.com/title/tt0000009/'),
+        (('get', 'person', 'nm0000001'),
+         'IMDb ID: nm0000001',
+         'IMDb page: https://www.imdb.com/name/nm0000001/'),
+    ],
+)
+def test_cli_search_and_get_show_public_id_and_page(
+    arguments, expected_id, expected_url
+):
+    result = run_cli(*arguments)
+
+    assert result.returncode == 0
+    assert expected_id in result.stdout
+    assert expected_url in result.stdout
     assert result.stderr == ''
 
 

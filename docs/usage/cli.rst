@@ -22,6 +22,20 @@ point remains the preferred installed command::
 ``-n`` must be a positive integer. Movie and person IDs can be supplied as
 digits or with their usual ``tt`` and ``nm`` prefixes.
 
+When an item is displayed on its own, either through ``search ... --first`` or
+``get``, the command appends the IMDb id and the IMDb web page URL after the
+item summary, so the selected record can be identified without guessing::
+
+  $ cinemagoer --uri sqlite:///cinemagoer.db get movie tt0000009
+  Movie
+  =====
+  Title: Miss Jerry (1894)
+  ...
+  IMDb ID: tt0000009
+  IMDb page: https://www.imdb.com/title/tt0000009/
+
+The plain ``search`` listing already shows the IMDb id for every result.
+
 Exit status
 -----------
 

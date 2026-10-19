@@ -26,6 +26,7 @@ from imdb import VERSION, IMDb, IMDbError
 
 DEFAULT_RESULT_SIZE = 20
 EXIT_ERROR = 1
+ID_PREFIX = {'movie': 'tt', 'person': 'nm'}
 
 
 class CLIError(Exception):
@@ -46,7 +47,7 @@ def positive_int(value):
 def normalize_imdb_id(type_, value):
     """Validate a movie or person IMDb ID and remove its optional prefix."""
     original_value = value
-    prefix = 'tt' if type_ == 'movie' else 'nm'
+    prefix = ID_PREFIX[type_]
     if value.startswith(prefix):
         value = value[len(prefix):]
     if not value.isdigit():
@@ -82,6 +83,15 @@ def list_results(items, type_, n=None):
         })
 
 
+def print_item(item, type_, urls):
+    """Print an item's summary followed by its IMDb id and web page."""
+    imdb_id = getattr(item, type_ + 'ID')
+    summary = item.summary()
+    print(summary, end='' if summary.endswith('\n') else '\n')
+    print('IMDb ID: %s%s' % (ID_PREFIX[type_], imdb_id))
+    print('IMDb page: %s' % (urls[type_ + '_main'] % imdb_id))
+
+
 def search_item(args):
     connection = get_connection(args)
     try:
@@ -94,7 +104,7 @@ def search_item(args):
             raise CLIError('no %s results found for %r' % (args.type, args.key))
         if args.first:
             connection.update(items[0])
-            print(items[0].summary())
+            print_item(items[0], args.type, connection.urls)
         else:
             list_results(items, type_=args.type, n=args.n)
     finally:
@@ -113,7 +123,7 @@ def get_item(args):
             raise CLIError(
                 '%s with IMDb id %r was not found' % (args.type, args.key)
             )
-        print(item.summary())
+        print_item(item, args.type, connection.urls)
     finally:
         connection.close()
 
